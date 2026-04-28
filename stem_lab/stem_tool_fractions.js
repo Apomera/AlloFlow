@@ -1217,7 +1217,7 @@ window.StemLab = window.StemLab || {
             onChange: function(e) { upd({ aiQuestion: e.target.value }); },
             onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
             placeholder: 'Ask me about fractions...',
-            className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
+            className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
           }),
           h('button', { onClick: askAITutor,
             disabled: aiLoading || !aiQuestion.trim(),
@@ -1342,7 +1342,7 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd({ answer: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
                   placeholder: 'Your answer...',
-                  className: 'flex-1 px-3 py-2 border border-rose-300 rounded-lg text-sm font-mono'
+                  className: 'flex-1 px-3 py-2 border border-rose-600 rounded-lg text-sm font-mono'
                 }),
                 h('button', { 'aria-label': 'Check',
                   onClick: checkChallenge,

@@ -1540,7 +1540,7 @@ if (!window._galaxyHasLoadedOnce) {
 
                     onClick: function () { toggleLayer(lt.key); },
 
-                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-300 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-200')
+                    className: "flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (isOn ? 'border-indigo-600 bg-indigo-50 text-indigo-700' : 'border-slate-200 bg-slate-50 text-slate-200')
 
                   }, lt.icon + " " + lt.label);
 

@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // stem_lab_module.js — v2.3.0 (a11y enhancements)
 (function () {
   if (window.AlloModules && window.AlloModules.StemLab) { console.log('[CDN] StemLab already loaded, skipping duplicate'); } else {
@@ -2136,7 +2146,7 @@
           id: 'explore',
           label: '\uD83D\uDD27 Explore',
           desc: t('stem.solver.manipulatives')
-        }].map(tab => /*#__PURE__*/React.createElement("button", { "aria-label": "STEM Lab tab",
+        }].map(tab => /*#__PURE__*/React.createElement("button", { "aria-label": tab.desc ? (tab.label + " tab: " + tab.desc) : (tab.label + " tab"),
           key: tab.id, role: "tab", "aria-selected": stemLabTab === tab.id,
           onClick: () => {
             setStemLabTab(tab.id);
@@ -2353,7 +2363,7 @@
         }].map(m => /*#__PURE__*/React.createElement("button", { "aria-label": m.label.replace(/[^\w\s]/g, '').trim() + ' mode',
           key: m.id,
           onClick: () => setStemLabCreateMode(m.id),
-          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'}`
+          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600 hover:text-indigo-600'}`
         }, m.label)), /*#__PURE__*/React.createElement("div", {
           className: "flex-1"
         }), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
@@ -2375,7 +2385,7 @@
         }].map(s => /*#__PURE__*/React.createElement("button", { "aria-label": s.label + ' style',
           key: s.val,
           onClick: () => setMathMode(s.val),
-          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`
+          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-600' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`
         }, s.label))), /*#__PURE__*/React.createElement("div", {
           className: "bg-slate-50 rounded-xl p-4 border border-slate-400"
         }, /*#__PURE__*/React.createElement("textarea", {
@@ -2435,7 +2445,7 @@
           id: 'fractionViz',
           icon: '🍕',
           label: t('stem.assessment.fraction_lab')
-        }].map(tool => /*#__PURE__*/React.createElement("button", { "aria-label": "STEM Lab tab",
+        }].map(tool => /*#__PURE__*/React.createElement("button", { "aria-label": "Open " + tool.label,
           key: tool.id,
           onClick: () => {
             setStemLabTab('explore');
@@ -2922,6 +2932,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'bakingScience', icon: '🥐', label: 'Baking Lab',
+                desc: 'Leavening chemistry, emulsions, recipe scaling, oven timeline, and Maillard browning — the science behind every bake.',
+                color: 'amber', ready: true
+              },
+              {
                 id: 'dissection', icon: '\uD83D\uDD2C', label: 'Dissection Lab',
                 desc: 'Virtual frog dissection — peel back layers to explore organs, muscles, and skeleton.',
                 color: 'emerald', ready: true
@@ -3048,6 +3063,11 @@
                 desc: 'Tax & paycheck calculator, data literacy, decision matrix, contract reader, health insurance navigator, and applied science for daily life.',
                 color: 'cyan', ready: true
               },
+              {
+                id: 'typingPractice', icon: '\u2328\uFE0F', label: 'Typing Practice',
+                desc: 'Disability-first keyboarding — dyslexia font, high-contrast, audio cues, error-tolerant mode, pace reference, on-screen keyboard. 8+ drill tiers, AI-personalized passages, IEP-ready progress reports.',
+                color: 'violet', ready: true
+              },
 
               {
                 id: 'flightSim', icon: '✈️', label: 'SkySchool',
@@ -3058,6 +3078,11 @@
                 id: 'roadReady', icon: '🚗', label: "RoadReady: Driver's Ed",
                 desc: "3D driving simulator + US permit test + fuel efficiency physics. 14 scenarios, 114 practice questions, real stopping-distance math. Maine state focus.",
                 color: 'emerald', ready: true
+              },
+              {
+                id: 'bikeLab', icon: '🚲', label: 'BikeLab: Physics & Repair',
+                desc: '2D side-view physics sandbox (force vectors, energy graph) + gearing lab (chainring/cassette math, climb sim) + hands-on repair simulator (patch tube, brakes, chain, derailleur).',
+                color: 'amber', ready: true
               },
               {
                 id: 'echoTrainer', icon: '🎧', label: 'Echo Navigator',
@@ -3073,6 +3098,7 @@
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
               { id: 'spaceExplorer', label: 'Space Explorer', icon: '\uD83C\uDF0C', desc: 'Roguelike missions across the solar system. AI-generated challenges teach real science through strategic decisions.', color: 'purple', ready: true },
+              { id: 'alloBotSage', label: 'AlloBot: Starbound Sage', icon: '\uD83E\uDDD9\u200D\u2642\uFE0F', desc: 'Cozy sci-fi roguelite. AlloBot\u2019s spells unlock as you master other STEM Lab tools \u2014 and every cast is a retrieval-practice micro-challenge. Spaced practice, in-game.', color: 'violet', ready: true },
               { id: 'gameStudio', icon: '🎮', label: 'Game Studio', desc: 'Design, build, and test your own games with a visual coding interface.', color: 'purple', ready: true },
 
               { id: '_cat_Biology', icon: '', label: '🧬 Biology & Life Science', desc: '', color: 'slate', category: true },
@@ -3142,7 +3168,7 @@
             // Category filter (from chip buttons)
             var _catFilter = d._categoryFilter || '';
             if (_catFilter && !_activeStation) {
-              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo'], strategy: ['Strategy', 'strategy'] };
+              var _catMap = { science: ['Science', 'Biology', 'Life Science', 'science'], math: ['Math', 'math'], engineering: ['Engineering', 'tech', 'cs', 'engineering'], creative: ['Creative', 'creative', 'Art'], applied: ['Applied', 'applied', 'geo', 'life-skills', 'life skills', 'economics', 'social studies'], strategy: ['Strategy', 'strategy'] };
               var _catKeys = _catMap[_catFilter] || [_catFilter];
               _filteredTools = _filteredTools.filter(function(tool) {
                 if (tool.category) {
@@ -3216,7 +3242,7 @@
                   if (typeof announceToSR === 'function') announceToSR(newFilter ? 'Showing ' + cat.label + ' tools' : 'Showing all tools');
                 },
                 className: "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all border " +
-                  (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600')
+                  (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-600 hover:text-indigo-600')
               }, cat.icon + ' ' + cat.label);
             })
           ),
@@ -3741,7 +3767,7 @@
                       _setStationTools(next);
                     },
                     className: "p-2 rounded-lg text-left text-[10px] font-bold transition-all border " +
-                      (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300")
+                      (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-600")
                   },
                     React.createElement("span", { className: "text-lg block" }, tool.icon),
                     React.createElement("span", { className: "block truncate" }, tool.label)
@@ -4128,8 +4154,10 @@
             // Applied
             a11yAuditor: true, lifeSkills: true, physics: true, wave: true,
             worldBuilder: true,
+            typingPractice: true,
             flightSim: true,
             roadReady: true,
+            bikeLab: true,
             atcTower: true,
             musicSynth: true,
             beehive: true,
@@ -4138,7 +4166,9 @@
             oratory: true,
             singing: true,
             migration: true,
-            appLab: true
+            appLab: true,
+            bakingScience: true,
+            alloBotSage: true
           };
           // Throttle fallback log to once per tool (avoid flooding console on re-renders)
           if (!window._stemFallbackLogged) window._stemFallbackLogged = {};
@@ -4227,6 +4257,9 @@
             setCanvasNarrateEnabled: typeof setCanvasNarrateEnabled === 'function' ? setCanvasNarrateEnabled : function() {},
             celebrate: typeof stemCelebrate === 'function' ? stemCelebrate : function() {},
             callGemini: typeof callGemini === 'function' ? callGemini : null,
+            sourceText: typeof inputText === 'string' ? inputText : (typeof sourceText === 'string' ? sourceText : ''),
+            inputText: typeof inputText === 'string' ? inputText : '',
+            gradeLevel: typeof gradeLevel === 'string' ? gradeLevel : '',
             t: typeof t === 'function' ? t : function(k) { return k; },
             icons: { ArrowLeft: ArrowLeft, Calculator: Calculator, Sparkles: Sparkles, X: X, GripVertical: GripVertical },
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,

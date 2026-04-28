@@ -793,7 +793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                { icon: '\uD83D\uDCDA', title: 'Learn', desc: 'Attend AccessU sessions, use free resources, and build your accessibility skills.' },
                { icon: '\uD83D\uDCE3', title: 'Advocate', desc: 'Use THIS tool to audit and report accessibility barriers. Be a change agent in your community!' }
               ].map(function(item) {
-                return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-600 hover:border-amber-300 transition-all' },
+                return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-600 hover:border-amber-600 transition-all' },
                   h('span', { className: 'text-lg' }, item.icon),
                   h('div', null,
                     h('div', { className: 'font-bold text-xs text-amber-800' }, item.title),
@@ -832,7 +832,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('div', { className: 'flex gap-2 mb-3' },
               [{ id: 'ada_coordinator', label: '\uD83C\uDFE2 ADA Coordinator' }, { id: 'doj', label: '\uD83C\uDFDB\uFE0F Dept. of Justice' }].map(function(opt) {
                 return h('button', { key: opt.id, onClick: function() { upd('complaintType', opt.id); },
-                  className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-300')
+                  className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all ' + (complaintType === opt.id ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                 }, opt.label);
               })
             ),

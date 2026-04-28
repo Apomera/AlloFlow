@@ -894,7 +894,7 @@ window.SelHub = window.SelHub || {
           d.freeWrite && d.freeWrite.length > 20 && h('button', { 'aria-label': 'Why Does This Matter to Me?',
             onClick: function() { askCounselor(d.freeWrite); },
             disabled: aiLoading,
-            className: 'w-full px-4 py-2 bg-teal-50 border border-teal-200 rounded-lg text-xs font-bold text-teal-600 hover:bg-teal-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
+            className: 'w-full px-4 py-2 bg-teal-50 border border-teal-600 rounded-lg text-xs font-bold text-teal-600 hover:bg-teal-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
           }, h(Sparkles, { size: 14 }), aiLoading ? 'Thinking...' : '\ud83d\udcac Talk to AI Counselor about this')
         ),
 
@@ -1000,7 +1000,7 @@ window.SelHub = window.SelHub || {
                   upd('exploredIssues', explored);
                   if (explored.length >= 5) awardBadge('empathy_leader');
                 },
-                className: 'p-4 rounded-2xl border-2 border-slate-200 bg-white text-left transition-all hover:border-teal-300 hover:shadow-md hover:scale-[1.01]'
+                className: 'p-4 rounded-2xl border-2 border-slate-200 bg-white text-left transition-all hover:border-teal-600 hover:shadow-md hover:scale-[1.01]'
               },
                 h('div', { className: 'flex items-center gap-3' },
                   h('span', { className: 'text-2xl' }, issue.emoji),
@@ -1158,7 +1158,7 @@ window.SelHub = window.SelHub || {
                   key: key,
                   onClick: function() { upd('selectedTemplate', selectedTemplate === key ? null : key); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ' +
-                    (selectedTemplate === key ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-teal-600 border-teal-300 hover:bg-teal-50')
+                    (selectedTemplate === key ? 'bg-teal-700 text-white border-teal-600' : 'bg-white text-teal-600 border-teal-600 hover:bg-teal-50')
                 }, tmpl.title);
               })
             ),
@@ -1245,7 +1245,7 @@ window.SelHub = window.SelHub || {
                     var showResult = chosen !== undefined;
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
                     if (showResult && isChosen) btnClass += 'border-teal-400 bg-teal-50 font-bold';
-                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50';
+                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-600 hover:bg-teal-50';
                     else btnClass += 'border-slate-200 bg-slate-50 text-slate-400';
                     return h('div', { key: oi },
                       h('button', { 'aria-label': opt.text,
@@ -1367,7 +1367,7 @@ window.SelHub = window.SelHub || {
                         updMulti({ legBill: bill.id, legSupport: bill.support_base });
                         ctx.awardXP(5);
                       },
-                      className: 'w-full p-4 rounded-xl border-2 text-left transition-all ' + (isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300')
+                      className: 'w-full p-4 rounded-xl border-2 text-left transition-all ' + (isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-600')
                     },
                       h('div', { className: 'font-bold text-sm text-slate-800' }, bill.title),
                       h('p', { className: 'text-xs text-slate-600 mt-1' }, bill.desc),
@@ -1628,7 +1628,7 @@ window.SelHub = window.SelHub || {
                     upd('surveyQuestions', newQs);
                     ctx.awardXP(2);
                   },
-                  className: 'w-full p-3 rounded-xl border text-left text-xs transition-all ' + (alreadyAdded ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white hover:border-teal-300 text-slate-700')
+                  className: 'w-full p-3 rounded-xl border text-left text-xs transition-all ' + (alreadyAdded ? 'border-emerald-600 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-white hover:border-teal-600 text-slate-700')
                 },
                   h('div', { className: 'flex justify-between items-center' },
                     h('span', null, tmpl.q),
@@ -1826,7 +1826,7 @@ window.SelHub = window.SelHub || {
                       }
                     },
                     className: 'flex-shrink-0 px-3 py-1.5 rounded-md text-[10px] font-bold transition-all whitespace-nowrap ' +
-                      (isCurrent ? 'bg-white text-indigo-700 shadow-sm border border-indigo-200' : isExplored ? 'text-emerald-600/70' : 'text-slate-400 hover:text-slate-700')
+                      (isCurrent ? 'bg-white text-indigo-700 shadow-sm border border-indigo-600' : isExplored ? 'text-emerald-600/70' : 'text-slate-400 hover:text-slate-700')
                   }, it.icon + ' ' + (ii + 1));
                 })
               ),
@@ -1862,7 +1862,7 @@ window.SelHub = window.SelHub || {
                   value: rightsScenarioAnswer,
                   onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
                   placeholder: 'Write your response here.',
-                  className: 'w-full text-sm p-3 border border-amber-200 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
+                  className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-amber-300',
                   'aria-label': 'Your response to the prompt'
                 }),
                 rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', {
@@ -1956,7 +1956,7 @@ window.SelHub = window.SelHub || {
                       value: rightsScenarioAnswer,
                       onChange: function(e) { upd('rightsScenarioAnswer', e.target.value); },
                       placeholder: 'Write your response here. Think about rights and responsibilities...',
-                      className: 'w-full text-sm p-3 border border-amber-200 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
+                      className: 'w-full text-sm p-3 border border-amber-600 rounded-lg resize-none h-20 outline-none focus:ring-2 focus:ring-amber-300',
                       'aria-label': 'Your response to the scenario'
                     }),
                     rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && callGemini && h('button', { 'aria-label': 'Get feedback on your response',
@@ -2014,7 +2014,7 @@ window.SelHub = window.SelHub || {
                     upd('serviceTemplate', tmpl.id);
                     ctx.awardXP(5);
                   },
-                  className: 'p-4 rounded-2xl border-2 border-slate-200 bg-white text-left transition-all hover:border-teal-300 hover:shadow-md hover:scale-[1.01]'
+                  className: 'p-4 rounded-2xl border-2 border-slate-200 bg-white text-left transition-all hover:border-teal-600 hover:shadow-md hover:scale-[1.01]'
                 },
                   h('div', { className: 'text-2xl mb-2' }, tmpl.title.split(' ')[0]),
                   h('div', { className: 'font-bold text-sm text-slate-800' }, tmpl.title),
@@ -2179,7 +2179,7 @@ window.SelHub = window.SelHub || {
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
                     if (showResult && isCorrect) btnClass += 'border-emerald-400 bg-emerald-50 text-emerald-800 font-bold';
                     else if (showResult && isChosen && !isCorrect) btnClass += 'border-red-400 bg-red-50 text-red-800';
-                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-300 hover:bg-teal-50 text-slate-700';
+                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-teal-600 hover:bg-teal-50 text-slate-700';
                     else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
                     return h('button', { 'aria-label': '\ud83d\udca1 ' + question.explain,
                       key: oi,
@@ -2267,8 +2267,8 @@ window.SelHub = window.SelHub || {
                     var stars = '';
                     for (var s = 0; s < 5; s++) stars += s < choice.score ? '\u2605' : '\u2606';
                     var btnClass = 'w-full p-3 rounded-xl border-2 text-left text-sm transition-all ';
-                    if (showResult && isChosen) btnClass += choice.score >= 4 ? 'border-emerald-400 bg-emerald-50' : choice.score >= 3 ? 'border-amber-400 bg-amber-50' : 'border-red-300 bg-red-50';
-                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-indigo-50';
+                    if (showResult && isChosen) btnClass += choice.score >= 4 ? 'border-emerald-400 bg-emerald-50' : choice.score >= 3 ? 'border-amber-400 bg-amber-50' : 'border-red-600 bg-red-50';
+                    else if (!showResult) btnClass += 'border-slate-200 bg-white hover:border-indigo-600 hover:bg-indigo-50';
                     else btnClass += 'border-slate-200 bg-slate-50 text-slate-300';
                     return h('div', { key: ci },
                       h('button', { 'aria-label': choice.text,

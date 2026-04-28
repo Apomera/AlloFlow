@@ -2260,7 +2260,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return React.createElement("button", { "aria-label": "Play Progression",
                       key: prog.name,
                       onClick: function () { playProgression(prog); },
-                      className: "text-left px-2.5 py-2 rounded-lg bg-white border border-slate-400 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+                      className: "text-left px-2.5 py-2 rounded-lg bg-white border border-slate-400 hover:border-purple-600 hover:bg-purple-50 transition-all group"
                     },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-700 group-hover:text-purple-700 block" }, prog.name),
                       React.createElement("span", { className: "text-[11px] text-slate-200" }, prog.desc)
@@ -2728,7 +2728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                     return React.createElement("button", { "aria-label": "Play Progression",
                       key: prog.name,
                       onClick: function () { playProgression(prog); },
-                      className: "text-left px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-400 hover:border-purple-300 hover:bg-purple-50 transition-all group"
+                      className: "text-left px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-400 hover:border-purple-600 hover:bg-purple-50 transition-all group"
                     },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-700 group-hover:text-purple-700 block" }, prog.name),
                       React.createElement("span", { className: "text-[11px] text-slate-200" }, prog.desc)
@@ -3162,7 +3162,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                             }, ci * 800);
                           });
                         },
-                        className: "p-2 rounded-lg text-left transition-all border hover:shadow-md " + ((d.activeProgression && d.activeProgression.name === prog.name) ? 'border-purple-400 bg-purple-100 shadow-md' : 'border-purple-100 bg-white hover:border-purple-300')
+                        className: "p-2 rounded-lg text-left transition-all border hover:shadow-md " + ((d.activeProgression && d.activeProgression.name === prog.name) ? 'border-purple-400 bg-purple-100 shadow-md' : 'border-purple-100 bg-white hover:border-purple-600')
                       },
                         React.createElement("div", { className: "text-[11px] font-bold text-purple-800" }, prog.name),
                         React.createElement("div", { className: "flex gap-1 mt-1 flex-wrap" },

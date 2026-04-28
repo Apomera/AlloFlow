@@ -4335,7 +4335,7 @@ var d = (labToolData.companionPlanting) || {};
                         cgUpd(patch);
                         if (addToast) addToast('🎯 Challenge started: ' + ch.title, 'info');
                       },
-                      className: 'text-left p-2 rounded-lg border transition-all ' + (completed ? 'bg-emerald-50 border-emerald-300 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm')
+                      className: 'text-left p-2 rounded-lg border transition-all ' + (completed ? 'bg-emerald-50 border-emerald-600 opacity-60' : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm')
                     },
                       h('div', { className: 'flex items-center gap-1.5' },
                         h('span', null, ch.emoji),
@@ -4450,7 +4450,7 @@ var d = (labToolData.companionPlanting) || {};
                 callGemini && h('button', {
                   onClick: cgAskAdvisor,
                   disabled: cgAdvisorCooldown > 0,
-                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300')
+                  className: 'flex-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (cgAdvisorCooldown > 0 ? 'bg-slate-100 text-slate-200' : 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600')
                 }, cgAdvisorCooldown > 0 ? '\uD83E\uDDD1\u200D\uD83C\uDF3E Advisor (wait ' + cgAdvisorCooldown + ' days)' : '\uD83E\uDDD1\u200D\uD83C\uDF3E Ask Garden Advisor')
               ),
 
@@ -4545,14 +4545,14 @@ var d = (labToolData.companionPlanting) || {};
 
                 React.createElement("button", {
                   onClick: function () { upd('gardenMode', 'community'); },
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300"
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-600"
                 }, "🏡 Community Garden"),
 
                 React.createElement("button", {
 
                   onClick: function () { upd('showCulture', !showCulture); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showCulture ? 'bg-amber-100 text-amber-800 border border-amber-600' : 'bg-slate-100 text-slate-600 hover:bg-amber-50'),
 
                   "aria-label": "Cultural context"
 
@@ -4562,7 +4562,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   onClick: function () { upd('compareMode', !compareMode); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-300' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (compareMode ? 'bg-blue-100 text-blue-800 border border-blue-600' : 'bg-slate-100 text-slate-600 hover:bg-blue-50')
 
                 }, "🔬 Compare"),
 
@@ -4570,7 +4570,7 @@ var d = (labToolData.companionPlanting) || {};
 
                   onClick: function () { upd('showSoilDetail', !showSoilDetail); },
 
-                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
+                  className: "px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (showSoilDetail ? 'bg-emerald-100 text-emerald-800 border border-emerald-600' : 'bg-slate-100 text-slate-600 hover:bg-emerald-50')
 
                 }, "🧪 Soil Science")
 
@@ -4810,7 +4810,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-300' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-400')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (cornPlanted ? 'bg-yellow-100 text-yellow-800 border border-yellow-600' : 'bg-slate-50 text-slate-600 hover:bg-yellow-50 border border-slate-400')
 
                   }, "🌽 Corn" + (cornPlanted ? ' ✓' : '')),
 
@@ -4830,7 +4830,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-300' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-400')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (beansPlanted ? 'bg-green-100 text-green-800 border border-green-600' : 'bg-slate-50 text-slate-600 hover:bg-green-50 border border-slate-400')
 
                   }, "🫘 Beans" + (beansPlanted ? ' ✓' : '')),
 
@@ -4850,7 +4850,7 @@ var d = (labToolData.companionPlanting) || {};
 
                     },
 
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-400')
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (squashPlanted ? 'bg-orange-100 text-orange-800 border border-orange-600' : 'bg-slate-50 text-slate-600 hover:bg-orange-50 border border-slate-400')
 
                   }, "🎃 Squash" + (squashPlanted ? ' ✓' : ''))
 

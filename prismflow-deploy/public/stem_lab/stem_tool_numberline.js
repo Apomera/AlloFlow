@@ -566,7 +566,7 @@ window.StemLab = window.StemLab || {
                           onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkAnswer(); },
                           placeholder: 'Your answer',
                           'aria-label': 'Challenge answer',
-                          className: 'flex-1 px-3 py-2 border border-blue-300 rounded-lg text-sm font-mono'
+                          className: 'flex-1 px-3 py-2 border border-blue-600 rounded-lg text-sm font-mono'
                         }) : h('div', { className: 'flex-1 text-sm font-bold text-amber-600 px-2' }, 'Click the number line above to place a marker.'),
                         h('button', { 'aria-label': 'Check Answer',
                           onClick: checkAnswer,
@@ -703,7 +703,7 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd({ aiQuestion: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
                   placeholder: 'Ask about number lines...',
-                  className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
+                  className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
                 }),
                 h('button', { onClick: askAITutor,
                   disabled: aiLoading || !aiQuestion.trim(),

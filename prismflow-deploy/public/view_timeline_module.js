@@ -305,7 +305,7 @@
       [idx]: e.target.value
     })),
     placeholder: t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter',
-    className: "text-[10px] border border-yellow-300 rounded px-1 py-0.5 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0",
+    className: "text-[10px] border border-yellow-600 rounded px-1 py-0.5 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0",
     onKeyDown: e => {
       if (e.key === 'Enter' && timelineRefinementInputs[idx]) {
         handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
@@ -343,7 +343,7 @@
   })))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
     onClick: handleAddTimelineStep,
-    className: "w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
+    className: "w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 16
   }), " ", t('timeline.add_step'))) : isTeacherMode || isIndependentMode ? (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => /*#__PURE__*/React.createElement("div", {

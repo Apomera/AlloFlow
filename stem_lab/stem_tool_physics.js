@@ -1911,7 +1911,7 @@ const d = labToolData.physics;
                       addToast('\uD83C\uDFC6 ' + ch.desc + ' — fire away!', 'info');
                     },
                     className: "p-2 rounded-lg text-center transition-all border-2 " +
-                      (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-300')
+                      (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-600')
                   },
                     React.createElement("p", { className: "text-xs font-bold " + (completed ? 'text-emerald-700' : 'text-violet-700') }, completed ? '\u2705 ' + ch.label : ch.label),
                     React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, ch.desc),

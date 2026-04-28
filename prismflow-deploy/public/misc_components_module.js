@@ -124,7 +124,7 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
         readOnly: status === "success",
         className: `
                   text-center border-b-2 px-1 py-0.5 text-sm font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-400 rounded-t
-                  ${status === "success" ? "border-green-500 bg-green-50 text-green-800" : status === "error" ? "border-red-500 bg-red-50 animate-pulse" : status === "active" ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-indigo-300 bg-white focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200"}
+                  ${status === "success" ? "border-green-500 bg-green-50 text-green-800" : status === "error" ? "border-red-500 bg-red-50 animate-pulse" : status === "active" ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200" : "border-indigo-600 bg-white focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200"}
               `,
         style: { width },
         placeholder: "?",

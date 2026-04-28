@@ -199,7 +199,7 @@ var StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], 
     {
       "aria-label": t("common.close"),
       onClick: onClose,
-      className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-3 rounded-xl transition-all active:scale-95"
+      className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-600 hover:text-indigo-600 font-bold py-3 rounded-xl transition-all active:scale-95"
     },
     t("common.cancel")
   ))));

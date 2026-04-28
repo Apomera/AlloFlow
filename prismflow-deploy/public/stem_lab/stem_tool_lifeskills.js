@@ -909,7 +909,7 @@ window.StemLab = window.StemLab || {
                     stemBeep(oi === dlCurrent.correct);
                     if (dlScore + (oi === dlCurrent.correct ? 1 : 0) >= 3) checkBadge('dataDetect');
                   }
-                }, className: 'p-2 rounded-xl text-xs font-bold text-left transition-all border-2 ' + (revealed ? (isCorrect ? 'border-emerald-400 bg-emerald-50' : isSelected ? 'border-red-400 bg-red-50' : 'border-slate-200') : isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-indigo-300') }, opt);
+                }, className: 'p-2 rounded-xl text-xs font-bold text-left transition-all border-2 ' + (revealed ? (isCorrect ? 'border-emerald-400 bg-emerald-50' : isSelected ? 'border-red-400 bg-red-50' : 'border-slate-200') : isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-indigo-600') }, opt);
               })
             ),
             dlRevealed && h('div', { className: 'mt-3 p-3 rounded-xl ' + (dlAnswer === dlCurrent.correct ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200') },
@@ -989,7 +989,7 @@ window.StemLab = window.StemLab || {
                     if (list.length >= crCurrent.traps.length) checkBadge('trapFinder');
                     awardXP(10, 'Found trap: ' + trap.hint);
                   }
-                }, className: 'p-2 rounded-xl text-left text-[11px] transition-all border ' + (found ? 'bg-red-50 border-red-300' : 'bg-white border-slate-200 hover:border-amber-300') },
+                }, className: 'p-2 rounded-xl text-left text-[11px] transition-all border ' + (found ? 'bg-red-50 border-red-600' : 'bg-white border-slate-200 hover:border-amber-600') },
                   found ? h('div', null, h('p', { className: 'font-bold text-red-700' }, '\u26A0\uFE0F ' + trap.hint), h('p', { className: 'text-red-600 mt-0.5' }, trap.explain)) :
                   h('p', { className: 'text-slate-600 italic' }, '\uD83D\uDD0D Click to investigate: ' + trap.hint)
                 );
@@ -1135,7 +1135,7 @@ window.StemLab = window.StemLab || {
                   stemBeep(correct);
                   updMulti({ ccDashFb: correct ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Wrong! It\'s ' + ccCurrentDash.name + '. ' + ccCurrentDash.desc });
                   if (correct) { awardXP(10, 'Dashboard quiz'); checkBadge('mechanic'); }
-                }, className: 'p-2 rounded-xl text-xs font-bold border border-slate-400 hover:border-teal-300' }, c);
+                }, className: 'p-2 rounded-xl text-xs font-bold border border-slate-400 hover:border-teal-600' }, c);
               })
             ),
             d.ccDashFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.ccDashFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.ccDashFb),
@@ -1175,7 +1175,7 @@ window.StemLab = window.StemLab || {
                   stemBeep(correct);
                   updMulti({ plumbFb: correct ? '\u2705 Correct! ' + plumbCurrent.explain : '\u274C Not ' + part.name + '. Try again!' });
                   if (correct) { checkBadge('handyman'); awardXP(15, 'Plumbing diagnosis'); }
-                }, className: 'p-2 rounded-xl text-center text-[11px] font-bold border border-slate-400 hover:border-teal-300' },
+                }, className: 'p-2 rounded-xl text-center text-[11px] font-bold border border-slate-400 hover:border-teal-600' },
                   h('span', { className: 'text-lg block' }, part.icon), part.name
                 );
               })
@@ -1519,7 +1519,7 @@ window.StemLab = window.StemLab || {
                     stemBeep(correct);
                     updMulti({ foodSafetyFb: correct ? '\u2705 Correct! ' + foodSafetyCurrent.tempF + '\u00B0F for ' + foodSafetyCurrent.food : '\u274C It\'s ' + foodSafetyCurrent.tempF + '\u00B0F. ' + foodSafetyCurrent.danger, foodSafetyScore: foodSafetyScore + (correct ? 1 : 0) });
                     if (correct && foodSafetyScore + 1 >= 5) checkBadge('chefSafe');
-                  }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-400 hover:border-amber-300' }, temp + '\u00B0F');
+                  }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-400 hover:border-amber-600' }, temp + '\u00B0F');
                 })
               ),
               d.foodSafetyFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.foodSafetyFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.foodSafetyFb),

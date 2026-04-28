@@ -997,12 +997,12 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'px-2 py-0.5 bg-violet-100 text-violet-700 text-[11px] font-bold rounded-full' }, 'GENETICS v3'),
               h('button', {
                 onClick: function() { upd('_showBadgePanel', !showBadgePanel); },
-                className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-300' : 'bg-slate-50 text-slate-600 border-slate-200'),
+                className: 'ml-auto px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showBadgePanel ? 'bg-amber-100 text-amber-700 border-amber-600' : 'bg-slate-50 text-slate-600 border-slate-200'),
                 'aria-label': 'Toggle badges'
               }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGES.length),
               h('button', {
                 onClick: function() { upd('_showAI', !showAI); },
-                className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showAI ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200'),
+                className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (showAI ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200'),
                 'aria-label': 'Toggle AI tutor'
               }, '\uD83E\uDD16 AI')
             ),
@@ -1014,7 +1014,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: st.id,
                   onClick: function() { upd('subtool', st.id); announceToSR('Switched to ' + st.label); },
                   className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
-                    (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300 hover:bg-violet-50'),
+                    (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600 hover:bg-violet-50'),
                   title: st.desc
                 }, st.icon + ' ' + st.label);
               })
@@ -1072,7 +1072,7 @@ window.StemLab = window.StemLab || {
                         upd('_activePreset', null);
                         trackCross();
                       },
-                      className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border-2 ' + (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
+                      className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all border-2 ' + (isActive ? 'bg-violet-600 text-white border-violet-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
                     }, info.icon + ' ' + info.label);
                   })
                 ),
@@ -1285,7 +1285,7 @@ window.StemLab = window.StemLab || {
                       }
                     },
                     className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all ' +
-                      (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300')
+                      (isDihybrid ? 'bg-indigo-600 text-white border-indigo-600 shadow-md' : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600')
                   }, isDihybrid ? '\uD83E\uDDEC Dihybrid ON (4\u00D74)' : '\uD83E\uDDEC Dihybrid Cross (4\u00D74)'),
                   isDihybrid && h('span', { className: 'text-[11px] text-slate-600' }, 'Two genes, 16 offspring combinations')
                 ),
@@ -1498,7 +1498,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: ped.id,
                     onClick: function() { updMulti({ _pedPreset: idx, _pedSolveAnswer: '', _pedSolveFeedback: null }); punnettSound('preset'); },
                     className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all border ' +
-                      (isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
+                      (isActive ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
                   }, ped.label);
                 })
               ),
@@ -1506,11 +1506,11 @@ window.StemLab = window.StemLab || {
               // Controls
               h('div', { className: 'flex gap-2 mb-3' },
                 h('button', { onClick: function() { upd('_pedShowGeno', !pedShowGeno); },
-                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200')
+                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedShowGeno ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                 }, pedShowGeno ? '\uD83D\uDC41 Hide Genotypes' : '\uD83D\uDC41 Show Genotypes'),
                 h('button', { 'aria-label': 'Toggle pedigree solve mode',
                   onClick: function() { updMulti({ _pedSolveMode: !pedSolveMode, _pedSolveAnswer: '', _pedSolveFeedback: null, _pedShowGeno: pedSolveMode }); },
-                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-slate-50 text-slate-600 border-slate-200')
+                  className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (pedSolveMode ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                 }, pedSolveMode ? '\uD83E\uDDE9 Solve Mode ON' : '\uD83E\uDDE9 Solve Mode')
               ),
 
@@ -1630,7 +1630,7 @@ window.StemLab = window.StemLab || {
                         }
                       },
                       className: 'px-3 py-1.5 text-[11px] font-bold rounded-lg border transition-all ' +
-                        (isSelected ? (pedSolveFeedback && pedSolveFeedback.indexOf('\u2705') !== -1 ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300') : 'bg-white text-slate-600 border-slate-200 hover:border-fuchsia-300')
+                        (isSelected ? (pedSolveFeedback && pedSolveFeedback.indexOf('\u2705') !== -1 ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-red-100 text-red-700 border-red-600') : 'bg-white text-slate-600 border-slate-200 hover:border-fuchsia-600')
                     }, opt.label);
                   })
                 ),
@@ -1715,7 +1715,7 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'flex items-center gap-2 mb-2' },
                   h('button', { 'aria-label': 'Random genetic drift (stronger in small populations)',
                     onClick: function() { upd('popDrift', !popDrift); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-300' : 'bg-slate-50 text-slate-600 border-slate-200')
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (popDrift ? 'bg-sky-100 text-sky-700 border-sky-600' : 'bg-slate-50 text-slate-600 border-slate-200')
                   }, popDrift ? '\uD83C\uDFB2 Drift ON' : '\uD83C\uDFB2 Drift OFF'),
                   h('span', { className: 'text-[11px] text-slate-600' }, 'Random genetic drift (stronger in small populations)')
                 ),
@@ -1855,7 +1855,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: f.val,
                     onClick: function() { upd('_traitFilter', f.val); },
                     className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' +
-                      (traitFilter === f.val ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-300')
+                      (traitFilter === f.val ? 'bg-violet-600 text-white border-violet-600' : 'bg-white text-slate-600 border-slate-200 hover:border-violet-600')
                   }, f.label);
                 })
               ),
@@ -1921,16 +1921,16 @@ window.StemLab = window.StemLab || {
                 h('div', { className: 'flex gap-2 mt-2' },
                   h('button', { 'aria-label': 'Sample 1',
                     onClick: function() { upd('_dnaShowSteps', !dnaShowSteps); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (dnaShowSteps ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-300' : 'bg-white text-slate-600 border-slate-200')
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg border ' + (dnaShowSteps ? 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-600' : 'bg-white text-slate-600 border-slate-200')
                   }, dnaShowSteps ? '\uD83D\uDC41 Hide Steps' : '\uD83D\uDC41 Show Steps'),
                   // Quick presets
                   h('button', { 'aria-label': 'Sample 1',
                     onClick: function() { upd('_dnaSeq', 'ATGAAAGCTTTTCGATGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-600'
                   }, '\uD83E\uDDEA Sample 1'),
                   h('button', { 'aria-label': 'Sample 2',
                     onClick: function() { upd('_dnaSeq', 'ATGTGCCCGAACGTTTACTGA'); punnettSound('translate'); },
-                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-300'
+                    className: 'px-2 py-1 text-[11px] font-bold rounded-lg bg-white text-slate-600 border border-slate-400 hover:border-fuchsia-600'
                   }, '\uD83E\uDDEA Sample 2'),
                   h('button', { 'aria-label': 'Translate',
                     onClick: function() {
@@ -2179,7 +2179,7 @@ window.StemLab = window.StemLab || {
                         }, 1500);
                       },
                       className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-300 hover:bg-violet-50')
+                        (chalFeedback ? (i === chalQuestions[chalIdx].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-violet-600 hover:bg-violet-50')
                     }, opt);
                   })
                 ),
@@ -2279,7 +2279,7 @@ window.StemLab = window.StemLab || {
                           }, 1500);
                         },
                         className: 'px-3 py-2 text-xs font-bold rounded-lg border transition-all ' +
-                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-300 hover:bg-red-50')
+                          (battleFeedback ? (i === BATTLE_QS[battleRound].correct ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-slate-50 text-slate-600 border-slate-200') : 'bg-white text-slate-700 border-slate-200 hover:border-red-600 hover:bg-red-50')
                       }, opt);
                     })
                   ),

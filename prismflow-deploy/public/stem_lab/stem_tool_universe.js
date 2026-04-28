@@ -1701,7 +1701,7 @@ var d = labToolData.universe || {};
 
                     onClick: function () { upd("cosmicTime", ep.t); var cv = document.querySelector('[data-universe-canvas]'); if (cv) cv.dataset.time = String(ep.t); awardStemXP('universe_explore', 5, 'Visited epoch: ' + ep.name); },
 
-                    className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105 " + (isCurrent ? "text-white shadow-sm" : "bg-white text-slate-600 border border-slate-400 hover:border-violet-300"),
+                    className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all hover:scale-105 " + (isCurrent ? "text-white shadow-sm" : "bg-white text-slate-600 border border-slate-400 hover:border-violet-600"),
 
                     style: isCurrent ? { backgroundColor: ep.border } : {}
 
@@ -2079,7 +2079,7 @@ var d = labToolData.universe || {};
                   'aria-label': 'Ask the AI cosmos tutor a question',
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askCosmosTutor(d.aiQuestion); },
-                  className: "flex-1 px-3 py-1.5 border border-violet-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-400 outline-none"
+                  className: "flex-1 px-3 py-1.5 border border-violet-600 rounded-lg text-sm focus:ring-2 focus:ring-violet-400 outline-none"
                 }),
                 React.createElement("button", { "aria-label": "Ask Cosmos Tutor",
                   onClick: function() { askCosmosTutor(d.aiQuestion); },
@@ -3310,7 +3310,7 @@ var d = labToolData.universe || {};
                     value: d.earthWeight || 70,
                     'aria-label': 'Your weight on Earth in kilograms',
                     onChange: function(e) { upd('earthWeight', parseFloat(e.target.value) || 70); },
-                    className: "w-20 px-2 py-1 border rounded text-sm text-center " + (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'border-green-300')
+                    className: "w-20 px-2 py-1 border rounded text-sm text-center " + (isDark ? 'bg-slate-700 border-slate-600 text-white' : 'border-green-600')
                   }),
                   React.createElement("span", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-200') }, "(" + Math.round((d.earthWeight || 70) * 2.205) + " lbs)")
                 ),

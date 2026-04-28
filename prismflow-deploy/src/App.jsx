@@ -5014,61 +5014,62 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/view_dbq_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/view_timeline_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5079,7 +5080,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1e631ef/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@db71636/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -5144,6 +5145,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_roadready.js',
         'stem_lab/stem_tool_firstresponse.js',
         'stem_lab/stem_tool_bikelab.js',
+        'stem_lab/stem_tool_evolab.js',
         'stem_lab/stem_tool_bakingscience.js',
         'stem_lab/stem_tool_allobotsage.js',
         'stem_lab/stem_tool_skatelab.js',
@@ -14237,7 +14239,7 @@ Return ONLY valid JSON:
   };
   const _createDocPipeline = window.AlloModules && window.AlloModules.createDocPipeline;
   const _docPipeline = _createDocPipeline
-    ? _createDocPipeline({ callGemini, callGeminiVision, callImagen, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); } })
+    ? _createDocPipeline({ callGemini, callGeminiVision, callImagen, addToast, t, isRtlLang, updateExportPreview: function() { if (typeof updateExportPreview === 'function') updateExportPreview(); }, getDefaultTitle: function(type) { return typeof getDefaultTitle === 'function' ? getDefaultTitle(type) : ''; } })
     : null;
   const runPdfAccessibilityAudit = _docPipeline ? _docPipeline.runPdfAccessibilityAudit : async () => { addToast('Doc pipeline loading...', 'info'); };
   const auditOutputAccessibility = _docPipeline ? _docPipeline.auditOutputAccessibility : async () => {};
@@ -20871,12 +20873,7 @@ Return ONLY valid JSON:
   }, [botAccessoryBase, isBlueprintMode]);
   const isSystemAudioActiveMemo = useMemo(() => isPlaying || isGeneratingAudio || !!phonicsData, [isPlaying, isGeneratingAudio, phonicsData]);
   return (
-    /* role="region" + aria-label below ensures axe-core's `region` best-practice rule
-       is satisfied — every child of #root (splash overlay, skip link, sr-only h1,
-       floating help button + AI guide tooltip, "Saved to Device" indicator, etc.)
-       is now contained by a named landmark. role="region" chosen over role="application"
-       so it doesn't change how screen readers navigate the rest of the app. */
-    <div role="region" aria-label="AlloFlow application" className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
+    <div className={`min-h-screen bg-slate-50 font-sans text-slate-800 flex flex-col ${disableAnimations ? 'reduce-motion' : ''}`}>
       {kokoroLoadState && kokoroLoadState.loading && (
         <div role="status" aria-live="polite" aria-label="AlloFlow loading" style={{
           position: 'fixed', inset: 0, zIndex: 9999,
@@ -23337,7 +23334,7 @@ Return ONLY valid JSON:
                                                 value={personaInput}
                                                 onChange={(e) => setPersonaInput(e.target.value)}
                                                 onKeyDown={(e) => e.key === 'Enter' && handlePanelChatSubmit(personaInput)}
-                                                className="flex-1 p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-600"
+                                                className="flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-600"
                                                 placeholder={t('persona.panel_question_placeholder')}
                                                 disabled={personaState.isLoading}
                                             />
@@ -24442,7 +24439,7 @@ Return ONLY valid JSON:
                                       value={urlSearchQuery}
                                       onChange={(e) => setUrlSearchQuery(e.target.value)}
                                       placeholder={`e.g. Photosynthesis for ${gradeLevel}...`}
-                                      className="flex-grow text-sm p-2 border border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+                                      className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
                                       onKeyDown={(e) => e.key === 'Enter' && handleAiUrlSearch()}
                                       autoFocus
                                   />
@@ -24499,7 +24496,7 @@ Return ONLY valid JSON:
                                   value={urlToFetch}
                                   onChange={(e) => setUrlToFetch(e.target.value)}
                                   placeholder={t('common.url_placeholder')}
-                                  className="flex-grow text-sm p-2 border border-indigo-200 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
+                                  className="flex-grow text-sm p-2 border border-indigo-600 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none"
                                   onKeyDown={(e) => e.key === 'Enter' && handleUrlFetch()}
                                   autoFocus
                                 />
@@ -25719,7 +25716,7 @@ Return ONLY valid JSON:
                                     data-help-key="brainstorm_simulation_type"
                                     value={bridgeSimType}
                                     onChange={(e) => setBridgeSimType(e.target.value)}
-                                    className="w-full text-xs border border-violet-200 rounded p-1.5 focus:ring-2 focus:ring-violet-500 outline-none text-violet-800"
+                                    className="w-full text-xs border border-violet-600 rounded p-1.5 focus:ring-2 focus:ring-violet-500 outline-none text-violet-800"
                                 >
                                     {BRIDGE_MODES.map(mode => (
                                         <option key={mode.id} value={mode.id}>
@@ -26113,7 +26110,7 @@ Return ONLY valid JSON:
                                 </label>
                                 <input type="text" placeholder={window._dbqMode === 'search' ? 'e.g. "Japanese internment primary sources"' : window._dbqMode === 'links' ? 'e.g. "Civil Rights Movement"' : 'e.g. "Federalists vs Anti-Federalists"'}
                                     aria-label={window._dbqMode === 'search' ? 'Search topic for primary source hunting' : window._dbqMode === 'links' ? 'Topic context for AI link analysis' : 'Perspectives to compare for DBQ'}
-                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
+                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
                                     id="dbq-focus-topic" />
                             </div>
                         )}
@@ -26143,7 +26140,7 @@ Return ONLY valid JSON:
                                         <label className="text-[11px] font-bold text-slate-600 uppercase block mb-1">Import from URL</label>
                                         <div className="flex gap-1">
                                             <input type="text" id="dbq-import-url"
-                                                className="flex-1 text-xs border border-indigo-200 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none"
+                                                className="flex-1 text-xs border border-indigo-600 rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-indigo-300 outline-none"
                                                 placeholder="https://... (article, speech, primary source)"
                                                 aria-label="URL to import as document" />
                                             <button onClick={async () => {
@@ -26232,11 +26229,11 @@ Return ONLY valid JSON:
                                     </div>
                                 </div>
                                 <textarea id="dbq-custom-docs"
-                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none font-mono"
+                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none font-mono"
                                     rows={8} placeholder="Paste your documents here, separated by --- on its own line..."
                                     aria-label="Custom documents for DBQ" />
                                 <input type="text" id="dbq-custom-essay-focus"
-                                    className="w-full text-xs border border-rose-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
+                                    className="w-full text-xs border border-rose-600 rounded-lg px-3 py-2 focus:ring-2 focus:ring-rose-300 outline-none"
                                     placeholder="Essay focus question (optional) — e.g. 'How did different groups define liberty in 1776?'"
                                     aria-label="Custom essay focus question" />
                             </div>
@@ -26771,7 +26768,7 @@ Return ONLY valid JSON:
                         <button aria-label={t('common.resume_saved_adventure')}
                             data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
                             disabled={isResumingAdventure}
-                            className="w-full bg-white border-2 border-purple-200 text-purple-700 text-sm font-bold py-2 rounded-md hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 shadow-sm mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full bg-white border-2 border-purple-600 text-purple-700 text-sm font-bold py-2 rounded-md hover:bg-purple-50 transition-colors flex items-center justify-center gap-2 shadow-sm mb-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isResumingAdventure ? <RefreshCw size={16} className="animate-spin" /> : <History size={16} />}
                             {isResumingAdventure ? t('adventure.loading_save') : t('adventure.resume')}
@@ -27085,7 +27082,7 @@ Return ONLY valid JSON:
                                         <label htmlFor="advArtStyle" className="text-xs font-bold text-indigo-800 cursor-pointer select-none flex items-center gap-2 whitespace-nowrap">
                                             🎨 {t('adventure.art_style_label') || 'Art Style'}
                                         </label>
-                                        <select id="advArtStyle" value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="flex-1 text-xs px-2 py-1 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none cursor-pointer">
+                                        <select id="advArtStyle" value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="flex-1 text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none cursor-pointer">
                                             <option value="auto">🎨 {t('adventure.art_auto') || 'Auto (default)'}</option>
                                             <option value="storybook">📚 {t('adventure.art_storybook') || 'Storybook'}</option>
                                             <option value="pixel">🎮 {t('adventure.art_pixel') || 'Pixel Art'}</option>
@@ -27096,7 +27093,7 @@ Return ONLY valid JSON:
                                         </select>
                                     </div>
                                     {adventureArtStyle === 'custom' && (
-                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="w-full text-xs px-3 py-1.5 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="w-full text-xs px-3 py-1.5 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
                                     )}
                                     <div className="flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200" data-help-key="adventure_low_quality">
                                         <input aria-label={t('common.toggle_use_low_quality_visuals')}
@@ -27215,7 +27212,7 @@ Return ONLY valid JSON:
                                         max="50"
                                         value={adventureState.climaxMinTurns || 20}
                                         onChange={(e) => setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(e.target.value) || 20) }))}
-                                        className="w-14 text-xs border border-purple-200 rounded p-1 text-center focus:ring-purple-500 outline-none font-bold text-purple-900"
+                                        className="w-14 text-xs border border-purple-600 rounded p-1 text-center focus:ring-purple-500 outline-none font-bold text-purple-900"
                                     />
                                 </div>
                                 <div className="bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2">
@@ -27727,7 +27724,7 @@ Return ONLY valid JSON:
                             </div>
                             <button onClick={() => { setIsRosterKeyOpen(true); setTimeout(() => setShowBatchConfig(true), 300); }}
                                 disabled={!hasSourceOrAnalysis}
-                                className="w-full px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 border border-amber-200"
+                                className="w-full px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-100 transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 border border-amber-600"
                             >
                                 <Layers size={14} /> {t('roster.batch_generate') || 'Differentiate by Group'}
                             </button>
@@ -28640,7 +28637,7 @@ Return ONLY valid JSON:
                                                          <button aria-label={t('common.auto_correct_selected_errors')}
                                                              onClick={handleAutoCorrectSource}
                                                              disabled={isProcessing || selectedDiscrepancies.size === 0} aria-busy={isProcessing}
-                                                             className="w-full flex items-center justify-center gap-2 bg-white border border-red-200 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                             className="w-full flex items-center justify-center gap-2 bg-white border border-red-600 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                          >
                                                              {isProcessing ? <RefreshCw size={12} className="animate-spin"/> : <Wrench size={12}/>}
                                                              {t('analysis.fix_button')} ({selectedDiscrepancies.size})
@@ -28780,7 +28777,7 @@ Return only the corrected version of this exact text:`;
                                                   <button aria-label={t('common.fix_grammar_errors')}
                                                       onClick={handleFixGrammarErrors}
                                                       disabled={isProcessing || selectedGrammarErrors.size === 0} aria-busy={isProcessing}
-                                                      className="w-full flex items-center justify-center gap-2 bg-white border border-amber-200 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                                      className="w-full flex items-center justify-center gap-2 bg-white border border-amber-600 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                                                   >
                                                       {isProcessing ? <RefreshCw size={12} className="animate-spin"/> : <Wand2 size={12}/>}
                                                       {t('analysis.fix_grammar_button') || 'Fix Grammar Errors'} ({selectedGrammarErrors.size})
@@ -28841,7 +28838,7 @@ Return only the corrected version of this exact text:`;
                                             onChange={(e) => setSourceRefineInstruction(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAiRefineSource()}
                                             placeholder={t('analysis.refine_placeholder')}
-                                            className="w-full pl-9 pr-3 py-2 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition-all shadow-sm bg-white"
+                                            className="w-full pl-9 pr-3 py-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400 outline-none transition-all shadow-sm bg-white"
                                             disabled={isProcessing} aria-busy={isProcessing}
                                         />
                                     </div>
@@ -29106,7 +29103,7 @@ Return only the corrected version of this exact text:`;
                                                 generateWordSearch(e.target.value);
                                             }
                                         }}
-                                        className="text-xs font-bold text-teal-700 bg-transparent border-r border-teal-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer hover:bg-teal-100 rounded-l-full"
+                                        className="text-xs font-bold text-teal-700 bg-transparent border-r border-teal-600 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 cursor-pointer hover:bg-teal-100 rounded-l-full"
                                         title={t('glossary.tooltips.select_puzzle_lang')}
                                     >
                                         <option value="English">{t('common.english')}</option>
@@ -29230,7 +29227,7 @@ Return only the corrected version of this exact text:`;
                             </div>
                             <div data-help-key="glossary_search" className="relative w-full sm:w-auto">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400" size={14} />
-                                <input type="text" aria-label={t('glossary.search_placeholder') || 'Search glossary'} placeholder={t('glossary.search_placeholder')} value={glossarySearchTerm} onChange={(e) => setGlossarySearchTerm(e.target.value)} className="pl-8 pr-3 py-1.5 text-sm border border-blue-200 rounded focus:outline-none focus:ring-2 focus:ring-indigo-200 w-full"/>
+                                <input type="text" aria-label={t('glossary.search_placeholder') || 'Search glossary'} placeholder={t('glossary.search_placeholder')} value={glossarySearchTerm} onChange={(e) => setGlossarySearchTerm(e.target.value)} className="pl-8 pr-3 py-1.5 text-sm border border-blue-600 rounded focus:outline-none focus:ring-2 focus:ring-indigo-200 w-full"/>
                                 {glossarySearchTerm && <button onClick={handleSetGlossarySearchTermConst} className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-400 hover:text-blue-600" aria-label={t('common.clear')}><X size={14} /></button>}
                             </div>
                             {/* Manual Health Check Button */}
@@ -32403,7 +32400,7 @@ Return only the corrected version of this exact text:`;
                                             onChange={(e) => setMapAddInput(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && handleAddToMapList(mapAddInput)}
                                             placeholder={t('concept_map.setup.add_concept_placeholder')}
-                                            className="px-3 py-2 rounded-xl border-2 border-indigo-100 text-sm focus:border-indigo-400 outline-none w-32 bg-slate-50 focus:bg-white transition-colors"
+                                            className="px-3 py-2 rounded-xl border-2 border-indigo-600 text-sm focus:border-indigo-400 outline-none w-32 bg-slate-50 focus:bg-white transition-colors"
                                         />
                                         <button
                                             aria-label={t('common.add')}
@@ -33428,7 +33425,7 @@ Return only the corrected version of this exact text:`;
                                         <button aria-label={t('common.generate_content')}
                                         onClick={handleGenerateRubric}
                                         disabled={isGeneratingRubric}
-                                        className="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                        className="text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                                         >
                                         {isGeneratingRubric ? <RefreshCw size={12} className="animate-spin"/> : <Sparkles size={12}/>}
                                         {generatedContent?.data.rubric
@@ -34238,7 +34235,7 @@ Return only the corrected version of this exact text:`;
                                                             <div className="flex items-center gap-3 p-2 rounded-lg border border-indigo-100 bg-indigo-50/50">
                                                                 <div className="flex-1">
                                                                     <span className="block text-xs font-bold text-slate-700">🎨 {t('adventure.art_style_label') || 'Art Style'}</span>
-                                                                    <select aria-label={t('adventure.art_style_label') || 'Art style'} value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="mt-1 w-full text-xs px-2 py-1 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none cursor-pointer">
+                                                                    <select aria-label={t('adventure.art_style_label') || 'Art style'} value={adventureArtStyle} onChange={(e) => setAdventureArtStyle(e.target.value)} className="mt-1 w-full text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none cursor-pointer">
                                                                         <option value="auto">🎨 {t('adventure.art_auto') || 'Auto (default)'}</option>
                                                                         <option value="storybook">📚 {t('adventure.art_storybook') || 'Storybook'}</option>
                                                                         <option value="pixel">🎮 {t('adventure.art_pixel') || 'Pixel Art'}</option>
@@ -34248,7 +34245,7 @@ Return only the corrected version of this exact text:`;
                                                                         <option value="custom">✏️ {t('adventure.art_custom') || 'Custom...'}</option>
                                                                     </select>
                                                                     {adventureArtStyle === 'custom' && (
-                                                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="mt-1 w-full text-xs px-2 py-1 border border-indigo-200 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
+                                                                        <input type="text" aria-label={t('adventure.custom_art_style_placeholder') || 'Custom art style'} value={adventureCustomArtStyle} onChange={(e) => setAdventureCustomArtStyle(e.target.value)} placeholder={t('adventure.custom_art_style_placeholder') || 'Describe your art style...'} className="mt-1 w-full text-xs px-2 py-1 border border-indigo-600 rounded-lg bg-white focus:ring-2 focus:ring-indigo-400 focus:outline-none"/>
                                                                     )}
                                                                 </div>
                                                             </div>
@@ -34307,7 +34304,7 @@ Return only the corrected version of this exact text:`;
                                                                     value={adventureState.climaxMinTurns || 20}
                                                                     onChange={(e) => setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(e.target.value) || 20) }))}
                                                                     disabled={!isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings}
-                                                                    className="w-12 text-xs border border-indigo-200 rounded p-1 text-center focus:ring-indigo-500 outline-none font-bold text-indigo-900 bg-white"
+                                                                    className="w-12 text-xs border border-indigo-600 rounded p-1 text-center focus:ring-indigo-500 outline-none font-bold text-indigo-900 bg-white"
                                                                 />
                                                             </div>
                                                         </div>
@@ -34917,7 +34914,7 @@ Return only the corrected version of this exact text:`;
                                                             type="text"
                                                             value={opt}
                                                             onChange={(e) => handleOptionBufferChange(idx, e.target.value)}
-                                                            className="flex-grow p-3 rounded-xl border-2 border-indigo-200 text-sm font-bold text-indigo-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+                                                            className="flex-grow p-3 rounded-xl border-2 border-indigo-600 text-sm font-bold text-indigo-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
                                                             placeholder={t('adventure.option_placeholder', { n: idx + 1 })}
                                                         />
                                                         <button
@@ -35215,7 +35212,7 @@ Return only the corrected version of this exact text:`;
                                     value={imageRefinementInput}
                                     onChange={(e) => setImageRefinementInput(e.target.value)}
                                     placeholder={t('visuals.refiner_placeholder')}
-                                    className="flex-grow text-sm p-2 border border-yellow-200 rounded-md focus:ring-2 focus:ring-yellow-400 outline-none"
+                                    className="flex-grow text-sm p-2 border border-yellow-600 rounded-md focus:ring-2 focus:ring-yellow-400 outline-none"
                                     onKeyDown={(e) => e.key === 'Enter' && handleRefineImage()}
                                 />
                                 <button
@@ -35247,7 +35244,7 @@ Return only the corrected version of this exact text:`;
                               onClick={() => singleImageFileRef.current?.click()}
                               className="flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-600 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
                             ><span style={{fontSize:'18px'}}>📷</span></button>
-                            <button aria-label={t('common.regenerate')} onClick={handleRestoreImage} data-help-key="visuals_regenerate" className="flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-600 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-200"><RefreshCw size={18} /></button>
+                            <button aria-label={t('common.regenerate')} onClick={handleRestoreImage} data-help-key="visuals_regenerate" className="flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-600 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600"><RefreshCw size={18} /></button>
                         </div>
                         )}
                     </div>
@@ -35371,384 +35368,22 @@ Return only the corrected version of this exact text:`;
                       ))}
                   </div>
                 )}
-                {activeView === 'timeline' && (
-                    <div className="space-y-6">
-                        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4">
-                            <div className="text-sm text-indigo-800">
-                                <strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('timeline.udl_goal_desc')}
-                            </div>
-                            <div className="flex gap-2">
-                                <button
-                                    aria-label={t('common.start_game')}
-                                    onClick={handleSetIsTimelineGameToTrue}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
-                                >
-                                    <Gamepad2 size={14}/> {isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')}
-                                </button>
-                                {isTeacherMode && (
-                                    <button
-                                        aria-label={t('common.toggle_edit_timeline')}
-                                        onClick={handleToggleIsEditingTimeline}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingTimeline ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`}
-                                    >
-                                        {isEditingTimeline ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
-                                        {isEditingTimeline ? t('timeline.done_editing') : t('timeline.edit_sequence')}
-                                    </button>
-                                )}
-                                <div data-help-key="timeline_image_size" className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-indigo-200 shadow-sm" title={t('timeline.image_size_tooltip') || 'Resize sequence images'}>
-                                    <ImageIcon size={14} className="text-indigo-400"/>
-                                    <input aria-label={t('common.range_slider') || 'Image size'}
-                                        type="range"
-                                        min="64"
-                                        max="300"
-                                        step="16"
-                                        value={timelineImageSize}
-                                        onChange={(e) => setTimelineImageSize(Number(e.target.value))}
-                                        className="w-20 h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-500"
-                                    />
-                                </div>
-                        </div>
-                        </div>
-                        {isTeacherMode && generatedContent?.data && (
-                            <div className="bg-white p-3 rounded-lg border border-slate-400 shadow-sm flex flex-wrap gap-2 items-center">
-                                <Sparkles size={14} className="text-indigo-500" />
-                                <input aria-label={t('common.timeline_revise_placeholder')}
-                                    type="text"
-                                    value={timelineRevisionInput || ''}
-                                    onChange={(e) => setTimelineRevisionInput(e.target.value)}
-                                    placeholder={t('timeline.revise_placeholder')}
-                                    className="flex-grow min-w-[200px] text-sm border border-slate-400 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-300"
-                                />
-                                <button
-                                    onClick={() => handleTimelineRevision()}
-                                    disabled={isRevisingTimeline || !timelineRevisionInput?.trim()}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isRevisingTimeline ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
-                                    {isRevisingTimeline ? t('timeline.revising') : t('timeline.revise_button')}
-                                </button>
-                            </div>
-                        )}
-                        {isTeacherMode && !Array.isArray(generatedContent?.data) && Array.isArray(generatedContent?.data?.validationIssues) && generatedContent.data.validationIssues.length > 0 && (
-                            <details className="bg-amber-50 border border-amber-200 rounded-lg shadow-sm p-3">
-                                <summary className="cursor-pointer flex flex-wrap items-center gap-2 text-xs font-bold text-amber-800">
-                                    <AlertTriangle size={14} className="text-amber-600" />
-                                    {t('timeline.validation.issues_header', { count: generatedContent.data.validationIssues.length }) || `${generatedContent.data.validationIssues.length} structural issue(s) detected`}
-                                    <button
-                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAutoFixTimeline(); }}
-                                        disabled={isAutoFixingTimeline}
-                                        className="ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-amber-600 text-white hover:bg-amber-700 transition-colors disabled:opacity-50"
-                                        aria-busy={isAutoFixingTimeline}
-                                    >
-                                        {isAutoFixingTimeline ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                                        {isAutoFixingTimeline ? (t('timeline.validation.fixing') || 'Fixing…') : (t('timeline.validation.auto_fix') || 'Auto-fix')}
-                                    </button>
-                                </summary>
-                                <ul className="mt-2 text-[12px] text-amber-900 list-disc list-inside space-y-1">
-                                    {generatedContent.data.validationIssues.map((iss, i) => (
-                                        <li key={i}>{iss.message}</li>
-                                    ))}
-                                </ul>
-                            </details>
-                        )}
-                        {isTeacherMode && generatedContent?.data && (
-                            <div className="flex justify-end">
-                                <button
-                                    onClick={() => handleVerifyTimelineAccuracy()}
-                                    disabled={isVerifyingTimeline}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                    aria-busy={isVerifyingTimeline}
-                                    title={t('timeline.validation.verify_tooltip') || 'Run AI accuracy check on each item'}
-                                >
-                                    {isVerifyingTimeline ? <Loader2 size={14} className="animate-spin" /> : '🔍'}
-                                    {isVerifyingTimeline ? (t('timeline.validation.verifying') || 'Verifying…') : (t('timeline.validation.verify') || 'Verify accuracy')}
-                                </button>
-                            </div>
-                        )}
-                        <div className="relative pl-12 sm:pl-16 border-l-2 border-indigo-200 space-y-8 my-8">
-                            <div className="absolute left-[-7px] top-0 font-black text-indigo-300 text-[11px] uppercase tracking-widest -translate-y-full">{t('timeline.start_marker')}</div>
-                            {!Array.isArray(generatedContent?.data) && generatedContent?.data?.progressionLabel && (
-                                <div className="absolute left-4 top-[-24px] flex items-center gap-2">
-                                    <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
-                                        <span className="opacity-70">{t('timeline.order_by')}</span> {generatedContent?.data.progressionLabel}
-                                    </div>
-                                    {generatedContent?.data.mode && TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode] && (
-                                        generatedContent.data.autoDetected ? (
-                                            <button
-                                                onClick={handleLockTimelineMode}
-                                                className="bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm hover:bg-amber-100 transition-colors"
-                                                title={t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations'}
-                                                aria-label={t('timeline.click_to_lock_aria') || 'Click to lock this mode'}
-                                            >
-                                                ✨ {t('timeline.detected_label') || 'Detected'}: {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
-                                            </button>
-                                        ) : (
-                                            <span className="bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm">
-                                                🔒 {TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label}
-                                            </span>
-                                        )
-                                    )}
-                                </div>
-                            )}
-                            <div className="absolute left-[-5px] bottom-[-10px] w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[12px] border-t-indigo-200"></div>
-                            {isEditingTimeline ? (
-                                <div className="space-y-4">
-                                    <div className="text-xs text-slate-600 italic text-center mb-2">
-                                        {t('timeline.edit_instruction')}
-                                    </div>
-                                    {(Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
-                                        <div
-                                            key={idx}
-                                            data-timeline-row
-                                            draggable
-                                            onDragStart={(e) => handleTimelineDragStart(e, idx)}
-                                            onDragOver={(e) => handleTimelineDragOver(e, idx)}
-                                            onDragEnd={handleTimelineDragEnd}
-                                            className={`relative flex items-start gap-2 p-3 rounded-xl border-2 transition-all ${
-                                                draggedTimelineIndex === idx
-                                                ? 'opacity-50 border-dashed border-indigo-300 bg-indigo-50'
-                                                : 'bg-white border-slate-200 shadow-sm'
-                                            }`}
-                                        >
-                                            <div className="flex flex-col items-center gap-1 mt-2 text-slate-600 cursor-grab active:cursor-grabbing hover:text-indigo-500">
-                                                <GripVertical size={16} />
-                                                <span className="text-[11px] font-bold bg-slate-100 px-1.5 rounded text-slate-600">
-                                                    {idx + 1}
-                                                </span>
-                                            </div>
-                                            <div className="flex-grow grid grid-cols-1 gap-3">
-                                                <div className="flex gap-2">
-                                                    <input aria-label={t('common.enter_item')}
-                                                        type="text"
-                                                        value={item.date}
-                                                        onChange={(e) => handleTimelineChange(idx, 'date', e.target.value)}
-                                                        className="w-1/3 text-xs font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                        placeholder={t('timeline.label_placeholder')}
-                                                    />
-                                                    <input aria-label={t('common.text_field')}
-                                                        type="text"
-                                                        data-timeline-event
-                                                        value={item.event}
-                                                        onChange={(e) => handleTimelineChange(idx, 'event', e.target.value)}
-                                                        className="w-2/3 text-sm font-medium text-slate-800 bg-slate-50 border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                        placeholder={t('timeline.event_placeholder')}
-                                                    />
-                                                </div>
-                                                {(item.event_en || leveledTextLanguage !== 'English') && (
-                                                    <div className="flex gap-2">
-                                                        <input aria-label={t('common.enter_item')}
-                                                            type="text"
-                                                            value={item.date_en || ''}
-                                                            onChange={(e) => handleTimelineChange(idx, 'date', e.target.value, true)}
-                                                            className="w-1/3 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-100 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                            placeholder={t('timeline.label_en_placeholder')}
-                                                        />
-                                                        <input aria-label={t('common.text_field')}
-                                                            type="text"
-                                                            value={item.event_en || ''}
-                                                            onChange={(e) => handleTimelineChange(idx, 'event', e.target.value, true)}
-                                                            className="w-2/3 text-xs text-slate-600 bg-white border border-slate-400 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300"
-                                                            placeholder={t('timeline.event_en_placeholder')}
-                                                        />
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col items-center gap-1 mt-1 shrink-0">
-                                                {item.image ? (
-                                                    <div className="relative group/timgimg">
-                                                        <img
-                                                            loading="lazy"
-                                                            src={item.image}
-                                                            alt={`${item.date || ''}: ${item.event || ''}`}
-                                                            className="w-12 h-12 object-contain rounded border border-slate-400 bg-white"
-                                                        />
-                                                        <button
-                                                            onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date)}
-                                                            disabled={isGeneratingTimelineImage[idx]}
-                                                            aria-busy={!!isGeneratingTimelineImage[idx]}
-                                                            aria-label={t('timeline.visuals.regen_button_aria') || 'Regenerate image for this item'}
-                                                            className="absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover/timgimg:opacity-100 transition-opacity text-white disabled:opacity-80"
-                                                            title={t('common.regenerate') || 'Regenerate'}
-                                                        >
-                                                            {isGeneratingTimelineImage[idx] ? <RefreshCw size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                                                        </button>
-                                                        {isEditingTimeline && (
-                                                            <div className="absolute top-full mt-1 left-0 w-44 bg-white border border-slate-400 rounded shadow-lg p-1.5 z-10 animate-in slide-in-from-top-2">
-                                                                <button
-                                                                    aria-label={t('timeline.visuals.remove_text_btn') || 'Remove text from image'}
-                                                                    onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean.")}
-                                                                    disabled={isGeneratingTimelineImage[idx]}
-                                                                    className="w-full mb-1 text-[10px] bg-red-50 text-red-600 hover:bg-red-100 border border-red-100 px-1.5 py-0.5 rounded flex items-center justify-center gap-1 font-bold"
-                                                                    title={t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'}
-                                                                >
-                                                                    {isGeneratingTimelineImage[idx] ? <RefreshCw size={10} className="animate-spin" /> : <Ban size={10} />} {t('timeline.visuals.remove_text_btn') || 'Remove Text'}
-                                                                </button>
-                                                                <div className="flex gap-1">
-                                                                    <input
-                                                                        type="text"
-                                                                        value={timelineRefinementInputs[idx] || ''}
-                                                                        onChange={(e) => setTimelineRefinementInputs(prev => ({ ...prev, [idx]: e.target.value }))}
-                                                                        placeholder={t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter'}
-                                                                        className="text-[10px] border border-yellow-300 rounded px-1 py-0.5 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0"
-                                                                        onKeyDown={(e) => {
-                                                                            if (e.key === 'Enter' && timelineRefinementInputs[idx]) {
-                                                                                handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
-                                                                            }
-                                                                        }}
-                                                                    />
-                                                                    <button
-                                                                        onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx])}
-                                                                        disabled={!timelineRefinementInputs[idx] || isGeneratingTimelineImage[idx]}
-                                                                        className="bg-yellow-400 text-yellow-900 p-1 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0"
-                                                                        aria-label={t('common.apply_edit') || 'Apply edit'}
-                                                                    >
-                                                                        {isGeneratingTimelineImage[idx] ? <RefreshCw size={10} className="animate-spin" /> : <Send size={10} />}
-                                                                    </button>
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => handleGenerateTimelineItemImage(idx, item.event, item.date)}
-                                                        disabled={isGeneratingTimelineImage[idx] || !item.event}
-                                                        aria-busy={!!isGeneratingTimelineImage[idx]}
-                                                        aria-label={t('timeline.visuals.regen_button_aria') || 'Generate image for this item'}
-                                                        className="w-12 h-12 rounded border-2 border-dashed border-indigo-200 text-indigo-500 hover:border-indigo-400 hover:bg-indigo-50 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-wait"
-                                                        title={t('timeline.visuals.regen_button_aria') || 'Generate image'}
-                                                    >
-                                                        {isGeneratingTimelineImage[idx] ? <RefreshCw size={14} className="animate-spin" /> : <ImageIcon size={14} />}
-                                                    </button>
-                                                )}
-                                            </div>
-                                            <button
-                                                aria-label={t('common.delete')}
-                                                onClick={() => handleDeleteTimelineStep(idx)}
-                                                className="p-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors mt-1"
-                                                title={t('timeline.remove_step_title')}
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                    ))}
-                                    <button aria-label={t('common.add')}
-                                        onClick={handleAddTimelineStep}
-                                        className="w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        <Plus size={16} /> {t('timeline.add_step')}
-                                    </button>
-                                </div>
-                            ) : (
-                                (isTeacherMode || isIndependentMode) ? (
-                                    (Array.isArray(generatedContent?.data) ? generatedContent?.data : generatedContent?.data?.items || []).map((item, idx) => (
-                                    <div key={idx} className="relative animate-in slide-in-from-bottom-2 duration-300" style={{animationDelay: `${idx * 100}ms`}}>
-                                        <div className="absolute -left-[57px] sm:-left-[73px] top-1 w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-indigo-600 border-4 border-indigo-100 box-content"></div>
-                                        <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm hover:shadow-md transition-shadow flex gap-3 items-start">
-                                            {item.image && (
-                                                <img
-                                                    loading="lazy"
-                                                    src={item.image}
-                                                    alt={`${item.date || ''}: ${item.event || ''}`}
-                                                    className="object-contain rounded-lg bg-white border border-slate-100 shrink-0"
-                                                    style={{ width: `${timelineImageSize}px`, height: `${timelineImageSize}px` }}
-                                                />
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <span className="inline-block bg-indigo-100 text-indigo-700 text-xs font-bold px-2 py-0.5 rounded mb-1 border border-indigo-200">
-                                                    {item.date}
-                                                    {item.date_en && <span className="opacity-60 font-normal ml-1">({item.date_en})</span>}
-                                                </span>
-                                                <p className="text-sm font-medium text-slate-800 leading-relaxed">
-                                                    {item.event}
-                                                </p>
-                                                {item.event_en && (
-                                                    <p className="text-xs text-slate-600 italic mt-1">{item.event_en}</p>
-                                                )}
-                                                {(() => {
-                                                    const _vKey = idx + ':' + (item.event || '');
-                                                    const _flagged = item.verification && (item.verification.factual === false || item.verification.position === false);
-                                                    if (!_flagged || dismissedVerifications.has(_vKey)) return null;
-                                                    return (
-                                                        <div className="mt-2 border border-red-200 rounded-lg bg-red-50 p-2 text-[11px] text-red-800">
-                                                            <div className="flex items-center gap-1.5 mb-1">
-                                                                <AlertCircle size={12} className="shrink-0 text-red-600" />
-                                                                <strong>{t('timeline.validation.flagged') || 'Flagged'}</strong>
-                                                                <span className="text-red-700/70">
-                                                                    {item.verification.factual === false ? '• factual' : ''}
-                                                                    {item.verification.position === false ? ' • position' : ''}
-                                                                </span>
-                                                                <button
-                                                                    onClick={() => setDismissedVerifications(prev => { const next = new Set(prev); next.add(_vKey); return next; })}
-                                                                    className="ml-auto text-red-400 hover:text-red-600 p-0.5 rounded"
-                                                                    aria-label={t('timeline.validation.dismiss') || 'Dismiss verification concern'}
-                                                                    title={t('timeline.validation.dismiss') || 'Dismiss'}
-                                                                ><X size={12} /></button>
-                                                            </div>
-                                                            <div className="text-red-700 leading-relaxed pl-4">
-                                                                {item.verification.concern || (item.verification.factual === false ? (t('timeline.validation.factual_concern') || 'Factual concern — review this item.') : (t('timeline.validation.position_concern') || 'Position may be wrong — check placement on the axis.'))}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })()}
-                                                {item.verification && item.verification.factual !== false && item.verification.position !== false && (
-                                                    item.verification.rationale ? (
-                                                        <details className="mt-2 group">
-                                                            <summary className="inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800 cursor-pointer hover:bg-emerald-100 list-none transition-colors">
-                                                                <CheckCircle2 size={11} className="text-emerald-600" />
-                                                                {t('timeline.validation.verified') || 'Verified'}
-                                                                <span className="text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform">▾</span>
-                                                            </summary>
-                                                            <div className="mt-1.5 text-[11px] bg-emerald-50/50 border-l-2 border-emerald-300 px-2 py-1.5 text-emerald-900/90 leading-relaxed rounded-r">
-                                                                {item.verification.rationale}
-                                                            </div>
-                                                        </details>
-                                                    ) : (
-                                                        <div className="mt-2 inline-flex items-center gap-1 text-[11px] bg-emerald-50 border border-emerald-200 rounded px-2 py-0.5 text-emerald-800">
-                                                            <CheckCircle2 size={11} className="text-emerald-600" /> {t('timeline.validation.verified') || 'Verified'}
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    ))
-                                ) : (
-                                    <div className="relative -ml-12 sm:-ml-16">
-                                        <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center animate-in fade-in zoom-in duration-300">
-                                            <div className="bg-indigo-100 p-4 rounded-full mb-4">
-                                                <ListOrdered size={48} className="text-indigo-500" />
-                                            </div>
-                                            <h3 className="text-xl font-black text-slate-700 mb-2">{t('timeline.ready_title')}</h3>
-                                            <p className="text-slate-600 mb-8 max-w-md">
-                                                {t('timeline.ready_desc')}
-                                            </p>
-                                            <button
-                                                aria-label={t('common.start_game')}
-                                                onClick={handleSetIsTimelineGameToTrue}
-                                                className="px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
-                                            >
-                                                <Gamepad2 size={24} className="fill-current text-yellow-400" /> {t('timeline.start_activity')}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )
-                            )}
-                        </div>
-                        {isTimelineGame && (
-                            <ErrorBoundary fallbackMessage="Sequence Game encountered an error.">
-                                <TimelineGame
-                                    data={generatedContent?.data}
-                                    onClose={closeTimeline}
-                                    playSound={playSound}
-                                    onScoreUpdate={handleGameScoreUpdate}
-                                    onGameComplete={handleGameCompletion}
-                                    onExplainIncorrect={handleExplainTimelineItem}
-                                    initialImageSize={timelineImageSize}
-                                />
-                            </ErrorBoundary>
-                        )}
-                    </div>
-                )}
+                {activeView === 'timeline' && window.AlloModules && window.AlloModules.TimelineView && React.createElement(window.AlloModules.TimelineView, {
+                    t, generatedContent, isTeacherMode, isIndependentMode, leveledTextLanguage,
+                    TIMELINE_MODE_DEFINITIONS,
+                    dismissedVerifications, draggedTimelineIndex,
+                    timelineImageSize, timelineRefinementInputs, timelineRevisionInput,
+                    isAutoFixingTimeline, isEditingTimeline, isGeneratingTimelineImage,
+                    isRevisingTimeline, isTimelineGame, isVerifyingTimeline,
+                    setDismissedVerifications, setTimelineImageSize, setTimelineRefinementInputs, setTimelineRevisionInput,
+                    handleAddTimelineStep, handleAutoFixTimeline, handleDeleteTimelineStep,
+                    handleExplainTimelineItem, handleGameCompletion, handleGameScoreUpdate,
+                    handleGenerateTimelineItemImage, handleLockTimelineMode, handleSetIsTimelineGameToTrue,
+                    handleTimelineChange, handleTimelineDragEnd, handleTimelineDragOver, handleTimelineDragStart,
+                    handleTimelineRevision, handleToggleIsEditingTimeline, handleVerifyTimelineAccuracy,
+                    closeTimeline,
+                    ErrorBoundary, TimelineGame
+                })}
                 {activeView === 'concept-sort' && (
                     <div className="space-y-6 h-full flex flex-col" data-help-key="concept_sort_panel">
                         <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4">
@@ -36109,7 +35744,7 @@ Return only the corrected version of this exact text:`;
                                         </button>
                                     )}
                                     <button onClick={handleToggleMathSelfGrade}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50'}`}>
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50'}`}>
                                         ✏️ {mathSelfGradeMode ? t('math.exit_self_grade') : t('math.self_grade')}
                                     </button>
                                     {mathSelfGradeMode && (
@@ -36199,7 +35834,7 @@ Return only the corrected version of this exact text:`;
                                                   }
                                                   setShowStemLab(true);
                                                   setStemLabTab('explore');
-                                               }} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-200 hover:bg-blue-100 transition-all text-sm mb-2">
+                                               }} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-600 hover:bg-blue-100 transition-all text-sm mb-2">
                                                    <span className="text-lg">📂</span> Open Visual Support ({problem.manipulativeSupport.tool})
                                                </button>
                                             )}
@@ -36586,7 +36221,7 @@ Return only the corrected version of this exact text:`;
                                                                         <span className="text-sm">✅</span>
                                                                         <span className="text-sm font-bold text-green-700">Answer: {problem.answer}</span>
                                                                         {(mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && (
-                                                                            <button onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = parseInt(String(problem.answer).replace(/[^\d]/g,'')); if (vol && vol > 0 && vol <= 100) { setCubeBuilderChallenge({type:'volume', answer: vol, shape:'any'}); setCubeBuilderFeedback(null); } }} className="ml-auto text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm">
+                                                                            <button onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = parseInt(String(problem.answer).replace(/[^\d]/g,'')); if (vol && vol > 0 && vol <= 100) { setCubeBuilderChallenge({type:'volume', answer: vol, shape:'any'}); setCubeBuilderFeedback(null); } }} className="ml-auto text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm">
                                                                                 📦 Try with cubes
                                                                             </button>
                                                                         )}
@@ -36646,7 +36281,7 @@ Return only the corrected version of this exact text:`;
                                         <button key={suggestion}
                                             onClick={() => { setMathEditInput(suggestion); handleMathEdit(suggestion); }}
                                             disabled={isMathEditing}
-                                            className="px-2 py-1 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-200 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
+                                            className="px-2 py-1 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
                                         >
                                             {suggestion}
                                         </button>
@@ -36854,7 +36489,7 @@ Return only the corrected version of this exact text:`;
                                                                 <input aria-label={t('common.enter_typeof')}
                                                                     value={typeof ext.title === 'string' ? ext.title : (ext.title?.en || '')}
                                                                     onChange={(e) => handleLessonPlanChange('extensions', { ...ext, title: e.target.value }, idx)}
-                                                                    className="w-full bg-white border border-indigo-200 rounded px-2 py-1 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                                    className="w-full bg-white border border-indigo-600 rounded px-2 py-1 text-sm font-bold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                                                 />
                                                              ) : (
                                                                 <BilingualFieldRenderer text={typeof ext === 'string' ? t('lesson_headers.extension_idea_fallback') : ext.title} />
@@ -37008,7 +36643,7 @@ Return only the corrected version of this exact text:`;
                                 <button aria-label={t('common.generate_content')}
                                     onClick={handleGenerateProgression}
                                     disabled={isGeneratingProgression}
-                                    className="w-full py-6 rounded-2xl border-2 border-dashed border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all group flex flex-col items-center justify-center gap-2 text-indigo-600 hover:text-indigo-600"
+                                    className="w-full py-6 rounded-2xl border-2 border-dashed border-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all group flex flex-col items-center justify-center gap-2 text-indigo-600 hover:text-indigo-600"
                                 >
                                     {isGeneratingProgression ? (
                                         <RefreshCw size={24} className="animate-spin"/>
@@ -40175,7 +39810,7 @@ Return only the corrected version of this exact text:`;
                         value={saveFileName}
                         onChange={(e) => setSaveFileName(e.target.value)}
                         placeholder={t('modals.save_project.placeholder')}
-                        className="w-full text-lg p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-slate-700 font-bold"
+                        className="w-full text-lg p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-slate-700 font-bold"
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && executeSaveFile()}
                     />
@@ -40216,7 +39851,7 @@ Return only the corrected version of this exact text:`;
                             type="text"
                             value={targetTranslationLang}
                             onChange={(e) => setTargetTranslationLang(e.target.value)}
-                            className="w-full text-sm border-2 border-indigo-100 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all"
+                            className="w-full text-sm border-2 border-indigo-600 rounded-xl p-2 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all"
                             placeholder={t('translate.placeholder')}
                             autoFocus
                         />
@@ -40764,7 +40399,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <div className="flex flex-wrap gap-1">
                         <button onClick={() => { window.__pdfBrandMode = 'auto'; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="auto"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="auto"
-                          className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200">
+                          className="px-2 py-1.5 rounded-lg border text-left transition-all ring-2 ring-indigo-400 bg-indigo-50 border-indigo-600">
                           <div className="text-[11px] font-bold text-slate-700">🎨 Match Original</div>
                           <div className="text-[11px] text-slate-600">Extract colors from this PDF</div>
                         </button>
@@ -40799,7 +40434,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         </label>
                         <button onClick={() => { window.__pdfBrandMode = 'none'; window.__pdfBrandOverride = null; document.querySelectorAll('[data-brand-mode]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector('[data-brand-mode="none"]')?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                           data-brand-mode="none"
-                          className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
+                          className="px-2 py-1.5 rounded-lg border text-left transition-all border-slate-200 hover:border-indigo-600 hover:bg-indigo-50">
                           <div className="text-[11px] font-bold text-slate-700">⬜ No Branding</div>
                           <div className="text-[11px] text-slate-600">Use default palette</div>
                         </button>
@@ -40825,7 +40460,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         ].map(s => (
                           <button key={s.id} onClick={() => { window.__pdfStyleSeed = s.id; window.__pdfStylePreference = s.id; document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50')); document.querySelector(`[data-style-pref="${s.id}"]`)?.classList.add('ring-2','ring-indigo-400','bg-indigo-50'); }}
                             data-style-pref={s.id}
-                            className={`px-2 py-1.5 rounded-lg border text-left transition-all ${s.id === 'professional' ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-200' : 'border-slate-200 hover:border-indigo-200 hover:bg-indigo-50'}`}>
+                            className={`px-2 py-1.5 rounded-lg border text-left transition-all ${s.id === 'professional' ? 'ring-2 ring-indigo-400 bg-indigo-50 border-indigo-600' : 'border-slate-200 hover:border-indigo-600 hover:bg-indigo-50'}`}>
                             <div className="text-[11px] font-bold text-slate-700">{s.label}</div>
                             <div className="text-[11px] text-slate-600">{s.desc}</div>
                           </button>
@@ -40853,7 +40488,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                           document.querySelectorAll('[data-style-pref]').forEach(b => b.classList.remove('ring-2','ring-indigo-400','bg-indigo-50'));
                                           addToast && addToast('Custom style "' + s.name + '" applied!', 'success');
                                         }}
-                                          className="px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-200 hover:bg-indigo-50">
+                                          className="px-2 py-1.5 rounded-l-lg border text-left transition-all border-slate-200 hover:border-indigo-600 hover:bg-indigo-50">
                                           <div className="text-[11px] font-bold text-slate-700" style={{color: s.headingColor}}>🎨 {s.name}</div>
                                           <div className="text-[11px] text-slate-600">{s.font || 'Custom'}</div>
                                         </button>
@@ -44412,7 +44047,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         a.download = templateName.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase() + '.alloflow-template.json';
                         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                         addToast('📐 Template "' + templateName + '" saved! Use it in Document Builder to create pre-structured accessible documents.', 'success');
-                      }} className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
+                      }} className="w-full px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-600 rounded-xl text-xs font-bold text-amber-700 hover:from-amber-100 hover:to-orange-100 transition-all flex items-center justify-center gap-2">
                         📐 Save Structure as Template (for future documents)
                       </button>
 
@@ -44421,7 +44056,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <summary className="text-[11px] font-bold text-teal-600 uppercase tracking-widest cursor-pointer hover:text-teal-800 transition-colors flex items-center gap-1">
                           📑 Alternative Formats <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
-                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-3 space-y-1.5">
+                        <div className="mt-2 bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-600 rounded-xl p-3 space-y-1.5">
                           <p className="text-[11px] text-slate-600">Download the remediated document in accessible alternative formats</p>
 
                           {/* ePub */}
@@ -44470,7 +44105,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                               addToast('📚 ePub downloaded — open in any e-reader', 'success');
                             });
-                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📚 ePub (e-readers, mobile, Kindle)
                           </button>
 
@@ -44507,7 +44142,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                             addToast('⠃⠗⠇ Braille file downloaded (Grade 1 BRF)', 'success');
-                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             ⠃⠗⠇ Electronic Braille (BRF)
                           </button>
 
@@ -44526,7 +44161,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.txt';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                             addToast('📝 Plain text downloaded', 'success');
-                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📝 Plain Text (screen readers, large print)
                           </button>
 
@@ -44551,7 +44186,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.md';
                             document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                             addToast('📋 Markdown downloaded', 'success');
-                          }} className="w-full px-3 py-2 bg-white border border-teal-200 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
+                          }} className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📋 Markdown (LMS, wiki, docs)
                           </button>
                         </div>
@@ -44638,7 +44273,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       </details>
 
                       {/* Differentiation Tools */}
-                      <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-xl p-3 space-y-2">
+                      <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-600 rounded-xl p-3 space-y-2">
                         <div className="text-[11px] font-bold text-violet-600 uppercase tracking-widest">📚 Differentiate This Document</div>
 
                         {/* Bionic Reading - toggle on/off */}
@@ -44660,7 +44295,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: html, _preBionicHtml: snapshot }));
                             addToast('📖 Bionic reading applied — click again to remove', 'success');
                           }
-                        }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preBionicHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-200 text-violet-700 hover:bg-violet-100'}`}>
+                        }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preBionicHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-600 text-violet-700 hover:bg-violet-100'}`}>
                           <b>Bi</b>onic {pdfFixResult._preBionicHtml ? '✓ ON (click to remove)' : 'Reading'}
                         </button>
 
@@ -44694,13 +44329,13 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             setPdfFixResult(prev => ({ ...prev, accessibleHtml: fixed, _preLineGuideHtml: snapshot }));
                             addToast('📏 Line guide applied — alternating stripes help eye tracking', 'success');
                           }
-                        }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-200 text-violet-700 hover:bg-violet-100'}`}>
+                        }} className={`w-full px-3 py-2 border rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${pdfFixResult._preLineGuideHtml ? 'bg-violet-100 border-violet-400 text-violet-800' : 'bg-white border-violet-600 text-violet-700 hover:bg-violet-100'}`}>
                           📏 Line Guide {pdfFixResult._preLineGuideHtml ? '✓ ON (click to remove)' : '(reading tracker)'}
                         </button>
 
                         {/* Translate with free-text input + datalist suggestions */}
                         <div className="flex gap-1.5">
-                          <input id="pdf-translate-lang" list="pdf-translate-suggestions" className="flex-1 text-[11px] border border-violet-200 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label="Translation language — type any language or pick from suggestions" placeholder="🌐 Type language (e.g. Spanish, Tagalog, Dari...)" />
+                          <input id="pdf-translate-lang" list="pdf-translate-suggestions" className="flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label="Translation language — type any language or pick from suggestions" placeholder="🌐 Type language (e.g. Spanish, Tagalog, Dari...)" />
                           <datalist id="pdf-translate-suggestions">
                             <option value="Spanish" /><option value="French" /><option value="Arabic" />
                             <option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" />
@@ -44782,7 +44417,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
 
                         {/* Simplify with grade level dropdown */}
                         <div className="flex gap-1.5">
-                          <select id="pdf-simplify-level" className="flex-1 text-[11px] border border-violet-200 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label="Simplification grade level" defaultValue="5th">
+                          <select id="pdf-simplify-level" className="flex-1 text-[11px] border border-violet-600 rounded-lg px-2 py-2 bg-white text-slate-700" aria-label="Simplification grade level" defaultValue="5th">
                             <option value="K">📖 Kindergarten</option>
                             <option value="1st">📖 1st Grade</option>
                             <option value="2nd">📖 2nd Grade</option>
@@ -44831,7 +44466,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           setInputText(temp.textContent || temp.innerText || '');
                           _closePdfAuditModal();
                           addToast('Content loaded — generate leveled text, glossary, quiz, and more', 'success');
-                        }} className="w-full px-3 py-2 bg-white border border-violet-200 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center">
+                        }} className="w-full px-3 py-2 bg-white border border-violet-600 rounded-xl text-xs font-bold text-violet-700 hover:bg-violet-100 transition-all flex items-center gap-2 justify-center">
                           ✨ Full Differentiation Pipeline
                         </button>
 
@@ -44933,25 +44568,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                         <summary className="text-[11px] font-bold text-blue-600 uppercase tracking-widest cursor-pointer hover:text-blue-800 transition-colors flex items-center gap-1">
                           📖 Plain Language Summary <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                         </summary>
-                        <div className="mt-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 space-y-2">
+                        <div className="mt-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-600 rounded-xl p-3 space-y-2">
                           <p className="text-[11px] text-slate-600">Generate an easy-to-read version for parents, guardians, or community members.</p>
                           <div className="flex gap-2">
                             <div className="flex-1">
                               <label className="text-[11px] font-bold text-slate-600 uppercase">Language</label>
-                              <input id="summary-lang" aria-label="Translation language" list="summary-lang-list" className="w-full text-[11px] border border-blue-200 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
+                              <input id="summary-lang" aria-label="Translation language" list="summary-lang-list" className="w-full text-[11px] border border-blue-600 rounded-lg px-2 py-1.5 bg-white" placeholder="English" defaultValue="English" />
                               <datalist id="summary-lang-list">
                                 <option value="English" /><option value="Spanish" /><option value="French" /><option value="Arabic" /><option value="Somali" /><option value="Vietnamese" /><option value="Portuguese" /><option value="Mandarin Chinese" /><option value="Haitian Creole" /><option value="Russian" />
                               </datalist>
                             </div>
                             <div className="w-20">
                               <label className="text-[11px] font-bold text-slate-600 uppercase">Level</label>
-                              <select id="summary-level" className="w-full text-[11px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="5">
+                              <select id="summary-level" className="w-full text-[11px] border border-blue-600 rounded-lg px-1 py-1.5 bg-white" defaultValue="5">
                                 <option value="3">3rd</option><option value="5">5th</option><option value="8">8th</option><option value="adult">Adult</option>
                               </select>
                             </div>
                             <div className="w-20">
                               <label className="text-[11px] font-bold text-slate-600 uppercase">Length</label>
-                              <select id="summary-length" className="w-full text-[11px] border border-blue-200 rounded-lg px-1 py-1.5 bg-white" defaultValue="medium">
+                              <select id="summary-length" className="w-full text-[11px] border border-blue-600 rounded-lg px-1 py-1.5 bg-white" defaultValue="medium">
                                 <option value="brief">Brief</option><option value="medium">Medium</option><option value="detailed">Detailed</option>
                               </select>
                             </div>
@@ -45018,7 +44653,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
         <div className="fixed inset-0 z-[70] bg-black/50 flex items-stretch" role="dialog" aria-modal="true" aria-label="Accessible document preview and editor">
           <div className="flex flex-1 m-4 gap-0 animate-in fade-in duration-200">
             {/* Left panel: controls */}
-            <div className="w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-200 p-4 flex flex-col gap-3 overflow-y-auto shrink-0">
+            <div className="w-72 bg-white rounded-l-2xl border-2 border-r-0 border-indigo-600 p-4 flex flex-col gap-3 overflow-y-auto shrink-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-indigo-800">♿ Preview & Edit</h3>
                 <button onClick={() => setPdfPreviewOpen(false)} className="p-1 hover:bg-slate-100 rounded-lg transition-colors" aria-label="Close preview">
@@ -45034,7 +44669,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <div className="grid grid-cols-2 gap-1">
                   {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars || s.name === 'Match Original').map(([key, s]) => (
                     <button key={key} onClick={() => { setPdfPreviewTheme(key); setTimeout(() => updatePdfPreview(key), 50); }}
-                      className={`text-[11px] font-bold px-2 py-1.5 rounded-lg border transition-all text-left ${pdfPreviewTheme === key ? 'border-indigo-400 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-300' : 'border-slate-200 text-slate-600 hover:border-indigo-200'}`}>
+                      className={`text-[11px] font-bold px-2 py-1.5 rounded-lg border transition-all text-left ${pdfPreviewTheme === key ? 'border-indigo-400 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-300' : 'border-slate-200 text-slate-600 hover:border-indigo-600'}`}>
                       {s.emoji} {s.name}{s.wcagLevel === 'AAA' ? ' ♿' : ''}
                     </button>
                   ))}
@@ -45081,14 +44716,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       } catch(err) { addToast('Style failed — try again', 'error'); }
                       setIsGeneratingStyle(false);
                     }}
-                      className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700'}`}
+                      className={`px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${isGeneratingStyle ? 'bg-indigo-100 text-indigo-400 animate-pulse' : 'bg-slate-50 border border-slate-400 text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700'}`}
                     >{isGeneratingStyle ? '⏳ Styling...' : preset.label}</button>
                   ))}
                   {pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle') && (
                     <button onClick={() => {
                       const old = pdfPreviewRef.current?.contentDocument?.getElementById('ai-restyle');
                       if (old) { old.remove(); addToast('AI style removed', 'info'); }
-                    }} className="px-2 py-1 bg-red-50 border border-red-200 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
+                    }} className="px-2 py-1 bg-red-50 border border-red-600 rounded-md text-[11px] font-bold text-red-500 hover:bg-red-100 transition-colors">✕ Reset</button>
                   )}
                 </div>
                 <p className="text-[11px] text-slate-600 mb-2">One-click AI restyling. These override the theme above.</p>
@@ -45237,7 +44872,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <span className="text-[11px] text-slate-600 group-open:hidden">▸</span>
                   <span className="text-[11px] text-slate-600 hidden group-open:inline">▾</span>
                 </summary>
-                <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-200 p-2 space-y-2 mt-2">
+                <div className="bg-gradient-to-br from-amber-50 to-rose-50 rounded-lg border border-amber-600 p-2 space-y-2 mt-2">
                   <input type="text" id="pdf-wordart-text-input" placeholder="Your word art text..." defaultValue="" className="w-full text-xs border border-amber-300 rounded px-2 py-1.5 bg-white focus:border-amber-500 outline-none" aria-label="Word art text" />
                   <div>
                     <div className="text-[10px] font-bold text-slate-600 uppercase mb-1">Style</div>
@@ -45761,7 +45396,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               doc.open(); doc.write(html); doc.close();
                               try { doc.designMode = 'on'; } catch(e) {}
                               addToast('📐 Template "' + tmpl.name + '" applied — click any text to edit', 'success');
-                            }} className="w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
+                            }} className="w-full text-[11px] font-bold text-amber-700 py-1.5 bg-amber-50 border border-amber-600 rounded-lg hover:bg-amber-100 transition-colors text-left px-2 flex items-center justify-between">
                               <span>📐 {tmpl.name}</span>
                               <span className="text-[11px] text-amber-400">{tmpl.structure?.filter(s => s.type === 'heading').length || 0} sections</span>
                             </button>
@@ -46159,7 +45794,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   document.body.appendChild(a); a.click(); document.body.removeChild(a);
                   URL.revokeObjectURL(dlUrl);
                   addToast('🎧 Downloaded! ' + blobs.length + '/' + segments.length + (failed > 0 ? ' (' + failed + ' failed)' : ''), 'success');
-                }} className="w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-200 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50">
+                }} className="w-full px-3 py-2 bg-amber-50 text-amber-700 rounded-lg text-xs font-bold border border-amber-600 hover:bg-amber-100 transition-colors flex items-center gap-2 disabled:opacity-50">
                   🎧 Download Audio
                 </button>
               )}
@@ -46173,7 +45808,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   setPdfFixResult(prev => ({ ...prev, axeAudit: axe, axeScore: axe.score, accessibleHtml: html }));
                   addToast(axe.totalViolations === 0 ? '✅ Zero violations!' : `⚠️ ${axe.totalViolations} violation(s) found`, axe.totalViolations === 0 ? 'success' : 'info');
                 }
-              }} className="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-200 hover:bg-indigo-100 transition-colors flex items-center gap-2">
+              }} className="w-full px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-2">
                 🔬 Re-audit (axe-core)
               </button>
               <button onClick={async () => {
@@ -46200,13 +45835,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       : `⚠️ Re-audit: ${totalIssues} issue(s), ${totalPasses} passing`, totalIssues === 0 ? 'success' : 'info');
                   }
                 } catch(e) { addToast('Re-audit failed: ' + e.message, 'error'); }
-              }} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-200 hover:bg-purple-100 transition-colors flex items-center gap-2">
+              }} className="w-full px-3 py-2 bg-purple-50 text-purple-700 rounded-lg text-xs font-bold border border-purple-600 hover:bg-purple-100 transition-colors flex items-center gap-2">
                 🤖 Full Re-audit (AI + axe-core)
               </button>
 
               {/* Extracted images — collapsible gallery, draggable into iframe placeholders */}
               {extractedImagesList.length > 0 && (
-                <details className="bg-white border border-indigo-200 rounded-lg p-2" open>
+                <details className="bg-white border border-indigo-600 rounded-lg p-2" open>
                   <summary className="cursor-pointer text-[11px] font-bold text-slate-600 uppercase tracking-widest select-none">
                     🖼 Extracted Images ({extractedImagesList.length})
                   </summary>
@@ -46255,7 +45890,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   const a = document.createElement('a'); a.href = url; a.download = `${(pendingPdfFile?.name || 'document').replace(/\.pdf$/i, '')}-accessible.html`;
                   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                   addToast('Saved edited HTML', 'success');
-                }} className="w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-200 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2">
+                }} className="w-full px-3 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-600 hover:bg-emerald-100 transition-colors flex items-center justify-center gap-2">
                   📄 Save as HTML
                 </button>
                 <button onClick={() => { setPdfPreviewOpen(false); }} className="w-full text-[11px] text-slate-600 hover:text-slate-600 font-bold text-center py-1">
@@ -46265,7 +45900,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
             </div>
 
             {/* Right panel: live preview iframe */}
-            <div className="flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-200 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-white rounded-r-2xl border-2 border-l border-indigo-600 overflow-hidden flex flex-col">
               <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 text-[11px] text-slate-600 shrink-0">
                 <span className="font-bold text-slate-700">Live Preview</span>
                 <span>— select text, then use the toolbar to format</span>
@@ -46280,7 +45915,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   { cmd: 'strikeThrough', icon: 'S', label: 'Strikethrough', style: 'line-through' },
                 ].map(btn => (
                   <button key={btn.cmd} onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, null); }}
-                    className={`w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-200`}
+                    className={`w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
                     aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                 ))}
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
@@ -46291,42 +45926,42 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   { cmd: 'formatBlock', val: '<p>', icon: '¶', label: 'Paragraph' },
                 ].map(btn => (
                   <button key={btn.icon} onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, btn.val); }}
-                    className="px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-200"
+                    className="px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                     aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                 ))}
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertUnorderedList', false, null); }}
-                  className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-xs text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Bullet list" title="Bullet list">•</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('insertOrderedList', false, null); }}
-                  className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Numbered list" title="Numbered list">1.</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyLeft', false, null); }}
-                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Align left" title="Align left">≡</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('justifyCenter', false, null); }}
-                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Align center" title="Center">≡</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => {
                   const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                   const url = prompt('Enter link URL:');
                   if (url) doc.execCommand('createLink', false, url);
-                }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Insert link" title="Insert link">🔗</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('unlink', false, null); }}
-                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Remove link" title="Remove link">🚫</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('removeFormat', false, null); }}
-                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Clear formatting" title="Clear formatting">✕</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('undo', false, null); }}
-                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Undo" title="Undo">↩</button>
                 <button onClick={() => { const doc = pdfPreviewRef.current?.contentDocument; if (doc) doc.execCommand('redo', false, null); }}
-                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                  className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Redo" title="Redo">↪</button>
                 <span className="w-px h-5 bg-slate-200 mx-1" aria-hidden="true"></span>
                 <select onChange={(e) => { const doc = pdfPreviewRef.current?.contentDocument; if (doc && e.target.value) doc.execCommand('foreColor', false, e.target.value); e.target.value = ''; }}
@@ -46352,7 +45987,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 <button onClick={() => {
                   const doc = pdfPreviewRef.current?.contentDocument; if (!doc) return;
                   doc.execCommand('insertHTML', false, '<table style="width:100%;border-collapse:collapse;margin:12px 0"><caption style="font-weight:bold;margin-bottom:4px">Table Title</caption><thead><tr><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 1</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 2</th><th scope="col" style="border:1px solid #cbd5e1;padding:8px;background:#f1f5f9;text-align:left;font-weight:bold">Header 3</th></tr></thead><tbody><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr><tr><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td><td style="border:1px solid #cbd5e1;padding:8px">Data</td></tr></tbody></table>');
-                }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-200"
+                }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label="Insert table" title="Insert accessible table">📊</button>
               </div>
               <iframe ref={pdfPreviewRef} title="Accessible document preview" className="flex-1 w-full border-0"
@@ -47061,7 +46696,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         onChange={(e) => setStudyTaskLabel(e.target.value)}
                         disabled={isStudyTimerRunning}
                         placeholder={t('timer.placeholder')}
-                        className="w-full text-sm p-3 border-2 border-indigo-100 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white"
+                        className="w-full text-sm p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none transition-all font-medium text-slate-700 bg-slate-50 focus:bg-white"
                     />
                 </div>
                 <div className="flex gap-2 mb-4 justify-center flex-wrap">
@@ -47090,7 +46725,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         onChange={(e) => setCustomTimerMinutes(e.target.value)}
                         placeholder={t('common.placeholder_custom_min')}
                         disabled={isStudyTimerRunning}
-                        className="w-24 p-2 text-xs border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-slate-700"
+                        className="w-24 p-2 text-xs border border-indigo-600 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none text-center font-bold text-slate-700"
                     />
                     <button
                         onClick={() => {
@@ -47585,18 +47220,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                   <div className="flex flex-wrap gap-1">
                     {Object.entries(BUILT_IN_PRESETS).map(([key, preset]) => (
                       <button key={key} onClick={() => applyExportPreset(preset)}
-                        className="px-2 py-1 bg-white border border-slate-400 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 transition-all"
+                        className="px-2 py-1 bg-white border border-slate-400 rounded-lg text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 transition-all"
                         title={`Apply "${preset.name}" preset`}
                       >{preset.emoji} {preset.name}</button>
                     ))}
                     {Object.entries(exportPresets).map(([key, preset]) => (
                       <div key={key} className="flex items-center gap-0.5">
                         <button onClick={() => applyExportPreset(preset)}
-                          className="px-2 py-1 bg-white border border-violet-200 rounded-l-lg text-[11px] font-bold text-violet-600 hover:bg-violet-50 transition-all"
+                          className="px-2 py-1 bg-white border border-violet-600 rounded-l-lg text-[11px] font-bold text-violet-600 hover:bg-violet-50 transition-all"
                           title={`Apply "${preset.name}" preset`}
                         >{preset.emoji} {preset.name}</button>
                         <button onClick={() => deleteExportPreset(key)}
-                          className="px-1 py-1 bg-white border border-violet-200 border-l-0 rounded-r-lg text-[11px] text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
+                          className="px-1 py-1 bg-white border border-violet-600 border-l-0 rounded-r-lg text-[11px] text-red-400 hover:text-red-600 hover:bg-red-50 transition-all"
                           title={`Delete "${preset.name}" preset`}
                         ><X size={10} /></button>
                       </div>
@@ -47956,7 +47591,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     ].map(preset => (
                       <button key={preset.label} onClick={() => { setExportStylePrompt(preset.prompt); setTimeout(() => generateCustomExportStyle(), 50); }}
                         disabled={isGeneratingStyle}
-                        className="px-2 py-1 bg-slate-50 border border-slate-400 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-200 hover:text-indigo-700 disabled:opacity-40 transition-colors"
+                        className="px-2 py-1 bg-slate-50 border border-slate-400 rounded-md text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-600 hover:text-indigo-700 disabled:opacity-40 transition-colors"
                       >{preset.label}</button>
                     ))}
                   </div>
@@ -48197,7 +47832,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     { cmd: 'underline', icon: 'U', label: 'Underline', style: 'underline' },
                   ].map(btn => (
                     <button key={btn.cmd} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, null); }}
-                      className={`w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-200`}
+                      className={`w-7 h-7 rounded text-xs ${btn.style} text-slate-700 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600`}
                       aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                   ))}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
@@ -48207,7 +47842,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     { cmd: 'formatBlock', val: '<p>', icon: '¶', label: 'Paragraph' },
                   ].map(btn => (
                     <button key={btn.icon} onClick={() => { const doc = exportPreviewRef.current?.contentDocument; if (doc) doc.execCommand(btn.cmd, false, btn.val); }}
-                      className="px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-200"
+                      className="px-1.5 h-7 rounded text-[11px] font-bold text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors border border-transparent hover:border-indigo-600"
                       aria-label={btn.label} title={btn.label}>{btn.icon}</button>
                   ))}
                   <span className="w-px h-5 bg-slate-200 mx-0.5" aria-hidden="true"></span>
@@ -48429,28 +48064,28 @@ Return ONLY the plain language summary in ${lang}.`, false);
               <button onClick={() => setShowEducatorHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label="Close educator tools">✕</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <button onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button onClick={() => { setShowEducatorHub(false); setShowBehaviorLens(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🧠</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.behavior_lens_title') || 'BehaviorLens'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.behavior_lens_desc') || 'FBA/BIP behavioral observation, ABC data collection, and 60+ clinical tools'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button onClick={() => { setShowEducatorHub(false); setShowReportWriter(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">📝</span>
                 <div>
                   <h3 className="font-bold text-violet-800">{t('educator_hub.report_writer_title') || 'Report Writer'}</h3>
                   <p className="text-xs text-violet-600 mt-1">{t('educator_hub.report_writer_desc') || 'AI-powered clinical report generation with fact-chunks, accuracy audit, and developmental norms'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button onClick={() => { setShowEducatorHub(false); setIsSymbolStudioOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">🎨</span>
                 <div>
                   <h3 className="font-bold text-purple-800">Symbol Studio</h3>
                   <p className="text-xs text-purple-600 mt-1">AI-generated PCS-style icons for visual supports, AAC boards, and schedules — powered by image-to-image editing</p>
                 </div>
               </button>
-              <button onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              <button onClick={() => { setShowEducatorHub(false); openExportPreview('print'); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">📄</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">Document Hub</h3>
@@ -48498,7 +48133,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       }
                   };
                   input.click();
-              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
+              }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-left">
                 <span className="text-3xl mt-1">♿</span>
                 <div>
                   <h3 className="font-bold text-teal-800">PDF Accessibility</h3>
@@ -48530,35 +48165,35 @@ Return ONLY the plain language summary in ${lang}.`, false);
               <button onClick={() => setShowLearningHub(false)} className="text-slate-600 hover:text-slate-600 text-xl" aria-label="Close learning hub">{'\u2715'}</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <button onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+              <button onClick={() => { setShowLearningHub(false); setShowStemLab(true); setStemLabTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-blue-50 to-indigo-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDD2C'}</span>
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('learning_hub.stem_title') || 'STEM Lab'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('learning_hub.stem_desc') || '40+ interactive math & science explorations'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowLearningHub(false); setShowStoryForge(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+              <button onClick={() => { setShowLearningHub(false); setShowStoryForge(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDCD6'}</span>
                 <div>
                   <h3 className="font-bold text-rose-800">{t('learning_hub.storyforge_title') || 'StoryForge'}</h3>
                   <p className="text-xs text-rose-600 mt-1">{t('learning_hub.storyforge_desc') || 'Create illustrated stories with AI writing tools'}</p>
                 </div>
               </button>
-              <button onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+              <button onClick={() => { setShowLearningHub(false); setShowLitLab(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🎭</span>
                 <div>
                   <h3 className="font-bold text-violet-800">LitLab</h3>
                   <p className="text-xs text-violet-600 mt-1">Bring stories to life with character voices & literary analysis</p>
                 </div>
               </button>
-              <button onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+              <button onClick={() => { setShowLearningHub(false); setShowPoetTree(true); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">🌳</span>
                 <div>
                   <h3 className="font-bold text-teal-800">PoetTree</h3>
                   <p className="text-xs text-teal-600 mt-1">Write poems with form scaffolds, rhyme & meter analysis, AI feedback</p>
                 </div>
               </button>
-              <button onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
+              <button onClick={() => { setShowLearningHub(false); setShowSelHub(true); setSelHubTab('explore'); }} className="flex flex-col items-center gap-3 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all text-center">
                 <span className="text-4xl">{'\uD83D\uDC96'}</span>
                 <div>
                   <h3 className="font-bold text-emerald-800">{t('learning_hub.sel_title') || 'SEL Hub'}</h3>

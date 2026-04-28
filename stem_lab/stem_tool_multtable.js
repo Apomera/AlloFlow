@@ -751,7 +751,7 @@ window.StemLab = window.StemLab || {
               className: 'w-20 px-3 py-2 text-center text-lg font-bold border-2 rounded-lg transition-all ' +
                 (inputDisabled
                   ? 'border-slate-200 bg-slate-50 text-slate-600 cursor-not-allowed'
-                  : 'border-pink-300 focus:border-pink-500'),
+                  : 'border-pink-600 focus:border-pink-500'),
               placeholder: '?',
               autoFocus: true,
               disabled: inputDisabled,

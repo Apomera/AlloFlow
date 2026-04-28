@@ -1418,7 +1418,7 @@
                 else if (showAsWrong)  cls += 'bg-red-50 border-red-400 ring-2 ring-red-300';
                 else if (isSelected)   cls += 'bg-pink-100 border-pink-500 ring-2 ring-pink-300';
                 else if (revealed)     cls += 'bg-slate-50 border-slate-200 opacity-70';
-                else                   cls += 'bg-white border-slate-200 hover:border-pink-300 hover:bg-pink-50 cursor-pointer';
+                else                   cls += 'bg-white border-slate-200 hover:border-pink-600 hover:bg-pink-50 cursor-pointer';
                 return h('button', {
                   key: opt.id,
                   onClick: function() { pickOption(opt.id); },
@@ -1723,7 +1723,7 @@
                   return h('button', {
                     key: tgt.id,
                     onClick: function() { applyTarget(tgt); },
-                    className: 'text-left rounded-xl border-2 p-2.5 transition-all ' + (match ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 hover:border-teal-300 hover:bg-teal-50'),
+                    className: 'text-left rounded-xl border-2 p-2.5 transition-all ' + (match ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 hover:border-teal-600 hover:bg-teal-50'),
                     title: tgt.note
                   },
                     h('div', { className: 'text-sm font-black ' + (match ? 'text-emerald-800' : 'text-slate-800') }, tgt.label),

@@ -364,14 +364,14 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
         setUseCustomName(false);
         if (!rosterAdj || !rosterAnimal) randomizeRosterName();
       },
-      className: `px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? "bg-teal-100 text-teal-800 border border-teal-300" : "text-slate-400 hover:text-slate-600"}`
+      className: `px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
     },
     "\u{1F3B2} Codename Only"
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setUseCustomName(true),
-      className: `px-2 py-1 rounded-full font-bold transition-all ${useCustomName ? "bg-teal-100 text-teal-800 border border-teal-300" : "text-slate-400 hover:text-slate-600"}`
+      className: `px-2 py-1 rounded-full font-bold transition-all ${useCustomName ? "bg-teal-100 text-teal-800 border border-teal-600" : "text-slate-400 hover:text-slate-600"}`
     },
     "\u270F\uFE0F Codename + Real Name"
   )), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 items-center" }, /* @__PURE__ */ React.createElement(
@@ -2505,7 +2505,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       {
         key,
         onClick: () => setStudentFilter(key),
-        className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50")
+        className: "text-xs font-bold px-3 py-1.5 rounded-full transition-all border " + (studentFilter === key ? "bg-indigo-600 text-white border-indigo-600 shadow-sm" : "bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50")
       },
       label,
       " (",

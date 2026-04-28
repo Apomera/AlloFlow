@@ -1223,7 +1223,7 @@ const WordSoundsReviewPanel = ({
           },
           disabled: regeneratingIndex === idx,
           className: `w-10 h-10 flex items-center justify-center rounded-full transition-colors text-base font-bold border-2
-                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin text-orange-700" : "bg-orange-50 border-orange-600 text-orange-500 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 shadow-sm"}`,
+                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin text-orange-700" : "bg-orange-50 border-orange-600 text-orange-500 hover:bg-orange-100 hover:border-orange-600 hover:scale-110 shadow-sm"}`,
           "data-help-key": "word_sounds_review_regen_word",
           title: t("common.regenerate_this_word"),
           style: { pointerEvents: "auto", cursor: "pointer" }
@@ -1308,7 +1308,7 @@ const WordSoundsReviewPanel = ({
             }
           },
           disabled: playingWordIndex !== null || !word.ttsReady,
-          className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors ${word._ttsFailed ? "bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-300" : playingWordIndex === idx ? "bg-pink-200 text-pink-700 animate-pulse" : playingWordIndex !== null ? "bg-pink-50 text-pink-300 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-600"}`,
+          className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors ${word._ttsFailed ? "bg-red-100 hover:bg-red-200 text-red-600 border-2 border-red-600" : playingWordIndex === idx ? "bg-pink-200 text-pink-700 animate-pulse" : playingWordIndex !== null ? "bg-pink-50 text-pink-300 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-600"}`,
           title: playingWordIndex === idx ? "Playing..." : word._ttsFailed ? "Audio failed to generate \u2014 click Retry audio in header" : !word.ttsReady ? "Loading audio..." : "Play word"
         },
         word._ttsFailed ? "\u{1F507}" : playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Volume2, { size: 18 })
@@ -1371,7 +1371,7 @@ const WordSoundsReviewPanel = ({
             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
           },
           disabled: generatingImageIndex === idx,
-          className: `px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all ${generatingImageIndex === idx ? "border-indigo-400 bg-indigo-100 text-indigo-600 animate-pulse" : "border-dashed border-indigo-300 text-indigo-500 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105"}`,
+          className: `px-3 py-2 rounded-lg border-2 flex items-center gap-2 text-sm font-bold transition-all ${generatingImageIndex === idx ? "border-indigo-400 bg-indigo-100 text-indigo-600 animate-pulse" : "border-dashed border-indigo-600 text-indigo-500 hover:border-indigo-500 hover:bg-indigo-50 hover:scale-105"}`,
           "data-help-key": "word_sounds_review_image_gen",
           title: t("common.generate_image_for_this_word")
         },
@@ -1384,7 +1384,7 @@ const WordSoundsReviewPanel = ({
           role: "dialog",
           onClick: (e) => e.stopPropagation(),
           onChange: (e) => onUpdateWord(idx, { ...word, difficulty: e.target.value }),
-          className: `text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none ${word.difficulty === "easy" ? "bg-green-100 text-green-700 border-green-300" : word.difficulty === "hard" ? "bg-red-100 text-red-700 border-red-300" : "bg-yellow-100 text-yellow-700 border-yellow-300"}`
+          className: `text-xs font-bold px-2 py-1 rounded-full border cursor-pointer appearance-none ${word.difficulty === "easy" ? "bg-green-100 text-green-700 border-green-600" : word.difficulty === "hard" ? "bg-red-100 text-red-700 border-red-600" : "bg-yellow-100 text-yellow-700 border-yellow-600"}`
         },
         /* @__PURE__ */ React.createElement("option", { value: "easy" }, "\u{1F7E2} Easy"),
         /* @__PURE__ */ React.createElement("option", { value: "medium" }, "\u{1F7E1} Medium"),
@@ -1472,7 +1472,7 @@ const WordSoundsReviewPanel = ({
         "aria-label": t("common.rhyme_time_options"),
         value: word.rhymeWord || "",
         onChange: (e) => onUpdateWord(idx, { ...word, rhymeWord: e.target.value }),
-        className: "px-3 py-1.5 font-bold border-2 border-green-300 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300",
+        className: "px-3 py-1.5 font-bold border-2 border-green-600 bg-green-50 rounded-lg focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-300",
         "data-help-key": "word_sounds_review_distractor_input",
         placeholder: t("common.placeholder_correct_rhyme")
       }
@@ -1537,7 +1537,7 @@ const WordSoundsReviewPanel = ({
           const newDist = [...word.rhymeDistractors || [], ""];
           onUpdateWord(idx, { ...word, rhymeDistractors: newDist });
         },
-        className: "px-3 py-1.5 bg-orange-100 text-orange-600 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold"
+        className: "px-3 py-1.5 bg-orange-100 text-orange-600 rounded-lg border-2 border-dashed border-orange-600 hover:bg-orange-200 text-sm font-bold"
       },
       "+ Add"
     ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-violet-500 uppercase tracking-wider mb-2 block" }, t("word_sounds.blend_options")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "px-3 py-1.5 font-bold bg-green-100 text-green-700 rounded-lg border-2 border-green-300" }, word.targetWord || word.word, " \u2713"), (word.blendingDistractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
@@ -1599,7 +1599,7 @@ const WordSoundsReviewPanel = ({
           const newDist = [...word.blendingDistractors || [], ""];
           onUpdateWord(idx, { ...word, blendingDistractors: newDist });
         },
-        className: "px-3 py-1.5 bg-violet-100 text-violet-600 rounded-lg border-2 border-dashed border-violet-300 hover:bg-violet-200 text-sm font-bold"
+        className: "px-3 py-1.5 bg-violet-100 text-violet-600 rounded-lg border-2 border-dashed border-violet-600 hover:bg-violet-200 text-sm font-bold"
       },
       "+ Add"
     ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block" }, "Sound Positions (Find Sounds Activity)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, (() => {
@@ -1644,7 +1644,7 @@ const WordSoundsReviewPanel = ({
         value: imageRefinementInputs[idx] || "",
         onChange: (e) => setImageRefinementInputs((prev) => ({ ...prev, [idx]: e.target.value })),
         placeholder: "e.g., make it cuter, add a banana",
-        className: "flex-1 text-xs border border-yellow-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400",
+        className: "flex-1 text-xs border border-yellow-600 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-yellow-400",
         onKeyDown: (e) => e.key === "Enter" && onRefineImage && imageRefinementInputs[idx] && onRefineImage(idx, imageRefinementInputs[idx])
       }
     ), /* @__PURE__ */ React.createElement(

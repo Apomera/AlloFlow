@@ -579,7 +579,7 @@ window.StemLab = window.StemLab || {
             placeholder: graphMode === '2d' ? 'y > 2x + 1' : 'x > 3 or -2 < x \u2264 5',
             onChange: function(e) { upd('expr', e.target.value); },
             onKeyDown: function(e) { if (e.key === 'Enter') addToHistory(d.expr); },
-            className: 'px-4 py-2 border-2 border-fuchsia-300 rounded-lg font-mono text-lg text-center w-52 focus:ring-2 focus:ring-fuchsia-400 outline-none',
+            className: 'px-4 py-2 border-2 border-fuchsia-600 rounded-lg font-mono text-lg text-center w-52 focus:ring-2 focus:ring-fuchsia-400 outline-none',
             'aria-label': 'Inequality expression input'
           })
         ),
@@ -733,7 +733,7 @@ window.StemLab = window.StemLab || {
                 }
               },
               'aria-label': 'Test a value against the inequality',
-              className: 'px-3 py-1.5 border-2 border-sky-300 rounded-lg font-mono text-sm w-36 text-center focus:ring-2 focus:ring-sky-400 outline-none'
+              className: 'px-3 py-1.5 border-2 border-sky-600 rounded-lg font-mono text-sm w-36 text-center focus:ring-2 focus:ring-sky-400 outline-none'
             }),
             testResult !== null && h('span', { className: 'text-sm font-bold ' + (testResult ? 'text-emerald-600' : 'text-red-600') },
               testResult
@@ -856,7 +856,7 @@ window.StemLab = window.StemLab || {
               type: 'text', value: solverExpr, placeholder: '3x - 7 \u2265 5',
               onChange: function(e) { upd('solverExpr', e.target.value); },
               'aria-label': 'Step-by-step solver inequality input',
-              className: 'px-3 py-1.5 border-2 border-teal-300 rounded-lg font-mono text-sm w-48 text-center focus:ring-2 focus:ring-teal-400 outline-none'
+              className: 'px-3 py-1.5 border-2 border-teal-600 rounded-lg font-mono text-sm w-48 text-center focus:ring-2 focus:ring-teal-400 outline-none'
             }),
             h('button', { 'aria-label': 'Solve',
               onClick: function() {
@@ -910,7 +910,7 @@ window.StemLab = window.StemLab || {
             exprHistory.map(function(ex, i) {
               return h('button', { key: i,
                 onClick: function() { upd('expr', ex); },
-                className: 'px-2 py-1 text-[11px] font-mono font-bold bg-white text-slate-600 rounded border border-slate-400 hover:bg-fuchsia-50 hover:border-fuchsia-300 transition-all'
+                className: 'px-2 py-1 text-[11px] font-mono font-bold bg-white text-slate-600 rounded border border-slate-400 hover:bg-fuchsia-50 hover:border-fuchsia-600 transition-all'
               }, ex);
             })
           )

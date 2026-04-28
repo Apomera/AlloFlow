@@ -1361,7 +1361,7 @@ const normalizePhoneme = (p, defaultGrapheme = null) => {
                                                 className={`w-10 h-10 flex items-center justify-center rounded-full transition-colors text-base font-bold border-2
                                                     ${regeneratingIndex === idx
                                                         ? 'bg-orange-200 border-orange-400 animate-spin text-orange-700'
-                                                        : 'bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 shadow-sm'
+                                                        : 'bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100 hover:border-orange-600 hover:scale-110 shadow-sm'
                                                     }`}
                                                 data-help-key="word_sounds_review_regen_word" title={t('common.regenerate_this_word')}
                                                 style={{ pointerEvents: 'auto', cursor: 'pointer' }}

@@ -1149,7 +1149,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                 var visited = roomsVisited.indexOf(connId) >= 0;
                 return h('button', { 'aria-label': 'Move To Room', key: connId, onClick: function() { moveToRoom(connId); },
                   className: 'px-3 py-2 rounded-xl border-2 text-xs font-bold transition-all hover:scale-105 ' +
-                    (visited ? 'border-green-300 bg-green-50 text-green-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-300')
+                    (visited ? 'border-green-600 bg-green-50 text-green-700' : 'border-slate-200 bg-white text-slate-600 hover:border-violet-600')
                 }, connRoom.emoji + ' ' + connRoom.name + (visited ? ' ✓' : ''));
               })
             )
@@ -1380,11 +1380,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
             d.actionMode === 'craft' && h('div', { className: 'flex gap-2 mb-2 ml-1' },
               h('button', { 'aria-label': 'Craft Item', onClick: function() { upd('craftSubMode', 'item'); },
                 className: 'px-3 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                  (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300')
+                  (craftSubMode === 'item' ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-600')
               }, '🔨 Craft Item' + (craftedThisTurn ? ' ✓' : '')),
               h('button', { 'aria-label': 'Build Structure', onClick: function() { upd('craftSubMode', 'structure'); },
                 className: 'px-3 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                  (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300') +
+                  (craftSubMode === 'structure' ? 'bg-emerald-100 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-600') +
                   (structureCooldown > 0 ? ' opacity-40' : '')
               }, '🏗️ Build Structure' + (structureCooldown > 0 ? ' (' + structureCooldown + ' turns)' : '')),
               structureCooldown > 0 && h('span', { className: 'text-[11px] text-slate-200 self-center' }, '⏳ Structure cooldown: ' + structureCooldown + ' turn' + (structureCooldown > 1 ? 's' : '') + ' left')

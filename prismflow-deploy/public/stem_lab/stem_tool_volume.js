@@ -578,15 +578,15 @@ window.StemLab = window.StemLab || {
               upd({ paintSurfaceArea: !paintSurfaceArea });
               if (!badges.surfaceExplorer) checkBadges({ surfaceExplorer: true });
             },
-            className: 'px-3 py-1 ml-2 rounded-lg text-xs font-bold transition-all border ' + (paintSurfaceArea ? 'bg-orange-100 text-orange-700 border-orange-300 shadow-inner' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'),
+            className: 'px-3 py-1 ml-2 rounded-lg text-xs font-bold transition-all border ' + (paintSurfaceArea ? 'bg-orange-100 text-orange-700 border-orange-600 shadow-inner' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'),
             title: 'Toggle paint (P)'
           }, paintSurfaceArea ? '\uD83E\uDDFC Wash Paint' : '\uD83C\uDFA8 Paint Surface'),
           // Zoom
           h('div', { className: 'flex items-center gap-1' },
-            h('button', { 'aria-label': 'Zoom out', onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
+            h('button', { 'aria-label': 'Zoom out', onClick: function() { upd({ scale: Math.max(0.4, scale - 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '\u2212'),
             h('span', { className: 'text-[11px] text-emerald-600 font-mono w-10 text-center' }, Math.round(scale*100)+'%'),
-            h('button', { 'aria-label': 'Zoom in', onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-300 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
-            h('button', { 'aria-label': 'Reset 3D view rotation and zoom', onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-300 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100' }, '\u21BA'))
+            h('button', { 'aria-label': 'Zoom in', onClick: function() { upd({ scale: Math.min(2.5, scale + 0.15) }); }, className: 'w-7 h-7 rounded-full bg-white border border-emerald-600 text-emerald-700 font-bold text-sm hover:bg-emerald-100 flex items-center justify-center' }, '+'),
+            h('button', { 'aria-label': 'Reset 3D view rotation and zoom', onClick: function() { upd({ rotation: { x: -25, y: -35 }, scale: 1.0 }); }, className: 'ml-1 px-2 py-1 rounded-md bg-white border border-emerald-600 text-emerald-700 font-bold text-[11px] hover:bg-emerald-100' }, '\u21BA'))
         ),
 
         // ── Badge panel ──
@@ -773,7 +773,7 @@ window.StemLab = window.StemLab || {
               type: 'number', value: answer,
               onChange: function(e) { upd({ answer: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
-              placeholder: 'V = ?', 'aria-label': 'Volume answer', className: 'flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono'
+              placeholder: 'V = ?', 'aria-label': 'Volume answer', className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
             }),
             h('button', { 'aria-label': 'Check',
               onClick: checkChallenge, disabled: !answer,

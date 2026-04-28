@@ -2768,7 +2768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               h('div', { className: 'flex gap-1 flex-wrap' },
                 ['What is Lotka-Volterra?', 'Why do populations oscillate?', 'What is carrying capacity?', 'Explain food webs'].map(function(question) {
                   return h('button', { key: question,
-                    className: 'px-2 py-1 text-[11px] rounded-full border border-indigo-300 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800',
+                    className: 'px-2 py-1 text-[11px] rounded-full border border-indigo-600 dark:border-indigo-600 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-800',
                     onClick: function() { askAI(question); }
                   }, question);
                 })
@@ -2817,7 +2817,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 className: 'flex-1 px-1.5 py-2 text-[11px] font-bold rounded-lg border-2 transition-all text-center ' +
                   (sandboxTool === tool.id
                     ? 'border-teal-400 bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 shadow'
-                    : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-teal-300'),
+                    : 'border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:border-teal-600'),
                 onClick: function() {
                   upd('sandboxTool', tool.id);
                   var canvasEl = document.querySelector('canvas[data-eco-canvas]');

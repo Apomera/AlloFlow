@@ -1366,7 +1366,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("span", { className: "px-2 py-0.5 bg-pink-100 text-pink-700 text-[11px] font-bold rounded-full" }, "CREATIVE"),
 
-              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-300 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
+              React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-600 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: "Launch 3D Architecture Studio" }, "\uD83C\uDFD7\uFE0F 3D Builder \u2192"),
 
               React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "bg-pink-50 text-pink-600 border border-pink-600 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": "Toggle studio tour" }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
 

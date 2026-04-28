@@ -686,13 +686,13 @@ window.StemLab = window.StemLab || {
               // Badge toggle
               h('button', { 'aria-label': 'Badges',
                 onClick: function() { upd('showBadges', !showBadges); },
-                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showBadges ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-amber-50')
+                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showBadges ? 'bg-amber-100 text-amber-700 border border-amber-600' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-amber-50')
               }, '\uD83C\uDFC5 Badges'),
 
               // AI toggle
               h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { upd('showAI', !showAI); },
-                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showAI ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-blue-50')
+                className: 'px-2 py-1 text-xs rounded-lg transition-all ' + (showAI ? 'bg-blue-100 text-blue-700 border border-blue-600' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:bg-blue-50')
               }, '\uD83E\uDD16 AI Tutor'),
 
               // Mode buttons
@@ -931,37 +931,37 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex flex-wrap gap-2 mt-3 mb-3' },
               h('button', { 'aria-label': 'Resistor',
                 onClick: function() { addComponent('resistor', 100); },
-                className: 'px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-300 hover:bg-yellow-200 transition-all'
+                className: 'px-3 py-1.5 bg-yellow-100 text-yellow-800 font-bold rounded-lg text-sm border border-yellow-600 hover:bg-yellow-200 transition-all'
               }, '\u2795 Resistor'),
 
               h('button', { 'aria-label': 'Bulb',
                 onClick: function() { addComponent('bulb', 50); },
-                className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-300 hover:bg-amber-200 transition-all'
+                className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-sm border border-amber-600 hover:bg-amber-200 transition-all'
               }, '\uD83D\uDCA1 Bulb'),
 
               h('button', { 'aria-label': 'Switch',
                 onClick: function() { addComponent('switch', 0, { closed: true }); },
-                className: 'px-3 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-sm border border-emerald-300 hover:bg-emerald-200 transition-all'
+                className: 'px-3 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-lg text-sm border border-emerald-600 hover:bg-emerald-200 transition-all'
               }, '\uD83D\uDD18 Switch'),
 
               h('button', { 'aria-label': 'LED',
                 onClick: function() { addComponent('led', 40, { ledColor: '#ef4444' }); },
-                className: 'px-3 py-1.5 bg-rose-100 text-rose-800 font-bold rounded-lg text-sm border border-rose-300 hover:bg-rose-200 transition-all'
+                className: 'px-3 py-1.5 bg-rose-100 text-rose-800 font-bold rounded-lg text-sm border border-rose-600 hover:bg-rose-200 transition-all'
               }, '\uD83D\uDD34 LED'),
 
               h('button', { 'aria-label': 'Ammeter',
                 onClick: function() { addComponent('ammeter', 0); },
-                className: 'px-3 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-lg text-sm border border-blue-300 hover:bg-blue-200 transition-all'
+                className: 'px-3 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-lg text-sm border border-blue-600 hover:bg-blue-200 transition-all'
               }, '\u26A1 Ammeter'),
 
               h('button', { 'aria-label': 'Voltmeter',
                 onClick: function() { addComponent('voltmeter', 0); },
-                className: 'px-3 py-1.5 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm border border-orange-300 hover:bg-orange-200 transition-all'
+                className: 'px-3 py-1.5 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm border border-orange-600 hover:bg-orange-200 transition-all'
               }, '\uD83D\uDD0B Voltmeter'),
 
               h('button', { 'aria-label': 'Capacitor',
                 onClick: function() { addComponent('capacitor', 100); },
-                className: 'px-3 py-1.5 bg-sky-100 text-sky-800 font-bold rounded-lg text-sm border border-sky-300 hover:bg-sky-200 transition-all'
+                className: 'px-3 py-1.5 bg-sky-100 text-sky-800 font-bold rounded-lg text-sm border border-sky-600 hover:bg-sky-200 transition-all'
               }, '\u2E28 Capacitor'),
 
               h('button', { 'aria-label': 'Clear',
@@ -1029,7 +1029,7 @@ window.StemLab = window.StemLab || {
                     // Switch toggle button
                     comp.type === 'switch' && h('button', { 'aria-label': 'Toggle Switch',
                       onClick: function() { toggleSwitch(comp.id); },
-                      className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-red-100 text-red-700 border-red-300')
+                      className: 'px-2 py-1 text-xs font-bold rounded border transition-all ' + (comp.closed ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : 'bg-red-100 text-red-700 border-red-600')
                     }, comp.closed ? 'Close' : 'Open'),
 
                     // LED color cycle button
@@ -1221,7 +1221,7 @@ window.StemLab = window.StemLab || {
                         upd('challenge', ch);
                       }
                     },
-                    className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : challengesDoneSet[ci] ? 'bg-emerald-50 text-emerald-500 border-emerald-600' : 'bg-white text-amber-700 border-amber-600 hover:bg-amber-50')
+                    className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-600' : challengesDoneSet[ci] ? 'bg-emerald-50 text-emerald-500 border-emerald-600' : 'bg-white text-amber-700 border-amber-600 hover:bg-amber-50')
                   }, (close || challengesDoneSet[ci] ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
                 })
               )
@@ -1571,7 +1571,7 @@ window.StemLab = window.StemLab || {
                     return h('button', { key: type,
                       onClick: function() { upd('_selectedComp', active ? null : type); },
                       className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' +
-                        (active ? 'text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-300'),
+                        (active ? 'text-white shadow-sm' : 'bg-white text-slate-600 border border-slate-400 hover:border-amber-600'),
                       style: active ? { background: info.color } : {}
                     }, info.icon + ' ' + info.name);
                   })
@@ -1615,7 +1615,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: app.name,
                     onClick: function() { upd('_expandedApp', expanded ? null : app.name); },
                     className: 'text-left rounded-lg p-2 border transition-all ' +
-                      (expanded ? 'bg-white border-cyan-400 shadow-sm' : 'bg-white/60 border-cyan-100 hover:border-cyan-300')
+                      (expanded ? 'bg-white border-cyan-400 shadow-sm' : 'bg-white/60 border-cyan-100 hover:border-cyan-600')
                   },
                     h('div', { className: 'flex items-center gap-2 mb-1' },
                       h('span', { className: 'text-lg' }, app.emoji),

@@ -2407,7 +2407,7 @@
                         /*#__PURE__*/ React.createElement("input", {
                         "aria-label": t("common.enter_opt"),
                         className:
-                          "w-full h-32 rounded-2xl border-4 border-amber-300 bg-white text-center text-4xl font-bold outline-none focus:ring-4 focus:ring-amber-500 text-slate-700",
+                          "w-full h-32 rounded-2xl border-4 border-amber-600 bg-white text-center text-4xl font-bold outline-none focus:ring-4 focus:ring-amber-500 text-slate-700",
                         value: opt,
                         onChange: (e) =>
                           onUpdateOption &&
@@ -3231,7 +3231,7 @@
                     onChange: (e) =>
                       onUpdateOption && onUpdateOption(0, e.target.value),
                     className:
-                      "w-48 px-4 py-3 text-xl font-bold text-slate-700 bg-white rounded-xl border border-amber-300 focus:ring-4 focus:ring-amber-200 outline-none shadow-sm",
+                      "w-48 px-4 py-3 text-xl font-bold text-slate-700 bg-white rounded-xl border border-amber-600 focus:ring-4 focus:ring-amber-200 outline-none shadow-sm",
                   }),
                   /*#__PURE__*/ React.createElement(
                     "button",
@@ -3288,7 +3288,7 @@
                   onChange: (e) => setUserSpelling(e.target.value),
                   placeholder: t("common.placeholder_drag_letters_here"),
                   className: `w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest uppercase
-                                ${feedback === "correct" ? "border-green-400 bg-green-50 text-green-700" : feedback === "incorrect" ? "border-red-300 bg-red-50 text-red-700 animate-shake" : "border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"}
+                                ${feedback === "correct" ? "border-green-400 bg-green-50 text-green-700" : feedback === "incorrect" ? "border-red-600 bg-red-50 text-red-700 animate-shake" : "border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"}
                             `,
                   autoComplete: "off",
                 }),
@@ -4011,7 +4011,7 @@
                     onChange: (e) =>
                       onUpdateOption && onUpdateOption(i, e.target.value),
                     className:
-                      "w-20 h-20 rounded-2xl border-4 text-center text-3xl font-bold outline-none focus:ring-4 focus:ring-amber-500 border-amber-300 bg-white text-slate-700",
+                      "w-20 h-20 rounded-2xl border-4 text-center text-3xl font-bold outline-none focus:ring-4 focus:ring-amber-500 border-amber-600 bg-white text-slate-700",
                     onKeyDown: (e) => e.stopPropagation(),
                   }),
                       /*#__PURE__*/ React.createElement(
@@ -11685,7 +11685,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   placeholder: t("common.placeholder_type_the_word"),
                   maxLength: currentWordSoundsWord?.length || 20,
                   className:
-                    "w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-amber-300 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none",
+                    "w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-amber-600 rounded-xl focus:ring-2 focus:ring-amber-400 focus:border-amber-400 outline-none",
                   autoFocus: true,
                 }),
               /*#__PURE__*/ React.createElement(
@@ -11879,7 +11879,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   placeholder: t("common.placeholder_type_or_tap_letters"),
                   maxLength: currentWordSoundsWord?.length || 20,
                   className:
-                    "w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-violet-300 rounded-xl focus:ring-2 focus:ring-violet-400 outline-none",
+                    "w-full max-w-xs px-4 py-3 text-center text-xl font-bold border-2 border-violet-600 rounded-xl focus:ring-2 focus:ring-violet-400 outline-none",
                   autoFocus: true,
                 }),
               /*#__PURE__*/ React.createElement(
@@ -16391,7 +16391,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               "flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all " +
                               (surveyAnswers[q.id] === idx + 1
                                 ? "bg-purple-600 text-white shadow-md scale-105"
-                                : "bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-300"),
+                                : "bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-600"),
                             onClick: () =>
                               setSurveyAnswers((p) => ({
                                 ...p,
@@ -17474,7 +17474,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-300 font-medium text-slate-600 transition-colors",
+                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-600 font-medium text-slate-600 transition-colors",
                   onClick: () => {
                     const headers = [
                       "Date",
@@ -17516,7 +17516,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 "button",
                 {
                   className:
-                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-300 font-medium text-slate-600 transition-colors",
+                    "flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-600 font-medium text-slate-600 transition-colors",
                   onClick: () => {
                     const allResponses = [];
                     Object.entries(surveyResponses).forEach(([key, arr]) => {
@@ -20794,7 +20794,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                               }
                             },
                             className:
-                              "w-24 text-center text-2xl font-bold border-2 border-purple-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
+                              "w-24 text-center text-2xl font-bold border-2 border-purple-600 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
                             placeholder: "?",
                             autoFocus: true,
                           }),
@@ -24527,7 +24527,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                         onClick: () =>
                                           setResearchStudent(name),
                                         className:
-                                          "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-300 hover:shadow-md transition-all text-left group",
+                                          "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-600 hover:shadow-md transition-all text-left group",
                                       },
                                                   /*#__PURE__*/ React.createElement(
                                         "div",

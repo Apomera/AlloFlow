@@ -1578,7 +1578,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     (locked
                       ? 'opacity-50 cursor-not-allowed bg-white/5 border-white/10'
                       : (isHidden
-                        ? 'hover:scale-[1.01] active:scale-[0.98] bg-yellow-500/10 border-yellow-400/50 hover:border-yellow-300 hover:bg-yellow-500/15 focus:ring-2 focus:ring-yellow-400'
+                        ? 'hover:scale-[1.01] active:scale-[0.98] bg-yellow-500/10 border-yellow-400/50 hover:border-yellow-600 hover:bg-yellow-500/15 focus:ring-2 focus:ring-yellow-400'
                         : 'hover:scale-[1.01] active:scale-[0.98] bg-white/5 border-white/10 hover:border-amber-400/40 hover:bg-amber-500/5 focus:ring-2 focus:ring-amber-400'))
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },

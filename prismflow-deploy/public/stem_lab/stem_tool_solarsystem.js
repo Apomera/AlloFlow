@@ -6689,7 +6689,7 @@ const d = labToolData.solarSystem;
                           ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white border-indigo-400/50 shadow-lg shadow-indigo-500/25 scale-[1.03] ring-1 ring-indigo-400/30'
                           : (isDark
                             ? 'bg-slate-800 text-slate-300 border-slate-600 hover:border-indigo-500/50 hover:bg-slate-700 hover:text-indigo-300'
-                            : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
+                            : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 shadow-sm'))
                     }, btn.icon + ' ' + btn.label);
                   })
                 ),
@@ -12157,7 +12157,7 @@ const d = labToolData.solarSystem;
                       }, "\uD83D\uDCDD I have a prediction!"),
                       React.createElement("button", {
                         onClick: function() { upd('poe_seen_' + sel.name, 'skipped'); var seen = (d.poeSeen || []).concat([sel.name]); upd('poeSeen', seen); },
-                        className: "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 border border-amber-300 hover:bg-amber-50 transition-all"
+                        className: "px-3 py-2 text-xs font-bold rounded-lg bg-white text-amber-700 border border-amber-600 hover:bg-amber-50 transition-all"
                       }, "Skip for now"))
                   ),
 
@@ -12196,8 +12196,8 @@ const d = labToolData.solarSystem;
                         React.createElement("span", { className: "text-[11px] font-black tracking-wide " + (isDark ? 'text-purple-300' : 'text-purple-700') }, "TRUE OR FALSE?")),
                       React.createElement("p", { className: "text-xs font-bold mb-2 " + (isDark ? 'text-purple-200' : 'text-purple-900') }, '"' + mc.statement + '"'),
                       !d['mc_choice_' + mcTrigger] ? React.createElement("div", { className: "flex gap-2" },
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-700 border-emerald-300 hover:bg-emerald-200') }, "\u2705 True"),
-                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50 hover:bg-red-800/40' : 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200') }, "\u274C False")
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, true); upd('mc_answered_' + mcTrigger, mc.answer === true); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50 hover:bg-emerald-800/40' : 'bg-emerald-100 text-emerald-700 border-emerald-600 hover:bg-emerald-200') }, "\u2705 True"),
+                        React.createElement("button", { onClick: function() { upd('mc_choice_' + mcTrigger, false); upd('mc_answered_' + mcTrigger, mc.answer === false); }, className: "flex-1 px-3 py-1.5 text-xs font-bold rounded-lg border transition-all " + (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50 hover:bg-red-800/40' : 'bg-red-100 text-red-700 border-red-600 hover:bg-red-200') }, "\u274C False")
                       ) : React.createElement("div", null,
                         React.createElement("p", { className: "text-xs font-bold " + (d['mc_choice_' + mcTrigger] === mc.answer ? 'text-emerald-600' : 'text-red-600') }, d['mc_choice_' + mcTrigger] === mc.answer ? '\u2705 Correct!' : '\u274C Not quite!'),
                         React.createElement("p", { className: "text-xs text-purple-700 mt-1 leading-relaxed" }, mc.explanation),
@@ -12264,9 +12264,9 @@ const d = labToolData.solarSystem;
                           var cls = !d.quiz.answered
                             ? (isDark ? 'bg-slate-700 text-slate-200 border-slate-600 hover:border-indigo-400 hover:bg-slate-600' : 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50')
                             : isCorrect
-                              ? (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50' : 'bg-emerald-100 text-emerald-800 border-emerald-300')
+                              ? (isDark ? 'bg-emerald-900/30 text-emerald-300 border-emerald-700/50' : 'bg-emerald-100 text-emerald-800 border-emerald-600')
                               : wasChosen && !isCorrect
-                                ? (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50' : 'bg-red-100 text-red-800 border-red-300')
+                                ? (isDark ? 'bg-red-900/30 text-red-300 border-red-700/50' : 'bg-red-100 text-red-800 border-red-600')
                                 : (isDark ? 'bg-slate-800 text-slate-200 border-slate-700' : 'bg-slate-50 text-slate-600 border-slate-200');
 
                           return React.createElement("button", { "aria-label": "Select answer: " + opt,
@@ -13362,7 +13362,7 @@ const d = labToolData.solarSystem;
                     type: "number", placeholder: "Your weight (kg)", value: d.gravWeight || '',
                     'aria-label': 'Your weight in kilograms',
                     onChange: function(e) { updMulti({ gravWeight: e.target.value, gravCalcUsed: true }); setTimeout(checkChallenges, 50); },
-                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-orange-700/50 text-slate-200' : 'bg-white border-orange-300')
+                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-orange-700/50 text-slate-200' : 'bg-white border-orange-600')
                   }),
                   React.createElement("span", { className: "text-sm font-bold " + (isDark ? 'text-orange-400' : 'text-orange-600'), style: { fontFamily: 'monospace' } },
                     d.gravWeight ? (Math.round(parseFloat(d.gravWeight) * (GRAVITY_MAP[sel.name] || 1) * 10) / 10) + ' kg on ' + sel.name : '...'
@@ -13414,7 +13414,7 @@ const d = labToolData.solarSystem;
                     'aria-label': 'Ask the AI space tutor a question',
                     onChange: function(e) { upd('aiQuestion', e.target.value); },
                     onKeyDown: function(e) { if (e.key === 'Enter') askSpaceTutor(d.aiQuestion); },
-                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-violet-700/50 text-slate-200' : 'bg-white border-violet-300')
+                    className: "orr-input flex-1 px-3 py-1.5 rounded-lg text-sm border " + (isDark ? 'bg-slate-800 border-violet-700/50 text-slate-200' : 'bg-white border-violet-600')
                   }),
                   React.createElement("button", { "aria-label": "Ask Space Tutor",
                     onClick: function() { askSpaceTutor(d.aiQuestion); },
@@ -13566,7 +13566,7 @@ const d = labToolData.solarSystem;
                     var lp = LEARNING_PATHS[k];
                     var active = d.learningPath === k;
                     return React.createElement("button", { key: k, onClick: function() { upd('learningPath', active ? null : k); },
-                      className: "p-2 rounded-lg border text-left transition-all " + (active ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 shadow-sm' : 'bg-indigo-50 border-indigo-300 shadow-sm') : (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-300'))
+                      className: "p-2 rounded-lg border text-left transition-all " + (active ? (isDark ? 'bg-indigo-900/30 border-indigo-600/50 shadow-sm' : 'bg-indigo-50 border-indigo-600 shadow-sm') : (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/50' : 'bg-white border-slate-200 hover:border-indigo-600'))
                     },
                       React.createElement("div", { className: "text-sm mb-0.5" }, lp.icon),
                       React.createElement("div", { className: "text-[11px] font-bold " + (active ? (isDark ? 'text-indigo-300' : 'text-indigo-700') : (isDark ? 'text-slate-300' : 'text-slate-700')) }, lp.name),
@@ -13593,7 +13593,7 @@ const d = labToolData.solarSystem;
                 ),
                 React.createElement("button", {
                   onClick: function() { upd('showJournal', !d.showJournal); },
-                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (d.showJournal ? (isDark ? 'bg-amber-900/30 text-amber-300 border border-amber-700/50' : 'bg-amber-100 text-amber-700 border border-amber-300') : (isDark ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-700 text-white hover:bg-amber-600'))
+                  className: "w-full px-3 py-1.5 text-xs font-bold rounded-lg transition-all " + (d.showJournal ? (isDark ? 'bg-amber-900/30 text-amber-300 border border-amber-700/50' : 'bg-amber-100 text-amber-700 border border-amber-600') : (isDark ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-amber-700 text-white hover:bg-amber-600'))
                 }, d.showJournal ? 'Close Journal' : (sel ? 'Write about ' + sel.name : 'Open Journal')),
                 d.showJournal && React.createElement("div", { className: "mt-2 space-y-2" },
                   // New entry form

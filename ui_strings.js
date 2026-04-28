@@ -2974,7 +2974,19 @@
                                                                       "visuals_failed": "{failed} of {total} card visuals couldn't be generated. Cards will show text only.",
                                                                         "image_style_label": "Image style",
                                                                           "style_placeholder": "e.g. cartoon, pixel art, watercolor",
-                                                                            "image_style_hint": "Applied to all AI-generated card visuals."
+                                                                            "image_style_hint": "Applied to all AI-generated card visuals.",
+                                                                              "image_scale_label": "Card image size",
+                                                                                "image_scale_hint": "Scales card visuals in the review panel and during play.",
+                                                                                  "image_size_word": "Size",
+                                                                                    "actions": {
+                                                                                      "image_regenerated": "Image regenerated.",
+                                                                                        "image_regen_failed": "Image regeneration failed. Try again or upload your own.",
+                                                                                          "upload_not_image": "That file is not an image.",
+                                                                                            "upload_too_large": "Image is too large (max 5 MB).",
+                                                                                              "image_uploaded": "Image uploaded.",
+                                                                                                "upload_failed": "Upload failed.",
+                                                                                                  "image_cleared": "Image removed."
+                                                                                    }
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",

@@ -289,11 +289,11 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
              <div className="flex flex-col gap-2">
                <div className="flex items-center gap-2 text-[11px]">
                  <button onClick={() => { setUseCustomName(false); if (!rosterAdj || !rosterAnimal) randomizeRosterName(); }}
-                   className={`px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'text-slate-400 hover:text-slate-600'}`}>
+                   className={`px-2 py-1 rounded-full font-bold transition-all ${!useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-600' : 'text-slate-400 hover:text-slate-600'}`}>
                    🎲 Codename Only
                  </button>
                  <button onClick={() => setUseCustomName(true)}
-                   className={`px-2 py-1 rounded-full font-bold transition-all ${useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-300' : 'text-slate-400 hover:text-slate-600'}`}>
+                   className={`px-2 py-1 rounded-full font-bold transition-all ${useCustomName ? 'bg-teal-100 text-teal-800 border border-teal-600' : 'text-slate-400 hover:text-slate-600'}`}>
                    ✏️ Codename + Real Name
                  </button>
                </div>

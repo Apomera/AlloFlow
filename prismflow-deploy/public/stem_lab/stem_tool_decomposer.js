@@ -1200,7 +1200,7 @@
                 className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all '
                   + (sel.name === m.name
                     ? 'text-white shadow-md scale-105'
-                    : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-300'),
+                    : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600'),
                 style: sel.name === m.name ? { background: m.color } : {}
               }, m.emoji + ' ' + m.name);
             })
@@ -1346,7 +1346,7 @@
                       upd('compareTo', e.target.value);
                       upd('comparisons', (d.comparisons || 0) + 1);
                     },
-                    className: 'px-2 py-1 rounded-lg text-xs font-bold border border-indigo-300 bg-white text-indigo-700'
+                    className: 'px-2 py-1 rounded-lg text-xs font-bold border border-indigo-600 bg-white text-indigo-700'
                   },
                     MATERIALS.filter(function(m) { return m.name !== sel.name; }).map(function(m) {
                       return h('option', { key: m.name, value: m.name }, m.emoji + ' ' + m.name);
@@ -1544,7 +1544,7 @@
                       updMulti({ activeScene: scene.id, scenesVisited: visited, selectedSceneObj: null, huntTarget: target ? target.id : null, huntWrongGuess: null });
                     },
                     className: 'group relative rounded-2xl p-4 text-left border-2 transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 ' +
-                      (complete ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50' : 'border-slate-200 bg-white hover:border-indigo-300'),
+                      (complete ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50' : 'border-slate-200 bg-white hover:border-indigo-600'),
                     style: { borderLeftWidth: '6px', borderLeftColor: scene.accent, overflow: 'hidden' }
                   },
                     // Background scene tint
@@ -2100,7 +2100,7 @@
                       return h('button', { key: obj.id,
                         onClick: function() { SOUNDS.elementClick(); upd('selectedSceneObj', selectedSceneObj === obj.id ? null : obj.id); },
                         className: 'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' +
-                          (selectedSceneObj === obj.id ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-300')
+                          (selectedSceneObj === obj.id ? 'bg-amber-100 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600 hover:border-amber-600')
                       }, obj.emoji + ' ' + (mat ? mat.formula : obj.name));
                     })
                   )
@@ -2154,7 +2154,7 @@
                     else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null }); }
                   },
                   className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
-                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-300')
+                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600')
                 }, m.emoji + ' ' + m.name);
               })
             ),
@@ -2584,9 +2584,9 @@
                   var cls = !quizQ.answered
                     ? 'bg-white text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50'
                     : isCorrect
-                      ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                      ? 'bg-emerald-100 text-emerald-800 border-emerald-600'
                       : wasChosen && !isCorrect
-                        ? 'bg-red-100 text-red-800 border-red-300'
+                        ? 'bg-red-100 text-red-800 border-red-600'
                         : 'bg-slate-50 text-slate-600 border-slate-200';
 
                   return h('button', { key: opt,

@@ -1113,7 +1113,7 @@ window.SelHub = window.SelHub || {
                 key: ct.id,
                 onClick: function() { updMulti({ circleType: ct.id, tab: 'circle', promptIdx: 0, circleActive: true, customPrompts: null }); ctx.awardXP(5); },
                 className: 'p-4 rounded-2xl border-2 text-left transition-all hover:scale-[1.02] hover:shadow-md ' +
-                  (selectedCircleType === ct.id ? 'border-amber-400 bg-amber-50 shadow-md' : 'border-slate-200 bg-white hover:border-amber-300')
+                  (selectedCircleType === ct.id ? 'border-amber-400 bg-amber-50 shadow-md' : 'border-slate-200 bg-white hover:border-amber-600')
               },
                 h('div', { className: 'text-2xl mb-2' }, ct.emoji),
                 h('div', { className: 'font-bold text-sm text-slate-800' }, ct.label),
@@ -1228,7 +1228,7 @@ window.SelHub = window.SelHub || {
           h('button', { 'aria-label': 'Circle Scripts',
             onClick: generateCustomPrompts,
             disabled: aiLoading,
-            className: 'w-full px-4 py-2 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
+            className: 'w-full px-4 py-2 bg-indigo-50 border border-indigo-600 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors disabled:opacity-40 flex items-center justify-center gap-2'
           }, h(Sparkles, { size: 14 }), aiLoading ? 'Generating...' : '\u2728 Generate Custom Prompts with AI')
         ),
 
@@ -2171,7 +2171,7 @@ window.SelHub = window.SelHub || {
                           ctx.awardXP(5);
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                          (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-300')
+                          (ratings[ratingKey] === 'punitive' ? 'border-red-400 bg-red-50 text-red-700' : 'border-slate-200 text-slate-600 hover:border-red-600')
                       }, gradeBand === 'elementary' ? '\uD83D\uDEAB Punishment' : '\uD83D\uDEAB Punitive'),
                       h('button', { 'aria-label': 'compareReflections',
                         onClick: function() {
@@ -2182,7 +2182,7 @@ window.SelHub = window.SelHub || {
                           ctx.awardXP(5);
                         },
                         className: 'flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all border-2 ' +
-                          (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:border-emerald-300')
+                          (ratings[ratingKey] === 'restorative' ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-slate-200 text-slate-600 hover:border-emerald-600')
                       }, gradeBand === 'elementary' ? '\uD83D\uDC9A Making It Right' : '\uD83D\uDC9A Restorative')
                     ),
 

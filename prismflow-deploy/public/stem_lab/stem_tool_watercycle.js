@@ -1819,7 +1819,7 @@ const d = labToolData.waterCycle;
                         if (cv) { cv.dataset.journeyState = 'river_runoff'; if (cv._onJourneyTransition) cv._onJourneyTransition('river_runoff'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: River Runoff.');
                       },
-                      className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-300 hover:bg-blue-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center bg-blue-50 border-2 border-blue-600 hover:bg-blue-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF0A"),
                       React.createElement("p", { className: "text-[11px] font-bold text-blue-700" }, "River Runoff (R)"),
@@ -1833,7 +1833,7 @@ const d = labToolData.waterCycle;
                         if (cv) { cv.dataset.journeyState = 'infiltrating'; if (cv._onJourneyTransition) cv._onJourneyTransition('infiltrating'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Underground infiltration.');
                       },
-                      className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-300 hover:bg-amber-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center bg-amber-50 border-2 border-amber-600 hover:bg-amber-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83E\uDEB4"),
                       React.createElement("p", { className: "text-[11px] font-bold text-amber-700" }, "Underground (U)"),
@@ -1847,7 +1847,7 @@ const d = labToolData.waterCycle;
                         if (cv) { cv.dataset.journeyState = 'plant_absorb'; if (cv._onJourneyTransition) cv._onJourneyTransition('plant_absorb'); }
                         if (typeof announceToSR === 'function') announceToSR('Path chosen: Plant absorption.');
                       },
-                      className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-300 hover:bg-emerald-100 transition-all hover:scale-105"
+                      className: "p-2 rounded-lg text-center bg-emerald-50 border-2 border-emerald-600 hover:bg-emerald-100 transition-all hover:scale-105"
                     },
                       React.createElement("p", { className: "text-lg" }, "\uD83C\uDF3F"),
                       React.createElement("p", { className: "text-[11px] font-bold text-emerald-700" }, "Enter Plant (P)"),

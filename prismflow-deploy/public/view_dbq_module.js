@@ -81,10 +81,16 @@
     fontSize: '13px',
     fontWeight: 700,
     cursor: 'pointer',
-    borderBottom: dbqTab === id ? '3px solid #4f46e5' : '3px solid transparent',
     color: dbqTab === id ? '#4338ca' : '#64748b',
     background: dbqTab === id ? '#eef2ff' : 'transparent',
-    border: 'none',
+    // Use the four per-side longhand properties instead of the `border` shorthand.
+    // React warns when shorthand (`border: 'none'`) and longhand (`borderBottom`)
+    // are mixed on the same element because rerender diffing has to drop the
+    // shorthand to apply a new longhand value, which can cause visual glitches.
+    borderTop: 'none',
+    borderRight: 'none',
+    borderLeft: 'none',
+    borderBottom: dbqTab === id ? '3px solid #4f46e5' : '3px solid transparent',
     borderRadius: '8px 8px 0 0',
     transition: 'all 0.2s'
   });

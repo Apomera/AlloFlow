@@ -899,7 +899,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: t.id,
                     onClick: function() { upd({ selectedTile: t.id, brushTool: 'brush' }); },
                     className: 'w-8 h-8 rounded border-2 flex items-center justify-center text-sm transition-all ' +
-                      (selectedTile === t.id ? 'border-rose-500 shadow-md scale-110' : 'border-gray-200 hover:border-rose-300'),
+                      (selectedTile === t.id ? 'border-rose-500 shadow-md scale-110' : 'border-gray-200 hover:border-rose-600'),
                     style: { background: t.color },
                     title: t.label
                   }, t.emoji || '');
@@ -984,12 +984,12 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: sp.id,
                     onClick: function() { upd({ activeSprite: sp.id, spritePixels: Object.assign({}, sp.pixels), spriteColor: sp.color }); },
                     className: 'px-3 py-2 rounded-lg border-2 text-xs font-bold transition-all ' +
-                      (activeSprite === sp.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-gray-200 hover:border-rose-300')
+                      (activeSprite === sp.id ? 'border-rose-400 bg-rose-50 shadow-md' : 'border-gray-200 hover:border-rose-600')
                   }, '\uD83C\uDFA8 ' + sp.name);
                 }),
                 h('button', { 'aria-label': 'New',
                   onClick: function() { upd({ activeSprite: 'custom_' + Date.now(), spritePixels: {}, spriteColor: '#e74c3c' }); },
-                  className: 'px-3 py-2 rounded-lg border-2 border-dashed border-rose-300 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all'
+                  className: 'px-3 py-2 rounded-lg border-2 border-dashed border-rose-600 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all'
                 }, '\u2795 New')
               )
             ),
@@ -1139,7 +1139,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: sid,
                   onClick: function() { upd({ activeSprite: sid }); },
                   className: 'px-3 py-1.5 rounded-lg border-2 text-xs font-bold transition-all ' +
-                    (activeSprite === sid ? 'border-rose-400 bg-rose-100 shadow-md' : 'border-gray-200 hover:border-rose-300')
+                    (activeSprite === sid ? 'border-rose-400 bg-rose-100 shadow-md' : 'border-gray-200 hover:border-rose-600')
                 }, (icons[sid] || '') + ' ' + sid.charAt(0).toUpperCase() + sid.slice(1) + ' (' + sprEvents.length + ')');
               })
             ),
@@ -1239,7 +1239,7 @@ window.StemLab = window.StemLab || {
                     arr.push({ trigger: 'onKey', param: 'ArrowUp', action: 'move', actionParam: 'up' });
                     ne[activeSprite] = arr; upd({ events: ne });
                   },
-                  className: 'w-full py-2 rounded-xl border-2 border-dashed border-rose-300 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all'
+                  className: 'w-full py-2 rounded-xl border-2 border-dashed border-rose-600 text-xs font-bold text-rose-500 hover:bg-rose-50 transition-all'
                 }, '\u2795 Add Rule (' + sprEvents.length + '/8)')
               );
             })()
@@ -1458,7 +1458,7 @@ window.StemLab = window.StemLab || {
                       else if (showResult && isSelected && !isCorrect) btnClass += 'border-red-400 bg-red-50 text-red-700';
                       else if (showResult && isCorrect) btnClass += 'border-green-400 bg-green-50 text-green-700';
                       else if (isSelected) btnClass += 'border-indigo-400 bg-indigo-100 text-indigo-800';
-                      else btnClass += 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50 text-slate-700';
+                      else btnClass += 'border-gray-200 bg-white hover:border-indigo-600 hover:bg-indigo-50 text-slate-700';
                       return h('button', { key: oi,
                         onClick: function() {
                           if (learnShowResult) return;
@@ -1515,7 +1515,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: lesson.id,
                   onClick: function() { upd({ activeLesson: lesson.id, learnAnswer: null, learnShowResult: false }); },
                   className: 'p-4 rounded-xl border-2 text-left transition-all hover:shadow-md ' +
-                    (isComplete ? 'border-green-300 bg-green-50' : 'border-indigo-200 bg-white hover:border-indigo-400')
+                    (isComplete ? 'border-green-600 bg-green-50' : 'border-indigo-200 bg-white hover:border-indigo-400')
                 },
                   h('div', { className: 'flex items-start gap-3' },
                     h('span', { style: { fontSize: '24px' } }, lesson.icon),

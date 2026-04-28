@@ -2320,7 +2320,7 @@ show();
     {
       key,
       onClick: () => setGenre(key),
-      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-300"}`
+      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-600"}`
     },
     g.emoji,
     /* @__PURE__ */ React.createElement("br", null),
@@ -2361,7 +2361,7 @@ show();
     {
       key: style,
       onClick: () => setArtStyle(style),
-      className: `p-3 rounded-xl border-2 text-center text-xs font-bold capitalize transition-all ${artStyle === style ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-300"}`
+      className: `p-3 rounded-xl border-2 text-center text-xs font-bold capitalize transition-all ${artStyle === style ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-600"}`
     },
     style === "storybook" ? "\u{1F4DA}" : style === "pixel" ? "\u{1F47E}" : style === "cinematic" ? "\u{1F3AC}" : style === "anime" ? "\u2728" : "\u{1F58D}\uFE0F",
     /* @__PURE__ */ React.createElement("br", null),
@@ -2370,7 +2370,7 @@ show();
     "button",
     {
       onClick: () => setArtStyle("custom"),
-      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${artStyle === "custom" ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-300"}`
+      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${artStyle === "custom" ? "border-purple-500 bg-purple-50 text-purple-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-purple-600"}`
     },
     "\u{1F3A8}",
     /* @__PURE__ */ React.createElement("br", null),
@@ -2390,7 +2390,7 @@ show();
     {
       key: l.code,
       onClick: () => setLanguage(l.code),
-      className: `p-2.5 rounded-xl border-2 text-center text-xs font-bold transition-all ${language === l.code ? "border-teal-500 bg-teal-50 text-teal-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-teal-300"}`
+      className: `p-2.5 rounded-xl border-2 text-center text-xs font-bold transition-all ${language === l.code ? "border-teal-500 bg-teal-50 text-teal-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-teal-600"}`
     },
     l.label
   ))), language === "other" && /* @__PURE__ */ React.createElement(
@@ -2417,7 +2417,7 @@ show();
     {
       key: si,
       onClick: () => setStoryPrompt(starter),
-      className: `w-full text-left text-xs p-2.5 rounded-lg border transition-all ${storyPrompt === starter ? "bg-amber-100 border-amber-400 text-amber-800 font-bold" : "bg-white border-slate-200 text-slate-600 hover:border-amber-300 hover:bg-amber-50"}`
+      className: `w-full text-left text-xs p-2.5 rounded-lg border transition-all ${storyPrompt === starter ? "bg-amber-100 border-amber-400 text-amber-800 font-bold" : "bg-white border-slate-200 text-slate-600 hover:border-amber-600 hover:bg-amber-50"}`
     },
     '"',
     starter,
@@ -2535,7 +2535,7 @@ show();
     "button",
     {
       onClick: () => toggleDictation(idx),
-      className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-300 text-red-600 animate-pulse" : "bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700"}`,
+      className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-600 text-red-600 animate-pulse" : "bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700"}`,
       "aria-label": dictation.isDictating && dictatingParagraphIdx === idx ? "Stop dictation" : "Start dictation"
     },
     /* @__PURE__ */ React.createElement(Mic, { size: 10 }),
@@ -2640,7 +2640,7 @@ show();
   ), onCallGeminiVision && /* @__PURE__ */ React.createElement("div", { className: `px-4 py-1.5 border-t flex items-center gap-2 flex-wrap ${layoutMode === "dark" ? "bg-slate-900 border-slate-700" : "bg-white border-slate-100"}` }, /* @__PURE__ */ React.createElement(
     "label",
     {
-      className: `inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-dashed rounded-lg text-xs font-bold cursor-pointer transition-all ${hwLoading && hwTargetParagraph === idx ? "opacity-50 pointer-events-none" : ""} ${layoutMode === "dark" ? "border-cyan-700 text-cyan-400 hover:bg-cyan-900/30" : "border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400"}`,
+      className: `inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-dashed rounded-lg text-xs font-bold cursor-pointer transition-all ${hwLoading && hwTargetParagraph === idx ? "opacity-50 pointer-events-none" : ""} ${layoutMode === "dark" ? "border-cyan-700 text-cyan-400 hover:bg-cyan-900/30" : "border-violet-600 text-violet-600 hover:bg-violet-50 hover:border-violet-400"}`,
       "aria-label": `Snap or upload handwriting for paragraph ${idx + 1}`
     },
     /* @__PURE__ */ React.createElement(
@@ -2663,7 +2663,7 @@ show();
       onClick: () => setHwPenmanshipOn(!hwPenmanshipOn),
       "aria-label": `${hwPenmanshipOn ? "Disable" : "Enable"} penmanship feedback`,
       "aria-pressed": hwPenmanshipOn,
-      className: `inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${hwPenmanshipOn ? layoutMode === "dark" ? "bg-cyan-900 border-cyan-600 text-cyan-300" : "bg-violet-100 border-violet-300 text-violet-700" : layoutMode === "dark" ? "bg-slate-800 border-slate-600 text-slate-300 hover:border-cyan-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-300 hover:text-violet-500"}`
+      className: `inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ${hwPenmanshipOn ? layoutMode === "dark" ? "bg-cyan-900 border-cyan-600 text-cyan-300" : "bg-violet-100 border-violet-600 text-violet-700" : layoutMode === "dark" ? "bg-slate-800 border-slate-600 text-slate-300 hover:border-cyan-600" : "bg-slate-50 border-slate-200 text-slate-500 hover:border-violet-600 hover:text-violet-500"}`
     },
     "\u270F\uFE0F Penmanship Tips ",
     hwPenmanshipOn ? "ON" : "OFF"

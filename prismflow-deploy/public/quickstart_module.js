@@ -562,7 +562,7 @@ const QuickStartWizard = React.memo(({
       key: i,
       "data-help-key": "wizard_standard_select",
       onClick: () => toggleStandard(val),
-      className: `p-3 rounded-xl border-2 cursor-pointer transition-all mb-2 ${isSelected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-300'}`
+      className: `p-3 rounded-xl border-2 cursor-pointer transition-all mb-2 ${isSelected ? 'border-indigo-500 bg-indigo-50' : 'border-slate-200 bg-white hover:border-indigo-600'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-start gap-3"
     }, /*#__PURE__*/React.createElement("div", {

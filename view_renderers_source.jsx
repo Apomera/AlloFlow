@@ -778,7 +778,7 @@ const renderOutlineContent = (deps) => {
                                                             <input aria-label={t('common.enter_item')}
                                                                 value={item}
                                                                 onChange={(e) => handleOutlineChange(i, 'item', e.target.value, k)}
-                                                                className="w-full bg-white rounded px-2 py-1 outline-none border border-slate-400 focus:border-indigo-300"
+                                                                className="w-full bg-white rounded px-2 py-1 outline-none border border-slate-400 focus:border-indigo-600"
                                                             />
                                                             {(branch.items_en?.[k] || leveledTextLanguage !== 'English') && (
                                                                 <input aria-label={t('common.common_placeholder_translation')}
@@ -1005,7 +1005,7 @@ const renderInteractiveMap = (deps) => {
                                           )}
                                           <button
                                               onClick={handleRetryChallenge}
-                                              className="flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-300 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
+                                              className="flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-600 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm"
                                               title={t('concept_map.challenge.retry_tooltip')}
                                               aria-label={t('concept_map.challenge.retry_tooltip')}
                                           >

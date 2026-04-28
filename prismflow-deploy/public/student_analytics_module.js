@@ -2084,7 +2084,7 @@
         className: 'flex gap-1'
       }, ...q.labels.map((label, idx) => React.createElement('button', {
         key: idx,
-        className: 'flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ' + (surveyAnswers[q.id] === idx + 1 ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-300'),
+        className: 'flex-1 py-2 px-1 rounded-lg text-xs font-medium transition-all ' + (surveyAnswers[q.id] === idx + 1 ? 'bg-purple-600 text-white shadow-md scale-105' : 'bg-white border border-slate-400 text-slate-600 hover:bg-purple-50 hover:border-purple-600'),
         onClick: () => setSurveyAnswers(p => ({
           ...p,
           [q.id]: idx + 1
@@ -2584,7 +2584,7 @@
       }, entry.weekday + ' ' + new Date(entry.date).toLocaleDateString()))))) : null, React.createElement('div', {
         className: 'mt-3 flex gap-2'
       }, React.createElement('button', {
-        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-300 font-medium text-slate-600 transition-colors',
+        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-emerald-50 hover:border-emerald-600 font-medium text-slate-600 transition-colors',
         onClick: () => {
           const headers = ['Date', 'Weekday', 'Student', 'Activity', 'Duration_Min', 'Study'];
           const rows = fidelityLog.map(e => [e.date, e.weekday, e.student, e.activity, e.duration, e.researchStudy].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
@@ -2601,7 +2601,7 @@
           URL.revokeObjectURL(link.href);
         }
       }, '\u{1F4C4} Export Fidelity Log'), React.createElement('button', {
-        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-300 font-medium text-slate-600 transition-colors',
+        className: 'flex-1 text-xs px-3 py-1.5 bg-white rounded-lg border border-slate-400 hover:bg-purple-50 hover:border-purple-600 font-medium text-slate-600 transition-colors',
         onClick: () => {
           const allResponses = [];
           Object.entries(surveyResponses).forEach(([key, arr]) => {
@@ -3597,7 +3597,7 @@
               setProbeTargetStudent(val);
               setMathProbeStudent(val);
             },
-            className: "text-sm font-bold border-2 border-indigo-300 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[200px]"
+            className: "text-sm font-bold border-2 border-indigo-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 min-w-[200px]"
           },
             React.createElement("option", { value: "" }, '\uD83C\uDFAF Practice Mode (No Student)'),
             importedStudents.map(function(s) {
@@ -3648,7 +3648,7 @@
               setScreeningQueueActive(true);
               addToast('Screening queue started with ' + names.length + ' students', 'info');
             },
-            className: "text-xs px-3 py-2 bg-white border border-indigo-300 text-indigo-700 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1"
+            className: "text-xs px-3 py-2 bg-white border border-indigo-600 text-indigo-700 rounded-lg font-bold hover:bg-indigo-50 transition-colors flex items-center gap-1"
           }, '\uD83D\uDCCB Start Screening Queue')
         )
       ),
@@ -5350,7 +5350,7 @@
             }
           }
         },
-        className: "w-24 text-center text-2xl font-bold border-2 border-purple-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
+        className: "w-24 text-center text-2xl font-bold border-2 border-purple-600 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
         placeholder: "?",
         autoFocus: true
       }), /*#__PURE__*/React.createElement("button", {
@@ -7212,7 +7212,7 @@
       return /*#__PURE__*/React.createElement("button", {
         key: name,
         onClick: () => setResearchStudent(name),
-        className: "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-300 hover:shadow-md transition-all text-left group"
+        className: "p-3 bg-white rounded-xl border border-slate-400 hover:border-indigo-600 hover:shadow-md transition-all text-left group"
       }, /*#__PURE__*/React.createElement("div", {
         className: "font-bold text-sm text-slate-700 group-hover:text-indigo-700"
       }, name), anomalyFlags.length > 0 && /*#__PURE__*/React.createElement("div", {

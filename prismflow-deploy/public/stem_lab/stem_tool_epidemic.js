@@ -1558,7 +1558,7 @@ window.StemLab = window.StemLab || {
                 return h('button', { 'aria-label': 'Subtract',
                   key: npi.id,
                   onClick: function() { toggleNPI(npi.id); },
-                  className: 'p-2 rounded-xl text-left transition-all border ' + (active ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-200' : 'bg-white border-slate-200 hover:border-teal-300')
+                  className: 'p-2 rounded-xl text-left transition-all border ' + (active ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-200' : 'bg-white border-slate-200 hover:border-teal-600')
                 },
                   h('div', { className: 'flex items-center gap-1.5' },
                     h('span', { className: 'text-lg' }, npi.icon),

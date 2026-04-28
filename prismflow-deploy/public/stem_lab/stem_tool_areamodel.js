@@ -521,7 +521,7 @@ window.StemLab = window.StemLab || {
               onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
               placeholder: 'Ask about area models...',
               'aria-label': 'Ask the area model tutor',
-              className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
+              className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
             }),
             h('button', { onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
               className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
@@ -620,7 +620,7 @@ window.StemLab = window.StemLab || {
               checkBadges(Object.assign(getBadgeUpdates(), { usedCommutative: true }));
             },
             className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
-              (swapped ? 'bg-violet-100 text-violet-700 border border-violet-300' : 'bg-slate-100 text-slate-600 hover:bg-violet-50 border border-slate-400')
+              (swapped ? 'bg-violet-100 text-violet-700 border border-violet-600' : 'bg-slate-100 text-slate-600 hover:bg-violet-50 border border-slate-400')
           },
             '\u21C4 Commutative: ' + rows + ' \u00d7 ' + cols + (swapped ? ' (swapped!)' : '')
           ),
@@ -672,7 +672,7 @@ window.StemLab = window.StemLab || {
                     onKeyDown: function(e) { if (e.key === 'Enter' && answer) checkChallenge(); },
                     placeholder: 'Product = ?',
                     'aria-label': 'Challenge answer',
-                    className: 'flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm font-mono'
+                    className: 'flex-1 px-3 py-2 border border-amber-600 rounded-lg text-sm font-mono'
                   }),
                   h('button', { 'aria-label': 'Check',
                     onClick: checkChallenge,

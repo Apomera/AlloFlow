@@ -943,7 +943,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Daily bonus
           dailyAvailable && unlockedSpells.length > 0 && h('button', {
             onClick: claimDaily,
-            className: 'w-full mb-3 rounded-xl p-3 text-left border-2 border-amber-300 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 focus:ring-2 focus:ring-amber-400 focus:outline-none transition abs-pulse',
+            className: 'w-full mb-3 rounded-xl p-3 text-left border-2 border-amber-600 bg-gradient-to-r from-amber-50 to-yellow-50 hover:from-amber-100 hover:to-yellow-100 focus:ring-2 focus:ring-amber-400 focus:outline-none transition abs-pulse',
             'aria-label': 'Claim daily essence bonus'
           },
             h('div', { className: 'flex items-center gap-3' },

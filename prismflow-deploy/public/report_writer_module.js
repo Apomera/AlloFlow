@@ -1619,7 +1619,7 @@ Return ONLY valid JSON:
                             }, h('span', { className: 'font-medium text-slate-800' }, demo.label))
                         ),
                         h('div', { className: 'border-t border-amber-200 pt-2 mt-1' },
-                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-left px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-300 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
+                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-left px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-600 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
                                 onClick: generateAIDemoCase,
                                 disabled: generatingDemo
                             },
@@ -2076,7 +2076,7 @@ Return ONLY valid JSON:
                                     }, '\u270F\uFE0F Edit'),
                                     // Grade-level adaptation dropdown
                                     h('select', {
-                                        className: `text-[11px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-700 cursor-wait border-teal-300' : 'bg-teal-50 text-teal-700 border-teal-600 hover:bg-teal-100'}`,
+                                        className: `text-[11px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-700 cursor-wait border-teal-600' : 'bg-teal-50 text-teal-700 border-teal-600 hover:bg-teal-100'}`,
                                         'aria-label': 'Adapt grade level for ' + section,
                                         disabled: adaptingSection === section,
                                         value: '',

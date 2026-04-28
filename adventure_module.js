@@ -707,7 +707,7 @@ var AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
       {
         onClick: () => onPurchase(item),
         disabled: gold < item.cost,
-        className: `w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-[40px] ${gold >= item.cost ? "bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-300 ring-1 ring-yellow-400/50" : "bg-slate-700 text-slate-600 cursor-not-allowed"}`
+        className: `w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-[40px] ${gold >= item.cost ? "bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-600 ring-1 ring-yellow-400/50" : "bg-slate-700 text-slate-600 cursor-not-allowed"}`
       },
       gold >= item.cost ? t("adventure.buy_now") : t("adventure.no_gold")
     )), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" })))))

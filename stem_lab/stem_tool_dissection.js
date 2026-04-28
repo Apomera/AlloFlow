@@ -5818,7 +5818,7 @@ var d = labToolData.dissection || {};
               // ── Study toggle ──
               React.createElement("button", { "aria-label": "Toggle Study toolbar",
                 onClick: function () { upd('toolbarStudyOpen', !d.toolbarStudyOpen); upd('toolbarViewOpen', false); upd('toolbarToolsOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-300' : 'bg-white text-slate-600 border border-slate-400 hover:bg-amber-50'))
+                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarStudyOpen ? 'bg-amber-700 text-white shadow-md' : (d.quizMode || d.flashcardMode || d.guidedMode || d.compareMode || d.practicalMode ? 'bg-amber-100 text-amber-700 border border-amber-600' : 'bg-white text-slate-600 border border-slate-400 hover:bg-amber-50'))
               }, '\uD83D\uDCDA Study ' + (d.toolbarStudyOpen ? '\u25B2' : '\u25BC'))
 
             ),

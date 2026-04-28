@@ -1285,12 +1285,12 @@ window.StemLab = window.StemLab || {
             crisprPhase === 'cut' && h("div", { className: "space-y-2" },
               h("p", { className: "text-xs font-bold text-red-600" }, '\u2702\uFE0F Double-strand break created! Choose repair pathway:'),
               h("div", { className: "grid grid-cols-2 gap-2" },
-                h("button", { onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-300 bg-amber-50 hover:bg-amber-100 transition-all text-left" },
+                h("button", { onClick: function() { applyCRISPRRepair('nhej'); }, className: "p-3 rounded-xl border-2 border-amber-600 bg-amber-50 hover:bg-amber-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-amber-700" }, '\uD83D\uDD27 NHEJ'),
                   h("p", { className: "text-[11px] text-amber-600 mt-0.5" }, 'Non-Homologous End Joining'),
                   h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Quick fix \u2014 might make mistakes!', 'Error-prone, may add or delete bases.', 'Error-prone. Introduces indels. Used for gene knockouts.', 'Error-prone. Introduces indels. Used for gene knockouts.'))
                 ),
-                h("button", { onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 transition-all text-left" },
+                h("button", { onClick: function() { applyCRISPRRepair('hdr'); }, className: "p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-all text-left" },
                   h("p", { className: "text-xs font-bold text-emerald-700" }, '\uD83E\uDDEC HDR'),
                   h("p", { className: "text-[11px] text-emerald-600 mt-0.5" }, 'Homology-Directed Repair'),
                   h("p", { className: "text-[11px] text-slate-600 mt-1" }, gradeText('Careful fix \u2014 uses a template!', 'Precise editing using a template.', 'Precise editing using donor template. Used for gene knock-ins.', 'Precise editing using donor template. Used for gene knock-ins and corrections.'))

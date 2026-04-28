@@ -4293,7 +4293,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     className: 'px-3 py-2.5 rounded-xl text-xs font-bold transition-all border-2 text-left ' +
                       (showResult && isCorrect ? 'border-green-400 bg-green-50 text-green-800' :
                         showResult && wasChosen && !isCorrect ? 'border-red-400 bg-red-50 text-red-700' :
-                          'border-slate-200 hover:border-amber-300 text-slate-700 hover:bg-amber-50')
+                          'border-slate-200 hover:border-amber-600 text-slate-700 hover:bg-amber-50')
                   }, (showResult && isCorrect ? '\u2705 ' : showResult && wasChosen ? '\u274C ' : '') + opt.name);
                 })
               ),
@@ -4334,7 +4334,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var isDone = pathwaysCompleted[pw.id];
                 return h('button', { key: pw.id,
                   onClick: function() { updMulti({ _activePathway: pw.id, _pathwayStep: 0 }); upd('selectedStructure', pw.steps[0].structure); playSound('pathwayStep'); },
-                  className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-300 bg-rose-50' : 'border-slate-200 hover:border-rose-200 hover:bg-rose-50/50')
+                  className: 'text-left rounded-xl p-3 border-2 transition-all ' + (isDone ? 'border-rose-600 bg-rose-50' : 'border-slate-200 hover:border-rose-200 hover:bg-rose-50/50')
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-lg' }, pw.icon),
@@ -4422,7 +4422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     }
                     upd('_expandedConn', d._expandedConn === conn.id ? null : conn.id);
                   },
-                  className: 'w-full text-left rounded-xl p-3 border-2 transition-all ' + (isViewed ? 'border-sky-300 bg-sky-50' : 'border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/50')
+                  className: 'w-full text-left rounded-xl p-3 border-2 transition-all ' + (isViewed ? 'border-sky-600 bg-sky-50' : 'border-slate-200 bg-white hover:border-sky-200 hover:bg-sky-50/50')
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'text-base' }, conn.icon),

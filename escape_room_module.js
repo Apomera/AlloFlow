@@ -1726,7 +1726,7 @@ inputText.substring(0, 6000) + '\n' +
       return h('div', { className: 'fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500' },
         h('button', {
           onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: true, textInput: '' }); }); },
-          className: 'flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-slate-900 font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform animate-pulse border-4 border-yellow-300 focus:outline-none focus:ring-4 focus:ring-yellow-200',
+          className: 'flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-slate-900 font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform animate-pulse border-4 border-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-200',
           'aria-label': t('escape_room.approach_door') || 'Approach the final door'
         },
           h(DoorOpen, { size: 28, className: 'animate-bounce', 'aria-hidden': 'true' }),
@@ -2046,7 +2046,7 @@ inputText.substring(0, 6000) + '\n' +
               ? h('button', {
                   'aria-label': t('common.load_saved_escape_room'),
                   onClick: handlers.loadSavedEscapeRoom,
-                  className: 'flex-1 py-3 rounded-xl border-2 border-emerald-300 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2'
+                  className: 'flex-1 py-3 rounded-xl border-2 border-emerald-600 text-emerald-700 font-bold hover:bg-emerald-50 transition-colors flex items-center justify-center gap-2'
                 }, '\uD83D\uDCC2 ' + (t('escape_room.load_saved') || 'Load Saved'))
               : null,
             h('button', {
@@ -2150,7 +2150,7 @@ inputText.substring(0, 6000) + '\n' +
                           value: opt,
                           onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'options', { index: optIdx, text: e.target.value }); },
                           className: 'flex-1 p-1.5 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 transition-colors ' +
-                            (optIdx === puzzle.correctIndex ? 'border-green-300 bg-green-50' : 'border-slate-200')
+                            (optIdx === puzzle.correctIndex ? 'border-green-600 bg-green-50' : 'border-slate-200')
                         })
                       );
                     })

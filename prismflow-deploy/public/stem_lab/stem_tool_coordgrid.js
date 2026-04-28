@@ -525,7 +525,7 @@ window.StemLab = window.StemLab || {
               onChange: function(e) { updCG({ aiQuestion: e.target.value }); },
               onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
               placeholder: 'Ask about coordinates...',
-              className: 'flex-1 px-3 py-2 border border-sky-300 rounded-lg text-sm'
+              className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
             }),
             h('button', { onClick: askAITutor, disabled: aiLoading || !aiQuestion.trim(),
               className: 'px-4 py-2 bg-sky-600 text-white font-bold rounded-lg text-sm hover:bg-sky-700 disabled:opacity-50'
@@ -649,11 +649,11 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, 'Slope (m)'),
-              h('input', { type: 'text', placeholder: 'e.g. 2/3', value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, className: 'px-2 py-1.5 border-2 border-amber-300 rounded-lg text-sm font-bold text-center focus:border-amber-500 ' })
+              h('input', { type: 'text', placeholder: 'e.g. 2/3', value: (gridFeedback && gridFeedback.slopeAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { slopeAnswer: e.target.value }); }); }, onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); }, className: 'px-2 py-1.5 border-2 border-amber-600 rounded-lg text-sm font-bold text-center focus:border-amber-500 ' })
             )
           ),
           h('div', { className: 'flex gap-2 items-center' },
-            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': 'Hint', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-300' }, '\uD83D\uDCA1 Hint'),
+            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': 'Hint', onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-600' }, '\uD83D\uDCA1 Hint'),
             (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[11px] text-amber-500 italic' }, '\uD83D\uDCA1 Hint used'),
             h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600' }, '\u2714 Check')
           ),
@@ -670,7 +670,7 @@ window.StemLab = window.StemLab || {
               value: (gridFeedback && gridFeedback.distanceAnswer) || '',
               onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { distanceAnswer: e.target.value }); }); },
               onKeyDown: function(e) { if (e.key === 'Enter') checkGrid(); },
-              className: 'flex-1 px-3 py-2 border border-green-300 rounded-lg text-sm font-mono'
+              className: 'flex-1 px-3 py-2 border border-green-600 rounded-lg text-sm font-mono'
             }),
             h('button', { 'aria-label': 'Check', onClick: checkGrid, className: 'px-4 py-2 bg-green-700 text-white font-bold rounded-lg text-sm hover:bg-green-700' }, '\u2714 Check')
           ),

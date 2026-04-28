@@ -1267,7 +1267,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-300' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'bg-blue-100 text-blue-700 border-blue-600' : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200')
 
                 }, "\u{1F517} " + (d.buildBondFrom !== null && d.buildBondFrom !== undefined ? 'Cancel Bond' : 'Draw Bond')),
 

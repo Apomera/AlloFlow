@@ -456,7 +456,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       }
                     },
                     'aria-label': 'Value to convert',
-                    className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-300 outline-none focus:ring-2 focus:ring-cyan-500 py-1',
+                    className: 'w-32 text-center text-2xl font-bold border-b-2 border-cyan-600 outline-none focus:ring-2 focus:ring-cyan-500 py-1',
                     step: '0.01'
                   }),
                   h('select', {

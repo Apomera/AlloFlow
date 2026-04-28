@@ -2380,7 +2380,7 @@ const d = labToolData.rocks || {};
 
                           className: "p-2 rounded-lg text-[11px] font-bold border-2 transition-all hover:scale-105 text-center " +
 
-                            (wasWrong ? "bg-red-50 border-red-300 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
+                            (wasWrong ? "bg-red-50 border-red-600 text-red-700" : "bg-slate-50 border-slate-200 text-slate-700 hover:border-amber-400")
 
                         },
 
@@ -3594,7 +3594,7 @@ const d = labToolData.rockCycle;
 
                     var wasChosen = d.rcQuiz.chosen === opt;
 
-                    var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-300' : wasChosen ? 'bg-red-100 border-red-300' : 'bg-slate-50 border-slate-200 opacity-50';
+                    var cls = !d.rcQuiz.answered ? 'bg-white border-slate-200 hover:border-orange-400' : isCorrect ? 'bg-emerald-100 border-emerald-600' : wasChosen ? 'bg-red-100 border-red-600' : 'bg-slate-50 border-slate-200 opacity-50';
 
                     return React.createElement("button", { "aria-label": "Select answer: " + opt,
 

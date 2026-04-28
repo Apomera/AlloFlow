@@ -27,6 +27,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     document.head.appendChild(st);
   })();
 
+  // Detect prefers-reduced-motion at module load — used to gate canvas-level
+  // cosmetic motion (rotating pedal crank, particle emitters) for vestibular-
+  // sensitive users. The simulation itself still runs; only purely decorative
+  // animation is suppressed.
+  var _prefersReducedMotion = (function() {
+    try {
+      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) { return false; }
+  })();
+
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
     if (document.getElementById('allo-live-bikelab')) return;
@@ -115,7 +125,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     {
       id: 'flat', name: 'Flat Pavement', icon: '🛣️',
       desc: 'Perfectly level smooth asphalt for 400 m. The control case.',
-      profile: function(x) { return { y: 0, kind: 'pavement' }; }
+      // x param is unused for flat terrain (y always 0); kept to match interface.
+      profile: function(_x) { return { y: 0, kind: 'pavement' }; }
     },
     {
       id: 'rollinghills', name: 'Rolling Hills', icon: '⛰️',
@@ -138,7 +149,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     {
       id: 'wet', name: 'Rainy Road', icon: '🌧️',
       desc: 'Flat but wet. Slightly higher Crr + lower braking friction.',
-      profile: function(x) { return { y: 0, kind: 'wet' }; }
+      // x param is unused for flat-wet terrain (y always 0); kept to match interface.
+      profile: function(_x) { return { y: 0, kind: 'wet' }; }
     }
   ];
 
@@ -319,7 +331,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       // Top-level view selector. 'menu' | 'sandbox' | 'gearing' | 'repair'
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
-      var goto = function(v) { setView(v); upd('view', v); };
+      // Badge ids match module view ids — when a user visits a module, mark it
+      // explored. This drives the progress banner on MainMenu and the per-card
+      // checkmark indicator. Persisted via ctx.update so progress survives reload.
+      var BADGE_IDS = ['sandbox','gearing','repair','ride','fit','braking','safety','parts','helmetFit','winterBike','signalDrill'];
+      var goto = function(v) {
+        setView(v);
+        upd('view', v);
+        if (BADGE_IDS.indexOf(v) !== -1) {
+          var prev = d.bikeBadges || {};
+          if (!prev[v]) {
+            var next = Object.assign({}, prev);
+            next[v] = true;
+            upd('bikeBadges', next);
+          }
+        }
+      };
 
       // ─────────────────────────────────────────────────────
       // MAIN MENU
@@ -387,15 +414,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             desc: 'SVG bike diagram with clickable hotspots. Each part shows its function, common failure modes, and a deep-link to the related repair job.',
             color: 'from-slate-500 to-slate-700',
             ring: 'ring-slate-500/40'
+          },
+          {
+            id: 'helmetFit', title: 'Helmet Fit Checker', icon: '⛑️',
+            subtitle: 'Position, angle, chin strap',
+            desc: 'Adjust helmet height, side-strap angle, and chin-strap snugness on a live diagram. Get instant fit feedback against the 2V1 rule (2 fingers above eyebrows, V under ears, 1 finger chin slack).',
+            color: 'from-pink-500 to-rose-600',
+            ring: 'ring-pink-500/40'
+          },
+          {
+            id: 'winterBike', title: 'Maine Winter Biking', icon: '❄️',
+            subtitle: 'Fat bikes, ice, salt, layering',
+            desc: 'Maine-specific guide: fat bike physics, studded tires, freeze-thaw road conditions, salt corrosion care, and layering for sub-freezing rides. Includes a winterization checklist.',
+            color: 'from-sky-500 to-blue-700',
+            ring: 'ring-sky-500/40'
+          },
+          {
+            id: 'signalDrill', title: 'Signal Reaction Drill', icon: '✋',
+            subtitle: 'Match the signal under time pressure',
+            desc: 'A traffic-situation flashes; you press the matching hand signal as fast as possible. Tracks reaction time across 10 rounds, with a personal-best leaderboard.',
+            color: 'from-yellow-500 to-amber-600',
+            ring: 'ring-yellow-500/40'
           }
         ];
 
+        var badges = d.bikeBadges || {};
+        var visitedCount = BADGE_IDS.filter(function(id) { return badges[id]; }).length;
+        var totalCount = BADGE_IDS.length;
+        var allDone = visitedCount === totalCount;
+
         var renderCard = function(c, isBig) {
+          var visited = !!badges[c.id];
           return h('button', {
             key: c.id,
             onClick: function() { goto(c.id); },
-            className: 'text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 border-slate-200 hover:border-slate-400 overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring
+            'aria-label': c.title + (visited ? ' (explored)' : ''),
+            className: 'relative text-left bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all border-2 ' + (visited ? 'border-emerald-600' : 'border-slate-200') + ' hover:border-slate-400 overflow-hidden group focus:outline-none focus:ring-4 ' + c.ring
           },
+            visited && h('span', {
+              'aria-hidden': true,
+              className: 'absolute top-2 right-2 z-10 bg-emerald-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md'
+            }, '✓'),
             h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
@@ -424,6 +483,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'BikeLab'),
             h('p', { className: 'text-lg text-slate-600 max-w-2xl mx-auto' },
               'Physics, mechanics, and maintenance — learn the science of cycling and the real-world skills to keep a bike rolling.')
+          ),
+          // Progress banner — encourages exploration of all 8 modules.
+          h('div', {
+            'aria-live': 'polite',
+            className: 'mb-6 p-4 rounded-2xl border-2 ' + (allDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200') + ' flex items-center justify-between gap-4'
+          },
+            h('div', { className: 'flex items-center gap-3' },
+              h('span', { className: 'text-3xl' }, allDone ? '🏆' : '🎯'),
+              h('div', null,
+                h('div', { className: 'font-bold text-slate-800' },
+                  allDone ? 'All modules explored — full mastery path complete!' : ('Progress: ' + visitedCount + ' of ' + totalCount + ' modules explored')
+                ),
+                h('div', { className: 'text-xs text-slate-600' },
+                  allDone ? 'Revisit any module to deepen your understanding.' : 'Open each card below to learn its specialty.')
+              )
+            ),
+            // Progress bar
+            h('div', { className: 'flex-shrink-0 w-32 h-3 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
+              h('div', {
+                className: 'h-full ' + (allDone ? 'bg-emerald-500' : 'bg-cyan-500') + ' transition-all',
+                style: { width: Math.round((visitedCount / totalCount) * 100) + '%' }
+              })
+            )
           ),
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-600 mb-2 px-1' }, 'Core Modules'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8' },
@@ -800,7 +882,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           // Pedal cadence (rad/s) from linear speed and gear ratio. Simplified
           // effective cadence for the animation (cap so it stays readable).
           var cadenceRate = Math.min(16, (velRef.current / Math.max(0.5, bike.wheelR)) * Math.max(0.3, gear * 0.7));
-          var pedalPhi = timeRef.current * cadenceRate;
+          // Freeze the pedal crank rotation for users who prefer reduced motion —
+          // it's purely cosmetic; bike position + speed still convey pedaling progress.
+          var pedalPhi = _prefersReducedMotion ? 0 : timeRef.current * cadenceRate;
 
           ctx2d.save();
           ctx2d.translate(bx, by);
@@ -878,12 +962,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           // Moving on dirt kicks up dust, on wet leaves a mist, on sand tosses
           // grains. Emission rate scales with speed — so students physically
           // see that higher velocity = more energy dissipated into the surface.
+          // Suppressed for users who prefer reduced motion (purely decorative).
           var emitSurf = terrain.profile(camX).kind;
           var vNow = velRef.current;
           var emitRate = 0;
           var emitColor = '#fbbf24';
           var emitSpread = 0.7;
-          if (emitSurf === 'dirt' && vNow > 1.5) { emitRate = Math.min(3, vNow * 0.25); emitColor = '#a8774a'; }
+          if (_prefersReducedMotion) { /* no emission */ }
+          else if (emitSurf === 'dirt' && vNow > 1.5) { emitRate = Math.min(3, vNow * 0.25); emitColor = '#a8774a'; }
           else if (emitSurf === 'wet' && vNow > 2) { emitRate = Math.min(4, vNow * 0.35); emitColor = '#94a3b8'; emitSpread = 1.1; }
           else if (emitSurf === 'sand' && vNow > 1) { emitRate = Math.min(5, vNow * 0.45); emitColor = '#fcd34d'; emitSpread = 0.9; }
           if (emitRate > 0) {
@@ -1185,7 +1271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           ctx2d.fillText(label, x + dx + 8, y + dy + 3);
         };
 
-        var drawEnergyGraph = function(ctx2d, W, H) {
+        var drawEnergyGraph = function(ctx2d, W, _H) {
           var gw = 220, gh = 90;
           var gx = W - gw - 12, gy = 12;
           ctx2d.fillStyle = 'rgba(15, 23, 42, 0.75)';
@@ -2141,6 +2227,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var revealState = useState(false);
         var reveal = revealState[0], setReveal = revealState[1];
 
+        // Boundary guard: if idx ever lands outside QUESTIONS (corrupted state, hot-reload
+        // after questions array shrunk), don't crash — clamp to the last valid index.
+        if (idx < 0 || idx >= QUESTIONS.length) {
+          var safeIdx = Math.max(0, Math.min(QUESTIONS.length - 1, idx));
+          if (safeIdx !== idx) { setIdx(safeIdx); }
+          return h('div', { className: 'p-6 text-center text-slate-600' }, 'Loading quiz…');
+        }
         var q = QUESTIONS[idx];
         var hasAnswered = answers[idx] !== undefined;
         var chosenId = answers[idx];
@@ -2291,9 +2384,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
 
         var COURSE_LENGTH = 600;
         var COURSE_SEGMENTS = [
-          { from: 0,   to: 180, kind: 'pavement', label: 'Your block', elevFn: function(x) { return 0; } },
-          { from: 180, to: 220, kind: 'pavement', label: 'STOP SIGN',  elevFn: function(x) { return 0; }, stopSign: { at: 205, windowStart: 195, windowEnd: 215 } },
-          { from: 220, to: 280, kind: 'pavement', label: 'Flat run',   elevFn: function(x) { return 0; } },
+          { from: 0,   to: 180, kind: 'pavement', label: 'Your block', elevFn: function(_x) { return 0; } },
+          { from: 180, to: 220, kind: 'pavement', label: 'STOP SIGN',  elevFn: function(_x) { return 0; }, stopSign: { at: 205, windowStart: 195, windowEnd: 215 } },
+          { from: 220, to: 280, kind: 'pavement', label: 'Flat run',   elevFn: function(_x) { return 0; } },
           { from: 280, to: 380, kind: 'pavement', label: 'Oak Hill',   elevFn: function(x) { return (x - 280) * 0.07; }, hill: { start: 280, end: 380 } },
           { from: 380, to: 450, kind: 'pavement', label: 'Descent',    elevFn: function(x) { return 7 - (x - 380) * 0.03; } },
           { from: 450, to: 520, kind: 'wet',      label: 'Wet patch',  elevFn: function(x) { return 4.9 - (x - 450) * 0.04; }, wet: { start: 450, end: 520 } },
@@ -2594,10 +2687,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('input', { type: 'range', min: 0.2, max: 1.0, step: 0.05, value: gear,
                   onChange: function(e) { setGear(parseFloat(e.target.value)); },
                   className: 'w-full accent-violet-500' }),
+                // Discrete gear-step buttons — easier on touch devices (no precise
+                // drag needed) and don't require looking at the slider mid-ride.
+                h('div', { className: 'grid grid-cols-2 gap-2 mt-2' },
+                  h('button', {
+                    'aria-label': 'Shift to a lower gear (easier pedaling, less top speed)',
+                    onClick: function() { setGear(function(g) { return Math.max(0.2, +(g - 0.1).toFixed(2)); }); },
+                    className: 'py-2 rounded-lg font-bold bg-violet-100 hover:bg-violet-200 text-violet-800 text-sm shadow-sm transition-colors'
+                  }, '↓ Lower'),
+                  h('button', {
+                    'aria-label': 'Shift to a higher gear (more top speed, harder pedaling)',
+                    onClick: function() { setGear(function(g) { return Math.min(1.0, +(g + 0.1).toFixed(2)); }); },
+                    className: 'py-2 rounded-lg font-bold bg-violet-100 hover:bg-violet-200 text-violet-800 text-sm shadow-sm transition-colors'
+                  }, '↑ Higher')
+                ),
                 h('label', { className: 'text-xs font-bold uppercase tracking-wider text-slate-600 flex justify-between mt-2' },
                   h('span', null, 'Pedal Power'), h('span', { className: 'text-cyan-600' }, power + ' W')),
                 h('input', { type: 'range', min: 0, max: 400, value: power,
-                  onChange: function(e) { setPower(parseInt(e.target.value)); },
+                  // NaN-guard: parseInt('') returns NaN; clamp to 0 so an empty
+                  // keyboard-edited slider value can't poison physics.
+                  onChange: function(e) { var v = parseInt(e.target.value, 10); setPower(isFinite(v) ? v : 0); },
                   className: 'w-full accent-cyan-500' })
               ),
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col' },
@@ -2848,6 +2957,422 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
+      // HELMET FIT CHECKER
+      // ─────────────────────────────────────────────────────
+      // Interactive helmet fit using the "2V1 rule": helmet sits 2 fingers above
+      // the eyebrows, side straps form a V (or Y) under each ear, and the chin
+      // strap allows only 1 finger of slack. Three sliders drive an SVG diagram;
+      // a live verdict tells the student which adjustment is off.
+      function HelmetFit() {
+        // Position: 0 = on forehead (correct), 1 = mid-skull (too high)
+        var posState = useState(0.55), pos = posState[0], setPos = posState[1];
+        // Strap angle: -1 = inverted V (wrong), 0 = perfect Y under ear, 1 = wide V (wrong)
+        var angleState = useState(0.6), strapAngle = angleState[0], setStrapAngle = angleState[1];
+        // Chin slack: 0 = too tight (choking), 0.5 = perfect (1 finger), 1 = too loose (3+ fingers)
+        var slackState = useState(0.7), slack = slackState[0], setSlack = slackState[1];
+
+        var posOk = pos < 0.35;
+        var angleOk = Math.abs(strapAngle) < 0.25;
+        var slackOk = slack > 0.35 && slack < 0.65;
+        var allOk = posOk && angleOk && slackOk;
+
+        var posLabel = pos < 0.2 ? '✓ Low — covers forehead' : pos < 0.35 ? '✓ Good fit' : pos < 0.6 ? '⚠ A bit high' : '✗ Too high — forehead exposed';
+        var angleLabel = Math.abs(strapAngle) < 0.15 ? '✓ Y under ear' : Math.abs(strapAngle) < 0.3 ? '⚠ Slightly off — adjust' : strapAngle > 0 ? '✗ Straps too wide (V)' : '✗ Straps inverted';
+        var slackLabel = slack < 0.2 ? '✗ Too tight — uncomfortable' : slack < 0.35 ? '⚠ Snug but pinches' : slack < 0.65 ? '✓ 1-finger slack' : slack < 0.85 ? '⚠ A little loose' : '✗ Too loose — flies off in a crash';
+
+        // SVG geometry — head is at center, helmet sits on top.
+        // pos drives helmet Y offset (0 = low/correct, 1 = high/wrong)
+        var helmetY = 70 + pos * 38;            // 70 (low) to 108 (high)
+        var earY = 132;                          // ear pivot point
+        // Strap angle: front strap meets rear strap under the ear at varying angles
+        var frontStrapDx = 6 + strapAngle * 14;   // wider with higher angle
+        var rearStrapDx  = -6 + strapAngle * 14;
+        // Chin strap height drives apparent slack (lower hanging = more slack)
+        var chinY = 178 + slack * 24;            // 178 = snug, 202 = loose
+
+        var sliderRow = function(label, value, setter, min, max, step, statusText, statusColor) {
+          return h('div', { className: 'bg-white rounded-xl p-4 shadow border border-slate-300' },
+            h('label', { className: 'flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
+              h('span', null, label),
+              h('span', { className: 'normal-case text-[11px] font-semibold ' + statusColor }, statusText)
+            ),
+            h('input', {
+              type: 'range', min: min, max: max, step: step, value: value,
+              onChange: function(e) {
+                var v = parseFloat(e.target.value);
+                setter(isFinite(v) ? v : 0);
+              },
+              'aria-valuetext': statusText,
+              className: 'w-full accent-pink-500'
+            })
+          );
+        };
+
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          BackBar({ icon: '⛑️', title: 'Helmet Fit Checker' }),
+          h('div', { className: 'p-4 max-w-6xl mx-auto w-full' },
+            h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
+              // Left: SVG visualization
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Live Fit Diagram'),
+                h('svg', {
+                  viewBox: '0 0 240 260',
+                  className: 'w-full h-64 mx-auto',
+                  role: 'img',
+                  'aria-label': 'Helmet fit diagram. Helmet position: ' + posLabel + '. Strap angle: ' + angleLabel + '. Chin slack: ' + slackLabel
+                },
+                  // Background
+                  h('rect', { x: 0, y: 0, width: 240, height: 260, fill: '#f8fafc' }),
+                  // Shoulders
+                  h('path', { d: 'M 30 250 Q 120 220 210 250 L 210 260 L 30 260 Z', fill: '#cbd5e1' }),
+                  // Neck
+                  h('rect', { x: 100, y: 200, width: 40, height: 40, fill: '#fed7aa' }),
+                  // Head (face) — oval
+                  h('ellipse', { cx: 120, cy: 145, rx: 48, ry: 58, fill: '#fed7aa', stroke: '#9a6c4a', strokeWidth: 1 }),
+                  // Eyebrows reference line (where helmet should sit ~2 fingers above)
+                  h('line', { x1: 88, y1: 132, x2: 152, y2: 132, stroke: '#94a3b8', strokeWidth: 0.5, strokeDasharray: '2,2' }),
+                  h('text', { x: 156, y: 135, fill: '#64748b', fontSize: '8' }, 'eyebrow line'),
+                  // Eyes
+                  h('circle', { cx: 105, cy: 138, r: 2, fill: '#1e293b' }),
+                  h('circle', { cx: 135, cy: 138, r: 2, fill: '#1e293b' }),
+                  // Mouth
+                  h('path', { d: 'M 110 162 Q 120 168 130 162', stroke: '#9a6c4a', strokeWidth: 1, fill: 'none' }),
+                  // Helmet shell — shifts with `pos`
+                  h('path', {
+                    d: 'M 70 ' + helmetY + ' Q 120 ' + (helmetY - 36) + ' 170 ' + helmetY + ' L 170 ' + (helmetY + 24) + ' Q 120 ' + (helmetY + 14) + ' 70 ' + (helmetY + 24) + ' Z',
+                    fill: posOk ? '#ec4899' : '#f59e0b',
+                    stroke: '#831843', strokeWidth: 1.5
+                  }),
+                  // Helmet vents
+                  h('rect', { x: 95, y: helmetY - 5, width: 8, height: 4, fill: '#831843', rx: 1 }),
+                  h('rect', { x: 117, y: helmetY - 10, width: 8, height: 4, fill: '#831843', rx: 1 }),
+                  h('rect', { x: 138, y: helmetY - 5, width: 8, height: 4, fill: '#831843', rx: 1 }),
+                  // Front strap (helmet front to ear) — angle responds to strapAngle
+                  h('line', {
+                    x1: 78, y1: helmetY + 22, x2: 105 + frontStrapDx, y2: earY,
+                    stroke: angleOk ? '#1e293b' : '#dc2626', strokeWidth: 2
+                  }),
+                  // Rear strap (helmet back to ear) — angle responds to strapAngle
+                  h('line', {
+                    x1: 162, y1: helmetY + 22, x2: 105 + rearStrapDx, y2: earY,
+                    stroke: angleOk ? '#1e293b' : '#dc2626', strokeWidth: 2
+                  }),
+                  // Mirror straps on right side
+                  h('line', {
+                    x1: 162, y1: helmetY + 22, x2: 135 - frontStrapDx, y2: earY,
+                    stroke: angleOk ? '#1e293b' : '#dc2626', strokeWidth: 2
+                  }),
+                  h('line', {
+                    x1: 78, y1: helmetY + 22, x2: 135 - rearStrapDx, y2: earY,
+                    stroke: angleOk ? '#1e293b' : '#dc2626', strokeWidth: 2
+                  }),
+                  // Chin strap — Y position depends on slack
+                  h('path', {
+                    d: 'M ' + (105 + frontStrapDx) + ' ' + earY + ' Q 120 ' + chinY + ' ' + (135 - frontStrapDx) + ' ' + earY,
+                    stroke: slackOk ? '#1e293b' : '#dc2626', strokeWidth: 2, fill: 'none'
+                  }),
+                  // Slack indicator (the "1 finger" gap visualization)
+                  h('rect', {
+                    x: 116, y: 168, width: 8, height: chinY - 168,
+                    fill: slackOk ? 'rgba(34,197,94,0.18)' : 'rgba(239,68,68,0.15)',
+                    stroke: slackOk ? '#22c55e' : '#ef4444', strokeWidth: 0.5, strokeDasharray: '2,2'
+                  })
+                ),
+                // Verdict banner
+                h('div', { 'aria-live': 'polite', className: 'mt-3 p-3 rounded-lg text-center font-bold ' + (allOk ? 'bg-emerald-50 border-2 border-emerald-400 text-emerald-800' : 'bg-amber-50 border-2 border-amber-400 text-amber-800') },
+                  allOk ? '✓ GOOD FIT — ready to ride.' : '⚠ Adjust the sliders until all three checks pass.'
+                )
+              ),
+              // Right: controls + reference
+              h('div', { className: 'space-y-3' },
+                sliderRow('1. Helmet Position', pos, setPos, 0, 1, 0.01, posLabel, posOk ? 'text-emerald-700' : pos < 0.6 ? 'text-amber-700' : 'text-rose-700'),
+                sliderRow('2. Side-Strap Angle', strapAngle, setStrapAngle, -1, 1, 0.02, angleLabel, angleOk ? 'text-emerald-700' : 'text-rose-700'),
+                sliderRow('3. Chin-Strap Slack', slack, setSlack, 0, 1, 0.01, slackLabel, slackOk ? 'text-emerald-700' : 'text-rose-700'),
+                h('div', { className: 'bg-pink-50 border border-pink-300 rounded-xl p-4' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-pink-800 mb-2' }, '📏 The 2V1 Rule'),
+                  h('ul', { className: 'space-y-2 text-sm text-slate-700' },
+                    h('li', null, h('strong', null, '2 fingers'), ' above the eyebrows: the helmet should sit LOW on the forehead, not pushed back to expose your forehead.'),
+                    h('li', null, h('strong', null, 'V'), ' under each ear: the front and rear straps should meet just below your ear, forming a clean V (or Y).'),
+                    h('li', null, h('strong', null, '1 finger'), ' chin slack: only one finger should fit between the chin strap and your jaw — looser and the helmet pops off in a crash; tighter and you can\'t breathe comfortably.')
+                  ),
+                  h('div', { className: 'text-xs text-slate-600 mt-3' },
+                    h('strong', null, 'Why it matters: '),
+                    'A loose or tilted helmet protects almost as poorly as no helmet at all. Concussion-research data shows 60-80% of cyclist head injuries happen with a helmet that was incorrectly fitted or unstrapped at the moment of impact.'
+                  )
+                )
+              )
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // MAINE WINTER BIKING GUIDE
+      // ─────────────────────────────────────────────────────
+      // Maine-specific cold-weather cycling content. Sectioned guide with a
+      // winterization checklist the user can tick through. Targets the gap
+      // identified in the audit: existing safety quiz mentions winter conditions
+      // but no module dedicated to year-round Maine riding.
+      function WinterBike() {
+        var checkState = useState({}), checks = checkState[0], setChecks = checkState[1];
+        var toggleCheck = function(id) {
+          var next = Object.assign({}, checks);
+          next[id] = !next[id];
+          setChecks(next);
+        };
+        var checklistItems = [
+          { id: 'tires', label: 'Tire pressure dropped 5-10 PSI for snow/slush traction' },
+          { id: 'studded', label: 'Studded tires installed if riding on ice (or fat-bike with low PSI)' },
+          { id: 'lights', label: 'Front white + rear red lights installed (Maine §2065 — required at night)' },
+          { id: 'lube', label: 'Wet/winter chain lube applied (washes off less in slush)' },
+          { id: 'fenders', label: 'Fenders installed (slush spray = wet & cold = stops you within 1 ride)' },
+          { id: 'brakes', label: 'Brake pads inspected — wet/grit conditions wear them 3-5x faster' },
+          { id: 'layering', label: 'Layered clothing: wicking base + insulating mid + windproof shell' },
+          { id: 'extremities', label: 'Hands (lobster mitts/bar mitts), feet (wool socks + waterproof shoes), face (balaclava)' },
+          { id: 'visibility', label: 'High-vis or reflective outer layer (drivers see you 3x sooner)' },
+          { id: 'route', label: 'Route checked for plow status — recently-plowed > untouched powder > glare ice' },
+          { id: 'phone', label: 'Phone in inner pocket (cold drains battery; keep it warm)' },
+          { id: 'wash', label: 'Post-ride: rinse the bike to remove road salt (corrodes drivetrain in days)' }
+        ];
+        var doneCount = checklistItems.filter(function(it) { return checks[it.id]; }).length;
+        var allChecked = doneCount === checklistItems.length;
+
+        var section = function(icon, title, body, accent) {
+          return h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
+            h('div', { className: 'flex items-center gap-2 mb-2' },
+              h('span', { className: 'text-2xl' }, icon),
+              h('h3', { className: 'text-sm font-bold uppercase tracking-wider ' + (accent || 'text-slate-700') }, title)
+            ),
+            body
+          );
+        };
+
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          BackBar({ icon: '❄️', title: 'Maine Winter Biking' }),
+          h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
+            // Hero / context
+            h('div', { className: 'bg-gradient-to-br from-sky-600 to-blue-800 rounded-2xl p-5 text-white shadow-lg' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('span', { className: 'text-4xl' }, '🇺🇸'),
+                h('div', null,
+                  h('h2', { className: 'text-2xl font-black' }, 'Riding through a Maine winter'),
+                  h('p', { className: 'text-sm text-sky-100 mt-1' }, 'Maine\'s winter is roughly 5 months long. Done right, biking in -10°F can be safer than biking in summer rain — there\'s less traffic, the road is harder, and you\'re more visible. Done wrong, you crash on black ice or freeze your fingers. This guide covers the gear, technique, and Maine-specific knowledge you need.')
+                )
+              )
+            ),
+            // Three core lessons in a grid
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              section('🛞', 'Tires & Traction', h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                h('p', null, h('strong', null, 'Fat bikes (3.5-5\" tires) '), 'float on packed snow and run at 5-12 PSI — way below road bike pressures. The wider contact patch behaves like a snowshoe. Norway and Minnesota commute on these year-round.'),
+                h('p', null, h('strong', null, 'Studded tires '), 'have 100-300 metal carbide studs that bite into ice. Maine has no winter-tire law for bicycles (cars are restricted to Oct 1 – May 1, but bikes can run them anytime). They\'re loud and slow on bare pavement, so most riders swap them on/off seasonally.'),
+                h('p', null, h('strong', null, 'Pressure rule: '), 'drop 5-10 PSI for snow/slush. Lower pressure = larger contact patch = more grip. But not so low you pinch-flat over a curb.')
+              )),
+              section('❄️', 'Surface Awareness', h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                h('p', null, h('strong', null, 'Black ice '), 'forms first on bridges (no ground heat below) and shaded curves. Just-below-freezing (28-32°F) is more dangerous than -10°F because surface meltwater pools and refreezes.'),
+                h('p', null, h('strong', null, 'Glare ice '), 'is fully transparent — looks like wet asphalt. If you suspect it: don\'t brake, don\'t turn. Coast straight through.'),
+                h('p', null, h('strong', null, 'Salt + sand '), 'on roads gives traction but eats your drivetrain. A salty chain lasts a week instead of a season.'),
+                h('p', null, h('strong', null, 'Plow priority: '), 'recently plowed > untouched 2\" powder > deep slush > glare ice. Plan your route around the plow schedule.')
+              )),
+              section('🧥', 'Layering for Sub-Freezing', h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                h('p', null, h('strong', null, 'Base: '), 'wicking synthetic or merino wool. NEVER cotton — once wet from sweat, it freezes against your skin.'),
+                h('p', null, h('strong', null, 'Mid: '), 'insulating fleece or light down. Trap warm air without bulk that restricts pedaling.'),
+                h('p', null, h('strong', null, 'Shell: '), 'windproof and ideally water-resistant. Wind chill at 15 mph adds 10-15°F of cooling.'),
+                h('p', null, h('strong', null, 'Rule of thumb: '), 'dress so you\'re slightly cold for the first 5 minutes. If you\'re warm at the start, you\'ll be soaked in sweat 20 minutes in.')
+              )),
+              section('🤚', 'Hands, Feet, Face', h('div', { className: 'space-y-2 text-sm text-slate-700' },
+                h('p', null, h('strong', null, 'Hands '), 'fail first. Lobster-claw mitts (3-finger) are warmer than gloves and still let you brake. Bar mitts (handlebar pogies) are the warmest — they wrap the entire hand-and-grip area.'),
+                h('p', null, h('strong', null, 'Feet '), 'fail second. Wool socks + waterproof shoes + neoprene shoe covers. Toe warmers (chemical packets) work for sub-zero rides.'),
+                h('p', null, h('strong', null, 'Face: '), 'a balaclava + ski goggles below 20°F. Cold air hurts to breathe — a thin scarf over the mouth warms inhalations.'),
+                h('p', null, h('strong', null, 'Below 0°F: '), 'cover EVERY square inch of skin. Frostbite begins in 10-30 minutes of exposed skin in those temps.')
+              ))
+            ),
+            // Maine-specific salt warning callout
+            h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
+              h('div', { className: 'flex items-start gap-3' },
+                h('span', { className: 'text-3xl' }, '⚠️'),
+                h('div', null,
+                  h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-amber-900 mb-1' }, 'The Maine salt problem'),
+                  h('p', { className: 'text-sm text-slate-700' }, 'Maine roads use brine + rock salt all winter. Salt + steel = rust within DAYS, not weeks. After every wet/slushy ride: rinse the bike with a hose, dry the chain, re-lube. Skip this and you\'ll go through chains and cassettes 3-4x faster than summer riders. Aluminum frames are mostly fine; steel frames need extra care, especially at welds.')
+                )
+              )
+            ),
+            // Winterization checklist
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
+              h('div', { className: 'flex items-center justify-between mb-3' },
+                h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700' }, '✅ Winter-Ride Checklist'),
+                h('div', { 'aria-live': 'polite', className: 'text-xs font-bold ' + (allChecked ? 'text-emerald-700' : 'text-slate-600') },
+                  doneCount + ' of ' + checklistItems.length + (allChecked ? ' — ready to ride!' : ' completed')
+                )
+              ),
+              h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden mb-3', 'aria-hidden': true },
+                h('div', { className: 'h-full ' + (allChecked ? 'bg-emerald-500' : 'bg-sky-500') + ' transition-all', style: { width: Math.round((doneCount / checklistItems.length) * 100) + '%' } })
+              ),
+              h('ul', { className: 'space-y-2' },
+                checklistItems.map(function(it) {
+                  var done = !!checks[it.id];
+                  return h('li', { key: it.id },
+                    h('label', { className: 'flex items-start gap-3 p-2 rounded-lg hover:bg-sky-50 cursor-pointer transition-colors ' + (done ? 'bg-emerald-50' : '') },
+                      h('input', {
+                        type: 'checkbox',
+                        checked: done,
+                        onChange: function() { toggleCheck(it.id); },
+                        className: 'mt-0.5 accent-sky-600',
+                        'aria-label': it.label
+                      }),
+                      h('span', { className: 'text-sm ' + (done ? 'text-slate-500 line-through' : 'text-slate-700') }, it.label)
+                    )
+                  );
+                })
+              )
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // SIGNAL REACTION DRILL
+      // ─────────────────────────────────────────────────────
+      // A traffic situation prompt appears; the student must press the matching
+      // hand signal (left, right, stop) as fast as possible. Tracks reaction
+      // time across 10 rounds, awards a "best avg" personal best.
+      function SignalDrill() {
+        var SCENARIOS = [
+          { id: 'turn-left',  prompt: 'Turning left at the upcoming intersection', answer: 'left' },
+          { id: 'turn-right', prompt: 'Turning right onto the side street', answer: 'right' },
+          { id: 'stop-light', prompt: 'Stopping for a red light ahead', answer: 'stop' },
+          { id: 'stop-sign',  prompt: 'Approaching a stop sign', answer: 'stop' },
+          { id: 'lane-left',  prompt: 'Changing to the left lane to pass a parked car', answer: 'left' },
+          { id: 'lane-right', prompt: 'Merging right into the bike lane', answer: 'right' },
+          { id: 'stop-ped',   prompt: 'Slowing for a pedestrian in the crosswalk', answer: 'stop' },
+          { id: 'turn-l2',    prompt: 'Turning left at a roundabout exit', answer: 'left' },
+          { id: 'turn-r2',    prompt: 'Turning right after the next utility pole', answer: 'right' },
+          { id: 'stop-haz',   prompt: 'Stopping for an obstacle ahead (downed branch)', answer: 'stop' }
+        ];
+        var ROUND_COUNT = 10;
+        var roundIdxState = useState(0), roundIdx = roundIdxState[0], setRoundIdx = roundIdxState[1];
+        var startTimeState = useState(0), startTime = startTimeState[0], setStartTime = startTimeState[1];
+        var resultsState = useState([]), results = resultsState[0], setResults = resultsState[1];
+        var gameState = useState('idle'), gameMode = gameState[0], setGameMode = gameState[1]; // idle | playing | done
+        var feedbackState = useState(''), feedback = feedbackState[0], setFeedback = feedbackState[1];
+
+        var sequenceRef = useRef([]);
+        // On first 'play' click, randomize a sequence of ROUND_COUNT scenarios
+        var startGame = function() {
+          var pool = SCENARIOS.slice().sort(function() { return Math.random() - 0.5; });
+          sequenceRef.current = pool.slice(0, ROUND_COUNT);
+          setRoundIdx(0);
+          setResults([]);
+          setGameMode('playing');
+          setStartTime(Date.now());
+          setFeedback('');
+        };
+
+        var current = gameMode === 'playing' ? sequenceRef.current[roundIdx] : null;
+
+        var pickAnswer = function(ans) {
+          if (gameMode !== 'playing' || !current) return;
+          var ms = Date.now() - startTime;
+          var correct = ans === current.answer;
+          var newResults = results.concat([{ correct: correct, ms: ms, scenario: current.id }]);
+          setResults(newResults);
+          setFeedback(correct ? '✓ ' + (ms / 1000).toFixed(2) + 's' : '✗ ' + (ms / 1000).toFixed(2) + 's — answer was ' + current.answer);
+          if (roundIdx + 1 >= ROUND_COUNT) {
+            setGameMode('done');
+            // Compute avg reaction time on correct answers; persist personal best.
+            var correctOnly = newResults.filter(function(r) { return r.correct; });
+            if (correctOnly.length > 0) {
+              var avgMs = correctOnly.reduce(function(s, r) { return s + r.ms; }, 0) / correctOnly.length;
+              var prev = d.signalDrillBestMs;
+              if (!prev || avgMs < prev) upd('signalDrillBestMs', avgMs);
+            }
+          } else {
+            setRoundIdx(roundIdx + 1);
+            setStartTime(Date.now());
+          }
+        };
+
+        var avgCorrect = (function() {
+          var correctOnly = results.filter(function(r) { return r.correct; });
+          if (correctOnly.length === 0) return null;
+          return correctOnly.reduce(function(s, r) { return s + r.ms; }, 0) / correctOnly.length;
+        })();
+        var bestMs = d.signalDrillBestMs;
+
+        var signalButton = function(label, ans, color, icon) {
+          return h('button', {
+            onClick: function() { pickAnswer(ans); },
+            disabled: gameMode !== 'playing',
+            'aria-label': 'Signal ' + label,
+            className: 'flex flex-col items-center justify-center gap-2 p-6 rounded-2xl border-2 ' + color + ' shadow-lg transition-all ' + (gameMode === 'playing' ? 'hover:scale-105 active:scale-95 cursor-pointer' : 'opacity-50 cursor-not-allowed')
+          },
+            h('span', { className: 'text-5xl' }, icon),
+            h('span', { className: 'font-bold text-lg' }, label)
+          );
+        };
+
+        return h('div', { className: 'flex flex-col h-full bg-slate-50' },
+          BackBar({ icon: '✋', title: 'Signal Reaction Drill' }),
+          h('div', { className: 'p-4 max-w-4xl mx-auto w-full space-y-4' },
+            // Scoreboard
+            h('div', { className: 'grid grid-cols-3 gap-3' },
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
+                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, 'Round'),
+                h('div', { className: 'text-2xl font-black text-amber-700' }, gameMode === 'idle' ? '—' : (Math.min(roundIdx + (gameMode === 'done' ? 0 : 1), ROUND_COUNT) + ' / ' + ROUND_COUNT))
+              ),
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
+                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, 'Avg (Correct)'),
+                h('div', { className: 'text-2xl font-black text-cyan-700' }, avgCorrect ? (avgCorrect / 1000).toFixed(2) + 's' : '—')
+              ),
+              h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-3 text-center' },
+                h('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-slate-600' }, '🏆 Personal Best'),
+                h('div', { className: 'text-2xl font-black text-emerald-700' }, bestMs ? (bestMs / 1000).toFixed(2) + 's' : '—')
+              )
+            ),
+            // Prompt area
+            h('div', { className: 'bg-gradient-to-br from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-2xl p-6 min-h-[140px] flex items-center justify-center' },
+              gameMode === 'idle' ? h('div', { className: 'text-center' },
+                h('div', { className: 'text-3xl mb-2' }, '✋'),
+                h('p', { className: 'text-slate-700 mb-4 max-w-md' }, 'A traffic situation will appear. Press the matching hand signal as fast as you can. 10 rounds. Best correct-only average is your personal best.'),
+                h('button', {
+                  onClick: startGame,
+                  className: 'px-6 py-3 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-lg'
+                }, '▶ Start Drill')
+              ) : gameMode === 'playing' ? h('div', { className: 'text-center', 'aria-live': 'polite' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-700 mb-2' }, 'Round ' + (roundIdx + 1)),
+                h('p', { className: 'text-xl font-bold text-slate-800' }, current ? current.prompt : ''),
+                feedback && h('div', { className: 'text-sm text-slate-600 mt-2' }, feedback)
+              ) : h('div', { className: 'text-center' },
+                h('div', { className: 'text-3xl mb-2' }, avgCorrect && avgCorrect < 1500 ? '⚡' : avgCorrect && avgCorrect < 2500 ? '🎯' : '👍'),
+                h('p', { className: 'text-lg font-bold text-slate-800 mb-1' }, 'Drill complete!'),
+                h('p', { className: 'text-sm text-slate-700' },
+                  results.filter(function(r) { return r.correct; }).length + ' of ' + ROUND_COUNT + ' correct · avg ' + (avgCorrect ? (avgCorrect / 1000).toFixed(2) + 's' : '—')
+                ),
+                h('button', {
+                  onClick: startGame,
+                  className: 'mt-3 px-5 py-2 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 text-white shadow'
+                }, '↻ Run Again')
+              )
+            ),
+            // Three signal buttons
+            h('div', { className: 'grid grid-cols-3 gap-3' },
+              signalButton('Left',  'left',  'border-blue-400 bg-blue-50 text-blue-800 hover:bg-blue-100',     '⬅️'),
+              signalButton('Stop',  'stop',  'border-rose-400 bg-rose-50 text-rose-800 hover:bg-rose-100',     '🛑'),
+              signalButton('Right', 'right', 'border-emerald-400 bg-emerald-50 text-emerald-800 hover:bg-emerald-100', '➡️')
+            ),
+            // Reference
+            h('div', { className: 'bg-white rounded-xl shadow border border-slate-300 p-4' },
+              h('h3', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, '📖 Hand Signal Reference'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-slate-700' },
+                h('div', null, h('strong', null, 'Left turn: '), 'left arm extended straight out to the side.'),
+                h('div', null, h('strong', null, 'Right turn: '), 'left arm bent up at 90° (or right arm out — both legal in Maine).'),
+                h('div', null, h('strong', null, 'Stop / slow: '), 'left arm bent down at 90° with palm facing back.')
+              )
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // MAIN VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'sandbox') return h(PhysicsSandbox);
@@ -2858,6 +3383,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
       if (view === 'safety') return h(SafetyQuiz);
       if (view === 'ride') return h(NeighborhoodRide);
       if (view === 'parts') return h(PartsInspector);
+      if (view === 'helmetFit') return h(HelmetFit);
+      if (view === 'winterBike') return h(WinterBike);
+      if (view === 'signalDrill') return h(SignalDrill);
       return h(MainMenu);
     }
   });

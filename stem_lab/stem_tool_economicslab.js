@@ -3011,7 +3011,7 @@ var d = labToolData || {};
 
                       className: 'flex-1 p-2 rounded-lg text-center transition-all border-2 ' +
 
-                        ((d.pfHousing || 'renting') === h.id ? 'border-orange-400 bg-orange-100' : 'border-slate-200 bg-white hover:border-orange-300')
+                        ((d.pfHousing || 'renting') === h.id ? 'border-orange-400 bg-orange-100' : 'border-slate-200 bg-white hover:border-orange-600')
 
                     },
 

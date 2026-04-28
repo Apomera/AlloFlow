@@ -1681,7 +1681,7 @@ var d = labToolData || {};
                                    (isCorrect ? 'bg-green-100 border-green-400 text-green-800' :
                                     isWrongClicked ? 'bg-red-100 border-red-400 text-red-800' :
                                     answered ? 'bg-slate-50 border-slate-200 text-slate-400' :
-                                    'bg-slate-100 hover:bg-teal-100 text-slate-700 border-slate-200 hover:border-teal-300')
+                                    'bg-slate-100 hover:bg-teal-100 text-slate-700 border-slate-200 hover:border-teal-600')
                       }, cap);
                     })
                   );
@@ -3211,7 +3211,7 @@ var d = labToolData || {};
           if (gpInvestigate&&!gpRevealed) return React.createElement('div',{className:'bg-amber-50 rounded-xl p-3 border-2 border-amber-200 border-dashed'},
             React.createElement('div',{className:'flex items-center gap-2 mb-2'}, React.createElement('span',{className:'text-base'},'🔍'), React.createElement('p',{className:'text-sm font-bold text-amber-700 flex-1'},`${theorems.length} relationship${theorems.length>1?'s':''} detected!`)),
             React.createElement('p',{className:'text-xs text-amber-600 mb-2'},'Investigate Mode ON — write your prediction before revealing!'),
-            React.createElement('textarea',{rows:2,placeholder:'What theorems or rules do you think apply here?','aria-label':'Theorem prediction',value:gp.prediction||'',onChange:e=>gpUpd('prediction',e.target.value),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 resize-none'}),
+            React.createElement('textarea',{rows:2,placeholder:'What theorems or rules do you think apply here?','aria-label':'Theorem prediction',value:gp.prediction||'',onChange:e=>gpUpd('prediction',e.target.value),className:'w-full px-3 py-2 border-2 border-amber-600 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 resize-none'}),
             React.createElement('button',{onClick:()=>gpUpd('revealed',true),disabled:!(gp.prediction||'').trim(),className:'w-full py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all disabled:opacity-40'},'👁 Reveal Theorems')
           );
           return React.createElement('div',{className:'bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl p-3 border border-violet-200'},
@@ -3419,7 +3419,7 @@ var d = labToolData || {};
               React.createElement('p',{className:'text-sm font-bold text-violet-800 mb-3'},'🎯 '+gpChallenge.question),
               gpChallenge.type==='polygon_sum'&&React.createElement('p',{className:'text-[11px] text-violet-600 italic mb-2'},'💡 How many triangles fit inside the polygon?'),
               React.createElement('div',{className:'flex gap-2'},
-                React.createElement('input',{type:'text','aria-label':'Challenge answer in degrees',value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:'Your answer (°)',className:'flex-1 px-3 py-2 border-2 border-violet-300 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none'}),
+                React.createElement('input',{type:'text','aria-label':'Challenge answer in degrees',value:gp.challengeAnswer||'',onChange:e=>gpUpd('challengeAnswer',e.target.value),onKeyDown:e=>{if(e.key==='Enter')checkChallenge();},placeholder:'Your answer (°)',className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-center focus:border-violet-500 focus:ring-2 focus:ring-violet-300 outline-none'}),
                 React.createElement('button',{onClick:checkChallenge,className:'px-4 py-2 bg-violet-700 text-white font-bold rounded-lg text-sm hover:bg-violet-600 transition-all'},'✔ Check')
               ),
               gpFeedback&&React.createElement('div',{className:`mt-3 p-3 rounded-xl border ${gpFeedback.correct?'bg-emerald-50 border-emerald-200':'bg-red-50 border-red-200'}`}, React.createElement('p',{className:`text-sm font-bold ${gpFeedback.correct?'text-emerald-700':'text-red-600'}`},gpFeedback.msg))

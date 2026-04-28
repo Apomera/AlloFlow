@@ -6416,7 +6416,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                               ? "bg-emerald-100/50 text-emerald-400 cursor-not-allowed opacity-60"
 
-                              : "bg-white/70 hover:bg-white border border-emerald-100 hover:border-emerald-300 hover:shadow-sm cursor-pointer")
+                              : "bg-white/70 hover:bg-white border border-emerald-100 hover:border-emerald-600 hover:shadow-sm cursor-pointer")
 
                         },
 

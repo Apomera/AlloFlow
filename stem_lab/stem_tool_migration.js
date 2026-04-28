@@ -1942,7 +1942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               var fwColor = FLYWAY_COLORS[sp.flyway];
               return h('button', {
                 key: sp.id,
-                className: 'p-2 rounded-lg text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-300'),
+                className: 'p-2 rounded-lg text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
                 'aria-label': sp.name + ', ' + sp.flyway + ' flyway, ' + sp.distance + ' miles',
                 'aria-pressed': active ? 'true' : 'false',
                 onClick: function() {
@@ -2563,7 +2563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 var active = selectedWing === wt.id;
                 return h('button', {
                   key: wt.id,
-                  className: 'p-3 rounded-xl text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-300'),
+                  className: 'p-3 rounded-xl text-left transition-all border ' + (active ? 'ring-2 ring-sky-400 border-sky-400 ' + accentBg : borderCol + ' ' + cardBg + ' hover:border-sky-600'),
                   'aria-label': wt.name + ' wing type. Aspect ratio: ' + wt.aspectRatio + '. ' + wt.desc,
                   'aria-pressed': active ? 'true' : 'false',
                   onClick: function() { upd('selectedWing', wt.id); }

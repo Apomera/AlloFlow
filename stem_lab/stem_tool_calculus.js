@@ -1943,7 +1943,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-sm font-bold text-violet-800 mb-1' }, '\uD83D\uDD2E What do you estimate \u222B[' + xMin + ',' + xMax2 + '] f(x) dx to be?'),
               h('p', { className: 'text-xs text-violet-600 mb-3 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
               h('div', { className: 'flex gap-2' },
-                h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': 'Integral estimate input', className:'flex-1 px-3 py-2 border-2 border-violet-300 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
+                h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': 'Integral estimate input', className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
                 h('button', {"aria-label":"Reveal", disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Reveal \u2192')
               )
             ),
@@ -2020,11 +2020,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-xs text-cyan-800 mb-2' }, 'For f(x) = ' + buildFStr(fa, fb, fc) + ', complete F(x):'),
               h('div', { className: 'flex items-center gap-1 flex-wrap' },
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, 'F(x) = '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiA, onChange:function(e){upd('antiA',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-cubed coefficient', className:'w-10 text-center border-2 border-cyan-300 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiA, onChange:function(e){upd('antiA',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-cubed coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B3/3 + '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-squared coefficient', className:'w-10 text-center border-2 border-cyan-300 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x-squared coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B2/2 + '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x coefficient', className:'w-10 text-center border-2 border-cyan-300 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', { type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': 'Antiderivative x coefficient', className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x'),
                 h('button', {"aria-label":"Check", disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-700' }, 'Check')
               ),
@@ -2128,9 +2128,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[11px] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
                 h('div', { className: 'flex items-center gap-1 flex-wrap' },
                   h('span', { className: 'text-sm font-bold text-emerald-900' }, "f\u2032(x) = "),
-                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':'Derivative x coefficient', onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-300 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':'Derivative x coefficient', onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                   h('span', { className: 'text-sm font-bold text-emerald-900' }, 'x + '),
-                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput2, 'aria-label':'Derivative constant', onChange:function(e){upd('derivInput2',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-300 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput2, 'aria-label':'Derivative constant', onChange:function(e){upd('derivInput2',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                   h('button', {"aria-label":"Check", disabled:derivInput1===''||derivInput2==='', onClick:function(){upd('derivInputChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, 'Check')
                 ),
                 derivInputChecked && (function(){
@@ -2197,7 +2197,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
               h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C'),
               h('div',{className:'flex gap-2'},
-                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-300 text-sm font-bold bg-white focus:border-emerald-500'}),
+                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-500'}),
                 h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-700'},'Check \u2192')
               )
             ),
@@ -2362,7 +2362,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'At n=6, which method do you predict will be MOST accurate?'),
                   h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
                     ['Left Riemann','Right Riemann','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
-                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('prediction',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction===m?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-300')},m);
+                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('prediction',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.prediction===m?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},m);
                     })
                   ),
                   data.prediction && h('button',{"aria-label":"Prediction locked",onClick:nextStep,className:'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700'},'Prediction locked \u2192')
@@ -2373,7 +2373,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Which method had the SMALLEST error?'),
                   h('div',{ className:'grid grid-cols-3 gap-2 mb-3'},
                     ['Left','Right','Midpoint','Trapezoidal',"Simpson's"].map(function(m){
-                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('measured',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.measured===m?'bg-emerald-700 text-white border-emerald-500':'bg-white text-slate-600 border-slate-200 hover:border-emerald-300')},m);
+                      return h('button',{ "aria-label": "Next Step",key:m,onClick:function(){saveData('measured',m);},className:'px-2 py-2 rounded-lg text-xs font-bold border-2 transition-all '+(data.measured===m?'bg-emerald-700 text-white border-emerald-500':'bg-white text-slate-600 border-slate-200 hover:border-emerald-600')},m);
                     })
                   ),
                   data.measured && h('button',{"aria-label":"Next",onClick:nextStep,className:'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700'},'Next \u2192')
@@ -2388,7 +2388,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},"Why is Simpson's usually most accurate for polynomials?"),
                   h('div',{ className:'grid grid-cols-2 gap-2 mb-3'},
                     ['It uses parabolas — which fit polynomial curves better than flat-top rectangles','It uses the most rectangles','It averages left and right','It avoids the edges of the curve'].map(function(ans,i){
-                      return h('button',{ "aria-label": "Next Step",key:i,onClick:function(){saveData('why',i);},className:'px-2 py-2 rounded-lg text-xs text-left border-2 transition-all '+(data.why===i?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-300')},ans);
+                      return h('button',{ "aria-label": "Next Step",key:i,onClick:function(){saveData('why',i);},className:'px-2 py-2 rounded-lg text-xs text-left border-2 transition-all '+(data.why===i?'bg-amber-700 text-white border-amber-500':'bg-white text-slate-600 border-slate-200 hover:border-amber-600')},ans);
                     })
                   ),
                   data.why !== undefined && h('button',{"aria-label":"See answer",onClick:nextStep,className:'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-700'},'See answer \u2192')
