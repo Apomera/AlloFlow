@@ -127,12 +127,17 @@ var createDocPipeline = function(deps) {
   var t = deps.t;
   var isRtlLang = deps.isRtlLang || function() { return false; };
   var updateExportPreview = deps.updateExportPreview || function() {};
+  // generateResourceHTML at line 12106 uses getDefaultTitle(item.type)
+  // for resources without an explicit title. Threaded via deps from
+  // host scope (host const at AlloFlowANTI.txt:15623).
+  var getDefaultTitle = deps.getDefaultTitle || function() { return ''; };
   // Proxy all state access through window.__docPipelineState
   var _s = function() { return window.__docPipelineState || {}; };
   // Re-expose state vars as getters so existing code works unchanged
   var exportTheme, exportConfig, exportPreviewMode, leveledTextLanguage,
       selectedFont, responses, history, inputText, gradeLevel,
       projectName, studentNickname, isTeacherMode, generatedContent,
+      currentUiLanguage, isIndependentMode, isParentMode,
       pendingPdfBase64, pendingPdfFile, pdfFixResult, pdfAuditResult,
       pdfAutoFixPasses, pdfPolishPasses, pdfAuditorCount,
       pdfPreviewTheme, pdfPreviewFontSize, pdfPreviewA11yInspect,
@@ -153,6 +158,8 @@ var createDocPipeline = function(deps) {
     inputText = s.inputText; gradeLevel = s.gradeLevel;
     projectName = s.projectName; studentNickname = s.studentNickname;
     isTeacherMode = s.isTeacherMode; generatedContent = s.generatedContent;
+    currentUiLanguage = s.currentUiLanguage || 'English';
+    isIndependentMode = s.isIndependentMode; isParentMode = s.isParentMode;
     pendingPdfBase64 = s.pendingPdfBase64; pendingPdfFile = s.pendingPdfFile;
     pdfFixResult = s.pdfFixResult; pdfAuditResult = s.pdfAuditResult;
     pdfAutoFixPasses = s.pdfAutoFixPasses; pdfPolishPasses = s.pdfPolishPasses;
