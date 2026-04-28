@@ -1244,6 +1244,13 @@ window.StemLab = window.StemLab || {
             // climbs, peaks, and falls. Default on so first-time
             // students see the math; can toggle off for cleaner demos.
             showEnergyBar: true,
+            // Park Session — string N attempts together as a single
+            // arc with aggregate stats. Mirrors the real skate-
+            // culture concept of "having a session." active=true
+            // routes each run into session.attempts. summaryOpen
+            // gates the post-session modal. history is the saved
+            // session list across resets.
+            session: { active: false, target: 5, attempts: [], summaryOpen: false, startPromptOpen: false, history: [] },
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
@@ -1526,6 +1533,7 @@ window.StemLab = window.StemLab || {
       function performResetStats() {
         var preserved = d.customScenarios || [];
         var preservedTricks = d.customTricks || [];
+        var preservedHistory = (d.session && d.session.history) || [];
         upd({
           landings: 0, bails: 0, attempts: 0,
           longestGap: 0, biggestSpin: 0,
