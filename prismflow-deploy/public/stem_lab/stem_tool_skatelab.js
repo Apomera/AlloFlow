@@ -252,6 +252,19 @@ window.StemLab = window.StemLab || {
   // m in KE = ½mv² and PE = mgh.
   var RIDER_KG = 60;
 
+  // Skater color palette — id maps to {body, accent}. Body tints
+  // the stick-figure strokes; accent is reserved for the helmet
+  // shell when helmet is on. Six options keeps the picker tight.
+  var SKATER_COLORS = {
+    amber:  { body: '#fef3c7', accent: '#fbbf24', label: 'Amber' },
+    red:    { body: '#fecaca', accent: '#ef4444', label: 'Red' },
+    green:  { body: '#bbf7d0', accent: '#22c55e', label: 'Green' },
+    blue:   { body: '#bfdbfe', accent: '#3b82f6', label: 'Blue' },
+    purple: { body: '#e9d5ff', accent: '#a855f7', label: 'Purple' },
+    pink:   { body: '#fbcfe8', accent: '#ec4899', label: 'Pink' }
+  };
+  function getSkaterColor(id) { return SKATER_COLORS[id] || SKATER_COLORS.amber; }
+
   // ── Famous-trick scenarios ───────────────────────────────────────
   // Each scenario pre-configures the simulator to recreate a real
   // moment in skate / BMX history (or a thought experiment like the
@@ -660,6 +673,8 @@ window.StemLab = window.StemLab || {
     var sx = state.skX != null ? state.skX : leftLipX;
     var sy = state.skY != null ? state.skY : lipY;
     var rot = state.skRot || 0;
+    var skStyle = state.skater || { color: 'amber', helmet: false, pads: false };
+    var skColors = getSkaterColor(skStyle.color);
     // Body
     ctx.save();
     ctx.translate(sx, sy);
@@ -670,8 +685,19 @@ window.StemLab = window.StemLab || {
     ctx.fillStyle = '#1e293b';
     ctx.beginPath(); ctx.arc(-12, 12, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(12, 12, 2.5, 0, Math.PI * 2); ctx.fill();
+    // Pads — render before body strokes so the body lines layer on
+    // top, giving the pads a clean "wrapped around the joint" feel.
+    if (skStyle.pads) {
+      ctx.fillStyle = '#15803d';
+      // Knee pads (legs are short on this stick figure, so the
+      // "knee" lives at the body's lower segment)
+      ctx.fillRect(-3, 2, 6, 4);
+      // Elbow pads (arms outstretched at y=-4)
+      ctx.fillRect(-12, -6, 4, 4);
+      ctx.fillRect(8, -6, 4, 4);
+    }
     // Body (stick figure)
-    ctx.strokeStyle = '#fef3c7';
+    ctx.strokeStyle = skColors.body;
     ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, 6);
@@ -681,10 +707,26 @@ window.StemLab = window.StemLab || {
     ctx.lineTo(10, -4);
     ctx.stroke();
     // Head
-    ctx.fillStyle = '#fef3c7';
+    ctx.fillStyle = skColors.body;
     ctx.beginPath();
     ctx.arc(0, -20, 6, 0, Math.PI * 2);
     ctx.fill();
+    // Helmet — slightly larger oval over the head, in the accent
+    // color. Sits on top of the head fill, with a small chin strap
+    // line for visual recognition.
+    if (skStyle.helmet) {
+      ctx.fillStyle = skColors.accent;
+      ctx.beginPath();
+      ctx.ellipse(0, -21, 7.5, 6.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      // Visor stripe
+      ctx.strokeStyle = 'rgba(15,23,42,0.55)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-7, -19);
+      ctx.lineTo(7, -19);
+      ctx.stroke();
+    }
     ctx.restore();
     // HUD overlay — speed + height labels (top-left, monospace)
     ctx.fillStyle = '#fbbf24';
@@ -845,6 +887,8 @@ window.StemLab = window.StemLab || {
     var sx = state.skX != null ? state.skX : rampX;
     var sy = state.skY != null ? state.skY : rampTopY;
     var rot = state.skRot || 0;
+    var skStyleG = state.skater || { color: 'amber', helmet: false, pads: false };
+    var skColorsG = getSkaterColor(skStyleG.color);
     ctx.save();
     ctx.translate(sx, sy);
     ctx.rotate(rot * Math.PI / 180);
@@ -853,7 +897,14 @@ window.StemLab = window.StemLab || {
     ctx.fillStyle = '#1e293b';
     ctx.beginPath(); ctx.arc(-9, 9, 2, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(9, 9, 2, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = '#fef3c7';
+    // Pads (knees + elbows) — drawn before strokes
+    if (skStyleG.pads) {
+      ctx.fillStyle = '#15803d';
+      ctx.fillRect(-2.5, 1, 5, 3.5);
+      ctx.fillRect(-10, -4, 3.5, 3.5);
+      ctx.fillRect(6.5, -4, 3.5, 3.5);
+    }
+    ctx.strokeStyle = skColorsG.body;
     ctx.lineWidth = 2.5;
     ctx.beginPath();
     ctx.moveTo(0, 4);
@@ -861,8 +912,20 @@ window.StemLab = window.StemLab || {
     ctx.moveTo(-8, -2);
     ctx.lineTo(8, -2);
     ctx.stroke();
-    ctx.fillStyle = '#fef3c7';
+    ctx.fillStyle = skColorsG.body;
     ctx.beginPath(); ctx.arc(0, -16, 5, 0, Math.PI * 2); ctx.fill();
+    if (skStyleG.helmet) {
+      ctx.fillStyle = skColorsG.accent;
+      ctx.beginPath();
+      ctx.ellipse(0, -17, 6.5, 5.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(15,23,42,0.55)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(-6, -15);
+      ctx.lineTo(6, -15);
+      ctx.stroke();
+    }
     ctx.restore();
     // HUD
     ctx.fillStyle = '#fbbf24';
@@ -906,6 +969,7 @@ window.StemLab = window.StemLab || {
     var energyTotal = 0.5 * totalMass * sim.vTakeoff * sim.vTakeoff;
     var energyG = sim.gravity || G;
     var showEnergy = !opts || opts.showEnergyBar !== false;
+    var skaterStyle = (opts && opts.skater) || { color: 'amber', helmet: false, pads: false };
     // Slow-mo support — opts.speedMul scales dt during the AIR phase
     // only, so the educational moment (parabolic arc + rotation
     // completion) plays at 0.5x or 0.25x. Pump/descent stay full
@@ -919,7 +983,7 @@ window.StemLab = window.StemLab || {
     var ghost = opts && opts.ghost;
     var raf = 0;
     function step() {
-      var state = { gapFt: 0, ghost: ghost, showEnergyBar: showEnergy };
+      var state = { gapFt: 0, ghost: ghost, showEnergyBar: showEnergy, skater: skaterStyle };
       if (phase === 'descend') {
         // Drop in: arc from left lip to floor center
         var p = Math.min(1, t / 0.45);
@@ -1024,6 +1088,7 @@ window.StemLab = window.StemLab || {
     var energyTotalG = 0.5 * totalMassG * sim.vM * sim.vM;
     var energyGravity = sim.gravity || G;
     var showEnergyG = !opts || opts.showEnergyBar !== false;
+    var skaterStyleG = (opts && opts.skater) || { color: 'amber', helmet: false, pads: false };
     var rampX = W * 0.18;
     var rampTopY = H * 0.55;
     var pxPerFt = (W * 0.6) / 25;
@@ -1043,7 +1108,7 @@ window.StemLab = window.StemLab || {
     var doneCb = opts && opts.onDone;
     var raf = 0;
     function step() {
-      var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '', wind: sim.wind, ghost: ghost, showEnergyBar: showEnergyG };
+      var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '', wind: sim.wind, ghost: ghost, showEnergyBar: showEnergyG, skater: skaterStyleG };
       if (phase === 'roll') {
         // Roll up the ramp (roll phase isn't slowed — only flight is)
         var p = Math.min(1, t / 0.6);
@@ -1165,6 +1230,20 @@ window.StemLab = window.StemLab || {
           var n = ((d.session && d.session.history) || []).length;
           return n >= 1 ? '✓ ' + n + ' session' + (n === 1 ? '' : 's') : 'pending';
         }
+      },
+      { id: 'sk_geared_up', label: 'Gear up your skater (helmet + pads)', icon: '⛑️',
+        check: function(d) { return !!(d.skater && d.skater.helmet && d.skater.pads); },
+        progress: function(d) {
+          var s = d.skater || {};
+          if (s.helmet && s.pads) return '✓';
+          if (s.helmet) return 'helmet ✓ · pads pending';
+          if (s.pads) return 'pads ✓ · helmet pending';
+          return 'gear up';
+        }
+      },
+      { id: 'sk_daily_3', label: 'Complete 3 daily challenges', icon: '🎯',
+        check: function(d) { return Object.keys(d.dailyDone || {}).length >= 3; },
+        progress: function(d) { return Object.keys(d.dailyDone || {}).length + '/3 days'; }
       }
     ],
     render: function(ctx) {
@@ -1258,6 +1337,19 @@ window.StemLab = window.StemLab || {
             // gates the post-session modal. history is the saved
             // session list across resets.
             session: { active: false, target: 5, attempts: [], summaryOpen: false, startPromptOpen: false, history: [] },
+            // Skater style — color + protective gear toggles. Pure
+            // engagement layer that ties directly to v15 gear
+            // science: a kid who just read why helmets work can put
+            // one on their skater. Body color tints the stick-figure
+            // strokes; helmet / pads render as small overlays in the
+            // canvas. Persists across stat resets.
+            skater: { color: 'amber', helmet: false, pads: false },
+            // Daily challenge — date-seeded scenario pick. Each day
+            // every student gets the same featured challenge.
+            // dailyDone is keyed by YYYY-MM-DD; landing today's
+            // featured scenario flips today's flag to true. Persists
+            // across stat resets so the streak survives.
+            dailyDone: {},
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
@@ -1356,6 +1448,33 @@ window.StemLab = window.StemLab || {
         return getScenario(id) ||
           ((d.customScenarios || []).find(function(s) { return s.id === id; })) ||
           null;
+      }
+      // ── Daily challenge picker ──────────────────────────────────
+      // Date-seeded hash → deterministic pick from SCENARIOS so
+      // every student in the class gets the same challenge today,
+      // and the same one again exactly N days later (where N is the
+      // length of the rotation). The hash uses the date string in
+      // ISO YYYY-MM-DD form so timezone shifts at midnight are
+      // local-friendly without going through UTC.
+      function _todayKey() {
+        var now = new Date();
+        var y = now.getFullYear();
+        var m = String(now.getMonth() + 1).padStart(2, '0');
+        var dd = String(now.getDate()).padStart(2, '0');
+        return y + '-' + m + '-' + dd;
+      }
+      function _todayScenario() {
+        var key = _todayKey();
+        // Simple djb2-ish hash so the rotation is non-monotonic
+        // (otherwise consecutive dates would advance by exactly 1
+        // and feel predictable). Modulo SCENARIOS.length for the
+        // index pick.
+        var h = 5381;
+        for (var i = 0; i < key.length; i++) {
+          h = ((h << 5) + h) ^ key.charCodeAt(i);
+        }
+        var idx = Math.abs(h) % SCENARIOS.length;
+        return SCENARIOS[idx];
       }
       // ── Trick Lab helpers ────────────────────────────────────
       // findAnyTrick returns built-in trick first, then custom.
@@ -1633,7 +1752,9 @@ window.StemLab = window.StemLab || {
           resetConfirmOpen: false,
           customScenarios: preserved,
           customTricks: preservedTricks,
-          session: { active: false, target: 5, attempts: [], summaryOpen: false, startPromptOpen: false, history: preservedHistory }
+          session: { active: false, target: 5, attempts: [], summaryOpen: false, startPromptOpen: false, history: preservedHistory },
+          skater: d.skater || { color: 'amber', helmet: false, pads: false },
+          dailyDone: d.dailyDone || {}
         });
         if (addToast) addToast('SkateLab stats reset.', 'success');
         skAnnounce('Stats cleared. Custom scenarios preserved.');
@@ -2063,6 +2184,7 @@ window.StemLab = window.StemLab || {
         cancelAnimRef.current = animateHalfpipe(canvasRef.current, sim, {
           ghost: (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost.halfpipe : null,
           showEnergyBar: d.showEnergyBar !== false,
+          skater: d.skater,
           onDone: function() {
             var bumps = {};
             bumps.running = false;
@@ -2095,6 +2217,16 @@ window.StemLab = window.StemLab || {
               bumps.bestHalfpipeScore = Math.max(d.bestHalfpipeScore || 0, sk.totalScore);
               bumps.bestAirFt = Math.max(d.bestAirFt || 0, +(sim.hAir * M2FT).toFixed(2));
               if (sim.vehicle.id === 'bmx') bumps.bmxLanded = true;
+              // Daily challenge — landing today's featured scenario
+              // flips the date flag. Only fires once per day.
+              if (d.activeScenarioId === _todayScenario().id) {
+                var todayKey = _todayKey();
+                if (!((d.dailyDone || {})[todayKey])) {
+                  bumps.dailyDone = Object.assign({}, d.dailyDone || {}, { [todayKey]: true });
+                  if (addToast) addToast('🎯 Daily challenge complete! Come back tomorrow.', 'success');
+                  skAnnounce('Daily challenge complete.');
+                }
+              }
               // Best-run ghost — promote this sim if it beats the
               // current halfpipe ghost on bonused score. Ties don't
               // promote (a slight tie-breaker bias for the older run
@@ -2156,6 +2288,7 @@ window.StemLab = window.StemLab || {
         cancelAnimRef.current = animateGapJump(canvasRef.current, sim, {
           ghost: (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost.gap : null,
           showEnergyBar: d.showEnergyBar !== false,
+          skater: d.skater,
           onDone: function() {
             var bumps = { running: false };
             bumps.lastResult = {
@@ -2178,6 +2311,16 @@ window.StemLab = window.StemLab || {
               bumps.landings = (d.landings || 0) + 1;
               bumps.longestGap = Math.max(d.longestGap || 0, sim.gapFt);
               bumps.bestGapScore = Math.max(d.bestGapScore || 0, skG.totalScore);
+              // Daily challenge mirror — gap mode side. Same once-
+              // per-day gate as halfpipe.
+              if (d.activeScenarioId === _todayScenario().id) {
+                var todayKeyG = _todayKey();
+                if (!((d.dailyDone || {})[todayKeyG])) {
+                  bumps.dailyDone = Object.assign({}, d.dailyDone || {}, { [todayKeyG]: true });
+                  if (addToast) addToast('🎯 Daily challenge complete! Come back tomorrow.', 'success');
+                  skAnnounce('Daily challenge complete.');
+                }
+              }
               // Best-run ghost for gap mode.
               var prevGhostG = (d.bestSimGhost && d.bestSimGhost.gap) || null;
               if (prevGhostG) {
@@ -2221,8 +2364,9 @@ window.StemLab = window.StemLab || {
       React.useEffect(function() {
         if (d.running) return;
         var idleGhost = (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost[d.mode] : null;
+        var idleSkater = d.skater || { color: 'amber', helmet: false, pads: false };
         if (d.mode === 'halfpipe') {
-          drawHalfpipe(canvasRef.current, { skX: null, skY: null, skRot: 0, speedMph: 0, airHeightFt: 0, label: 'Ready', ghost: idleGhost });
+          drawHalfpipe(canvasRef.current, { skX: null, skY: null, skRot: 0, speedMph: 0, airHeightFt: 0, label: 'Ready', ghost: idleGhost, skater: idleSkater });
         } else {
           // Pre-compute predicted trajectory for visual feedback —
           // includes current gravity + vehicle so the parabola
@@ -2237,6 +2381,7 @@ window.StemLab = window.StemLab || {
             preview: true, previewV: sim.vM, previewTheta: sim.theta, previewHang: sim.hangTime,
             wind: sim.wind,
             ghost: idleGhost,
+            skater: idleSkater,
             label: 'Ready'
           });
         }
@@ -2278,6 +2423,53 @@ window.StemLab = window.StemLab || {
             h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 12 } }, 'Skate / BMX physics — same math that lands a 720.')
           )
         ),
+        // ── Daily Challenge banner ──────────────────────────────
+        // Date-seeded scenario pick from SCENARIOS — every student
+        // in the class gets the same challenge today. Banner shows
+        // today's pick + a "Try it" shortcut + a ✓ when the student
+        // has already landed it today.
+        (function() {
+          var today = _todayKey();
+          var todayScene = _todayScenario();
+          var done = !!(d.dailyDone && d.dailyDone[today]);
+          var doneCount = Object.keys(d.dailyDone || {}).length;
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Today\'s daily challenge',
+            style: {
+              background: done ? 'linear-gradient(135deg, rgba(34,197,94,0.14), rgba(21,128,61,0.10))' : 'linear-gradient(135deg, rgba(251,191,36,0.14), rgba(180,83,9,0.10))',
+              border: '1px solid ' + (done ? 'rgba(34,197,94,0.50)' : 'rgba(251,191,36,0.50)'),
+              borderRadius: 10, padding: '10px 12px', marginBottom: 10,
+              display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 22 } }, done ? '✅' : '🎯'),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: done ? '#86efac' : '#fbbf24', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 2 } },
+                done ? '✓ Daily challenge: complete · ' + doneCount + ' day' + (doneCount === 1 ? '' : 's') + ' total' : 'Today\'s Challenge · ' + today
+              ),
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7', marginBottom: 2 } },
+                todayScene.icon + ' ' + todayScene.label
+              ),
+              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } },
+                done ? 'Nice. Come back tomorrow for a new pick.' : 'Land this scenario to mark today complete. Same challenge for every student in the class.'
+              )
+            ),
+            !done && h('button', {
+              onClick: function() { loadScenario(todayScene.id); },
+              'aria-label': 'Load today\'s challenge: ' + todayScene.label,
+              'data-sk-focusable': 'true',
+              title: todayScene.teach,
+              style: {
+                padding: '8px 14px', fontSize: 12, fontWeight: 800,
+                background: 'linear-gradient(135deg,#fbbf24,#d97706)',
+                color: '#0f172a', border: '1px solid #b45309',
+                borderRadius: 8, cursor: 'pointer', minHeight: 36,
+                boxShadow: '0 2px 6px rgba(180,83,9,0.35)'
+              }
+            }, '🛹 Try it')
+          );
+        })(),
         // Famous-trick scenario pills — clicking loads a real-world
         // moment into the simulator. Active scenario gets a bright ring;
         // others sit on a subtle base. Mirrors ThrowLab's scenario row.
@@ -2302,22 +2494,24 @@ window.StemLab = window.StemLab || {
           h('div', { style: { display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' } },
             SCENARIOS.map(function(sc) {
               var active = d.activeScenarioId === sc.id;
+              var todayId = _todayScenario().id;
+              var isToday = sc.id === todayId;
               return h('button', {
                 key: sc.id,
                 onClick: function() { loadScenario(sc.id); },
                 'aria-pressed': active,
-                'aria-label': 'Load scenario: ' + sc.label,
+                'aria-label': 'Load scenario: ' + sc.label + (isToday ? ' (today\'s challenge)' : ''),
                 'data-sk-focusable': 'true',
-                title: sc.teach,
+                title: sc.teach + (isToday ? ' — TODAY\'S CHALLENGE' : ''),
                 style: {
                   padding: '5px 10px', fontSize: 11, fontWeight: 700,
                   background: active ? 'linear-gradient(135deg,#d97706,#b45309)' : 'rgba(254,243,199,0.08)',
                   color: active ? '#fff' : '#fef3c7',
-                  border: '1px solid ' + (active ? '#fbbf24' : 'rgba(254,243,199,0.25)'),
+                  border: '1px solid ' + (active ? '#fbbf24' : isToday ? '#fbbf24' : 'rgba(254,243,199,0.25)'),
                   borderRadius: 999, cursor: 'pointer',
-                  boxShadow: active ? '0 0 12px rgba(251,191,36,0.4)' : 'none'
+                  boxShadow: active ? '0 0 12px rgba(251,191,36,0.4)' : isToday ? '0 0 6px rgba(251,191,36,0.35)' : 'none'
                 }
-              }, sc.icon + ' ' + sc.label);
+              }, (isToday ? '🎯 ' : '') + sc.icon + ' ' + sc.label);
             })
           ),
           // Custom scenario sub-row — only renders when at least one
@@ -3921,6 +4115,108 @@ window.StemLab = window.StemLab || {
               }
             }, '📋 Print Gear Checklist')
           )
+        ),
+        // ── Skater Customizer ───────────────────────────────────
+        // Style your skater — body color + helmet + pads. Helmet
+        // and pads are cosmetic in the canvas but pair with the
+        // gear-science panel above (suit up your skater after
+        // reading why each piece works in real life).
+        h('details', {
+          style: {
+            background: 'rgba(168,85,247,0.06)',
+            border: '1px solid rgba(168,85,247,0.30)',
+            borderRadius: 10, padding: '10px 12px', marginBottom: 12
+          }
+        },
+          h('summary', {
+            style: {
+              cursor: 'pointer', color: '#c4b5fd', fontWeight: 800,
+              fontSize: 12, letterSpacing: '0.04em', textTransform: 'uppercase',
+              padding: '2px 0', userSelect: 'none'
+            }
+          }, '🎨 Skater Customizer — color + gear'),
+          (function() {
+            var sk = d.skater || { color: 'amber', helmet: false, pads: false };
+            return h('div', { style: { marginTop: 10, display: 'flex', flexDirection: 'column', gap: 10 } },
+              // Color row
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 700, color: '#a5b4fc', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Body color'),
+                h('div', { role: 'radiogroup', 'aria-label': 'Skater body color', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                  Object.keys(SKATER_COLORS).map(function(cid) {
+                    var c = SKATER_COLORS[cid];
+                    var sel = sk.color === cid;
+                    return h('button', {
+                      key: 'sk-c-' + cid,
+                      onClick: function() {
+                        upd({ skater: Object.assign({}, sk, { color: cid }) });
+                        skAnnounce('Body color: ' + c.label);
+                      },
+                      role: 'radio',
+                      'aria-checked': sel,
+                      'aria-label': c.label + ' body color',
+                      'data-sk-focusable': 'true',
+                      title: c.label,
+                      style: {
+                        width: 36, height: 36, borderRadius: '50%',
+                        background: c.body,
+                        border: '3px solid ' + (sel ? c.accent : 'transparent'),
+                        cursor: 'pointer',
+                        boxShadow: sel ? '0 0 0 2px rgba(255,255,255,0.18)' : 'none',
+                        outline: 'none'
+                      }
+                    });
+                  })
+                )
+              ),
+              // Gear toggles
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 } },
+                h('button', {
+                  onClick: function() {
+                    upd({ skater: Object.assign({}, sk, { helmet: !sk.helmet }) });
+                    skAnnounce(sk.helmet ? 'Helmet off.' : 'Helmet on. Smart move.');
+                  },
+                  'aria-pressed': !!sk.helmet,
+                  'aria-label': sk.helmet ? 'Helmet on. Click to remove.' : 'No helmet. Click to put one on.',
+                  'data-sk-focusable': 'true',
+                  style: {
+                    padding: '10px 12px', fontSize: 12, fontWeight: 800,
+                    background: sk.helmet ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.06)',
+                    color: sk.helmet ? '#fff' : '#94a3b8',
+                    border: '1px solid ' + (sk.helmet ? '#15803d' : 'rgba(254,243,199,0.20)'),
+                    borderRadius: 10, cursor: 'pointer', minHeight: 40
+                  }
+                }, sk.helmet ? '⛑️ Helmet ON' : '⛑️ Helmet OFF'),
+                h('button', {
+                  onClick: function() {
+                    upd({ skater: Object.assign({}, sk, { pads: !sk.pads }) });
+                    skAnnounce(sk.pads ? 'Pads off.' : 'Pads on. Slide instead of stop.');
+                  },
+                  'aria-pressed': !!sk.pads,
+                  'aria-label': sk.pads ? 'Pads on. Click to remove.' : 'No pads. Click to put them on.',
+                  'data-sk-focusable': 'true',
+                  style: {
+                    padding: '10px 12px', fontSize: 12, fontWeight: 800,
+                    background: sk.pads ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.06)',
+                    color: sk.pads ? '#fff' : '#94a3b8',
+                    border: '1px solid ' + (sk.pads ? '#15803d' : 'rgba(254,243,199,0.20)'),
+                    borderRadius: 10, cursor: 'pointer', minHeight: 40
+                  }
+                }, sk.pads ? '🦵 Pads ON' : '🦵 Pads OFF')
+              ),
+              sk.helmet && sk.pads && h('div', {
+                role: 'status',
+                style: {
+                  background: 'rgba(34,197,94,0.18)',
+                  border: '1px solid rgba(34,197,94,0.55)',
+                  borderRadius: 8, padding: '8px 10px',
+                  fontSize: 11, color: '#86efac', lineHeight: 1.5
+                }
+              },
+                h('b', null, '✓ Suited up.'),
+                ' Your skater\'s ready. Now do the same in real life.'
+              )
+            );
+          })()
         ),
         // Stats footer
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8 } },
