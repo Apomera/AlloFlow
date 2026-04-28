@@ -1175,6 +1175,12 @@
     // used by the "Same Maze" replay button on results so a student can
     // retry the same layout to beat their time.
     var lastRunRef = useRef(null);
+    // Per-fact accuracy log for THIS run only — keyed by problem.text
+    // (e.g. "7 × 8"), value is { correct, wrong }. Reset in startMaze.
+    // Surfaced on results as a "Facts to Practice" panel so the student
+    // (or teacher) sees which facts caused stumbles. Visual-volume gates
+    // skipped because their .text isn't a clean fact key.
+    var factStatsRef = useRef({});
     // Mirror of `isExplorer` so listeners attached once in init3D always see
     // the current value without a stale closure.
     var isExplorerRef = useRef(isExplorer);
@@ -1354,6 +1360,9 @@
       solvedPathsRef.current = {};
       lookYawRef.current = 0;
       lookYawTargetRef.current = 0;
+      // Per-fact accuracy log resets every run so the "Facts to Practice"
+      // panel reflects only the current attempt, not lifetime stumbles.
+      factStatsRef.current = {};
       setMonsterPos({ r: 0, c: 0 });
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
@@ -1474,6 +1483,14 @@
         // Correct — move to new cell
         var newPos = { r: currentProblem.targetR, c: currentProblem.targetC };
         setPlayerPos(newPos); playerPosRef.current = newPos;
+        // Per-fact accuracy log: count this as a correct attempt for the
+        // current fact text. Skip visual gates (no clean fact key).
+        if (currentProblem.problem.type !== 'visual') {
+          var _ftxt = currentProblem.problem.text;
+          var _fs = factStatsRef.current[_ftxt] || { correct: 0, wrong: 0 };
+          _fs.correct++;
+          factStatsRef.current[_ftxt] = _fs;
+        }
         // Explorer Mode: record this path-passage as solved so re-walking
         // it (or returning through it) skips the gate for the rest of the
         // run. Direction-agnostic via canonical _pathKey.
@@ -1763,6 +1780,15 @@
         setWrong(function(p) { return p + 1; });
         setScore(function(p) { return Math.max(0, p - 3); });
         setStreak(0);
+        // Per-fact accuracy log: count this as a wrong attempt for the
+        // current fact text. Used by the results "Facts to Practice"
+        // panel; visual gates are skipped (no clean fact key).
+        if (currentProblem.problem.type !== 'visual') {
+          var _wtxt = currentProblem.problem.text;
+          var _ws = factStatsRef.current[_wtxt] || { correct: 0, wrong: 0 };
+          _ws.wrong++;
+          factStatsRef.current[_wtxt] = _ws;
+        }
         setFeedback('wrong');
         _mfAnnounce('Wrong combination. The gate stays locked. Try again.');
         setAttemptCount(function(p) { return p + 1; });
@@ -1822,6 +1848,10 @@
         // Classic ignores these keys (yaw stays at 0 there anyway).
         if (isExplorer && (e.key === 'q' || e.key === 'Q')) { lookYawTargetRef.current -= Math.PI / 6; return; }
         if (isExplorer && (e.key === 'e' || e.key === 'E')) { lookYawTargetRef.current += Math.PI / 6; return; }
+        // R restarts the SAME maze layout (reuses lastRunRef) so a
+        // student can retry mid-run without trekking back to results.
+        // Only fires when there's a cached layout to reuse.
+        if ((e.key === 'r' || e.key === 'R') && lastRunRef.current) { startMaze(true); return; }
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
         if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
@@ -3222,6 +3252,39 @@
             h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#a16207' } }, elapsed + 's'),
             h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Time'))
         ),
+        // Facts to Practice — surfaces the top 3 facts the student got
+        // wrong this run, sorted by wrong count then by wrong rate.
+        // Pedagogical signal: the run wasn't just "X correct / Y wrong",
+        // it was "you stumbled on these specific facts." Hidden if
+        // there were no wrong answers (the student crushed it).
+        (function() {
+          var stats = factStatsRef.current || {};
+          var rows = [];
+          for (var k in stats) if (stats.hasOwnProperty(k)) {
+            var s = stats[k];
+            if (s.wrong > 0) rows.push({ text: k, wrong: s.wrong, correct: s.correct });
+          }
+          if (rows.length === 0) return null;
+          rows.sort(function(a, b) {
+            if (b.wrong !== a.wrong) return b.wrong - a.wrong;
+            return (b.wrong / Math.max(1, b.wrong + b.correct)) - (a.wrong / Math.max(1, a.wrong + a.correct));
+          });
+          rows = rows.slice(0, 3);
+          return h('div', {
+            style: { background: 'rgba(254,226,226,0.55)', border: '1px dashed #f87171', borderRadius: '10px', padding: '10px 12px', marginBottom: '14px' },
+            'aria-label': 'Facts to practice: ' + rows.map(function(r) { return r.text + ' missed ' + r.wrong + ' time' + (r.wrong > 1 ? 's' : ''); }).join(', ')
+          },
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#7f1d1d', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '6px' } }, '📚 Facts to Practice'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' } },
+              rows.map(function(rw, i) {
+                return h('span', {
+                  key: i,
+                  style: { fontSize: '12px', fontWeight: 700, fontFamily: 'monospace', color: '#7f1d1d', background: '#fff', border: '1px solid #fca5a5', padding: '3px 10px', borderRadius: '6px' }
+                }, rw.text + (rw.wrong > 1 ? ' (×' + rw.wrong + ')' : ''));
+              })
+            )
+          );
+        })(),
         h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
           h('button', { onClick: function() { startMaze(false); }, style: { padding: '10px 24px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7', border: '2px solid #78350f', borderRadius: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(120,53,15,0.35)' } }, '\uD83D\uDD04 Play Again'),
           // Same-Maze replay - reuses the cached layout + key cell so the
@@ -3520,9 +3583,10 @@
              'Fullscreen: F',
              'Look around (Explorer): Drag',
              'Rotate camera (Explorer): Q / E',
+             'Restart same maze: R',
              'This help: ?'].map(function(line, i) {
               var parts = line.split(': ');
-              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 9 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
+              return h('div', { key: i, style: { display: 'flex', justifyContent: 'space-between', gap: '12px', borderBottom: i < 10 ? '1px dashed rgba(217,119,6,0.3)' : 'none', padding: '3px 0' } },
                 h('span', { style: { fontWeight: 700 } }, parts[0]),
                 h('span', { style: { fontFamily: 'monospace', color: '#78350f' } }, parts[1])
               );
