@@ -553,7 +553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
             h('label', { className: 'text-xs font-bold text-slate-600 block' }, 'Paste the post text (include hashtags, mentions, and any image descriptions)'),
             h('textarea', { value: socialText, onChange: function(e) { upd('socialText', e.target.value); },
               placeholder: 'Paste the full post text here...\n\nInclude:\n\u2022 All text content\n\u2022 Hashtags\n\u2022 Image descriptions (if any)\n\u2022 Link URLs',
-              className: 'w-full text-xs p-3 border border-pink-200 rounded-lg outline-none focus:ring-2 focus:ring-pink-300 resize-none h-28', 'aria-label': 'Social media post text'
+              className: 'w-full text-xs p-3 border border-pink-600 rounded-lg outline-none focus:ring-2 focus:ring-pink-300 resize-none h-28', 'aria-label': 'Social media post text'
             }),
             h('div', { className: 'flex gap-2' },
               h('button', { 'aria-label': 'Audit social media post',
@@ -596,7 +596,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('input', { type: 'url', value: govUrl, onChange: function(e) { upd('govUrl', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter' && govUrl.trim()) runGovAudit(); },
                 placeholder: 'https://www.portlandschools.org', 'aria-label': 'Government website URL',
-                className: 'flex-1 text-sm p-2.5 border border-amber-200 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
+                className: 'flex-1 text-sm p-2.5 border border-amber-600 rounded-lg outline-none focus:ring-2 focus:ring-amber-300'
               }),
               h('button', { 'aria-label': 'Run Title II audit',
                 onClick: runGovAudit, disabled: !govUrl.trim() || auditLoading,
@@ -762,7 +762,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           h('div', { className: 'space-y-3' },
             h('h4', { className: 'text-sm font-black text-indigo-800 uppercase tracking-widest' }, 'Key Programs'),
             // AccessU
-            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-purple-200 p-4 hover:border-purple-400 transition-all' },
+            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-purple-600 p-4 hover:border-purple-400 transition-all' },
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-2xl' }, '\uD83C\uDF93'),
                 h('div', { className: 'flex-1' },
@@ -773,7 +773,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               )
             ),
             // AIR
-            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-teal-200 p-4 hover:border-teal-400 transition-all' },
+            h('button', { onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(5); }, className: 'w-full text-left bg-white rounded-2xl border-2 border-teal-600 p-4 hover:border-teal-400 transition-all' },
               h('div', { className: 'flex items-start gap-3' },
                 h('div', { className: 'text-2xl' }, '\uD83C\uDF10'),
                 h('div', { className: 'flex-1' },
@@ -793,7 +793,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                { icon: '\uD83D\uDCDA', title: 'Learn', desc: 'Attend AccessU sessions, use free resources, and build your accessibility skills.' },
                { icon: '\uD83D\uDCE3', title: 'Advocate', desc: 'Use THIS tool to audit and report accessibility barriers. Be a change agent in your community!' }
               ].map(function(item) {
-                return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-100 hover:border-amber-300 transition-all' },
+                return h('button', { key: item.title, onClick: function() { var n = Math.min(knowbilityExplored + 1, 3); upd('knowbilityExplored', n); if (awardStemXP) awardStemXP(3); }, className: 'w-full text-left flex items-start gap-3 bg-white rounded-xl p-3 border border-amber-600 hover:border-amber-300 transition-all' },
                   h('span', { className: 'text-lg' }, item.icon),
                   h('div', null,
                     h('div', { className: 'font-bold text-xs text-amber-800' }, item.title),
