@@ -1350,6 +1350,11 @@ window.StemLab = window.StemLab || {
             // featured scenario flips today's flag to true. Persists
             // across stat resets so the streak survives.
             dailyDone: {},
+            // First-time tour — 5-step guided onboarding that
+            // auto-shows on first mount. seen=true after either
+            // completion or explicit skip; re-openable from a tour
+            // button in the toggle row. Step is 0-indexed.
+            tour: { open: false, step: 0, seen: false },
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
@@ -1431,6 +1436,18 @@ window.StemLab = window.StemLab || {
         window.addEventListener('keydown', onKey);
         return function() { window.removeEventListener('keydown', onKey); };
       }, [muted]);
+
+      // Auto-open tour on first mount when the student hasn't seen
+      // it yet. Small delay so the panel renders before the overlay
+      // pops, otherwise the focus flash feels jarring.
+      React.useEffect(function() {
+        if (d.tour && !d.tour.seen && !d.tour.open) {
+          var to = setTimeout(function() {
+            upd({ tour: Object.assign({}, d.tour, { open: true, step: 0 }) });
+          }, 400);
+          return function() { clearTimeout(to); };
+        }
+      }, []);
 
       // Generate a fresh gap on each "New Gap" press
       function newGap() {
@@ -1754,7 +1771,8 @@ window.StemLab = window.StemLab || {
           customTricks: preservedTricks,
           session: { active: false, target: 5, attempts: [], summaryOpen: false, startPromptOpen: false, history: preservedHistory },
           skater: d.skater || { color: 'amber', helmet: false, pads: false },
-          dailyDone: d.dailyDone || {}
+          dailyDone: d.dailyDone || {},
+          tour: { open: false, step: 0, seen: !!(d.tour && d.tour.seen) }
         });
         if (addToast) addToast('SkateLab stats reset.', 'success');
         skAnnounce('Stats cleared. Custom scenarios preserved.');
@@ -2720,6 +2738,123 @@ window.StemLab = window.StemLab || {
             style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8 }
           })
         ),
+        // ── First-time tour overlay ──────────────────────────────
+        // Auto-shows on first mount (when tour.seen is false), then
+        // re-openable via the 💡 Tour chip. 5 steps cover: Drop In,
+        // pumps, tricks, predict mode, "explore deeper." Skip and
+        // Done both flip seen=true so it doesn't auto-show again.
+        (d.tour && d.tour.open) && (function() {
+          var TOUR_STEPS = [
+            {
+              icon: '👋',
+              title: 'Welcome to SkateLab',
+              body: 'This is a physics simulator where the math is the same as real skating. Press 🛹 Drop In! to attempt a kickflip on Earth.'
+            },
+            {
+              icon: '⚡',
+              title: 'Pumps add kinetic energy',
+              body: 'More pumps = more KE → more air → more rotation budget. Try 5 pumps and a 360 spin. Watch the Energy bar transform KE into PE as you climb.'
+            },
+            {
+              icon: '🎯',
+              title: 'Famous tricks + Today\'s Challenge',
+              body: 'The scenarios row at the top loads real moments from skate history — Tony Hawk\'s 900, Danny Way\'s Great Wall, Moonshot Kickflip. Today\'s Challenge is the same for every student in your class.'
+            },
+            {
+              icon: '🔮',
+              title: 'Predict before you run',
+              body: 'Toggle 🔮 Predict mode — type how high you think you\'ll go BEFORE pressing Drop In. Track how close you got. Your physics intuition will sharpen across attempts.'
+            },
+            {
+              icon: '🛡️',
+              title: 'Stay safe out there',
+              body: 'Mastery Tree, Trick Lab, Gear Science, and the Park Session live in the panels below. Play, predict, invent — and wear a helmet in real life.'
+            }
+          ];
+          var step = Math.max(0, Math.min(TOUR_STEPS.length - 1, d.tour.step || 0));
+          var s = TOUR_STEPS[step];
+          var isLast = step === TOUR_STEPS.length - 1;
+          var closeAndMarkSeen = function() {
+            upd({ tour: { open: false, step: 0, seen: true } });
+            skAnnounce('Tour closed.');
+          };
+          return h('div', {
+            role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-tour-title',
+            onClick: function(e) { if (e.target === e.currentTarget) closeAndMarkSeen(); },
+            style: {
+              position: 'fixed', inset: 0, zIndex: 9999,
+              background: 'rgba(15,23,42,0.78)', backdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+            }
+          },
+            h('div', {
+              style: {
+                background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                border: '2px solid #fbbf24', borderRadius: 14,
+                padding: 24, maxWidth: 460, width: '100%',
+                boxShadow: '0 20px 60px rgba(251,191,36,0.20)'
+              },
+              onClick: function(e) { e.stopPropagation(); }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', letterSpacing: '0.10em', textTransform: 'uppercase' } }, 'Quick tour · ' + (step + 1) + ' / ' + TOUR_STEPS.length),
+                h('button', {
+                  onClick: closeAndMarkSeen,
+                  'aria-label': 'Skip tour',
+                  'data-sk-focusable': 'true',
+                  style: {
+                    background: 'transparent', color: '#94a3b8',
+                    border: '1px solid rgba(148,163,184,0.40)',
+                    borderRadius: 6, padding: '4px 8px',
+                    fontSize: 10, fontWeight: 700, cursor: 'pointer'
+                  }
+                }, 'Skip')
+              ),
+              h('div', { style: { fontSize: 38, marginBottom: 6 } }, s.icon),
+              h('h3', { id: 'sk-tour-title', style: { margin: '0 0 8px', color: '#fef3c7', fontSize: 18, fontWeight: 900 } }, s.title),
+              h('p', { style: { margin: '0 0 16px', color: '#cbd5e1', fontSize: 13, lineHeight: 1.6 } }, s.body),
+              // Step dots
+              h('div', { style: { display: 'flex', gap: 4, justifyContent: 'center', marginBottom: 14 } },
+                TOUR_STEPS.map(function(_, i) {
+                  return h('div', {
+                    key: 'dot-' + i,
+                    style: {
+                      width: i === step ? 18 : 6, height: 6, borderRadius: 3,
+                      background: i === step ? '#fbbf24' : 'rgba(148,163,184,0.45)',
+                      transition: 'width 200ms ease'
+                    }
+                  });
+                })
+              ),
+              h('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end' } },
+                step > 0 && h('button', {
+                  onClick: function() { upd({ tour: Object.assign({}, d.tour, { step: step - 1 }) }); },
+                  'data-sk-focusable': 'true',
+                  style: {
+                    padding: '8px 14px', fontSize: 12, fontWeight: 700,
+                    background: 'transparent', color: '#94a3b8',
+                    border: '1px solid rgba(148,163,184,0.40)',
+                    borderRadius: 8, cursor: 'pointer', minHeight: 36
+                  }
+                }, '← Back'),
+                h('button', {
+                  onClick: function() {
+                    if (isLast) closeAndMarkSeen();
+                    else upd({ tour: Object.assign({}, d.tour, { step: step + 1 }) });
+                  },
+                  'data-sk-focusable': 'true',
+                  autoFocus: true,
+                  style: {
+                    padding: '10px 22px', fontSize: 13, fontWeight: 800,
+                    background: 'linear-gradient(135deg,#fbbf24,#d97706)',
+                    color: '#0f172a', border: '1px solid #b45309',
+                    borderRadius: 8, cursor: 'pointer', minHeight: 36
+                  }
+                }, isLast ? '🛹 Start skating' : 'Next →')
+              )
+            )
+          );
+        })(),
         // ── Save-scenario modal ─────────────────────────────────
         // ── Session start prompt modal ────────────────────────────
         // Pick attempt count (3/5/10) before kicking off a session.
@@ -3014,6 +3149,21 @@ window.StemLab = window.StemLab || {
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
           }, d.safetyAck ? '✓ Safety ack\'d' : '⚠️ Safety'),
+          // Tour re-open chip — for students who skipped or want a
+          // refresher. Subtle by default; doesn't compete for
+          // attention with the safety chip.
+          h('button', {
+            onClick: function() { upd({ tour: { open: true, step: 0, seen: !!(d.tour && d.tour.seen) } }); },
+            'aria-label': 'Open the SkateLab tour',
+            'data-sk-focusable': 'true',
+            title: 'Re-open the 5-step tour',
+            style: {
+              padding: '4px 10px', fontSize: 10, fontWeight: 700,
+              background: 'rgba(254,243,199,0.06)', color: '#94a3b8',
+              border: '1px solid rgba(254,243,199,0.20)',
+              borderRadius: 999, cursor: 'pointer', minHeight: 26
+            }
+          }, '💡 Tour'),
           // Mute toggle — gates every skTone call. Persists in
           // localStorage so a teacher who silences the classroom
           // doesn't have to re-mute every reload. Also bound to 'M'.

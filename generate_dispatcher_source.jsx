@@ -1879,8 +1879,13 @@ ${modeListForAuto}
              if (shouldGenerateImages && content.items.length > 0) {
                  setGenerationStep('Generating card visuals...');
                  addToast(t('toasts.generating_card_visuals'), "info");
-                 let imgFailCount = 0;
-                 const POOL_SIZE = 5;
+                 // POOL_SIZE was 5, dropped to 2 to reduce concurrent rate-limit
+                 // triggers on Imagen. callImagen has its own 3-retry exponential
+                 // backoff (1s/2s/4s, see AlloFlowANTI.txt:13021), but when 5
+                 // requests fire at once and the first hits a 429, the others
+                 // are already in flight and exhaust their retries within ~7s.
+                 // Smaller pool + a final-pass sweep recovers more cards.
+                 const POOL_SIZE = 2;
                  const generateOne = async (item) => {
                      try {
                          const styleInstruction = conceptSortImageStyle.trim() ? `Style: ${conceptSortImageStyle}.` : 'Educational style.';
@@ -1889,7 +1894,6 @@ ${modeListForAuto}
                          return { ...item, image: imageUrl };
                      } catch (e) {
                          warnLog("Card image gen failed", e);
-                         imgFailCount++;
                          return item;
                      }
                  };
@@ -1899,11 +1903,38 @@ ${modeListForAuto}
                      const results = await Promise.all(batch.map(generateOne));
                      results.forEach((r, j) => { output[i + j] = r; });
                  }
+                 // Final-pass retry sweep: any items still without images get a
+                 // second chance with serialized calls + 750ms gap. Catches
+                 // stragglers that hit transient rate limits during the burst.
+                 // Doesn't retry items that came back without images for safety
+                 // reasons (those would fail again the same way).
+                 const stillMissingIdx = output
+                     .map((it, idx) => (!it || !it.image) ? idx : -1)
+                     .filter(idx => idx >= 0);
+                 if (stillMissingIdx.length > 0) {
+                     setGenerationStep(`Retrying ${stillMissingIdx.length} card visual${stillMissingIdx.length === 1 ? '' : 's'}...`);
+                     for (const idx of stillMissingIdx) {
+                         const item = output[idx];
+                         if (!item) continue;
+                         const refreshed = await generateOne(item);
+                         if (refreshed && refreshed.image) {
+                             output[idx] = refreshed;
+                         }
+                         // 750ms gap so the rate-limit window has time to clear
+                         // between retries. Total worst case: N × (callImagen
+                         // retries up to ~7s + 750ms gap) = ~8s per missing card.
+                         // For typical 8-card decks with 2-3 stragglers, ~16-24s.
+                         await new Promise(r => setTimeout(r, 750));
+                     }
+                 }
+                 // Recount AFTER the sweep so the warning toast reflects what
+                 // actually shipped, not the first-pass failures.
+                 const finalFailCount = output.filter(it => !it || !it.image).length;
                  content.items = output;
-                 if (imgFailCount > 0) {
-                     const msg = t('concept_sort.visuals_failed', { failed: imgFailCount, total: content.items.length });
+                 if (finalFailCount > 0) {
+                     const msg = t('concept_sort.visuals_failed', { failed: finalFailCount, total: content.items.length });
                      addToast(
-                         (msg && msg !== 'concept_sort.visuals_failed') ? msg : `${imgFailCount} of ${content.items.length} card visuals couldn't be generated. Cards will show text only.`,
+                         (msg && msg !== 'concept_sort.visuals_failed') ? msg : `${finalFailCount} of ${content.items.length} card visuals couldn't be generated after retries. Cards will show text only — you can regenerate or upload images in edit mode.`,
                          "warning"
                      );
                  }

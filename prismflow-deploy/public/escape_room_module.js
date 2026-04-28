@@ -133,6 +133,14 @@
     var safeGetItem = shared.safeGetItem || function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } };
     var safeSetItem = shared.safeSetItem || function(k,v) { try { localStorage.setItem(k,v); } catch(e) {} };
     var warnLog = shared.warnLog || function() { console.warn.apply(console, arguments); };
+    // Optional host wiring for embedding the escape room into the
+    // active exit ticket / quiz resource so the config travels with
+    // the file (instead of only living in teacher-local storage).
+    // setHistory mutates the resource history array; getCurrentResourceId
+    // returns the id of the resource currently being viewed (e.g.
+    // generatedContent?.id). Both are no-ops if not wired.
+    var setHistoryDep = deps.setHistory || null;
+    var getCurrentResourceId = deps.getCurrentResourceId || function() { return null; };
 
     // ── generateEscapeRoom ──
     var generateEscapeRoom = async function() {
@@ -918,6 +926,24 @@ inputText.substring(0, 6000) + '\n' +
           sourceTextHash: inputText.substring(0, 100)
         };
         safeSetItem('allo_saved_escape_room', JSON.stringify(saveData));
+        // Embed into the active exit ticket / quiz resource so the
+        // config travels with the file. Going-forward only — if
+        // setHistory + getCurrentResourceId aren't wired (older
+        // host), this is a no-op and the localStorage save above is
+        // still the source of truth for the teacher's own device.
+        try {
+          var parentId = getCurrentResourceId && getCurrentResourceId();
+          if (parentId && setHistoryDep) {
+            setHistoryDep(function(prev) {
+              if (!Array.isArray(prev)) return prev;
+              return prev.map(function(item) {
+                if (!item || item.id !== parentId) return item;
+                var nextData = Object.assign({}, item.data || {}, { escapeRoomConfig: saveData });
+                return Object.assign({}, item, { data: nextData });
+              });
+            });
+          }
+        } catch (eEmbed) { warnLog('Failed to embed escape room into parent resource:', eEmbed); }
         addToast(t('escape_room.config_saved') || '\uD83D\uDCBE Escape Room saved! Load it anytime from settings.', 'success');
       } catch (e) {
         warnLog('Failed to save escape room config:', e);
@@ -925,7 +951,87 @@ inputText.substring(0, 6000) + '\n' +
       }
     };
 
+    // ── _hydrateConfig (shared helper) ──
+    // Pushes a parsed escape-room config into escapeRoomState. Used
+    // by both loadSavedEscapeRoom (localStorage path) and
+    // loadEscapeRoomFromConfig (resource-embedded path). Random
+    // shuffle on every call — by design; repeat plays vary.
+    var _hydrateConfig = function(config, difficulty) {
+      if (!config || !config.room || !config.puzzles) {
+        addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
+        return false;
+      }
+      var processedPuzzles = config.puzzles.map(function(p, i) {
+        var processed = Object.assign({}, p, {
+          linkedObject: (config.objects && config.objects.find(function(o) { return o.id === p.linkedObjectId; })) || (config.objects && config.objects[i]) || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i+1) }
+        });
+        if (p.type === 'sequence' && p.items) {
+          var indices = p.items.map(function(_, idx) { return idx; });
+          processed.shuffledItems = derangeShuffle(indices);
+        }
+        if (p.type === 'scramble' && p.scrambledWord) {
+          processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); }));
+        }
+        if (p.type === 'matching' && p.pairs) {
+          processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
+          processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
+        }
+        if (p.type === 'fillin' && p.wordbank) {
+          processed.wordbank = derangeShuffle(p.wordbank);
+        }
+        if (p.type === 'cipher' && p.wordbank) {
+          processed.wordbank = derangeShuffle(p.wordbank);
+        }
+        return processed;
+      });
+      var processedFinalDoor = config.finalDoor || null;
+      if (processedFinalDoor && processedFinalDoor.wordbank) {
+        processedFinalDoor = Object.assign({}, processedFinalDoor, { wordbank: derangeShuffle(processedFinalDoor.wordbank) });
+      }
+      var diffPresets = {
+        easy: { timePerPuzzle: 45, lives: 99, hints: 5, xpMultiplier: 0.5 },
+        normal: { timePerPuzzle: 30, lives: 3, hints: 3, xpMultiplier: 1.0 },
+        hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2.0 }
+      };
+      var diff = difficulty || 'normal';
+      var preset = diffPresets[diff] || diffPresets.normal;
+      var totalTime = processedPuzzles.length * preset.timePerPuzzle;
+      setState.setEscapeRoomState(function(prev) {
+        return Object.assign({}, prev, {
+          isActive: false,
+          isPreview: true,
+          isGenerating: false,
+          showSettings: false,
+          room: config.room,
+          puzzles: processedPuzzles,
+          objects: config.objects,
+          totalPuzzles: processedPuzzles.length,
+          finalDoorPuzzle: processedFinalDoor,
+          savedEscapeRoom: config,
+          solvedPuzzles: new Set(),
+          isEscaped: false,
+          timeRemaining: totalTime,
+          maxTime: totalTime,
+          difficulty: diff,
+          lives: preset.lives,
+          maxLives: preset.lives,
+          hintsRemaining: preset.hints,
+          maxHints: preset.hints,
+          xpMultiplier: preset.xpMultiplier,
+          streak: 0,
+          wrongAttempts: 0,
+          isGameOver: false,
+          timerPaused: true
+        });
+      });
+      setState.setEscapeTimeLeft(totalTime);
+      setState.setIsEscapeTimerRunning(false);
+      return true;
+    };
+
     // ── loadSavedEscapeRoom ──
+    // localStorage path — the teacher's own browser-local saves
+    // (independent of any specific exit ticket).
     var loadSavedEscapeRoom = function() {
       try {
         var saved = safeGetItem('allo_saved_escape_room');
@@ -934,81 +1040,34 @@ inputText.substring(0, 6000) + '\n' +
           return;
         }
         var saveData = JSON.parse(saved);
-        var config = saveData.config;
-        if (!config || !config.room || !config.puzzles) {
-          addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
-          return;
+        if (_hydrateConfig(saveData.config, saveData.difficulty)) {
+          playSound('correct');
+          addToast(t('escape_room.loaded_saved') || '\uD83D\uDCC2 Saved Escape Room loaded! Review and launch when ready.', 'success');
         }
-        var processedPuzzles = config.puzzles.map(function(p, i) {
-          var processed = Object.assign({}, p, {
-            linkedObject: (config.objects && config.objects.find(function(o) { return o.id === p.linkedObjectId; })) || (config.objects && config.objects[i]) || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i+1) }
-          });
-          if (p.type === 'sequence' && p.items) {
-            var indices = p.items.map(function(_, idx) { return idx; });
-            processed.shuffledItems = derangeShuffle(indices);
-          }
-          if (p.type === 'scramble' && p.scrambledWord) {
-            processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); }));
-          }
-          if (p.type === 'matching' && p.pairs) {
-            processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
-            processed.rightColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.right; }));
-          }
-          if (p.type === 'fillin' && p.wordbank) {
-            processed.wordbank = derangeShuffle(p.wordbank);
-          }
-          if (p.type === 'cipher' && p.wordbank) {
-            processed.wordbank = derangeShuffle(p.wordbank);
-          }
-          return processed;
-        });
-        var processedFinalDoor = config.finalDoor || null;
-        if (processedFinalDoor && processedFinalDoor.wordbank) {
-          processedFinalDoor = Object.assign({}, processedFinalDoor, { wordbank: derangeShuffle(processedFinalDoor.wordbank) });
-        }
-        var diffPresets = {
-          easy: { timePerPuzzle: 45, lives: 99, hints: 5, xpMultiplier: 0.5 },
-          normal: { timePerPuzzle: 30, lives: 3, hints: 3, xpMultiplier: 1.0 },
-          hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2.0 }
-        };
-        var diff = saveData.difficulty || 'normal';
-        var preset = diffPresets[diff];
-        var totalTime = processedPuzzles.length * preset.timePerPuzzle;
-        setState.setEscapeRoomState(function(prev) {
-          return Object.assign({}, prev, {
-            isActive: false,
-            isPreview: true,
-            isGenerating: false,
-            showSettings: false,
-            room: config.room,
-            puzzles: processedPuzzles,
-            objects: config.objects,
-            totalPuzzles: processedPuzzles.length,
-            finalDoorPuzzle: processedFinalDoor,
-            savedEscapeRoom: config,
-            solvedPuzzles: new Set(),
-            isEscaped: false,
-            timeRemaining: totalTime,
-            maxTime: totalTime,
-            difficulty: diff,
-            lives: preset.lives,
-            maxLives: preset.lives,
-            hintsRemaining: preset.hints,
-            maxHints: preset.hints,
-            xpMultiplier: preset.xpMultiplier,
-            streak: 0,
-            wrongAttempts: 0,
-            isGameOver: false,
-            timerPaused: true
-          });
-        });
-        setState.setEscapeTimeLeft(totalTime);
-        setState.setIsEscapeTimerRunning(false);
-        playSound('correct');
-        addToast(t('escape_room.loaded_saved') || '\uD83D\uDCC2 Saved Escape Room loaded! Review and launch when ready.', 'success');
       } catch (e) {
         warnLog('Failed to load saved escape room:', e);
         addToast(t('errors.load_failed') || 'Failed to load saved config', 'error');
+      }
+    };
+
+    // ── loadEscapeRoomFromConfig (new) ──
+    // Resource-embedded path — hydrates from a config object stored
+    // inside an exit ticket / quiz resource (resource.data.escapeRoomConfig).
+    // No localStorage involvement, so a student opening the same
+    // file on a different device gets the same content.
+    // saveData shape matches saveEscapeRoomConfig output:
+    //   { config, difficulty, puzzleCount, timestamp, sourceTextHash }
+    var loadEscapeRoomFromConfig = function(saveData, opts) {
+      if (!saveData) return false;
+      try {
+        var ok = _hydrateConfig(saveData.config, saveData.difficulty);
+        if (ok && opts && opts.silent !== true) {
+          addToast(t('escape_room.loaded_from_resource') || '\uD83D\uDCC2 Escape Room loaded from this exit ticket.', 'success');
+        }
+        return ok;
+      } catch (e) {
+        warnLog('Failed to hydrate escape room from resource:', e);
+        return false;
       }
     };
 
@@ -1042,6 +1101,7 @@ inputText.substring(0, 6000) + '\n' +
       updateEscapeRoomFinalDoor: updateEscapeRoomFinalDoor,
       saveEscapeRoomConfig: saveEscapeRoomConfig,
       loadSavedEscapeRoom: loadSavedEscapeRoom,
+      loadEscapeRoomFromConfig: loadEscapeRoomFromConfig,
       hasSavedEscapeRoom: hasSavedEscapeRoom
     };
   }

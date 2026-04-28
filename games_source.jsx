@@ -1506,7 +1506,11 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     </div>
   );
 });
-const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect }) => {
+const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect, imageScale, onImageScaleChange }) => {
+  // Image scale: defaults to 1.0 if host doesn't pass one. Bounded 0.5–2.5 to
+  // match the host's slider range. Used to scale card visuals during play.
+  const _imgScale = (typeof imageScale === 'number' && imageScale >= 0.5 && imageScale <= 2.5) ? imageScale : 1.0;
+  const _imgPx = Math.round(64 * _imgScale); // base 64px (w-16 h-16)
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [buckets, setBuckets] = useState([]);
@@ -1738,10 +1742,15 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       >
         {item.image ? (
             <div className="flex flex-col items-center gap-2">
+                {/* Card visual: base 64px (w-16 h-16) scaled by host's
+                    conceptSortImageScale slider via the imageScale prop. Inline
+                    width/height override the Tailwind size classes so the
+                    slider feels live during play. */}
                 <img loading="lazy"
                     src={item.image}
                     alt={item.content || ''}
-                    className="w-16 h-16 object-contain rounded bg-white/50"
+                    className="object-contain rounded bg-white/50"
+                    style={{ width: _imgPx + 'px', height: _imgPx + 'px' }}
                     decoding="async"
                 />
                 <div className="flex items-center gap-1">
@@ -1914,7 +1923,28 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
                                </span>
                            )}
                        </div>
-                       <div className="flex gap-2">
+                       <div className="flex gap-2 items-center">
+                           {/* Live image-size slider — visible during play so the
+                               teacher (or a sensory-sensitive student) can dial
+                               card visuals up/down without leaving the activity.
+                               Only shown when the host wired onImageScaleChange
+                               AND the deck actually has any images to scale. */}
+                           {typeof onImageScaleChange === 'function' && items.some(i => i.image) && (
+                               <div className="flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-full">
+                                   <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline">Size</span>
+                                   <input
+                                       type="range"
+                                       min="0.5"
+                                       max="2.5"
+                                       step="0.05"
+                                       value={_imgScale}
+                                       onChange={(e) => onImageScaleChange(parseFloat(e.target.value) || 1.0)}
+                                       aria-label={`Card image size, ${_imgScale.toFixed(2)} times`}
+                                       className="w-20 sm:w-28 accent-indigo-600"
+                                   />
+                                   <span className="text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-right">{_imgScale.toFixed(2)}×</span>
+                               </div>
+                           )}
                            <button
                                 data-help-key="concept_sort_reset"
                                 onClick={reset}

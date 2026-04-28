@@ -1299,7 +1299,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
     t("timeline.game.check_order")
   ))));
 });
-const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect }) => {
+const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect, imageScale, onImageScaleChange }) => {
+  const _imgScale = (typeof imageScale === "number" && imageScale >= 0.5 && imageScale <= 2.5) ? imageScale : 1.0;
+  const _imgPx = Math.round(64 * _imgScale);
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [buckets, setBuckets] = useState([]);
@@ -1549,7 +1551,8 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
           loading: "lazy",
           src: item.image,
           alt: item.content || "",
-          className: "w-16 h-16 object-contain rounded bg-white/50",
+          className: "object-contain rounded bg-white/50",
+          style: { width: _imgPx + "px", height: _imgPx + "px" },
           decoding: "async"
         }
       ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-bold text-center leading-tight text-slate-800" }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 }))) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-1.5" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-800 text-center leading-snug" }, item.content), /* @__PURE__ */ React.createElement(SpeakButton, { text: item.content, size: 11 })),
@@ -1646,7 +1649,19 @@ const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, 
       onDrop: (e) => handleDrop(e, "deck"),
       className: `bg-white border-t border-slate-200 fixed bottom-0 left-0 right-0 p-4 z-20 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-transform duration-300 ${isChecked ? "" : "hover:bg-slate-50"}`
     },
-    /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-500 uppercase tracking-wider" }, t("concept_sort.unsorted_cards"), " (", deckItems.length, ")"), keyboardSelectedItemId && !hasUsedKeyboardCard && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full" }, "Now pick a category to drop this card into."), !keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 italic" }, "Tip: press Enter on a card to sort with the keyboard."), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, "Try ", attempts + 1, bestScore > 0 ? ` \xB7 Best: ${bestScore} pts` : ""), imageFailCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full" }, imageFailCount, " card visual", imageFailCount === 1 ? "" : "s", " couldn't load \u2014 text only.")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto relative" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-500 uppercase tracking-wider" }, t("concept_sort.unsorted_cards"), " (", deckItems.length, ")"), keyboardSelectedItemId && !hasUsedKeyboardCard && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-full" }, "Now pick a category to drop this card into."), !keyboardSelectedItemId && !hasUsedKeyboardCard && !hintAutoHidden && items.length > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 italic" }, "Tip: press Enter on a card to sort with the keyboard."), attempts > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full" }, "Try ", attempts + 1, bestScore > 0 ? ` \xB7 Best: ${bestScore} pts` : ""), imageFailCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-medium text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full" }, imageFailCount, " card visual", imageFailCount === 1 ? "" : "s", " couldn't load \u2014 text only.")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 items-center" },
+      typeof onImageScaleChange === "function" && items.some((i) => i.image) && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 px-2 py-1 bg-slate-50 border border-slate-200 rounded-full" },
+        /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider hidden sm:inline" }, "Size"),
+        /* @__PURE__ */ React.createElement("input", {
+          type: "range", min: "0.5", max: "2.5", step: "0.05",
+          value: _imgScale,
+          onChange: (e) => onImageScaleChange(parseFloat(e.target.value) || 1.0),
+          "aria-label": `Card image size, ${_imgScale.toFixed(2)} times`,
+          className: "w-20 sm:w-28 accent-indigo-600"
+        }),
+        /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-mono text-indigo-700 min-w-[2.5em] text-right" }, _imgScale.toFixed(2) + "\xD7")
+      ),
+      /* @__PURE__ */ React.createElement(
       "button",
       {
         "data-help-key": "concept_sort_reset",

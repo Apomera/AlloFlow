@@ -199,7 +199,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.enter_main"),
       value: main,
       onChange: (e) => handleOutlineChange(null, "main", e.target.value),
-      className: "text-2xl font-black text-center text-slate-800 bg-white border border-indigo-200 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full"
+      className: "text-2xl font-black text-center text-slate-800 bg-white border border-indigo-600 rounded p-1 focus:ring-2 focus:ring-indigo-400 outline-none w-full"
     }
   ), (main_en || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
     "input",
@@ -217,7 +217,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.enter_branch"),
       value: branch.title,
       onChange: (e) => handleOutlineChange(bIdx, "title", e.target.value),
-      className: "font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
+      className: "font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1"
     }
   ), (branch.title_en || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
     "input",
@@ -234,7 +234,7 @@ const renderOutlineContent = (deps) => {
       "aria-label": t("common.enter_item"),
       value: item,
       onChange: (e) => handleOutlineChange(bIdx, "item", e.target.value, iIdx),
-      className: "w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200"
+      className: "w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-600"
     }
   ), (branch.items_en?.[iIdx] || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
     "input",
@@ -265,7 +265,7 @@ const renderOutlineContent = (deps) => {
           role: "dialog",
           "aria-modal": "true",
           onClick: (e) => e.stopPropagation(),
-          className: "w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200 text-xs font-bold"
+          className: "w-full bg-white/50 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-600 text-xs font-bold"
         }
       ), showEnglish && isNonEnglish && (items_en?.[i] || items_en?.[i] === "") && /* @__PURE__ */ React.createElement(
         "input",
@@ -276,7 +276,7 @@ const renderOutlineContent = (deps) => {
           role: "dialog",
           "aria-modal": "true",
           onClick: (e) => e.stopPropagation(),
-          className: "w-full bg-white/50 rounded px-2 py-0.5 text-[0.8em] opacity-80 font-normal outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-200",
+          className: "w-full bg-white/50 rounded px-2 py-0.5 text-[0.8em] opacity-80 font-normal outline-none focus:ring-2 focus:ring-indigo-300 border border-transparent focus:border-indigo-600",
           placeholder: t("common.placeholder_item_trans")
         }
       )) : /* @__PURE__ */ React.createElement(React.Fragment, null, "\u2022 ", it, showEnglish && isNonEnglish && items_en?.[i] && /* @__PURE__ */ React.createElement("div", { className: "text-[0.8em] opacity-80 font-normal mt-0.5" }, "(", items_en[i], ")"))));
@@ -292,7 +292,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.enter_title"),
         value: title,
         onChange: (e) => handleOutlineChange(branchIndex, "title", e.target.value),
-        className: "font-black text-center bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
+        className: "font-black text-center bg-transparent outline-none border-b border-dashed border-indigo-600 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-1 w-full"
       }
     ), showEnglish && isNonEnglish && (title_en || title_en === "") && /* @__PURE__ */ React.createElement(
       "input",
@@ -329,7 +329,7 @@ const renderOutlineContent = (deps) => {
           onChange: (e) => setVennInputs({ ...vennInputs, setA: e.target.value }),
           onKeyDown: (e) => e.key === "Enter" && handleAddVennItem("setA"),
           placeholder: t("concept_map.venn.add_item_placeholder"),
-          className: "flex-grow text-xs p-2 rounded border border-rose-200 outline-none focus:ring-2 focus:ring-rose-400"
+          className: "flex-grow text-xs p-2 rounded border border-rose-600 outline-none focus:ring-2 focus:ring-rose-400"
         }
       ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleAddVennItem("setA"), className: "bg-rose-200 hover:bg-rose-300 text-rose-800 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500", "aria-label": t("common.add") }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setA.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-rose-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveVennItem("setA", i), className: "text-rose-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setA.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-rose-400 italic text-center" }, t("concept_sort.no_items")))), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 rounded-xl border-2 border-purple-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-purple-800 mb-3 text-center uppercase tracking-wider" }, shared.title || "Shared"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
         "input",
@@ -340,7 +340,7 @@ const renderOutlineContent = (deps) => {
           onChange: (e) => setVennInputs({ ...vennInputs, shared: e.target.value }),
           onKeyDown: (e) => e.key === "Enter" && handleAddVennItem("shared"),
           placeholder: t("concept_map.venn.add_item_placeholder"),
-          className: "flex-grow text-xs p-2 rounded border border-purple-200 outline-none focus:ring-2 focus:ring-purple-400"
+          className: "flex-grow text-xs p-2 rounded border border-purple-600 outline-none focus:ring-2 focus:ring-purple-400"
         }
       ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleAddVennItem("shared"), className: "bg-purple-200 hover:bg-purple-300 text-purple-800 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500", "aria-label": t("common.add") }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.shared.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-purple-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveVennItem("shared", i), className: "text-purple-300 hover:text-purple-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.shared.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-purple-400 italic text-center" }, t("concept_sort.no_items")))), /* @__PURE__ */ React.createElement("div", { className: "bg-blue-50 rounded-xl border-2 border-blue-200 p-4 flex flex-col" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-blue-800 mb-3 text-center uppercase tracking-wider" }, setB.title), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
         "input",
@@ -351,7 +351,7 @@ const renderOutlineContent = (deps) => {
           onChange: (e) => setVennInputs({ ...vennInputs, setB: e.target.value }),
           onKeyDown: (e) => e.key === "Enter" && handleAddVennItem("setB"),
           placeholder: t("concept_map.venn.add_item_placeholder"),
-          className: "flex-grow text-xs p-2 rounded border border-blue-200 outline-none focus:ring-2 focus:ring-blue-400"
+          className: "flex-grow text-xs p-2 rounded border border-blue-600 outline-none focus:ring-2 focus:ring-blue-400"
         }
       ), /* @__PURE__ */ React.createElement("button", { onClick: () => handleAddVennItem("setB"), className: "bg-blue-200 hover:bg-blue-300 text-blue-800 p-2 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500", "aria-label": t("common.add") }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2 flex-grow overflow-y-auto max-h-60 custom-scrollbar pr-1" }, vennGameData.setB.map((item, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-white p-2 rounded shadow-sm border border-blue-100 text-xs flex justify-between items-center group" }, /* @__PURE__ */ React.createElement("span", null, typeof item === "object" ? item.text : item), /* @__PURE__ */ React.createElement("button", { onClick: () => handleRemoveVennItem("setB", i), className: "text-blue-300 hover:text-blue-500 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vennGameData.setB.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-400 italic text-center" }, t("concept_sort.no_items"))))), /* @__PURE__ */ React.createElement(
         "button",
@@ -370,7 +370,7 @@ const renderOutlineContent = (deps) => {
       {
         "aria-label": t("common.start_game"),
         onClick: handleInitializeVenn,
-        className: "flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-bold text-sm transition-colors border border-indigo-200 shadow-sm"
+        className: "flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full font-bold text-sm transition-colors border border-indigo-600 shadow-sm"
       },
       /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
       " ",
@@ -381,7 +381,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.selection"),
         value: outlineTranslationMode,
         onChange: (e) => setOutlineTranslationMode(e.target.value),
-        className: "text-xs border border-indigo-200 rounded-full px-3 py-2 bg-white text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm cursor-pointer"
+        className: "text-xs border border-indigo-600 rounded-full px-3 py-2 bg-white text-indigo-700 font-bold focus:outline-none focus:ring-2 focus:ring-indigo-200 shadow-sm cursor-pointer"
       },
       /* @__PURE__ */ React.createElement("option", { value: "bilingual" }, leveledTextLanguage, " + ", t("languages.english")),
       /* @__PURE__ */ React.createElement("option", { value: "target" }, leveledTextLanguage, " Only")
@@ -440,7 +440,7 @@ const renderOutlineContent = (deps) => {
         "aria-label": t("common.enter_branch"),
         value: branch.title,
         onChange: (e) => handleOutlineChange(i, "title", e.target.value),
-        className: "font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-200 focus:border-indigo-500"
+        className: "font-bold text-lg text-indigo-900 w-full bg-transparent outline-none border-b border-dashed border-indigo-600 focus:border-indigo-500"
       }
     ), (branch.title_en || leveledTextLanguage !== "English") && /* @__PURE__ */ React.createElement(
       "input",
@@ -506,7 +506,7 @@ const renderInteractiveMap = (deps) => {
       "aria-label": t("common.reset_venn_diagram"),
       onClick: handleVennResetBoard,
       disabled: isMapLocked,
-      className: `flex items-center gap-2 bg-white text-indigo-600 border border-indigo-200 px-4 py-2 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`
+      className: `flex items-center gap-2 bg-white text-indigo-600 border border-indigo-600 px-4 py-2 rounded-full text-xs font-bold hover:bg-indigo-50 transition-colors shadow-sm ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`
     },
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }),
     " ",
@@ -549,7 +549,7 @@ const renderInteractiveMap = (deps) => {
     {
       onClick: handleSetIsConceptMapReadyToFalse,
       disabled: isMapLocked,
-      className: `flex items-center gap-1 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-200 ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
+      className: `flex items-center gap-1 text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded text-xs font-bold hover:bg-indigo-50 transition-colors border border-transparent hover:border-indigo-600 ${isMapLocked ? "opacity-50 cursor-not-allowed" : ""}`,
       title: t("concept_map.toolbar.return_setup_tooltip"),
       "aria-label": t("concept_map.toolbar.return_setup_tooltip")
     },
@@ -596,7 +596,7 @@ const renderInteractiveMap = (deps) => {
     {
       onClick: () => handleAutoLayout(),
       disabled: isProcessing || isMapLocked,
-      className: "flex items-center gap-1 text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-100",
+      className: "flex items-center gap-1 text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded text-xs font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-indigo-600",
       title: t("concept_map.toolbar.auto_layout_tooltip"),
       "aria-label": t("concept_map.toolbar.auto_layout_tooltip")
     },
@@ -672,7 +672,7 @@ const renderInteractiveMap = (deps) => {
     "button",
     {
       onClick: handleExitChallenge,
-      className: "flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-500 border border-slate-400 hover:border-red-200 w-8 h-8 rounded-full transition-colors",
+      className: "flex items-center justify-center bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-500 border border-slate-400 hover:border-red-600 w-8 h-8 rounded-full transition-colors",
       title: t("concept_map.challenge.exit"),
       "aria-label": t("concept_map.challenge.exit")
     },
