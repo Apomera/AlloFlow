@@ -21364,7 +21364,7 @@ Keep the language professional but accessible.`;
 
                         h('span', { className: 'text-xs font-bold text-slate-700' }, name),
 
-                        h('select', { value: tierNum, onChange: (e) => setTier(name, parseInt(e.target.value)), 'aria-label': 'MTSS tier level for ' + name, className: 'ml-1 text-[11px] bg-transparent border-0 text-' + tc.color + '-600 font-bold cursor-pointer' }, h('option', { value: 1 }, 'T1'), h('option', { value: 2 }, 'T2'), h('option', { value: 3 }, 'T3'))
+                        h('select', { value: tierNum, onChange: (e) => setTier(name, parseInt(e.target.value)), 'aria-label': 'MTSS tier level for ' + name, className: 'ml-1 text-[11px] bg-white border border-slate-400 rounded px-1 text-' + tc.color + '-700 font-bold cursor-pointer' }, h('option', { value: 1 }, 'T1'), h('option', { value: 2 }, 'T2'), h('option', { value: 3 }, 'T3'))
 
                     )))
 

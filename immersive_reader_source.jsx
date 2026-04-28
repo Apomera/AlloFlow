@@ -214,7 +214,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>THEME</span>
-                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.light + '55', background: 'transparent', color: c.strong }}>
+                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.light, background: c.bg, color: c.strong }}>
                             <option value="warm">☀ Warm</option>
                             <option value="dark">🌙 Dark</option>
                             <option value="sepia">📜 Sepia</option>
@@ -800,7 +800,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ opacity: 0.7 }}>PALETTE</span>
-                        <select aria-label="Palette" value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 bg-transparent border" style={{ borderColor: p.text + '55', color: p.text }}>
+                        <select aria-label="Palette" value={palette} onChange={e => setPalette(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: p.text, background: p.bg, color: p.text }}>
                             <option value="gold">Golden</option>
                             <option value="teal">Aqua</option>
                             <option value="paper">Paper</option>
@@ -1226,7 +1226,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
                     </div>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.dim }}>THEME</span>
-                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.dim + '88', background: 'transparent', color: c.ink }}>
+                        <select aria-label="Theme" value={theme} onChange={e => setTheme(e.target.value)} className="text-xs rounded px-2 py-1 border" style={{ borderColor: c.ink, background: c.bg, color: c.ink }}>
                             <option value="warm">☀️ Warm</option>
                             <option value="dark">🌙 Dark</option>
                             <option value="sepia">📜 Sepia</option>
