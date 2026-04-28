@@ -627,7 +627,7 @@ window.StemLab = window.StemLab || {
         return h('button', { onClick: function() { upd('activeTab', id); if (soundEnabled) sfxClick(); },
           role: 'tab', 'aria-selected': active,
           className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
-            (active ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-200')
+            (active ? 'bg-purple-700 text-white shadow-md' : 'bg-white text-purple-600 hover:bg-purple-50 border border-purple-600')
         }, icon + ' ' + label);
       };
 
@@ -798,10 +798,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-1.5 flex-wrap' },
             [0, 30, 45, 60, 90, 120, 135, 150, 180, 270, 360].map(function(a) {
               return h('button', { 'aria-label': 'Set angle to ' + a + ' degrees', 'aria-pressed': angleValue === a, key: a, onClick: function() { setAngleValue(a); setAngleFeedback(null); if (soundEnabled) sfxClick(); logAngle(a, 'quick'); },
-                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-100')
+                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
               }, a + '\u00B0');
             }),
-            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition-all', title: 'Pin this angle on protractor' }, '\uD83D\uDCCC Pin')
+            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: 'Pin this angle on protractor' }, '\uD83D\uDCCC Pin')
           ),
 
           // Pinned angles
@@ -918,7 +918,7 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'flex gap-2 flex-wrap justify-center' },
                 ['Acute', t('stem.calculus.right') || 'Right', 'Obtuse', 'Straight', 'Reflex'].map(function(cls) {
                   return h('button', { 'aria-label': 'Answer Speed', key: cls, onClick: function() { answerSpeed(cls); },
-                    className: 'px-4 py-2 rounded-lg text-sm font-bold bg-white border-2 border-red-200 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all cursor-pointer'
+                    className: 'px-4 py-2 rounded-lg text-sm font-bold bg-white border-2 border-red-600 text-red-700 hover:bg-red-100 hover:border-red-400 transition-all cursor-pointer'
                   }, cls);
                 })
               )
@@ -974,7 +974,7 @@ window.StemLab = window.StemLab || {
                     else recordWrong();
                   },
                   className: 'px-3 py-2 rounded-lg text-sm font-bold transition-all border ' +
-                    (angleFeedback ? (cls === classifyAngle(angleChallenge.target) ? 'bg-green-100 border-green-400 text-green-700' : 'bg-slate-50 border-slate-200 text-slate-600') : 'bg-white border-purple-200 text-purple-700 hover:bg-purple-100 hover:border-purple-400 cursor-pointer')
+                    (angleFeedback ? (cls === classifyAngle(angleChallenge.target) ? 'bg-green-100 border-green-400 text-green-700' : 'bg-slate-50 border-slate-200 text-slate-600') : 'bg-white border-purple-600 text-purple-700 hover:bg-purple-100 hover:border-purple-400 cursor-pointer')
                 }, cls);
               })
             ),
@@ -1103,7 +1103,7 @@ window.StemLab = window.StemLab || {
                   checkBadges({ polygonsExplored: explored });
                 },
                   className: 'px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
-                    (active ? 'bg-violet-700 text-white shadow' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200')
+                    (active ? 'bg-violet-700 text-white shadow' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600')
                 }, p.icon + ' ' + p.name);
               })
             ),

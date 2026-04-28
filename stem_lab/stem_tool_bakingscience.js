@@ -648,7 +648,7 @@
                       return h('button', {
                         key: a.id,
                         onClick: function() { upd('leavAcid', a.id); playBeep('click'); },
-                        className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-amber-500 text-white border-amber-600 shadow' : 'bg-amber-50 border-amber-200 hover:border-amber-400 text-amber-900'),
+                        className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-amber-500 text-white border-amber-600 shadow' : 'bg-amber-50 border-amber-600 hover:border-amber-400 text-amber-900'),
                         'aria-pressed': active,
                         'aria-label': a.name
                       },
@@ -667,7 +667,7 @@
                       return h('button', {
                         key: b.id,
                         onClick: function() { upd('leavBase', b.id); playBeep('click'); },
-                        className: 'rounded-xl border-2 p-3 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white border-orange-600 shadow' : 'bg-orange-50 border-orange-200 hover:border-orange-400 text-orange-900'),
+                        className: 'rounded-xl border-2 p-3 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white border-orange-600 shadow' : 'bg-orange-50 border-orange-600 hover:border-orange-400 text-orange-900'),
                         'aria-pressed': active,
                         'aria-label': b.name
                       },
@@ -816,7 +816,7 @@
                   return h('button', {
                     key: g.id,
                     onClick: function() { upd('emulGoal', g.id); playBeep('click'); },
-                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-yellow-500 text-white shadow' : 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-200')
+                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-yellow-500 text-white shadow' : 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-600')
                   }, g.label);
                 })
               )
@@ -959,7 +959,7 @@
                   return h('button', {
                     key: r.id,
                     onClick: function() { upd('scaleRecipe', r.id); playBeep('click'); },
-                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white shadow' : 'bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-200')
+                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white shadow' : 'bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-600')
                   }, r.label);
                 })
               )
@@ -1365,7 +1365,7 @@
               h('div', { className: 'flex items-center gap-2' },
                 h('button', {
                   onClick: reshuffle,
-                  className: 'px-3 py-1.5 rounded-full text-xs font-bold bg-white border border-pink-200 text-pink-700 hover:bg-pink-50 shadow-sm',
+                  className: 'px-3 py-1.5 rounded-full text-xs font-bold bg-white border border-pink-600 text-pink-700 hover:bg-pink-50 shadow-sm',
                   'aria-label': tr('baking.diagnosis.reshuffle_aria', 'Reshuffle scenarios')
                 }, '\uD83D\uDD00 ' + tr('baking.diagnosis.reshuffle', 'Reshuffle')),
                 backBtn('pink')
@@ -1862,7 +1862,7 @@
                   return h('button', {
                     key: f.id,
                     onClick: function() { upd('brownFood', f.id); playBeep('click'); },
-                    className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white border-orange-600 shadow' : 'bg-orange-50 border-orange-200 hover:border-orange-400 text-orange-900'),
+                    className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white border-orange-600 shadow' : 'bg-orange-50 border-orange-600 hover:border-orange-400 text-orange-900'),
                     'aria-pressed': active,
                     'aria-label': f.label
                   },
@@ -2080,7 +2080,7 @@
                     onClick: function () { upd('aiLevel', L.id); },
                     'aria-label': 'Reading level: ' + L.label + (active ? ' (selected)' : ''),
                     'aria-pressed': active,
-                    className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                    className: 'px-2 py-0.5 rounded text-[10px] font-bold ' + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
                   }, L.label);
                 })
               ),

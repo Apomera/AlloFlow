@@ -5977,7 +5977,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     onClick: function () { initTank(tank.id); },
 
-                    className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-200/60 hover:border-cyan-400"
+                    className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-600 hover:border-cyan-400"
 
                   },
 
@@ -7239,7 +7239,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         onClick: function () { addFish(sp.id); },
 
-                        className: "px-2 py-1 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-all",
+                        className: "px-2 py-1 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-600 rounded-full hover:bg-cyan-100 transition-all",
 
                         title: sp.fact
 
@@ -7315,7 +7315,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: doWaterChange,
 
-                      className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-200/60"
+                      className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-600"
 
                     }, "\uD83D\uDCA7 Water"),
 
@@ -7325,7 +7325,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-600")
 
                     }, "\uD83C\uDF7D\uFE0F Flake"),
 
@@ -7335,7 +7335,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: tankFish.length === 0,
 
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-600 border-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-600")
 
                     }, "\uD83E\uDD90 Live")
 
@@ -7349,7 +7349,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: toggleLights,
 
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (lightsOn ? "bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-700 hover:from-yellow-100 hover:to-amber-100 border-amber-200/60" : "bg-gradient-to-r from-indigo-100 to-slate-100 text-indigo-700 hover:from-indigo-200 hover:to-slate-200 border-indigo-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (lightsOn ? "bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-700 hover:from-yellow-100 hover:to-amber-100 border-amber-600" : "bg-gradient-to-r from-indigo-100 to-slate-100 text-indigo-700 hover:from-indigo-200 hover:to-slate-200 border-indigo-600")
 
                     }, lightsOn ? "\uD83D\uDCA1 Lights On" : "\uD83C\uDF19 Lights Off"),
 
@@ -7357,7 +7357,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: medicateFish,
 
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-200/60 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-600 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
 
                     }, "\uD83D\uDC8A Medicate" + (Object.keys(fishSickness).length > 0 ? " (" + Object.keys(fishSickness).length + ")" : "")),
 
@@ -7365,7 +7365,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: cleanGlass,
 
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-200/60" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-600" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-600 border-slate-400")
 
                     }, "\uD83E\uDDF9 Clean" + (algaeLevel > 15 ? " (" + Math.round(algaeLevel) + "%)" : ""))
 
@@ -7757,7 +7757,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     },
 
-                    className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-700 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100")
+                    className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-700 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-600 hover:bg-blue-100")
 
                   }, sc.label);
 
@@ -7983,7 +7983,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       onClick: function () { upd('meshSize', m); },
 
-                      className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-700 text-white" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50")
+                      className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-700 text-white" : "bg-white text-blue-700 border border-blue-600 hover:bg-blue-50")
 
                     }, m.charAt(0).toUpperCase() + m.slice(1));
 
@@ -8003,7 +8003,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   React.createElement("button", { onClick: function () { upd('isOpenSeason', !isOpenSeason); },
 
-                    className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-700 text-white" : "bg-red-100 text-red-700 border border-red-200")
+                    className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-700 text-white" : "bg-red-100 text-red-700 border border-red-600")
 
                   }, isOpenSeason ? "\uD83D\uDFE2 Open Season" : "\uD83D\uDD34 Closed Season")
 
@@ -8241,7 +8241,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       disabled: answered,
 
-                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-600") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
+                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-600") : "bg-white border-indigo-600 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
 
                     }, opt);
 

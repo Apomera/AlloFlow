@@ -4061,7 +4061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var ttsBtn = function(text) {
           return h('button', {
             onClick: function() { speakText(text, callTTS); },
-            className: 'ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-200',
+            className: 'ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-all border border-indigo-600',
             title: 'Read aloud', 'aria-label': 'Read aloud'
           }, '\uD83D\uDD0A');
         };
@@ -4113,7 +4113,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ),
             h('button', { 'aria-label': 'Snapshot',
               onClick: takeSnapshot,
-              className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all',
+              className: 'ml-auto px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all',
               title: 'Save snapshot'
             }, '\uD83D\uDCF8 Snapshot')
           ),
@@ -4131,32 +4131,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('button', { 'aria-label': 'Tour',
               role: 'tab', 'aria-selected': activeTab === 'tour', tabIndex: activeTab === 'tour' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'tour'); if (!tourActive) { upd('_tourActive', true); upd('_tourStepIdx', 0); } },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'tour' ? 'bg-emerald-700 text-white' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-600')
             }, '\uD83E\uDDED Tour'),
             h('button', { 'aria-label': 'Connect',
               role: 'tab', 'aria-selected': activeTab === 'connections', tabIndex: activeTab === 'connections' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'connections'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-200')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'connections' ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-600 hover:bg-sky-100 border border-sky-600')
             }, '\uD83D\uDD17 Connect'),
             h('button', { 'aria-label': 'AI Tutor',
               role: 'tab', 'aria-selected': activeTab === 'aiTutor', tabIndex: activeTab === 'aiTutor' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'aiTutor'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'aiTutor' ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600')
             }, '\uD83E\uDD16 AI Tutor'),
             h('button', { 'aria-label': 'Spotter',
               role: 'tab', 'aria-selected': activeTab === 'spotter', tabIndex: activeTab === 'spotter' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'spotter'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'spotter' ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-600')
             }, '\uD83C\uDFAF Spotter'),
             h('button', { 'aria-label': 'Pathways',
               role: 'tab', 'aria-selected': activeTab === 'pathways', tabIndex: activeTab === 'pathways' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'pathways'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'pathways' ? 'bg-rose-600 text-white' : 'bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-600')
             }, '\uD83D\uDEE4 Pathways'),
             h('button', { 'aria-label': 'Cards',
               role: 'tab', 'aria-selected': activeTab === 'flashcards', tabIndex: activeTab === 'flashcards' ? 0 : -1,
               onClick: function() { upd('_activeTab', 'flashcards'); },
-              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200')
+              className: 'px-4 py-1.5 rounded-lg text-xs font-bold transition-all ' + (activeTab === 'flashcards' ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-600')
             }, '\uD83C\uDCCF Cards'),
             h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
           ),
@@ -4185,7 +4185,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 return h('button', { 'aria-label': 'Ask question',
                   key: qi,
                   onClick: function() { sendAiQuestion(q); },
-                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-200 transition-all'
+                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-violet-50 text-violet-600 hover:bg-violet-100 border border-violet-600 transition-all'
                 }, q);
               })
             ),
@@ -4196,7 +4196,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 value: d._aiInput || '',
                 onChange: function(e) { upd('_aiInput', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); } },
-                className: 'flex-1 px-3 py-1.5 text-xs border border-violet-200 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none'
+                className: 'flex-1 px-3 py-1.5 text-xs border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-300 outline-none'
               }),
               h('button', { 'aria-label': 'Ask',
                 onClick: function() { sendAiQuestion(d._aiInput || ''); upd('_aiInput', ''); },
@@ -4525,7 +4525,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // Mnemonics section
             MNEMONICS[sysKey] && MNEMONICS[sysKey].length > 0 ? h('div', { className: 'mb-3' },
               h('button', { onClick: function() { upd('_showMnemonics', !d._showMnemonics); },
-                className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-all'
+                className: 'w-full flex items-center justify-between px-3 py-2 rounded-lg bg-purple-50 border border-purple-600 hover:bg-purple-100 transition-all'
               },
                 h('span', { className: 'text-[11px] font-bold text-purple-700 uppercase flex items-center gap-1' }, '\uD83E\uDDE0 Mnemonics (' + MNEMONICS[sysKey].length + ')'),
                 h('span', { className: 'text-[11px] text-purple-500' }, d._showMnemonics ? '\u25B2' : '\u25BC')
@@ -4614,7 +4614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 className: 'flex-1 min-w-[140px] px-3 py-1.5 text-xs border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none'
               }),
               h('button', { onClick: function() { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               h('div', { className: 'flex rounded-lg border border-slate-400 overflow-hidden' },
                 [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function(lv) {
@@ -4652,7 +4652,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               sysKey === 'reproductive' ? h('button', {
                 'aria-label': 'Toggle male/female anatomy',
                 onClick: function() { upd('_maleAnatomy', !d._maleAnatomy); },
-                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ml-1 ' + (d._maleAnatomy ? 'bg-violet-600 text-white border-violet-600' : 'bg-pink-50 text-pink-600 border-pink-200 hover:bg-pink-100'),
+                className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ml-1 ' + (d._maleAnatomy ? 'bg-violet-600 text-white border-violet-600' : 'bg-pink-50 text-pink-600 border-pink-600 hover:bg-pink-100'),
                 title: 'Switch between male and female reproductive anatomy'
               }, d._maleAnatomy ? '\u2642 Male' : '\u2640 Female') : null
             ),
@@ -4915,14 +4915,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           upd('_clinicalSolved', (d._clinicalSolved || 0) + 1);
                           playSound('clinicalCase');
                         },
-                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all'
+                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-600 hover:bg-green-100 transition-all'
                       }, '\u2705 I got it!'),
                       h('button', { 'aria-label': 'Reveal Answer',
                         onClick: function() {
                           upd('_activeCaseIdx', ci);
                           upd('_activeCaseFeedback', 'reveal');
                         },
-                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all'
+                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all'
                       }, '\uD83D\uDC41 Reveal Answer')
                     )
                   );

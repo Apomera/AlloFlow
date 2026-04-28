@@ -641,11 +641,11 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'grid grid-cols-3 gap-2 mb-2' },
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[11px] font-bold text-red-600 uppercase' }, 'Rise (\u0394y)'),
-              h('input', { type: 'number', placeholder: '?', value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-red-200 rounded-lg text-sm font-bold text-center focus:border-red-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-400' : '') })
+              h('input', { type: 'number', placeholder: '?', value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { riseAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-red-600 rounded-lg text-sm font-bold text-center focus:border-red-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-400' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[11px] font-bold text-blue-600 uppercase' }, 'Run (\u0394x)'),
-              h('input', { type: 'number', placeholder: '?', value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-blue-200 rounded-lg text-sm font-bold text-center focus:border-blue-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-400' : '') })
+              h('input', { type: 'number', placeholder: '?', value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: function(e) { setGridFeedback(function(prev) { return Object.assign({}, prev, { runAnswer: e.target.value }); }); }, disabled: gridFeedback && gridFeedback.hinted, className: 'px-2 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-bold text-center focus:border-blue-400 ' + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-400' : '') })
             ),
             h('div', { className: 'flex flex-col gap-1' },
               h('label', { className: 'text-[11px] font-bold text-amber-700 uppercase' }, 'Slope (m)'),
@@ -743,7 +743,7 @@ window.StemLab = window.StemLab || {
         // AI Tutor toggle + panel
         !showAITutor && h('button', { 'aria-label': 'AI Tutor',
           onClick: function() { sfxClick(); updCG({ showAITutor: true }); },
-          className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
+          className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-600 hover:bg-sky-100 transition-all'
         }, '\uD83E\uDD16 AI Tutor'),
         renderAITutor(),
 

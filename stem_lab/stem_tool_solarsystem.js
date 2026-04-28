@@ -13601,19 +13601,19 @@ const d = labToolData.solarSystem;
                     React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-amber-300' : 'text-amber-800') }, "\uD83D\uDCDD New Entry: " + sel.name),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "What I predicted:"),
-                      React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: "Before exploring, I thought...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-predict', rows: 2, placeholder: "Before exploring, I thought...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "What I observed:"),
-                      React.createElement("textarea", { id: 'journal-observe', rows: 2, placeholder: "I noticed that...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-observe', rows: 2, placeholder: "I noticed that...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "What surprised me:"),
-                      React.createElement("textarea", { id: 'journal-surprise', rows: 1, placeholder: "I was surprised that...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-surprise', rows: 1, placeholder: "I was surprised that...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("div", null,
                       React.createElement("label", { className: "text-[11px] font-bold text-amber-600 block mb-0.5" }, "One question I still have:"),
-                      React.createElement("textarea", { id: 'journal-question', rows: 1, placeholder: "I wonder...", className: "w-full text-[11px] p-2 rounded border border-amber-200 resize-none", style: { fontSize: '11px' } })
+                      React.createElement("textarea", { id: 'journal-question', rows: 1, placeholder: "I wonder...", className: "w-full text-[11px] p-2 rounded border border-amber-600 resize-none", style: { fontSize: '11px' } })
                     ),
                     React.createElement("button", {
                       onClick: function() {

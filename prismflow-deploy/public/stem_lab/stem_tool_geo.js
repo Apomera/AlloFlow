@@ -2403,7 +2403,7 @@ var d = labToolData || {};
                       disabled: answered,
                       onChange: function(e) { upd('geoQuizAnswer', e.target.value); },
                       onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(d.geoQuizAnswer || ''); },
-                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-200 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-300'
+                      className: 'flex-1 px-3 py-2 rounded-lg border border-teal-600 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400 disabled:bg-slate-50 disabled:text-slate-300'
                     }),
 
                     React.createElement('button', {
@@ -2513,7 +2513,7 @@ var d = labToolData || {};
                     onKeyDown: function(e) { if (e.key === 'Enter') checkDistanceAnswer(); },
                     placeholder: 'Distance in km...',
                     'aria-label': 'Distance guess in kilometers',
-                    className: 'w-48 px-3 py-2 rounded-lg border border-teal-200 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
+                    className: 'w-48 px-3 py-2 rounded-lg border border-teal-600 text-sm text-center focus:outline-none focus:ring-2 focus:ring-teal-400'
                   }),
                   React.createElement('span', { className: 'text-xs text-slate-600 font-bold' }, 'km'),
                   React.createElement('button', {
@@ -3248,7 +3248,7 @@ var d = labToolData || {};
             React.createElement('div',{className:'flex items-center gap-2 mb-3'}, React.createElement('div',{className:'w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-base'},'📝'), React.createElement('div',{className:'flex-1'}, React.createElement('h4',{className:'text-sm font-bold text-emerald-800'},proof.title), React.createElement('p',{className:'text-[11px] text-emerald-600 italic'},proof.theorem)), React.createElement('div',{className:`text-xs font-bold px-2 py-1 rounded-full ${pct===100?'bg-emerald-700 text-white':'bg-emerald-100 text-emerald-700'}`},pct+'%')),
             React.createElement('div',{className:'w-full h-1.5 bg-emerald-200 rounded-full mb-3 overflow-hidden'}, React.createElement('div',{className:'h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-500',style:{width:pct+'%'}})),
             // Proof selector
-            React.createElement('div',{className:'flex gap-1.5 mb-3 flex-wrap'}, GUIDED_PROOFS.map(p=>React.createElement('button',{key:p.id,onClick:()=>loadGuidedProof(p.id),className:`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${gpGuided.proofId===p.id?'bg-emerald-700 text-white':'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-200'}`},p.title.split(' ').slice(0,3).join(' ')))),
+            React.createElement('div',{className:'flex gap-1.5 mb-3 flex-wrap'}, GUIDED_PROOFS.map(p=>React.createElement('button',{key:p.id,onClick:()=>loadGuidedProof(p.id),className:`px-2 py-1 text-[11px] font-bold rounded-lg transition-all ${gpGuided.proofId===p.id?'bg-emerald-700 text-white':'bg-white text-emerald-700 hover:bg-emerald-100 border border-emerald-600'}`},p.title.split(' ').slice(0,3).join(' ')))),
             // ── Reason Chip Bank (draggable) ──
             React.createElement('div',{className:'mb-3'},
               React.createElement('p',{className:'text-[11px] font-bold text-emerald-700 uppercase mb-1.5'},'🧩 Drag a reason to the correct row (or click to select, then click the row):'),
@@ -3377,7 +3377,7 @@ var d = labToolData || {};
           // BUILD TAB
           gpTab==='build'&&React.createElement('div',{className:'space-y-3'},
             React.createElement('div',{className:'flex items-center gap-2'},
-              React.createElement('button',{onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
+              React.createElement('button',{onClick:()=>{gpUpd('investigate',!gpInvestigate);gpUpd('revealed',false);gpUpd('prediction','');},className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpInvestigate?'bg-amber-700 text-white shadow':'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100'}`},gpInvestigate?'🔮 Investigate ON':'🔮 Investigate Mode'),
               React.createElement('span',{className:'text-[11px] text-slate-600 italic'},gpInvestigate?'Theorems hidden — predict first!':'Auto-show theorems')
             ),
             React.createElement('div',{className:'flex gap-1.5 flex-wrap'},
@@ -3387,13 +3387,13 @@ var d = labToolData || {};
                {id:'parallel',label:'∥ Parallel',color:'teal',action:loadParallel},
                {id:'bisector',label:'∠ Bisector',color:'amber',action:loadBisector},
                {id:'guided',label:'📝 Guided Proof',color:'emerald',action:()=>loadGuidedProof('tri_angle_sum')}
-              ].map(m=>React.createElement('button',{key:m.id,onClick:m.action,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpMode===m.id?'bg-'+m.color+'-600 text-white shadow-md':'bg-'+m.color+'-50 text-'+m.color+'-700 hover:bg-'+m.color+'-100 border border-'+m.color+'-200'}`},m.label))
+              ].map(m=>React.createElement('button',{key:m.id,onClick:m.action,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpMode===m.id?'bg-'+m.color+'-600 text-white shadow-md':'bg-'+m.color+'-50 text-'+m.color+'-700 hover:bg-'+m.color+'-100 border border-'+m.color+'-600'}`},m.label))
             ),
             React.createElement('div',{className:'flex gap-2 flex-wrap'},
-              React.createElement('button',{onClick:()=>{if(gpPoints.length>=2){const last=gpPoints.length-1;if(!gpSegments.some(s=>(s.from===last-1&&s.to===last)||(s.from===last&&s.to===last-1)))gpUpd('segments',[...gpSegments,{from:last-1,to:last}]);}},disabled:gpPoints.length<2,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-200 transition-all disabled:opacity-40'},'🔗 Connect Last Two'),
-              React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
+              React.createElement('button',{onClick:()=>{if(gpPoints.length>=2){const last=gpPoints.length-1;if(!gpSegments.some(s=>(s.from===last-1&&s.to===last)||(s.from===last&&s.to===last-1)))gpUpd('segments',[...gpSegments,{from:last-1,to:last}]);}},disabled:gpPoints.length<2,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-violet-100 text-violet-700 hover:bg-violet-200 border border-violet-600 transition-all disabled:opacity-40'},'🔗 Connect Last Two'),
+              React.createElement('button',{onClick:()=>{if(gpConnecting!=null)gpUpd('connecting',null);else if(gpPoints.length>0)gpUpd('connecting',gpPoints.length-1);},disabled:gpPoints.length<1,className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpConnecting!=null?'bg-indigo-600 text-white':'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-600'} disabled:opacity-40`},gpConnecting!=null?'✔ Connecting from '+labelFor(gpConnecting):'↗️ Draw Segment'),
               React.createElement('button',{onClick:()=>gpUpd('showLabels',!gpShowLabels),className:`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${gpShowLabels?'bg-emerald-700 text-white':'bg-slate-100 text-slate-600 border border-slate-400'}`},gpShowLabels?'📏 Labels ON':'📏 Labels'),
-              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 transition-all disabled:opacity-40'},'⌫ Undo'),
+              React.createElement('button',{onClick:()=>{if(gpPoints.length>0){const rm=gpPoints.length-1;gpUpd('points',gpPoints.slice(0,-1));gpUpd('segments',gpSegments.filter(s=>s.from!==rm&&s.to!==rm));gpUpd('connecting',null);}},disabled:gpPoints.length<1,className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-red-50 text-red-600 hover:bg-red-100 border border-red-600 transition-all disabled:opacity-40'},'⌫ Undo'),
               React.createElement('button',{onClick:()=>{gpUpd('points',[]);gpUpd('segments',[]);gpUpd('connecting',null);gpUpd('feedback',null);gpUpd('challenge',null);gpUpd('challengeAnswer','');},className:'px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 transition-all'},'↺ Clear')
             ),
             renderTheoremPanel(),

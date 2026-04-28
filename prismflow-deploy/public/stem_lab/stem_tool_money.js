@@ -1563,8 +1563,8 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 border border-pink-200" },
                   React.createElement("h3", { className: "text-base font-bold text-pink-800 mb-3" }, "\uD83D\uDCB3 Tips & Discounts"),
                   React.createElement("div", { className: "flex gap-2 mb-4" },
-                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDF7D Tip Calculator"),
-                    React.createElement("button", { "aria-label": "Discount Shopping", onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDFF7\uFE0F Discount Shopping")
+                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-600 hover:bg-pink-50') }, "\uD83C\uDF7D Tip Calculator"),
+                    React.createElement("button", { "aria-label": "Discount Shopping", onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-600 hover:bg-pink-50') }, "\uD83C\uDFF7\uFE0F Discount Shopping")
                   ),
                   // Tip mode
                   (d.tipMode || 'tip') === 'tip' && (!d.tipBill
@@ -1726,7 +1726,7 @@ window.StemLab = window.StemLab || {
                       cur.bills.slice().reverse().concat(cur.coins.slice().reverse()).map(function (item, idx) {
                         return React.createElement("button", { key: idx, onClick: function () {
                           upd('fcPlaced', [].concat(d.fcPlaced || [], [item.value]));
-                        }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-200 hover:bg-amber-50 transition-all" }, (item.name || fmt(item.value)));
+                        }, className: "px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-600 hover:bg-amber-50 transition-all" }, (item.name || fmt(item.value)));
                       })
                     ),
                     // Placed items
@@ -2023,7 +2023,7 @@ window.StemLab = window.StemLab || {
                             }
                           },
                           disabled: !!cdFb,
-                          className: "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all border-2 " + (wouldOvershoot && !cdFb ? 'border-red-200 bg-red-50 opacity-60' : 'border-amber-200 bg-white hover:border-amber-400 hover:shadow-md hover:scale-105') + (cdFb ? ' opacity-50 cursor-not-allowed' : '')
+                          className: "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all border-2 " + (wouldOvershoot && !cdFb ? 'border-red-600 bg-red-50 opacity-60' : 'border-amber-600 bg-white hover:border-amber-400 hover:shadow-md hover:scale-105') + (cdFb ? ' opacity-50 cursor-not-allowed' : '')
                         },
                           React.createElement("div", {
                             className: "flex items-center justify-center rounded-full font-black text-white text-[11px]",
@@ -2212,7 +2212,7 @@ window.StemLab = window.StemLab || {
                     Object.keys(loanPresets).map(function (k) {
                       return React.createElement("button", { "aria-label": "Loan Amount", key: k, onClick: function () {
                         upd('loanType', k); upd('loanAmt', loanPresets[k].amt); upd('loanRate', loanPresets[k].rate); upd('loanTerm', loanPresets[k].term);
-                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-700 text-white shadow-md' : 'bg-white text-rose-600 border border-rose-200 hover:bg-rose-50') }, loanPresets[k].label);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-700 text-white shadow-md' : 'bg-white text-rose-600 border border-rose-600 hover:bg-rose-50') }, loanPresets[k].label);
                     })
                   ),
                   // Controls
@@ -2293,7 +2293,7 @@ window.StemLab = window.StemLab || {
                     Object.keys(sgGoals).map(function (k) {
                       return React.createElement("button", { "aria-label": "Target Amount", key: k, onClick: function () {
                         upd('sgGoal', k); upd('sgTarget', sgGoals[k].target); upd('sgHave', 0);
-                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50') }, sgGoals[k].label);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50') }, sgGoals[k].label);
                     })
                   ),
                   // Controls

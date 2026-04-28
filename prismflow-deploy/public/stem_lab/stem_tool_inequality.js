@@ -505,11 +505,11 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'px-2 py-0.5 bg-fuchsia-100 text-fuchsia-700 text-[11px] font-bold rounded-full' }, 'INTERACTIVE'),
           d.quiz && (d.quiz.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.quiz.streak),
           earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
-            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
+            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
             title: 'View badges (B)'
           }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
           h('button', { onClick: askAI,
-            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
+            className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
             title: 'AI Tutor (?)'
           }, '\uD83E\uDDE0 AI')
         ),
@@ -550,7 +550,7 @@ window.StemLab = window.StemLab || {
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
           !aiLoading && h('button', { 'aria-label': 'Ask Again',
             onClick: askAI,
-            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
+            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
           }, '\uD83D\uDD04 Ask Again')
         ),
 
@@ -587,7 +587,7 @@ window.StemLab = window.StemLab || {
           PRESETS.map(function(ex) {
             return h('button', { key: ex.label,
               onClick: function() { upd('expr', ex.expr); },
-              className: 'px-2 py-1 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-600 rounded border border-fuchsia-200 hover:bg-fuchsia-100 transition-all'
+              className: 'px-2 py-1 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-600 rounded border border-fuchsia-600 hover:bg-fuchsia-100 transition-all'
             }, ex.label);
           })
         ),
@@ -822,7 +822,7 @@ window.StemLab = window.StemLab || {
                       addToast('\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'), 'error');
                     }
                   },
-                  className: 'px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-fuchsia-200 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all'
+                  className: 'px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-fuchsia-600 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all'
                 }, dispOpt);
               })
             )

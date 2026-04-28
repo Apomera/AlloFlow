@@ -966,7 +966,7 @@ window.StemLab = window.StemLab || {
 
               h('button', { 'aria-label': 'Clear',
                 onClick: clearComponents,
-                className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all'
+                className: 'px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-600 hover:bg-red-100 transition-all'
               }, '\uD83D\uDDD1 Clear'),
 
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-600 ml-auto' }, components.length + ' component' + (components.length > 1 ? 's' : ''))
@@ -1221,7 +1221,7 @@ window.StemLab = window.StemLab || {
                         upd('challenge', ch);
                       }
                     },
-                    className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : challengesDoneSet[ci] ? 'bg-emerald-50 text-emerald-500 border-emerald-200' : 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50')
+                    className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : challengesDoneSet[ci] ? 'bg-emerald-50 text-emerald-500 border-emerald-600' : 'bg-white text-amber-700 border-amber-600 hover:bg-amber-50')
                   }, (close || challengesDoneSet[ci] ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
                 })
               )
@@ -1265,7 +1265,7 @@ window.StemLab = window.StemLab || {
                           }
                           checkBadges(getBadgeUpdates({ quizScore: newScore, quizStreak: newStreak }));
                         },
-                        className: 'px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all'
+                        className: 'px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-all'
                       }, opt + ohmQuiz.unit);
                     })
                   )
@@ -1317,7 +1317,7 @@ window.StemLab = window.StemLab || {
                   value: aiQuestion,
                   onChange: function(e) { upd('aiQuestion', e.target.value); },
                   onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
-                  className: 'flex-1 px-3 py-2 text-sm border border-blue-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300'
+                  className: 'flex-1 px-3 py-2 text-sm border border-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300'
                 }),
                 h('button', { 'aria-label': 'AI is thinking...',
                   onClick: askAI,
@@ -1333,7 +1333,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': 'Ask question',
                     key: q,
                     onClick: function() { updMulti({ aiQuestion: q }); },
-                    className: 'px-2 py-1 text-[11px] bg-white text-blue-600 border border-blue-200 rounded-full hover:bg-blue-50 transition-all'
+                    className: 'px-2 py-1 text-[11px] bg-white text-blue-600 border border-blue-600 rounded-full hover:bg-blue-50 transition-all'
                   }, q);
                 })
               )

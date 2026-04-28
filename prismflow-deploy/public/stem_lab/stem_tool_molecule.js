@@ -1297,7 +1297,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                   onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all ml-auto"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-600 hover:bg-red-100 transition-all ml-auto"
 
                 }, "\uD83D\uDDD1\uFE0F Clear All")
 
@@ -1570,7 +1570,7 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
 
-                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                        relatedCompounds.map((comp, i) => React.createElement("button", { "aria-label": "Open " + comp.name + " in Compound Creator", key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[11px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
 
                       )
 

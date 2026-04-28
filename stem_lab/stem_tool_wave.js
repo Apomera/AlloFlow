@@ -1471,7 +1471,7 @@ const d = labToolData.wave;
 
                 React.createElement("button", { key: wt, onClick: () => upd('waveType', wt),
 
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100')
 
                 }, wt.charAt(0).toUpperCase() + wt.slice(1))
 
@@ -1487,7 +1487,7 @@ const d = labToolData.wave;
 
               [1, 2, 3, 4, 5, 6].map(function (h) {
 
-                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100') }, h);
 
               }),
 
@@ -1926,7 +1926,7 @@ const d = labToolData.wave;
                         onClick: function () { setAiLevel(L.id); },
                         "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
                       }, L.label);
                     })
                   ),

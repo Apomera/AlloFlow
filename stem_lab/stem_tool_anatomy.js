@@ -4915,14 +4915,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           upd('_clinicalSolved', (d._clinicalSolved || 0) + 1);
                           playSound('clinicalCase');
                         },
-                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-all'
+                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-green-50 text-green-700 border border-green-600 hover:bg-green-100 transition-all'
                       }, '\u2705 I got it!'),
                       h('button', { 'aria-label': 'Reveal Answer',
                         onClick: function() {
                           upd('_activeCaseIdx', ci);
                           upd('_activeCaseFeedback', 'reveal');
                         },
-                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-all'
+                        className: 'px-2 py-1 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100 transition-all'
                       }, '\uD83D\uDC41 Reveal Answer')
                     )
                   );

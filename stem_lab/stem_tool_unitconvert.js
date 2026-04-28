@@ -353,13 +353,13 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             (d.score || 0) > 0 && h('span', { className: 'px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-bold rounded-full' }, '\u2B50 ' + d.score + ' XP'),
             (d.streak || 0) >= 2 && h('span', { className: 'px-2 py-0.5 bg-orange-100 text-orange-600 text-[11px] font-bold rounded-full animate-pulse' }, '\uD83D\uDD25 ' + d.streak),
             earnedCount > 0 && h('button', { onClick: function() { upd('showBadges', !showBadges); },
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 hover:bg-amber-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-600 text-amber-700 hover:bg-amber-100 transition-all',
               title: 'View badges (B)'
             }, '\uD83C\uDFC5 ' + earnedCount + '/' + BADGES.length),
             h('button', { onClick: askTutor,
               'aria-label': tutorLoading ? 'AI Tutor thinking' : 'Ask AI Tutor',
               'aria-busy': !!tutorLoading,
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-all',
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 border border-purple-600 text-purple-600 hover:bg-purple-100 transition-all',
               title: 'AI Tutor (?)'
             }, '\uD83E\uDDE0 AI')
           ),
@@ -400,7 +400,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
             !tutorLoading && h('button', { 'aria-label': 'Ask Again',
               onClick: askTutor,
-              className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-200 transition-all'
+              className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
             }, '\uD83D\uDD04 Ask Again')
           ),
 
@@ -462,7 +462,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('select', {
                     'aria-label': 'From unit', value: d.fromUnit,
                     onChange: function(e) { upd('fromUnit', e.target.value); },
-                    className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1'
+                    className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1'
                   }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, u); }))
                 ),
 
@@ -485,7 +485,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('select', {
                     'aria-label': 'To unit', value: d.toUnit,
                     onChange: function(e) { upd('toUnit', e.target.value); },
-                    className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1'
+                    className: 'block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1'
                   }, Object.keys(cat.units).map(function(u) { return h('option', { key: u, value: u }, u); }))
                 )
               ),
@@ -615,7 +615,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                         return Object.assign({}, prev, { unitConvert: Object.assign({}, prev.unitConvert, { category: p.category, fromUnit: p.from, toUnit: p.to }) });
                       });
                     },
-                    className: 'flex items-center gap-1 px-2 py-1 bg-white border border-amber-200 rounded-full text-xs font-bold text-amber-700 hover:bg-amber-50'
+                    className: 'flex items-center gap-1 px-2 py-1 bg-white border border-amber-600 rounded-full text-xs font-bold text-amber-700 hover:bg-amber-50'
                   },
                     p.label,
                     h('span', { 
@@ -752,7 +752,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       type: 'number', placeholder: 'Your answer...', autoFocus: true,
                       step: '0.01',
                       'aria-label': 'Quiz answer',
-                      className: 'flex-1 px-3 py-2 border-2 border-cyan-200 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400',
+                      className: 'flex-1 px-3 py-2 border-2 border-cyan-600 rounded-lg font-mono text-sm outline-none focus:ring-2 focus:ring-cyan-500 focus:border-cyan-400',
                       onKeyDown: function(e) {
                         if (e.key !== 'Enter') return;
                         var ans = parseFloat(e.target.value);

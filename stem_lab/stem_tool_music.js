@@ -2780,7 +2780,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         return React.createElement("button", { "aria-label": "Minor 6th Diminished Scale",
                           key: i,
                           onClick: function () { playChord(NOTE_NAMES[(rootIdx + chord.degree) % 12], chord.type, 0); },
-                          className: "px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-200 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200')
+                          className: "px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-600 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-600 hover:bg-amber-200')
                         }, chord.label);
                       })
                     )
@@ -2792,7 +2792,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         return React.createElement("button", { "aria-label": "Play Chord",
                           key: i,
                           onClick: function () { playChord(NOTE_NAMES[(rootIdx + chord.degree) % 12], chord.type, 0); },
-                          className: "px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-200 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200')
+                          className: "px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-600 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-600 hover:bg-amber-200')
                         }, chord.label);
                       })
                     )
@@ -2868,7 +2868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("span", { className: "text-xs font-bold text-purple-700 w-8 text-center" }, d.seqBPM || 120)
                 ),
                 // Tap Tempo
-                React.createElement("button", { "aria-label": "Tap", onClick: tapTempo, className: "px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all border border-amber-200" }, "\uD83E\uDD4A Tap"),
+                React.createElement("button", { "aria-label": "Tap", onClick: tapTempo, className: "px-2 py-1.5 rounded-lg text-[11px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all border border-amber-600" }, "\uD83E\uDD4A Tap"),
                 // Pattern Length
                 React.createElement("select", { value: String(d.bpPatternLen || 16), onChange: function (e) { upd('bpPatternLen', parseInt(e.target.value)); }, className: "px-2 py-1 rounded text-[11px] font-bold bg-white border border-slate-400", title: "Pattern length in steps" },
                   React.createElement("option", { value: '8' }, "8 steps"),
@@ -2889,7 +2889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("button", { onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[11px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-600 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
                 ),
                 // Step Rec toggle
-                React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
+                React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-600') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
                 // Clear
                 React.createElement("button", { "aria-label": "Clear all beats", onClick: function () { pushBpUndo(); upd('seqGrid', {}); upd('beatMelody', null); }, className: "ml-auto px-2 py-1 rounded text-[11px] font-bold bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 transition-all" }, "\uD83D\uDDD1 Clear")
               ),
@@ -2920,7 +2920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "border-l border-slate-200 h-6 mx-1" }),
                 React.createElement("button", { "aria-label": "A loop",
                   onClick: function () { upd('bpChainMode', !d.bpChainMode); },
-                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-700 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100')
+                  className: "px-2 py-1 rounded-lg text-[11px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-700 text-white' : 'bg-orange-50 text-orange-600 border border-orange-600 hover:bg-orange-100')
                 }, "\uD83D\uDD17 Chain " + (d.bpChainMode ? 'ON' : 'OFF')),
                 d.bpChainMode && React.createElement("span", { className: "text-[11px] text-orange-500" }, "A\u2192B\u2192C\u2192D loop")
               ),
@@ -2929,7 +2929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               React.createElement("div", { className: "flex gap-1.5 mb-3 flex-wrap" },
                 Object.keys(SEQ_PRESETS).map(function (key) {
                   return React.createElement("button", { "aria-label": "Load " + key + " preset", key: key, onClick: function () { pushBpUndo(); upd('seqGrid', Object.assign({}, SEQ_PRESETS[key].grid)); },
-                    className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-200 hover:from-purple-100 hover:to-pink-100 hover:shadow-sm transition-all"
+                    className: "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-600 hover:from-purple-100 hover:to-pink-100 hover:shadow-sm transition-all"
                   }, "\uD83C\uDFB5 " + SEQ_PRESETS[key].name);
                 })
               ),
@@ -2998,7 +2998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   React.createElement("span", { className: "text-[11px] text-slate-200" }, "16 steps = 1 bar"),
                   // Scale selector
                   React.createElement("select", { value: d.bpScale || 'major', onChange: function (e) { upd('bpScale', e.target.value); },
-                    className: "ml-auto px-2 py-0.5 rounded text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200"
+                    className: "ml-auto px-2 py-0.5 rounded text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-600"
                   },
                     Object.keys(SCALE_PATTERNS).map(function (k) {
                       return React.createElement("option", { key: k, value: k }, '\uD83C\uDFB5 ' + SCALE_PATTERNS[k].name);
@@ -3373,7 +3373,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   ? React.createElement("div", { className: "flex gap-2 flex-wrap" },
                       (window._alloUserSamples || []).map(function (smp, si) {
                         return React.createElement("button", { "aria-label": "Play recorded sample " + (si + 1), key: si, onMouseDown: function () { playUserSample(si); },
-                          className: "px-3 py-2 rounded-lg text-[11px] font-bold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:shadow-sm transition-all flex items-center gap-1"
+                          className: "px-3 py-2 rounded-lg text-[11px] font-bold bg-white border border-indigo-600 text-indigo-700 hover:bg-indigo-50 hover:shadow-sm transition-all flex items-center gap-1"
                         },
                           React.createElement("span", null, "\uD83C\uDFB5"),
                           React.createElement("span", { className: "truncate max-w-[80px]" }, smp.name),
@@ -3555,7 +3555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                   { id: 'pad', label: '\uD83C\uDF0A Pad', desc: t('stem.synth.slow_lush') }].map(function (v) {
                     return React.createElement("button", { key: v.id,
                       onClick: function () { upd('omniVoice', v.id); },
-                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
+                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-600 text-amber-800 hover:bg-amber-100')
                     },
                       React.createElement("div", { className: "text-xs font-bold" }, v.label),
                       React.createElement("div", { className: "text-[11px] " + ((d.omniVoice || 'harp') === v.id ? 'text-amber-200' : 'text-amber-500') }, v.desc)
@@ -3583,7 +3583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                           onClick: function () {
                             upd('omniChordRoot', root); upd('omniChordType', ct.type);
                           },
-                          className: "py-2 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-gradient-to-b ' + ct.color + ' text-white shadow-md scale-105' : 'bg-white border border-amber-200 text-amber-800 hover:border-amber-400 hover:bg-amber-50')
+                          className: "py-2 rounded-lg text-[11px] font-bold transition-all " + (isActive ? 'bg-gradient-to-b ' + ct.color + ' text-white shadow-md scale-105' : 'bg-white border border-amber-600 text-amber-800 hover:border-amber-400 hover:bg-amber-50')
                         }, root + ct.label,
                           React.createElement("div", { className: "text-[11px] opacity-40 mt-0.5" }, (function() { var keys = { C: 'QAZ', D: 'WSX', E: 'EDC', F: 'RFV', G: 'TGB', A: 'YHN', B: 'UJM' }; var row = { Major: 0, Minor: 1, Dom7: 2 }; return keys[root] ? keys[root][row[ct.type]] : ''; })())
                         );
@@ -3913,7 +3913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                                           setTimeout(function() { upd('waveType', origW); }, 50);
                                         }
                                       },
-                                      className: "px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all border hover:shadow-md hover:scale-105 active:scale-95 " + (d['instNoteActive_' + pni] ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border-blue-200 hover:bg-blue-50'),
+                                      className: "px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all border hover:shadow-md hover:scale-105 active:scale-95 " + (d['instNoteActive_' + pni] ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border-blue-600 hover:bg-blue-50'),
                                       style: { minWidth: '32px' }
                                     }, pn.note + pn.octave);
                                   });
@@ -4121,7 +4121,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                           upd('intervalGame', Object.assign({}, intervalGame, { answered: true, chosen: intv.name, score: intervalGame.score + (correct ? 1 : 0), streak: correct ? intervalGame.streak + 1 : 0 }));
                           addToast(correct ? '\u2705 Correct! ' + intv.name : '\u274C ' + t('stem.dissection.it_was') + ' ' + intervalGame.answer, correct ? 'success' : 'error');
                         },
-                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'bg-green-100 border-green-400 text-green-700' : isWrong ? 'bg-red-100 border-red-400 text-red-600' : 'bg-white border-emerald-200 text-slate-700 hover:border-emerald-400')
+                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'bg-green-100 border-green-400 text-green-700' : isWrong ? 'bg-red-100 border-red-400 text-red-600' : 'bg-white border-emerald-600 text-slate-700 hover:border-emerald-400')
                       }, intv.name);
                     })
                   )
@@ -4191,7 +4191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         upd('ksBrightness', preset.brightness); upd('ksDamping', preset.damping); upd('synthEngine', 'plucked');
                         playPlucked(noteFreq(selectedRoot, d.octave || 4), 'ks_demo', preset.brightness, preset.damping);
                       },
-                      className: "py-2 rounded-lg text-[11px] font-bold bg-white border border-amber-200 text-amber-800 hover:bg-amber-100 hover:border-amber-400 transition-all"
+                      className: "py-2 rounded-lg text-[11px] font-bold bg-white border border-amber-600 text-amber-800 hover:bg-amber-100 hover:border-amber-400 transition-all"
                     }, preset.label);
                   })
                 ),
@@ -4238,7 +4238,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                             upd('quizStreak2', correct ? (d.quizStreak2 || 0) + 1 : 0);
                             addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + q.a, correct ? 'success' : 'error');
                           },
-                          className: "px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-200' : 'border-purple-200 bg-white text-slate-700 hover:border-purple-400 hover:bg-purple-50')
+                          className: "px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-200' : 'border-purple-600 bg-white text-slate-700 hover:border-purple-400 hover:bg-purple-50')
                         }, opt);
                       })
                     ),
@@ -4294,7 +4294,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                           upd('chordDetectTotal', (d.chordDetectTotal || 0) + 1);
                           addToast(correct ? '\u2705 Correct! ' + d.chordDetect.root + ' ' + d.chordDetect.type : '\u274C It was ' + d.chordDetect.root + ' ' + d.chordDetect.type, correct ? 'success' : 'error');
                         },
-                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-200' : 'border-rose-200 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-200' : 'border-rose-600 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
                       }, opt);
                     })
                   ),
@@ -4347,7 +4347,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                             var g = d.dictation.guesses.slice(); g[idx] = e.target.value;
                             upd('dictation', Object.assign({}, d.dictation, { guesses: g }));
                           },
-                          className: "w-full px-2 py-1.5 rounded-lg border-2 text-sm font-bold " + (correct ? 'border-green-400 bg-green-50 text-green-700' : wrong ? 'border-red-400 bg-red-50 text-red-600' : 'border-violet-200 text-slate-700')
+                          className: "w-full px-2 py-1.5 rounded-lg border-2 text-sm font-bold " + (correct ? 'border-green-400 bg-green-50 text-green-700' : wrong ? 'border-red-400 bg-red-50 text-red-600' : 'border-violet-600 text-slate-700')
                         },
                           React.createElement("option", { value: "" }, "?"),
                           ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(function (n) { return React.createElement("option", { key: n, value: n }, n); })
@@ -4419,7 +4419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                         onClick: function () { upd('aiLevel', L.id); },
                         "aria-label": "Reading level: " + L.label + (active ? " (selected)" : ""),
                         "aria-pressed": active,
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-200 hover:bg-purple-100')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold " + (active ? 'bg-purple-600 text-white' : 'bg-white text-purple-700 border border-purple-600 hover:bg-purple-100')
                       }, L.label);
                     })
                   ),

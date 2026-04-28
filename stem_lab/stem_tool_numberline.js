@@ -461,7 +461,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: range.min,
                     onChange: function(e) { upd({ range: { min: parseInt(e.target.value) || 0, max: range.max } }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                    className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 ),
                 h('div', { className: 'bg-blue-50 rounded-lg p-3 border border-blue-100' },
@@ -469,7 +469,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: range.max,
                     onChange: function(e) { upd({ range: { min: range.min, max: parseInt(e.target.value) || 20 } }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                    className: 'w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                   })
                 )
               ),
@@ -479,7 +479,7 @@ window.StemLab = window.StemLab || {
                 [[0, 10], [0, 20], [0, 100], [-10, 10], [-20, 20], [0, 1000]].map(function(pr) {
                   return h('button', { key: pr.join('-'),
                     onClick: function() { sfxClick(); upd({ range: { min: pr[0], max: pr[1] } }); },
-                    className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all'
+                    className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-600 hover:bg-blue-100 transition-all'
                   }, pr[0] + ' to ' + pr[1]);
                 })
               ),
@@ -493,12 +493,12 @@ window.StemLab = window.StemLab || {
                   type: 'number', id: 'nlMarkerVal', min: range.min, max: range.max,
                   placeholder: 'Value',
                   'aria-label': 'Marker value',
-                  className: 'w-24 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                  className: 'w-24 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
                 h('input', {
                   type: 'text', id: 'nlMarkerLabel', placeholder: 'Label (optional)',
                   'aria-label': 'Marker label',
-                  className: 'flex-1 px-3 py-1.5 text-sm border border-blue-200 rounded-lg'
+                  className: 'flex-1 px-3 py-1.5 text-sm border border-blue-600 rounded-lg'
                 }),
                 h('input', { type: 'color', id: 'nlMarkerColor', defaultValue: '#ef4444', className: 'w-8 h-8 rounded cursor-pointer' }),
                 h('button', { 'aria-label': '+ Add',
@@ -603,7 +603,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', min: 1, max: 100, value: skipBy,
                     onChange: function(e) { upd({ skipBy: Math.max(1, parseInt(e.target.value) || 1) }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-200 rounded-lg text-center font-bold'
+                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
                 ),
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
@@ -611,7 +611,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', value: skipFrom,
                     onChange: function(e) { upd({ skipFrom: parseInt(e.target.value) || 0 }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-200 rounded-lg text-center font-bold'
+                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
                 ),
                 h('div', { className: 'bg-violet-50 rounded-lg p-3 border border-violet-100' },
@@ -619,7 +619,7 @@ window.StemLab = window.StemLab || {
                   h('input', {
                     type: 'number', min: 2, max: 20, value: skipCount,
                     onChange: function(e) { upd({ skipCount: Math.max(2, Math.min(20, parseInt(e.target.value) || 8)) }); },
-                    className: 'w-full px-3 py-1.5 text-sm border border-violet-200 rounded-lg text-center font-bold'
+                    className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
                 )
               ),
@@ -630,7 +630,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: s,
                     onClick: function() { sfxClick(); upd({ skipBy: s, skipFrom: 0, skipCount: 8 }); },
                     className: 'px-3 py-1 rounded-lg text-xs font-bold ' +
-                      (skipBy === s ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100') + ' transition-all'
+                      (skipBy === s ? 'bg-violet-600 text-white' : 'bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100') + ' transition-all'
                   }, '' + s + 's');
                 })
               ),
@@ -767,7 +767,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2' },
               !showAITutor && h('button', { 'aria-label': 'AI Tutor',
                 onClick: function() { sfxClick(); upd({ showAITutor: true }); },
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-all'
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-sky-50 text-sky-700 border border-sky-600 hover:bg-sky-100 transition-all'
               }, '\uD83E\uDD16 AI Tutor')
             ),
             renderAITutor(),

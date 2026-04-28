@@ -803,7 +803,7 @@ window.StemLab = window.StemLab || {
               return h('button', { key: tab.id,
                 onClick: function() { upd({ tab: tab.id, playMessage: null }); },
                 className: 'flex-1 py-2 px-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ' +
-                  (isActive ? 'bg-white text-rose-800 shadow-md border border-rose-200' : 'text-rose-500 hover:text-rose-700 hover:bg-rose-100')
+                  (isActive ? 'bg-white text-rose-800 shadow-md border border-rose-600' : 'text-rose-500 hover:text-rose-700 hover:bg-rose-100')
               }, tab.icon + ' ' + tab.label);
             })
           ),
@@ -824,7 +824,7 @@ window.StemLab = window.StemLab || {
                   upd({ gridW: parseInt(p[0]), gridH: parseInt(p[1]), tiles: {} });
                 },
                 'aria-label': 'Grid size',
-                className: 'text-xs border border-rose-200 rounded-lg px-2 py-1.5 bg-white'
+                className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white'
               },
                 ['8x6','12x8','16x12','20x15','24x18'].map(function(s) { return h('option', { key: s, value: s }, s); })
               ),
@@ -833,7 +833,7 @@ window.StemLab = window.StemLab || {
                 value: gameType,
                 onChange: function(e) { upd({ gameType: e.target.value }); },
                 'aria-label': 'Game type',
-                className: 'text-xs border border-rose-200 rounded-lg px-2 py-1.5 bg-white'
+                className: 'text-xs border border-rose-600 rounded-lg px-2 py-1.5 bg-white'
               },
                 h('option', { value: 'topdown' }, '\uD83D\uDD3D Top-Down'),
                 h('option', { value: 'platformer' }, '\uD83C\uDFC3 Platformer'),
@@ -875,7 +875,7 @@ window.StemLab = window.StemLab || {
                 onChange: function(e) { upd({ aiPrompt: e.target.value }); },
                 placeholder: 'Theme: forest maze, ice castle, dungeon...',
                 'aria-label': 'AI map generation theme',
-                className: 'flex-1 text-xs border border-rose-200 rounded-lg px-2 py-1.5'
+                className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2 py-1.5'
               }),
               aiResult && h('span', { className: 'text-xs font-bold self-center ' + (aiResult.charAt(0) === '\u2705' ? 'text-green-600' : 'text-red-500') }, aiResult)
             ),
@@ -1070,7 +1070,7 @@ window.StemLab = window.StemLab || {
                 // AI sprite gen
                 callImagen && h('div', { className: 'p-3 rounded-xl border border-purple-200 bg-purple-50 space-y-2' },
                   h('div', { className: 'text-xs font-bold text-purple-700' }, '\uD83E\uDD16 AI Sprite Tools'),
-                  h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: 'a fire-breathing dragon...', 'aria-label': 'AI sprite generation prompt', className: 'w-full text-xs border border-purple-200 rounded-lg px-2 py-1.5' }),
+                  h('input', { type: 'text', value: aiPrompt, onChange: function(e) { upd({ aiPrompt: e.target.value }); }, placeholder: 'a fire-breathing dragon...', 'aria-label': 'AI sprite generation prompt', className: 'w-full text-xs border border-purple-600 rounded-lg px-2 py-1.5' }),
                   h('button', { onClick: function() {
                       if (!aiPrompt.trim()) return;
                       upd({ aiLoading: true });
@@ -1102,7 +1102,7 @@ window.StemLab = window.StemLab || {
                 // Clear
                 h('button', { 'aria-label': 'Clear Canvas',
                   onClick: function() { upd({ spritePixels: {} }); },
-                  className: 'w-full py-1.5 text-xs font-bold text-rose-500 border border-rose-200 rounded-lg hover:bg-rose-50 transition-all'
+                  className: 'w-full py-1.5 text-xs font-bold text-rose-500 border border-rose-600 rounded-lg hover:bg-rose-50 transition-all'
                 }, '\uD83D\uDDD1\uFE0F Clear Canvas')
               )
             ),
@@ -1182,7 +1182,7 @@ window.StemLab = window.StemLab || {
                           arr[ri] = Object.assign({}, arr[ri], { trigger: e.target.value, param: '' });
                           ne[activeSprite] = arr; upd({ events: ne });
                         },
-                        className: 'text-xs border border-rose-200 rounded px-1.5 py-1 bg-rose-50 font-bold'
+                        className: 'text-xs border border-rose-600 rounded px-1.5 py-1 bg-rose-50 font-bold'
                       }, TRIGGERS.map(function(t) { return h('option', { key: t.id, value: t.id }, t.label); })),
                       // Trigger param
                       (function() {
@@ -1195,7 +1195,7 @@ window.StemLab = window.StemLab || {
                             arr[ri] = Object.assign({}, arr[ri], { param: e.target.value });
                             ne[activeSprite] = arr; upd({ events: ne });
                           },
-                          className: 'text-xs border border-rose-200 rounded px-1.5 py-1'
+                          className: 'text-xs border border-rose-600 rounded px-1.5 py-1'
                         }, h('option', { value: '' }, '\u2014'), trig.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
                       })(),
                       h('span', { className: 'text-xs font-bold text-slate-600' }, '\u2192'),
@@ -1206,7 +1206,7 @@ window.StemLab = window.StemLab || {
                           arr[ri] = Object.assign({}, arr[ri], { action: e.target.value, actionParam: '' });
                           ne[activeSprite] = arr; upd({ events: ne });
                         },
-                        className: 'text-xs border border-rose-200 rounded px-1.5 py-1 bg-rose-50 font-bold'
+                        className: 'text-xs border border-rose-600 rounded px-1.5 py-1 bg-rose-50 font-bold'
                       }, ACTIONS.map(function(a) { return h('option', { key: a.id, value: a.id }, a.label); })),
                       // Action param
                       (function() {
@@ -1219,7 +1219,7 @@ window.StemLab = window.StemLab || {
                             arr[ri] = Object.assign({}, arr[ri], { actionParam: e.target.value });
                             ne[activeSprite] = arr; upd({ events: ne });
                           },
-                          className: 'text-xs border border-rose-200 rounded px-1.5 py-1'
+                          className: 'text-xs border border-rose-600 rounded px-1.5 py-1'
                         }, h('option', { value: '' }, '\u2014'), act.params.map(function(p) { return h('option', { key: p, value: p }, p); }));
                       })(),
                       h('button', { 'aria-label': 'Remove item',
@@ -1638,7 +1638,7 @@ window.StemLab = window.StemLab || {
               h('input', {
                 type: 'text', value: projectName,
                 onChange: function(e) { upd({ projectName: e.target.value }); },
-                className: 'w-full text-sm border border-rose-200 rounded-lg px-3 py-2 font-bold'
+                className: 'w-full text-sm border border-rose-600 rounded-lg px-3 py-2 font-bold'
               })
             ),
 
@@ -1654,7 +1654,7 @@ window.StemLab = window.StemLab || {
                   if (addToast) addToast('\uD83D\uDCE4 Game exported!', 'success');
                   if (typeof awardStemXP === 'function') awardStemXP('gameStudio', 5, 'export game');
                 },
-                className: 'p-3 rounded-xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
+                className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
               },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCE4'),
                 h('div', { className: 'text-xs font-bold text-rose-700' }, 'Export')
@@ -1682,7 +1682,7 @@ window.StemLab = window.StemLab || {
                   };
                   inp.click();
                 },
-                className: 'p-3 rounded-xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
+                className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
               },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCE5'),
                 h('div', { className: 'text-xs font-bold text-rose-700' }, 'Import')
@@ -1694,7 +1694,7 @@ window.StemLab = window.StemLab || {
                     if (addToast) addToast('\uD83D\uDCCB Share code copied!', 'success');
                   });
                 },
-                className: 'p-3 rounded-xl border-2 border-rose-200 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
+                className: 'p-3 rounded-xl border-2 border-rose-600 bg-rose-50 hover:bg-rose-100 text-center transition-all hover:shadow-md'
               },
                 h('div', { className: 'text-2xl mb-1' }, '\uD83D\uDCCB'),
                 h('div', { className: 'text-xs font-bold text-rose-700' }, 'Share Code')
@@ -1708,7 +1708,7 @@ window.StemLab = window.StemLab || {
                 h('input', {
                   type: 'text', placeholder: 'Paste share code...',
                   id: 'gs-share-import',
-                  className: 'flex-1 text-xs border border-rose-200 rounded-lg px-2 py-1.5'
+                  className: 'flex-1 text-xs border border-rose-600 rounded-lg px-2 py-1.5'
                 }),
                 h('button', { 'aria-label': 'Load',
                   onClick: function() {
@@ -1743,7 +1743,7 @@ window.StemLab = window.StemLab || {
                       upd({ projectName: starter.name, gameType: starter.type, gridW: 16, gridH: 12, tiles: starter.tiles, tab: 'map' });
                       if (addToast) addToast('\uD83C\uDFAE Loaded "' + starter.name + '"!', 'success');
                     },
-                    className: 'p-3 rounded-xl border-2 border-rose-200 hover:border-rose-400 bg-rose-50 hover:bg-rose-100 text-left transition-all hover:shadow-md'
+                    className: 'p-3 rounded-xl border-2 border-rose-600 hover:border-rose-400 bg-rose-50 hover:bg-rose-100 text-left transition-all hover:shadow-md'
                   },
                     h('div', { className: 'text-2xl mb-1' }, starter.icon),
                     h('div', { className: 'text-xs font-bold text-rose-800' }, starter.name),
@@ -1782,7 +1782,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'mt-6 text-center' },
             h('button', { 'aria-label': 'Back to Tools',
               onClick: function() { setStemLabTool(null); },
-              className: 'px-6 py-2.5 text-sm font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition-all'
+              className: 'px-6 py-2.5 text-sm font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-600 rounded-xl transition-all'
             }, '\u2190 Back to Tools')
           )
         );
