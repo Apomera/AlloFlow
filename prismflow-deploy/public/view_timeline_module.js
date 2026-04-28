@@ -18,6 +18,32 @@
   if (!React) { console.error('[ViewTimelineModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
+  // Lazy Lucide icon resolution from window.AlloIcons (populated by
+  // host at AlloFlowANTI.txt:4930). Avoids threading 16 icon
+  // components as props. Mirrors view_renderers_module.js pattern.
+  var _lazyIcon = function (name) {
+    return function (props) {
+      var I = window.AlloIcons && window.AlloIcons[name];
+      return I ? React.createElement(I, props) : null;
+    };
+  };
+  var AlertCircle = _lazyIcon('AlertCircle');
+  var AlertTriangle = _lazyIcon('AlertTriangle');
+  var Ban = _lazyIcon('Ban');
+  var CheckCircle2 = _lazyIcon('CheckCircle2');
+  var Gamepad2 = _lazyIcon('Gamepad2');
+  var GripVertical = _lazyIcon('GripVertical');
+  var ImageIcon = _lazyIcon('ImageIcon');
+  var ListOrdered = _lazyIcon('ListOrdered');
+  var Loader2 = _lazyIcon('Loader2');
+  var Pencil = _lazyIcon('Pencil');
+  var Plus = _lazyIcon('Plus');
+  var RefreshCw = _lazyIcon('RefreshCw');
+  var Send = _lazyIcon('Send');
+  var Sparkles = _lazyIcon('Sparkles');
+  var Trash2 = _lazyIcon('Trash2');
+  var X = _lazyIcon('X');
+
   function TimelineView(props) {
   // Pure data refs
   var t = props.t;
@@ -25,6 +51,7 @@
   var isTeacherMode = props.isTeacherMode;
   var isIndependentMode = props.isIndependentMode;
   var leveledTextLanguage = props.leveledTextLanguage;
+  var TIMELINE_MODE_DEFINITIONS = props.TIMELINE_MODE_DEFINITIONS;
   // State slices + flags
   var dismissedVerifications = props.dismissedVerifications;
   var draggedTimelineIndex = props.draggedTimelineIndex;
