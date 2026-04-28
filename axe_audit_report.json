@@ -1,41 +1,81 @@
 {
   "meta": {
     "url": "https://prismflow-911fe.web.app",
-    "timestamp": "2026-04-27T23:10:07.195Z",
+    "timestamp": "2026-04-28T00:39:39.490Z",
     "axeVersion": "4.10.3"
   },
   "results": [
     {
       "scenario": "landing",
       "counts": {
-        "violationRules": 1,
-        "violationNodes": 1,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
           "serious": 0,
-          "moderate": 1,
+          "moderate": 3,
           "minor": 0
         }
       },
       "violations": [
         {
-          "id": "region",
+          "id": "landmark-banner-is-top-level",
           "impact": "moderate",
-          "help": "All page content should be contained by landmarks",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "help": "Banner landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-banner-is-top-level?application=axeAPI",
           "tags": [
-            "cat.keyboard",
+            "cat.semantics",
             "best-practice"
           ],
           "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                "#root"
+                "header"
               ],
-              "html": "<div id=\"root\">",
-              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+              "html": "<header aria-label=\"Main application header\" class=\"p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white\">",
+              "failureSummary": "Fix any of the following:\n  The null landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "help": "Aside should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-complementary-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "aside"
+              ],
+              "html": "<aside aria-label=\"Gemini Powered Scaffolds\" class=\"flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 block \" style=\"width: 35%; height: 100%;\">",
+              "failureSummary": "Fix any of the following:\n  The complementary landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "help": "Main landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#main-content"
+              ],
+              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
+              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
             }
           ]
         }
@@ -44,7 +84,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 1
+          "nodeCount": 2
         },
         {
           "id": "color-contrast",
@@ -56,34 +96,74 @@
     {
       "scenario": "landing_with_text",
       "counts": {
-        "violationRules": 1,
-        "violationNodes": 1,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
           "serious": 0,
-          "moderate": 1,
+          "moderate": 3,
           "minor": 0
         }
       },
       "violations": [
         {
-          "id": "region",
+          "id": "landmark-banner-is-top-level",
           "impact": "moderate",
-          "help": "All page content should be contained by landmarks",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "help": "Banner landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-banner-is-top-level?application=axeAPI",
           "tags": [
-            "cat.keyboard",
+            "cat.semantics",
             "best-practice"
           ],
           "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                "#root"
+                "header"
               ],
-              "html": "<div id=\"root\">",
-              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+              "html": "<header aria-label=\"Main application header\" class=\"p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white\">",
+              "failureSummary": "Fix any of the following:\n  The null landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "help": "Aside should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-complementary-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "aside"
+              ],
+              "html": "<aside aria-label=\"Gemini Powered Scaffolds\" class=\"flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 block \" style=\"width: 35%; height: 100%;\">",
+              "failureSummary": "Fix any of the following:\n  The complementary landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "help": "Main landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#main-content"
+              ],
+              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
+              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
             }
           ]
         }
@@ -92,7 +172,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 1
+          "nodeCount": 2
         },
         {
           "id": "color-contrast",
@@ -104,34 +184,74 @@
     {
       "scenario": "theme_dark",
       "counts": {
-        "violationRules": 1,
-        "violationNodes": 1,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
           "serious": 0,
-          "moderate": 1,
+          "moderate": 3,
           "minor": 0
         }
       },
       "violations": [
         {
-          "id": "region",
+          "id": "landmark-banner-is-top-level",
           "impact": "moderate",
-          "help": "All page content should be contained by landmarks",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "help": "Banner landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-banner-is-top-level?application=axeAPI",
           "tags": [
-            "cat.keyboard",
+            "cat.semantics",
             "best-practice"
           ],
           "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                "#root"
+                "header"
               ],
-              "html": "<div id=\"root\">",
-              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+              "html": "<header aria-label=\"Main application header\" class=\"p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white\">",
+              "failureSummary": "Fix any of the following:\n  The null landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "help": "Aside should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-complementary-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "aside"
+              ],
+              "html": "<aside aria-label=\"Gemini Powered Scaffolds\" class=\"flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 block \" style=\"width: 35%; height: 100%;\">",
+              "failureSummary": "Fix any of the following:\n  The complementary landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "help": "Main landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#main-content"
+              ],
+              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
+              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
             }
           ]
         }
@@ -140,7 +260,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 1
+          "nodeCount": 2
         },
         {
           "id": "color-contrast",
@@ -152,34 +272,74 @@
     {
       "scenario": "theme_contrast",
       "counts": {
-        "violationRules": 1,
-        "violationNodes": 1,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
           "serious": 0,
-          "moderate": 1,
+          "moderate": 3,
           "minor": 0
         }
       },
       "violations": [
         {
-          "id": "region",
+          "id": "landmark-banner-is-top-level",
           "impact": "moderate",
-          "help": "All page content should be contained by landmarks",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "help": "Banner landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-banner-is-top-level?application=axeAPI",
           "tags": [
-            "cat.keyboard",
+            "cat.semantics",
             "best-practice"
           ],
           "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                "#root"
+                "header"
               ],
-              "html": "<div id=\"root\">",
-              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+              "html": "<header aria-label=\"Main application header\" class=\"p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white\">",
+              "failureSummary": "Fix any of the following:\n  The null landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "help": "Aside should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-complementary-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "aside"
+              ],
+              "html": "<aside aria-label=\"Gemini Powered Scaffolds\" class=\"flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 block \" style=\"width: 35%; height: 100%;\">",
+              "failureSummary": "Fix any of the following:\n  The complementary landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "help": "Main landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#main-content"
+              ],
+              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
+              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
             }
           ]
         }
@@ -188,7 +348,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 1
+          "nodeCount": 2
         },
         {
           "id": "color-contrast",
@@ -200,34 +360,74 @@
     {
       "scenario": "reading_theme_sepia",
       "counts": {
-        "violationRules": 1,
-        "violationNodes": 1,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
           "serious": 0,
-          "moderate": 1,
+          "moderate": 3,
           "minor": 0
         }
       },
       "violations": [
         {
-          "id": "region",
+          "id": "landmark-banner-is-top-level",
           "impact": "moderate",
-          "help": "All page content should be contained by landmarks",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "help": "Banner landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-banner-is-top-level?application=axeAPI",
           "tags": [
-            "cat.keyboard",
+            "cat.semantics",
             "best-practice"
           ],
           "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                "#root"
+                "header"
               ],
-              "html": "<div id=\"root\">",
-              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+              "html": "<header aria-label=\"Main application header\" class=\"p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white\">",
+              "failureSummary": "Fix any of the following:\n  The null landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "help": "Aside should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-complementary-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "aside"
+              ],
+              "html": "<aside aria-label=\"Gemini Powered Scaffolds\" class=\"flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 block \" style=\"width: 35%; height: 100%;\">",
+              "failureSummary": "Fix any of the following:\n  The complementary landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "help": "Main landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#main-content"
+              ],
+              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
+              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
             }
           ]
         }
@@ -236,7 +436,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 1
+          "nodeCount": 2
         },
         {
           "id": "color-contrast",
@@ -248,34 +448,74 @@
     {
       "scenario": "reading_theme_dyslexia",
       "counts": {
-        "violationRules": 1,
-        "violationNodes": 1,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
           "serious": 0,
-          "moderate": 1,
+          "moderate": 3,
           "minor": 0
         }
       },
       "violations": [
         {
-          "id": "region",
+          "id": "landmark-banner-is-top-level",
           "impact": "moderate",
-          "help": "All page content should be contained by landmarks",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "help": "Banner landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-banner-is-top-level?application=axeAPI",
           "tags": [
-            "cat.keyboard",
+            "cat.semantics",
             "best-practice"
           ],
           "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                "#root"
+                "header"
               ],
-              "html": "<div id=\"root\">",
-              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+              "html": "<header aria-label=\"Main application header\" class=\"p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white\">",
+              "failureSummary": "Fix any of the following:\n  The null landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "help": "Aside should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-complementary-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "aside"
+              ],
+              "html": "<aside aria-label=\"Gemini Powered Scaffolds\" class=\"flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 block \" style=\"width: 35%; height: 100%;\">",
+              "failureSummary": "Fix any of the following:\n  The complementary landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "help": "Main landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#main-content"
+              ],
+              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
+              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
             }
           ]
         }
@@ -284,7 +524,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 1
+          "nodeCount": 2
         },
         {
           "id": "color-contrast",
@@ -296,34 +536,74 @@
     {
       "scenario": "color_overlay_blue",
       "counts": {
-        "violationRules": 1,
-        "violationNodes": 1,
+        "violationRules": 3,
+        "violationNodes": 3,
         "incomplete": 2,
         "byImpact": {
           "critical": 0,
           "serious": 0,
-          "moderate": 1,
+          "moderate": 3,
           "minor": 0
         }
       },
       "violations": [
         {
-          "id": "region",
+          "id": "landmark-banner-is-top-level",
           "impact": "moderate",
-          "help": "All page content should be contained by landmarks",
-          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/region?application=axeAPI",
+          "help": "Banner landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-banner-is-top-level?application=axeAPI",
           "tags": [
-            "cat.keyboard",
+            "cat.semantics",
             "best-practice"
           ],
           "nodeCount": 1,
           "nodes": [
             {
               "target": [
-                "#root"
+                "header"
               ],
-              "html": "<div id=\"root\">",
-              "failureSummary": "Fix any of the following:\n  Some page content is not contained by landmarks"
+              "html": "<header aria-label=\"Main application header\" class=\"p-6 md:py-8 md:px-10 shadow-2xl no-print relative z-50 transition-all duration-500 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-purple-900 via-indigo-950 to-slate-900 text-white\">",
+              "failureSummary": "Fix any of the following:\n  The null landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-complementary-is-top-level",
+          "impact": "moderate",
+          "help": "Aside should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-complementary-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "aside"
+              ],
+              "html": "<aside aria-label=\"Gemini Powered Scaffolds\" class=\"flex flex-col gap-4 overflow-y-auto pr-2 custom-scrollbar transition-all duration-200 block \" style=\"width: 35%; height: 100%;\">",
+              "failureSummary": "Fix any of the following:\n  The complementary landmark is contained in another landmark."
+            }
+          ]
+        },
+        {
+          "id": "landmark-main-is-top-level",
+          "impact": "moderate",
+          "help": "Main landmark should not be contained in another landmark",
+          "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-main-is-top-level?application=axeAPI",
+          "tags": [
+            "cat.semantics",
+            "best-practice"
+          ],
+          "nodeCount": 1,
+          "nodes": [
+            {
+              "target": [
+                "#main-content"
+              ],
+              "html": "<main aria-label=\"Main content\" id=\"main-content\" class=\"flex-grow w-full flex flex-col md:flex-row gap-0 relative no-print overflow-hidden transition-all duration-300 theme-light  h-[calc(100vh-80px)] p-4 md:p-6\">",
+              "failureSummary": "Fix any of the following:\n  The main landmark is contained in another landmark."
             }
           ]
         }
@@ -332,7 +612,7 @@
         {
           "id": "aria-prohibited-attr",
           "help": "Elements must only use permitted ARIA attributes",
-          "nodeCount": 1
+          "nodeCount": 2
         },
         {
           "id": "color-contrast",
