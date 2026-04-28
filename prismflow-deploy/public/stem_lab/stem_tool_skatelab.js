@@ -1158,6 +1158,13 @@ window.StemLab = window.StemLab || {
       { id: 'sk_beat_best', label: 'Beat your own ghost 3 times', icon: '👻',
         check: function(d) { return (d.ghostBeatCount || 0) >= 3; },
         progress: function(d) { return (d.ghostBeatCount || 0) + '/3 ghosts beaten'; }
+      },
+      { id: 'sk_session_done', label: 'Complete a park session', icon: '🎯',
+        check: function(d) { return ((d.session && d.session.history) || []).length >= 1; },
+        progress: function(d) {
+          var n = ((d.session && d.session.history) || []).length;
+          return n >= 1 ? '✓ ' + n + ' session' + (n === 1 ? '' : 's') : 'pending';
+        }
       }
     ],
     render: function(ctx) {
@@ -1244,6 +1251,13 @@ window.StemLab = window.StemLab || {
             // climbs, peaks, and falls. Default on so first-time
             // students see the math; can toggle off for cleaner demos.
             showEnergyBar: true,
+            // Park Session — string N attempts together as a single
+            // arc with aggregate stats. Mirrors the real skate-
+            // culture concept of "having a session." active=true
+            // routes each run into session.attempts. summaryOpen
+            // gates the post-session modal. history is the saved
+            // session list across resets.
+            session: { active: false, target: 5, attempts: [], summaryOpen: false, startPromptOpen: false, history: [] },
             // Confirm-reset state — false normally, true while the
             // student/teacher is being asked to confirm a reset.
             resetConfirmOpen: false,
@@ -1429,6 +1443,81 @@ window.StemLab = window.StemLab || {
         if (addToast) addToast('Custom trick deleted.', 'info');
         skAnnounce('Custom trick deleted.');
       }
+      // ── Park Session helpers ────────────────────────────────────
+      // startSession: clears the attempts buffer and arms the run
+      // handlers to push each subsequent run's summary into it.
+      // endSession: surfaces the summary modal AND saves the run to
+      // history; called automatically when target reached, or
+      // manually via "End early."
+      function startSession(target) {
+        var n = Math.max(3, Math.min(10, target || 5));
+        upd({
+          session: Object.assign({}, d.session || {}, {
+            active: true, target: n, attempts: [],
+            startPromptOpen: false, summaryOpen: false
+          })
+        });
+        if (addToast) addToast('🎯 Session started. ' + n + ' attempts to glory.', 'success');
+        skAnnounce('Session started. ' + n + ' attempts.');
+      }
+      function endSession(opts) {
+        var s = d.session || {};
+        var attempts = s.attempts || [];
+        var manuallyEnded = opts && opts.manual;
+        var summary = {
+          startedAt: s.startedAt || Date.now(),
+          target: s.target,
+          attemptCount: attempts.length,
+          attempts: attempts,
+          manuallyEnded: !!manuallyEnded
+        };
+        var nextHistory = ((s.history || []).concat([summary])).slice(-10);  // keep last 10 sessions
+        upd({
+          session: { active: false, target: s.target, attempts: attempts, summaryOpen: true, startPromptOpen: false, history: nextHistory, lastSummary: summary }
+        });
+        if (addToast) addToast('🎯 Session complete: ' + attempts.filter(function(a) { return a.landed; }).length + '/' + attempts.length + ' lands.', 'success');
+        skAnnounce('Session complete. Tap to view your summary.');
+      }
+      // Append the current attempt's summary to the session buffer.
+      // Returns the bumps object to merge so the caller can add
+      // session updates atomically with run-result updates.
+      function _sessionBumps(bumps, simResult) {
+        if (!d.session || !d.session.active) return;
+        var attempt = {
+          mode: simResult.mode,
+          landed: !!simResult.landed,
+          score: simResult.scoreBonused || simResult.score || 0,
+          predicted: simResult.predicted,
+          actual: simResult.actual,
+          errPct: simResult.errPct,
+          ts: Date.now()
+        };
+        if (simResult.mode === 'halfpipe') {
+          attempt.label = simResult.trick;
+          attempt.hFt = simResult.hFt;
+        } else {
+          attempt.label = simResult.gapFt + ' ft gap';
+          attempt.rangeFt = simResult.rangeFt;
+        }
+        var nextAttempts = (d.session.attempts || []).concat([attempt]);
+        bumps.session = Object.assign({}, d.session, { attempts: nextAttempts, startedAt: d.session.startedAt || Date.now() });
+        // Auto-end when target reached. Push summary into history.
+        if (nextAttempts.length >= (d.session.target || 5)) {
+          var summary = {
+            startedAt: d.session.startedAt || Date.now(),
+            target: d.session.target,
+            attemptCount: nextAttempts.length,
+            attempts: nextAttempts,
+            manuallyEnded: false
+          };
+          var nextHist = (((d.session.history) || []).concat([summary])).slice(-10);
+          bumps.session = { active: false, target: d.session.target, attempts: nextAttempts, summaryOpen: true, startPromptOpen: false, history: nextHist, lastSummary: summary };
+          if (addToast) {
+            var lands = nextAttempts.filter(function(a) { return a.landed; }).length;
+            addToast('🎯 Session done: ' + lands + '/' + nextAttempts.length + ' lands. Tap the badge for stats.', 'success');
+          }
+        }
+      }
       function loadScenario(scenarioId) {
         var sc = findAnyScenario(scenarioId);
         if (!sc) return;
@@ -1526,6 +1615,7 @@ window.StemLab = window.StemLab || {
       function performResetStats() {
         var preserved = d.customScenarios || [];
         var preservedTricks = d.customTricks || [];
+        var preservedHistory = (d.session && d.session.history) || [];
         upd({
           landings: 0, bails: 0, attempts: 0,
           longestGap: 0, biggestSpin: 0,
@@ -1542,7 +1632,8 @@ window.StemLab = window.StemLab || {
           lastResult: null, lastSim: null, activeScenarioId: null,
           resetConfirmOpen: false,
           customScenarios: preserved,
-          customTricks: preservedTricks
+          customTricks: preservedTricks,
+          session: { active: false, target: 5, attempts: [], summaryOpen: false, startPromptOpen: false, history: preservedHistory }
         });
         if (addToast) addToast('SkateLab stats reset.', 'success');
         skAnnounce('Stats cleared. Custom scenarios preserved.');
@@ -2045,6 +2136,9 @@ window.StemLab = window.StemLab || {
                 }
               }
             }
+            // Park Session — append this attempt to the active
+            // session buffer, auto-end if target reached.
+            _sessionBumps(bumps, bumps.lastResult);
             upd(bumps);
           }
         });
@@ -2117,6 +2211,7 @@ window.StemLab = window.StemLab || {
                 }
               }
             }
+            _sessionBumps(bumps, bumps.lastResult);
             upd(bumps);
           }
         });
@@ -2432,6 +2527,165 @@ window.StemLab = window.StemLab || {
           })
         ),
         // ── Save-scenario modal ─────────────────────────────────
+        // ── Session start prompt modal ────────────────────────────
+        // Pick attempt count (3/5/10) before kicking off a session.
+        // Mirrors saveModalDraft visual pattern — overlay + card.
+        (d.session && d.session.startPromptOpen) && h('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-sess-title',
+          onClick: function(e) { if (e.target === e.currentTarget) upd({ session: Object.assign({}, d.session, { startPromptOpen: false }) }); },
+          style: {
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,23,42,0.78)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }
+        },
+          h('div', {
+            style: {
+              background: '#1e293b', border: '1px solid #15803d', borderRadius: 14,
+              padding: 20, maxWidth: 380, width: '100%',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)'
+            },
+            onClick: function(e) { e.stopPropagation(); }
+          },
+            h('h3', { id: 'sk-sess-title', style: { margin: '0 0 6px', color: '#86efac', fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' } }, '🎯 Start a park session'),
+            h('p', { style: { margin: '0 0 14px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
+              'Run a fixed number of attempts and get aggregate stats at the end. See if your prediction accuracy improves across the session.'
+            ),
+            h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 12 } },
+              [3, 5, 10].map(function(n) {
+                return h('button', {
+                  key: 'sess-n-' + n,
+                  onClick: function() { startSession(n); },
+                  'data-sk-focusable': 'true',
+                  style: {
+                    padding: '12px 20px', fontSize: 14, fontWeight: 800,
+                    background: 'linear-gradient(135deg,#22c55e,#15803d)',
+                    color: '#fff', border: '1px solid #15803d',
+                    borderRadius: 10, cursor: 'pointer', minHeight: 44,
+                    flex: 1
+                  }
+                }, n + ' attempts');
+              })
+            ),
+            h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: function() { upd({ session: Object.assign({}, d.session, { startPromptOpen: false }) }); },
+                'data-sk-focusable': 'true',
+                style: {
+                  padding: '8px 14px', fontSize: 12, fontWeight: 700,
+                  background: 'transparent', color: '#94a3b8',
+                  border: '1px solid rgba(148,163,184,0.40)',
+                  borderRadius: 8, cursor: 'pointer', minHeight: 32
+                }
+              }, 'Cancel')
+            )
+          )
+        ),
+        // ── Session summary modal ────────────────────────────────
+        // Renders aggregate stats across the just-completed session.
+        // Save-to-history happens in endSession before this opens, so
+        // closing the modal is a pure dismiss.
+        (d.session && d.session.summaryOpen && d.session.lastSummary) && h('div', {
+          role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'sk-sess-summary-title',
+          onClick: function(e) { if (e.target === e.currentTarget) upd({ session: Object.assign({}, d.session, { summaryOpen: false }) }); },
+          style: {
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+          }
+        },
+          (function() {
+            var sum = d.session.lastSummary;
+            var atts = sum.attempts || [];
+            var lands = atts.filter(function(a) { return a.landed; }).length;
+            var totalScore = atts.reduce(function(s, a) { return s + (a.score || 0); }, 0);
+            var withErr = atts.filter(function(a) { return typeof a.errPct === 'number'; });
+            var avgErr = withErr.length ? (withErr.reduce(function(s, a) { return s + a.errPct; }, 0) / withErr.length) : null;
+            var firstErr = withErr.length ? withErr[0].errPct : null;
+            var lastErr = withErr.length ? withErr[withErr.length - 1].errPct : null;
+            var improvement = (firstErr !== null && lastErr !== null) ? (firstErr - lastErr) : null;
+            // Longest streak in this session
+            var bestStreak = 0, curStreak = 0;
+            atts.forEach(function(a) {
+              if (a.landed) { curStreak++; if (curStreak > bestStreak) bestStreak = curStreak; }
+              else curStreak = 0;
+            });
+            return h('div', {
+              style: {
+                background: '#1e293b', border: '2px solid #15803d', borderRadius: 14,
+                padding: 24, maxWidth: 520, width: '100%',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                maxHeight: '85vh', overflow: 'auto'
+              },
+              onClick: function(e) { e.stopPropagation(); }
+            },
+              h('h3', { id: 'sk-sess-summary-title', style: { margin: '0 0 4px', color: '#86efac', fontSize: 18, fontWeight: 900, letterSpacing: '0.04em' } }, '🎯 Session complete'),
+              h('p', { style: { margin: '0 0 16px', fontSize: 12, color: '#94a3b8' } },
+                atts.length + ' attempts' + (sum.manuallyEnded ? ' · ended early' : '')
+              ),
+              // Stat grid
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, marginBottom: 12 } },
+                [
+                  { label: 'Lands', val: lands + ' / ' + atts.length, color: '#86efac' },
+                  { label: 'Total XP', val: totalScore, color: '#fbbf24' },
+                  { label: 'Best streak', val: bestStreak, color: '#fb923c' },
+                  { label: 'Avg prediction error', val: avgErr !== null ? avgErr.toFixed(1) + '%' : '—', color: '#a5b4fc' }
+                ].map(function(s, i) {
+                  return h('div', { key: i, style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 8, padding: '10px 12px' } },
+                    h('div', { style: { fontSize: 18, fontWeight: 900, color: s.color } }, String(s.val)),
+                    h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, s.label)
+                  );
+                })
+              ),
+              // Improvement callout (only when there's enough prediction data)
+              improvement !== null && Math.abs(improvement) > 1 && h('div', {
+                style: {
+                  background: improvement > 0 ? 'rgba(34,197,94,0.18)' : 'rgba(168,85,247,0.18)',
+                  border: '1px solid ' + (improvement > 0 ? '#22c55e' : 'rgba(168,85,247,0.55)'),
+                  borderRadius: 8, padding: '8px 10px', marginBottom: 12,
+                  fontSize: 12, color: '#e2e8f0', lineHeight: 1.5
+                }
+              },
+                h('b', null, improvement > 0 ? '📈 Your physics intuition sharpened ' : '📉 Your prediction error grew '),
+                'from ', firstErr.toFixed(1) + '%', ' (first attempt) to ', lastErr.toFixed(1) + '%', ' (last). ',
+                improvement > 0 ? 'That ' + improvement.toFixed(1) + '%' + ' improvement is the loop working — you got closer to the answer with each attempt.' : 'Tomorrow, predict before changing variables and watch the gap close.'
+              ),
+              // Attempt strip — small cards, one per attempt
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Attempts'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
+                atts.map(function(a, i) {
+                  return h('div', {
+                    key: 'att-' + i,
+                    style: {
+                      flex: '1 1 0', minWidth: 80, padding: '6px 8px',
+                      background: a.landed ? 'rgba(34,197,94,0.12)' : 'rgba(180,83,9,0.12)',
+                      border: '1px solid ' + (a.landed ? '#22c55e' : '#d97706'),
+                      borderRadius: 6, fontSize: 10, color: '#e2e8f0', fontFamily: 'monospace'
+                    }
+                  },
+                    h('div', { style: { fontWeight: 800, color: a.landed ? '#86efac' : '#fbbf24' } }, '#' + (i + 1) + ' ' + (a.landed ? '✓' : '✗')),
+                    h('div', null, a.label || ''),
+                    h('div', { style: { color: '#cbd5e1' } }, '+' + (a.score || 0) + ' XP'),
+                    typeof a.errPct === 'number' && h('div', { style: { color: '#a5b4fc' } }, '🔮 off ' + a.errPct.toFixed(0) + '%')
+                  );
+                })
+              ),
+              h('div', { style: { display: 'flex', justifyContent: 'flex-end' } },
+                h('button', {
+                  onClick: function() { upd({ session: Object.assign({}, d.session, { summaryOpen: false }) }); },
+                  'data-sk-focusable': 'true',
+                  autoFocus: true,
+                  style: {
+                    padding: '10px 22px', fontSize: 13, fontWeight: 800,
+                    background: 'linear-gradient(135deg,#22c55e,#15803d)',
+                    color: '#fff', border: '1px solid #15803d',
+                    borderRadius: 10, cursor: 'pointer', minHeight: 40
+                  }
+                }, '✓ Done')
+              )
+            );
+          })()
+        ),
         // Inline modal — when saveModalDraft is non-null, dim the
         // tool body and show a name-input card. Confirm captures the
         // current state. Mirrors ThrowLab's save-scenario flow.
@@ -2642,7 +2896,46 @@ window.StemLab = window.StemLab || {
               border: '1px solid ' + (d.showEnergyBar ? 'rgba(248,113,113,0.50)' : 'rgba(254,243,199,0.20)'),
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
-          }, '⚡ Energy: ' + (d.showEnergyBar ? 'on' : 'off'))
+          }, '⚡ Energy: ' + (d.showEnergyBar ? 'on' : 'off')),
+          // Session chip — when no session is active, opens the
+          // start prompt. When active, shows progress (e.g. 3/5)
+          // and lets the student tap to end early or view stats.
+          (function() {
+            var sess = d.session || {};
+            if (sess.active) {
+              return h('button', {
+                onClick: function() {
+                  if (confirm('End session early? Your ' + (sess.attempts || []).length + '/' + sess.target + ' attempts will be saved.')) {
+                    endSession({ manual: true });
+                  }
+                },
+                'aria-label': 'Session in progress: ' + (sess.attempts || []).length + ' of ' + sess.target + '. Click to end early.',
+                'data-sk-focusable': 'true',
+                title: 'End session early',
+                style: {
+                  padding: '4px 10px', fontSize: 10, fontWeight: 800,
+                  background: 'linear-gradient(135deg,#22c55e,#15803d)',
+                  color: '#fff',
+                  border: '1px solid #15803d',
+                  borderRadius: 999, cursor: 'pointer', minHeight: 26
+                }
+              }, '🎯 ' + (sess.attempts || []).length + '/' + sess.target);
+            }
+            return h('button', {
+              onClick: function() {
+                upd({ session: Object.assign({}, sess, { startPromptOpen: true }) });
+              },
+              'aria-label': 'Start a park session — string several attempts together',
+              'data-sk-focusable': 'true',
+              title: 'Run a park session — aggregate stats across N attempts',
+              style: {
+                padding: '4px 10px', fontSize: 10, fontWeight: 700,
+                background: 'rgba(34,197,94,0.10)', color: '#86efac',
+                border: '1px solid rgba(34,197,94,0.40)',
+                borderRadius: 999, cursor: 'pointer', minHeight: 26
+              }
+            }, '🎯 Session');
+          })()
         ),
         // ── Safety expansion ─────────────────────────────────────
         // Renders ONLY while safetyAck is false (initial state each
