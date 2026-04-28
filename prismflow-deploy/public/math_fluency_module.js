@@ -1167,6 +1167,14 @@
     // last-move direction (Classic behavior). Mutated by mouse/touch drag
     // listeners attached in init3D; read in the camera lookAt loop.
     var lookYawRef = useRef(0);
+    // Target yaw the camera is easing toward. Q/E keyboard rotate sets this
+    // and lets the per-frame lerp animate to it; mouse/touch drag sets BOTH
+    // refs so the camera tracks the cursor 1:1 without lerp lag.
+    var lookYawTargetRef = useRef(0);
+    // Snapshot of the maze grid + key position from the last startMaze call,
+    // used by the "Same Maze" replay button on results so a student can
+    // retry the same layout to beat their time.
+    var lastRunRef = useRef(null);
     // Mirror of `isExplorer` so listeners attached once in init3D always see
     // the current value without a stale closure.
     var isExplorerRef = useRef(isExplorer);
@@ -1322,19 +1330,30 @@
       setTimeout(function() { setHintDir(null); }, 2200);
     }
 
-    function startMaze() {
-      var sz = getMazeSize();
-      var newMaze = generateMaze(sz.rows, sz.cols);
+    function startMaze(replay) {
+      var newMaze, keyPos, sz;
+      // Replay branch — reuse the previous run's grid + key cell so a
+      // student can retry the same layout. Falls back to a fresh maze if
+      // there's no last-run cached (e.g., first session).
+      if (replay && lastRunRef.current && lastRunRef.current.maze) {
+        newMaze = lastRunRef.current.maze;
+        keyPos = lastRunRef.current.keyPos;
+        sz = { rows: newMaze.length, cols: newMaze[0].length };
+      } else {
+        sz = getMazeSize();
+        newMaze = generateMaze(sz.rows, sz.cols);
+      }
       setMaze(newMaze);
       setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
       // Reset breadcrumb trail — each new maze starts with only the origin lit.
       visitedCellsRef.current = { '0,0': true };
       // Reset Explorer-mode state. solvedPathsRef accumulates over a run; a
-      // fresh maze means no paths solved yet. lookYawRef keeps the camera
-      // aimed at the start orientation rather than wherever the previous
-      // maze ended.
+      // fresh maze means no paths solved yet. lookYawRef + lookYawTargetRef
+      // keep the camera aimed at the start orientation rather than wherever
+      // the previous maze ended.
       solvedPathsRef.current = {};
       lookYawRef.current = 0;
+      lookYawTargetRef.current = 0;
       setMonsterPos({ r: 0, c: 0 });
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
@@ -1342,24 +1361,30 @@
       setStreak(0); setHintDir(null);
       setKeyCollected(false);
       setMedal(null);
-      // Pick a random cell for the key that isn't the start OR the exit, and
-      // prefer cells at least 1/3 of the way from origin so the key detour
-      // feels meaningful rather than incidental.
-      var minDist = Math.floor((sz.rows + sz.cols) / 3);
-      var candidates = [];
-      for (var kr = 0; kr < sz.rows; kr++) {
-        for (var kc = 0; kc < sz.cols; kc++) {
-          if (kr === 0 && kc === 0) continue;
-          if (kr === sz.rows - 1 && kc === sz.cols - 1) continue;
-          if ((kr + kc) >= minDist) candidates.push({ r: kr, c: kc });
+      if (keyPos) {
+        keyPosRef.current = keyPos;
+      } else {
+        // Pick a random cell for the key that isn't the start OR the exit, and
+        // prefer cells at least 1/3 of the way from origin so the key detour
+        // feels meaningful rather than incidental.
+        var minDist = Math.floor((sz.rows + sz.cols) / 3);
+        var candidates = [];
+        for (var kr = 0; kr < sz.rows; kr++) {
+          for (var kc = 0; kc < sz.cols; kc++) {
+            if (kr === 0 && kc === 0) continue;
+            if (kr === sz.rows - 1 && kc === sz.cols - 1) continue;
+            if ((kr + kc) >= minDist) candidates.push({ r: kr, c: kc });
+          }
+        }
+        if (candidates.length === 0) {
+          // Tiny 2x2-ish fallback — just drop it in the middle.
+          keyPosRef.current = { r: Math.floor(sz.rows / 2), c: Math.floor(sz.cols / 2) };
+        } else {
+          keyPosRef.current = candidates[Math.floor(Math.random() * candidates.length)];
         }
       }
-      if (candidates.length === 0) {
-        // Tiny 2x2-ish fallback — just drop it in the middle.
-        keyPosRef.current = { r: Math.floor(sz.rows / 2), c: Math.floor(sz.cols / 2) };
-      } else {
-        keyPosRef.current = candidates[Math.floor(Math.random() * candidates.length)];
-      }
+      // Stash the layout for the "Same Maze" replay button on results.
+      lastRunRef.current = { maze: newMaze, keyPos: keyPosRef.current };
       setMode('playing');
       // Timer
       if (timerRef.current) clearInterval(timerRef.current);
@@ -1791,11 +1816,12 @@
         if (e.key === 'm' || e.key === 'M') { _toggleMute(); return; }
         if (e.key === 'f' || e.key === 'F') { setFullscreen(function(v) { return !v; }); return; }
         if (paused) return;
-        // Explorer Mode keyboard rotate — Q/E rotate the camera 30° each
-        // press so keyboard-only users get free-look without a mouse.
+        // Explorer Mode keyboard rotate — Q/E nudge the look-yaw target
+        // 30° per press; the animate loop lerps the actual camera yaw
+        // toward it so the rotation feels smooth instead of snapping.
         // Classic ignores these keys (yaw stays at 0 there anyway).
-        if (isExplorer && (e.key === 'q' || e.key === 'Q')) { lookYawRef.current -= Math.PI / 6; return; }
-        if (isExplorer && (e.key === 'e' || e.key === 'E')) { lookYawRef.current += Math.PI / 6; return; }
+        if (isExplorer && (e.key === 'q' || e.key === 'Q')) { lookYawTargetRef.current -= Math.PI / 6; return; }
+        if (isExplorer && (e.key === 'e' || e.key === 'E')) { lookYawTargetRef.current += Math.PI / 6; return; }
         if (e.key === 'ArrowUp' || e.key === 'w') tryMove('up');
         if (e.key === 'ArrowDown' || e.key === 's') tryMove('down');
         if (e.key === 'ArrowLeft' || e.key === 'a') tryMove('left');
@@ -2186,7 +2212,11 @@
       function _onMouseDown(e) { if (!isExplorerRef.current) return; dragging = true; lastX = e.clientX; }
       function _onMouseMove(e) {
         if (!dragging || !isExplorerRef.current) return;
-        lookYawRef.current -= (e.clientX - lastX) * 0.005;
+        var delta = (e.clientX - lastX) * 0.005;
+        // Drag is direct: set both refs so the camera tracks 1:1 without
+        // the lerp lag. Q/E only sets target so its motion is animated.
+        lookYawRef.current -= delta;
+        lookYawTargetRef.current -= delta;
         lastX = e.clientX;
       }
       function _onMouseUp() { dragging = false; }
@@ -2198,7 +2228,9 @@
       function _onTouchMove(e) {
         if (!touchActive || !isExplorerRef.current || !e.touches || e.touches.length !== 1) return;
         var x = e.touches[0].clientX;
-        lookYawRef.current -= (x - lastTouchX) * 0.005;
+        var d = (x - lastTouchX) * 0.005;
+        lookYawRef.current -= d;
+        lookYawTargetRef.current -= d;
         lastTouchX = x;
         // preventDefault keeps the page from scrolling under a 1-finger drag
         // on the maze, but only when we're actually using it for look.
@@ -2488,6 +2520,14 @@
         // Classic Mode keeps the per-move lookAt set in the useEffect
         // below, so we only override here when Explorer is active.
         if (isExplorerRef.current) {
+          // Lerp the actual yaw toward target so Q/E rotates feel smooth.
+          // Drag sets both refs so this is a no-op for direct mouse input.
+          var _diff = lookYawTargetRef.current - lookYawRef.current;
+          if (Math.abs(_diff) > 0.0005) {
+            lookYawRef.current += _diff * 0.18;
+          } else {
+            lookYawRef.current = lookYawTargetRef.current;
+          }
           var _ya = lookYawRef.current;
           eng.camera.lookAt(
             eng.camera.position.x + Math.sin(_ya),
@@ -3182,8 +3222,11 @@
             h('div', { style: { fontSize: '26px', fontWeight: 900, color: '#a16207' } }, elapsed + 's'),
             h('div', { style: { fontSize: '10px', color: '#92400e', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' } }, 'Time'))
         ),
-        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
-          h('button', { onClick: startMaze, style: { padding: '10px 24px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7', border: '2px solid #78350f', borderRadius: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(120,53,15,0.35)' } }, '\uD83D\uDD04 Play Again'),
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
+          h('button', { onClick: function() { startMaze(false); }, style: { padding: '10px 24px', background: 'linear-gradient(135deg, #b45309, #7c2d12)', color: '#fef3c7', border: '2px solid #78350f', borderRadius: '10px', fontSize: '13px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(120,53,15,0.35)' } }, '\uD83D\uDD04 Play Again'),
+          // Same-Maze replay - reuses the cached layout + key cell so the
+          // student can retry the exact run to beat their time.
+          lastRunRef.current && h('button', { onClick: function() { startMaze(true); }, title: 'Replay the same maze layout', style: { padding: '10px 18px', background: '#fef3c7', color: '#78350f', border: '2px solid #fcd34d', borderRadius: '10px', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '\u21A9 Same Maze'),
           h('button', { onClick: function() {
             try {
               var opLabel = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', mixed: 'Mixed', volume: 'Volume' }[operation] || operation;
@@ -3239,6 +3282,25 @@
           }
         }, '\uD83D\uDD25 x' + streak),
         h('span', { style: { color: '#fde68a' } }, '\u23F1 ' + elapsed + 's'),
+        // Goal compass - 8-direction bearing toward the current goal
+        // (key while uncollected, exit afterward). General-direction only
+        // (no shortest-path), so it gives orientation without spoiling
+        // the maze logic. Hidden when the player is on the goal cell.
+        (function() {
+          var goal = !keyCollected && keyPosRef.current
+            ? { r: keyPosRef.current.r, c: keyPosRef.current.c, label: 'Key', icon: '\uD83D\uDDDD' }
+            : { r: MAZE_ROWS - 1, c: MAZE_COLS - 1, label: 'Exit', icon: keyCollected ? '\u2B50' : '\uD83D\uDD12' };
+          var dr = goal.r - playerPos.r, dc = goal.c - playerPos.c;
+          if (dr === 0 && dc === 0) return null;
+          var deg = (Math.atan2(dr, dc) * 180 / Math.PI + 360) % 360;
+          var dirsByDeg = ['E','SE','S','SW','W','NW','N','NE'];
+          var sector = Math.round(deg / 45) % 8;
+          var label = dirsByDeg[sector];
+          return h('span', {
+            style: { color: '#fde68a', fontWeight: 700, fontSize: '11px', background: 'rgba(254,243,199,0.12)', border: '1px solid rgba(254,243,199,0.28)', padding: '2px 8px', borderRadius: '999px', letterSpacing: '0.04em' },
+            'aria-label': goal.label + ' is to the ' + label
+          }, goal.icon + ' ' + label);
+        })(),
         chaseMode && h('span', { style: { color: '#f59e0b', fontWeight: 700 } }, '\uD83D\uDC7E CHASE!'),
         // Explorer-mode chip - visible only in Explorer so the player
         // knows the rules differ (each path gates once, free-look camera).
