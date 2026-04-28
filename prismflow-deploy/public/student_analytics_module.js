@@ -3903,7 +3903,7 @@
     }, classSummary.totalStudents, " students"), /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.configure_rti_thresholds'),
       onClick: () => setShowRTISettings(true),
-      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-200",
+      className: "p-1.5 rounded-lg hover:bg-white/80 text-slate-600 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-600",
       title: t('common.configure_rti_thresholds')
     }, /*#__PURE__*/React.createElement(Settings, {
       size: 14
@@ -4246,7 +4246,7 @@
         };
         setProbeActivity(batteries[g] || 'segmentation');
       },
-      className: "text-xs font-bold border border-violet-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+      className: "text-xs font-bold border border-violet-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -4259,7 +4259,7 @@
       "aria-label": t('common.probe_form'),
       value: mathProbeForm,
       onChange: e => setMathProbeForm(e.target.value),
-      className: "text-xs font-bold border border-violet-200 rounded-lg px-3 py-2 bg-violet-50 text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
+      className: "text-xs font-bold border border-violet-600 rounded-lg px-3 py-2 bg-violet-50 text-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -4305,7 +4305,7 @@
       "aria-label": "Math probe grade",
       value: mathProbeGrade || "1",
       onChange: e => setMathProbeGrade(e.target.value),
-      className: "text-xs font-bold border border-orange-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+      className: "text-xs font-bold border border-orange-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -4322,7 +4322,7 @@
       "aria-label": "Math probe form",
       value: mathProbeForm || "A",
       onChange: e => setMathProbeForm(e.target.value),
-      className: "text-xs font-bold border border-orange-200 rounded-lg px-3 py-2 bg-orange-50 text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
+      className: "text-xs font-bold border border-orange-600 rounded-lg px-3 py-2 bg-orange-50 text-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -4419,7 +4419,7 @@
         // Timer starts after ProbeOverlay countdown completes (via onCountdownDone)
         setProbeTimerPending({ type: 'nwf', timeLimit: data.timeLimit || 60 });
       },
-      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-base"
     }, "\uD83D\uDD24"), /*#__PURE__*/React.createElement("div", {
@@ -4450,7 +4450,7 @@
         setLnfProbeActive(true);
         setProbeTimerPending({ type: 'lnf', timeLimit: data.timeLimit || 60 });
       },
-      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-base"
     }, "\uD83C\uDD70\uFE0F"), /*#__PURE__*/React.createElement("div", {
@@ -4483,7 +4483,7 @@
         setRanProbeActive(true);
         setProbeTimerPending({ type: 'ran' });
       },
-      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-200 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
+      className: "flex items-center gap-2 px-3 py-2.5 bg-white border-2 border-emerald-600 text-slate-700 rounded-lg font-bold text-xs hover:bg-emerald-50 hover:border-emerald-400 transition-all"
     }, /*#__PURE__*/React.createElement("span", {
       className: "text-base"
     }, "\u26A1"), /*#__PURE__*/React.createElement("div", {
@@ -5201,7 +5201,7 @@
       "aria-label": "Assign probe to student",
       value: mathProbeStudent || "",
       onChange: e => setMathProbeStudent(e.target.value),
-      className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      className: "text-xs font-bold border border-purple-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: ""
     }, "Select Student..."), importedStudents.map(s => /*#__PURE__*/React.createElement("option", {
@@ -5213,7 +5213,7 @@
       "aria-label": "Missing number probe grade",
       value: mnGrade || "1",
       onChange: e => setMnGrade(e.target.value),
-      className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      className: "text-xs font-bold border border-purple-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -5224,7 +5224,7 @@
       "aria-label": "Missing number form",
       value: mnForm || "A",
       onChange: e => setMnForm(e.target.value),
-      className: "text-xs font-bold border border-purple-200 rounded-lg px-3 py-2 bg-purple-50 text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
+      className: "text-xs font-bold border border-purple-600 rounded-lg px-3 py-2 bg-purple-50 text-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5456,7 +5456,7 @@
       "aria-label": "QD probe grade",
       value: qdGrade || "K",
       onChange: e => setQdGrade(e.target.value),
-      className: "text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+      className: "text-xs font-bold border border-cyan-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -5465,7 +5465,7 @@
       "aria-label": "QD form",
       value: qdForm || "A",
       onChange: e => setQdForm(e.target.value),
-      className: "text-xs font-bold border border-cyan-200 rounded-lg px-3 py-2 bg-cyan-50 text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+      className: "text-xs font-bold border border-cyan-600 rounded-lg px-3 py-2 bg-cyan-50 text-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5578,7 +5578,7 @@
             setQdProbeActive(false);
           }
         },
-        className: "w-28 h-28 text-4xl font-bold rounded-2xl border-4 border-cyan-200 bg-white hover:border-cyan-500 hover:bg-cyan-50 hover:scale-110 transition-all shadow-lg cursor-pointer"
+        className: "w-28 h-28 text-4xl font-bold rounded-2xl border-4 border-cyan-600 bg-white hover:border-cyan-500 hover:bg-cyan-50 hover:scale-110 transition-all shadow-lg cursor-pointer"
       }, num))));
     })() : /*#__PURE__*/React.createElement("div", {
       className: "text-center py-4"
@@ -5654,7 +5654,7 @@
       "aria-label": "NWF grade",
       value: nwfGrade || "K",
       onChange: e => setNwfGrade(e.target.value),
-      className: "text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+      className: "text-xs font-bold border border-emerald-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, t('probes.grade_k')), /*#__PURE__*/React.createElement("option", {
@@ -5663,7 +5663,7 @@
       "aria-label": "NWF form",
       value: nwfForm || "A",
       onChange: e => setNwfForm(e.target.value),
-      className: "text-xs font-bold border border-emerald-200 rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
+      className: "text-xs font-bold border border-emerald-600 rounded-lg px-3 py-2 bg-emerald-50 text-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5690,7 +5690,7 @@
       "aria-label": "LNF form",
       value: lnfForm || "A",
       onChange: e => setLnfForm(e.target.value),
-      className: "text-xs font-bold border border-rose-200 rounded-lg px-3 py-2 bg-rose-50 text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+      className: "text-xs font-bold border border-rose-600 rounded-lg px-3 py-2 bg-rose-50 text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -5717,7 +5717,7 @@
       "aria-label": "RAN grade",
       value: ranGrade || "K",
       onChange: e => setRanGrade(e.target.value),
-      className: "text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+      className: "text-xs font-bold border border-amber-600 rounded-lg px-3 py-2 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "K"
     }, "Grade K (Colors)"), /*#__PURE__*/React.createElement("option", {
@@ -5728,7 +5728,7 @@
       "aria-label": "RAN form",
       value: ranForm || "A",
       onChange: e => setRanForm(e.target.value),
-      className: "text-xs font-bold border border-amber-200 rounded-lg px-3 py-2 bg-amber-50 text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
+      className: "text-xs font-bold border border-amber-600 rounded-lg px-3 py-2 bg-amber-50 text-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-300"
     }, /*#__PURE__*/React.createElement("option", {
       value: "A"
     }, "Form A (Fall)"), /*#__PURE__*/React.createElement("option", {
@@ -7136,10 +7136,10 @@
       className: "flex flex-wrap gap-2"
     }, /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowCBMImport(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
+      className: "px-3 py-1.5 text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-all flex items-center gap-1"
     }, "\uD83D\uDCC2 Import CBM Data"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowSurveyModal(true),
-      className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-200 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1"
+      className: "px-3 py-1.5 text-xs font-bold bg-violet-50 text-violet-700 border border-violet-600 rounded-lg hover:bg-violet-100 transition-all flex items-center gap-1"
     }, "\uD83D\uDCDD Teacher Survey"), /*#__PURE__*/React.createElement("button", {
       onClick: () => setShowResearchSetup(true),
       className: "px-3 py-1.5 text-xs font-bold bg-slate-50 text-slate-600 border border-slate-400 rounded-lg hover:bg-slate-100 transition-all flex items-center gap-1"
@@ -7182,8 +7182,8 @@
       ),
       React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" },
         React.createElement("button", { onClick: function() { if (!(researchMode && researchMode.active)) setShowResearchSetup(true); }, className: "px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700 transition-all" }, researchMode && researchMode.active ? '\u2705 Research Mode Active' : '\uD83D\uDD2C Start Research Mode'),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-200 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
-        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-200 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('assessments'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83C\uDFAF Run Probes"),
+        React.createElement("button", { onClick: function() { setAssessmentCenterTab('students'); }, className: "px-4 py-2 bg-white text-indigo-700 font-bold rounded-lg text-sm border border-indigo-600 hover:bg-indigo-50 transition-all" }, "\uD83D\uDCCB Import Student Data")
       )
     ) : /*#__PURE__*/React.createElement("div", {
       className: "space-y-4"

@@ -5092,57 +5092,57 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/text_utility_helpers_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/text_utility_helpers_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
@@ -5155,7 +5155,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@98b40fc/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@85fbf45/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -9403,6 +9403,17 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     try { return localStorage.getItem('alloflow_concept_sort_image_style') || ''; } catch (e) { return ''; }
   });
   React.useEffect(() => { try { localStorage.setItem('alloflow_concept_sort_image_style', conceptSortImageStyle); } catch (e) {} }, [conceptSortImageStyle]);
+  // Image scale multiplier — applies to edit-mode thumbnails AND card images in
+  // the play view (ConceptSortGame). 1.0 = baseline, 0.5 = half, 2.5 = 2.5x.
+  // Persisted per-user so a teacher who finds tiny visuals annoying for younger
+  // students can set 1.5 once and have it stick across decks.
+  const [conceptSortImageScale, setConceptSortImageScale] = useState(() => {
+    try {
+      const v = parseFloat(localStorage.getItem('alloflow_concept_sort_image_scale'));
+      return (isFinite(v) && v >= 0.5 && v <= 2.5) ? v : 1.0;
+    } catch (e) { return 1.0; }
+  });
+  React.useEffect(() => { try { localStorage.setItem('alloflow_concept_sort_image_scale', String(conceptSortImageScale)); } catch (e) {} }, [conceptSortImageScale]);
   const [csEdit, setCsEdit] = useState(null);
   const [csBusyId, setCsBusyId] = useState(null); // item id regenerating
   const [csAddingCatId, setCsAddingCatId] = useState(null); // which category is prompting for a new item
@@ -19398,6 +19409,12 @@ ${t('export.readme_json_desc')}`;
       callGemini, addToast, t, handleScoreUpdate, setGlobalPoints, playSound,
       getState: () => ({ escapeRoomState, escapeTimeLeft, isEscapeTimerRunning, inputText, activeSessionCode, sessionData, user, activeSessionAppId }),
       setState: { setEscapeRoomState, setEscapeTimeLeft, setIsEscapeTimerRunning },
+      // Host wiring so saveEscapeRoomConfig can embed the escape room
+      // into the active exit ticket / quiz resource. Going-forward
+      // only — old exit tickets without embedded config won't auto-
+      // acquire one.
+      setHistory: setHistory,
+      getCurrentResourceId: () => (generatedContent && generatedContent.id) || null,
       firebase: window.__alloFirebase || {},
       shared: { safeGetItem, safeSetItem, warnLog, fetchWithExponentialBackoff },
     });
@@ -19426,9 +19443,30 @@ ${t('export.readme_json_desc')}`;
   const updateEscapeRoomFinalDoor = _erCall('updateEscapeRoomFinalDoor');
   const saveEscapeRoomConfig = _erCall('saveEscapeRoomConfig');
   const loadSavedEscapeRoom = _erCall('loadSavedEscapeRoom');
+  const loadEscapeRoomFromConfig = _erCall('loadEscapeRoomFromConfig');
   const hasSavedEscapeRoom = _erCall('hasSavedEscapeRoom');
   const launchCollaborativeEscapeRoom = _erCall('launchCollaborativeEscapeRoom');
   const endCollaborativeEscapeRoom = _erCall('endCollaborativeEscapeRoom');
+  // Auto-hydrate escape room when a resource with embedded
+  // escapeRoomConfig is loaded (or switched to). Only fires on
+  // resource id change so re-renders within the same resource
+  // don't re-shuffle the puzzles. Skips when an escape room is
+  // already active to avoid clobbering an in-progress play.
+  const _embeddedEscapeRoomLoadedFor = useRef(null);
+  useEffect(() => {
+    const id = generatedContent && generatedContent.id;
+    const embedded = generatedContent && generatedContent.data && generatedContent.data.escapeRoomConfig;
+    if (!id || !embedded) {
+      _embeddedEscapeRoomLoadedFor.current = null;
+      return;
+    }
+    if (_embeddedEscapeRoomLoadedFor.current === id) return;
+    if (escapeRoomState && escapeRoomState.isActive) return;
+    if (typeof loadEscapeRoomFromConfig === 'function') {
+      const ok = loadEscapeRoomFromConfig(embedded, { silent: true });
+      if (ok) _embeddedEscapeRoomLoadedFor.current = id;
+    }
+  }, [generatedContent && generatedContent.id]);
   useEffect(() => {
     if (!isEscapeTimerRunning || escapeTimeLeft <= 0) {
       if (escapeTimeLeft === 0 && isEscapeTimerRunning) {
@@ -20455,6 +20493,70 @@ ${t('export.readme_json_desc')}`;
           setCsAddingText('');
       }
   }, [handleGenerateConceptItem, csUpdateData]);
+  // Image-only operations on existing items: regenerate the visual without
+  // re-classifying or rewriting the term, upload a custom image, or clear the
+  // image. Lighter-weight than csRegenerateItem (which re-runs classification
+  // + image gen via handleGenerateConceptItem) because the AI roundtrip is
+  // just one Imagen call, not Gemini-classify-then-Imagen.
+  const csRegenerateItemImage = useCallback(async (item) => {
+      if (!item || !item.id || typeof callImagen !== 'function') return;
+      setCsBusyId(item.id);
+      try {
+          const styleInstruction = (conceptSortImageStyle || '').trim() ? `Style: ${conceptSortImageStyle}.` : 'Educational style.';
+          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
+          const imageUrl = await callImagen(imgPrompt);
+          if (imageUrl) {
+              csUpdateData((data) => Object.assign({}, data, {
+                  items: (data.items || []).map(i => i.id === item.id ? Object.assign({}, i, { image: imageUrl }) : i)
+              }));
+              if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_regenerated') || 'Image regenerated.', 'success');
+          } else {
+              if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_regen_failed') || 'Image regeneration failed. Try again or upload your own.', 'error');
+          }
+      } catch (e) {
+          warnLog('csRegenerateItemImage failed', e);
+          if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_regen_failed') || 'Image regeneration failed. Try again or upload your own.', 'error');
+      } finally {
+          setCsBusyId(null);
+      }
+  }, [callImagen, conceptSortImageStyle, csUpdateData, addToast, t]);
+  const csUploadItemImage = useCallback((itemId, file) => {
+      if (!itemId || !file) return;
+      // Validate: must be image, <=5MB. Skipping format-specific checks since the
+      // browser's <img> tag will accept anything image/* anyway.
+      if (!/^image\//.test(file.type)) {
+          if (typeof addToast === 'function') addToast(t('concept_sort.actions.upload_not_image') || 'That file is not an image.', 'error');
+          return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+          if (typeof addToast === 'function') addToast(t('concept_sort.actions.upload_too_large') || 'Image is too large (max 5 MB).', 'error');
+          return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+          const dataUrl = ev.target && ev.target.result;
+          if (typeof dataUrl !== 'string' || !dataUrl) return;
+          csUpdateData((data) => Object.assign({}, data, {
+              items: (data.items || []).map(i => i.id === itemId ? Object.assign({}, i, { image: dataUrl }) : i)
+          }));
+          if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_uploaded') || 'Image uploaded.', 'success');
+      };
+      reader.onerror = () => {
+          if (typeof addToast === 'function') addToast(t('concept_sort.actions.upload_failed') || 'Upload failed.', 'error');
+      };
+      reader.readAsDataURL(file);
+  }, [csUpdateData, addToast, t]);
+  const csClearItemImage = useCallback((itemId) => {
+      if (!itemId) return;
+      csUpdateData((data) => Object.assign({}, data, {
+          items: (data.items || []).map(i => {
+              if (i.id !== itemId) return i;
+              const { image, ...rest } = i;
+              return rest;
+          })
+      }));
+      if (typeof addToast === 'function') addToast(t('concept_sort.actions.image_cleared') || 'Image removed.', 'info');
+  }, [csUpdateData, addToast, t]);
   const handleExplainConceptSortItem = useCallback(async (item, correctCategory, chosenCategory) => {
       try {
           const prompt = `
@@ -26759,6 +26861,31 @@ ${t('export.readme_json_desc')}`;
                                 className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
                             />
                             <p className="text-[11px] text-slate-600 mt-1">{t('concept_sort.image_style_hint') || 'Applied to all AI-generated card visuals.'}</p>
+                        </div>
+                        )}
+                        {conceptImageMode !== 'never' && (
+                        <div data-help-key="concept_sort_image_scale">
+                            <label htmlFor="concept-sort-image-scale" className="block text-xs text-slate-600 mb-1 font-medium">
+                                <Palette size={12} className="inline mr-1 text-purple-500"/> {t('concept_sort.image_scale_label') || 'Image size'}
+                                <span className="ml-2 text-[11px] font-mono text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">{conceptSortImageScale.toFixed(2)}×</span>
+                            </label>
+                            <input
+                                id="concept-sort-image-scale"
+                                aria-label={(t('concept_sort.image_scale_label') || 'Image size') + ', ' + conceptSortImageScale.toFixed(2) + ' times'}
+                                type="range"
+                                min="0.5"
+                                max="2.5"
+                                step="0.05"
+                                value={conceptSortImageScale}
+                                onChange={(e) => setConceptSortImageScale(parseFloat(e.target.value) || 1.0)}
+                                className="w-full accent-indigo-600"
+                            />
+                            <div className="flex justify-between text-[10px] text-slate-500 -mt-0.5">
+                                <span>0.5×</span>
+                                <button type="button" onClick={() => setConceptSortImageScale(1.0)} className="text-[10px] text-indigo-600 hover:underline">reset</button>
+                                <span>2.5×</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 mt-1">{t('concept_sort.image_scale_hint') || 'Scales card visuals in both edit mode and the play view.'}</p>
                         </div>
                         )}
                     </div>
@@ -36557,10 +36684,15 @@ Return only the corrected version of this exact text:`;
                                                     const isBusy = csBusyId === item.id;
                                                     return (
                                                         <div key={item.id} data-help-key="concept_sort_item" className="flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors">
+                                                            {/* Edit-mode thumbnail. Base 32px (w-8 h-8) scaled by user's
+                                                                conceptSortImageScale slider. Inline width/height override
+                                                                the Tailwind size classes so the slider feels live. */}
                                                             {item.image ? (
-                                                                <img src={item.image} alt="" className="w-8 h-8 object-contain rounded shrink-0 bg-white border border-slate-100" loading="lazy" />
+                                                                <img src={item.image} alt="" className="object-contain rounded shrink-0 bg-white border border-slate-100" loading="lazy"
+                                                                    style={{ width: Math.round(32 * conceptSortImageScale) + 'px', height: Math.round(32 * conceptSortImageScale) + 'px' }} />
                                                             ) : (
-                                                                <div className="w-8 h-8 rounded bg-slate-100 border border-slate-400 shrink-0 flex items-center justify-center text-slate-400 text-[10px]" title="No image">—</div>
+                                                                <div className="rounded bg-slate-100 border border-slate-400 shrink-0 flex items-center justify-center text-slate-400 text-[10px]" title="No image"
+                                                                    style={{ width: Math.round(32 * conceptSortImageScale) + 'px', height: Math.round(32 * conceptSortImageScale) + 'px' }}>—</div>
                                                             )}
                                                             {isEditingItem ? (
                                                                 <input
@@ -36599,16 +36731,57 @@ Return only the corrected version of this exact text:`;
                                                                     <option key={c.id} value={c.id}>{c.label}</option>
                                                                 ))}
                                                             </select>
-                                                            {/* Regenerate button */}
+                                                            {/* Regenerate button (full: text + image) */}
                                                             <button
                                                                 onClick={() => csRegenerateItem(item, generatedContent?.data.categories || [])}
                                                                 disabled={isBusy || csBusyId === '__adding__'}
                                                                 className="w-7 h-7 rounded text-sm hover:bg-indigo-50 text-indigo-600 disabled:opacity-30 flex items-center justify-center"
                                                                 title="Regenerate this item (text + image)"
-                                                                aria-label="Regenerate this item"
+                                                                aria-label="Regenerate this item — text and image"
                                                             >
                                                                 {isBusy ? '⏳' : '🔄'}
                                                             </button>
+                                                            {/* Image-only regenerate button */}
+                                                            <button
+                                                                onClick={() => csRegenerateItemImage(item)}
+                                                                disabled={isBusy || csBusyId === '__adding__'}
+                                                                className="w-7 h-7 rounded text-sm hover:bg-purple-50 text-purple-600 disabled:opacity-30 flex items-center justify-center"
+                                                                title="Regenerate just the image (keep the text)"
+                                                                aria-label="Regenerate image only"
+                                                            >
+                                                                {isBusy ? '⏳' : '🖼️'}
+                                                            </button>
+                                                            {/* Upload custom image button (hidden file input + label trigger) */}
+                                                            <label
+                                                                className={`w-7 h-7 rounded text-sm hover:bg-emerald-50 text-emerald-600 flex items-center justify-center cursor-pointer ${isBusy || csBusyId === '__adding__' ? 'opacity-30 pointer-events-none' : ''}`}
+                                                                title="Upload your own image (max 5 MB)"
+                                                                aria-label="Upload custom image"
+                                                            >
+                                                                <input
+                                                                    type="file"
+                                                                    accept="image/*"
+                                                                    className="hidden"
+                                                                    onChange={(e) => {
+                                                                        const f = e.target.files && e.target.files[0];
+                                                                        if (f) csUploadItemImage(item.id, f);
+                                                                        e.target.value = '';
+                                                                    }}
+                                                                    aria-label={`Upload image for ${item.content}`}
+                                                                />
+                                                                📤
+                                                            </label>
+                                                            {/* Clear image button (only when an image exists) */}
+                                                            {item.image && (
+                                                                <button
+                                                                    onClick={() => csClearItemImage(item.id)}
+                                                                    disabled={isBusy}
+                                                                    className="w-7 h-7 rounded text-sm hover:bg-amber-50 text-amber-600 disabled:opacity-30 flex items-center justify-center"
+                                                                    title="Remove the image (keep the text)"
+                                                                    aria-label="Clear image"
+                                                                >
+                                                                    🚫
+                                                                </button>
+                                                            )}
                                                             {/* Delete button */}
                                                             <button
                                                                 onClick={() => csDeleteItem(item.id)}
@@ -36674,6 +36847,8 @@ Return only the corrected version of this exact text:`;
                                     onScoreUpdate={handleGameScoreUpdate}
                                     onGameComplete={handleGameCompletion}
                                     onExplainIncorrect={handleExplainConceptSortItem}
+                                    imageScale={conceptSortImageScale}
+                                    onImageScaleChange={setConceptSortImageScale}
                                 />
                             </ErrorBoundary>
                         )}

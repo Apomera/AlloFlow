@@ -507,7 +507,88 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'Right-of-way at a T-intersection (no signs or signals):', a: ['The car on the through road always goes first', 'The car on the stem road goes first', 'The larger vehicle goes first', 'Whoever arrives first'], correct: 0, exp: 'At a T-intersection without signs, the through road (top of the T) has the right-of-way. The car on the terminating road (stem) must yield. This is because they are essentially entering a new road.', category: 'general' },
     { q: 'The purpose of rumble strips on the highway shoulder is to:', a: ['Mark the edge for snow plows', 'Alert drowsy or distracted drivers that they are leaving the travel lane', 'Slow down traffic', 'Guide cyclists'], correct: 1, exp: 'Rumble strips create noise and vibration when you drive over them. They are specifically designed to wake up drowsy drivers or alert distracted ones before they leave the road. They reduce run-off-road crashes by 15-70%.', category: 'general' },
     { q: 'When driving near a large truck, where is the SAFEST position?', a: ['Directly behind the truck (drafting)', 'Far enough behind or ahead that you can see the truck driver\'s mirrors', 'Beside the truck in the left lane', 'As close as possible to save fuel'], correct: 1, exp: 'Rule: if you cannot see the truck driver\'s mirrors, they cannot see you. Stay out of all 4 no-zones. Pass quickly — do not cruise alongside. Never cut in front of a truck (they need 40% more stopping distance than a car).', category: 'general' },
-    { q: 'In Maine, the minimum age to obtain a full unrestricted license is:', a: ['16', '16 and 9 months', '17', '18'], correct: 1, exp: 'Maine graduated licensing: permit at 15, intermediate at 16 (after 70 hrs supervised driving), full unrestricted at 16 years and 9 months (after 9 months with no violations). The 9-month intermediate period has passenger and curfew restrictions.', category: 'gdl' }
+    { q: 'In Maine, the minimum age to obtain a full unrestricted license is:', a: ['16', '16 and 9 months', '17', '18'], correct: 1, exp: 'Maine graduated licensing: permit at 15, intermediate at 16 (after 70 hrs supervised driving), full unrestricted at 16 years and 9 months (after 9 months with no violations). The 9-month intermediate period has passenger and curfew restrictions.', category: 'gdl' },
+
+    // ── Expanded category coverage (DUI / Winter / Pedestrian / Emergency / Maintenance / GDL / Signs) ──
+    // ── DUI / impaired ──
+    { q: 'In Maine, the BAC limit for drivers UNDER 21 is:', a: ['0.08%', '0.05%', '0.02% (zero tolerance)', 'No limit'], correct: 2, exp: 'Maine has zero tolerance: ANY measurable alcohol (0.02% or higher) for under-21 drivers triggers a license suspension. The 0.08% limit only applies to adults 21+.', category: 'dui' },
+    { q: 'How long does an OUI (Operating Under Influence) conviction stay on your Maine driving record?', a: ['1 year', '5 years', '10 years', 'Forever'], correct: 2, exp: 'In Maine, OUI convictions stay on your driving record for 10 years. They affect insurance rates, employment background checks, and any subsequent DUI charges (which carry escalating penalties).', category: 'dui' },
+    { q: 'Maine\'s "implied consent" law means that refusing a breath test after a traffic stop:', a: ['Has no consequences', 'Triggers an automatic license suspension', 'Is always smart legal advice', 'Only matters if you fail it'], correct: 1, exp: 'By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any DUI charges.', category: 'dui' },
+    { q: 'You went out for drinks and feel "okay to drive." The safest choice is:', a: ['Drive carefully and slowly', 'Wait 30 minutes and reassess', 'Use a rideshare, taxi, or designated driver', 'Drink coffee for 15 minutes first'], correct: 2, exp: 'You cannot reliably self-assess your impairment — alcohol affects judgment FIRST. The only safe choice is not driving. Coffee speeds nothing; only TIME (about 1 hour per standard drink) lowers BAC.', category: 'dui' },
+    { q: 'Approximately how long does it take your body to metabolize ONE standard drink (12 oz beer, 5 oz wine, 1.5 oz liquor)?', a: ['10 minutes', '1 hour', '4 hours', '24 hours'], correct: 1, exp: 'About 1 hour per drink for a typical adult. There is no shortcut — coffee, food, cold air, and exercise do not speed metabolism. Plan drinks-and-driving math BEFORE you start.', category: 'dui' },
+    { q: 'Combining alcohol with sleep deprivation is dangerous because:', a: ['Sleep deprivation cancels out alcohol\'s effects', 'Their effects multiply — being tired AND drunk impairs you far more than either alone', 'It only matters at 0.08% BAC', 'It only affects taller drivers'], correct: 1, exp: 'Fatigue + alcohol is exponentially worse than either alone. Studies show being awake 18+ hours alongside a "legal" 0.05% BAC gives you the impairment of a 0.10% drunk driver.', category: 'dui' },
+    { q: 'Which over-the-counter medication is MOST likely to impair driving?', a: ['Vitamin C', 'Diphenhydramine (Benadryl) and other sedating antihistamines', 'Tylenol', 'Daily aspirin'], correct: 1, exp: 'Sedating antihistamines (Benadryl, NyQuil, Advil PM) cause drowsiness comparable to alcohol. Read labels: "may cause drowsiness" means do not drive. Non-drowsy options (Claritin, Zyrtec) are safer.', category: 'dui' },
+    { q: 'Recreational marijuana is legal in Maine for adults 21+, but driving while impaired by marijuana is:', a: ['Legal if you have a medical card', 'Legal as long as you can pass the breath test', 'A criminal OUI offense — same penalties as alcohol DUI', 'Only a fine'], correct: 2, exp: 'Cannabis OUI in Maine carries the same penalties as alcohol OUI: license suspension, fines, and possible jail. Officers can request a blood test if they suspect impairment. The "legal at home" status does not extend to driving.', category: 'dui' },
+    { q: 'How does cannabis impairment differ from alcohol impairment behind the wheel?', a: ['Cannabis only slows reflexes; alcohol does the rest', 'Cannabis can impair attention, reaction time, lane keeping, and decision-making — many alcohol-like effects', 'Cannabis improves driving', 'They are identical'], correct: 1, exp: 'THC slows reaction time, narrows attention, distorts time perception, and degrades multitasking. Effects last 4-8 hours after smoking and longer after edibles. There is no equivalent of "one drink is fine" for cannabis.', category: 'dui' },
+    { q: 'Your friend has had several drinks and insists they\'re fine to drive. The best action is:', a: ['Trust their judgment', 'Take their keys, offer a ride or call them a rideshare', 'Drive slowly behind them as a backup', 'Let them sleep in the car for an hour first'], correct: 1, exp: 'Friends do not let friends drive impaired. Take the keys. Offer a ride, call a rideshare, or let them sleep on your couch. An hour of sleep does not metabolize alcohol — only time does.', category: 'dui' },
+
+    // ── Winter & adverse conditions ──
+    { q: 'When should you switch from all-season to winter (snow) tires in Maine?', a: ['Only when there is snow on the ground', 'When average temperatures consistently drop below 45°F (typically late October-November)', 'Only on dirt roads', 'Never — all-seasons are enough'], correct: 1, exp: 'All-season tire rubber stiffens below ~45°F, losing grip. Winter tires use a softer compound and aggressive tread that grips snow, slush, and cold pavement. Mainers often switch in November and back in April.', category: 'winter' },
+    { q: 'The main difference between all-season tires and winter (snow) tires is:', a: ['Color', 'Winter tires have softer rubber and aggressive tread that grips below 45°F and on snow/ice', 'Winter tires are only for trucks', 'There is no real difference'], correct: 1, exp: 'Winter tires have a softer, silica-rich compound that stays flexible in cold. Tread blocks have sipes (tiny zigzag cuts) that bite into snow and ice. Stopping distance on ice can be 30-50% shorter than all-seasons.', category: 'winter' },
+    { q: 'In light snow, you should reduce your speed by approximately:', a: ['Nothing — modern cars handle snow', 'About 10-20% below the posted limit', 'About a third (1/3) below the posted limit', 'You should drive 50% slower than normal'], correct: 2, exp: 'Light snow: reduce speed by ~1/3. Heavy snow or ice: reduce by 1/2 or more. The posted limit assumes ideal conditions; you are responsible for adjusting to real conditions.', category: 'winter' },
+    { q: 'Your car is stuck in deep snow. Spinning the wheels harder will:', a: ['Eventually free the car', 'Just dig you in deeper and overheat the transmission — instead, rock the car gently between drive and reverse', 'Save the engine', 'Always work in 4WD'], correct: 1, exp: 'Wheel-spin polishes ice under the tire and digs you in. The "rocking" technique: gently shift between drive and reverse, easing on the gas to build momentum. Better still: shovel out, sand/kitty litter for traction.', category: 'winter' },
+    { q: 'A Maine winter emergency car kit should include:', a: ['Just a phone charger', 'Blanket, water, snacks, flashlight, jumper cables, ice scraper, sand or kitty litter, gloves', 'Only a flare', 'Nothing — you can call AAA'], correct: 1, exp: 'A real winter kit: warm blanket, water, granola/protein bars, flashlight + spare batteries, jumper cables, full ice scraper, gloves/hat, sand or kitty litter (for traction), small shovel, phone charger, hand-warmers.', category: 'winter' },
+    { q: 'Ice on your windshield is best cleared by:', a: ['Pouring hot water on it (warms it up)', 'Running the defroster + scraping with a proper ice scraper', 'A credit card or CD case', 'Driving until it melts'], correct: 1, exp: 'NEVER pour hot water — thermal shock cracks the windshield. Run the defroster, scrape with a real ice scraper. Maine law: clear ALL the windshield, not a "porthole" through the ice.', category: 'winter' },
+    { q: 'Wiper blades stuck to a frozen windshield: you should NOT:', a: ['Run the defroster first', 'Yank them up by force', 'Lift them with the engine warming up', 'Use a wiper-deicer spray'], correct: 1, exp: 'Yanking can rip the rubber off the wiper arm or bend the frame. Warm the windshield with the defroster first, then gently free the blades. In a freeze, lift wipers off the windshield BEFORE shutting the car off overnight.', category: 'winter' },
+    { q: 'Your defroster fails on a cold morning. The safest workaround is:', a: ['Drive carefully looking through one cleared spot', 'Pull over, manually clear all glass, crack a window for airflow, and drive only when visibility is full', 'Use the rear wiper instead', 'Keep driving and hope it warms up'], correct: 1, exp: 'Driving with limited visibility is illegal in Maine and dangerous. Clear the glass manually. A cracked window provides airflow that helps clear interior fog. If glass keeps fogging, get the heater/defroster repaired before driving.', category: 'winter' },
+    { q: 'Of these, which has the SHORTEST stopping distance on glare ice?', a: ['Front-wheel drive (FWD)', 'Rear-wheel drive (RWD)', 'All-wheel drive (AWD) and 4WD', 'They all stop the same — drivetrain helps acceleration, not braking'], correct: 3, exp: 'AWD/4WD help you GO; they do not help you STOP. All four wheels still rely on the same tire-to-ice friction for braking. Tires (especially studded or true winter tires) matter far more than drivetrain for stopping.', category: 'winter' },
+    { q: 'Roads are typically MOST slippery when the air temperature is:', a: ['Well below freezing (0-10°F)', 'Just below freezing (~28-32°F)', 'Above 50°F', 'During heavy snowfall only'], correct: 1, exp: 'Just below freezing creates the most slippery ice — surface meltwater pools and refreezes. Below 10°F, ice is harder and tires bite better. Above freezing, it is wet but not icy. The "freezing rain" zone is most treacherous.', category: 'winter' },
+    { q: 'Black ice is more dangerous than visible ice or frost because:', a: ['It is colder', 'It looks like wet pavement, so drivers do not slow down', 'It only forms at night', 'It melts faster'], correct: 1, exp: 'Black ice is a transparent thin layer of ice on dark asphalt — it looks like wet road. Drivers do not adjust speed because they do not see it. Bridges, shaded areas, and overpasses freeze first. Be suspicious in cold weather.', category: 'winter' },
+    { q: 'In a near-whiteout snow squall on a highway, the safest action is:', a: ['Stop in the travel lane and turn on hazards', 'Slow down, increase following distance, turn on low beams (not high beams), exit at the next safe pull-off', 'Speed up to get out of it', 'Pull onto the shoulder and stop with no lights'], correct: 1, exp: 'Stopping in the lane = rear-end crash risk. The shoulder is unsafe (others may also leave the road). Slow, increase distance, low beams, and exit at a rest area, gas station, or wide pull-off. Hazards on the shoulder, NOT in the lane.', category: 'winter' },
+
+    // ── Pedestrian / school zone ──
+    { q: 'A pedestrian is at an UNMARKED crosswalk (intersection without painted lines). They have:', a: ['No right-of-way without a marked crosswalk', 'The same right-of-way as if it were marked — every intersection is a legal crosswalk in Maine', 'Right-of-way only during daylight', 'Right-of-way only on residential streets'], correct: 1, exp: 'Every intersection in Maine is a legal crosswalk whether painted or not. Pedestrians have right-of-way at any intersection, and drivers must yield when turning.', category: 'pedestrian' },
+    { q: 'You are turning right at an intersection. A pedestrian is on the sidewalk waiting to cross. You should:', a: ['Turn quickly before they step off the curb', 'Yield: stop and let them cross before completing your turn', 'Honk so they wait for you', 'Continue if you have a green light'], correct: 1, exp: 'A green light is permission to PROCEED, not to ignore pedestrians. Stop, yield, let them cross, then turn. Right-on-red turns demand the same yielding behavior.', category: 'pedestrian' },
+    { q: 'Pedestrian right-of-way in Maine extends to:', a: ['Crosswalks only', 'Crosswalks AND any time a pedestrian is in the travel lane (jaywalking does not strip right-of-way once they are exposed to traffic)', 'Children only', 'School zones only'], correct: 1, exp: 'Even when a pedestrian is jaywalking, drivers must take reasonable care to avoid hitting them. You cannot "claim right-of-way" against a vulnerable road user. Slow, signal, and pass safely.', category: 'pedestrian' },
+    { q: 'When backing out of a driveway, the highest-risk pedestrian is:', a: ['An adult on the sidewalk', 'A child on a bike, scooter, or playing — small, fast, and below your rearview mirror sightline', 'A dog walker', 'No one — backup cameras eliminate the risk'], correct: 1, exp: 'Children move unpredictably and are below mirror sightlines. Walk around the car before backing up if children may be around. Backup cameras help but do not show every angle.', category: 'pedestrian' },
+    { q: 'On a residential street with children playing nearby (no posted limit change), Maine law expects you to:', a: ['Drive the posted limit — that is what is legal', 'Reduce speed below the posted limit to a safe speed for the conditions', 'Honk to alert the children', 'Continue normally'], correct: 1, exp: '"Reasonable and prudent" speed is the legal standard. The posted limit is a maximum, not a target. Children + cars = drop your speed. Maine uses "basic speed law" to ticket drivers for "speeding" even at the posted limit when conditions warrant slowing.', category: 'pedestrian' },
+    { q: 'Approaching a school crossing where a crossing guard holds up a stop paddle, you must:', a: ['Slow down', 'Come to a complete stop until the guard signals you may proceed', 'Drive around them carefully', 'Honk before passing'], correct: 1, exp: 'A school crossing guard\'s stop paddle has the legal authority of a stop sign. Stop completely. Wait until they signal you may go. Children may continue stepping into the crosswalk after the first one.', category: 'pedestrian' },
+    { q: 'A flashing yellow light at a school zone means:', a: ['Stop and wait', 'Slow down — children may be present and the school-zone speed limit (typically 15 mph in Maine) is in effect', 'School is closed', 'Same as a regular yellow light'], correct: 1, exp: 'Flashing yellow at a school zone activates the school-zone speed limit and warns of children. In Maine, school zone speed is typically 15 mph when flashing. Standard speed applies otherwise.', category: 'pedestrian' },
+    { q: 'A pedestrian carrying a white cane (sometimes with a red tip) is signaling:', a: ['Crosswalk volunteer', 'Visual impairment — they have absolute right-of-way and you must come to a complete stop', 'Construction worker', 'Tour guide'], correct: 1, exp: 'A white cane (often with red tip) indicates blindness or low vision. Maine law: drivers MUST stop fully and wait until the person is across. Do not honk — the sound disorients them.', category: 'pedestrian' },
+    { q: 'A car ahead of you stops at a marked crosswalk for a pedestrian. You should:', a: ['Pass them in the next lane to keep traffic moving', 'STOP — never pass a vehicle stopped at a crosswalk; the pedestrian may be hidden by the stopped vehicle', 'Honk to encourage the front car to move', 'Pass on the right'], correct: 1, exp: 'A stopped car at a crosswalk is the most dangerous moment — the pedestrian is hidden from your view. Stop and wait. Pass-through-pedestrian crashes are often fatal.', category: 'pedestrian' },
+    { q: 'A school bus stop on a 2-lane neighborhood street: where do children most often appear from?', a: ['The front of the bus only', 'BOTH the front (crossing the street) AND the rear (running to catch the bus)', 'Only after the bus moves', 'Only from designated zones'], correct: 1, exp: 'Children dart from in front (crossing) and behind (running for bus). Stay stopped and scan in all directions. Never resume driving until the bus retracts the stop arm AND lights stop flashing.', category: 'pedestrian' },
+
+    // ── Emergency situations ──
+    { q: 'Smoke pours out from under your hood while driving. You should:', a: ['Open the hood quickly to see what is burning', 'Pull over, turn off the engine, and DO NOT open the hood (oxygen feeds the fire) — call 911 from a safe distance', 'Pour water through the air vents', 'Try to drive to a fire station'], correct: 1, exp: 'Opening the hood of a smoking engine adds oxygen and can produce a flash flame. Pull over, kill the engine, get out, get away (~100+ feet), call 911. Take any kids/pets with you.', category: 'emergency' },
+    { q: 'Engine temperature gauge spikes into red while driving on the highway. You should:', a: ['Speed up to get home faster', 'Take the next exit, pull over safely, turn off the engine, let it cool 30+ minutes before checking coolant', 'Add cold water to the radiator immediately', 'Open the radiator cap to relieve pressure'], correct: 1, exp: 'A red-zone engine can warp the head or seize. Pull over and shut down. NEVER open a hot radiator cap — pressurized scalding coolant can erupt. After 30+ min cooldown, top off coolant and limp to a shop.', category: 'emergency' },
+    { q: 'Power steering fails at 60 mph. The car becomes much harder to steer. You should:', a: ['Pull over immediately at high speed', 'Grip the wheel firmly with BOTH hands, slow gradually with brakes, signal, and steer firmly to the shoulder', 'Slam the brakes', 'Take your hands off the wheel and let the car straighten itself'], correct: 1, exp: 'Manual steering still works, just much harder. Both hands on wheel. Slow gradually so you don\'t need to make sharp inputs. Signal and ease to shoulder. Investigate (could be a snapped power steering belt or low fluid).', category: 'emergency' },
+    { q: 'Engine stalls suddenly on the highway. You should:', a: ['Turn the key off and try restart while moving', 'Coast in neutral with hazards on, signal and steer to the shoulder, restart only when stopped', 'Slam brakes and stop in the travel lane', 'Pull the parking brake'], correct: 1, exp: 'Keep momentum. Hazards on. Coast to the shoulder. The power steering and brake assist remain functional briefly (one or two pumps). Once stopped safely, attempt restart. Don\'t restart while moving — risks losing steering at speed.', category: 'emergency' },
+    { q: 'The ABS warning light comes on while driving. The car still stops, but ABS is disabled. You should:', a: ['Continue normally', 'Drive cautiously to a shop — your brakes work but anti-lock function is offline; allow extra stopping distance, especially on wet roads', 'Stop driving immediately and tow it', 'Pump the brakes from now on'], correct: 1, exp: 'ABS off = pre-1990s braking. Brakes work but wheels can lock under hard stops, removing steering. Drive carefully, maintain extra distance, get the system diagnosed. Common causes: wheel-speed sensor or fuse.', category: 'emergency' },
+    { q: 'The battery warning light comes on while driving. This typically means:', a: ['Battery is full', 'The alternator is failing — the car runs on battery alone, which will drain in 30-60 minutes; head to a shop or home', 'Just an oil issue', 'It will fix itself'], correct: 1, exp: 'Battery light = charging system failure. The alternator is no longer charging the battery. Reduce electrical load (turn off AC, radio, fan) and head straight to a shop. Once the battery dies, the car stops.', category: 'emergency' },
+    { q: 'Your car is stuck on railroad tracks and a train is coming. You should:', a: ['Stay in the car and call 911', 'Get out IMMEDIATELY, run AT AN ANGLE TOWARD the oncoming train (debris flies forward when struck), then call 911', 'Try to push the car off', 'Drive forward through the crossing'], correct: 1, exp: 'A train cannot stop in time. Get out NOW. Run TOWARD the train at a 45° angle — when it hits the car, debris flies forward in the train\'s direction. Running away from the train means you may be hit by the debris.', category: 'emergency' },
+    { q: 'In Maine, if you strike and kill a deer or moose with your car, you must:', a: ['Drive away — wildlife collisions are not reportable', 'Stop, report the collision to the Maine Warden Service or local police, and not move the carcass without permission', 'Take the animal home', 'Only call if your car is damaged'], correct: 1, exp: 'Maine law: report deer/moose strikes to a game warden or police. They tag the carcass. Roadkill salvage requires a permit. Do not approach a wounded moose — they are dangerous when injured.', category: 'emergency' },
+    { q: 'You witness a serious crash on the highway. The legal and right thing to do is:', a: ['Drive past slowly to look (rubbernecking)', 'Pull over safely beyond the scene, call 911 first, then offer help if safe; if you saw it happen, stay as a witness', 'Keep going — others have already called', 'Take photos before helping'], correct: 1, exp: 'Maine has Good Samaritan laws protecting honest helpers. Park beyond the scene (so emergency vehicles can access), call 911, give location and number of victims. Offer help only if safe (no fire, no traffic risk). Stay if you witnessed it.', category: 'emergency' },
+    { q: 'At a crash scene, when should you move an injured victim from the vehicle?', a: ['Always — get them out fast', 'ONLY if there is immediate fire or other life threat — moving someone with a possible spine injury can paralyze them; otherwise wait for EMS', 'After 5 minutes', 'Never under any circumstance'], correct: 1, exp: 'Spinal injuries can be made permanent by moving the victim. Wait for EMTs unless fire, flooding, or other immediate danger forces the move. If you must move them, support the head and neck in line with the spine.', category: 'emergency' },
+    { q: 'When you call 911 from the scene of a crash, the FIRST thing to report is:', a: ['Your name', 'Location (address, mile marker, or nearest intersection) — 911 prioritizes location so they can dispatch even if the call drops', 'How fast you were going', 'Insurance information'], correct: 1, exp: 'Location first, in case the call drops. Then: number of victims, nature of injuries, hazards (fire, fuel leak), your number. Stay on the line until dispatch releases you.', category: 'emergency' },
+    { q: 'A downed power line is across the road in front of your car. You should:', a: ['Drive over it carefully', 'STOP at least 30 feet back, do NOT exit the car, call 911 — assume the line is live', 'Get out and move it with a stick', 'Speed up to clear it quickly'], correct: 1, exp: 'A downed line can carry lethal voltage and may energize the ground around it. Stay in the car (it shields you). If you must exit (fire), JUMP clear without touching the car and ground at the same time, then shuffle away in small steps.', category: 'emergency' },
+    { q: 'You feel a sudden severe shake — earthquake while driving. You should:', a: ['Speed up to escape it', 'Pull over to an open area away from bridges, overpasses, power lines, and large trees; stop, set parking brake, stay inside until shaking stops', 'Stop in the middle of an overpass', 'Get out and lie on the road'], correct: 1, exp: 'Open ground, away from anything that can fall. Stay buckled inside the car (it offers some protection from falling debris). After shaking stops, watch for road damage and aftershocks before resuming.', category: 'emergency' },
+    { q: 'You see another driver having a medical emergency (clutching chest, slumping). You should:', a: ['Pass them and continue', 'Use your horn to alert them, follow safely, call 911 with their location and a description, do not try to physically stop their car', 'Crash into them to stop the car', 'Pull alongside and yell at them'], correct: 1, exp: 'Call 911 with their location, description, plate, direction. Police can stop the vehicle safely. Do NOT try to ram or pull alongside — a slumping driver may swerve unpredictably and you become the next victim.', category: 'emergency' },
+    { q: 'Your car catches fire while driving. The first thing to do is:', a: ['Speed up to outrun the fire', 'Pull over IMMEDIATELY, put it in park, kill the engine, get everyone out, run at least 100 feet upwind, call 911', 'Open the hood to look', 'Drive to the nearest fire station'], correct: 1, exp: 'Cars burn fast — under 5 minutes from smoke to total loss. Get out NOW, get clear, call 911. Do not return for belongings; gas tanks can explode. Tell 911 if it is electric/hybrid (different fire response).', category: 'emergency' },
+
+    // ── Maintenance ──
+    { q: 'Modern cars with synthetic oil typically need oil changes:', a: ['Every 1,000 miles', 'Every 5,000-10,000 miles depending on driving conditions and the manufacturer\'s schedule', 'Once a year regardless', 'Never if the warning light is off'], correct: 1, exp: 'Old "every 3,000 miles" advice is from conventional oil. Synthetic oil typically lasts 5,000-10,000 miles. Severe driving (short trips, towing, dust, extreme cold) shortens the interval. Follow your owner\'s manual.', category: 'maintenance' },
+    { q: 'Coolant (antifreeze) flush interval is typically:', a: ['Never — coolant lasts forever', '30,000 miles or every 2-3 years (some long-life formulas: 100,000 miles)', 'Every 1,000 miles', 'Only when overheating'], correct: 1, exp: 'Coolant degrades and becomes acidic, eating engine internals. Standard green: 30K miles. Long-life (Dexcool, OAT): 100K. Check your manual. Topping off does not replace flushing.', category: 'maintenance' },
+    { q: 'Squealing or grinding when you press the brakes typically means:', a: ['Normal new-brake sound', 'Worn brake pads (squeal indicator) or worn rotors (grinding) — get them inspected NOW; grinding means metal-on-metal damage', 'Tires need rotation', 'Engine issue'], correct: 1, exp: 'Most pads have a "wear indicator" — a small metal tab that squeals when pads are nearly gone. Grinding = pads are gone, rotors are damaging. Driving on grinding brakes triples repair cost (rotor replacement).', category: 'maintenance' },
+    { q: 'Car batteries typically last:', a: ['1 year', '3-5 years (less in extreme heat or cold)', '20+ years', 'Until they explode'], correct: 1, exp: '3-5 years average lifespan. Hot climates shorten it; Maine cold strains them. Have your battery load-tested every fall before winter — a weak battery may start in summer but fail at -10°F.', category: 'maintenance' },
+    { q: 'Wiper blades should be replaced approximately:', a: ['Every 5 years', 'Every 6-12 months (or whenever they streak/skip/chatter)', 'Only when they fall off', 'Never'], correct: 1, exp: 'Rubber degrades from UV and ozone. Replace at first sign of streaking, skipping, or chattering. Mainers often replace twice yearly: spring (after winter ice abuse) and fall (before snow).', category: 'maintenance' },
+    { q: 'Engine air filter should be replaced approximately:', a: ['Every oil change', 'Every 15,000-30,000 miles (or sooner if visibly dirty or you drive in dusty conditions)', 'Never', 'Only at 100,000 miles'], correct: 1, exp: 'A clogged air filter reduces MPG and engine power. 15K-30K miles for most cars. If yours is gray/black instead of white when you pull it out, it is overdue. Easy DIY in most cars.', category: 'maintenance' },
+    { q: 'The cabin air filter (different from engine air filter) is for:', a: ['Engine combustion air', 'Filtering pollen, dust, and exhaust from the air your AC/heat pulls into the cabin — replace every 15,000-30,000 miles', 'Brake cooling', 'Oil filtration'], correct: 1, exp: 'Cabin filter sits behind the glove box on most cars. A clogged one weakens AC airflow and lets pollen/exhaust into the cabin. Important for allergy sufferers. Often skipped in service intervals — DIY.', category: 'maintenance' },
+    { q: 'Transmission fluid in a typical automatic should be:', a: ['Never checked or changed', 'Checked annually and changed per the manufacturer\'s schedule (typically 30,000-100,000 miles)', 'Replaced every 1,000 miles', 'Topped off only with motor oil'], correct: 1, exp: 'Transmission fluid lubricates and cools — when it burns or sludges, the transmission fails ($3,000-6,000 repair). Check the dipstick (warm engine, in park or neutral). Burned smell or dark color = service it.', category: 'maintenance' },
+    { q: 'Spare tire pressure should be checked:', a: ['Never — it never gets used', 'At least every few months — a flat spare is useless when you actually need it', 'Only when the dashboard light comes on', 'Only at the dealership'], correct: 1, exp: 'Spares lose air slowly over time. The moment you need it (flat tire on a dark, cold night) is the worst time to find it deflated. Check pressure during routine maintenance. Donut spares often need 60 PSI.', category: 'maintenance' },
+    { q: 'When replacing a burned-out headlight bulb, you should:', a: ['Replace just the burned-out one', 'Replace BOTH bulbs at the same time — the second is likely close to failure, and matching brightness is safer', 'Never replace bulbs yourself', 'Wait until both fail'], correct: 1, exp: 'Headlight bulbs from the same batch typically fail close together. Mismatched-brightness lights look uneven and confuse oncoming drivers. Many shops bundle the second bulb at low cost — ask.', category: 'maintenance' },
+
+    // ── Maine GDL specifics ──
+    { q: 'Maine intermediate license curfew is in effect:', a: ['10 PM - 5 AM', 'Midnight - 5 AM (with exceptions for work, school, medical, or accompanied driving)', 'No curfew', '8 PM - 6 AM'], correct: 1, exp: 'Maine intermediate license: no driving between midnight and 5 AM during the first 9 months, except to/from work, school, religious activity, medical, or accompanied by a licensed adult 20+.', category: 'gdl' },
+    { q: 'During the first 9 months of a Maine intermediate license, the driver may:', a: ['Carry any number of passengers', 'NOT carry passengers under age 20 except immediate family members', 'Carry only adult passengers', 'Not drive at all'], correct: 1, exp: 'Maine intermediate: no passengers under 20 except siblings, kids, parents, etc. for the first 9 months. After 9 months with a clean record, restrictions lift to a full license.', category: 'gdl' },
+    { q: 'A Maine driver\'s ed program for teens requires approximately:', a: ['No requirement', '30 hours of classroom + 10 hours behind-the-wheel instruction with a licensed instructor', '5 hours total', '100 hours total'], correct: 1, exp: 'Maine driver\'s ed: 30 hours classroom and 10 hours behind-the-wheel (split over multiple sessions) with a state-licensed instructor. Required to get a permit before age 18.', category: 'gdl' },
+    { q: 'A Maine teen driver gets a moving violation during the intermediate period. The probationary period:', a: ['Is unaffected', 'Restarts the 9-month intermediate clock and can extend the curfew/passenger restrictions', 'Means a permanent suspension', 'Just adds a fine'], correct: 1, exp: 'A violation during intermediate license restarts the 9-month clock. Multiple violations can lead to suspension. The system is designed so teens demonstrate clean driving habits before earning a full license.', category: 'gdl' },
+    { q: 'Who can supervise a Maine learner\'s permit holder during practice driving?', a: ['Anyone with a license', 'A licensed driver age 20+ with at least 2 years of licensed driving experience', 'Only a parent', 'Only a paid instructor'], correct: 1, exp: 'Maine permit supervisor: licensed driver age 20+ with 2+ years of licensed experience. Common supervisors are parents, but other family or qualified adults work. They sit in the front passenger seat.', category: 'gdl' },
+
+    // ── Signs (extra coverage) ──
+    { q: 'A pennant-shaped (sideways triangle) yellow sign on the LEFT side of the road means:', a: ['No parking', 'Beginning of a no-passing zone', 'School ahead', 'Construction'], correct: 1, exp: 'The pennant is the only sign placed on the LEFT side of the road. It marks the start of a no-passing zone. Solid yellow line on your side of the centerline confirms it.', category: 'signs' },
+    { q: 'A round yellow sign with a black "X" and the letters "RR" warns of:', a: ['A railroad crossing ahead', 'Road end', 'Roundabout', 'Recreation area'], correct: 0, exp: 'Round yellow + RR + X = railroad crossing ahead. Slow down, look, listen. Stop at the white line if a train is approaching, and never stop ON the tracks.', category: 'signs' },
+    { q: 'A blue rectangular sign typically indicates:', a: ['Warnings', 'Services available (gas, food, lodging, hospital, rest area)', 'Construction', 'Speed limit'], correct: 1, exp: 'Blue = motorist services. Includes gas, food, lodging, hospital, rest area, EV charging. Different from green (directions) and brown (recreational/scenic).', category: 'signs' },
+    { q: 'A brown rectangular sign typically indicates:', a: ['Speed limit', 'Recreational, scenic, or cultural information (parks, historic sites, hiking)', 'Construction', 'Hospital'], correct: 1, exp: 'Brown = parks, recreation, historic sites. Often used for state parks, national monuments, lighthouses, museums. In Maine: Acadia, Baxter, lighthouses, lobster pounds, etc.', category: 'signs' }
   ];
 
   console.log('[RoadReady] Loaded ' + PERMIT_BANK.length + ' permit questions');
@@ -528,6 +609,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // d.permit.questions. Each guarantees length 20 by padding from the broader pool when
   // the category-filter doesn't yield enough — keeps the existing 16-of-20 pass threshold
   // and "/20" denominator working without conditional UI.
+  // Coaching-debrief event capture. Detection sites (hard brake, tailgate, speed violation,
+  // crash, skid) call this with the live physics state at the instant of the incident.
+  // Debounce: at most one event per type per 1.5s — per-frame detectors otherwise flood
+  // the log with hundreds of duplicates for a single sustained behavior. Cap at 60 events
+  // total to keep the debrief renderable on long drives.
+  function pushDriveEvent(statsRef, type, speedMph, mu, postedLimitMph, severity, extra) {
+    var sR = statsRef.current;
+    if (!sR) return;
+    if (!sR.driveEvents) sR.driveEvents = [];
+    if (!sR._lastEvent)  sR._lastEvent  = {};
+    var now = (Date.now() - (sR.startTime || Date.now())) / 1000;
+    var lastT = sR._lastEvent[type];
+    if (lastT !== undefined && now - lastT < 1.5) return;
+    sR._lastEvent[type] = now;
+    var ev = {
+      type: type,
+      t: now,
+      speedMph: Math.round(speedMph || 0),
+      mu: typeof mu === 'number' ? +mu.toFixed(2) : null,
+      postedLimitMph: postedLimitMph || null,
+      severity: severity || 1
+    };
+    if (extra) Object.keys(extra).forEach(function(k) { ev[k] = extra[k]; });
+    sR.driveEvents.push(ev);
+    if (sR.driveEvents.length > 60) sR.driveEvents.shift();
+  }
+
+  // Coaching tip dispatch — keyed on event type plus weather (mu) and severity.
+  // Returns { title, advice } for the debrief card. Wet (<0.6) and ice (<0.3)
+  // thresholds match the existing physics constants used elsewhere in the tool.
+  function coachTipFor(ev) {
+    if (!ev) return { title: 'Driving moment', advice: 'Review your form for next time.' };
+    var mu = typeof ev.mu === 'number' ? ev.mu : 1.0;
+    var wet = mu < 0.6, ice = mu < 0.3;
+    var conditions = ice ? 'icy' : wet ? 'wet' : 'dry';
+    switch (ev.type) {
+      case 'hardBrake':
+        return ice
+          ? { title: 'Hard brake on ICE', advice: 'On ice, hard braking locks wheels and you lose steering. Pump or trust ABS, look 12-15 sec ahead, and increase following distance to 6+ seconds. The earlier you start braking, the gentler it can be.' }
+          : wet
+          ? { title: 'Hard brake on WET pavement', advice: 'Wet roads need 4× normal stopping distance. Engine-brake on downgrades and start braking earlier. Hard brakes also waste fuel — every kinetic-energy hit becomes brake heat.' }
+          : { title: 'Hard brake', advice: 'Hard brakes mean you reacted late. Look 12-15 seconds ahead, follow at 3+ seconds, and cover the brake when approaching stale greens. Smooth braking saves fuel and brake wear.' };
+      case 'tailgate':
+        return wet
+          ? { title: 'Tailgating in ' + conditions + ' conditions', advice: 'You followed within half the safe distance. In ' + conditions + ' weather, use the 4-6 second rule (not 3). Pick a fixed point — you should reach it that many seconds after the lead car passes it.' }
+          : { title: 'Following too closely', advice: 'You followed within half the safe distance. Use the 3-second rule on dry roads. Tailgating eliminates your reaction buffer — at 60 mph you need 312 ft to react and stop, but a 1-second gap is only 88 ft.' };
+      case 'speedViolation':
+        return { title: 'Speeding past the posted limit', advice: ev.postedLimitMph ? ('You exceeded ' + ev.postedLimitMph + ' mph by 8+. Speed limits set the maximum for ideal conditions; in ' + conditions + ' weather you should be UNDER. Braking distance grows with v² — double the speed = 4× the distance.') : 'You exceeded the posted limit by 8+. Watch the speedometer, especially on long downhills where speed creeps up unnoticed.' };
+      case 'crash':
+        return { title: 'Collision', advice: 'Crashes happen when reaction time runs out. Look further ahead, leave more following distance, and remember the friction circle: tires can brake OR steer at full grip, not both. Brake BEFORE the turn, not during.' };
+      case 'skidLoss':
+        return ice
+          ? { title: 'Skid on ICE', advice: 'Ease off the gas, do NOT brake hard, and steer gently in the direction you want the front to go. On ice, every input must be smaller and slower. If equipped, switch to engine braking instead of pedal braking.' }
+          : { title: 'Skid', advice: 'Lost grip means you exceeded what the tires could give. Smaller inputs, more anticipation. Friction circle: 100% braking + steering = exceeding 100% grip = skid.' };
+      case 'cyclistClose':
+        return { title: 'Passed cyclist too closely', advice: 'Maine law requires a minimum 3 ft (1 m) when passing a cyclist. Crossing a double-yellow centerline to provide that space is legal if it\'s safe to do so. Wait for an opening if the road is narrow.' };
+      default:
+        return { title: ev.type, advice: 'Review your form for next time.' };
+    }
+  }
+
   function buildRandomTest() {
     var shuffled = PERMIT_BANK.slice().sort(function() { return Math.random() - 0.5; });
     return shuffled.slice(0, 20);
@@ -1942,6 +2084,314 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // step-by-step Maine road test guidance: line up, reverse-right, straighten,
   // reverse-left, center.
 
+  // ─────────────────────────────────────────────────────────
+  // PARKING SCENARIOS REGISTRY (data-only — geometry + step heuristic)
+  // ─────────────────────────────────────────────────────────
+  // Each scenario describes: starting car position, fixed obstacles, target slot
+  // (with required heading), and a per-scenario completion check (stepCheck).
+  // ScenarioParkingMode (below) consumes these — keeps the original ParkingMode
+  // (parallel parking) untouched so its tuned heuristic doesn't regress.
+  var PARKING_SCENARIOS = {
+    tightParallel: {
+      id: 'tightParallel', label: '🅿️ Tight Parallel', difficulty: 'hard',
+      hint: 'Like standard parallel — but the gap is only 10 ft (vs 18 ft). Be precise.',
+      startCar:  { x: 80, y: 60, heading: 0 },
+      obstacles: [
+        { x: 320, y: 320, w: 60, h: 110, label: 'FRONT', color: '#7c3aed' },
+        { x: 320, y: 425, w: 60, h: 110, label: 'REAR',  color: '#dc2626' }
+      ],
+      slot:    { x: 320, y: 380, w: 70, h: 75, requiredHeadingDeg: 0, headingTolDeg: 12 },
+      curb:    { x: 295, edgeColor: '#fbbf24' },
+      bestKey: 'tightParallel',
+      // Same heuristic as parallel — just the slot is shorter, so this auto-trips
+      // when the player gets the car squared inside the tighter box.
+      stepCheck: function(car, scn, headingDeg) {
+        var inSlot = car.x > scn.slot.x - 30 && car.x < scn.slot.x + 30 && car.y > scn.slot.y - 30 && car.y < scn.slot.y + 50;
+        return inSlot && Math.abs(headingDeg) < scn.slot.headingTolDeg && Math.abs(car.speed) < 1;
+      }
+    },
+    angleBack: {
+      id: 'angleBack', label: '↘ Angle Back-In', difficulty: 'medium',
+      hint: 'Back into a 45° angled spot between two parked cars. Approach from the lane, then reverse at the right angle.',
+      startCar:  { x: 100, y: 250, heading: 0 },
+      // Two angled parked cars flanking the slot
+      obstacles: [
+        { x: 340, y: 200, w: 50, h: 90, label: 'CAR L', color: '#7c3aed', rotateDeg: 45 },
+        { x: 470, y: 200, w: 50, h: 90, label: 'CAR R', color: '#dc2626', rotateDeg: 45 }
+      ],
+      slot:    { x: 405, y: 240, w: 65, h: 100, requiredHeadingDeg: 45, headingTolDeg: 18 },
+      curb:    { x: 0, edgeColor: 'transparent' },
+      bestKey: 'angleBack',
+      stepCheck: function(car, scn, headingDeg) {
+        // Angled spot at ~45°. Headings are in 0-360. We accept either 45° or 225° (back end first).
+        var targetHeadings = [45, 225];
+        var headingOk = targetHeadings.some(function(t) { return Math.abs(((headingDeg - t) + 540) % 360 - 180) < scn.slot.headingTolDeg; });
+        var inSlot = car.x > scn.slot.x - 30 && car.x < scn.slot.x + 30 && car.y > scn.slot.y - 35 && car.y < scn.slot.y + 35;
+        return inSlot && headingOk && Math.abs(car.speed) < 1.2;
+      }
+    },
+    obstacleBack: {
+      id: 'obstacleBack', label: '↩️ Backing Around Obstacle', difficulty: 'medium',
+      hint: '50 ft straight reverse. A parked car is offset 4 ft into your lane — stay clear of it AND inside the marked corridor.',
+      startCar:  { x: 200, y: 80, heading: -Math.PI / 2 },
+      obstacles: [
+        { x: 250, y: 280, w: 50, h: 100, label: 'PARKED', color: '#dc2626' }
+      ],
+      slot:    { x: 200, y: 480, w: 80, h: 60, requiredHeadingDeg: 270, headingTolDeg: 15 },
+      curb:    { x: 0, edgeColor: 'transparent' },
+      bounds:  { x: 150, y: 50, w: 200, h: 470 }, // boundary corridor
+      bestKey: 'obstacleBack',
+      stepCheck: function(car, scn, headingDeg) {
+        var inSlot = car.x > scn.slot.x - 40 && car.x < scn.slot.x + 40 && car.y > scn.slot.y - 30 && car.y < scn.slot.y + 30;
+        // Heading should still be roughly straight (within tolerance) — i.e., NOT spun out
+        var stillStraight = Math.abs(((headingDeg - 270) + 540) % 360 - 180) < scn.slot.headingTolDeg;
+        return inSlot && stillStraight && Math.abs(car.speed) < 1;
+      }
+    },
+    uTurnNarrow: {
+      id: 'uTurnNarrow', label: '🔄 Narrow U-Turn', difficulty: 'hard',
+      hint: 'Three-point turn in a narrow street. You start facing east; finish facing west — and stay inside the bounded street width.',
+      startCar:  { x: 100, y: 250, heading: 0 },
+      obstacles: [],
+      slot:    { x: 500, y: 250, w: 100, h: 100, requiredHeadingDeg: 180, headingTolDeg: 15 },
+      curb:    { x: 0, edgeColor: 'transparent' },
+      bounds:  { x: 50, y: 200, w: 600, h: 100 }, // narrow street rect
+      bestKey: 'uTurnNarrow',
+      stepCheck: function(car, scn, headingDeg) {
+        // Done when car is anywhere on the road and faces ~180° (west)
+        var carInRoad = car.x > scn.bounds.x && car.x < scn.bounds.x + scn.bounds.w;
+        var facingWest = Math.abs(((headingDeg - 180) + 540) % 360 - 180) < scn.slot.headingTolDeg;
+        return carInRoad && facingWest && Math.abs(car.speed) < 1;
+      }
+    }
+  };
+
+  // ScenarioParkingMode: parameterized variant of ParkingMode for the new scenarios.
+  // Uses the same bicycle-model integrator and hit detection patterns. Each scenario's
+  // stepCheck (above) determines completion. Score starts at 100, -25 per obstacle hit,
+  // -10 per boundary breach. Reusing rectsOverlap from parent scope. Score persists to
+  // d.parkingBest[id] via lsSet.
+  function ScenarioParkingMode(props) {
+    var React = props.React;
+    var h = props.h;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+    var useRef = React.useRef;
+    var scn = props.scenario;
+    var canvasRef = useRef(null);
+    var carRef = useRef(Object.assign({ speed: 0, steering: 0 }, scn.startCar));
+    var keysRef = useRef({});
+    var animRef = useRef(null);
+    var timeRef = useRef(0);
+    var hitCooldownRef = useRef(0);
+    var doneRef = useRef(false);
+    var status = useState({ score: 100, time: 0, hits: 0, parked: false });
+    var st = status[0]; var setSt = status[1];
+    var feedback = useState(scn.hint);
+    var feedbackText = feedback[0]; var setFeedback = feedback[1];
+
+    function resetCar() {
+      carRef.current = Object.assign({ speed: 0, steering: 0 }, scn.startCar);
+      doneRef.current = false;
+      hitCooldownRef.current = 0;
+      setSt({ score: 100, time: 0, hits: 0, parked: false });
+      setFeedback(scn.hint);
+    }
+
+    useEffect(function() {
+      var onDown = function(e) {
+        if (['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright',' ','shift','r'].indexOf(e.key.toLowerCase()) !== -1) e.preventDefault();
+        if (e.repeat) return;
+        keysRef.current[e.key.toLowerCase()] = true;
+        if (e.key.toLowerCase() === 'r') resetCar();
+      };
+      var onUp = function(e) { keysRef.current[e.key.toLowerCase()] = false; };
+      window.addEventListener('keydown', onDown);
+      window.addEventListener('keyup', onUp);
+      return function() {
+        window.removeEventListener('keydown', onDown);
+        window.removeEventListener('keyup', onUp);
+      };
+    }, []);
+
+    useEffect(function() {
+      var canvas = canvasRef.current;
+      if (!canvas) return;
+      var gfx = canvas.getContext('2d');
+      var lastT = performance.now();
+
+      var step = function(now) {
+        var dt = Math.min(0.05, (now - lastT) / 1000);
+        lastT = now;
+        timeRef.current += dt;
+        if (!doneRef.current) update(dt);
+        render();
+        animRef.current = requestAnimationFrame(step);
+      };
+
+      var update = function(dt) {
+        var car = carRef.current;
+        var k = keysRef.current;
+        var fwd = (k['w'] || k['arrowup']) ? 1 : 0;
+        var rev = (k['s'] || k['arrowdown'] || k['shift']) ? 1 : 0;
+        var left = (k['a'] || k['arrowleft']) ? 1 : 0;
+        var right = (k['d'] || k['arrowright']) ? 1 : 0;
+        var steerTarget = (right - left) * 0.7;
+        car.steering += (steerTarget - car.steering) * dt * 4;
+        var accel = (fwd - rev) * 30;
+        car.speed += accel * dt;
+        car.speed *= 0.92;
+        if (car.speed > 60) car.speed = 60;
+        if (car.speed < -40) car.speed = -40;
+        var turnRate = car.steering * (car.speed / 30) * 1.4;
+        car.heading += turnRate * dt;
+        car.x += Math.cos(car.heading) * car.speed * dt;
+        car.y += Math.sin(car.heading) * car.speed * dt;
+
+        // Hit detection vs obstacles (axis-aligned approximation)
+        var carBox = { x: car.x - 25, y: car.y - 12, w: 50, h: 24 };
+        var anyHit = false;
+        scn.obstacles.forEach(function(ob) {
+          if (rectsOverlap(carBox, ob)) anyHit = true;
+        });
+        if (anyHit) {
+          if (hitCooldownRef.current <= 0) {
+            hitCooldownRef.current = 0.5;
+            var newSt = Object.assign({}, st);
+            newSt.score = Math.max(0, newSt.score - 25);
+            newSt.hits += 1;
+            setSt(newSt);
+            setFeedback('💥 You hit an obstacle. -25. Press R to reset.');
+          }
+          car.speed *= -0.3;
+        } else {
+          hitCooldownRef.current = Math.max(0, hitCooldownRef.current - dt);
+        }
+
+        // Boundary breach (if scenario has bounds)
+        if (scn.bounds) {
+          var bd = scn.bounds;
+          var outOfBounds = car.x < bd.x || car.x > bd.x + bd.w || car.y < bd.y || car.y > bd.y + bd.h;
+          if (outOfBounds && hitCooldownRef.current <= 0) {
+            hitCooldownRef.current = 0.5;
+            var newSt2 = Object.assign({}, st);
+            newSt2.score = Math.max(0, newSt2.score - 10);
+            setSt(newSt2);
+            setFeedback('⚠️ Out of bounds. Stay inside the lane markings. -10.');
+          }
+        }
+
+        // Step check — completion heuristic from scenario
+        var headingDeg = (car.heading * 180 / Math.PI + 360) % 360;
+        if (!doneRef.current && scn.stepCheck(car, scn, headingDeg)) {
+          doneRef.current = true;
+          var finalSt = Object.assign({}, st);
+          finalSt.parked = true;
+          setSt(finalSt);
+          setFeedback('✅ Parked! Final score: ' + finalSt.score + '/100 (' + finalSt.hits + ' hits)');
+          if (props.onComplete) props.onComplete(finalSt.score);
+        }
+      };
+
+      var render = function() {
+        var W = canvas.width = canvas.offsetWidth;
+        var H = canvas.height = 480;
+        // Asphalt background
+        gfx.fillStyle = '#334155'; gfx.fillRect(0, 0, W, H);
+        // Bounds overlay (if scenario uses one)
+        if (scn.bounds) {
+          var bd = scn.bounds;
+          gfx.strokeStyle = 'rgba(251,191,36,0.6)'; gfx.lineWidth = 3; gfx.setLineDash([10, 6]);
+          gfx.strokeRect(bd.x, bd.y, bd.w, bd.h);
+          gfx.setLineDash([]);
+        }
+        // Curb (if scenario uses one)
+        if (scn.curb && scn.curb.x > 0) {
+          gfx.fillStyle = '#94a3b8'; gfx.fillRect(0, 0, scn.curb.x, H);
+          gfx.fillStyle = scn.curb.edgeColor; gfx.fillRect(scn.curb.x, 0, 4, H);
+        }
+        // Slot guide
+        var sl = scn.slot;
+        gfx.strokeStyle = 'rgba(34,197,94,0.6)'; gfx.lineWidth = 2; gfx.setLineDash([6, 6]);
+        gfx.save();
+        gfx.translate(sl.x + sl.w / 2, sl.y + sl.h / 2);
+        if (sl.requiredHeadingDeg) gfx.rotate(sl.requiredHeadingDeg * Math.PI / 180);
+        gfx.strokeRect(-sl.w / 2, -sl.h / 2, sl.w, sl.h);
+        gfx.restore();
+        gfx.setLineDash([]);
+        // Obstacles
+        scn.obstacles.forEach(function(ob) {
+          gfx.save();
+          if (ob.rotateDeg) {
+            gfx.translate(ob.x + ob.w / 2, ob.y + ob.h / 2);
+            gfx.rotate(ob.rotateDeg * Math.PI / 180);
+            gfx.fillStyle = ob.color;
+            gfx.fillRect(-ob.w / 2, -ob.h / 2, ob.w, ob.h);
+          } else {
+            gfx.fillStyle = ob.color;
+            gfx.fillRect(ob.x, ob.y, ob.w, ob.h);
+          }
+          gfx.fillStyle = 'rgba(0,0,0,0.4)';
+          if (ob.rotateDeg) {
+            gfx.fillRect(-ob.w / 2 + 6, -ob.h / 2 + 8, ob.w - 12, 14);
+            gfx.fillRect(-ob.w / 2 + 6, ob.h / 2 - 22, ob.w - 12, 14);
+          } else {
+            gfx.fillRect(ob.x + 6, ob.y + 8, ob.w - 12, 14);
+            gfx.fillRect(ob.x + 6, ob.y + ob.h - 22, ob.w - 12, 14);
+          }
+          gfx.restore();
+          if (ob.label) {
+            gfx.fillStyle = '#0f172a'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center';
+            gfx.fillText(ob.label, ob.x + ob.w / 2, ob.y + ob.h / 2 + 4);
+          }
+        });
+        // Player car
+        var car = carRef.current;
+        gfx.save();
+        gfx.translate(car.x, car.y);
+        gfx.rotate(car.heading + Math.PI / 2);
+        gfx.fillStyle = '#22d3ee';
+        gfx.fillRect(-25, -12, 50, 24);
+        gfx.fillStyle = '#0c4a6e';
+        gfx.fillRect(-20, -10, 14, 20);
+        if (car.speed < -0.5) {
+          gfx.fillStyle = '#ef4444';
+          gfx.fillRect(20, -10, 6, 6); gfx.fillRect(20, 4, 6, 6);
+        }
+        gfx.save();
+        gfx.translate(-15, 0);
+        gfx.rotate(car.steering);
+        gfx.fillStyle = '#0f172a'; gfx.fillRect(-3, -8, 6, 16);
+        gfx.restore();
+        gfx.restore();
+        // HUD
+        gfx.fillStyle = 'rgba(15,23,42,0.85)';
+        gfx.fillRect(10, 10, 180, 56);
+        gfx.fillStyle = '#22d3ee'; gfx.font = 'bold 14px system-ui'; gfx.textAlign = 'left';
+        gfx.fillText('Score: ' + st.score, 20, 30);
+        gfx.fillStyle = '#fbbf24'; gfx.font = '11px system-ui';
+        gfx.fillText(scn.label + (scn.difficulty ? ' · ' + scn.difficulty : ''), 20, 46);
+        gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
+        gfx.fillText('R = reset', 20, 60);
+      };
+
+      animRef.current = requestAnimationFrame(step);
+      return function() { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    }, [scn.id]);
+
+    return h('div', { style: { padding: '14px', maxWidth: '760px', margin: '0 auto' } },
+      h('button', { onClick: props.onExit, style: { fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '8px' } }, '← Menu'),
+      h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #1e293b' } },
+        h('div', { style: { fontSize: '15px', fontWeight: 800, color: '#e2e8f0', marginBottom: '4px' } }, scn.label + ' · ' + scn.difficulty),
+        h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '10px' } }, feedbackText),
+        h('canvas', { ref: canvasRef, style: { width: '100%', height: '480px', borderRadius: '8px', background: '#1e293b', display: 'block' } }),
+        h('div', { style: { marginTop: '8px', fontSize: '11px', color: '#cbd5e1' } },
+          'WASD or arrows to drive. SHIFT or down arrow = reverse. R = reset. Stay inside the dashed boundary if shown.'
+        )
+      )
+    );
+  }
+
   function ParkingMode(props) {
     var React = props.React;
     var h = props.h;
@@ -3069,7 +3519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
       var timeRef = useRef(0);
-      var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0 });
+      var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, driveEvents: [], _lastEvent: {} });
       var lastStateRef = useRef({ speed: 0, accel: 0 });
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
@@ -3430,7 +3880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cy.y = startY + (cy.y >= startY ? 25 : -25);
           }
         });
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0 };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, driveEvents: [], _lastEvent: {} };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
@@ -3728,7 +4178,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             pedYields: s.pedYields || 0,
             scenarioId: currentScenario.id,
             lastCrashReplay: s.crashes > 0 ? blackBoxRef.current.slice(-120) : null, // last 2 sec before end
-            drivePath: drivePathRef.current.slice() // full drive path for map
+            drivePath: drivePathRef.current.slice(), // full drive path for map
+            // Coaching debrief: per-incident timeline (hard brakes, tailgates, speed violations, etc.)
+            // The driveDebrief view renders these as annotated cards with weather-aware advice.
+            events: (s.driveEvents || []).slice()
           }
         });
         // Check achievements
@@ -5101,6 +5554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var impactMph = Math.abs(car.speed) * MS_TO_MPH;
                 if (impactMph > 5) {
                   statsRef.current.crashes++;
+                  pushDriveEvent(statsRef, 'crash', impactMph, frictionCoef(scn.weather), scn.speedLimit, 3);
                   journalLog('crash', '💥', 'Crash at ' + Math.round(impactMph) + ' mph');
                   // A crash is an automatic major deduction on the road test (-25 pts, crash any speed = fail zone).
                   if (roadTestRef.current.active) {
@@ -5297,6 +5751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             statsRef.current.hardBrakes++;
             statsRef.current.efficiencyScore -= 2;
             statsRef.current.safetyScore -= 1;
+            pushDriveEvent(statsRef, 'hardBrake', Math.abs(car.speed) * MS_TO_MPH, frictionCoef(scn.weather), scn.speedLimit, accel < -7 ? 3 : 2);
           }
           // Speed violation — only in Drive, with 5-second grace period, +8 mph threshold.
           // speedViolations counts discrete incidents (one per entry into the over-limit state)
@@ -5310,6 +5765,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (!statsRef.current._wasOverLimit) {
               statsRef.current.speedViolations += 1;
               statsRef.current._wasOverLimit = true;
+              pushDriveEvent(statsRef, 'speedViolation', speedMph, frictionCoef(scn.weather), scn.speedLimit, speedMph > scn.speedLimit + 15 ? 3 : 2);
             }
           } else if (statsRef.current._wasOverLimit && speedMph < scn.speedLimit + 3) {
             // Hysteresis: only "exit" the violation state once you're 3 mph under the +8 trigger,
@@ -7532,6 +7988,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!nearest._closeFollowFlagged) {
                 nearest._closeFollowFlagged = true;
                 statsRef.current.closeFollows++;
+                pushDriveEvent(statsRef, 'tailgate', Math.abs(car.speed) * MS_TO_MPH, frictionCoef(currentScenario.weather), currentScenario.speedLimit, 2, { leadDistanceFt: Math.round(actualFeet), safeFeet: Math.round(safeFeet) });
               }
               statsRef.current.safetyScore -= 0.1;
             } else if (nearest._closeFollowFlagged && actualFeet > safeFeet * 0.7) {
@@ -19737,10 +20194,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // Crash replay button (only if there was a crash)
               drivingStats.lastCrashReplay ? h('button', { onClick: function() { upd('view', 'crashReplay'); },
                 style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #ef4444', background: 'rgba(239,68,68,0.15)', color: '#fca5a5', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '🔄 Crash Replay') : null,
+              // Coaching debrief button — annotated incident-by-incident review with weather-aware advice.
+              drivingStats.events && drivingStats.events.length > 0 ? h('button', {
+                onClick: function() { upd('view', 'driveDebrief'); },
+                'aria-label': 'View detailed coaching debrief, ' + drivingStats.events.length + ' moments to review',
+                'data-rr-focusable': true,
+                style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #22d3ee', background: 'rgba(34,211,238,0.15)', color: '#67e8f9', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+              }, '🎓 Coaching (' + drivingStats.events.length + ')') : null,
               // Certificate button (only if passed with A or B)
               !isFreeExplore && combined >= 80 ? h('button', { onClick: function() { upd('view', 'certificate'); },
                 style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #fbbf24', background: 'rgba(251,191,36,0.15)', color: '#fcd34d', fontSize: '13px', fontWeight: 700, cursor: 'pointer' } }, '📜 Certificate') : null
             )
+          )
+        );
+      }
+
+      // ── COACHING DEBRIEF VIEW ──
+      // Renders drivingStats.events as annotated cards with physics readouts and tip dispatch.
+      // Empty events array: shows a celebratory "clean drive" state instead.
+      if (view === 'driveDebrief' && drivingStats) {
+        var events = (drivingStats.events || []).slice();
+        // Group consecutive same-type events for cleaner visual scanning
+        var byType = {};
+        events.forEach(function(e) { byType[e.type] = (byType[e.type] || 0) + 1; });
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'debrief'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Drive Debrief'),
+          h('div', { style: { background: 'linear-gradient(135deg, #0c4a6e, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #22d3ee', marginBottom: '14px' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' } },
+              h('div', { style: { fontSize: '36px' } }, '🎓'),
+              h('div', null,
+                h('h2', { style: { fontSize: '20px', fontWeight: 900, marginBottom: '2px' } }, 'Coaching Debrief'),
+                h('div', { style: { fontSize: '11px', color: '#67e8f9' } }, drivingStats.scenario + ' · ' + drivingStats.vehicle + ' · ' + drivingStats.time)
+              )
+            ),
+            // Type summary chips
+            events.length > 0 ? h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '8px' } },
+              Object.keys(byType).map(function(t) {
+                return h('span', { key: t, style: { padding: '3px 10px', borderRadius: '12px', background: 'rgba(34,211,238,0.2)', border: '1px solid rgba(34,211,238,0.4)', fontSize: '10px', fontWeight: 700, color: '#67e8f9' } },
+                  byType[t] + ' × ' + t
+                );
+              })
+            ) : null
+          ),
+          events.length === 0 ? h('div', { style: { background: '#0f172a', borderRadius: '12px', padding: '32px', textAlign: 'center', border: '1px solid #4ade80' } },
+            h('div', { style: { fontSize: '48px', marginBottom: '10px' } }, '🌟'),
+            h('h3', { style: { fontSize: '18px', fontWeight: 800, color: '#4ade80', marginBottom: '6px' } }, 'Clean drive — no coaching moments.'),
+            h('div', { style: { fontSize: '12px', color: '#94a3b8', lineHeight: '1.6' } }, 'No hard brakes, tailgates, speed violations, or crashes were logged. Keep it up.')
+          ) : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            events.map(function(ev, idx) {
+              var tip = coachTipFor(ev);
+              var icon = ev.type === 'hardBrake' ? '🛑' : ev.type === 'tailgate' ? '🚗' : ev.type === 'speedViolation' ? '⚡' : ev.type === 'crash' ? '💥' : ev.type === 'skidLoss' ? '🌀' : '⚠️';
+              var sev = ev.severity || 1;
+              var border = sev >= 3 ? '#ef4444' : sev === 2 ? '#f59e0b' : '#3b82f6';
+              var conditions = ev.mu === null || ev.mu === undefined ? null : (ev.mu < 0.3 ? 'icy' : ev.mu < 0.6 ? 'wet' : 'dry');
+              var mins = Math.floor(ev.t / 60), secs = Math.floor(ev.t % 60);
+              return h('div', {
+                key: idx,
+                style: { background: '#0f172a', borderRadius: '10px', padding: '14px', borderLeft: '4px solid ' + border, border: '1px solid #1e293b' }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '12px' } },
+                  h('div', { style: { fontSize: '28px', lineHeight: '1' } }, icon),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
+                      h('div', { style: { fontSize: '13px', fontWeight: 800, color: '#e2e8f0' } }, tip.title),
+                      h('div', { style: { fontSize: '10px', color: '#64748b', fontVariantNumeric: 'tabular-nums' } }, mins + ':' + String(secs).padStart(2, '0'))
+                    ),
+                    // Physics readout: speed, conditions, distance for tailgates
+                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '8px', fontFamily: 'monospace' } },
+                      ev.speedMph + ' mph' +
+                      (ev.postedLimitMph ? ' · limit ' + ev.postedLimitMph : '') +
+                      (conditions ? ' · ' + conditions + ' (μ=' + ev.mu + ')' : '') +
+                      (ev.leadDistanceFt !== undefined ? ' · ' + ev.leadDistanceFt + ' ft from lead (need ' + ev.safeFeet + ')' : '')
+                    ),
+                    h('div', { style: { fontSize: '12px', color: '#cbd5e1', lineHeight: '1.5' } }, tip.advice)
+                  )
+                )
+              );
+            })
           )
         );
       }
@@ -23265,7 +23795,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'freeExploreSetup', goal: 'practice', icon: '🌎', name: 'Free Explore', desc: 'Open sandbox with landmarks, challenges, road trips, dynamic weather.' },
           { view: 'lessonPath', goal: 'practice', icon: '🎓', name: 'Lesson Path', desc: 'Guided 10-lesson progression from beginner to winter expert.' },
           { view: 'roadTestIntro', goal: 'practice', icon: '🪪', name: 'Road Test Simulator', desc: 'Full Maine BMV-style scored exam (pre-trip + 4min drive).' },
-          { view: 'parking', goal: 'practice', icon: '🅿️', name: 'Parallel Parking', desc: 'Step-by-step top-down parking practice.' },
+          { view: 'parkingMenu', goal: 'practice', icon: '🅿️', name: 'Parking Practice (7 Scenarios)', desc: 'Parallel, tight parallel, 3-point, backing, angle-back, obstacle, U-turn. Personal-best scores save.' },
           { view: 'nightVisionIntro', goal: 'practice', icon: '🌃', name: 'Night Vision Training', desc: 'Focused night-drive drill with coach prompts.' },
           { view: 'parentRideCheck', goal: 'practice', icon: '👨‍👧', name: 'Parent Ride Check', desc: '2-min structured eval — parent taps to mark errors.' },
           { view: 'defensiveList', goal: 'safety', icon: '🛡️', name: 'Defensive Drills', desc: '8 hazard-response scenarios with correct-answer reveals.' },
@@ -24783,6 +25313,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ── BACKING DRILL (2D) ──
       if (view === 'backingDrill') {
         return h(BackingDrillMode, { key: 'backing-mode', h: h, React: React, onExit: function() { upd('view', 'menu'); } });
+      }
+
+      // ── ADDITIONAL PARKING SCENARIOS (data-driven) ──
+      // Each scenario uses ScenarioParkingMode with config from PARKING_SCENARIOS.
+      // Scoring persists best per-scenario via parkingBest localStorage; the menu
+      // shows the user's best score, encouraging replay and progression.
+      var scenarioParkingHandler = function(scnId) {
+        return function(score) {
+          var current = (d.parkingBest || {})[scnId] || 0;
+          if (score > current) {
+            var pb = Object.assign({}, d.parkingBest || {});
+            pb[scnId] = score;
+            upd('parkingBest', pb);
+            lsSet('roadReady.parkingBest.v1', pb);
+            addToast('🏅 New personal best for ' + (PARKING_SCENARIOS[scnId].label) + ': ' + score);
+          }
+        };
+      };
+      if (view === 'tightParallel') {
+        return h(ScenarioParkingMode, { key: 'tight-parallel-mode', React: React, h: h, scenario: PARKING_SCENARIOS.tightParallel, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('tightParallel') });
+      }
+      if (view === 'angleBack') {
+        return h(ScenarioParkingMode, { key: 'angle-back-mode', React: React, h: h, scenario: PARKING_SCENARIOS.angleBack, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('angleBack') });
+      }
+      if (view === 'obstacleBack') {
+        return h(ScenarioParkingMode, { key: 'obstacle-back-mode', React: React, h: h, scenario: PARKING_SCENARIOS.obstacleBack, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('obstacleBack') });
+      }
+      if (view === 'uTurnNarrow') {
+        return h(ScenarioParkingMode, { key: 'uturn-narrow-mode', React: React, h: h, scenario: PARKING_SCENARIOS.uTurnNarrow, onExit: function() { upd('view', 'parkingMenu'); }, onComplete: scenarioParkingHandler('uTurnNarrow') });
+      }
+
+      // ── PARKING MENU (hub for all 7 scenarios) ──
+      if (view === 'parkingMenu') {
+        var pb = d.parkingBest || {};
+        var diffColor = function(diff) { return diff === 'hard' ? '#ef4444' : diff === 'medium' ? '#f59e0b' : '#4ade80'; };
+        var scenarioCard = function(label, icon, viewKey, difficulty, bestKey, hint) {
+          var best = bestKey && pb[bestKey] ? pb[bestKey] : null;
+          return h('button', {
+            key: viewKey,
+            onClick: function() { upd('view', viewKey); },
+            'aria-label': label + ' (' + difficulty + ')' + (best ? ', best score ' + best : ''),
+            'data-rr-focusable': true,
+            style: { padding: '14px', borderRadius: '10px', border: '1px solid #334155', background: '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '6px' }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+                h('span', { style: { fontSize: '24px' } }, icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 800 } }, label)
+              ),
+              h('span', { style: { padding: '2px 8px', borderRadius: '8px', background: diffColor(difficulty) + '22', border: '1px solid ' + diffColor(difficulty), fontSize: '9px', fontWeight: 800, color: diffColor(difficulty), textTransform: 'uppercase' } }, difficulty)
+            ),
+            h('div', { style: { fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' } }, hint),
+            best ? h('div', { style: { fontSize: '10px', color: '#fbbf24', fontWeight: 700 } }, '🏅 Personal best: ' + best + '/100') : null
+          );
+        };
+        return h('div', { style: { padding: '20px', maxWidth: '760px', margin: '0 auto', color: '#e2e8f0' } },
+          h('button', { onClick: function() { upd('view', 'menu'); }, style: { fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, marginBottom: '12px' } }, '← Menu'),
+          h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '4px' } }, '🅿️ Parking Practice'),
+          h('div', { style: { fontSize: '12px', color: '#94a3b8', marginBottom: '16px' } }, '7 scenarios across 3 difficulty tiers. Personal-best scores save automatically.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' } },
+            scenarioCard('Standard Parallel', '🅿️', 'parking',       'medium', null,            'Park between two cars on a curb. The classic.'),
+            scenarioCard('Tight Parallel',    '🅿️', 'tightParallel', 'hard',   'tightParallel', 'Same as parallel — but only a 10 ft gap. Less margin for error.'),
+            scenarioCard('3-Point Turn',      '↪️', 'threePoint',    'medium', null,            'Reverse the car\'s direction in three movements.'),
+            scenarioCard('Backing Drill',     '⬅️', 'backingDrill',  'easy',   null,            'Reverse straight without drifting off line.'),
+            scenarioCard('Angle Back-In',     '↘',  'angleBack',     'medium', 'angleBack',     'Back into a 45° angled spot between two parked cars.'),
+            scenarioCard('Backing Around Obstacle', '↩️', 'obstacleBack', 'medium', 'obstacleBack', '50 ft straight reverse with a parked car offset into the lane.'),
+            scenarioCard('Narrow U-Turn',     '🔄', 'uTurnNarrow',   'hard',   'uTurnNarrow',   'Three-point U-turn inside a narrow street boundary.')
+          )
+        );
       }
 
       // ── FUEL COST CALCULATOR ──

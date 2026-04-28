@@ -1614,12 +1614,12 @@ Return ONLY valid JSON:
                     h('div', { className: 'px-3 pb-3 space-y-2' },
                         h('p', { className: 'text-[11px] text-amber-600' }, 'Load fictional clinical data to test the full report pipeline. All data is clearly marked as demo.'),
                         Object.entries(DEMO_CASES).map(([key, demo]) =>
-                            h('button', { 'aria-label': 'Load demo case', key, className: 'w-full text-left px-3 py-2 bg-white rounded-lg border border-amber-200 hover:bg-amber-50 text-[11px] transition-colors',
+                            h('button', { 'aria-label': 'Load demo case', key, className: 'w-full text-left px-3 py-2 bg-white rounded-lg border border-amber-600 hover:bg-amber-50 text-[11px] transition-colors',
                                 onClick: () => loadDemoCase(key)
                             }, h('span', { className: 'font-medium text-slate-800' }, demo.label))
                         ),
                         h('div', { className: 'border-t border-amber-200 pt-2 mt-1' },
-                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-left px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-300 cursor-wait' : 'bg-violet-50 border-violet-200 hover:bg-violet-100'}`,
+                            h('button', { 'aria-label': 'Generate AI demo case', className: `w-full text-left px-3 py-2 rounded-lg border text-[11px] transition-colors flex items-center gap-2 ${generatingDemo ? 'bg-violet-100 border-violet-300 cursor-wait' : 'bg-violet-50 border-violet-600 hover:bg-violet-100'}`,
                                 onClick: generateAIDemoCase,
                                 disabled: generatingDemo
                             },
@@ -1640,7 +1640,7 @@ Return ONLY valid JSON:
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '\u{1F50D} Clinical Observations'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Enter clinical observations, interview notes, and collateral information. Each source is tracked for fact attribution.'),
                 // BehaviorLens import
-                (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { 'aria-label': 'Import from BehaviorLens', className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors',
+                (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { 'aria-label': 'Import from BehaviorLens', className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg border border-indigo-600 hover:bg-indigo-100 transition-colors',
                     onClick: () => {
                         let obsText = clinicalObs.behavioral.text || '';
                         if (abcEntries && abcEntries.length > 0) {
@@ -1663,7 +1663,7 @@ Return ONLY valid JSON:
                 h('div', { className: 'flex flex-wrap gap-1 border-b border-slate-200 pb-2' },
                     OBS_TAB_META.map(tab =>
                         h('button', { 'aria-label': 'Select observation tab', key: tab.key,
-                            className: 'px-2.5 py-1.5 rounded-t-lg text-[11px] font-medium transition-all ' + (activeObsTab === tab.key ? 'bg-violet-600 text-white' : (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-slate-50 text-slate-600 hover:bg-slate-100')),
+                            className: 'px-2.5 py-1.5 rounded-t-lg text-[11px] font-medium transition-all ' + (activeObsTab === tab.key ? 'bg-violet-600 text-white' : (clinicalObs[tab.key]?.text?.trim() ? 'bg-green-50 text-green-700 border border-green-600' : 'bg-slate-50 text-slate-600 hover:bg-slate-100')),
                             onClick: () => setActiveObsTab(tab.key)
                         }, tab.icon + ' ' + tab.label + (clinicalObs[tab.key]?.text?.trim() ? ' \u2713' : ''))
                     )
@@ -1778,10 +1778,10 @@ Return ONLY valid JSON:
                 h('h3', { className: 'text-sm font-bold text-slate-800 flex items-center gap-2' }, '📋 Background & History'),
                 h('p', { className: 'text-[11px] text-slate-600' }, 'Enter background information. PII is auto-scrubbed before any AI processing.'),
                 h('div', { className: 'flex flex-wrap gap-2' },
-                    (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors',
+                    (abcEntries?.length > 0 || observationSessions?.length > 0) && h('button', { className: 'px-3 py-1.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-lg border border-indigo-600 hover:bg-indigo-100 transition-colors',
                         onClick: importFromBehaviorLens
                     }, `📥 Import from BehaviorLens (${(abcEntries?.length || 0)} ABC + ${(observationSessions?.length || 0)} observations)`),
-                    longitudinalData && h('button', { 'aria-label': 'Import student progress', className: 'px-3 py-1.5 bg-teal-50 text-teal-700 text-[11px] font-medium rounded-lg border border-teal-200 hover:bg-teal-100 transition-colors',
+                    longitudinalData && h('button', { 'aria-label': 'Import student progress', className: 'px-3 py-1.5 bg-teal-50 text-teal-700 text-[11px] font-medium rounded-lg border border-teal-600 hover:bg-teal-100 transition-colors',
                         onClick: importStudentProgress
                     }, `📈 Import Student Progress (${(longitudinalData.history?.length || 0)} activities${longitudinalData.mathFluencyHistory?.length ? ' + ' + longitudinalData.mathFluencyHistory.length + ' probes' : ''})`)
                 ),
@@ -1898,7 +1898,7 @@ Return ONLY valid JSON:
                     h('div', { className: 'flex flex-wrap gap-1' },
                         HYPOTHESIS_PRESETS.filter(p => !hypotheses.includes(p)).map(preset =>
                             h('button', { 'aria-label': 'Add hypothesis preset', key: preset,
-                                className: 'px-2 py-1 bg-violet-50 text-violet-700 text-[11px] rounded-full border border-violet-200 hover:bg-violet-100 transition-colors',
+                                className: 'px-2 py-1 bg-violet-50 text-violet-700 text-[11px] rounded-full border border-violet-600 hover:bg-violet-100 transition-colors',
                                 onClick: () => setHypotheses(prev => [...prev, preset])
                             }, '+ ' + preset)
                         )
@@ -2076,7 +2076,7 @@ Return ONLY valid JSON:
                                     }, '\u270F\uFE0F Edit'),
                                     // Grade-level adaptation dropdown
                                     h('select', {
-                                        className: `text-[11px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-700 cursor-wait border-teal-300' : 'bg-teal-50 text-teal-700 border-teal-200 hover:bg-teal-100'}`,
+                                        className: `text-[11px] px-1.5 py-0.5 rounded border transition-colors ${adaptingSection === section ? 'bg-teal-200 text-teal-700 cursor-wait border-teal-300' : 'bg-teal-50 text-teal-700 border-teal-600 hover:bg-teal-100'}`,
                                         'aria-label': 'Adapt grade level for ' + section,
                                         disabled: adaptingSection === section,
                                         value: '',
@@ -2235,19 +2235,19 @@ Return ONLY valid JSON:
                 ),
                 // Export buttons
                 h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
-                    h('button', { 'aria-label': 'Export as JSON', className: 'flex flex-col items-center gap-1 px-3 py-3 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100 transition-colors', onClick: exportJSON },
+                    h('button', { 'aria-label': 'Export as JSON', className: 'flex flex-col items-center gap-1 px-3 py-3 bg-violet-50 border border-violet-600 rounded-lg hover:bg-violet-100 transition-colors', onClick: exportJSON },
                         h('span', { className: 'text-lg' }, '💾'),
                         h('span', { className: 'text-[11px] font-medium text-violet-700' }, 'Save JSON')
                     ),
-                    h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-200 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-200 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before copying — run accuracy audit and fix flagged claims', 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { 'aria-label': 'Copy report to clipboard', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-indigo-50 border border-indigo-600 hover:bg-indigo-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before copying — run accuracy audit and fix flagged claims', 'error'); return; } copyFullReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '📋'),
                         h('span', { className: 'text-[11px] font-medium text-indigo-700' }, 'Copy Report')
                     ),
-                    h('button', { 'aria-label': 'Copy formal report', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-200 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-200 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before printing — run accuracy audit and fix flagged claims', 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
+                    h('button', { 'aria-label': 'Copy formal report', className: `flex flex-col items-center gap-1 px-3 py-3 rounded-lg transition-colors ${accuracyResults.filter(r => r.status === 'contradicts').length > 0 ? 'bg-red-50 border border-red-600 opacity-50 cursor-not-allowed' : 'bg-blue-50 border border-blue-600 hover:bg-blue-100'}`, onClick: () => { if (accuracyResults.filter(r => r.status === 'contradicts').length > 0) { addToast('Resolve contradictions before printing — run accuracy audit and fix flagged claims', 'error'); return; } printReport(); }, disabled: Object.keys(reportSections).length === 0 },
                         h('span', { className: 'text-lg' }, '🖨️'),
                         h('span', { className: 'text-[11px] font-medium text-blue-700' }, 'Print / PDF')
                     ),
-                    h('button', { 'aria-label': 'Print report', className: 'flex flex-col items-center gap-1 px-3 py-3 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors', onClick: () => document.getElementById('rw-import-area')?.focus() },
+                    h('button', { 'aria-label': 'Print report', className: 'flex flex-col items-center gap-1 px-3 py-3 bg-emerald-50 border border-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors', onClick: () => document.getElementById('rw-import-area')?.focus() },
                         h('span', { className: 'text-lg' }, '📂'),
                         h('span', { className: 'text-[11px] font-medium text-emerald-700' }, 'Load JSON')
                     )

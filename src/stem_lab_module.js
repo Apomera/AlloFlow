@@ -336,7 +336,7 @@
           },
           disabled: stemAILoading,
           className: "flex items-center gap-1 px-2.5 py-1 mt-1 text-[10px] font-bold rounded-full transition-all " +
-            (stemAILoading ? "bg-slate-100 text-slate-400 cursor-wait" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-200")
+            (stemAILoading ? "bg-slate-100 text-slate-400 cursor-wait" : "bg-yellow-50 text-yellow-700 hover:bg-yellow-100 border border-yellow-600")
         }, stemAILoading ? "⏳" : "💡", " ", t('stem.ai.get_hint') || "Get a Hint");
       }
 
@@ -1792,7 +1792,7 @@
         }].map(s => /*#__PURE__*/React.createElement("button", {
           key: s.val,
           onClick: () => setMathMode(s.val),
-          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`
+          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-600'}`
         }, s.label))), /*#__PURE__*/React.createElement("div", {
           className: "bg-slate-50 rounded-xl p-4 border border-slate-400"
         }, /*#__PURE__*/React.createElement("textarea", {
@@ -1858,7 +1858,7 @@
             setStemLabTab('explore');
             setStemLabTool(tool.id);
           },
-          className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all flex items-center gap-1"
+          className: "px-2 py-1 text-[10px] font-bold bg-slate-50 text-slate-500 border border-slate-400 rounded-lg hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center gap-1"
         }, tool.icon, " ", tool.label)))), stemLabTab === 'create' && showAssessmentBuilder && /*#__PURE__*/React.createElement("div", {
           className: "space-y-4 max-w-3xl mx-auto animate-in fade-in duration-200"
         }, /*#__PURE__*/React.createElement("div", {
@@ -5137,7 +5137,7 @@
                                 if (typeof addToast === 'function') addToast('Added ' + item.name + ' to cart!', 'success');
                               }
                             },
-                            className: "w-full p-3 bg-white rounded-xl border text-left group transition-all " + (isAdding ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-orange-100 hover:border-orange-300 hover:shadow-md')
+                            className: "w-full p-3 bg-white rounded-xl border text-left group transition-all " + (isAdding ? 'border-orange-400 ring-2 ring-orange-200 shadow-md' : 'border-orange-600 hover:border-orange-300 hover:shadow-md')
                           },
                             React.createElement("div", { className: "text-2xl mb-1" }, item.name.split(' ')[0]),
                             React.createElement("p", { className: "text-xs font-bold text-slate-700 truncate" }, item.name.substring(item.name.indexOf(' ') + 1)),
@@ -5381,8 +5381,8 @@
                 React.createElement("div", { className: "bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-5 border border-pink-200" },
                   React.createElement("h3", { className: "text-base font-bold text-pink-800 mb-3" }, "\uD83D\uDCB3 Tips & Discounts"),
                   React.createElement("div", { className: "flex gap-2 mb-4" },
-                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDF7D Tip Calculator"),
-                    React.createElement("button", { onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-200 hover:bg-pink-50') }, "\uD83C\uDFF7\uFE0F Discount Shopping")
+                    React.createElement("button", { onClick: genTipProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + ((d.tipMode || 'tip') === 'tip' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-600 hover:bg-pink-50') }, "\uD83C\uDF7D Tip Calculator"),
+                    React.createElement("button", { onClick: genDiscountProblem, className: "flex-1 px-4 py-2 rounded-xl text-xs font-bold transition-all " + (d.tipMode === 'discount' ? 'bg-pink-600 text-white shadow-md' : 'bg-white text-pink-600 border border-pink-600 hover:bg-pink-50') }, "\uD83C\uDFF7\uFE0F Discount Shopping")
                   ),
                   // Tip mode
                   (d.tipMode || 'tip') === 'tip' && (!d.tipBill
@@ -5540,7 +5540,7 @@
                       cur.bills.slice().reverse().concat(cur.coins.slice().reverse()).map(function (item, idx) {
                         return React.createElement("button", { key: idx, onClick: function () {
                           upd('fcPlaced', [].concat(d.fcPlaced || [], [item.value]));
-                        }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white border border-amber-200 hover:bg-amber-50 transition-all" }, (item.name || fmt(item.value)));
+                        }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white border border-amber-600 hover:bg-amber-50 transition-all" }, (item.name || fmt(item.value)));
                       })
                     ),
                     // Placed items
@@ -5837,7 +5837,7 @@
                             }
                           },
                           disabled: !!cdFb,
-                          className: "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all border-2 " + (wouldOvershoot && !cdFb ? 'border-red-200 bg-red-50 opacity-60' : 'border-amber-200 bg-white hover:border-amber-400 hover:shadow-md hover:scale-105') + (cdFb ? ' opacity-50 cursor-not-allowed' : '')
+                          className: "flex flex-col items-center gap-0.5 px-2 py-1.5 rounded-xl transition-all border-2 " + (wouldOvershoot && !cdFb ? 'border-red-600 bg-red-50 opacity-60' : 'border-amber-600 bg-white hover:border-amber-400 hover:shadow-md hover:scale-105') + (cdFb ? ' opacity-50 cursor-not-allowed' : '')
                         },
                           React.createElement("div", {
                             className: "flex items-center justify-center rounded-full font-black text-white text-[10px]",
@@ -6026,7 +6026,7 @@
                     Object.keys(loanPresets).map(function (k) {
                       return React.createElement("button", { key: k, onClick: function () {
                         upd('loanType', k); upd('loanAmt', loanPresets[k].amt); upd('loanRate', loanPresets[k].rate); upd('loanTerm', loanPresets[k].term);
-                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-700 text-white shadow-md' : 'bg-white text-rose-600 border border-rose-200 hover:bg-rose-50') }, loanPresets[k].label);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (loanType === k ? 'bg-rose-700 text-white shadow-md' : 'bg-white text-rose-600 border border-rose-600 hover:bg-rose-50') }, loanPresets[k].label);
                     })
                   ),
                   // Controls
@@ -6107,7 +6107,7 @@
                     Object.keys(sgGoals).map(function (k) {
                       return React.createElement("button", { key: k, onClick: function () {
                         upd('sgGoal', k); upd('sgTarget', sgGoals[k].target); upd('sgHave', 0);
-                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50') }, sgGoals[k].label);
+                      }, className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (sgGoal === k ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50') }, sgGoals[k].label);
                     })
                   ),
                   // Controls
@@ -7054,7 +7054,7 @@
                     dmOptions.map(function (opt, oi) {
                       return React.createElement("input", { key: oi, value: opt, onChange: function (e) {
                         var newOpts = dmOptions.slice(); newOpts[oi] = e.target.value; upd('dmOptions', newOpts);
-                      }, className: "px-3 py-1.5 border border-amber-200 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" });
+                      }, className: "px-3 py-1.5 border border-amber-600 rounded-lg text-xs font-bold w-28 focus:ring-2 focus:ring-amber-400 outline-none" });
                     }),
                     dmOptions.length < 5 && React.createElement("button", { onClick: function () { upd('dmOptions', dmOptions.concat(['Option ' + String.fromCharCode(65 + dmOptions.length)])); },
                       className: "px-3 py-1.5 border-2 border-dashed border-amber-300 rounded-lg text-xs font-bold text-amber-800 hover:bg-amber-50" }, "+")
@@ -7149,7 +7149,7 @@
                     return React.createElement("button", { key: trap.id, onClick: function () {
                       if (!found) upd('crFound', crFound.concat([trap.id]));
                     }, className: "px-3 py-2 rounded-xl text-xs font-bold text-left transition-all border-2 " +
-                      (found ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-orange-200 bg-white text-orange-600 hover:border-orange-400 hover:bg-orange-50')
+                      (found ? 'border-emerald-400 bg-emerald-50 text-emerald-700' : 'border-orange-600 bg-white text-orange-600 hover:border-orange-400 hover:bg-orange-50')
                     }, found ? '\u2705 ' + trap.hint : '\uD83D\uDD0D ' + trap.hint);
                   })
                 ),
@@ -7183,7 +7183,7 @@
                 React.createElement("div", { className: "flex gap-2 mb-4 justify-center" },
                   [{ id: 'low', label: '\uD83D\uDE4B Healthy (2 visits)', color: 'emerald' }, { id: 'medium', label: '\uD83E\uDE7A Moderate (6 visits)', color: 'amber' }, { id: 'high', label: '\uD83C\uDFE5 Heavy (12 visits)', color: 'rose' }].map(function (u) {
                     return React.createElement("button", { key: u.id, onClick: function () { upd('hiUsage', u.id); },
-                      className: "px-3 py-2 rounded-xl text-xs font-bold transition-all " + (hiUsage === u.id ? 'bg-sky-500 text-white shadow-md' : 'bg-white text-sky-600 border border-sky-200 hover:bg-sky-50')
+                      className: "px-3 py-2 rounded-xl text-xs font-bold transition-all " + (hiUsage === u.id ? 'bg-sky-500 text-white shadow-md' : 'bg-white text-sky-600 border border-sky-600 hover:bg-sky-50')
                     }, u.label);
                   })
                 ),
@@ -7235,7 +7235,7 @@
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" },
                   [{ id: 'tire', label: '\uD83D\uDE97 Gas Laws & Tires' }, { id: 'insulation', label: '\uD83C\uDFE0 Heat & Insulation' }, { id: 'cook', label: '\uD83C\uDF73 Cooking Chemistry' }, { id: 'circuit', label: '\u26A1 Circuits & Wattage' }, { id: 'car', label: '\uD83D\uDD27 Car Care' }, { id: 'plumbing', label: '\uD83E\uDEA0 Plumbing' }, { id: 'home', label: '\uD83C\uDFE0 Home Systems' }].map(function (s) {
                     return React.createElement("button", { key: s.id, onClick: function () { upd('asTab', s.id); },
-                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-200 hover:bg-teal-50')
+                      className: "px-3 py-1.5 rounded-xl text-xs font-bold transition-all " + (asTab === s.id ? 'bg-teal-700 text-white shadow-md' : 'bg-white text-teal-600 border border-teal-600 hover:bg-teal-50')
                     }, s.label);
                   })
                 ),
@@ -7568,7 +7568,7 @@
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                     [{ id: 'toilet', label: '\uD83D\uDEBD Toilet' }, { id: 'pipe', label: '\uD83E\uDEA0 Pipes' }, { id: 'heater', label: '\uD83D\uDD25 Water Heater' }, { id: 'paint', label: '\uD83C\uDFA8 Paint' }, { id: 'quality', label: '\uD83E\uDDEB Water Quality' }, { id: 'usage', label: '\uD83D\uDCA7 Daily Usage' }].map(function (s) {
                       return React.createElement("button", { key: s.id, onClick: function () { upd('plumbTab', s.id); },
-                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (plumbTab === s.id ? 'bg-sky-500 text-white' : 'bg-white text-sky-600 border border-sky-200 hover:bg-sky-50')
+                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (plumbTab === s.id ? 'bg-sky-500 text-white' : 'bg-white text-sky-600 border border-sky-600 hover:bg-sky-50')
                       }, s.label);
                     })
                   ),
@@ -7922,7 +7922,7 @@
                   React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                     [{ id: 'hvac', label: '\uD83C\uDF2C\uFE0F HVAC' }, { id: 'water', label: '\uD83D\uDCA7 Pressure' }, { id: 'panel', label: '\u26A1 Panel' }, { id: 'energy', label: '\uD83D\uDD0C Energy Audit' }, { id: 'fire', label: '\uD83D\uDD25 Fire Safety' }, { id: 'insulation', label: '\uD83C\uDFE0 Insulation' }, { id: 'heating', label: '\uD83D\uDD25 Heating' }, { id: 'heatpump', label: '\u2668\uFE0F Heat Pump' }, { id: 'solar', label: '\u2600\uFE0F Solar vs Gas' }].map(function (s) {
                       return React.createElement("button", { key: s.id, onClick: function () { upd('homeTab', s.id); },
-                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50')
+                        className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (homeTab === s.id ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-600 hover:bg-purple-50')
                       }, s.label);
                     })
                   ),
@@ -8265,7 +8265,7 @@
                       React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-1" },
                         insZoneData.map(function (z) {
                           return React.createElement("button", { key: z.zone, onClick: function () { upd('insZone', z.zone); },
-                            className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50') },
+                            className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (insZone === z.zone ? 'bg-purple-700 text-white' : 'bg-white text-purple-600 border border-purple-600 hover:bg-purple-50') },
                             "Zone " + z.zone + " " + z.label);
                         })
                       )
@@ -8355,7 +8355,7 @@
                 React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
                   htSrcSystems.map(function (s) {
                     return React.createElement("button", { key: s.id, onClick: function () { upd('htSrcFuel', s.id); },
-                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (htSrcFuel === s.id ? 'bg-orange-700 text-white shadow-md' : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50')
+                      className: "px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all " + (htSrcFuel === s.id ? 'bg-orange-700 text-white shadow-md' : 'bg-white text-orange-600 border border-orange-600 hover:bg-orange-50')
                     }, s.icon + " " + s.name);
                   })
                 ),
@@ -8874,11 +8874,11 @@
                 React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
                   React.createElement("div", { className: "flex flex-col gap-1" },
                     React.createElement("label", { className: "text-[10px] font-bold text-red-600 uppercase" }, "Rise (\u0394y)"),
-                    React.createElement("input", { type: "number", placeholder: "?", value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { riseAnswer: e.target.value })), disabled: gridFeedback && gridFeedback.hinted, className: "px-2 py-1.5 border-2 border-red-200 rounded-lg text-sm font-bold text-center focus:border-red-400 focus:outline-none" + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-400' : '') })
+                    React.createElement("input", { type: "number", placeholder: "?", value: (gridFeedback && gridFeedback.riseAnswer) || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { riseAnswer: e.target.value })), disabled: gridFeedback && gridFeedback.hinted, className: "px-2 py-1.5 border-2 border-red-600 rounded-lg text-sm font-bold text-center focus:border-red-400 focus:outline-none" + ((gridFeedback && gridFeedback.hinted) ? ' bg-red-50 text-red-400' : '') })
                   ),
                   React.createElement("div", { className: "flex flex-col gap-1" },
                     React.createElement("label", { className: "text-[10px] font-bold text-blue-600 uppercase" }, "Run (\u0394x)"),
-                    React.createElement("input", { type: "number", placeholder: "?", value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { runAnswer: e.target.value })), disabled: gridFeedback && gridFeedback.hinted, className: "px-2 py-1.5 border-2 border-blue-200 rounded-lg text-sm font-bold text-center focus:border-blue-400 focus:outline-none" + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-400' : '') })
+                    React.createElement("input", { type: "number", placeholder: "?", value: (gridFeedback && gridFeedback.runAnswer) || '', onChange: e => setGridFeedback(prev => Object.assign({}, prev, { runAnswer: e.target.value })), disabled: gridFeedback && gridFeedback.hinted, className: "px-2 py-1.5 border-2 border-blue-600 rounded-lg text-sm font-bold text-center focus:border-blue-400 focus:outline-none" + ((gridFeedback && gridFeedback.hinted) ? ' bg-blue-50 text-blue-400' : '') })
                   ),
                   React.createElement("div", { className: "flex flex-col gap-1" },
                     React.createElement("label", { className: "text-[10px] font-bold text-amber-700 uppercase" }, "Slope (m)"),
@@ -9398,7 +9398,7 @@
               ...prev,
               min: parseInt(e.target.value) || 0
             })),
-            className: "w-full px-3 py-1.5 text-sm border border-blue-200 rounded-lg"
+            className: "w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg"
           })), /*#__PURE__*/React.createElement("div", {
             className: "bg-blue-50 rounded-lg p-3 border border-blue-100"
           }, /*#__PURE__*/React.createElement("label", {
@@ -9410,7 +9410,7 @@
               ...prev,
               max: parseInt(e.target.value) || 20
             })),
-            className: "w-full px-3 py-1.5 text-sm border border-blue-200 rounded-lg"
+            className: "w-full px-3 py-1.5 text-sm border border-blue-600 rounded-lg"
           }))), /*#__PURE__*/React.createElement("div", {
             className: "bg-white rounded-xl border-2 border-blue-200 p-6 flex flex-col items-center"
           }, /*#__PURE__*/React.createElement("svg", {
@@ -9493,12 +9493,12 @@
             min: numberLineRange.min,
             max: numberLineRange.max,
             placeholder: t('stem.mult_table.value'),
-            className: "flex-1 px-3 py-2 text-sm border border-blue-200 rounded-lg"
+            className: "flex-1 px-3 py-2 text-sm border border-blue-600 rounded-lg"
           }), /*#__PURE__*/React.createElement("input", {
             type: "text",
             id: "nlMarkerLabel",
             placeholder: t('stem.mult_table.label_optional'),
-            className: "flex-1 px-3 py-2 text-sm border border-blue-200 rounded-lg"
+            className: "flex-1 px-3 py-2 text-sm border border-blue-600 rounded-lg"
           }), /*#__PURE__*/React.createElement("button", {
             onClick: () => {
               const valEl = document.getElementById('nlMarkerVal');
@@ -9556,7 +9556,7 @@
               });
               setNumberLineMarkers([]);
             },
-            className: "px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-100 transition-all"
+            className: "px-3 py-1.5 text-xs font-bold bg-blue-50 text-blue-700 border border-blue-600 rounded-lg hover:bg-blue-100 transition-all"
           }, preset.label))), /*#__PURE__*/React.createElement("div", {
             className: "bg-blue-50 rounded-xl p-4 border border-blue-200 space-y-3"
           }, /*#__PURE__*/React.createElement("div", {
@@ -10127,7 +10127,7 @@
                   key: p.label, onClick: function () {
                     upd('a', p.a); upd('b', p.b); upd('c', p.c); upd('xMin', p.xMin); upd('xMax', p.xMax); upd('n', p.n);
                     addToast(p.tip, 'success');
-                  }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-all"
+                  }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-red-50 text-red-700 border border-red-600 hover:bg-red-100 transition-all"
                 }, p.label);
               })
             ),
@@ -10942,7 +10942,7 @@
               ['sine', 'square', 'triangle', 'sawtooth'].map(wt =>
                 React.createElement("button", {
                   key: wt, onClick: () => upd('waveType', wt),
-                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100')
+                  className: "px-2.5 py-1 rounded-lg text-xs font-bold transition-all " + ((d.waveType || 'sine') === wt ? 'bg-cyan-700 text-white shadow-md' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100')
                 }, wt.charAt(0).toUpperCase() + wt.slice(1))
               )
             ),
@@ -10950,7 +10950,7 @@
             waveMode === 'standing' && React.createElement("div", { className: "flex gap-2 mb-3 items-center" },
               React.createElement("span", { className: "text-xs font-bold text-cyan-600" }, "Harmonic:"),
               [1, 2, 3, 4, 5, 6].map(function (h) {
-                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100') }, h);
+                return React.createElement("button", { key: h, onClick: function () { upd('harmonic', h); }, className: "w-9 h-9 rounded-lg text-sm font-black transition-all " + ((d.harmonic || 1) === h ? 'bg-cyan-700 text-white shadow-md scale-110' : 'bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100') }, h);
               }),
               React.createElement("span", { className: "text-xs text-slate-500 ml-2" }, (d.harmonic || 1) + " node" + ((d.harmonic || 1) > 1 ? 's' : '') + ", " + ((d.harmonic || 1) + 1) + " antinode" + ((d.harmonic || 1) > 0 ? 's' : ''))
             ),
@@ -12850,7 +12850,7 @@
                           if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
                         }
                         else { upd("quizStreak", 0); }
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt.toLowerCase() === quizQuestion.a.toLowerCase() ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-purple-200 bg-white text-slate-700 hover:border-purple-400")
+                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt.toLowerCase() === quizQuestion.a.toLowerCase() ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-purple-600 bg-white text-slate-700 hover:border-purple-400")
                     }, opt);
                   })
                 )
@@ -12866,7 +12866,7 @@
                           if (ansOrg) { var dd = (d.discoveries || []).slice(); var und = ansOrg.facts.map(function (f, i) { return ansOrg.id + '_' + i; }).filter(function (k) { return dd.indexOf(k) === -1; }); if (und.length > 0) { dd.push(und[0]); upd("discoveries", dd); } }
                         }
                         else { upd("quizStreak", 0); }
-                      }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 border-purple-200 bg-white text-slate-700 hover:border-purple-400"
+                      }, className: "px-2.5 py-1.5 text-[11px] font-bold rounded-lg border-2 transition-all hover:scale-105 border-purple-600 bg-white text-slate-700 hover:border-purple-400"
                     }, org.icon + " " + org.label);
                   })
                 ),
@@ -13043,8 +13043,8 @@
             ),
             // Toggles
             React.createElement("div", { className: "flex gap-2 mt-3 mb-2" },
-              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-200') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
-              React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-200') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
+              React.createElement("button", { onClick: () => upd('showDeriv', !d.showDeriv), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showDeriv ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-600 border border-amber-600') }, d.showDeriv ? "\u2705 f\u2032(x)" : "\uD83D\uDCC9 Show f\u2032(x)"),
+              React.createElement("button", { onClick: () => upd('showArea', !d.showArea), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-500 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
               roots.length > 0 && React.createElement("span", { className: "px-2 py-1.5 bg-red-50 text-red-600 rounded-lg text-[10px] font-bold border border-red-200" }, "\uD83D\uDCCD " + roots.length + " root" + (roots.length > 1 ? 's' : '') + ": x = " + roots.map(r => r.toFixed(2)).join(', ')),
               yIntercept >= yR.yMin && yIntercept <= yR.yMax && React.createElement("span", { className: "px-2 py-1.5 bg-green-50 text-green-600 rounded-lg text-[10px] font-bold border border-green-200" }, "\uD83D\uDFE2 y-int: " + yIntercept.toFixed(2))
             ),
@@ -13075,7 +13075,7 @@
                     key: p.label, onClick: function () {
                       upd('type', p.type); upd('a', p.a); upd('b', p.b); upd('c', p.c);
                       addToast(t('stem.func_grapher.ud83dudcc8') + p.tip, 'success');
-                    }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all"
+                    }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-600 hover:bg-indigo-100 transition-all"
                   }, p.label);
                 })
               )
@@ -13831,12 +13831,12 @@
               }, "\uD83D\uDE80 Launch!"),
               React.createElement("button", {
                 onClick: function () { upd('airResist', !d.airResist); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-600')
               }, "\uD83C\uDF2C\uFE0F Air Drag " + (d.airResist ? 'ON' : 'OFF')),
               PRESETS.map(function (p) {
                 return React.createElement("button", {
                   key: p.label, onClick: function () { upd('gravity', p.gravity); },
-                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-600 hover:bg-sky-100')
                 }, p.label);
               })
             ),
@@ -13928,7 +13928,7 @@
                         else { upd('quizStreak', 0); }
                       },
                       className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " +
-                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-400' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
+                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-400' : 'bg-white border-amber-600 text-slate-700 hover:border-amber-400')
                     }, opt.toFixed(1) + " m");
                   })
                 ),
@@ -14105,7 +14105,7 @@
                     var pick = filtered[Math.floor(Math.random() * filtered.length)];
                     switchPreset(pick.name);
                     addToast(t('stem.chem_balance.ud83cudfb2_random') + pick.name + ' (' + pick.tier + ')', 'info');
-                  }, className: "px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 transition-colors border border-purple-200"
+                  }, className: "px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 transition-colors border border-purple-600"
                 }, "\uD83C\uDFB2 Random Equation")
               ),
               // Hint panel
@@ -14133,7 +14133,7 @@
                     upd('coefficients', Array(numSlots).fill(1));
                     upd('feedback', null);
                   }
-                }, className: "px-4 py-2 rounded-lg text-xs font-bold transition-all " + (d.timerActive ? 'bg-red-100 text-red-600 border border-red-200' : 'bg-amber-100 text-amber-700 border border-amber-200 hover:bg-amber-200')
+                }, className: "px-4 py-2 rounded-lg text-xs font-bold transition-all " + (d.timerActive ? 'bg-red-100 text-red-600 border border-red-600' : 'bg-amber-100 text-amber-700 border border-amber-600 hover:bg-amber-200')
               }, d.timerActive ? '\u23F9 Stop Timer' : '\u23F1 Speed Challenge'),
               d.timerActive && d.timerStart && React.createElement("span", { className: "text-xs font-mono font-bold text-amber-600" }, '\u23F1 ' + ((Date.now() - d.timerStart) / 1000).toFixed(0) + 's'),
               d.feedback && d.feedback.correct && d.timerActive && d.timerStart && React.createElement("span", { className: "text-xs font-bold text-emerald-600" }, '\u26A1 Solved in ' + ((Date.now() - d.timerStart) / 1000).toFixed(1) + 's!')
@@ -14180,7 +14180,7 @@
                           upd('chemQStreak', correct ? chemQStreak + 1 : 0);
                           if (correct) { addToast('🧪 Correct! ' + chemQ.explain, 'success'); awardStemXP('chemBalance', 10, 'Chemistry Quiz'); }
                           else { addToast('❌ ' + chemQ.explain, 'error'); }
-                        }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-purple-200 hover:border-purple-400 hover:bg-purple-50 transition-all"
+                        }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-purple-600 hover:border-purple-400 hover:bg-purple-50 transition-all"
                       }, opt);
                     })
                   )
@@ -14471,7 +14471,7 @@
                       upd('parent1', preset.p1); upd('parent2', preset.p2);
                       upd('_activePreset', preset);
                       addToast(t('stem.punnett.ud83euddec') + preset.tip, 'success');
-                    }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-200 hover:bg-violet-100 transition-all"
+                    }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-violet-50 text-violet-700 border border-violet-600 hover:bg-violet-100 transition-all"
                   }, preset.label);
                 })
               )
@@ -14731,7 +14731,7 @@
               React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'led', value: 40, id: Date.now() + 3, ledColor: '#ef4444' }]), className: "px-3 py-1.5 bg-rose-100 text-rose-800 font-bold rounded-lg text-sm border border-rose-300 hover:bg-rose-200 transition-all" }, "\uD83D\uDD34 LED"),
               React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'ammeter', value: 0, id: Date.now() + 4 }]), className: "px-3 py-1.5 bg-blue-100 text-blue-800 font-bold rounded-lg text-sm border border-blue-300 hover:bg-blue-200 transition-all" }, "\u26A1 Ammeter"),
               React.createElement("button", { onClick: () => upd('components', [...d.components, { type: 'voltmeter', value: 0, id: Date.now() + 5 }]), className: "px-3 py-1.5 bg-orange-100 text-orange-800 font-bold rounded-lg text-sm border border-orange-300 hover:bg-orange-200 transition-all" }, "\uD83D\uDD0B Voltmeter"),
-              React.createElement("button", { onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-200 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
+              React.createElement("button", { onClick: () => upd('components', []), className: "px-3 py-1.5 bg-red-50 text-red-600 font-bold rounded-lg text-sm border border-red-600 hover:bg-red-100 transition-all" }, "\uD83D\uDDD1 Clear"),
               d.components.length > 0 && React.createElement("span", { className: "self-center text-xs text-slate-400 ml-auto" }, d.components.length + " component" + (d.components.length > 1 ? 's' : ''))
             ),
             // Voltage slider + component editor
@@ -14834,7 +14834,7 @@
                       if (close) { addToast(t('stem.circuit.u2705_challenge_complete_you_hit') + actual.toFixed(3) + ch.unit + ' (target: ' + ch.target + ch.unit + ')', 'success'); }
                       else { addToast(t('stem.circuit.ud83cudfaf_target') + ch.target + ch.unit + ' | Current: ' + actual.toFixed(3) + ch.unit + '. Adjust components!', 'info'); }
                       upd('challenge', ch);
-                    }, className: "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all " + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50')
+                    }, className: "px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all " + (close ? 'bg-emerald-100 text-emerald-700 border-emerald-300' : 'bg-white text-amber-700 border-amber-600 hover:bg-amber-50')
                   }, (close ? '\u2705 ' : '\uD83C\uDFAF ') + ch.label);
                 })
               )
@@ -14882,7 +14882,7 @@
                           upd('ohmStreak', correct ? cqStreak + 1 : 0);
                           if (correct) { addToast('⚡ Correct! ' + cq.formula, 'success'); awardStemXP('circuit', 10, 'Ohm\'s Law Quiz'); }
                           else { addToast('❌ ' + cq.formula, 'error'); }
-                        }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-blue-200 hover:border-blue-400 hover:bg-blue-50 transition-all"
+                        }, className: "px-3 py-2.5 rounded-lg text-sm font-bold border-2 bg-white text-slate-700 border-blue-600 hover:border-blue-400 hover:bg-blue-50 transition-all"
                       }, opt + cq.unit);
                     })
                   )
@@ -14935,7 +14935,7 @@
                 { label: '\uD83C\uDF21 Temp vs Ice Cream', pts: [{ x: 15, y: 20 }, { x: 18, y: 35 }, { x: 22, y: 45 }, { x: 25, y: 60 }, { x: 28, y: 70 }, { x: 30, y: 85 }, { x: 33, y: 90 }, { x: 35, y: 95 }] },
                 { label: '\uD83C\uDFB2 Random (No Corr)', pts: Array.from({ length: 12 }, function () { return { x: Math.round(Math.random() * 10 * 10) / 10, y: Math.round(Math.random() * 10 * 10) / 10 }; }) },
               ].map(function (ds) {
-                return React.createElement("button", { key: ds.label, onClick: function () { upd('points', ds.pts); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-all" }, ds.label);
+                return React.createElement("button", { key: ds.label, onClick: function () { upd('points', ds.pts); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-teal-50 text-teal-700 border border-teal-600 hover:bg-teal-100 transition-all" }, ds.label);
               })
             ),
             React.createElement("svg", {
@@ -15149,7 +15149,7 @@
             ),
             React.createElement("div", { className: "flex flex-wrap gap-1.5 mb-3" },
               PRESETS.map(function (ex) {
-                return React.createElement("button", { key: ex.label, onClick: function () { upd('expr', ex.expr); }, className: "px-2 py-1 text-[10px] font-bold bg-fuchsia-50 text-fuchsia-600 rounded border border-fuchsia-200 hover:bg-fuchsia-100 transition-all" }, ex.label);
+                return React.createElement("button", { key: ex.label, onClick: function () { upd('expr', ex.expr); }, className: "px-2 py-1 text-[10px] font-bold bg-fuchsia-50 text-fuchsia-600 rounded border border-fuchsia-600 hover:bg-fuchsia-100 transition-all" }, ex.label);
               })
             ),
             // SVG Number line
@@ -15263,7 +15263,7 @@
                           addToast('\u274C Answer: ' + d.quiz.a.replace(/</g, '\u003c').replace(/>=/g, '\u2265').replace(/<=/g, '\u2264'), 'error');
                         }
                       },
-                      className: "px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-fuchsia-200 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all"
+                      className: "px-3 py-2 rounded-lg text-xs font-bold font-mono border-2 bg-white text-slate-700 border-fuchsia-600 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all"
                     }, dispOpt);
                   })
                 )
@@ -15727,7 +15727,7 @@
                 // Clear all
                 React.createElement("button", {
                   onClick: () => { upd('buildAtoms', []); upd('buildBonds', []); upd('buildBondFrom', null); upd('buildCheckResult', null); },
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all ml-auto"
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-600 hover:bg-red-100 transition-all ml-auto"
                 }, "\uD83D\uDDD1\uFE0F Clear All")
               ),
               // Running formula display
@@ -15859,7 +15859,7 @@
                     relatedCompounds.length > 0 && React.createElement("div", { className: "mt-2" },
                       React.createElement("p", { className: "text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1" }, "\u2697\uFE0F Craftable in Compound Creator (" + relatedCompounds.length + ")"),
                       React.createElement("div", { className: "flex flex-wrap gap-1" },
-                        relatedCompounds.map((comp, i) => React.createElement("button", { key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-200 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
+                        relatedCompounds.map((comp, i) => React.createElement("button", { key: i, onClick: () => { upd('moleculeMode', 'creator'); upd('selectedElements', { ...comp.recipe }); }, className: "px-2 py-0.5 bg-emerald-50 rounded-full text-[10px] font-bold text-emerald-700 border border-emerald-600 hover:bg-emerald-100 cursor-pointer transition-colors" }, comp.emoji + " " + comp.name + " (" + comp.formula + ")"))
                       )
                     ),
                     // ─── BOHR MODEL ATOM VISUALIZATION ───
@@ -18745,7 +18745,7 @@
                       var cv = document.querySelector('[data-galaxy-canvas]');
                       if (cv) { cv._galaxyInit = false; cv._galaxyCleanup && cv._galaxyCleanup(); canvasRefCb(cv); }
                     },
-                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (galaxyType === key ? 'border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200')
+                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " + (galaxyType === key ? 'border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-600')
                   }, gt.icon + " " + gt.label);
                 })
               ),
@@ -18858,7 +18858,7 @@
                   }, "\uD83D\uDCA5 Supernova!"),
                   React.createElement("button", {
                     onClick: function () { upd("quizMode", false); upd("simMode", "star"); },
-                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 border border-indigo-200 transition-all hover:bg-indigo-50"
+                    className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-indigo-600 border border-indigo-600 transition-all hover:bg-indigo-50"
                   }, "\u2B50 Star Life \u2192")
                 ),
                 // Milestone labels
@@ -18897,7 +18897,7 @@
 
               // ── Warp points ──
               React.createElement("div", { className: "flex flex-wrap gap-1.5 mt-3" },
-                WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
+                WARP_POINTS.map(function (wp) { return React.createElement("button", { key: wp.label, onClick: function () { var cv = document.querySelector('[data-galaxy-canvas]'); if (cv && cv._galaxyWarp) cv._galaxyWarp(wp); if (wp.desc) upd("warpInfo", wp.desc); }, className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-indigo-600 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition-all hover:scale-105" }, "\uD83D\uDE80 " + wp.label); })
               ),
 
               // ── Warp info ──
@@ -18965,7 +18965,7 @@
                         upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C The answer is: " + quizQ.a });
                         if (correct) { upd("quizScore", (d.quizScore || 0) + 1); upd("quizStreak", (d.quizStreak || 0) + 1); }
                         else { upd("quizStreak", 0); }
-                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-200 bg-white text-slate-700 hover:border-indigo-400")
+                      }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " + (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : d.quizFeedback && !d.quizFeedback.correct && opt !== quizQ.a ? "border-slate-200 bg-white text-slate-400 opacity-50" : "border-slate-200 bg-white text-slate-600") : "border-indigo-600 bg-white text-slate-700 hover:border-indigo-400")
                     }, opt);
                   })
                 ),
@@ -19344,7 +19344,7 @@
                       if (cv && cv._resetSim) cv._resetSim(p.starM, p.au, p.vFrac);
                     },
                     className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all hover:scale-105 " +
-                      ((d.orbitalPreset || 'earth') === p.key ? 'border-cyan-400 bg-cyan-100 text-cyan-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-200')
+                      ((d.orbitalPreset || 'earth') === p.key ? 'border-cyan-400 bg-cyan-100 text-cyan-700 shadow-sm' : 'border-slate-200 bg-white text-slate-600 hover:border-cyan-600')
                   }, p.label);
                 })
               ),
@@ -19704,7 +19704,7 @@
                   var isOn = d[kl.stateKey];
                   return React.createElement("button", { key: kl.k,
                     onClick: function () { upd(kl.stateKey, !isOn); var cv = document.querySelector('[data-orbital-canvas]'); if (cv && cv._setKepler) cv._setKepler(kl.k, !isOn); },
-                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isOn ? "border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-indigo-200")
+                    className: "px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isOn ? "border-indigo-400 bg-indigo-100 text-indigo-700 shadow-sm" : "border-slate-200 bg-white text-slate-500 hover:border-indigo-600")
                   }, kl.icon + " Kepler " + kl.label);
                 })
               ),
@@ -21319,7 +21319,7 @@
                       upd("quizFeedback", { correct: correct, msg: correct ? "\u2705 Correct! +10 XP" : "\u274C Not quite. The answer is: " + quizQ.a });
                       if (correct) upd("quizScore", (d.quizScore || 0) + 1);
                     }, className: "px-3 py-2 text-xs font-bold rounded-lg border-2 transition-all hover:scale-[1.02] " +
-                      (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-200 bg-white text-slate-700 hover:border-amber-400")
+                      (d.quizFeedback ? (opt === quizQ.a ? "border-green-400 bg-green-50 text-green-700" : "border-slate-200 bg-white text-slate-600") : "border-amber-600 bg-white text-slate-700 hover:border-amber-400")
                   }, opt);
                 })
               ),
@@ -23390,7 +23390,7 @@
                     upd('preyBirth', preset.preyBirth); upd('preyDeath', preset.preyDeath);
                     upd('predBirth', preset.predBirth); upd('predDeath', preset.predDeath);
                     upd('data', []); upd('steps', 0);
-                  }, className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all"
+                  }, className: "px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100 transition-all"
                 }, preset.label);
               })
             ),
@@ -23536,7 +23536,7 @@
               [
                 [1, 2, 1, 3], [2, 5, 3, 8], [3, 4, 5, 6], [1, 4, 2, 8], [7, 10, 3, 5], [5, 12, 1, 3]
               ].map(function (pr) {
-                return React.createElement("button", { key: pr.join('-'), onClick: function () { upd('num1', pr[0]); upd('den1', pr[1]); upd('num2', pr[2]); upd('den2', pr[3]); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-all" }, pr[0] + '/' + pr[1] + ' vs ' + pr[2] + '/' + pr[3]);
+                return React.createElement("button", { key: pr.join('-'), onClick: function () { upd('num1', pr[0]); upd('den1', pr[1]); upd('num2', pr[2]); upd('den2', pr[3]); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-orange-50 text-orange-700 border border-orange-600 hover:bg-orange-100 transition-all" }, pr[0] + '/' + pr[1] + ' vs ' + pr[2] + '/' + pr[3]);
               })
             ),
             // Fraction inputs
@@ -23762,7 +23762,7 @@
             ),
             // Preset buttons (including higher denominators)
             React.createElement("div", { className: "flex flex-wrap gap-2" },
-              [{ n: 1, d: 2, l: '\u00BD' }, { n: 1, d: 3, l: '\u2153' }, { n: 1, d: 4, l: '\u00BC' }, { n: 2, d: 3, l: '\u2154' }, { n: 3, d: 4, l: '\u00BE' }, { n: 3, d: 8, l: '\u215C' }, { n: 5, d: 6, l: '\u215A' }, { n: 7, d: 12, l: '7/12' }, { n: 11, d: 16, l: '11/16' }, { n: 13, d: 20, l: '13/20' }].map(function (p) { return React.createElement("button", { key: p.l, onClick: function () { setFractionPieces({ numerator: p.n, denominator: p.d }); }, className: "px-3 py-1.5 text-sm font-bold bg-rose-50 text-rose-700 border border-rose-200 rounded-lg hover:bg-rose-100 transition-all" }, p.l); })
+              [{ n: 1, d: 2, l: '\u00BD' }, { n: 1, d: 3, l: '\u2153' }, { n: 1, d: 4, l: '\u00BC' }, { n: 2, d: 3, l: '\u2154' }, { n: 3, d: 4, l: '\u00BE' }, { n: 3, d: 8, l: '\u215C' }, { n: 5, d: 6, l: '\u215A' }, { n: 7, d: 12, l: '7/12' }, { n: 11, d: 16, l: '11/16' }, { n: 13, d: 20, l: '13/20' }].map(function (p) { return React.createElement("button", { key: p.l, onClick: function () { setFractionPieces({ numerator: p.n, denominator: p.d }); }, className: "px-3 py-1.5 text-sm font-bold bg-rose-50 text-rose-700 border border-rose-600 rounded-lg hover:bg-rose-100 transition-all" }, p.l); })
             ),
             // Challenge section
             React.createElement("div", { className: "bg-rose-50 rounded-xl p-4 border border-rose-200 space-y-3" },
@@ -24108,14 +24108,14 @@
               React.createElement("div", { className: "flex items-center gap-4 justify-center" },
                 React.createElement("div", { className: "text-center" },
                   React.createElement("input", { type: "number", value: d.value, onChange: function (e) { upd('value', parseFloat(e.target.value) || 0); }, className: "w-32 text-center text-2xl font-bold border-b-2 border-cyan-300 outline-none py-1", step: "0.01" }),
-                  React.createElement("select", { 'aria-label': 'Convert from unit', value: d.fromUnit, onChange: function (e) { upd('fromUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1" },
+                  React.createElement("select", { 'aria-label': 'Convert from unit', value: d.fromUnit, onChange: function (e) { upd('fromUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1" },
                     Object.keys(cat.units).map(function (u) { return React.createElement("option", { key: u, value: u }, u); })
                   )
                 ),
                 React.createElement("span", { className: "text-2xl text-cyan-400 font-bold" }, "\u2192"),
                 React.createElement("div", { className: "text-center" },
                   React.createElement("p", { className: "text-2xl font-black text-cyan-700 py-1" }, fmtResult),
-                  React.createElement("select", { 'aria-label': 'Convert to unit', value: d.toUnit, onChange: function (e) { upd('toUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-200 rounded-lg py-1" },
+                  React.createElement("select", { 'aria-label': 'Convert to unit', value: d.toUnit, onChange: function (e) { upd('toUnit', e.target.value); }, className: "block w-full mt-2 text-center text-sm font-bold text-cyan-700 border border-cyan-600 rounded-lg py-1" },
                     Object.keys(cat.units).map(function (u) { return React.createElement("option", { key: u, value: u }, u); })
                   )
                 )
@@ -24186,7 +24186,7 @@
                 !d.quiz.answered
                   ? React.createElement("div", { className: "flex gap-2 items-center" },
                     React.createElement("input", {
-                      type: "number", placeholder: t('stem.converter.your_answer'), className: "px-3 py-2 border border-cyan-200 rounded-lg font-mono text-sm w-32", onKeyDown: function (e) {
+                      type: "number", placeholder: t('stem.converter.your_answer'), className: "px-3 py-2 border border-cyan-600 rounded-lg font-mono text-sm w-32", onKeyDown: function (e) {
                         if (e.key === 'Enter') {
                           var ans = parseFloat(e.target.value);
                           var correct = Math.abs(ans - d.quiz.a) < 0.01;
@@ -24537,10 +24537,10 @@
                   customOutcomes.map(function (o, i) {
                     return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
                       React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Event " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-200 text-sm font-bold flex-shrink-0" }),
-                      React.createElement("input", { type: "number", min: 0, max: 999, value: o.numerator != null ? o.numerator : 1, onChange: function (e) { var num = Math.max(0, parseInt(e.target.value) || 0); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { numerator: num, prob: (o.denominator || 20) > 0 ? num / (o.denominator || 20) : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-200 text-sm text-center font-mono" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Event " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
+                      React.createElement("input", { type: "number", min: 0, max: 999, value: o.numerator != null ? o.numerator : 1, onChange: function (e) { var num = Math.max(0, parseInt(e.target.value) || 0); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { numerator: num, prob: (o.denominator || 20) > 0 ? num / (o.denominator || 20) : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
                       React.createElement("span", { className: "text-xs font-bold text-amber-600 flex-shrink-0" }, "out of"),
-                      React.createElement("input", { type: "number", min: 1, max: 10000, value: o.denominator != null ? o.denominator : 20, onChange: function (e) { var den = Math.max(1, parseInt(e.target.value) || 1); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { denominator: den, prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-200 text-sm text-center font-mono" }),
+                      React.createElement("input", { type: "number", min: 1, max: 10000, value: o.denominator != null ? o.denominator : 20, onChange: function (e) { var den = Math.max(1, parseInt(e.target.value) || 1); var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { denominator: den, prob: den > 0 ? (o.numerator != null ? o.numerator : 1) / den : 0 }); upd('customOutcomes', co); }, className: "w-14 px-1 py-1 rounded-lg border border-amber-600 text-sm text-center font-mono" }),
                       React.createElement("span", { className: "ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold " + (o.prob <= 0.1 ? 'bg-violet-100 text-violet-700' : o.prob <= 0.5 ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700') }, (o.prob * 100).toFixed(1) + '%'),
                       customOutcomes.length > 2 && React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).filter(function (_, j) { return j !== i; }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "text-red-400 hover:text-red-600 text-sm font-bold px-1 flex-shrink-0" }, "\u2715")
                     );
@@ -24558,7 +24558,7 @@
                     var count = o.count || 1;
                     return React.createElement("div", { key: i, className: "flex items-center gap-2 bg-white/60 rounded-lg p-2" },
                       React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-7 h-7 rounded border-0 cursor-pointer flex-shrink-0" }),
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-200 text-sm font-bold flex-shrink-0" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
                       React.createElement("button", { onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-600 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
                       React.createElement("span", { className: "w-8 text-center text-sm font-black text-slate-700" }, count),
                       React.createElement("button", { onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); upd('customOutcomes', co); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-600 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
@@ -24586,7 +24586,7 @@
                   customOutcomes.map(function (o, i) {
                     return React.createElement("div", { key: i, className: "flex items-center gap-2" },
                       React.createElement("input", { type: "color", value: o.color, onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { color: e.target.value }); upd('customOutcomes', co); }, className: "w-8 h-8 rounded border-0 cursor-pointer" }),
-                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-200 text-sm font-bold" }),
+                      React.createElement("input", { type: "text", value: o.label, placeholder: "Outcome " + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); upd('customOutcomes', co); }, className: "flex-1 px-2 py-1.5 rounded-lg border border-amber-600 text-sm font-bold" }),
                       React.createElement("div", { className: "flex items-center gap-1" },
                         React.createElement("input", { type: "range", min: 1, max: 99, value: Math.round(o.prob * 100), onChange: function (e) { var newProb = parseInt(e.target.value) / 100; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { prob: newProb }); var remaining = 1 - newProb; var otherTotal = co.reduce(function (s, c, j) { return j === i ? s : s + c.prob; }, 0); if (otherTotal > 0) { co.forEach(function (c, j) { if (j !== i) co[j] = Object.assign({}, c, { prob: c.prob / otherTotal * remaining }); }); } upd('customOutcomes', co); }, className: "w-20 accent-amber-600" }),
                         React.createElement("span", { className: "w-10 text-xs font-mono text-amber-700 text-right" }, Math.round(o.prob * 100) + '%')
@@ -26906,7 +26906,7 @@
                         return React.createElement("button", {
                           key: i,
                           onClick: function () { playChord(NOTE_NAMES[(rootIdx + chord.degree) % 12], chord.type, 0); },
-                          className: "px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-200 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200')
+                          className: "px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-600 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-600 hover:bg-amber-200')
                         }, chord.label);
                       })
                     )
@@ -26918,7 +26918,7 @@
                         return React.createElement("button", {
                           key: i,
                           onClick: function () { playChord(NOTE_NAMES[(rootIdx + chord.degree) % 12], chord.type, 0); },
-                          className: "px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-200 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200')
+                          className: "px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all " + (chord.type === 'dim7' ? 'bg-red-100 text-red-700 border border-red-600 hover:bg-red-200' : 'bg-amber-100 text-amber-800 border border-amber-600 hover:bg-amber-200')
                         }, chord.label);
                       })
                     )
@@ -26994,7 +26994,7 @@
                   React.createElement("span", { className: "text-xs font-bold text-purple-700 w-8 text-center" }, d.seqBPM || 120)
                 ),
                 // Tap Tempo
-                React.createElement("button", { onClick: tapTempo, className: "px-2 py-1.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all border border-amber-200" }, "\uD83E\uDD4A Tap"),
+                React.createElement("button", { onClick: tapTempo, className: "px-2 py-1.5 rounded-lg text-[10px] font-bold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-all border border-amber-600" }, "\uD83E\uDD4A Tap"),
                 // Swing
                 React.createElement("select", { value: d.seqSwing || '0', onChange: function (e) { upd('seqSwing', e.target.value); }, className: "px-2 py-1 rounded text-[10px] font-bold bg-white border border-slate-400" },
                   React.createElement("option", { value: '0' }, "No Swing"),
@@ -27008,7 +27008,7 @@
                   React.createElement("button", { onClick: bpRedo, disabled: !(window._bpRedoStack || []).length, className: "px-2 py-1 rounded text-[10px] font-bold transition-all " + ((window._bpRedoStack || []).length ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-50 text-slate-300 cursor-not-allowed') }, "\u21AA " + (window._bpRedoStack || []).length)
                 ),
                 // Step Rec toggle
-                React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-200') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
+                React.createElement("button", { onClick: function () { upd('bpStepRec', !d.bpStepRec); upd('bpStepRecPos', 0); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpStepRec ? 'bg-red-700 text-white shadow-inner animate-pulse' : 'bg-red-50 text-red-500 hover:bg-red-100 border border-red-600') }, d.bpStepRec ? '\u23FA REC' : '\u26AB REC'),
                 // Clear
                 React.createElement("button", { onClick: function () { pushBpUndo(); upd('seqGrid', {}); upd('beatMelody', null); }, className: "ml-auto px-2 py-1 rounded text-[10px] font-bold bg-slate-100 text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all" }, "\uD83D\uDDD1 Clear")
               ),
@@ -27040,7 +27040,7 @@
                 React.createElement("div", { className: "border-l border-slate-200 h-6 mx-1" }),
                 React.createElement("button", {
                   onClick: function () { upd('bpChainMode', !d.bpChainMode); },
-                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-700 text-white' : 'bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100')
+                  className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.bpChainMode ? 'bg-orange-700 text-white' : 'bg-orange-50 text-orange-600 border border-orange-600 hover:bg-orange-100')
                 }, "\uD83D\uDD17 Chain " + (d.bpChainMode ? 'ON' : 'OFF')),
                 d.bpChainMode && React.createElement("span", { className: "text-[10px] text-orange-500" }, "A\u2192B\u2192C\u2192D loop")
               ),
@@ -27049,7 +27049,7 @@
               React.createElement("div", { className: "flex gap-1.5 mb-3 flex-wrap" },
                 Object.keys(SEQ_PRESETS).map(function (key) {
                   return React.createElement("button", { key: key, onClick: function () { pushBpUndo(); upd('seqGrid', Object.assign({}, SEQ_PRESETS[key].grid)); },
-                    className: "px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-200 hover:from-purple-100 hover:to-pink-100 hover:shadow-sm transition-all"
+                    className: "px-2.5 py-1 rounded-lg text-[10px] font-bold bg-gradient-to-r from-purple-50 to-pink-50 text-purple-700 border border-purple-600 hover:from-purple-100 hover:to-pink-100 hover:shadow-sm transition-all"
                   }, "\uD83C\uDFB5 " + SEQ_PRESETS[key].name);
                 })
               ),
@@ -27118,7 +27118,7 @@
                   React.createElement("span", { className: "text-[10px] text-slate-400" }, "16 steps = 1 bar"),
                   // Scale selector
                   React.createElement("select", { value: d.bpScale || 'major', onChange: function (e) { upd('bpScale', e.target.value); },
-                    className: "ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200"
+                    className: "ml-auto px-2 py-0.5 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-600"
                   },
                     Object.keys(SCALE_PATTERNS).map(function (k) {
                       return React.createElement("option", { key: k, value: k }, '\uD83C\uDFB5 ' + SCALE_PATTERNS[k].name);
@@ -27290,7 +27290,7 @@
                   ? React.createElement("div", { className: "flex gap-2 flex-wrap" },
                       (window._alloUserSamples || []).map(function (smp, si) {
                         return React.createElement("button", { key: si, onMouseDown: function () { playUserSample(si); },
-                          className: "px-3 py-2 rounded-lg text-[10px] font-bold bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:shadow-sm transition-all flex items-center gap-1"
+                          className: "px-3 py-2 rounded-lg text-[10px] font-bold bg-white border border-indigo-600 text-indigo-700 hover:bg-indigo-50 hover:shadow-sm transition-all flex items-center gap-1"
                         },
                           React.createElement("span", null, "\uD83C\uDFB5"),
                           React.createElement("span", { className: "truncate max-w-[80px]" }, smp.name),
@@ -27378,7 +27378,7 @@
                     return React.createElement("button", {
                       key: v.id,
                       onClick: function () { upd('omniVoice', v.id); },
-                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-200 text-amber-800 hover:bg-amber-100')
+                      className: "flex-1 py-2 rounded-lg text-center transition-all " + ((d.omniVoice || 'harp') === v.id ? 'bg-amber-700 text-white shadow-md' : 'bg-white border border-amber-600 text-amber-800 hover:bg-amber-100')
                     },
                       React.createElement("div", { className: "text-xs font-bold" }, v.label),
                       React.createElement("div", { className: "text-[10px] " + ((d.omniVoice || 'harp') === v.id ? 'text-amber-200' : 'text-amber-500') }, v.desc)
@@ -27407,7 +27407,7 @@
                           onClick: function () {
                             upd('omniChordRoot', root); upd('omniChordType', ct.type);
                           },
-                          className: "py-2 rounded-lg text-[10px] font-bold transition-all " + (isActive ? 'bg-gradient-to-b ' + ct.color + ' text-white shadow-md scale-105' : 'bg-white border border-amber-200 text-amber-800 hover:border-amber-400 hover:bg-amber-50')
+                          className: "py-2 rounded-lg text-[10px] font-bold transition-all " + (isActive ? 'bg-gradient-to-b ' + ct.color + ' text-white shadow-md scale-105' : 'bg-white border border-amber-600 text-amber-800 hover:border-amber-400 hover:bg-amber-50')
                         }, root + ct.label,
                           React.createElement("div", { className: "text-[7px] opacity-40 mt-0.5" }, (function() { var keys = { C: 'QAZ', D: 'WSX', E: 'EDC', F: 'RFV', G: 'TGB', A: 'YHN', B: 'UJM' }; var row = { Major: 0, Minor: 1, Dom7: 2 }; return keys[root] ? keys[root][row[ct.type]] : ''; })())
                         );
@@ -27649,7 +27649,7 @@
                     return React.createElement("button", {
                       key: h.n,
                       onClick: function () { playHarmonic(h.n); },
-                      className: "flex-1 py-3 rounded-xl bg-gradient-to-b from-indigo-50 to-purple-50 border border-indigo-200 text-center hover:shadow-md transition-all group cursor-pointer"
+                      className: "flex-1 py-3 rounded-xl bg-gradient-to-b from-indigo-50 to-purple-50 border border-indigo-600 text-center hover:shadow-md transition-all group cursor-pointer"
                     },
                       React.createElement("span", { className: "text-lg font-bold text-indigo-600 block group-hover:scale-110 transition-transform" }, h.n),
                       React.createElement("span", { className: "text-[8px] text-indigo-400 block" }, h.ratio),
@@ -27688,7 +27688,7 @@
                           upd('intervalGame', Object.assign({}, intervalGame, { answered: true, chosen: intv.name, score: intervalGame.score + (correct ? 1 : 0), streak: correct ? intervalGame.streak + 1 : 0 }));
                           addToast(correct ? '\u2705 Correct! ' + intv.name : '\u274C ' + t('stem.dissection.it_was') + ' ' + intervalGame.answer, correct ? 'success' : 'error');
                         },
-                        className: "px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all " + (isCorrect ? 'bg-green-100 border-green-400 text-green-700' : isWrong ? 'bg-red-100 border-red-400 text-red-600' : 'bg-white border-emerald-200 text-slate-700 hover:border-emerald-400')
+                        className: "px-2 py-1.5 rounded-lg text-[10px] font-bold border transition-all " + (isCorrect ? 'bg-green-100 border-green-400 text-green-700' : isWrong ? 'bg-red-100 border-red-400 text-red-600' : 'bg-white border-emerald-600 text-slate-700 hover:border-emerald-400')
                       }, intv.name);
                     })
                   )
@@ -27760,7 +27760,7 @@
                         upd('ksBrightness', preset.brightness); upd('ksDamping', preset.damping); upd('synthEngine', 'plucked');
                         playPlucked(noteFreq(selectedRoot, d.octave || 4), 'ks_demo', preset.brightness, preset.damping);
                       },
-                      className: "py-2 rounded-lg text-[11px] font-bold bg-white border border-amber-200 text-amber-800 hover:bg-amber-100 hover:border-amber-400 transition-all"
+                      className: "py-2 rounded-lg text-[11px] font-bold bg-white border border-amber-600 text-amber-800 hover:bg-amber-100 hover:border-amber-400 transition-all"
                     }, preset.label);
                   })
                 ),
@@ -27807,7 +27807,7 @@
                             upd('quizStreak2', correct ? (d.quizStreak2 || 0) + 1 : 0);
                             addToast(correct ? '\u2705 Correct!' : '\u274C The answer is: ' + q.a, correct ? 'success' : 'error');
                           },
-                          className: "px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-purple-200 bg-white text-slate-700 hover:border-purple-400 hover:bg-purple-50')
+                          className: "px-3 py-2.5 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-purple-600 bg-white text-slate-700 hover:border-purple-400 hover:bg-purple-50')
                         }, opt);
                       })
                     ),
@@ -27863,7 +27863,7 @@
                           upd('chordDetectTotal', (d.chordDetectTotal || 0) + 1);
                           addToast(correct ? '\u2705 Correct! ' + d.chordDetect.root + ' ' + d.chordDetect.type : '\u274C It was ' + d.chordDetect.root + ' ' + d.chordDetect.type, correct ? 'success' : 'error');
                         },
-                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-rose-200 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-rose-600 bg-white text-slate-700 hover:border-rose-400 hover:bg-rose-50')
                       }, opt);
                     })
                   ),
@@ -27916,7 +27916,7 @@
                             var g = d.dictation.guesses.slice(); g[idx] = e.target.value;
                             upd('dictation', Object.assign({}, d.dictation, { guesses: g }));
                           },
-                          className: "w-full px-2 py-1.5 rounded-lg border-2 text-sm font-bold " + (correct ? 'border-green-400 bg-green-50 text-green-700' : wrong ? 'border-red-400 bg-red-50 text-red-600' : 'border-violet-200 text-slate-700')
+                          className: "w-full px-2 py-1.5 rounded-lg border-2 text-sm font-bold " + (correct ? 'border-green-400 bg-green-50 text-green-700' : wrong ? 'border-red-400 bg-red-50 text-red-600' : 'border-violet-600 text-slate-700')
                         },
                           React.createElement("option", { value: "" }, "?"),
                           ['C', 'D', 'E', 'F', 'G', 'A', 'B'].map(function (n) { return React.createElement("option", { key: n, value: n }, n); })
@@ -28808,7 +28808,7 @@
               }),
               React.createElement("button", {
                 onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               React.createElement("div", { className: "flex rounded-lg border border-slate-400 overflow-hidden" },
                 [{ v: 1, label: 'K\u20135', tip: 'Elementary' }, { v: 2, label: '6\u20138', tip: 'Middle' }, { v: 3, label: '9\u201312+', tip: 'Advanced' }].map(function (lv) {
@@ -31545,27 +31545,27 @@
                 }, '\u2702\uFE0F ' + t('stem.dissection.peel') + ' ' + spec.layers[currentLayerIdx].name + ' \u2192 ' + spec.layers[Math.min(currentLayerIdx + 1, spec.layers.length - 1)].name),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceDigestion', !d.traceDigestion); upd('traceRespiration', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceDigestion ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-700 border border-amber-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceDigestion ? 'bg-amber-700 text-white' : 'bg-amber-50 text-amber-700 border border-amber-600')
                 }, d.traceDigestion ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83E\uDD62 ' + t('stem.dissection.trace_digestive')),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceRespiration', !d.traceRespiration); upd('traceDigestion', false); upd('traceCirculation', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceRespiration ? 'bg-sky-500 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceRespiration ? 'bg-sky-500 text-white' : 'bg-sky-50 text-sky-700 border border-sky-600')
                 }, d.traceRespiration ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83C\uDF2C\uFE0F ' + t('stem.dissection.trace_respiratory')),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceCirculation', !d.traceCirculation); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceExcretory', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceCirculation ? 'bg-red-700 text-white' : 'bg-red-50 text-red-700 border border-red-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceCirculation ? 'bg-red-700 text-white' : 'bg-red-50 text-red-700 border border-red-600')
                 }, d.traceCirculation ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\u2764\uFE0F ' + t('stem.dissection.trace_circulatory')),
                 (activeLayer === 'organs') && React.createElement("button", {
                   onClick: function () { upd('traceExcretory', !d.traceExcretory); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceNervous', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceExcretory ? 'bg-lime-500 text-white' : 'bg-lime-50 text-lime-700 border border-lime-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceExcretory ? 'bg-lime-500 text-white' : 'bg-lime-50 text-lime-700 border border-lime-600')
                 }, d.traceExcretory ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\uD83D\uDCA7 ' + t('stem.dissection.trace_excretory')),
                 React.createElement("button", {
                   onClick: function () { upd('traceNervous', !d.traceNervous); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); upd('showEndocrine', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-700 text-white' : 'bg-purple-50 text-purple-700 border border-purple-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.traceNervous ? 'bg-purple-700 text-white' : 'bg-purple-50 text-purple-700 border border-purple-600')
                 }, d.traceNervous ? '\u23F9 ' + t('stem.dissection.stop_trace') : '\u26A1 ' + t('stem.dissection.trace_nervous')),
                 React.createElement("button", {
                   onClick: function () { upd('showEndocrine', !d.showEndocrine); upd('traceNervous', false); upd('traceDigestion', false); upd('traceRespiration', false); upd('traceCirculation', false); upd('traceExcretory', false); },
-                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-700 text-white' : 'bg-pink-50 text-pink-700 border border-pink-200')
+                  className: "w-full mt-1 py-2 rounded-xl text-xs font-bold " + (d.showEndocrine ? 'bg-pink-700 text-white' : 'bg-pink-50 text-pink-700 border border-pink-600')
                 }, d.showEndocrine ? '\u23F9 ' + t('stem.dissection.endocrine_hide') : '\uD83E\uDDE0 ' + t('stem.dissection.endocrine_show'))
               ),
 
@@ -31675,7 +31675,7 @@
                     };
                     var sn = sel.name.toLowerCase(); var dev = null;
                     Object.keys(devMap).forEach(function (k) { if (sn.indexOf(k) >= 0) dev = devMap[k]; });
-                    var dColors = { Ectoderm: 'bg-blue-50 text-blue-600 border-blue-200', Mesoderm: 'bg-red-50 text-red-600 border-red-200', Endoderm: 'bg-yellow-50 text-yellow-600 border-yellow-200' };
+                    var dColors = { Ectoderm: 'bg-blue-50 text-blue-600 border-blue-600', Mesoderm: 'bg-red-50 text-red-600 border-red-600', Endoderm: 'bg-yellow-50 text-yellow-600 border-yellow-600' };
                     var dcKey = dev ? (dev.indexOf('Ecto') >= 0 ? 'Ectoderm' : dev.indexOf('Meso') >= 0 ? 'Mesoderm' : 'Endoderm') : null;
                     return dev ? React.createElement("span", { className: "inline-block px-2 py-0.5 rounded-full text-[10px] font-bold mr-1 mb-1 border " + (dColors[dcKey] || 'bg-slate-50 text-slate-600 border-slate-200') }, '\uD83E\uDDEC ' + dev) : null;
                   })(),
@@ -31822,7 +31822,7 @@
                         key: org.id,
                         id: 'diss-organ-' + org.id,
                         onClick: function () { upd('selectedOrgan', org.id); },
-                        className: "w-full text-left px-2 py-1.5 rounded-lg text-xs hover:bg-slate-50 transition-all flex items-center gap-1.5 " + (d.selectedOrgan === org.id ? 'bg-amber-50 border border-amber-200 font-bold text-amber-800' : 'text-slate-600')
+                        className: "w-full text-left px-2 py-1.5 rounded-lg text-xs hover:bg-slate-50 transition-all flex items-center gap-1.5 " + (d.selectedOrgan === org.id ? 'bg-amber-50 border border-amber-600 font-bold text-amber-800' : 'text-slate-600')
                       },
                         React.createElement("span", { style: { width: 6, height: 6, borderRadius: '50%', backgroundColor: dotColor, display: 'inline-block', flexShrink: 0 } }),
                         React.createElement("span", { className: "flex-1" }, org.name),
@@ -31855,7 +31855,7 @@
                           if (correct) awardStemXP('dissection', 2, 'Correct quiz answer');
                           addToast(correct ? '\u2705 ' + t('stem.dissection.correct') : '\u274C ' + t('stem.dissection.it_was') + ' ' + quizQ.name, correct ? 'success' : 'error');
                         },
-                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-amber-200 bg-white text-slate-700 hover:border-amber-400')
+                        className: "px-2 py-1.5 rounded-lg text-[11px] font-bold border transition-all " + (isCorrect ? 'border-green-400 bg-green-50 text-green-700' : isWrong ? 'border-red-400 bg-red-50 text-red-600' : fb ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-amber-600 bg-white text-slate-700 hover:border-amber-400')
                       }, opt.name);
                     })
                   ),
@@ -33118,7 +33118,7 @@
               }),
               React.createElement("button", {
                 onClick: function () { upd('quizMode', !d.quizMode); upd('quizIdx', 0); upd('quizScore', 0); upd('quizFeedback', null); },
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100')
+                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.quizMode ? 'bg-green-700 text-white' : 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100')
               }, d.quizMode ? '\u2705 Quiz On' : '\uD83E\uDDEA Quiz'),
               React.createElement("span", { className: "text-[10px] text-slate-500 font-bold" }, filtered.length + ' regions')
             ),
@@ -33652,7 +33652,7 @@
                     return React.createElement("button", { key: t.id, onClick: function () { upd('pixelTool', t.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.pixelTool || 'brush') === t.id ? 'bg-pink-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, t.icon + ' ' + t.label);
                   }),
                   React.createElement("button", { onClick: function () { upd('pixelData', {}); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                  React.createElement("button", { onClick: function () { var c = document.querySelector('canvas[style*="pixelated"]'); if (!c) return; var link = document.createElement('a'); link.download = 'pixel-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
                   React.createElement("select", { 'aria-label': 'Grid size', value: typeof d.pixelGrid === 'number' ? d.pixelGrid : 16, onChange: function (e) { upd('pixelGrid', parseInt(e.target.value)); upd('pixelData', {}); }, className: "px-2 py-1 text-xs border border-slate-400 rounded-lg" },
                     [8, 16, 24, 32].map(function (s) { return React.createElement("option", { key: s, value: s }, s + 'x' + s); }))
                 )
@@ -33694,7 +33694,7 @@
                 React.createElement("button", { onClick: function () { upd('symBrushMode', 'rainbow'); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + ((d.symBrushMode || 'rainbow') === 'rainbow' ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, "\uD83C\uDF08 Rainbow"),
                 React.createElement("button", { onClick: function () { upd('symMirrorOnly', !(d.symMirrorOnly)); upd('symmetryClear', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.symMirrorOnly ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-violet-50') }, d.symMirrorOnly ? '\uD83E\uDE9E Mirror \u2714' : '\uD83E\uDE9E Mirror'),
                 React.createElement("button", { onClick: function () { upd('symmetryClear', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
+                React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export PNG"),
                 React.createElement("button", { onClick: function () { toggleFullscreen('symmetryCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, "\uD83D\uDD0D Fullscreen")
               ),
               React.createElement("div", { id: 'symmetryCanvasContainer', className: "bg-slate-900 rounded-xl p-2 relative flex flex-col items-center justify-center w-full" },
@@ -33785,13 +33785,13 @@
                     }),
                     React.createElement("div", { className: "flex gap-2 mt-3" },
                       React.createElement("button", { onClick: function () { upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('spiroCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spirograph-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
                       React.createElement("button", { onClick: function () { upd('spiroRainbow', !(d.spiroRainbow)); upd('spiroReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.spiroRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.spiroRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
                     ),
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
                       React.createElement("span", { className: "text-[10px] font-bold text-indigo-500 mr-1" }, "Presets:"),
                       [{ label: 'Star', R: 120, r: 45, p: 55 }, { label: 'Flower', R: 150, r: 50, p: 25 }, { label: 'Lace', R: 100, r: 73, p: 80 }, { label: 'Atom', R: 180, r: 25, p: 90 }, { label: 'Spiral', R: 140, r: 91, p: 60 }].map(function (pr) {
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('spiroR', pr.R); upd('spiror', pr.r); upd('spirop', pr.p); upd('spiroReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-indigo-600 border border-indigo-600 hover:bg-indigo-50 transition-all" }, pr.label);
                       })
                     )
                   ),
@@ -33854,7 +33854,7 @@
                 }),
                 React.createElement("button", { onClick: function () { upd('genPaused', !d.genPaused); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.genPaused ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, d.genPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
                 React.createElement("button", { onClick: function () { upd('genReset', Date.now()); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                React.createElement("button", { onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                React.createElement("button", { onClick: function () { var c = document.getElementById('genCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'generative-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
               ),
               React.createElement("div", { className: "flex gap-2 mb-2" },
                 React.createElement("span", { className: "text-[10px] font-bold text-slate-500" }, "Density:"),
@@ -33990,7 +33990,7 @@
                 React.createElement("button", { onClick: function () { upd('spinSplatter', !d.spinSplatter); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinSplatter ? 'bg-orange-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-orange-50') }, d.spinSplatter ? '\uD83D\uDCA6 Splatter \u2714' : '\uD83D\uDCA6 Splatter'),
                 React.createElement("button", { onClick: function () { upd('spinDark', !d.spinDark); upd('spinReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (d.spinDark ? 'bg-slate-800 text-white' : 'bg-white text-slate-600 border border-slate-400') }, d.spinDark ? '\uD83C\uDF11 Dark' : '\u2B1C Light'),
                 React.createElement("button", { onClick: function () { upd('spinReset', Date.now()); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                React.createElement("button", { onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                React.createElement("button", { onClick: function () { var c = document.getElementById('spinCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'spin-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
               ),
               React.createElement("div", { className: "bg-slate-50 rounded-xl p-2 border border-slate-400" },
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
@@ -34121,13 +34121,13 @@
                     }),
                     React.createElement("div", { className: "flex gap-2 mt-3" },
                       React.createElement("button", { onClick: function () { upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear"),
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('stringCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'string-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG"),
                       React.createElement("button", { onClick: function () { upd('strRainbow', !(d.strRainbow)); upd('strReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.strRainbow ? 'bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-pink-50') }, d.strRainbow ? '\uD83C\uDF08 Rainbow \u2714' : '\uD83C\uDF08 Rainbow')
                     ),
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
                       React.createElement("span", { className: "text-[10px] font-bold text-rose-500 mr-1" }, "Presets:"),
                       [{ label: 'Cardioid', nails: 100, mult: 2 }, { label: 'Nephroid', nails: 100, mult: 3 }, { label: 'Star Burst', nails: 72, mult: 37 }, { label: 'Lace', nails: 150, mult: 71 }, { label: 'Weave', nails: 60, mult: 23 }].map(function (pr) {
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('strNails', pr.nails); upd('strMult', pr.mult); upd('strReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
                       })
                     )
                   ),
@@ -34243,8 +34243,8 @@
                       );
                     }),
                     React.createElement("div", { className: "flex gap-2 mt-3" },
-                      React.createElement("button", { onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { onClick: function () { upd('opPaused', !(d.opPaused)); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.opPaused ? 'bg-green-50 text-green-700 border border-green-600 hover:bg-green-100' : 'bg-amber-50 text-amber-700 border border-amber-600 hover:bg-amber-100') }, d.opPaused ? '\u25B6 Resume' : '\u23F8 Pause'),
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('opArtCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'op-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
                     ),
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
                       React.createElement("span", { className: "text-[10px] font-bold text-fuchsia-500 mr-1" }, "Presets:"),
@@ -34252,7 +34252,7 @@
                        { label: 'Neon Pulse', style: 'concentric', hA: 280, hB: 160, density: 15, speed: 8 },
                        { label: 'Spiral Vortex', style: 'moire', hA: 200, hB: 30, density: 40, speed: 6 },
                        { label: 'Wave Grid', style: 'checkerboard', hA: 10, hB: 190, density: 20, speed: 5 }].map(function (pr) {
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-fuchsia-600 border border-fuchsia-200 hover:bg-fuchsia-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('opStyle', pr.style); upd('opHueA', pr.hA); upd('opHueB', pr.hB); upd('opDensity', pr.density); upd('opSpeed', pr.speed); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-fuchsia-600 border border-fuchsia-600 hover:bg-fuchsia-50 transition-all" }, pr.label);
                       })
                     )
                   ),
@@ -34426,7 +34426,7 @@
                     ),
                     React.createElement("div", { className: "flex gap-2 mt-3" },
                       React.createElement("button", { onClick: function () { upd('tessClickData', {}); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\uD83D\uDDD1 Clear Colors"),
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('tessCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'tessellation-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
                     ),
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
                       React.createElement("span", { className: "text-[10px] font-bold text-teal-500 mr-1" }, "Presets:"),
@@ -34434,7 +34434,7 @@
                        { label: 'Pinwheel', shape: 'triangle', grid: 8, rot: 30, warp: 0, scheme: 'rainbow' },
                        { label: 'Islamic Star', shape: 'hexagon', grid: 5, rot: 15, warp: 10, scheme: 'cool' },
                        { label: 'Escher Fish', shape: 'square', grid: 6, rot: 0, warp: 35, scheme: 'rainbow' }].map(function (pr) {
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('tessShape', pr.shape); upd('tessGrid', pr.grid); upd('tessRotation', pr.rot); upd('tessWarpAmt', pr.warp); upd('tessScheme', pr.scheme); upd('tessClickData', {}); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-teal-600 border border-teal-600 hover:bg-teal-50 transition-all" }, pr.label);
                       })
                     )
                   ),
@@ -34655,7 +34655,7 @@
                     ),
                     React.createElement("div", { className: "flex gap-2 mt-3" },
                       React.createElement("button", { onClick: function () { upd('fractalZoom', 1); upd('fractalPanX', 0); upd('fractalPanY', 0); upd('fractalReset', Date.now()); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100" }, "\u21BA Reset View"),
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('fractalCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'fractal-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
                     ),
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
                       React.createElement("span", { className: "text-[10px] font-bold text-violet-500 mr-1" }, "Presets:"),
@@ -34663,7 +34663,7 @@
                        { label: 'Elephant Valley', type: 'mandelbrot', panX: 36, panY: -4, zoom: 80, iter: 300 },
                        { label: 'Lightning', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 250, jr: -12, ji: 75 },
                        { label: 'Spiral Arm', type: 'julia', panX: 0, panY: 0, zoom: 1, iter: 300, jr: 28, ji: 1 }].map(function (pr) {
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-violet-600 border border-violet-200 hover:bg-violet-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('fractalType', pr.type); upd('fractalPanX', pr.panX); upd('fractalPanY', pr.panY); upd('fractalZoom', pr.zoom); upd('fractalIter', pr.iter); if (pr.jr !== undefined) { upd('juliaReal', pr.jr); upd('juliaImag', pr.ji); } upd('fractalReset', Date.now()); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-violet-600 border border-violet-600 hover:bg-violet-50 transition-all" }, pr.label);
                       })
                     )
                   ),
@@ -34901,7 +34901,7 @@
                       })()
                     ),
                     React.createElement("div", { className: "flex gap-2 mt-3" },
-                      React.createElement("button", { onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
+                      React.createElement("button", { onClick: function () { var c = document.getElementById('gradientCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'gradient-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100" }, "\uD83D\uDCE5 Export PNG")
                     ),
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
                       React.createElement("span", { className: "text-[10px] font-bold text-rose-500 mr-1" }, "Presets:"),
@@ -34910,7 +34910,7 @@
                        { label: 'Vaporwave', stops: [{ hue: 300, pos: 0 }, { hue: 270, pos: 40 }, { hue: 190, pos: 70 }, { hue: 330, pos: 100 }], type: 'radial', angle: 90 },
                        { label: 'Golden Hour', stops: [{ hue: 40, pos: 0 }, { hue: 25, pos: 50 }, { hue: 10, pos: 100 }], type: 'linear', angle: 135 },
                        { label: 'Deep Space', stops: [{ hue: 260, pos: 0 }, { hue: 230, pos: 30 }, { hue: 200, pos: 60 }, { hue: 280, pos: 80 }, { hue: 0, pos: 100 }], type: 'radial', angle: 90 }].map(function (pr) {
-                        return React.createElement("button", { key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-200 hover:bg-rose-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.label, onClick: function () { upd('gradStops', pr.stops); upd('gradType', pr.type); upd('gradAngle', pr.angle); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-rose-600 border border-rose-600 hover:bg-rose-50 transition-all" }, pr.label);
                       })
                     )
                   ),
@@ -35119,7 +35119,7 @@
                         value: d.stereoAiStr || '', 
                         onChange: function(e) { upd('stereoAiStr', e.target.value); },
                         placeholder: "Describe an object for a depth map or a texture for a pattern...",
-                        className: "w-full text-xs p-2 rounded border border-indigo-200 focus:ring-2 focus:ring-indigo-400 mb-2 h-16 resize-none",
+                        className: "w-full text-xs p-2 rounded border border-indigo-600 focus:ring-2 focus:ring-indigo-400 mb-2 h-16 resize-none",
                         disabled: !!d.stereoAiGen
                       }),
                       React.createElement("div", { className: "flex gap-2" },
@@ -35184,11 +35184,11 @@
                     React.createElement("div", { className: "flex gap-1 mt-3 flex-wrap" },
                       React.createElement("span", { className: "text-[10px] font-bold text-cyan-500 mr-1" }, "Presets:"),
                       [{ label: 'Sphere', id: 'sphere' }, { label: 'Pyramid', id: 'pyramid' }, { label: 'Heart', id: 'heart' }, { label: 'HI Text', id: 'text' }, { label: 'Rings', id: 'rings' }].map(function (pr) {
-                        return React.createElement("button", { key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-cyan-600 border border-cyan-200 hover:bg-cyan-50 transition-all" }, pr.label);
+                        return React.createElement("button", { key: pr.id, onClick: function () { upd('stereoPreset', pr.id); upd('stereoClear', Date.now()); setTimeout(function () { upd('stereoGen', Date.now()); }, 150); }, className: "px-2 py-1 rounded-lg text-[10px] font-bold bg-white text-cyan-600 border border-cyan-600 hover:bg-cyan-50 transition-all" }, pr.label);
                       })
                     ),
-                    React.createElement("button", { onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export Stereogram"),
-                    React.createElement("button", { onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\u2B07\uFE0F Depth map saved!', 'success'); }, className: "w-full mt-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 hover:bg-cyan-100 transition-all" }, "\u2B07\uFE0F Save Depth Map")
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('stereoCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'stereogram-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full mt-2 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100 transition-all" }, "\uD83D\uDCE5 Export Stereogram"),
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('depthMapCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'depth-map-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\u2B07\uFE0F Depth map saved!', 'success'); }, className: "w-full mt-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-cyan-50 text-cyan-700 border border-cyan-600 hover:bg-cyan-100 transition-all" }, "\u2B07\uFE0F Save Depth Map")
                   ),
                   React.createElement("div", null,
                     React.createElement("p", { className: "text-[10px] font-bold text-cyan-600 mb-1" }, "\uD83C\uDFA8 Depth Map Canvas"),
@@ -35431,7 +35431,7 @@
                       )
                     ),
                     // Export
-                    React.createElement("button", { onClick: function () { var c = document.getElementById('lifeCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'game-of-life-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, '\uD83D\uDCE5 Export PNG'),
+                    React.createElement("button", { onClick: function () { var c = document.getElementById('lifeCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'game-of-life-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "w-full px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100 transition-all" }, '\uD83D\uDCE5 Export PNG'),
                     // ─── Expanded Preset Library ───
                     React.createElement("div", { className: "mt-3" },
                       React.createElement("span", { className: "text-[10px] font-bold text-emerald-500 block mb-1" }, '\uD83D\uDCDA Pattern Library'),
@@ -35468,7 +35468,7 @@
                           React.createElement("p", { className: "text-[10px] font-bold text-slate-500 mb-0.5" }, cat.emoji + ' ' + cat.cat),
                           React.createElement("div", { className: "flex gap-1 flex-wrap" },
                             cat.items.map(function (pr) {
-                              return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
+                              return React.createElement("button", { key: pr.id, onClick: function () { upd('lifePreset', pr.id); upd('lifeClear', Date.now()); upd('lifeGen', 0); upd('lifeMaxPop', 0); var stillLifes = { block:1, beehive:1, loaf:1, boat:1 }; upd('lifeRunning', !stillLifes[pr.id]); }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50 transition-all", title: pr.desc }, pr.label);
                             })
                           )
                         );
@@ -35482,11 +35482,11 @@
                     React.createElement("div", { className: "flex gap-2 mb-2" },
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, 'Birth (B)'),
-                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '3' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleB || '3', onChange: function (e) { upd('lifeRuleB', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '3' })
                       ),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("label", { className: "text-[10px] font-bold text-purple-600 block" }, 'Survival (S)'),
-                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-200 rounded-lg", placeholder: '23' })
+                        React.createElement("input", { type: "text", value: d.lifeRuleS || '23', onChange: function (e) { upd('lifeRuleS', e.target.value.replace(/[^0-8]/g, '')); }, className: "w-full px-2 py-1 text-xs font-mono border border-purple-600 rounded-lg", placeholder: '23' })
                       )
                     ),
                     React.createElement("div", { className: "flex gap-1 flex-wrap" },
@@ -35498,7 +35498,7 @@
                         { label: 'Day&Night B3678/S34678', b: '3678', s: '34678', desc: 'Symmetric \u2014 dead/alive are interchangeable' },
                         { label: 'Diamoeba B35678/S5678', b: '35678', s: '5678', desc: 'Creates diamond-shaped amoebas' }
                       ].map(function (rp) {
-                        return React.createElement("button", { key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-white text-purple-600 border border-purple-200 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
+                        return React.createElement("button", { key: rp.label, onClick: function () { upd('lifeRuleB', rp.b); upd('lifeRuleS', rp.s); }, className: "px-2 py-0.5 rounded text-[10px] font-bold bg-white text-purple-600 border border-purple-600 hover:bg-purple-50 transition-all", title: rp.desc }, rp.label);
                       })
                     ),
                     React.createElement("p", { className: "text-[10px] text-slate-400 mt-1 italic" }, 'Currently: B' + (d.lifeRuleB || '3') + '/S' + (d.lifeRuleS || '23') + ((d.lifeRuleB || '3') === '3' && (d.lifeRuleS || '23') === '23' ? ' (Conway\'s classic rules)' : ' (custom rules)'))
@@ -35521,7 +35521,7 @@
                           upd('lifeChallengeMsg', isActive ? null : ch.desc);
                           upd('lifeMaxPop', 0);
                           if (!isActive) { upd('lifeClear', Date.now()); upd('lifeRunning', false); upd('lifeGen', 0); upd('lifePop', 0); }
-                        }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (isActive ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'), title: ch.desc }, ch.label);
+                        }, className: "px-2 py-1 rounded-lg text-[10px] font-bold transition-all " + (isActive ? 'bg-amber-700 text-white ring-2 ring-amber-300' : 'bg-white text-amber-700 border border-amber-600 hover:bg-amber-50'), title: ch.desc }, ch.label);
                       })
                     ),
                     d.lifeChallenge && d.lifeChallengeStatus === 'active' && React.createElement("div", { className: "space-y-1" },
@@ -37140,7 +37140,7 @@
                       return React.createElement("button", {
                         key: s,
                         onClick: function () { upd('growSpeed', s); },
-                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-600 border border-emerald-200 hover:bg-emerald-50')
+                        className: "px-2 py-0.5 rounded text-[10px] font-bold transition-all " + (growSpeed === s ? 'bg-emerald-700 text-white' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50')
                       }, s + '×');
                     })
                   ),
@@ -37187,7 +37187,7 @@
                       className: "relative px-3 py-2 rounded-xl text-xs font-bold transition-all border " + (
                         onCooldown
                           ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed'
-                          : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-400 shadow-sm hover:shadow-md'
+                          : 'bg-white text-emerald-700 border-emerald-600 hover:bg-emerald-50 hover:border-emerald-400 shadow-sm hover:shadow-md'
                       ),
                       style: onCooldown ? { background: 'linear-gradient(to top, rgba(209,250,229,' + pct / 100 + ') ' + pct + '%, #f1f5f9 ' + pct + '%)' } : {}
                     }, action.emoji + ' ' + action.label + (onCooldown ? ' (' + (cd - day) + 'd)' : ''));
@@ -37307,11 +37307,11 @@
               React.createElement("div", { className: "flex-1" }),
               React.createElement("button", {
                 onClick: function () { upd('quizActive', !quizActive); upd('quizAnswer', ''); upd('quizFeedback', ''); },
-                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100')
+                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (quizActive ? 'bg-indigo-600 text-white shadow-lg' : 'bg-indigo-50 text-indigo-700 border border-indigo-600 hover:bg-indigo-100')
               }, "🧠 Quiz"),
               React.createElement("button", {
                 onClick: function () { upd('showSciencePanel', !showSciencePanel); },
-                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-700 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100')
+                className: "px-4 py-2 rounded-xl text-xs font-bold transition-all " + (showSciencePanel ? 'bg-emerald-700 text-white shadow-lg' : 'bg-emerald-50 text-emerald-700 border border-emerald-600 hover:bg-emerald-100')
               }, "\uD83D\uDCDA Science")
             ),
 
@@ -37402,7 +37402,7 @@
                     className: "px-4 py-2 rounded-xl text-xs font-bold transition-all border " + (
                       showResult && isCorrect ? 'bg-green-100 text-green-800 border-green-400' :
                         showResult && isSelected && !isCorrect ? 'bg-red-100 text-red-800 border-red-400' :
-                          'bg-white text-indigo-700 border-indigo-200 hover:border-indigo-400 hover:bg-indigo-50'
+                          'bg-white text-indigo-700 border-indigo-600 hover:border-indigo-400 hover:bg-indigo-50'
                     )
                   }, opt);
                 })
@@ -42273,7 +42273,7 @@
                   return React.createElement("button", {
                     key: tank.id,
                     onClick: function () { initTank(tank.id); },
-                    className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-200/60 hover:border-cyan-400"
+                    className: "group p-4 rounded-2xl border-2 text-left transition-all duration-300 hover:scale-[1.03] hover:shadow-xl hover:shadow-cyan-500/10 bg-gradient-to-br from-white via-cyan-50/50 to-sky-50 border-cyan-600/60 hover:border-cyan-400"
                   },
                     React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                       React.createElement("span", { className: "text-xl" }, tank.name.split(' ')[0]),
@@ -42482,7 +42482,7 @@
                           className: "text-left rounded-lg p-1.5 text-[10px] transition-all " +
                             (alreadyAdded
                               ? "bg-emerald-100/50 text-emerald-400 cursor-not-allowed opacity-60"
-                              : "bg-white/70 hover:bg-white border border-emerald-100 hover:border-emerald-300 hover:shadow-sm cursor-pointer")
+                              : "bg-white/70 hover:bg-white border border-emerald-600 hover:border-emerald-300 hover:shadow-sm cursor-pointer")
                         },
                           React.createElement("span", { className: "font-bold" }, (ps.icon || '\uD83C\uDF3F') + ' ' + ps.name),
                           React.createElement("div", { className: "text-[8px] text-slate-400 mt-0.5 leading-tight" },
@@ -42885,7 +42885,7 @@
                       return React.createElement("button", {
                         key: sp.id,
                         onClick: function () { addFish(sp.id); },
-                        className: "px-2 py-1 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-200 rounded-full hover:bg-cyan-100 transition-all",
+                        className: "px-2 py-1 text-[11px] font-bold bg-cyan-50 text-cyan-700 border border-cyan-600 rounded-full hover:bg-cyan-100 transition-all",
                         title: sp.fact
                       }, sp.icon + " " + sp.name + " (" + sp.load + ")");
                     })
@@ -42923,32 +42923,32 @@
                     }, simRunning ? "\u23F8 Pause" : "\u25B6 Run Simulation"),
                     React.createElement("button", {
                       onClick: doWaterChange,
-                      className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-200/60"
+                      className: "px-3 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-xl text-xs hover:from-blue-100 hover:to-blue-200 transition-all border border-blue-600/60"
                     }, "\uD83D\uDCA7 Water"),
                     React.createElement("button", {
                       onClick: feedFish,
                       disabled: tankFish.length === 0,
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 hover:from-amber-100 hover:to-amber-200 border-amber-600/60")
                     }, "\uD83C\uDF7D\uFE0F Flake"),
                     React.createElement("button", {
                       onClick: feedLive,
                       disabled: tankFish.length === 0,
-                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-200/60")
+                      className: "px-3 py-2.5 font-bold rounded-xl text-xs transition-all border " + (tankFish.length === 0 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-gradient-to-r from-red-50 to-red-100 text-red-700 hover:from-red-100 hover:to-red-200 border-red-600/60")
                     }, "\uD83E\uDD90 Live")
                   ),
                   // ── Second action row ──
                   React.createElement("div", { className: "flex gap-2" },
                     React.createElement("button", {
                       onClick: toggleLights,
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (lightsOn ? "bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-700 hover:from-yellow-100 hover:to-amber-100 border-amber-200/60" : "bg-gradient-to-r from-indigo-100 to-slate-100 text-indigo-700 hover:from-indigo-200 hover:to-slate-200 border-indigo-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (lightsOn ? "bg-gradient-to-r from-yellow-50 to-amber-50 text-amber-700 hover:from-yellow-100 hover:to-amber-100 border-amber-600/60" : "bg-gradient-to-r from-indigo-100 to-slate-100 text-indigo-700 hover:from-indigo-200 hover:to-slate-200 border-indigo-600/60")
                     }, lightsOn ? "\uD83D\uDCA1 Lights On" : "\uD83C\uDF19 Lights Off"),
                     React.createElement("button", {
                       onClick: medicateFish,
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-200/60 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-500 border-slate-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (Object.keys(fishSickness).length > 0 ? "bg-gradient-to-r from-pink-50 to-rose-50 text-rose-700 hover:from-pink-100 hover:to-rose-100 border-rose-600/60 animate-pulse" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-500 border-slate-200/60")
                     }, "\uD83D\uDC8A Medicate" + (Object.keys(fishSickness).length > 0 ? " (" + Object.keys(fishSickness).length + ")" : "")),
                     React.createElement("button", {
                       onClick: cleanGlass,
-                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-200/60" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-500 border-slate-200/60")
+                      className: "flex-1 px-3 py-2 font-bold rounded-xl text-xs transition-all border " + (algaeLevel > 30 ? "bg-gradient-to-r from-lime-50 to-green-50 text-green-700 hover:from-lime-100 hover:to-green-100 border-green-600/60" : "bg-gradient-to-r from-slate-50 to-slate-100 text-slate-500 border-slate-200/60")
                     }, "\uD83E\uDDF9 Clean" + (algaeLevel > 15 ? " (" + Math.round(algaeLevel) + "%)" : ""))
                   ),
 
@@ -43145,7 +43145,7 @@
                         upd('oceanScenario', sc.id);
                       }
                     },
-                    className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-700 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100")
+                    className: "px-3 py-2 text-xs font-bold rounded-lg border transition-all " + (oceanScenario === sc.id ? "bg-blue-700 text-white border-blue-600 shadow-md" : "bg-blue-50 text-blue-700 border-blue-600 hover:bg-blue-100")
                   }, sc.label);
                 })
               ),
@@ -43258,7 +43258,7 @@
                     return React.createElement("button", {
                       key: m,
                       onClick: function () { upd('meshSize', m); },
-                      className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-700 text-white" : "bg-white text-blue-700 border border-blue-200 hover:bg-blue-50")
+                      className: "px-3 py-1 text-xs font-bold rounded-full transition-all " + (meshSize === m ? "bg-blue-700 text-white" : "bg-white text-blue-700 border border-blue-600 hover:bg-blue-50")
                     }, m.charAt(0).toUpperCase() + m.slice(1));
                   }),
                   React.createElement("span", { className: "text-[10px] text-slate-400 ml-1" }, meshSize === 'small' ? '\u26A0\uFE0F High bycatch' : meshSize === 'large' ? '\u2705 Low bycatch' : '')
@@ -43269,7 +43269,7 @@
                   React.createElement("span", { className: "text-xs font-bold text-slate-600" }, "\uD83D\uDCC5 Season"),
                   React.createElement("button", {
                     onClick: function () { upd('isOpenSeason', !isOpenSeason); },
-                    className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-700 text-white" : "bg-red-100 text-red-700 border border-red-200")
+                    className: "px-4 py-1.5 text-xs font-bold rounded-full transition-all " + (isOpenSeason ? "bg-green-700 text-white" : "bg-red-100 text-red-700 border border-red-600")
                   }, isOpenSeason ? "\uD83D\uDFE2 Open Season" : "\uD83D\uDD34 Closed Season")
                 )
               ),
@@ -43390,7 +43390,7 @@
                       key: opt,
                       onClick: function () { if (!answered) answerQuiz(opt); },
                       disabled: answered,
-                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-400") : "bg-white border-indigo-200 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
+                      className: "py-2 px-3 text-xs font-bold rounded-lg border transition-all " + (answered ? (isCorrect ? "bg-green-100 border-green-400 text-green-800" : isChosen ? "bg-red-100 border-red-400 text-red-800" : "bg-slate-50 border-slate-200 text-slate-400") : "bg-white border-indigo-600 text-indigo-700 hover:bg-indigo-50 hover:border-indigo-400")
                     }, opt);
                   })
                 ),

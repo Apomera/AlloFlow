@@ -663,7 +663,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       "data-help-key": "ws_gen_family_select",
       value: selectedFamily,
       onChange: (e) => setSelectedFamily(e.target.value),
-      className: "mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
+      className: "mt-3 w-full p-2 rounded-lg border border-pink-600 bg-white text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, t("word_sounds.select_family", "Select family...")),
     Object.keys(WORD_FAMILY_PRESETS).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, k, " (", WORD_FAMILY_PRESETS[k].length, ")"))
@@ -678,7 +678,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       "data-help-key": "ws_gen_quick_add_input",
       type: "text",
       placeholder: t("word_sounds.add_word", "Add a word..."),
-      className: "flex-1 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none",
+      className: "flex-1 p-2 rounded-lg border border-emerald-600 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none",
       onKeyDown: (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
@@ -714,7 +714,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       value: customText,
       onChange: (e) => setCustomText(e.target.value),
       placeholder: t("word_sounds.type_words", "Type words here (space or comma separated)..."),
-      className: "mt-2 w-full h-20 p-2 rounded-lg border border-emerald-200 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none resize-none"
+      className: "mt-2 w-full h-20 p-2 rounded-lg border border-emerald-600 text-sm focus:ring-2 focus:ring-emerald-400 focus:outline-none resize-none"
     }
   ))), /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl border-2 transition-all ${includeSightWords ? "bg-amber-50 border-amber-500" : "bg-white border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { role: "button", tabIndex: 0, className: "flex items-center gap-3 cursor-pointer", onClick: () => setIncludeSightWords((prev) => !prev) }, /* @__PURE__ */ React.createElement("div", { className: `w-5 h-5 rounded border flex items-center justify-center ${includeSightWords ? "bg-amber-600 border-amber-600" : "border-slate-300"}` }, includeSightWords && /* @__PURE__ */ React.createElement(Check, { size: 14, className: "text-white" })), /* @__PURE__ */ React.createElement(BookOpen, { size: 18, className: "text-amber-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-700" }, t("word_sounds.source_sight_words", "\u{1F4DA} Sight Words"))), includeSightWords && /* @__PURE__ */ React.createElement(
     "select",
@@ -722,7 +722,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       "aria-label": t("common.selection"),
       value: selectedSightWordList,
       onChange: (e) => setSelectedSightWordList(e.target.value),
-      className: "mt-3 w-full p-2 rounded-lg border border-amber-200 bg-white text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
+      className: "mt-3 w-full p-2 rounded-lg border border-amber-600 bg-white text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "Select a sight word list..."),
     Object.keys(SIGHT_WORD_PRESETS).map((k) => /* @__PURE__ */ React.createElement("option", { key: k, value: k }, k, " (", SIGHT_WORD_PRESETS[k].length, " words)"))
@@ -733,7 +733,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       value: aiTopic,
       onChange: (e) => setAiTopic(e.target.value),
       placeholder: "e.g. Space, Ocean...",
-      className: "flex-1 p-2 rounded-lg border border-violet-200 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
+      className: "flex-1 p-2 rounded-lg border border-violet-600 text-sm focus:outline-none focus:ring-2 focus:ring-violet-400"
     }
   ), /* @__PURE__ */ React.createElement(
     "button",
@@ -1223,7 +1223,7 @@ const WordSoundsReviewPanel = ({
           },
           disabled: regeneratingIndex === idx,
           className: `w-10 h-10 flex items-center justify-center rounded-full transition-colors text-base font-bold border-2
-                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin text-orange-700" : "bg-orange-50 border-orange-200 text-orange-500 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 shadow-sm"}`,
+                                                    ${regeneratingIndex === idx ? "bg-orange-200 border-orange-400 animate-spin text-orange-700" : "bg-orange-50 border-orange-600 text-orange-500 hover:bg-orange-100 hover:border-orange-300 hover:scale-110 shadow-sm"}`,
           "data-help-key": "word_sounds_review_regen_word",
           title: t("common.regenerate_this_word"),
           style: { pointerEvents: "auto", cursor: "pointer" }
@@ -1279,7 +1279,7 @@ const WordSoundsReviewPanel = ({
             e.preventDefault();
             return false;
           },
-          className: "w-8 h-8 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors border-2 border-red-200 hover:border-red-400",
+          className: "w-8 h-8 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 text-red-500 hover:text-red-700 transition-colors border-2 border-red-600 hover:border-red-400",
           style: { pointerEvents: "auto", cursor: "pointer", position: "relative", zIndex: 100 },
           "data-help-key": "word_sounds_review_delete_word",
           title: t("common.delete_word")
@@ -1357,7 +1357,7 @@ const WordSoundsReviewPanel = ({
             onGenerateImage && onGenerateImage(idx, word.targetWord || word.word);
           },
           disabled: generatingImageIndex === idx,
-          className: "absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-indigo-200",
+          className: "absolute -top-1 -right-1 w-5 h-5 bg-white rounded-full shadow-lg flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity border border-indigo-600",
           "data-help-key": "word_sounds_review_image_gen",
           title: t("common.regenerate_image")
         },
@@ -1624,7 +1624,7 @@ const WordSoundsReviewPanel = ({
         "aria-label": t("common.refresh"),
         onClick: () => onGenerateImage && onGenerateImage(idx, word.targetWord || word.word),
         disabled: generatingImageIndex === idx,
-        className: `w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all ${word.image ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200 border border-indigo-200" : "bg-indigo-500 text-white hover:bg-indigo-600 shadow-md"}`
+        className: `w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-bold text-sm transition-all ${word.image ? "bg-indigo-100 text-indigo-600 hover:bg-indigo-200 border border-indigo-600" : "bg-indigo-500 text-white hover:bg-indigo-600 shadow-md"}`
       },
       generatingImageIndex === idx ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " Generating...") : word.image ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14 }), " Regenerate Image") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }), " Generate Image")
     ), word.image && /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement(
@@ -1632,7 +1632,7 @@ const WordSoundsReviewPanel = ({
       {
         onClick: () => onRefineImage && onRefineImage(idx, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
         disabled: generatingImageIndex === idx,
-        className: "w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 rounded-lg text-xs font-bold transition-all"
+        className: "w-full flex items-center justify-center gap-1 px-2 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 border border-red-600 rounded-lg text-xs font-bold transition-all"
       },
       /* @__PURE__ */ React.createElement(Ban, { size: 12 }),
       " Remove Text from Image"
