@@ -2010,6 +2010,410 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   ];
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.9: HANDS-ON LAB SIMULATOR — graded diagnostic scenarios
+  // Customer car presents symptoms; user walks through diagnostic decision
+  // points; each choice scored for efficiency (correct + verify-first) vs
+  // wasteful (throwing parts at it) vs harmful (continued driving with CEL
+  // flashing). Final letter grade + feedback per choice.
+  // ─────────────────────────────────────────────────────────
+  var LAB_SCENARIOS = [
+    {
+      id: 'lab-misfire', name: 'Cylinder 3 misfire', icon: '〰️', difficulty: 2,
+      intro: 'Customer drives in a 2014 Toyota Camry. "Check-engine light is FLASHING and the car shakes hard at stoplights. Started this morning."',
+      car: { year: 2014, make: 'Toyota', model: 'Camry', engine: '2.5L I4', mileage: 95000, history: 'Original-owner, dealer-serviced' },
+      symptoms: ['CEL FLASHING (not solid)', 'Rough idle', 'Hesitation at light throttle'],
+      steps: [
+        { id: 's1', prompt: 'Customer is asking if they should drive home. What do you tell them?',
+          choices: [
+            { id: 'a', label: 'Drive carefully, fix when convenient', score: -10,
+              fb: 'WRONG. Flashing CEL = severe misfire. Unburnt fuel is destroying the catalytic converter ($800-2500 if it goes).' },
+            { id: 'b', label: 'Do not drive — flashing CEL means severe misfire damaging the cat. Get a tow if needed.', score: 10,
+              fb: 'CORRECT. Flashing CEL is the only "stop driving" CEL. Cat damage is irreversible and expensive.' },
+            { id: 'c', label: 'Disconnect the battery to clear the light', score: -10,
+              fb: 'WRONG. Clearing the light hides the problem. Codes return; cat damage continues; customer trusts you less.' }
+          ] },
+        { id: 's2', prompt: 'They agree to leave it. First diagnostic move?',
+          choices: [
+            { id: 'a', label: 'OBD-II scan — read codes + freeze-frame data', score: 10,
+              fb: 'CORRECT. Always start at the OBD port. Codes narrow diagnosis; freeze-frame shows conditions when fault occurred.' },
+            { id: 'b', label: 'Pull all 4 spark plugs + inspect', score: 0,
+              fb: 'PARTIAL. Eventually useful, but codes first — they tell you which cylinder. Saves time on a 4-cylinder, but on a V6 you\'d be removing the intake for nothing.' },
+            { id: 'c', label: 'Replace all plugs + all coils as a set', score: -5,
+              fb: 'PARTS-CANNON. Customer pays $400 for guesswork. Diagnose first, repair what\'s broken.' }
+          ] },
+        { id: 's3', prompt: 'Codes returned: P0303 + P0316. What does P0316 tell you?',
+          choices: [
+            { id: 'a', label: 'Cylinder 16 misfire — V12 engine confirmed', score: -10,
+              fb: 'WRONG. P0316 is "misfire detected during engine startup" — a companion code to P03xx misfires.' },
+            { id: 'b', label: 'Misfire detected during engine startup — supports the cylinder 3 (P0303) finding', score: 10,
+              fb: 'CORRECT. P0316 is a startup-misfire flag. Confirms misfire happened during cold start (matches customer report).' },
+            { id: 'c', label: 'Internal engine damage — needs rebuild', score: -10,
+              fb: 'WRONG. P0316 doesn\'t indicate damage — just a startup misfire flag.' }
+          ] },
+        { id: 's4', prompt: 'Best test for whether it\'s coil vs plug vs injector?',
+          choices: [
+            { id: 'a', label: 'Swap coil from cyl 3 to cyl 1. Clear codes. Drive 5 min. See if misfire moves.', score: 10,
+              fb: 'CORRECT. The "swap test" — if misfire follows the coil, coil is bad. If misfire stays on cyl 3, coil is fine.' },
+            { id: 'b', label: 'Replace coil 3 first (most common cause)', score: 5,
+              fb: 'OK but not best. You\'ll fix it 70% of the time without testing — but the swap test is free.' },
+            { id: 'c', label: 'Pull cyl 3 plug only, inspect, decide', score: 5,
+              fb: 'OK. Plug inspection is informative (color, gap, electrode) and quick. But the coil swap test is more diagnostic.' }
+          ] },
+        { id: 's5', prompt: 'Swap test: misfire moved to cyl 1. Now what?',
+          choices: [
+            { id: 'a', label: 'Replace the OLD cyl 3 coil with a new one. Move it back to cyl 3. Verify misfire is gone.', score: 10,
+              fb: 'CORRECT. Coil is confirmed bad. New coil + return both to original positions. ~$40 part, 15 min.' },
+            { id: 'b', label: 'Leave coils swapped — call it good', score: -5,
+              fb: 'NO. Cyl 1 is now misfiring (with the bad coil). Customer drives away and returns next week.' },
+            { id: 'c', label: 'Replace all 4 coils + plugs as a set', score: -5,
+              fb: 'OVERKILL. The other 3 coils are fine. Charging customer for parts they don\'t need erodes trust.' }
+          ] }
+      ],
+      truth: 'Cyl 3 ignition coil failed. Replaced with OEM-spec coil. New plug installed (since you had it out). Verified no misfire codes after 10-min test drive. ~$45 parts + 1 hr labor.'
+    },
+    {
+      id: 'lab-no-start', name: 'No-start, rapid clicking', icon: '🔑', difficulty: 1,
+      intro: 'Customer text: "Won\'t start. Just clicks. -5°F here in Caribou."',
+      car: { year: 2017, make: 'Ford', model: 'Escape', engine: '1.5L EcoBoost I4', mileage: 78000, history: 'Battery never replaced' },
+      symptoms: ['Rapid clicking on key turn', 'Dash lights stay bright when key turns', 'Original 7-year-old battery'],
+      steps: [
+        { id: 's1', prompt: 'First test?',
+          choices: [
+            { id: 'a', label: 'Multimeter on battery posts (engine off)', score: 10,
+              fb: 'CORRECT. <12.0V resting = weak battery. Free, fast, splits the diagnosis.' },
+            { id: 'b', label: 'Replace starter immediately', score: -10,
+              fb: 'PARTS-CANNON. Starter is $300+. 80% of "rapid click" no-starts are battery, especially in Maine cold.' },
+            { id: 'c', label: 'Tow to dealer', score: -5,
+              fb: 'WASTEFUL. This is a 5-minute roadside diagnosis on a customer driveway.' }
+          ] },
+        { id: 's2', prompt: 'Battery reads 11.6V resting. What now?',
+          choices: [
+            { id: 'a', label: 'Try a jump start. If it fires, battery confirmed weak.', score: 10,
+              fb: 'CORRECT. The jump-start test confirms battery vs starter. Free.' },
+            { id: 'b', label: 'Replace battery without jumping', score: 5,
+              fb: 'OK. 11.6V is below minimum cranking. New battery is likely the fix. But the jump test verifies + might save customer the cost if alternator killed it.' },
+            { id: 'c', label: 'Charge battery overnight', score: 5,
+              fb: 'OK if customer can wait. But a 7-year-old battery at 11.6V resting is end-of-life regardless.' }
+          ] },
+        { id: 's3', prompt: 'Jump fires the engine. What\'s your next test?',
+          choices: [
+            { id: 'a', label: 'Multimeter on battery, engine running. Should read 13.8-14.7V.', score: 10,
+              fb: 'CORRECT. Verifies the alternator. If charging is good, battery alone is the fix. If charging is bad, new battery dies in days.' },
+            { id: 'b', label: 'Recommend new battery, send customer on their way', score: 0,
+              fb: 'INCOMPLETE. New battery may die again if alternator is the root cause.' },
+            { id: 'c', label: 'Call it fixed — engine running', score: -5,
+              fb: 'NO. Customer will be back tomorrow. The jump only got it started; the real cause hasn\'t been confirmed.' }
+          ] },
+        { id: 's4', prompt: 'Charging voltage reads 14.2V running. What\'s the diagnosis?',
+          choices: [
+            { id: 'a', label: 'Battery end-of-life. Alternator healthy. Replace battery + clean terminals.', score: 10,
+              fb: 'CORRECT. Single-component fix: ~$150 battery + 30 min labor. Maine cold + age killed the battery, alternator is fine.' },
+            { id: 'b', label: 'Alternator borderline — replace too', score: -5,
+              fb: 'OVERKILL. 14.2V is squarely in spec (13.8-14.7V).' },
+            { id: 'c', label: 'Recommend full electrical-system overhaul', score: -10,
+              fb: 'PARTS-CANNON. Customer leaves shop angry. Diagnose to fix, not to upsell.' }
+          ] }
+      ],
+      truth: 'Original-equipment battery died at year 7. Maine winter cranking load killed it. New AGM battery + cleaned posts; verified 13.8V at idle and 14.4V at 1500 RPM. ~$165 + 30 min.'
+    },
+    {
+      id: 'lab-brakes', name: 'Brake pedal pulses', icon: '🛑', difficulty: 2,
+      intro: 'Customer: "Pedal shakes hard when I brake from highway speed. Started after winter — fine in spring."',
+      car: { year: 2011, make: 'Subaru', model: 'Forester', engine: '2.5L H4', mileage: 142000, history: 'Sat through winter mostly unused' },
+      symptoms: ['Pedal pulses when braking from speed', 'No noise at light braking', 'Steering wheel shimmies during brake'],
+      steps: [
+        { id: 's1', prompt: 'First diagnostic move?',
+          choices: [
+            { id: 'a', label: 'Test drive: light + hard braking from 25 + 60 mph. Note when pulse starts.', score: 10,
+              fb: 'CORRECT. Confirms symptom + narrows to which axle. Speed-dependent pulse usually = warped front rotors.' },
+            { id: 'b', label: 'Replace front pads + rotors immediately', score: 0,
+              fb: 'PROBABLY RIGHT but unverified. Pulse = rotor issue 90% of the time, but verify before quoting.' },
+            { id: 'c', label: 'Quote a $1500 brake job sight-unseen', score: -10,
+              fb: 'NO. Customer has lost trust before you started. Diagnose first.' }
+          ] },
+        { id: 's2', prompt: 'Test drive confirmed: pulse starts at 50+ mph hard braking, steering shimmies. Lift the car. What now?',
+          choices: [
+            { id: 'a', label: 'Visual + dial-indicator check on each rotor for runout. Measure rotor thickness.', score: 10,
+              fb: 'CORRECT. Confirms warp/runout numerically. Thickness measurement tells you if rotors can be machined or must be replaced.' },
+            { id: 'b', label: 'Pull front wheels and call it warped without measuring', score: 5,
+              fb: 'OK. Visual confirmation is informative but a dial indicator gives you proof for the customer + decides resurface vs replace.' },
+            { id: 'c', label: 'Skip inspection, replace rotors as a precaution', score: -5,
+              fb: 'WASTEFUL. Maybe one rotor is fine. Maybe both are below minimum (= replace). Measurement is free.' }
+          ] },
+        { id: 's3', prompt: 'Front rotors: left has 0.020" runout (out of spec); right has 0.005" (in spec). Maine: car sat outside all winter. What\'s the cause?',
+          choices: [
+            { id: 'a', label: 'Rust pitting from sitting in salt + moisture. Rotor surface uneven now.', score: 10,
+              fb: 'CORRECT. Maine reality: cars that sit out develop rust pits on rotor surfaces. Pitting + uneven brake-pad bed-in = pulse.' },
+            { id: 'b', label: 'Rotor warped from heat (long downhills)', score: 5,
+              fb: 'POSSIBLE but unlikely on a Subaru that sat all winter. Heat warp shows up after hard use, not after sitting.' },
+            { id: 'c', label: 'Manufacturer defect', score: -5,
+              fb: 'UNLIKELY at 142K miles. Manufacturing defect would have shown years ago.' }
+          ] },
+        { id: 's4', prompt: 'What\'s the right repair?',
+          choices: [
+            { id: 'a', label: 'Replace both front rotors + pads. Old pads ground onto pitted rotor; new pads on resurfaced or new rotors.', score: 10,
+              fb: 'CORRECT. Pads + rotors as a pair on the front axle. Maine extra: brake-line check (rust seizing bleeders) before disassembly.' },
+            { id: 'b', label: 'Replace warped rotor only', score: -5,
+              fb: 'NO. Rotors must be replaced as a pair on each axle so braking is balanced. Pads should also be replaced.' },
+            { id: 'c', label: 'Resurface rotors only, keep old pads', score: -5,
+              fb: 'NO. The old pads are bedded into the pitted surfaces. New rotor + old pad = squeal + uneven wear.' }
+          ] }
+      ],
+      truth: 'Front rotor pitting from sat-out winter in salt. Replaced both front rotors + pads. Brake-line bleeders held intact (lucky). Test-drive confirmed smooth pedal at all speeds. ~$220 parts + 2 hr labor.'
+    },
+    {
+      id: 'lab-overheat', name: 'Overheating in traffic', icon: '🌡️', difficulty: 3,
+      intro: 'Customer: "Temp gauge climbs to red when stopped at lights, drops when I start moving. Highway is fine."',
+      car: { year: 2008, make: 'Honda', model: 'Civic', engine: '1.8L I4', mileage: 187000, history: 'Coolant changed once 5 years ago' },
+      symptoms: ['Overheats at idle / in traffic', 'Cools down at highway speed', 'Coolant level full', 'No visible leaks'],
+      steps: [
+        { id: 's1', prompt: 'The "overheats at idle, fine at speed" pattern is classic for what?',
+          choices: [
+            { id: 'a', label: 'Cooling fan failure — fan replaces airflow when ram-air at speed isn\'t there', score: 10,
+              fb: 'CORRECT. Highway = ram-air. Idle/traffic = fan must engage. No fan = overheat at low speed.' },
+            { id: 'b', label: 'Head gasket failure', score: -5,
+              fb: 'WRONG pattern. Head gasket would overheat under load. This pattern is fan/airflow.' },
+            { id: 'c', label: 'Low coolant', score: -5,
+              fb: 'WRONG. Customer says coolant level is full. And low coolant overheats anytime, not pattern-specific.' }
+          ] },
+        { id: 's2', prompt: 'Confirm the diagnosis. What\'s the test?',
+          choices: [
+            { id: 'a', label: 'Engine warm + idling. Watch fan. Should engage around 200°F. Turn AC on — fan should engage immediately.', score: 10,
+              fb: 'CORRECT. The two simple tests: temp threshold + AC threshold. If fan never engages, you\'ve confirmed the fault.' },
+            { id: 'b', label: 'Replace fan motor immediately', score: 0,
+              fb: 'PARTS-CANNON. Could be fuse, relay, sensor, or motor. Cheap fixes first.' },
+            { id: 'c', label: 'Pressure-test the cooling system', score: 0,
+              fb: 'NOT WRONG but not the diagnostic for this symptom. Pressure test finds leaks; this isn\'t a leak issue.' }
+          ] },
+        { id: 's3', prompt: 'Fan never engages — even with AC on. What do you check FIRST?',
+          choices: [
+            { id: 'a', label: 'Fan-circuit fuse + relay (cheapest, fastest)', score: 10,
+              fb: 'CORRECT. Always check fuse before relay before motor before sensor. $1 fuse vs $200 fan motor.' },
+            { id: 'b', label: 'Replace the fan motor', score: -5,
+              fb: 'PREMATURE. Motor is the most expensive failure point. Test cheaper components first.' },
+            { id: 'c', label: 'Replace the engine coolant temp sensor', score: 0,
+              fb: 'POSSIBLE but unlikely. Sensor would also throw a P-code. Not first move.' }
+          ] },
+        { id: 's4', prompt: 'Fuse is fine. Relay tests bad (no click when 12V applied to coil). Solution?',
+          choices: [
+            { id: 'a', label: 'Replace fan relay ($15 + 5 min). Verify fan now engages at temp + with AC.', score: 10,
+              fb: 'CORRECT. Cheapest fix in the repair manual. Always verify after the swap.' },
+            { id: 'b', label: 'Recommend new fan motor anyway', score: -5,
+              fb: 'PARTS-CANNON. Relay is the proven fault. Adding parts you don\'t need erodes trust.' },
+            { id: 'c', label: 'Bypass the relay with a hardwire', score: -10,
+              fb: 'NEVER. The relay\'s job is to control fan only when needed. Hardwiring runs fan continuously, drains battery, may damage fan.' }
+          ] }
+      ],
+      truth: 'Cooling fan relay failure. Replaced relay (~$12 + 5 min). Confirmed fan engages at 200°F + immediately when AC is on. Customer waited 30 min, paid $80 (relay + diag).'
+    },
+    {
+      id: 'lab-noise', name: 'Hum at speed', icon: '🎵', difficulty: 2,
+      intro: 'Customer: "Humming sound that gets louder above 40 mph. Worse turning right than left."',
+      car: { year: 2015, make: 'Chevrolet', model: 'Silverado 1500', engine: '5.3L V8', mileage: 165000, history: 'Tow vehicle, used hard' },
+      symptoms: ['Hum starts ~40 mph, louder at higher speed', 'Louder turning RIGHT, quieter turning LEFT', 'Can feel slight vibration through steering'],
+      steps: [
+        { id: 's1', prompt: 'Right-turn-louder + left-turn-quieter tells you what?',
+          choices: [
+            { id: 'a', label: 'LEFT bearing failing — load shifts onto it in a right turn (amplifying hum)', score: 10,
+              fb: 'CORRECT. In a right turn, weight shifts to the LEFT (outside) wheel. Loaded bad bearing = louder hum.' },
+            { id: 'b', label: 'RIGHT bearing failing — symptom side', score: -10,
+              fb: 'WRONG (and a common mistake). The QUIETER side has the bad bearing — turning unloads it.' },
+            { id: 'c', label: 'Could be either — needs more testing', score: 0,
+              fb: 'PARTIAL. The turn-test IS the more-testing. The pattern points to LEFT.' }
+          ] },
+        { id: 's2', prompt: 'What\'s the verification test before quoting?',
+          choices: [
+            { id: 'a', label: 'Lift LEFT front wheel. Spin by hand. Listen + feel for grinding. Grab top + bottom and rock for play.', score: 10,
+              fb: 'CORRECT. Both checks are diagnostic: rumble = bearing wear; play = bearing failure. Free.' },
+            { id: 'b', label: 'Quote a bearing replacement based on the road test alone', score: 5,
+              fb: 'PROBABLY RIGHT but unverified. Verification takes 5 minutes; saves an embarrassing wrong-side replacement.' },
+            { id: 'c', label: 'Replace BOTH front bearings as a precaution', score: -5,
+              fb: 'OVERKILL. The other side is fine. Customer pays double for guesswork.' }
+          ] },
+        { id: 's3', prompt: 'LEFT front bearing has audible grinding + perceptible play. Right is silent + tight. Repair plan?',
+          choices: [
+            { id: 'a', label: 'Replace LEFT front hub assembly only. Torque axle nut + lug nuts to spec. Test drive.', score: 10,
+              fb: 'CORRECT. On 2014+ Silverado, hub assembly is bolt-in (4 bolts behind the rotor). Bearing alone isn\'t serviceable.' },
+            { id: 'b', label: 'Press-in service: replace just the bearing in the existing hub', score: -5,
+              fb: 'WRONG MODEL. This Silverado uses a sealed hub assembly, not press-in. Pressing wastes hours.' },
+            { id: 'c', label: 'Adjust bearing preload', score: -10,
+              fb: 'OBSOLETE. Sealed bearings have no adjustment. Preload-adjustable bearings haven\'t been on common vehicles for 20+ years.' }
+          ] }
+      ],
+      truth: 'Left front wheel bearing failed (truck used hard for towing). Replaced left front hub assembly. Verified hum gone at 60 mph + same volume turning both directions. ~$280 parts + 1.5 hr labor.'
+    },
+    {
+      id: 'lab-leak', name: 'Sweet smell + low coolant', icon: '💧', difficulty: 4,
+      intro: 'Customer: "Sweet smell inside the car when the heat is on. Coolant level keeps dropping. No puddle in driveway."',
+      car: { year: 2010, make: 'Hyundai', model: 'Sonata', engine: '2.4L I4', mileage: 155000, history: 'Heater core never serviced' },
+      symptoms: ['Sweet smell inside cabin (especially heat on)', 'Coolant level drops 1/4 reservoir / week', 'No external coolant puddle', 'Passenger floor mat slightly damp'],
+      steps: [
+        { id: 's1', prompt: 'Sweet smell inside + dropping coolant + no external leak = WHERE is the leak?',
+          choices: [
+            { id: 'a', label: 'Heater core — leaks INSIDE the cabin so no driveway puddle', score: 10,
+              fb: 'CORRECT. Sweet smell = ethylene glycol vaporizing into cabin. Wet passenger carpet confirms it.' },
+            { id: 'b', label: 'Head gasket', score: -5,
+              fb: 'WRONG MECHANISM. Head gasket = milky oil, white smoke from exhaust, or coolant in oil. Not sweet smell in cabin.' },
+            { id: 'c', label: 'External hose leak', score: -5,
+              fb: 'NO. Customer reports no driveway puddle. External leak would leave one.' }
+          ] },
+        { id: 's2', prompt: 'Heater core access on this Sonata is...?',
+          choices: [
+            { id: 'a', label: 'Behind the dashboard. Full dash removal required to reach.', score: 10,
+              fb: 'CORRECT. Heater core lives in the HVAC box behind the dash on virtually every modern car. Major labor.' },
+            { id: 'b', label: 'Under the hood, easy access', score: -5,
+              fb: 'WRONG. The lines TO the heater core go through the firewall but the core itself is inside the dash.' },
+            { id: 'c', label: 'In the engine bay near the firewall', score: -5,
+              fb: 'PARTIAL — the connections are there, but the core is behind the dash.' }
+          ] },
+        { id: 's3', prompt: 'Quote labor: factory says 6.5 hours. Customer asks "is there a cheap workaround?"',
+          choices: [
+            { id: 'a', label: 'Bypass the heater core (loop the inlet + outlet hoses under the hood). NO heat in winter, but stops the leak. Temporary measure only — Maine winter without heat is dangerous.', score: 10,
+              fb: 'CORRECT. Honest answer. The bypass exists, has real downsides, and the customer needs to know both.' },
+            { id: 'b', label: 'No workaround — must do full repair', score: 5,
+              fb: 'TRUE-ISH but incomplete. The bypass is real and sometimes the right call (older car, summer, planning to scrap).' },
+            { id: 'c', label: 'Use stop-leak chemicals', score: -5,
+              fb: 'BAD ADVICE. Stop-leak can clog radiator + heater passages. Common reason a $50 hack turns into a $2000 cooling-system replacement.' }
+          ] },
+        { id: 's4', prompt: 'Customer chooses full repair. What part do you also replace while in there?',
+          choices: [
+            { id: 'a', label: 'New heater core, hoses, and the blower motor (it\'s right there + cheap insurance)', score: 10,
+              fb: 'CORRECT. While you\'re in the dash, components that share access get serviced. "While you\'re in there" doctrine.' },
+            { id: 'b', label: 'Heater core only', score: 5,
+              fb: 'OK. But blower motor + cabin air filter housing are typically serviced same labor.' },
+            { id: 'c', label: 'Replace the entire HVAC assembly', score: -5,
+              fb: 'OVERKILL. The HVAC box itself rarely fails. Replace the components that wear, not the whole assembly.' }
+          ] }
+      ],
+      truth: 'Heater core leak (typical at this mileage on this engine). Full dash-out repair: replaced heater core + hoses + blower motor + cabin filter. 7 hours labor. ~$200 parts + $700 labor. Customer learned: sweet smell + cabin moisture = heater core, not head gasket.'
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.92: VIN DECODER — parse a 17-char VIN, cross-link recall + history
+  // VIN structure (since 1981):
+  //   chars 1-3: World Manufacturer Identifier (country + maker)
+  //   chars 4-8: Vehicle Descriptor Section (model, body, engine)
+  //   char 9:    check digit
+  //   char 10:   model year
+  //   char 11:   plant code
+  //   chars 12-17: serial number
+  // ─────────────────────────────────────────────────────────
+  var VIN_COUNTRY = {
+    '1': 'United States', '4': 'United States', '5': 'United States',
+    '2': 'Canada', '3': 'Mexico',
+    'J': 'Japan', 'K': 'South Korea',
+    'L': 'China', 'V': 'France',
+    'W': 'Germany', 'S': 'United Kingdom',
+    'Y': 'Sweden / Finland', 'Z': 'Italy'
+  };
+  var VIN_MAKER = {
+    '1G': 'General Motors (US)', '1C': 'Chrysler (US)', '1F': 'Ford (US)',
+    '1H': 'Honda (US plant)', '1N': 'Nissan (US plant)',
+    '4T': 'Toyota (US plant)', '5N': 'Hyundai (US plant)', '5Y': 'Mazda (US plant)',
+    '2G': 'GM (Canada)', '2T': 'Toyota (Canada)', '2H': 'Honda (Canada)',
+    'JH': 'Honda (Japan)', 'JT': 'Toyota (Japan)', 'JN': 'Nissan (Japan)',
+    'JF': 'Subaru (Japan)', 'JM': 'Mazda (Japan)',
+    'KM': 'Hyundai (Korea)', 'KN': 'Kia (Korea)',
+    'WB': 'BMW (Germany)', 'WD': 'Mercedes-Benz (Germany)', 'WV': 'Volkswagen (Germany)',
+    'WP': 'Porsche (Germany)', 'WA': 'Audi (Germany)',
+    'YV': 'Volvo (Sweden)', 'ZF': 'Ferrari (Italy)', 'ZA': 'Alfa Romeo (Italy)'
+  };
+  var VIN_YEAR = {
+    'A': 2010, 'B': 2011, 'C': 2012, 'D': 2013, 'E': 2014, 'F': 2015, 'G': 2016,
+    'H': 2017, 'J': 2018, 'K': 2019, 'L': 2020, 'M': 2021, 'N': 2022, 'P': 2023,
+    'R': 2024, 'S': 2025, 'T': 2026, 'V': 2027, 'W': 2028, 'X': 2029, 'Y': 2030,
+    '1': 2001, '2': 2002, '3': 2003, '4': 2004, '5': 2005, '6': 2006, '7': 2007,
+    '8': 2008, '9': 2009
+  };
+
+  function decodeVin(vin) {
+    if (!vin || vin.length !== 17) return { error: 'VIN must be exactly 17 characters.' };
+    var v = vin.toUpperCase().replace(/[IOQ]/g, '');
+    if (v.length !== 17) return { error: 'VINs cannot contain I, O, or Q (avoids confusion with 1, 0, Q). Re-check your VIN.' };
+    var c1 = v[0];
+    var c12 = v.substring(0, 2);
+    var c10 = v[9];
+    var c11 = v[10];
+    var country = VIN_COUNTRY[c1] || 'Unknown country';
+    var maker = VIN_MAKER[c12] || 'Manufacturer not in this lookup (' + c12 + ')';
+    var year = VIN_YEAR[c10] || 'Unknown year (' + c10 + ')';
+    var serial = v.substring(11);
+    return {
+      vin: v, country: country, maker: maker, year: year,
+      plant: 'Plant code: ' + c11 + ' (manufacturer-specific)',
+      serial: 'Serial #: ' + serial,
+      check: 'Check digit: ' + v[8]
+    };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.93: MAINTENANCE SCHEDULE BUILDER — input year/mileage → upcoming items
+  // Generic OEM-agnostic schedule. Vehicle-specific is in owner\'s manual.
+  // ─────────────────────────────────────────────────────────
+  var MAINT_INTERVALS = [
+    { item: 'Engine oil + filter', miles: 5000, months: 6, severity: 'standard',
+      note: 'Synthetic full-flow filter. Maine winter short-trip drivers: closer to 3,000 if you only drive short distances.' },
+    { item: 'Tire rotation', miles: 5000, months: 6, severity: 'standard',
+      note: 'Free at the shop where you bought tires. DIY in 30 min with jack + stands + torque wrench.' },
+    { item: 'Tire pressure check', miles: 0, months: 1, severity: 'standard',
+      note: 'Monthly. Cold pressure drops ~1 psi per 10°F drop.' },
+    { item: 'Cabin air filter', miles: 15000, months: 12, severity: 'low',
+      note: 'DIY $15 + 5 min. Replace more often if you drive dusty roads or have pollen allergies.' },
+    { item: 'Engine air filter', miles: 30000, months: 24, severity: 'low',
+      note: 'DIY $20 + 5 min.' },
+    { item: 'Brake fluid flush', miles: 30000, months: 36, severity: 'standard',
+      note: 'Maine humidity: every 2 years not 3. Brake fluid absorbs water + corrodes ABS.' },
+    { item: 'Transmission fluid (drain + fill)', miles: 60000, months: 60, severity: 'standard',
+      note: 'Drain-and-fill is safer than machine-flush on high-mileage cars (>100K with no service history).' },
+    { item: 'Coolant flush', miles: 60000, months: 60, severity: 'standard',
+      note: 'Match OEM coolant chemistry (HOAT/OAT/IAT). Pre-mixed 50/50 is foolproof.' },
+    { item: 'Spark plugs (iridium)', miles: 100000, months: 0, severity: 'standard',
+      note: 'Verify gap on new plugs. Anti-seize on threads. Torque to spec.' },
+    { item: 'Spark plugs (copper)', miles: 30000, months: 0, severity: 'standard',
+      note: 'Older cars only. Modern vehicles use iridium.' },
+    { item: 'Timing belt (if equipped)', miles: 100000, months: 0, severity: 'critical',
+      note: 'CHECK if your engine has a belt or chain. Belt: replace per OEM. Chain: usually lifetime.' },
+    { item: 'Battery test', miles: 0, months: 12, severity: 'standard',
+      note: 'Annually in October — Maine cold doubles the load. Free at parts stores.' },
+    { item: 'Wiper blades', miles: 0, months: 6, severity: 'low',
+      note: 'Twice a year (spring + fall). Maine: winter blades October to April.' },
+    { item: 'Maine state inspection', miles: 0, months: 12, severity: 'critical',
+      note: 'Required annually ($12.50). 60 days to repair after a fail.' },
+    { item: 'Serpentine belt', miles: 60000, months: 60, severity: 'standard',
+      note: 'Inspect for cracks every oil change. Replace at OEM interval or if visibly aged.' },
+    { item: 'Fuel filter (in-tank)', miles: 100000, months: 0, severity: 'low',
+      note: 'Modern in-tank filters often lifetime. Older external filters every 30K-60K.' },
+    { item: 'Wheel alignment', miles: 0, months: 12, severity: 'standard',
+      note: 'After hitting a curb, suspension work, or annually as preventive. Check tire wear pattern.' }
+  ];
+
+  function buildMaintSchedule(currentMiles, monthsSinceLastService, vehicleYear) {
+    var currentYear = new Date().getFullYear();
+    var vehicleAge = vehicleYear ? (currentYear - vehicleYear) : 0;
+    var upcoming = MAINT_INTERVALS.map(function(m) {
+      var milesUntil = null;
+      if (m.miles > 0) {
+        var nextMileMark = Math.ceil(currentMiles / m.miles) * m.miles;
+        if (nextMileMark === currentMiles) nextMileMark += m.miles;
+        milesUntil = nextMileMark - currentMiles;
+      }
+      var monthsUntil = null;
+      if (m.months > 0) {
+        monthsUntil = Math.max(0, m.months - monthsSinceLastService);
+      }
+      var status;
+      if (m.miles > 0 && currentMiles >= m.miles && currentMiles % m.miles < (m.miles * 0.1)) status = 'overdue-miles';
+      else if (m.months > 0 && monthsSinceLastService >= m.months) status = 'overdue-time';
+      else if (milesUntil !== null && milesUntil < 1500) status = 'soon-miles';
+      else if (monthsUntil !== null && monthsUntil < 2) status = 'soon-time';
+      else status = 'ok';
+      return Object.assign({}, m, { milesUntil: milesUntil, monthsUntil: monthsUntil, status: status, vehicleAge: vehicleAge });
+    });
+    return upcoming;
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 10: KNOWLEDGE QUIZ — 10 questions covering safety, diagnostic, repair
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -2112,7 +2516,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q25', icon: '🧰',
       stem: 'You\'re a Maine high school junior thinking about an auto-tech career. What\'s the SMARTEST entry?',
       choices: ['Buy a $30K Snap-on tool box on credit before you start', 'Apply to the half-day CTE auto-tech program at Region 9, PATHS, Mid-Coast, or your local school. Earn ASE Student Certifications by graduation.', 'Open your own shop without experience', 'Skip school'],
-      correct: 1, why: 'Maine has strong half-day CTE programs that get you to ASE entry-level by graduation. Tool buying comes after you\'re working — start with the basics from a starter-kit allowance, not $30K of debt before earning a paycheck.' }
+      correct: 1, why: 'Maine has strong half-day CTE programs that get you to ASE entry-level by graduation. Tool buying comes after you\'re working — start with the basics from a starter-kit allowance, not $30K of debt before earning a paycheck.' },
+    { id: 'q26', icon: '🆔',
+      stem: 'Which character in a 17-character VIN tells you the model year?',
+      choices: ['Character 1', 'Character 10', 'Character 17', 'There\'s no year in the VIN'],
+      correct: 1, why: 'VIN char 10 = model year (using a letter+number cycle). Char 1 = country of origin; chars 1-3 = manufacturer; char 9 = checksum; chars 12-17 = serial.' },
+    { id: 'q27', icon: '🌳',
+      stem: 'In a graded diagnostic scenario, the customer reports a flashing CEL + rough idle. Your highest-scoring first move is...',
+      choices: ['Replace all plugs and coils as a precaution', 'Tell them not to drive (cat-damage-in-progress) and pull codes when they leave it', 'Drive the car to "feel" the problem', 'Disconnect the battery to clear the light'],
+      correct: 1, why: 'Flashing CEL = severe misfire actively damaging the catalytic converter. Stop driving + diagnose with codes is the highest-scoring path. Throwing parts or driving to "feel it" loses points.' },
+    { id: 'q28', icon: '📅',
+      stem: 'Your Maine winter brake-fluid flush interval should be...',
+      choices: ['Every 10 years', 'Every 2-3 years (Maine humidity accelerates moisture absorption)', 'Never', 'Every oil change'],
+      correct: 1, why: 'Brake fluid is hygroscopic — it absorbs atmospheric moisture. Maine humidity shortens the safe interval to 2-3 years (vs 3-5 in dryer climates). Old fluid lowers boiling point + corrodes ABS.' },
+    { id: 'q29', icon: '🌐',
+      stem: 'You\'re looking up a recall on a friend\'s VIN. Where do you go and what does it cost?',
+      choices: ['CarFax — paid', 'NHTSA recalls (nhtsa.gov/recalls) — free; recall repair is also FREE at any dealer', 'Local mechanic — paid', 'Vehicle manual — paid'],
+      correct: 1, why: 'NHTSA hosts the official safety-recall database. Free to search by VIN. Recall repair is FREE at any dealer regardless of where you bought the car.' },
+    { id: 'q30', icon: '🔧',
+      stem: 'You\'re running a diagnostic in the Lab Simulator. A customer\'s no-start has rapid clicking + bright dash lights. What\'s the highest-scoring first test?',
+      choices: ['Replace the starter immediately', 'Multimeter on battery posts (engine off) — costs nothing, splits the diagnosis instantly', 'Tow to dealer', 'Jump start it without testing first'],
+      correct: 1, why: 'Multimeter test is free + diagnostic. <12.0V = battery is the bottleneck. Throwing parts (starter, alternator) before testing is "parts cannon" thinking — and a low score in any graded scenario.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -2226,8 +2650,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       function renderMenu() {
         var modules = [
           { id: 'firstcar', icon: '🚗', label: 'First car? Start here', desc: 'Just bought your first car. 30-day week-by-week plan: paperwork → fluids → undercarriage → inspection prep.' },
+          { id: 'vin', icon: '🆔', label: 'VIN decoder', desc: 'Decode your 17-character VIN — country, manufacturer, year, plant. Free recall + history lookup links.' },
+          { id: 'maint', icon: '📅', label: 'Maintenance schedule', desc: 'Personalized schedule from your odometer + last-service date. Shows what\'s overdue, soon, and OK.' },
           { id: 'diagnose', icon: '🔍', label: 'Diagnose', desc: 'OBD-II codes, listening cues, fluid analysis, visual inspection.' },
           { id: 'tree', icon: '🌳', label: 'Decision tree', desc: 'Symptom → likely cause. 6 interactive flowcharts (no-start, misfire, brakes, overheating, charging, steering).' },
+          { id: 'lab', icon: '🧪', label: 'Hands-on lab simulator', desc: '6 graded diagnostic scenarios. Customer car presents symptoms; you walk through decision points; get a letter grade + per-choice feedback.' },
           { id: 'repair', icon: '🔧', label: 'Repair scenarios', desc: '12 step-by-step jobs, from oil change + battery to timing belt.' },
           { id: 'tools', icon: '🧰', label: 'Tool selection', desc: 'Pick the right tool for the job. Builds your mental toolkit.' },
           { id: 'safety', icon: '🛡️', label: 'Safety modules', desc: 'Jack stands, electrical, refrigerant, hot exhaust, springs, fluid disposal.' },
@@ -2240,7 +2667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ essential auto terms. Search and filter by category. So you can read any repair article.' },
           { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
           { id: 'shopbiz', icon: '🏪', label: 'Shop business basics', desc: 'Mobile mechanic startup, insurance, tool trucks, pricing, customer acquisition. For future shop owners.' },
-          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '25 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business.' },
+          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '30 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab simulator.' },
           { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
         ];
         var badgeCount = Object.keys(badges).length;
@@ -4017,11 +4444,339 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // LAB SIMULATOR view — graded diagnostic scenarios
+      // ─────────────────────────────────────────
+      function renderLab() {
+        var labId = d.labId || null;
+        var lab = labId ? LAB_SCENARIOS.find(function(s) { return s.id === labId; }) : null;
+        var stepIdx = d.labStep || 0;
+        var answers = d.labAnswers || {};
+
+        function pickLab(id) {
+          updMulti({ labId: id, labStep: 0, labAnswers: {} });
+          arAnnounce('Starting scenario: ' + LAB_SCENARIOS.find(function(s) { return s.id === id; }).name);
+        }
+        function reset() {
+          updMulti({ labId: null, labStep: 0, labAnswers: {} });
+        }
+        function selectChoice(stepId, choice) {
+          var nv = Object.assign({}, answers); nv[stepId] = choice.id;
+          var newStep = stepIdx + 1;
+          updMulti({ labAnswers: nv, labStep: newStep });
+          arAnnounce('Choice locked. ' + (choice.score >= 10 ? 'Excellent move.' : choice.score >= 5 ? 'Acceptable move.' : 'Costly move.'));
+        }
+
+        var diffStars = function(d2) { return '★'.repeat(d2) + '☆'.repeat(4 - d2); };
+
+        if (!lab) {
+          var labsCompleted = (d.labsCompleted || []).length;
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('🧪 Hands-on lab simulator'),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🧪 Diagnostic decision-making, scored'),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'A "customer car" arrives with symptoms. You walk through diagnostic decision points. Each choice is scored on diagnostic efficiency: ',
+                h('strong', { style: { color: T.good } }, '+10 = best move'), ', ',
+                h('strong', { style: { color: T.accentHi } }, '+5 = OK'), ', ',
+                h('strong', { style: { color: T.bad } }, '−5 to −10 = parts-cannon or harmful'), '. Final letter grade + per-choice feedback.'),
+              h('div', { style: { fontSize: 12, color: T.muted } },
+                h('strong', { style: { color: T.accentHi } }, 'Scenarios completed: '), labsCompleted + ' / ' + LAB_SCENARIOS.length)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+              LAB_SCENARIOS.map(function(s) {
+                var done = (d.labsCompleted || []).indexOf(s.id) >= 0;
+                return h('button', { key: s.id, 'data-ar-focusable': true,
+                  'aria-label': 'Start scenario: ' + s.name + (done ? ' (completed)' : ''),
+                  onClick: function() { pickLab(s.id); },
+                  style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + (done ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
+                  h('div', { style: { fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 4 } }, s.name, done && ' ✓'),
+                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, ' decision points'),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, s.intro)
+                );
+              })
+            ),
+            disclaimerFooter()
+          );
+        }
+
+        var totalSteps = lab.steps.length;
+        // Quiz complete screen
+        if (stepIdx >= totalSteps) {
+          var totalScore = 0;
+          var maxScore = 0;
+          lab.steps.forEach(function(step) {
+            var picked = answers[step.id];
+            var maxStep = Math.max.apply(Math, step.choices.map(function(c) { return c.score; }));
+            maxScore += maxStep;
+            if (picked) {
+              var pickedChoice = step.choices.find(function(c) { return c.id === picked; });
+              if (pickedChoice) totalScore += pickedChoice.score;
+            }
+          });
+          var pct = Math.round((totalScore / maxScore) * 100);
+          var grade = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
+          var gradeColor = pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad;
+          var completed = d.labsCompleted || [];
+          if (completed.indexOf(lab.id) === -1 && pct >= 70) {
+            upd('labsCompleted', completed.concat([lab.id]));
+            awardBadge('lab-' + lab.id, 'Solved: ' + lab.name);
+            if (completed.length + 1 === LAB_SCENARIOS.length) {
+              awardBadge('lab-master', 'Lab Master (all scenarios)');
+            }
+          }
+
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, '← Lab list'),
+              h('span', { style: { fontSize: 24 } }, lab.icon),
+              h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, lab.name + ' — Results')
+            ),
+            h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + gradeColor, marginBottom: 14, textAlign: 'center' } },
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, 'Final score'),
+              h('div', { style: { fontSize: 56, fontWeight: 900, color: gradeColor, lineHeight: 1, marginBottom: 6 } }, grade),
+              h('div', { style: { fontSize: 18, color: T.text, fontWeight: 700 } }, totalScore + ' / ' + maxScore + ' (' + pct + '%)'),
+              h('p', { style: { margin: '10px 0 0', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+                pct >= 90 ? '🏆 Master diagnostician. Test-first, verify-first, repair-only-what-broke.' :
+                pct >= 80 ? '🎓 Solid technician thinking. Minor optimizations in your decision path.' :
+                pct >= 70 ? '🚧 Apprentice level. Re-read the per-choice feedback below.' :
+                pct >= 60 ? '🛠️ Hands need work. Practice the Decision Tree module before retrying.' :
+                '📚 Back to the books. Cost-cutters and parts-cannons leave customers angry.')
+            ),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🔍 Step-by-step feedback'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+              lab.steps.map(function(step, i) {
+                var picked = answers[step.id];
+                var pickedChoice = step.choices.find(function(c) { return c.id === picked; });
+                var bestChoice = step.choices.reduce(function(best, c) { return c.score > best.score ? c : best; }, step.choices[0]);
+                var scoreColor = pickedChoice ? (pickedChoice.score >= 10 ? T.good : pickedChoice.score >= 5 ? T.accentHi : T.bad) : T.muted;
+                return h('div', { key: step.id, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + scoreColor } },
+                  h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 4 } }, 'Step ' + (i + 1)),
+                  h('div', { style: { fontSize: 13, color: T.text, fontWeight: 700, marginBottom: 8 } }, step.prompt),
+                  pickedChoice && h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, marginBottom: 6 } },
+                    h('div', { style: { fontSize: 11, color: scoreColor, fontWeight: 700, marginBottom: 4 } },
+                      'Your choice (' + (pickedChoice.score >= 0 ? '+' : '') + pickedChoice.score + ' pts): '),
+                    h('div', { style: { fontSize: 12, color: T.text, marginBottom: 4 } }, pickedChoice.label),
+                    h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, pickedChoice.fb)
+                  ),
+                  pickedChoice && pickedChoice.id !== bestChoice.id && h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.good } },
+                    h('div', { style: { fontSize: 11, color: T.good, fontWeight: 700, marginBottom: 4 } }, 'Best choice (+' + bestChoice.score + ' pts):'),
+                    h('div', { style: { fontSize: 12, color: T.text } }, bestChoice.label)
+                  )
+                );
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
+              h('strong', { style: { color: T.accentHi } }, '✅ What was actually wrong: '),
+              h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.55 } }, lab.truth)
+            ),
+            h('div', { style: { display: 'flex', gap: 8 } },
+              h('button', { 'data-ar-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, '🔁 Retry scenario'),
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, '🧪 Pick another')
+            ),
+            disclaimerFooter()
+          );
+        }
+
+        var step = lab.steps[stepIdx];
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
+            h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, '← Quit scenario'),
+            h('span', { style: { fontSize: 24 } }, lab.icon),
+            h('h2', { style: { margin: 0, fontSize: 17, color: T.text, flex: 1 } }, lab.name),
+            h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, 'Step ' + (stepIdx + 1) + ' / ' + totalSteps)
+          ),
+          stepIdx === 0 && h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🚗 Customer car'),
+            h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+              h('div', null, h('strong', { style: { color: T.text } }, 'Vehicle: '), lab.car.year + ' ' + lab.car.make + ' ' + lab.car.model + ' · ' + lab.car.engine),
+              h('div', null, h('strong', { style: { color: T.text } }, 'Mileage: '), lab.car.mileage.toLocaleString()),
+              h('div', null, h('strong', { style: { color: T.text } }, 'History: '), lab.car.history),
+              h('div', { style: { marginTop: 6 } }, h('strong', { style: { color: T.text } }, 'Symptoms: ')),
+              h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                lab.symptoms.map(function(sy, i) { return h('li', { key: i, style: { color: T.text } }, sy); })
+              )
+            )
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 12px', fontSize: 15, color: T.text } }, step.prompt)
+          ),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            step.choices.map(function(c) {
+              return h('button', { key: c.id, 'data-ar-focusable': true,
+                'aria-label': c.label,
+                onClick: function() { selectChoice(step.id, c); },
+                style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer', fontSize: 13, lineHeight: 1.5 } },
+                c.label
+              );
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // VIN DECODER view
+      // ─────────────────────────────────────────
+      function renderVin() {
+        var input = d.vinInput || '';
+        var decoded = input.length === 17 ? decodeVin(input) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🆔 VIN decoder'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🆔 17-character VIN decoder'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Enter your VIN (driver-side dash, door jamb, title, registration, or insurance card) to decode country, manufacturer, model year, and link to free recall + history lookups.'),
+            h('input', { type: 'text', 'data-ar-focusable': true,
+              'aria-label': 'VIN input (17 characters)',
+              maxLength: 17,
+              placeholder: 'e.g. 1HGCM82633A123456',
+              value: input,
+              onChange: function(e) { upd('vinInput', e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '')); },
+              style: { width: '100%', padding: 12, borderRadius: 8, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 16, fontFamily: 'monospace', letterSpacing: 1, marginBottom: 6, boxSizing: 'border-box' } }),
+            h('div', { style: { fontSize: 11, color: T.dim } }, input.length + ' / 17 characters')
+          ),
+          decoded && decoded.error && h('div', { style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid ' + T.bad, color: '#fed7aa', fontSize: 13 } },
+            '⚠️ ' + decoded.error),
+          decoded && !decoded.error && h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi, fontFamily: 'monospace' } }, '🔍 ' + decoded.vin),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                [
+                  { label: '🌍 Country of origin', val: decoded.country },
+                  { label: '🏭 Manufacturer', val: decoded.maker },
+                  { label: '📅 Model year', val: String(decoded.year) },
+                  { label: '🏗️ Plant', val: decoded.plant },
+                  { label: '🔢 Serial', val: decoded.serial },
+                  { label: '✅ Check', val: decoded.check }
+                ].map(function(r) {
+                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
+                    h('div', { style: { fontSize: 13, color: T.text, fontWeight: 600, lineHeight: 1.4 } }, r.val)
+                  );
+                })
+              )
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, '🔗 Free + paid lookups for this VIN'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                h('a', { href: 'https://www.nhtsa.gov/recalls?vin=' + decoded.vin, target: '_blank', rel: 'noopener',
+                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, color: T.good, textDecoration: 'none', fontSize: 13 } },
+                  '🛑 NHTSA Recalls (free) → nhtsa.gov/recalls?vin=' + decoded.vin),
+                h('a', { href: 'https://vpic.nhtsa.dot.gov/decoder/Decoder?vin=' + decoded.vin, target: '_blank', rel: 'noopener',
+                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, color: T.good, textDecoration: 'none', fontSize: 13 } },
+                  '📋 NHTSA full vPIC decoder (free) → vpic.nhtsa.dot.gov'),
+                h('a', { href: 'https://www.carfax.com/vehicle/' + decoded.vin, target: '_blank', rel: 'noopener',
+                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, color: T.warn, textDecoration: 'none', fontSize: 13 } },
+                  '📋 CarFax history report (paid, ~$40) → carfax.com'),
+                h('a', { href: 'https://www.iihs.org/ratings/vehicle/' + decoded.maker.split(' ')[0].toLowerCase(), target: '_blank', rel: 'noopener',
+                  style: { display: 'block', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accentHi, color: T.accentHi, textDecoration: 'none', fontSize: 13 } },
+                  '🛡️ IIHS crash-test ratings (free) → iihs.org')
+              )
+            )
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, '🔒 Privacy: '),
+            'This decoder runs locally — your VIN is not sent anywhere. The lookup links open in a new tab. NHTSA + CarFax handle their own privacy.'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // MAINTENANCE SCHEDULE view
+      // ─────────────────────────────────────────
+      function renderMaint() {
+        var miles = parseInt(d.maintMiles || 0, 10) || 0;
+        var monthsSince = parseInt(d.maintMonths || 6, 10) || 6;
+        var year = parseInt(d.maintYear || 0, 10) || 0;
+        var schedule = miles > 0 ? buildMaintSchedule(miles, monthsSince, year) : null;
+        var statusColor = function(s) {
+          if (s === 'overdue-miles' || s === 'overdue-time') return T.bad;
+          if (s === 'soon-miles' || s === 'soon-time') return T.warn;
+          return T.good;
+        };
+        var statusLabel = function(s) {
+          if (s === 'overdue-miles') return '🔴 OVERDUE (mileage)';
+          if (s === 'overdue-time') return '🔴 OVERDUE (time)';
+          if (s === 'soon-miles') return '🟡 Soon (mileage)';
+          if (s === 'soon-time') return '🟡 Soon (time)';
+          return '🟢 OK';
+        };
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📅 Maintenance schedule'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📅 Personalized maintenance schedule'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Generic OEM-agnostic intervals. Always cross-reference your owner\'s manual for vehicle-specific specs. Maine winter: shorten oil + brake-fluid intervals 20%.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 10 } },
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '🚗 Current odometer'),
+                h('input', { type: 'number', 'data-ar-focusable': true,
+                  'aria-label': 'Current odometer mileage',
+                  min: 0, max: 500000, step: 1000,
+                  placeholder: '85000',
+                  value: miles || '',
+                  onChange: function(e) { upd('maintMiles', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '📅 Months since last service'),
+                h('input', { type: 'number', 'data-ar-focusable': true,
+                  'aria-label': 'Months since last service',
+                  min: 0, max: 60, step: 1,
+                  placeholder: '6',
+                  value: monthsSince,
+                  onChange: function(e) { upd('maintMonths', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '🏷️ Vehicle year (optional)'),
+                h('input', { type: 'number', 'data-ar-focusable': true,
+                  'aria-label': 'Vehicle model year',
+                  min: 1990, max: 2030, step: 1,
+                  placeholder: '2015',
+                  value: year || '',
+                  onChange: function(e) { upd('maintYear', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+              )
+            )
+          ),
+          schedule && h('div', null,
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🔧 Items to plan'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              schedule.sort(function(a, b) {
+                var order = { 'overdue-miles': 0, 'overdue-time': 1, 'soon-miles': 2, 'soon-time': 3, 'ok': 4 };
+                return order[a.status] - order[b.status];
+              }).map(function(m, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + statusColor(m.status) } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                    h('strong', { style: { fontSize: 13, color: T.text, flex: 1 } }, m.item),
+                    h('span', { style: { padding: '2px 8px', borderRadius: 12, background: statusColor(m.status), color: '#0f172a', fontSize: 10, fontWeight: 800 } }, statusLabel(m.status))
+                  ),
+                  h('div', { style: { fontSize: 11, color: T.muted, marginBottom: 4 } },
+                    m.miles > 0 ? ('Every ' + m.miles.toLocaleString() + ' miles') : '',
+                    m.miles > 0 && m.months > 0 ? ' or ' : '',
+                    m.months > 0 ? ('every ' + m.months + ' months') : '',
+                    m.milesUntil !== null && m.milesUntil > 0 ? (' · ' + m.milesUntil.toLocaleString() + ' miles to next') : ''),
+                  h('div', { style: { fontSize: 11, color: T.dim, lineHeight: 1.5 } }, m.note)
+                );
+              })
+            )
+          ),
+          !schedule && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
+            'Enter your odometer mileage above to see what\'s due soon.'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
         case 'diagnose':   return renderDiagnose();
         case 'tree':       return renderTree();
+        case 'lab':        return renderLab();
         case 'repair':     return renderRepair();
         case 'tools':      return renderTools();
         case 'safety':     return renderSafety();
@@ -4034,6 +4789,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'roadside':   return renderRoadside();
         case 'shopbiz':    return renderShopBiz();
         case 'firstcar':   return renderFirstCar();
+        case 'vin':        return renderVin();
+        case 'maint':      return renderMaint();
         case 'career':     return renderCareer();
         case 'quiz':       return renderQuiz();
         case 'resources':  return renderResources();
