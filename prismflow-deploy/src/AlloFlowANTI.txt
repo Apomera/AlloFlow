@@ -5154,6 +5154,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_typingpractice.js',
         'stem_lab/stem_tool_llm_literacy.js',
         'stem_lab/stem_tool_assessmentliteracy.js',
+        'stem_lab/stem_tool_autorepair.js',
         'sel_hub/sel_safety_layer.js',
         'sel_hub/sel_tool_advocacy.js',
         'sel_hub/sel_tool_restorativecircle.js',
