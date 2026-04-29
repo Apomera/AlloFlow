@@ -5014,69 +5014,70 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/view_analysis_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/view_quiz_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5087,7 +5088,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@cf8f926/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7531930/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -9389,6 +9390,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pendingPdfFile, setPendingPdfFile] = useState(null);
   const [pdfFixResult, setPdfFixResult] = useState(null);
   const [pdfFixLoading, setPdfFixLoading] = useState(false);
+  // Three-way "save before closing?" dialog. Fires only when there is work to lose.
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const pdfFixModeRef = useRef('');
   const [pdfFixStep, setPdfFixStep] = useState('');
   useEffect(() => {
@@ -9678,6 +9681,24 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     setIsExtracting(false);
     setGenerationStep('');
     setPdfAuditResult(null); // close modal; result survives in pdfFixResult
+  };
+  // Guarded close: if there's audit work that hasn't been saved as a Project,
+  // prompt with Save / Discard / Cancel before letting the modal close.
+  // Empty-modal case (just-uploaded, mid-loading, no result yet) bypasses
+  // the dialog so users don't see friction when there's nothing to lose.
+  const safeCloseAudit = () => {
+    const hasWork = pdfFixResult && (pdfFixResult.accessibleHtml || pdfFixResult.afterScore != null);
+    if (!hasWork) { _closePdfAuditModal(); return; }
+    setShowCloseConfirm(true);
+  };
+  const _saveAndCloseAudit = () => {
+    try { saveProjectToFile(false); } catch (_) { /* toast handled inside saveProjectToFile */ }
+    setShowCloseConfirm(false);
+    _closePdfAuditModal();
+  };
+  const _discardAndCloseAudit = () => {
+    setShowCloseConfirm(false);
+    _closePdfAuditModal();
   };
   const startNewPdfAudit = () => {
     setPdfAuditResult(null);
@@ -14751,6 +14772,35 @@ Return ONLY valid JSON:
       } catch (error) {
           warnLog(`Error setting group ${field}:`, error);
       }
+  };
+  const handleStartLiveSession = async () => {
+      if (!activeSessionCode) return;
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      try { await updateDoc(sessionRef, { "quizState.isActive": true, "quizState.phase": "idle" }); } catch(e) { warnLog('Firestore sync failed:', e); }
+      addToast(t('quiz.live_activated'), "success");
+  };
+  const handleToggleInteractive = async () => {
+      if (!activeSessionCode) return;
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync failed:', e); }
+      addToast(sessionData?.forceStatic ? t('session.interactive_unlocked') : t('session.forced_static'), "success");
+  };
+  const handleEndLiveSession = async () => {
+      if (!activeSessionCode) return;
+      setConfirmDialog({ message: t('session.end_confirm_dialog') || 'End this session?', onConfirm: async () => {
+          setActiveSessionCode(null);
+          addToast(t('session.end_success'), "success");
+          try {
+              const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+              await updateDoc(sessionRef, {
+                  isActive: false,
+                  quizState: { isActive: false },
+                  status: 'ended',
+              });
+          } catch (e) {
+              warnLog("Firestore soft-end failed (Canvas sandbox):", e.message);
+          }
+      } });
   };
   const getGroupDifferentiationContext = () => {
       if (isTeacherMode && rosterKey?.groups && Object.keys(rosterKey.groups).length > 0) {
@@ -30733,660 +30783,39 @@ Return ONLY valid JSON:
                     handleAddToMapList, handleRemoveFromMapList,
                     renderInteractiveMap, renderOutlineContent
                 })}
-                {activeView === 'quiz' && (
-                  <div className="space-y-6">
-                    <div className="bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3">
-                        <p className="text-sm text-teal-800 flex-grow"><strong>UDL Goal:</strong> Providing options for action and expression. Frequent formative assessments help track progress and adjust instruction.</p>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            {isTeacherMode && activeSessionCode && !sessionData?.quizState?.isActive && (
-                                <>
-                                <button
-                                    aria-label={t('common.connect')}
-                                    onClick={async () => {
-                                        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                                        try { await updateDoc(sessionRef, { "quizState.isActive": true, "quizState.phase": "idle" }); } catch(e) { warnLog('Firestore sync failed:', e); }
-                                        addToast(t('quiz.live_activated'), "success");
-                                    }}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 animate-pulse ring-2 ring-indigo-200"
-                                    title={t('quiz.launch_live_tooltip')}
-                                >
-                                    <Wifi size={14} /> {t('quiz.launch_live_btn')}
-                                </button>
-                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-50 border border-orange-100 rounded-full animate-in fade-in duration-300">
-                                    <Users size={12} className="text-orange-400"/>
-                                    <span className="text-xs font-black text-orange-700">
-                                        {Object.keys(sessionData?.roster || {}).length} {t('quiz.lobby_waiting') || "Ready"}
-                                    </span>
-                                </div>
-                                <button
-                                    aria-label={t('common.locked')}
-                                    onClick={async () => {
-                                        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                                        try { await updateDoc(sessionRef, { "forceStatic": !sessionData?.forceStatic }); } catch(e) { warnLog('Firestore sync failed:', e); }
-                                        addToast(sessionData?.forceStatic ? t('session.interactive_unlocked') : t('session.forced_static'), "success");
-                                    }}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${sessionData?.forceStatic ? 'bg-slate-800 text-white hover:bg-slate-700' : 'bg-white text-slate-700 border border-slate-400 hover:bg-slate-50'}`}
-                                    title={t('session.toggle_interactive_title')}
-                                >
-                                    {sessionData?.forceStatic ? <Lock size={12}/> : <Unlock size={12}/>}
-                                    {sessionData?.forceStatic ? t('session.static_only') : t('session.interactive')}
-                                </button>
-                                </>
-                            )}
-                            <button
-                                aria-label={t('common.confirm')}
-                                onClick={handleToggleIsPresentationMode}
-                                disabled={isReviewGame || (isTeacherMode && sessionData?.quizState?.isActive)}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPresentationMode ? 'bg-indigo-600 text-white hover:bg-indigo-700 ring-2 ring-indigo-200' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`}
-                                title={t('quiz.presentation')}
-                            >
-                                {isPresentationMode ? <CheckCircle size={14}/> : <MonitorPlay size={14}/>}
-                                {isPresentationMode ? t('common.close') : t('quiz.presentation')}
-                            </button>
-                            <button
-                                onClick={handleToggleIsReviewGame}
-                                disabled={isPresentationMode}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isReviewGame ? 'bg-yellow-500 text-indigo-900 hover:bg-yellow-600 ring-2 ring-yellow-200' : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'}`}
-                                title={t('quiz.review_game')}
-                                aria-label={t('quiz.review_game')}
-                            >
-                            {isReviewGame ? <XCircle size={14}/> : <Gamepad2 size={14}/>}
-                                {isReviewGame ? t('common.close') : t('quiz.review_game')}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (escapeRoomState.isActive) {
-                                        if (isTeacherMode && activeSessionCode) {
-                                            endCollaborativeEscapeRoom();
-                                        } else {
-                                            resetEscapeRoom();
-                                        }
-                                    } else {
-                                        if (isTeacherMode && activeSessionCode) {
-                                            launchCollaborativeEscapeRoom();
-                                        } else {
-                                            openEscapeRoomSettings();
-                                        }
-                                    }
-                                }}
-                                disabled={isPresentationMode || isReviewGame}
-                                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50'}`}
-                                title={isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title')}
-                                aria-label={t('escape_room.title')}
-                            >
-                                {escapeRoomState.isActive ? <XCircle size={14}/> : <DoorOpen size={14}/>}
-                                {escapeRoomState.isActive
-                                    ? t('common.close')
-                                    : (isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title'))
-                                }
-                            </button>
-                            {isTeacherMode && !isIndependentMode && (
-                                <button
-                                    onClick={handleExportQTI}
-                                    className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all shadow-sm"
-                                    title={t('export_menu.qti')}
-                                    aria-label={t('export_menu.qti')}
-                                >
-                                    <FolderDown size={14}/> {t('quiz.export_qti_btn')}
-                                </button>
-                            )}
-                            {!isPresentationMode && !isReviewGame && (isTeacherMode || isParentMode) && (
-                                <>
-                                    {!isIndependentMode && !isParentMode && (
-                                    <button
-                                        aria-label={t('common.toggle_edit_quiz')}
-                                        onClick={handleToggleIsEditingQuiz}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingQuiz ? 'bg-teal-700 text-white hover:bg-teal-700' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50'}`}
-                                    >
-                                        {isEditingQuiz ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
-                                        {isEditingQuiz ? t('common.done_editing') : t('quiz.edit')}
-                                    </button>
-                                    )}
-                                    <button onClick={handleToggleShowQuizAnswers} className="text-xs flex items-center gap-2 bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full font-bold hover:bg-teal-200 transition-colors">
-                                        {showQuizAnswers ? <CheckSquare size={14} className="fill-current"/> : <CheckSquare size={14} />}
-                                        {showQuizAnswers
-                                            ? (isIndependentMode ? t('quiz.hide_answers_student') : (isParentMode ? 'Hide Scores' : t('quiz.hide_key')))
-                                            : (isIndependentMode ? t('quiz.check_answers') : (isParentMode ? 'View Scores' : t('quiz.show_key')))
-                                        }
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                    {isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (<ErrorBoundary fallbackMessage="Escape room controls encountered an error. Refreshing...">
-                        <EscapeRoomTeacherControls
-                            sessionData={sessionData}
-                            activeSessionCode={activeSessionCode}
-                            appId={appId}
-                            t={t}
-                        />
-                    </ErrorBoundary>
-                    )}
-                    {isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? (
-                        <div className="flex flex-col gap-4"><ErrorBoundary fallbackMessage="Live quiz controls encountered an error. Refreshing...">
-                            <TeacherLiveQuizControls
-                                sessionData={sessionData}
-                                generatedContent={generatedContent}
-                                activeSessionCode={activeSessionCode}
-                                appId={appId}
-                                onGenerateImage={callImagen}
-                                onRefineImage={callGeminiImageEdit}
-                                onCreateGroup={handleCreateGroup}
-                                onAssignStudent={handleAssignStudent}
-                                onSetGroupResource={handleSetGroupResource}
-                                isPushingResource={isPushingResource}
-                                onSetGroupLanguage={handleSetGroupLanguage}
-                                onSetGroupProfile={handleSetGroupProfile}
-                                onDeleteGroup={handleDeleteGroup}
-                            />
-                        </ErrorBoundary>
-                            <div className="flex justify-end px-4">
-                                <button
-                                    onClick={async () => {
-                                        setConfirmDialog({ message: t('session.end_confirm_dialog') || 'End this session?', onConfirm: async () => {
-                                            setActiveSessionCode(null);
-                                            addToast(t('session.end_success'), "success");
-                                            try {
-                                                const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-                                                await updateDoc(sessionRef, {
-                                                    isActive: false,
-                                                    quizState: { isActive: false },
-                                                    status: 'ended',
-                                                });
-                                            } catch (e) {
-                                                warnLog("Firestore soft-end failed (Canvas sandbox):", e.message);
-                                            }
-                                        } });
-                                    }}
-                                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors shadow-sm flex items-center gap-2"
-                                >
-                                    <XCircle size={14} /> {t('session.action_end')}
-                                </button>
-                            </div>
-                        </div>
-                    ) : isReviewGame ? (
-                        <div className="animate-in fade-in duration-500">
-                            <div className="bg-slate-900 p-6 rounded-2xl shadow-2xl border-4 border-yellow-500 relative overflow-hidden min-h-[700px] flex flex-col">
-                                <div className="absolute inset-0 opacity-10 pointer-events-none">
-                                    <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]"></div>
-                                    <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[linear-gradient(to_top,rgba(59,130,246,0.2),transparent)]"></div>
-                                </div>
-                                <div className="flex justify-between items-start mb-6 relative z-10">
-                                    <div className="text-left">
-                                        <h2 className="text-3xl font-black text-yellow-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3">
-                                            <Gamepad2 size={32}/> {t('review_game.title')}
-                                        </h2>
-                                        <p className="text-slate-600 text-sm mt-1 font-medium">{t('review_game.subtitle')}</p>
-                                    </div>
-                                    <div className="flex gap-2">
-                                        <button aria-label={t('common.volume')}
-                                            onClick={() => { setSoundEnabled(!soundEnabled); if(!soundEnabled) playSound('click'); }}
-                                            className={`p-2 rounded-full transition-colors ${soundEnabled ? 'bg-yellow-500 text-slate-900' : 'bg-slate-700 text-slate-600'}`}
-                                            title={t('review_game.toggle_sound')}
-                                        >
-                                            {soundEnabled ? <Volume2 size={20}/> : <MicOff size={20}/>}
-                                        </button>
-                                        <button aria-label={t('common.regenerate_vocabulary')} onClick={() => {
-                                            setConfirmDialog({ message: t('review_game.reset_confirm') || 'Reset the game?', onConfirm: () => {
-                                                setReviewGameState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
-                                                setGameTeams(gameTeams.map(t => ({...t, score: 0})));
-                                            } });
-                                        }} className="p-2 bg-slate-700 text-slate-600 rounded-full hover:bg-slate-600" title={t('review_game.reset')}>
-                                            <RefreshCw size={20}/>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-4 justify-center mb-8 p-4 bg-slate-800/50 rounded-xl border border-slate-700">
-                                    {gameTeams.map((team) => (
-                                        <div key={team.id} className={`${team.color} bg-opacity-20 border-2 border-opacity-50 border-${team.color.split('-')[1]}-400 rounded-lg p-3 min-w-[140px] flex flex-col items-center relative group`}>
-                                            <input aria-label={t('common.enter_team')}
-                                                className="bg-transparent text-center font-bold text-white outline-none focus:ring-2 focus:ring-white/50 w-full mb-1"
-                                                value={team.name}
-                                                onChange={(e) => setGameTeams(prev => prev.map(t => t.id === team.id ? { ...t, name: e.target.value } : t))}
-                                            />
-                                            <div className="text-3xl font-black text-white drop-shadow-md">{team.score}</div>
-                                            {scoreAnimation.teamId === team.id && (
-                                                <div className="absolute -top-8 left-1/2 -translate-x-1/2 text-yellow-300 font-black text-xl animate-[ping_1s_ease-out_reverse] pointer-events-none z-20 whitespace-nowrap shadow-sm">
-                                                    +{scoreAnimation.points}
-                                                </div>
-                                            )}
-                                            <div className="flex gap-2 mt-2 opacity-50 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                                                <button onClick={() => handleManualScore(team.id, -100)} className="text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded">-</button>
-                                                <button onClick={() => handleManualScore(team.id, 100)} className="text-xs bg-white/10 hover:bg-white/20 text-white px-2 rounded">+</button>
-                                            </div>
-                                            {gameTeams.length > 1 && (
-                                                <button onClick={() => handleRemoveTeam(team.id)} className="absolute -top-2 -right-2 bg-slate-800 text-red-400 rounded-full p-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 hover:bg-slate-700 transition-all shadow-sm" aria-label={t('common.remove')}>
-                                                    <X size={10}/>
-                                                </button>
-                                            )}
-                                        </div>
-                                    ))}
-                                    {gameTeams.length < 6 && (
-                                        <button aria-label={t('common.add')} onClick={handleAddTeam} className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-slate-600 rounded-lg text-slate-600 hover:text-white hover:border-slate-400 transition-colors">
-                                            <Plus size={24}/>
-                                            <span className="text-xs font-bold mt-1">{t('review_game.add_team')}</span>
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="grid grid-cols-3 gap-4 max-w-4xl mx-auto w-full flex-grow content-start relative z-10">
-                                    {getReviewCategories().map((cat, cIdx) => {
-                                        const CategoryIcon = cIdx === 0 ? Brain : cIdx === 1 ? Languages : Search;
-                                        const iconColor = cIdx === 0 ? "text-yellow-400" : cIdx === 1 ? "text-green-400" : "text-blue-400";
-                                        return (
-                                        <div key={cIdx} className="flex flex-col gap-4">
-                                            <div className="bg-slate-800/80 backdrop-blur-sm text-white font-bold text-center py-4 rounded-lg border-b-4 border-blue-600 shadow-lg uppercase tracking-wider text-sm md:text-base flex flex-col items-center gap-1">
-                                                <CategoryIcon size={20} className={iconColor} />
-                                                {cat.name}
-                                            </div>
-                                            {cat.questions.map((q, qIdx) => {
-                                                const isClaimed = reviewGameState.claimed.has(q.originalIndex);
-                                                return (
-                                                    <button
-                                                        key={qIdx}
-                                                        onClick={() => !isClaimed && handleReviewTileClick(q, q.points)}
-                                                        disabled={isClaimed}
-                                                        aria-label={`Category: ${cat.name}, ${q.points} Points${isClaimed ? ', Claimed' : ''}`}
-                                                        aria-disabled={isClaimed}
-                                                        className={`
-                                                            h-24 rounded-lg font-black text-3xl shadow-lg transition-all duration-300 transform flex items-center justify-center border-b-4 relative overflow-hidden group focus:outline-none focus:ring-4 focus:ring-yellow-400 focus:ring-offset-4 focus:ring-offset-slate-900
-                                                            ${isClaimed
-                                                                ? 'bg-slate-800/50 text-slate-700 border-slate-800 cursor-default'
-                                                                : 'bg-gradient-to-b from-blue-500 to-blue-600 text-yellow-300 border-blue-800 hover:from-blue-400 hover:to-blue-500 hover:-translate-y-1 hover:shadow-blue-500/20 hover:shadow-xl cursor-pointer active:scale-95'
-                                                            }
-                                                        `}
-                                                    >
-                                                        {!isClaimed && (
-                                                            <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-[shimmer_1s_infinite]"></div>
-                                                        )}
-                                                        <span className="relative z-10 drop-shadow-md">{isClaimed ? '' : q.points}</span>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                    )})}
-                                </div>
-                                {reviewGameState.activeQuestion && (
-                                    <div className="absolute inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 sm:p-12 animate-in zoom-in-95 duration-300">
-                                        <div className="bg-blue-800 w-full max-w-4xl rounded-2xl border-4 border-yellow-500 shadow-2xl p-8 text-center relative flex flex-col max-h-full overflow-y-auto">
-                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-yellow-500 text-blue-900 font-black text-2xl px-6 py-2 rounded-full shadow-lg border-2 border-white">
-                                                {reviewGameState.activeQuestion.points}
-                                            </div>
-                                            <button
-                                                aria-label={t('common.close')}
-                                                onClick={() => closeReviewModal(false)}
-                                                className="absolute top-4 right-4 text-blue-300 hover:text-white transition-colors"
-                                            >
-                                                <X size={24} />
-                                            </button>
-                                            <div className="mt-8 mb-8">
-                                                <h3 className="text-2xl md:text-4xl font-bold text-white leading-tight drop-shadow-sm">
-                                                    {formatInlineText(reviewGameState.activeQuestion.question, false, true)}
-                                                </h3>
-                                                {reviewGameState.activeQuestion.question_en && (
-                                                    <p className="text-blue-200 text-lg italic mt-4">{formatInlineText(reviewGameState.activeQuestion.question_en, false, true)}</p>
-                                                )}
-                                            </div>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 text-left">
-                                                {reviewGameState.activeQuestion.options.map((opt, oIdx) => (
-                                                    <div
-                                                        key={oIdx}
-                                                        className={`
-                                                            p-4 rounded-xl text-lg font-medium border-2 transition-all
-                                                            ${reviewGameState.showAnswer
-                                                                ? (opt === reviewGameState.activeQuestion.correctAnswer
-                                                                    ? 'bg-green-700 border-green-500 text-white shadow-[0_0_15px_rgba(34,197,94,0.5)] scale-105'
-                                                                    : 'bg-blue-900/50 border-blue-700 text-blue-300 opacity-50')
-                                                                : 'bg-blue-700 border-blue-500 text-white'
-                                                            }
-                                                        `}
-                                                    >
-                                                        <span className="inline-block w-8 font-bold opacity-50">{String.fromCharCode(65+oIdx)}.</span> {formatInlineText(opt, false, true)}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <div className="flex flex-col items-center gap-6 mt-auto pt-4 border-t border-blue-700">
-                                                {!reviewGameState.showAnswer ? (
-                                                    <button
-                                                        aria-label={t('common.check')}
-                                                        onClick={() => { setReviewGameState(prev => ({ ...prev, showAnswer: true })); playSound('reveal'); }}
-                                                        className="bg-yellow-500 text-blue-900 px-8 py-3 rounded-full font-bold text-lg hover:bg-yellow-400 transition-colors shadow-lg hover:shadow-yellow-500/20"
-                                                    >
-                                                        {t('review_game.reveal_answer')}
-                                                    </button>
-                                                ) : (
-                                                    <div className="w-full animate-in fade-in slide-in-from-bottom-4">
-                                                        <p className="text-blue-200 text-sm font-bold uppercase tracking-wider mb-3">{t('review_game.who_correct')}</p>
-                                                        <div className="flex flex-wrap justify-center gap-3">
-                                                            {gameTeams.map(team => (
-                                                                <button
-                                                                    aria-label={t('common.check')}
-                                                                    key={team.id}
-                                                                    onClick={() => handleAwardPoints(team.id, reviewGameState.activeQuestion.points)}
-                                                                    className={`${team.color.replace('bg-', 'bg-')} hover:opacity-90 ${team.color.includes('yellow') ? 'text-indigo-900' : 'text-white'} px-4 py-2 rounded-lg font-bold shadow-md flex items-center gap-2 border-b-4 border-black/20 active:border-b-0 active:translate-y-1 transition-all`}
-                                                                >
-                                                                    <CheckCircle2 size={16} /> {team.name}
-                                                                </button>
-                                                            ))}
-                                                            <button
-                                                                onClick={() => { playSound('incorrect'); closeReviewModal(true); }}
-                                                                className="bg-slate-700 text-slate-600 hover:bg-slate-600 px-4 py-2 rounded-lg font-bold transition-colors"
-                                                            >
-                                                                {t('review_game.no_points')}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ) : escapeRoomState.isActive ? (
-                        window.AlloModules && window.AlloModules.EscapeRoomGameplay ? (
-                            <window.AlloModules.EscapeRoomGameplay
-                                escapeRoomState={escapeRoomState}
-                                setEscapeRoomState={setEscapeRoomState}
-                                escapeTimeLeft={escapeTimeLeft}
-                                isEscapeTimerRunning={isEscapeTimerRunning}
-                                setIsEscapeTimerRunning={setIsEscapeTimerRunning}
-                                handleSetIsEscapeTimerRunningToTrue={() => setIsEscapeTimerRunning(true)}
-                                handlers={{generateEscapeRoom, handlePuzzleSolved, handleSelectObject, handleWrongAnswer, handleEscapeRoomAnswer, handleSequenceAnswer, handleCipherAnswer, handleMatchingSelect, handleScrambleAnswer, handleFillinAnswer, handleFinalDoorAnswer, resetEscapeRoom, handleRevealHint, derangeShuffle, openEscapeRoomSettings}}
-                                t={t}
-                                soundEnabled={soundEnabled}
-                                setSoundEnabled={setSoundEnabled}
-                                playSound={playSound}
-                                globalPoints={globalPoints}
-                                inputText={inputText}
-                            />
-                        ) : null
-                    ) : isPresentationMode ? (
-                        <div className="space-y-8 animate-in fade-in duration-500">
-                            <div className="flex justify-between items-center bg-slate-800 text-white p-4 rounded-xl shadow-lg">
-                                <h2 className="font-bold text-xl flex items-center gap-2"><MonitorPlay size={24} className="text-teal-400"/> {t('quiz.presentation_board')}</h2>
-                                <button aria-label={t('common.reset_presentation')} onClick={resetPresentation} className="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold transition-colors">
-                                    <RefreshCw size={14}/> {t('quiz.reset_board')}
-                                </button>
-                            </div>
-                            {generatedContent?.data.questions.map((q, i) => {
-                                const pState = presentationState[i] || {};
-                                const isAnswered = !!pState.selectedOption;
-                                const isCorrectlyAnswered = pState.isCorrect;
-                                const showAnswer = pState.showAnswer;
-                                const showExplanation = pState.showExplanation;
-                                return (
-                                    <div key={i} className="bg-white p-8 rounded-2xl border-2 border-slate-200 shadow-md hover:shadow-lg transition-all">
-                                        <div className="flex gap-4 mb-6">
-                                            <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold shrink-0 shadow-sm">
-                                                {i + 1}
-                                            </div>
-                                            <div className="flex-grow">
-                                                <h3 className="text-2xl font-bold text-slate-800 leading-tight">{formatInlineText(q.question, false)}</h3>
-                                                {q.question_en && <p className="text-lg text-slate-600 italic mt-2">{formatInlineText(q.question_en, false)}</p>}
-                                            </div>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-0 md:ml-14">
-                                            {q.options.map((opt, optIdx) => {
-                                                const isSelected = pState.selectedOption === opt;
-                                                const isCorrectOption = opt === q.correctAnswer;
-                                                let btnClass = "bg-slate-50 border-2 border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50";
-                                                let icon = <div className="w-6 h-6 rounded-full border-2 border-slate-300 group-hover:border-indigo-400 transition-colors"></div>;
-                                                if (isSelected) {
-                                                    if (pState.isCorrect) {
-                                                        btnClass = "bg-green-100 border-2 border-green-500 text-green-900 shadow-md transform scale-[1.02]";
-                                                        icon = <CheckCircle2 size={24} className="text-green-600" />;
-                                                    } else {
-                                                        btnClass = "bg-red-100 border-2 border-red-400 text-red-900 animate-shake";
-                                                        icon = <XCircle size={24} className="text-red-500" />;
-                                                    }
-                                                }
-                                                else if (showAnswer && isCorrectOption) {
-                                                    btnClass = "bg-green-50 border-2 border-green-400 text-green-800 ring-2 ring-green-200 ring-offset-2";
-                                                    icon = <CheckCircle2 size={24} className="text-green-500" />;
-                                                }
-                                                else if (showAnswer) {
-                                                    btnClass = "opacity-50 bg-slate-50 border-slate-100 text-slate-600 cursor-not-allowed";
-                                                }
-                                                return (
-                                                    <button
-                                                        aria-label={t('common.cancel')}
-                                                        key={optIdx}
-                                                        onClick={() => handlePresentationOptionClick(i, opt)}
-                                                        disabled={showAnswer}
-                                                        className={`p-5 rounded-xl text-left font-bold text-lg transition-all duration-200 flex items-center gap-4 group w-full ${btnClass}`}
-                                                    >
-                                                        <div className="shrink-0">{icon}</div>
-                                                        <div className="flex-grow">
-                                                            {formatInlineText(opt, false)}
-                                                            {q.options_en && q.options_en[optIdx] && <div className="text-sm font-normal opacity-80 italic mt-1">{formatInlineText(q.options_en[optIdx], false)}</div>}
-                                                        </div>
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                        <div className="mt-6 ml-0 md:ml-14 flex items-center justify-between border-t border-slate-100 pt-4 flex-wrap gap-2">
-                                            <div className="h-8 flex items-center relative">
-                                                {isAnswered && !isCorrectlyAnswered && !showAnswer && (
-                                                    <span className="text-red-500 font-bold flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
-                                                        <XCircle size={18}/> {t('quiz.presentation_try_again')}
-                                                    </span>
-                                                )}
-                                                {isAnswered && isCorrectlyAnswered && (
-                                                    <span className="text-green-600 font-bold flex items-center gap-2 animate-in zoom-in duration-300 overflow-visible">
-                                                        <Sparkles size={18}/> {t('quiz.presentation_correct')}
-                                                        <ConfettiExplosion />
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {q.factCheck && (
-                                                    <button
-                                                        aria-label={t('common.collapse')}
-                                                        onClick={() => togglePresentationExplanation(i)}
-                                                        className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${showExplanation ? 'bg-yellow-100 text-yellow-700' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-50'}`}
-                                                    >
-                                                        {showExplanation ? <ChevronUp size={14}/> : <Info size={14}/>}
-                                                        {showExplanation ? t('quiz.hide_explanation') : t('quiz.show_explanation')}
-                                                    </button>
-                                                )}
-                                                <button
-                                                    aria-label={t('common.show')}
-                                                    onClick={() => togglePresentationAnswer(i)}
-                                                    className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${showAnswer ? 'bg-slate-200 text-slate-600' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
-                                                >
-                                                    {showAnswer ? <Eye size={14}/> : <MousePointerClick size={14}/>}
-                                                    {showAnswer ? t('quiz.hide_answer') : t('quiz.reveal_answer')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {showExplanation && q.factCheck && (
-                                            <div className="mt-4 ml-0 md:ml-14 p-4 bg-yellow-50 border border-yellow-100 rounded-xl animate-in slide-in-from-top-2">
-                                                <div className="prose prose-sm text-slate-700 max-w-none leading-relaxed">
-                                                    {renderFormattedText(q.factCheck)}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                            <div className="bg-indigo-900 text-white p-8 rounded-2xl shadow-xl mt-8">
-                                <h3 className="text-xl font-bold mb-6 flex items-center gap-2"><MessageSquare size={24} className="text-indigo-300"/> {t('quiz.presentation_discussion')}</h3>
-                                <div className="space-y-8">
-                                    {Array.isArray(generatedContent?.data.reflections) ? generatedContent?.data.reflections.map((ref, i) => (
-                                        <div key={i} className="bg-indigo-800/50 p-6 rounded-xl border border-indigo-700">
-                                            <p className="text-2xl font-medium leading-relaxed text-center">
-                                                "{typeof ref === 'string' ? ref : ref.text}"
-                                            </p>
-                                            {(typeof ref === 'object' && ref.text_en) && (
-                                                <p className="text-lg text-indigo-300 italic text-center mt-4">"{ref.text_en}"</p>
-                                            )}
-                                        </div>
-                                    )) : (
-                                        <p className="text-2xl font-medium leading-relaxed text-center">"{generatedContent?.data.reflection}"</p>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="space-y-6">
-                            {generatedContent?.data.questions.map((q, i) => (
-                                <div key={i} className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question">
-                                    <div className="flex justify-between items-start mb-4 gap-4">
-                                        <div className="flex-grow flex gap-3">
-                                            <span className="bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs shrink-0 mt-1.5">{i + 1}</span>
-                                            <div className="flex-grow space-y-2">
-                                                {isEditingQuiz ? (
-                                                    <>
-                                                        <textarea
-                                                            aria-label={t('quiz.edit_question') || 'Edit question'}
-                                                            value={q.question}
-                                                            onChange={(e) => handleQuizChange(i, 'question', e.target.value)}
-                                                            className="w-full font-bold text-slate-800 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
-                                                            rows={getRows(q.question)}
-                                                        />
-                                                        {q.question_en !== undefined && (
-                                                            <textarea
-                                                                aria-label={t('quiz.edit_question_english') || 'Edit question English translation'}
-                                                                value={q.question_en || ''}
-                                                                onChange={(e) => handleQuizChange(i, 'question', e.target.value, null, true)}
-                                                                className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
-                                                                rows={getRows(q.question_en || '')}
-                                                                placeholder={t('common.placeholder_english_trans')}
-                                                            />
-                                                        )}
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <p className="font-bold text-slate-800 px-2 py-1">{q.question}</p>
-                                                        {q.question_en && <p className="text-sm text-slate-600 italic px-2">{q.question_en}</p>}
-                                                    </>
-                                                )}
-                                            </div>
-                                        </div>
-                                        {isTeacherMode && (
-                                        <button
-                                            aria-label={t('common.refresh')}
-                                            onClick={() => handleFactCheck(i)}
-                                            disabled={isFactChecking[i]}
-                                            className={`flex-shrink-0 flex items-center gap-1 text-xs font-bold px-2 py-1 rounded border transition-colors ${q.factCheck ? 'text-indigo-600 bg-indigo-50 hover:bg-indigo-100 border-indigo-200' : 'text-teal-800 bg-teal-50 hover:bg-teal-100 border-teal-200'}`}
-                                            title={t('quiz.verify_tooltip')}
-                                        >
-                                            {isFactChecking[i] ? <RefreshCw size={12} className="animate-spin"/> : (q.factCheck ? <RefreshCw size={12}/> : <ShieldCheck size={12}/>)}
-                                            {isFactChecking[i] ? t('quiz.verifying') : (q.factCheck ? t('quiz.reverify') : t('quiz.fact_check'))}
-                                        </button>
-                                        )}
-                                    </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 ml-9">
-                                        {q.options.map((opt, optIdx) => (
-                                            <div key={optIdx} className={`p-2 rounded-lg border text-sm relative group/option ${(showQuizAnswers && (isTeacherMode || isParentMode)) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : 'bg-slate-50 border-slate-100'}`}>
-                                                <div className="flex items-start gap-2">
-                                                    <span className="mt-1.5 opacity-50">{String.fromCharCode(65 + optIdx)}.</span>
-                                                    <div className="flex-grow">
-                                                        {isEditingQuiz ? (
-                                                            <>
-                                                                <textarea
-                                                                    aria-label={t('quiz.edit_option') || 'Edit answer option'}
-                                                                    value={opt}
-                                                                    onChange={(e) => handleQuizChange(i, 'option', e.target.value, optIdx)}
-                                                                    className={`w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5 outline-none resize-none transition-all ${(showQuizAnswers && (isTeacherMode || isParentMode)) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`}
-                                                                    rows={getRows(opt, 30)}
-                                                                />
-                                                                {q.options_en && (
-                                                                    <textarea
-                                                                        aria-label={t('quiz.edit_option_translation') || 'Edit option translation'}
-                                                                        value={q.options_en[optIdx] || ''}
-                                                                        onChange={(e) => handleQuizChange(i, 'option', e.target.value, optIdx, true)}
-                                                                        className="w-full text-xs text-slate-600 bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-1 py-0.5 outline-none resize-none transition-all mt-1"
-                                                                        rows={getRows(q.options_en[optIdx] || '', 30)}
-                                                                        placeholder={t('common.placeholder_option_trans')}
-                                                                    />
-                                                                )}
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <p className={`px-1 py-0.5 ${(showQuizAnswers && (isTeacherMode || isParentMode)) && opt === q.correctAnswer ? 'text-green-800 font-medium' : 'text-slate-600'}`}>{opt}</p>
-                                                                {q.options_en && q.options_en[optIdx] && <p className="text-xs text-slate-600 mt-1 px-1 italic">{q.options_en[optIdx]}</p>}
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                                {(showQuizAnswers && (isTeacherMode || isParentMode)) && opt === q.correctAnswer && <div className="absolute top-2 right-2 text-green-600"><CheckCircle2 size={14}/></div>}
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && (
-                                        <div className="mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in slide-in-from-top-2 relative">
-                                            <Stamp label={t('quiz.verified_stamp')} position="top-2 right-2" size="small" />
-                                            <button
-                                                aria-label={t('common.refresh')}
-                                                onClick={() => handleFactCheck(i)}
-                                                disabled={isFactChecking[i]}
-                                                className="absolute bottom-2 right-2 p-1.5 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-100 rounded-full transition-colors"
-                                                title={t('quiz.regenerate_check')}
-                                            >
-                                                <RefreshCw size={14} className={isFactChecking[i] ? "animate-spin" : ""}/>
-                                            </button>
-                                            <Sparkles size={14} className="mt-0.5 shrink-0 text-yellow-600"/>
-                                            <div className="flex-grow">
-                                                <div className="whitespace-pre-line leading-relaxed text-slate-700">
-                                                    {renderFormattedText(q.factCheck)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                            <div className="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8">
-                                <h4 className="font-bold text-indigo-900 mb-2 flex items-center gap-2"><PenTool size={16}/> {t('quiz.reflections')}</h4>
-                                {Array.isArray(generatedContent?.data.reflections) ? (
-                                <div className="space-y-6">
-                                    {generatedContent?.data.reflections.map((ref, i) => {
-                                    const text = typeof ref === 'string' ? ref : ref.text;
-                                    const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
-                                    return (
-                                        <div key={i}>
-                                        {isEditingQuiz ? (
-                                            <>
-                                                <textarea
-                                                    aria-label={t('quiz.edit_reflection') || 'Edit reflection prompt'}
-                                                    value={text}
-                                                    onChange={(e) => handleReflectionChange(i, e.target.value)}
-                                                    className="w-full text-indigo-800 mb-1 italic text-sm bg-transparent border border-transparent hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
-                                                    rows={getRows(text)}
-                                                />
-                                                {(textEn !== null || leveledTextLanguage !== 'English') && (
-                                                    <textarea
-                                                        aria-label={t('quiz.edit_reflection_translation') || 'Edit reflection translation'}
-                                                        value={textEn || ''}
-                                                        onChange={(e) => handleReflectionChange(i, e.target.value, true)}
-                                                        className="w-full text-indigo-600 mb-4 text-xs bg-transparent border border-transparent hover:border-indigo-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
-                                                        rows={getRows(textEn || '')}
-                                                        placeholder={t('common.placeholder_reflection_trans')}
-                                                    />
-                                                )}
-                                            </>
-                                        ) : (
-                                            <>
-                                                <p className="text-indigo-800 mb-1 italic text-sm px-2 py-1">{text}</p>
-                                                {textEn && <p className="text-indigo-600 mb-4 text-xs px-2 py-1 italic">{textEn}</p>}
-                                            </>
-                                        )}
-                                        <div className="h-24 border-b border-indigo-200 border-dashed"></div>
-                                        </div>
-                                    );
-                                    })}
-                                </div>
-                                ) : (
-                                <>
-                                    <p className="text-indigo-800 mb-4 italic text-sm">{generatedContent?.data.reflection}</p>
-                                    <div className="h-24 border-b border-indigo-200 border-dashed"></div>
-                                </>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                  </div>
-                )}
+                {activeView === 'quiz' && window.AlloModules && window.AlloModules.QuizView && React.createElement(window.AlloModules.QuizView, {
+                    t, isTeacherMode, isParentMode, isIndependentMode,
+                    activeSessionCode, sessionData,
+                    isPresentationMode, isReviewGame, isEditingQuiz,
+                    escapeRoomState, escapeTimeLeft, isEscapeTimerRunning,
+                    gameTeams, reviewGameState, scoreAnimation, soundEnabled,
+                    globalPoints, inputText, presentationState,
+                    generatedContent, isFactChecking, showQuizAnswers, leveledTextLanguage,
+                    appId, isPushingResource,
+                    setReviewGameState, setSoundEnabled, setGameTeams,
+                    setEscapeRoomState, setIsEscapeTimerRunning, setConfirmDialog,
+                    handleStartLiveSession, handleToggleInteractive, handleEndLiveSession,
+                    handleToggleIsPresentationMode, handleToggleIsReviewGame,
+                    handleToggleIsEditingQuiz, handleToggleShowQuizAnswers, handleExportQTI,
+                    handleManualScore, handleAddTeam, handleRemoveTeam,
+                    handleReviewTileClick, handleAwardPoints, closeReviewModal,
+                    handlePresentationOptionClick, togglePresentationAnswer,
+                    togglePresentationExplanation, resetPresentation,
+                    handleQuizChange, handleReflectionChange, handleFactCheck,
+                    endCollaborativeEscapeRoom, resetEscapeRoom,
+                    launchCollaborativeEscapeRoom, openEscapeRoomSettings,
+                    generateEscapeRoom, handlePuzzleSolved, handleSelectObject,
+                    handleWrongAnswer, handleEscapeRoomAnswer, handleSequenceAnswer,
+                    handleCipherAnswer, handleMatchingSelect, handleScrambleAnswer,
+                    handleFillinAnswer, handleFinalDoorAnswer, handleRevealHint, derangeShuffle,
+                    handleCreateGroup, handleAssignStudent, handleSetGroupResource,
+                    handleSetGroupLanguage, handleSetGroupProfile, handleDeleteGroup,
+                    callImagen, callGeminiImageEdit,
+                    getRows, formatInlineText, renderFormattedText,
+                    getReviewCategories, playSound, addToast,
+                    ErrorBoundary, EscapeRoomTeacherControls, TeacherLiveQuizControls,
+                    Stamp, ConfettiExplosion
+                })}
                 {activeView === 'udl-advice' && (
                     <div className="space-y-6">
                          <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center">
@@ -37508,12 +36937,12 @@ Return ONLY valid JSON:
           tabIndex={-1}
           onClick={(e) => {
             if (e.target === e.currentTarget && !pdfFixLoading && !pdfAutoContinueRunning) {
-              _closePdfAuditModal();
+              safeCloseAudit();
             }
           }}
           onKeyDown={(e) => {
             if (e.key === 'Escape' && !pdfFixLoading && !pdfAutoContinueRunning) {
-              _closePdfAuditModal();
+              safeCloseAudit();
             }
           }}
           ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
@@ -37524,7 +36953,7 @@ Return ONLY valid JSON:
             <div className="sticky top-0 z-20 flex justify-end p-2 bg-gradient-to-b from-white via-white/95 to-transparent pointer-events-none">
               <button
                 type="button"
-                onClick={() => { _closePdfAuditModal(); }}
+                onClick={() => { safeCloseAudit(); }}
                 disabled={pdfFixLoading || pdfAutoContinueRunning}
                 aria-label="Close audit modal"
                 title={(pdfFixLoading || pdfAutoContinueRunning) ? 'Wait for remediation to finish or click Stop first' : 'Close (Esc)'}
@@ -41864,6 +41293,58 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </div>
               </div>
             )}
+
+      {/* ── Close-audit confirm dialog ── */}
+      {/* Three-way Save / Discard / Cancel prompt that fires from safeCloseAudit
+          when the user clicks X, the backdrop, or Esc with audit work that
+          hasn't been saved as a Project. Rendered as a top-level sibling so it
+          layers above the audit modal (z-[210] vs z-[200]) without nesting. */}
+      {showCloseConfirm && (
+        <div
+          className="fixed inset-0 z-[210] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          role="dialog" aria-modal="true" aria-labelledby="pdf-close-confirm-title"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowCloseConfirm(false); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setShowCloseConfirm(false); } }}
+          tabIndex={-1}
+          ref={(el) => { if (el && !el.contains(document.activeElement)) { try { el.focus({ preventScroll: true }); } catch(_){ el.focus(); } } }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 border-2 border-amber-300">
+            <h3 id="pdf-close-confirm-title" className="text-lg font-bold text-slate-800 mb-2">Close without saving?</h3>
+            <p className="text-sm text-slate-600 mb-5 leading-relaxed">
+              This audit hasn't been saved as a <strong>Project</strong> file. If you close,
+              your remediated HTML and audit results won't survive a browser reload.
+            </p>
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setShowCloseConfirm(false)}
+                className="px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-xl text-sm font-bold hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={_discardAndCloseAudit}
+                className="px-4 py-2 bg-white text-red-700 border border-red-300 rounded-xl text-sm font-bold hover:bg-red-50 transition-colors"
+              >
+                Discard
+              </button>
+              <button
+                type="button"
+                onClick={_saveAndCloseAudit}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 transition-colors shadow-sm"
+                autoFocus
+              >
+                💾 Save & close
+              </button>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-4">
+              Tip: <strong>Save & close</strong> downloads a <code className="px-1 bg-slate-100 rounded">.alloflow.json</code> project file
+              that you can re-open later via the sidebar's <strong>Load Project</strong> button.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ═══ PDF Preview & Edit Modal ═══ */}
       {pdfPreviewOpen && pdfFixResult && (
