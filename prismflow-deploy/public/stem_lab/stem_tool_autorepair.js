@@ -2669,6 +2669,178 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.964: RECOMMENDED LEARNING PATH — 4-week curated walkthrough
+  // For new users / instructors: a paced curriculum order through the 28
+  // modules. Each week has theme + target modules + outcome.
+  // ─────────────────────────────────────────────────────────
+  var LEARNING_PATH = [
+    { week: 1, title: 'Week 1 — Know your car (foundation)', icon: '🚗',
+      theme: 'Build the basic mental model. Who is this car? What\'s its history? What\'s normal?',
+      modules: [
+        { id: 'firstcar', why: 'The 30-day owner plan anchors every other module. Even if you\'ve owned the car a while, walk through it once.' },
+        { id: 'vin', why: 'Decode your VIN. Run the free recall lookup. Know your country/maker/year details.' },
+        { id: 'glossary', why: 'Skim the 50+ terms so vocabulary in later modules doesn\'t slow you down.' },
+        { id: 'maint', why: 'Build a personalized schedule from your odometer + last service date. Set a baseline.' }
+      ],
+      outcome: 'You can describe your specific car in writing: year, make, model, engine, mileage, last service, open recalls, what\'s due soon.' },
+    { week: 2, title: 'Week 2 — Diagnose like a tech', icon: '🔍',
+      theme: 'Develop diagnostic vocabulary + active reasoning. Don\'t just memorize parts — learn to think about what\'s wrong.',
+      modules: [
+        { id: 'diagnose', why: 'The 4-channel diagnostic flow: OBD-II, listening, fluids, visual. Spend 30 min in each tab.' },
+        { id: 'tree', why: 'Walk through 3-4 of the 6 decision trees. Each takes 5 min and trains active reasoning.' },
+        { id: 'damage', why: 'Visual-pattern game. 15 cases of "what does this look like + what is it." Builds tech-eye.' },
+        { id: 'lab', why: 'Capstone of the diagnostic week — 6 graded scenarios. Each takes ~10 min. Aim for at least B grades.' }
+      ],
+      outcome: 'You can read a customer-style symptom + walk through a defensible diagnostic sequence. You earn at least 2 lab simulator badges.' },
+    { week: 3, title: 'Week 3 — Hands-on + safe', icon: '🔧',
+      theme: 'Move from theory to actual hands. Pick small jobs, do them safely, log them.',
+      modules: [
+        { id: 'safety', why: 'Walk through ALL 6 safety modules first. Especially jack stands + electrical + refrigerant. These rules don\'t bend.' },
+        { id: 'tools', why: 'Library of 22 tools. Identify what you have + what you\'d need. Play the 13-question tool-selection mini-game.' },
+        { id: 'repair', why: 'Pick 2-3 step-by-step jobs at difficulty 1: oil change, tire rotation, air filter, wipers, headlight bulb. Read all the steps.' },
+        { id: 'log', why: 'Whenever you actually do a job, record it. Service Log is your portfolio of competence.' }
+      ],
+      outcome: 'You complete one real-world Tier-1 maintenance job (oil change, tire rotation, or filter swap) on your own car. You record it in the Service Log.' },
+    { week: 4, title: 'Week 4 — Savvy consumer + career exploration', icon: '🛒',
+      theme: 'Protect yourself when you DO need a shop. Look at the trade as a career path.',
+      modules: [
+        { id: 'estimate', why: '21 common shop-quote line items. Know what\'s standard, DIY-able, or upsell BEFORE you authorize work.' },
+        { id: 'scams', why: '12 known shop scams + how to push back politely. Maine consumer-rights footer.' },
+        { id: 'roi', why: 'Repair-or-sell calculator. Run the math on a hypothetical scenario.' },
+        { id: 'usedcar', why: 'If you\'re car-shopping, walk through the 10 red flags + 9-step pre-purchase walkaround.' },
+        { id: 'career', why: 'ASE A1-A8 + Maine vocational programs. Even if you\'re not headed to mechanic school, the pathway is interesting.' },
+        { id: 'race', why: 'For sports-minded learners: the path from Maine high school auto shop to NASCAR runs through here.' }
+      ],
+      outcome: 'You complete the Knowledge Quiz (50 questions) at 80%+. You have at least 12 badges. You know what 1-2 modules you want to revisit deeper.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.97A: TIRE DEEP DIVE — sizing math, ratings, rotation patterns
+  // Tires are mentioned across 10+ modules but never get focused treatment.
+  // The single most-replaced item on most cars + a key safety component.
+  // ─────────────────────────────────────────────────────────
+  var TIRE_SIZE_DECODER = {
+    example: 'P215/65R17 98T',
+    parts: [
+      { code: 'P', name: 'Type', detail: 'P = Passenger car. LT = Light truck. ST = Special trailer. Some sizes start with no letter (Euro metric).' },
+      { code: '215', name: 'Width (mm)', detail: 'Tire section width in millimeters. 215 = 215mm wide. Bigger = more grip + worse fuel economy.' },
+      { code: '65', name: 'Aspect ratio', detail: 'Sidewall height as % of width. 65 = sidewall is 65% of 215mm = ~140mm. Lower = sportier handling, harsher ride.' },
+      { code: 'R', name: 'Construction', detail: 'R = Radial (modern). D = Diagonal/bias-ply (rare, vintage). B = Bias belted.' },
+      { code: '17', name: 'Wheel diameter (in)', detail: 'Inner diameter of tire = wheel diameter. 17 = 17-inch wheel. Must match the wheel exactly.' },
+      { code: '98', name: 'Load index', detail: '98 corresponds to 1,653 lb max load per tire. Use the OEM load index or higher.' },
+      { code: 'T', name: 'Speed rating', detail: 'T = 118 mph max. Common ratings: S (112), T (118), H (130), V (149), W (168), Y (186), Z (149+).' }
+    ]
+  };
+  var TIRE_TYPES = [
+    { type: 'All-season', icon: '☀️',
+      bestFor: 'Year-round driving in mild climates with occasional snow.',
+      mainePros: 'Convenience — one set, no swap. OK in light snow.',
+      maineCons: 'Below 45°F the rubber stiffens — significantly less grip than a winter tire on snow + ice. Maine winters are HARDER than what all-seasons are designed for.',
+      treadwear: '500-700 typical (wear well)',
+      verdict: 'Acceptable in southern Maine if you don\'t drive in storms. Not ideal for serious winter use.' },
+    { type: 'Winter (snow tires)', icon: '❄️',
+      bestFor: 'Cold weather (below 45°F) + snow + ice. Identifiable by the 3-peak mountain-snowflake (3PMSF) symbol.',
+      mainePros: 'Designed for cold rubber compound + aggressive tread + sipes (small slits) for ice grip. Real safety upgrade in Maine winter.',
+      maineCons: 'Faster wear in warm weather. Need a second set + swap costs (or dedicated wheels). Loud + slightly worse fuel economy.',
+      treadwear: '350-500 typical (wear faster than all-season)',
+      verdict: 'STRONGLY recommended for any Maine winter driver. The control + braking distance difference on snow + ice is dramatic.' },
+    { type: 'Summer (high-performance)', icon: '🔥',
+      bestFor: 'Sporty driving in warm + dry conditions. Sports cars + performance sedans.',
+      mainePros: 'Maximum grip in warm weather. Crisp handling.',
+      maineCons: 'BELOW 45°F THE RUBBER GETS HARD AND DANGEROUS — can crack. Useless on snow. Maine winters destroy them.',
+      treadwear: '200-400 typical (wear fast in heat)',
+      verdict: 'Maine: only on a track car or a fair-weather summer-only vehicle. Never run in winter conditions.' },
+    { type: 'Studded (ice-specific)', icon: '🧊',
+      bestFor: 'Pure ice driving. Northern Maine + Aroostook County roads in deep winter.',
+      mainePros: 'Best ice grip available. Critical on rural unplowed Maine logging roads + far-northern roads in February.',
+      maineCons: 'Maine LAW: studded tires allowed Oct 2 – April 30 only. Loud on pavement. Damages roads. Not legal in some other states.',
+      treadwear: 'N/A — winter-specific',
+      verdict: 'Worth it for far-northern Maine + rural drivers. Verify Maine\'s seasonal date window each year.' },
+    { type: 'All-terrain (truck/SUV)', icon: '🌲',
+      bestFor: 'Off-road + on-road combination. Pickups + SUVs that see logging roads, dirt, mud.',
+      mainePros: 'Aggressive sidewall + tread for unpaved Maine. Decent in light snow.',
+      maineCons: 'Louder + worse fuel economy than highway tires. Not as good in deep snow/ice as a dedicated winter tire.',
+      treadwear: '400-600 typical',
+      verdict: 'Standard for Maine logging + rural pickups. Pair with winter tires for deep-winter daily-driver use if needed.' }
+  ];
+  var TIRE_ROTATION_PATTERNS = [
+    { drive: 'Front-wheel drive (FWD)', icon: '🚗', pattern: 'Front-to-rear straight; rear crosses to opposite front',
+      detail: 'Front tires wear faster (drive + steer + brake the most). FWD pattern: F-left → R-left, F-right → R-right, R-left → F-right, R-right → F-left.',
+      interval: 'Every 5,000-7,500 miles. Free at most shops where you bought tires.' },
+    { drive: 'Rear-wheel drive (RWD)', icon: '🚙', pattern: 'Rear-to-front straight; front crosses to opposite rear',
+      detail: 'Reverse of FWD. Rear tires wear faster (drive). RWD: R-left → F-left, R-right → F-right, F-left → R-right, F-right → R-left.',
+      interval: 'Every 5,000-7,500 miles.' },
+    { drive: 'All-wheel drive (AWD) / 4WD', icon: '🚜', pattern: 'X-pattern: each tire crosses diagonally',
+      detail: 'AWD wears all 4 tires more evenly. X-pattern: F-left → R-right, F-right → R-left (and vice versa).',
+      interval: 'Every 5,000 miles. AWD especially: rotate ON SCHEDULE — uneven wear can damage the AWD drivetrain (different tire diameters confuse the differentials).' },
+    { drive: 'Directional tires', icon: '➡️', pattern: 'Front-to-rear same side ONLY. Look for arrow on sidewall.',
+      detail: 'Directional tread is designed to rotate in one direction (water evacuation). Crossing them ruins handling. F-left ↔ R-left only; F-right ↔ R-right only.',
+      interval: 'Every 5,000-7,500 miles. Note: directional tires can\'t be fully X-rotated, so they wear less evenly over time.' }
+  ];
+  var TIRE_REPLACEMENT_RULES = [
+    { rule: '2/32" tread depth (Lincoln penny test)',
+      detail: 'Insert a penny upside down into the tread. If you can see ALL of Lincoln\'s head, replace the tire. This is the LEGAL minimum.',
+      verdict: 'Maine: this is the inspection-fail threshold.' },
+    { rule: '4/32" tread depth (Washington quarter test)',
+      detail: 'Insert a quarter upside down. If you can see ALL of Washington\'s head, you\'re below 4/32". Stopping in slush + heavy rain is significantly worse.',
+      verdict: 'Maine: replace at 4/32" if you drive in winter. The 2/32" minimum is summer-only safe.' },
+    { rule: 'Sidewall cracks',
+      detail: 'Visible cracks in the sidewall rubber (other than UV checking). Indicates UV + age + ozone damage.',
+      verdict: 'Replace. The sidewall has internal cords; once compromised, it can blow out at speed.' },
+    { rule: 'Sidewall bulge',
+      detail: 'A marble-sized or larger bulge anywhere on the sidewall.',
+      verdict: 'REPLACE NOW. Internal cords are broken. Tire can rupture under load.' },
+    { rule: 'Age (regardless of tread)',
+      detail: 'Look for the DOT date code on the sidewall — last 4 digits = week + year (e.g., "0822" = 8th week of 2022). Tires generally degrade after 6-10 years even unused.',
+      verdict: 'Replace tires older than 10 years even with tread left. UV + ozone + heat cycle aging.' },
+    { rule: 'Multiple plugs / patches',
+      detail: 'A single small puncture in the tread (not sidewall, not shoulder) can be plug-patched safely. Multiple repairs in close proximity = structurally weakened.',
+      verdict: 'Replace if 2+ plugs within 16 inches of each other, or any sidewall/shoulder puncture.' },
+    { rule: 'Inside or outside-edge wear',
+      detail: 'Uneven wear pattern shows alignment is out (toe in/out) or camber is wrong.',
+      verdict: 'Replace tire + get an alignment same day. New tire wears the same way otherwise.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.97B: PRE-DRIVE WALK-AROUND — 60-second daily check
+  // The professional habit of walking around your vehicle once a day before
+  // first drive. Catches 90% of "dropped my keys + can't unlock my car" or
+  // "didn't notice the flat" or "headlight burned out yesterday" surprises.
+  // ─────────────────────────────────────────────────────────
+  var WALK_AROUND_STEPS = [
+    { n: 1, area: 'Right front corner', icon: '↗️',
+      check: 'Tire visibly flat or low? Lug nuts visible (not missing)? Body damage? Drips on the ground beneath?',
+      flag: 'Low tire = stop. Lug nuts missing = stop. Visible drip = identify the fluid before driving.' },
+    { n: 2, area: 'Right side / passenger door', icon: '➡️',
+      check: 'Side-view mirror present + intact? Door panel dented or scraped (recent)? Anything wedged near the wheel?',
+      flag: 'Missing or broken mirror = inspection-illegal in Maine. Address before driving.' },
+    { n: 3, area: 'Right rear corner', icon: '↘️',
+      check: 'Tire condition + lugs. Brake light bulb visible (test by pressing the brake pedal with a phone reflection or a buddy).',
+      flag: 'Burnt brake light = $5 fix at parts store + 5 min. Don\'t put it off.' },
+    { n: 4, area: 'Rear / tailgate', icon: '⬇️',
+      check: 'License plate present + lit? Bumper hanging? Trunk closed? Backup camera lens clean?',
+      flag: 'Plate missing = ticket. Trunk ajar = potential lost cargo + electrical drain.' },
+    { n: 5, area: 'Left rear corner', icon: '↙️',
+      check: 'Tire + lugs. Brake light. Reverse light works (with someone in driver seat, key on, in reverse).',
+      flag: 'Same as right rear.' },
+    { n: 6, area: 'Left side / driver door', icon: '⬅️',
+      check: 'Mirror present? Door condition? Anything under the front-left wheel area (drips)?',
+      flag: 'Drips = identify before driving (oil = diagnose; coolant = check temp gauge; trans fluid = check level).' },
+    { n: 7, area: 'Left front corner', icon: '↖️',
+      check: 'Tire + lugs. Headlight bulb works (key on, lights on — easier to see at dawn/dusk).',
+      flag: 'Burnt headlight = inspection-illegal + safety. $15 + 10 min DIY.' },
+    { n: 8, area: 'Front / hood', icon: '⬆️',
+      check: 'Hood latched? Bug screen / front grille intact? Hood dented from above (something falling on it)? Any obvious leaks visible from above?',
+      flag: 'Hood unlatched = will fly up + smash windshield at speed. NEVER drive with hood unlatched.' },
+    { n: 9, area: 'Inside cabin', icon: '🪑',
+      check: 'Mirrors set right? Windshield clean? All gauges read normal at start? Warning lights cleared after engine warm-up (no fresh CEL or ABS or oil)?',
+      flag: 'Fresh CEL = scan it. ABS = drive carefully (no anti-lock). Low oil = STOP. Battery = charging-system issue.' },
+    { n: 10, area: 'Drive away listen', icon: '👂',
+      check: 'First 30 seconds of driving — any new sound? Pull, shake, vibration?',
+      flag: 'New noise = note it for diagnosis. New shake = check a tire is properly mounted (recent flat repair?). Pull = tire pressure or alignment.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 9.96A: PROJECT CAR BUILD — the $500 rust-bucket capstone
   // ─────────────────────────────────────────────────────────
   var BUILD_PHASES = [
@@ -3316,7 +3488,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q50', icon: '🌲',
       stem: 'You\'ve worked through this whole tool. What\'s the single most actionable next step in real life?',
       choices: ['Buy every tool at once', 'Pick ONE module, pick ONE task, do it on a real car this weekend (your own or a friend\'s with permission). Hands-on beats theory by a wide margin.', 'Memorize all 50 quiz questions', 'Watch YouTube videos forever'],
-      correct: 1, why: 'The tool is a curriculum scaffold. The actual skills come from doing. Start small (oil change, wiper blades, tire rotation, battery test) on a real car. Use the Service Log to record it. The Service Log entry IS the proof you did it.' }
+      correct: 1, why: 'The tool is a curriculum scaffold. The actual skills come from doing. Start small (oil change, wiper blades, tire rotation, battery test) on a real car. Use the Service Log to record it. The Service Log entry IS the proof you did it.' },
+    { id: 'q51', icon: '📏',
+      stem: 'On a tire labeled P215/65R17 98T, what does the "65" mean?',
+      choices: ['Tread depth', 'Aspect ratio — sidewall height as a percentage of tire width (so sidewall = 65% of 215mm ≈ 140mm)', 'Speed rating', 'Load index'],
+      correct: 1, why: 'P215/65R17 = Passenger / 215mm wide / sidewall 65% of width / Radial / 17" wheel. Lower aspect ratio = sportier handling + harsher ride. Higher = more cushion + more sidewall flex.' },
+    { id: 'q52', icon: '❄️',
+      stem: 'You drive in northern Maine year-round. Best tire strategy?',
+      choices: ['All-seasons year-round', 'Dedicated winter (3-peak mountain-snowflake symbol) tires Oct-April + all-seasons or summer tires May-Sept. Pre-mount on dedicated wheels for fast swap.', 'Summer tires year-round', 'Studded tires year-round'],
+      correct: 1, why: 'Maine winter requires winter-rated tires. Below 45°F all-seasons stiffen and lose grip. Studded tires are legal Oct 2 – Apr 30 only. Two-set rotation is the safest + most cost-effective Maine pattern.' },
+    { id: 'q53', icon: '🔄',
+      stem: 'On a front-wheel-drive car, what\'s the standard tire rotation pattern?',
+      choices: ['No rotation needed', 'Front-to-rear straight; rear crosses to opposite front (front tires wear faster, this evens them out)', 'X-pattern only', 'Replace all four every year'],
+      correct: 1, why: 'FWD: F-left → R-left, F-right → R-right, R-left → F-right, R-right → F-left. Rear crosses to opposite front. AWD uses X-pattern. Directional tires can\'t cross at all.' },
+    { id: 'q54', icon: '🚗',
+      stem: 'A pre-drive walk-around takes about 60 seconds and catches what kind of issue?',
+      choices: ['Engine internals', 'Tire flat or low, missing lug nuts, burnt-out lights, fluid drip on the ground, hood unlatched, mirror missing — surprise issues that would otherwise become highway emergencies', 'Computer software', 'Future repairs'],
+      correct: 1, why: 'Pro drivers + truckers walk around their vehicles before EVERY drive. 60 seconds catches 90% of "I would have wished I noticed before driving" surprises. Especially valuable in winter when problems hide.' },
+    { id: 'q55', icon: '📚',
+      stem: 'If you\'re NEW to this tool, what\'s the smart way to work through 28 modules?',
+      choices: ['Random tabs', 'Use the Recommended Learning Path — 4-week curated walkthrough with weekly themes (Know your car / Diagnose / Hands-on safe / Savvy + career)', 'Try to do everything in one day', 'Skip everything'],
+      correct: 1, why: 'The Learning Path orders modules pedagogically: vocabulary first (week 1), reasoning second (week 2), hands-on third (week 3), consumer-protection + career exploration fourth (week 4). Each week has goals + outcomes you can verify.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -3433,9 +3625,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             desc: 'Just bought it / drive it / keep it healthy.',
             modules: [
               { id: 'firstcar', icon: '🚗', label: 'First car? Start here', desc: 'Just bought your first car. 30-day week-by-week plan.' },
+              { id: 'walk', icon: '🚶', label: 'Pre-drive walk-around', desc: '60-second daily check. The professional habit.' },
               { id: 'vin', icon: '🆔', label: 'VIN decoder', desc: '17-character VIN parse + free recall lookup.' },
               { id: 'maint', icon: '📅', label: 'Maintenance schedule', desc: 'Personalized from your odometer.' },
               { id: 'log', icon: '📓', label: 'Service log', desc: 'Record your own maintenance history.' },
+              { id: 'tires', icon: '🛞', label: 'Tire deep dive', desc: 'Sizing math, all-season vs winter, rotation patterns by drive type, when to replace.' },
               { id: 'inspection', icon: '🌲', label: 'Maine inspection', desc: '8-area pre-walk before your annual sticker.' },
               { id: 'cold', icon: '🌨️', label: 'Cold-weather prep', desc: 'Maine winter October-April checklist.' },
               { id: 'roadside', icon: '🚨', label: 'Roadside emergency', desc: 'Trunk kit + breakdown protocol.' }
@@ -3481,9 +3675,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             ]
           },
           { id: 'progress-cat', icon: '📊', name: 'Progress + reference',
-            desc: 'Self-test, achievements, full citation list.',
+            desc: 'Self-test, learning path, achievements, citations.',
             modules: [
-              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '50 questions across the full curriculum.' },
+              { id: 'path', icon: '🛤️', label: 'Learning path', desc: 'New here? 4-week curated walkthrough of the modules in optimal order.' },
+              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '55 questions across the full curriculum.' },
               { id: 'badges', icon: '🏆', label: 'Badge gallery', desc: 'All earned + unlockable badges. Track your progress.' },
               { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with working URL.' }
             ]
@@ -6728,6 +6923,291 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // LEARNING PATH view — 4-week curated walkthrough
+      // ─────────────────────────────────────────
+      function renderPath() {
+        var done = d.pathDone || {};
+        var totalMods = LEARNING_PATH.reduce(function(acc, w) { return acc + w.modules.length; }, 0);
+        var doneCount = Object.keys(done).filter(function(k) { return done[k]; }).length;
+        var pct = totalMods > 0 ? Math.round((doneCount / totalMods) * 100) : 0;
+        if (doneCount === totalMods) awardBadge('path-graduate', 'Curriculum Path Graduate');
+
+        // Map module ids to readable labels (same as menu)
+        var MOD_LABELS = {
+          firstcar: 'First car? Start here', vin: 'VIN decoder', maint: 'Maintenance schedule',
+          glossary: 'Glossary', diagnose: 'Diagnose', tree: 'Decision tree', damage: 'Damage ID game',
+          lab: 'Hands-on lab simulator', safety: 'Safety modules', tools: 'Tool selection',
+          repair: 'Repair scenarios', log: 'Service log', estimate: 'Estimate decoder',
+          scams: 'Common scams', roi: 'Repair ROI calculator', usedcar: 'Buying a used car',
+          career: 'Career path', race: 'Race mechanic'
+        };
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🛤️ Recommended learning path'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🛤️ A 4-week curated walkthrough'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'New here? This is the most valuable 4 weeks you can spend in this tool. ',
+              h('strong', { style: { color: T.accentHi } }, 'Each week: '), 'theme + 3-6 target modules + measurable outcome. ',
+              h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalMods + ' modules (' + pct + '%)')
+          ),
+          LEARNING_PATH.map(function(w) {
+            var weekDoneCount = w.modules.filter(function(m) { return done[m.id]; }).length;
+            return h('div', { key: w.week, style: { marginBottom: 14, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (weekDoneCount === w.modules.length ? T.good : T.accent) } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                h('span', { style: { fontSize: 28 } }, w.icon),
+                h('div', { style: { flex: 1 } },
+                  h('h4', { style: { margin: 0, fontSize: 16, color: T.accentHi } }, w.title),
+                  h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, weekDoneCount + ' / ' + w.modules.length + ' modules touched')
+                ),
+                weekDoneCount === w.modules.length && h('span', { style: { fontSize: 22, color: T.good } }, '✓')
+              ),
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.text, lineHeight: 1.55, fontStyle: 'italic' } }, w.theme),
+              h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
+                w.modules.map(function(m, i) {
+                  var key = 'w' + w.week + '-' + m.id;
+                  var isDone = !!done[key];
+                  var label = MOD_LABELS[m.id] || m.id;
+                  return h('button', { key: key, role: 'listitem', 'data-ar-focusable': true,
+                    'aria-label': label + (isDone ? ' (done)' : ''),
+                    onClick: function() {
+                      var nv = Object.assign({}, done); nv[key] = !nv[key];
+                      upd('pathDone', nv);
+                    },
+                    style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
+                      h('strong', { style: { fontSize: 13, color: isDone ? '#d1fae5' : T.accentHi, flex: 1 } }, '→ ' + label)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
+                      h('strong', { style: { color: T.dim } }, 'Why: '), m.why),
+                    h('div', { style: { marginTop: 6, marginLeft: 22 } },
+                      h('a', { href: '#', onClick: function(e) { e.preventDefault(); e.stopPropagation(); setView(m.id); },
+                        style: { fontSize: 11, color: T.link, textDecoration: 'underline' } },
+                        '🔗 Open ' + label + ' →'))
+                  );
+                })
+              ),
+              h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🎯 Outcome by end of week ' + w.week + ': '), w.outcome)
+            );
+          }),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // TIRE DEEP DIVE view
+      // ─────────────────────────────────────────
+      function renderTires() {
+        var tView = d.tView || 'sizing';
+        function tabBtn(id, label) {
+          var active = tView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('tView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function sizingTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📏 Decode any tire size'),
+              h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                'Every tire has a label like ',
+                h('strong', { style: { color: T.accentHi, fontFamily: 'monospace' } }, TIRE_SIZE_DECODER.example),
+                ' on the sidewall. Each piece tells you something specific.'),
+              h('div', { style: { padding: 12, borderRadius: 8, background: T.bg, border: '1px solid ' + T.accent, marginBottom: 12, textAlign: 'center', fontFamily: 'monospace', fontSize: 22, fontWeight: 800, color: T.accentHi, letterSpacing: 2 } },
+                TIRE_SIZE_DECODER.example),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+                TIRE_SIZE_DECODER.parts.map(function(p, i) {
+                  return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, display: 'flex', gap: 10, alignItems: 'flex-start' } },
+                    h('div', { style: { fontFamily: 'monospace', fontSize: 18, fontWeight: 800, color: T.accentHi, padding: '4px 10px', background: T.bg, borderRadius: 6, border: '1px solid ' + T.accent, minWidth: 50, textAlign: 'center' } }, p.code),
+                    h('div', { style: { flex: 1 } },
+                      h('strong', { style: { fontSize: 13, color: T.text, display: 'block', marginBottom: 4 } }, p.name),
+                      h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.55 } }, p.detail)
+                    )
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function typesTab() {
+          var picked = d.tTypePicked || null;
+          var pickedT = picked ? TIRE_TYPES.find(function(t) { return t.type === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '☀️❄️ 5 tire types'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Different rubber compounds + tread designs for different conditions. Each one has Maine-specific tradeoffs.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+              TIRE_TYPES.map(function(t) {
+                var sel = picked === t.type;
+                return h('button', { key: t.type, 'data-ar-focusable': true,
+                  'aria-label': t.type,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('tTypePicked', sel ? null : t.type); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, t.icon),
+                  h('span', null, t.type)
+                );
+              })
+            ),
+            pickedT && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedT.icon + ' ' + pickedT.type),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🎯 Best for: '), pickedT.bestFor),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.good } }, '✅ Maine pros: '), pickedT.mainePros),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.bad } }, '❌ Maine cons: '), pickedT.maineCons),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.text } }, '📊 Treadwear: '), pickedT.treadwear),
+              h('p', { style: { margin: 0, padding: 8, borderRadius: 6, background: T.cardAlt, color: T.text, fontSize: 13, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.accentHi } }, '🌲 Verdict: '), pickedT.verdict)
+            )
+          );
+        }
+
+        function rotationTab() {
+          var picked = d.tRotPicked || null;
+          var pickedR = picked ? TIRE_ROTATION_PATTERNS.find(function(r) { return r.drive === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔄 Rotation patterns by drive type'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Different drive systems wear tires differently. The pattern matters — wrong rotation = uneven wear + (on AWD) drivetrain damage.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              TIRE_ROTATION_PATTERNS.map(function(r) {
+                var sel = picked === r.drive;
+                return h('button', { key: r.drive, 'data-ar-focusable': true,
+                  'aria-label': r.drive,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('tRotPicked', sel ? null : r.drive); awardBadge('tire-pro', 'Tire Pro'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, r.icon),
+                  h('span', null, r.drive)
+                );
+              })
+            ),
+            pickedR && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedR.icon + ' ' + pickedR.drive),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55, padding: 8, borderRadius: 6, background: T.bg, fontFamily: 'monospace' } },
+                h('strong', { style: { color: T.accentHi } }, '↔️ Pattern: '), pickedR.pattern),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, '🔍 Detail: '), pickedR.detail),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '📅 Interval: '), pickedR.interval)
+            )
+          );
+        }
+
+        function replaceTab() {
+          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚩 When to replace'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              '7 conditions that mean replacement. Any one of these = new tire. Multiple = often a full set.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              TIRE_REPLACEMENT_RULES.map(function(r, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 4 } }, '🚩 ' + r.rule),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } },
+                    h('strong', { style: { color: T.text } }, 'Detail: '), r.detail),
+                  h('div', { style: { fontSize: 12, color: T.text, padding: 6, borderRadius: 4, background: T.bg } },
+                    h('strong', { style: { color: T.warn } }, '🌲 '), r.verdict)
+                );
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🛞 Tire deep dive'),
+          h('div', { role: 'tablist', 'aria-label': 'Tire sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('sizing', '📏 Sizing'),
+            tabBtn('types', '☀️❄️ Types'),
+            tabBtn('rotation', '🔄 Rotation'),
+            tabBtn('replace', '🚩 When to replace')
+          ),
+          tView === 'sizing' && sizingTab(),
+          tView === 'types' && typesTab(),
+          tView === 'rotation' && rotationTab(),
+          tView === 'replace' && replaceTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // PRE-DRIVE WALK-AROUND view
+      // ─────────────────────────────────────────
+      function renderWalkAround() {
+        var checked = d.walkChecked || {};
+        var done = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
+        var total = WALK_AROUND_STEPS.length;
+        var pct = Math.round((done / total) * 100);
+        if (done === total) awardBadge('walkaround-pro', 'Walk-Around Pro');
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🚶 Pre-drive walk-around'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚶 60-second daily check'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Pro drivers + truckers walk around their vehicles before EVERY drive. 60 seconds catches 90% of "I would have wished I noticed before driving" surprises. Especially valuable in Maine winter when problems hide.'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, 'Build the habit: '), 'use this once today as a checklist; after a week you\'ll do it from memory in under a minute. ',
+              h('strong', { style: { color: T.accentHi } }, 'Done: '), done + ' / ' + total + ' (' + pct + '%)'),
+            done < total && h('button', { 'data-ar-focusable': true,
+              style: Object.assign({}, btnGhost(), { marginTop: 8 }),
+              'aria-label': 'Reset walk-around',
+              onClick: function() { upd('walkChecked', {}); }
+            }, '↺ Reset')
+          ),
+          h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            WALK_AROUND_STEPS.map(function(s) {
+              var isChecked = !!checked[s.n];
+              return h('button', { key: s.n, role: 'listitem', 'data-ar-focusable': true,
+                'aria-label': 'Step ' + s.n + ': ' + s.area + (isChecked ? ' (checked)' : ''),
+                'aria-pressed': isChecked ? 'true' : 'false',
+                onClick: function() {
+                  var nv = Object.assign({}, checked); nv[s.n] = !nv[s.n];
+                  upd('walkChecked', nv);
+                },
+                style: { textAlign: 'left', padding: 12, borderRadius: 8, background: isChecked ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isChecked ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  h('span', { 'aria-hidden': 'true', style: { background: isChecked ? T.good : T.dim, color: '#0f172a', borderRadius: 999, width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 } }, s.n),
+                  h('span', { style: { fontSize: 22 } }, s.icon),
+                  h('strong', { style: { fontSize: 14, color: isChecked ? '#d1fae5' : T.text, flex: 1 } }, s.area),
+                  isChecked && h('span', { style: { fontSize: 16, color: T.good } }, '✓')
+                ),
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginBottom: 4 } },
+                  h('strong', { style: { color: T.accentHi } }, '👀 Check: '), s.check),
+                h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, padding: 6, borderRadius: 4, background: T.bg } },
+                  h('strong', { style: { color: T.warn } }, '🚩 Flag: '), s.flag)
+              );
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // BADGE GALLERY view — progress dashboard
       // ─────────────────────────────────────────
       function renderBadges() {
@@ -6740,7 +7220,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             { id: 'inspection-prep', icon: '🌲', name: 'Inspection Self-Walk', how: 'Complete all 8 Maine inspection self-checks.' },
             { id: 'winter-prep', icon: '🌨️', name: 'Maine Winter Prepped', how: 'Complete all 12 cold-weather prep items.' },
             { id: 'kit-packed', icon: '🎒', name: 'Trunk Kit Packed', how: 'Pack all 16 roadside-emergency kit items.' },
-            { id: 'first-car-30day', icon: '🚗', name: '30-Day Plan Complete', how: 'Finish all 17 first-car-owner tasks.' }
+            { id: 'first-car-30day', icon: '🚗', name: '30-Day Plan Complete', how: 'Finish all 17 first-car-owner tasks.' },
+            { id: 'walkaround-pro', icon: '🚶', name: 'Walk-Around Pro', how: 'Complete all 10 pre-drive walk-around steps.' },
+            { id: 'tire-pro', icon: '🛞', name: 'Tire Pro', how: 'Tap any rotation pattern in the Tire Deep Dive.' }
           ] },
           { group: '🔍 Diagnose + understand', items: [
             { id: 'obd-explorer', icon: '🔌', name: 'OBD Explorer', how: 'Tap any OBD-II code in the Diagnose module.' },
@@ -6772,8 +7254,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             { id: 'build-master', icon: '🏗️', name: 'Project Car Master', how: 'Check off all 30+ project-car build tasks.' },
             { id: 'diesel-aware', icon: '🚜', name: 'Diesel Aware', how: 'Tap any diesel key-difference in the Diesel module.' }
           ] },
-          { group: '🧪 Self-test', items: [
-            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 50-question knowledge quiz.' }
+          { group: '🧪 Self-test + path', items: [
+            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 55-question knowledge quiz.' },
+            { id: 'path-graduate', icon: '🛤️', name: 'Curriculum Path Graduate', how: 'Mark all 18 Learning Path modules as visited.' }
           ] }
         ];
 
@@ -6861,6 +7344,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'career':     return renderCareer();
         case 'quiz':       return renderQuiz();
         case 'badges':     return renderBadges();
+        case 'path':       return renderPath();
+        case 'tires':      return renderTires();
+        case 'walk':       return renderWalkAround();
         case 'resources':  return renderResources();
         case 'menu':
         default:           return renderMenu();
