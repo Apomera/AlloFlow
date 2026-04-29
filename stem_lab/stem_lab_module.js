@@ -2908,6 +2908,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'renewablesLab', icon: '\u26A1', label: 'Renewables Lab',
+                desc: 'How each renewable source actually generates electricity. Live sliders for solar PV, wind (Betz limit + cube of wind speed), hydro (head x flow), geothermal (depth x gradient), CSP, wave/tidal, biomass, and storage. Cited to NREL, IEA, IRENA.',
+                color: 'green', ready: true
+              },
+              {
                 id: 'fireEcology', icon: '\uD83D\uDD25', label: 'Fire Ecology & Indigenous Stewardship',
                 desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
                 color: 'orange', ready: true
@@ -4135,7 +4140,7 @@
             probability: true, protractor: true, volume: true,
             // Science
             anatomy: true, aquarium: true, brainAtlas: true, cell: true,
-            chemBalance: true, climateExplorer: true, companionPlanting: true,
+            chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, molecule: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
