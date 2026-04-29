@@ -814,7 +814,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'service-manual-required', name: 'Factory service manual / AllData access', icon: '📚',
       what: 'Manufacturer service procedures + torque specs + wiring diagrams.',
       when: 'Anything you haven\'t done before. Especially timing belts, electronics, fluid specs.',
-      buy: 'Many Maine public libraries offer free patron access to AllData. Used Haynes/Chilton ~$25.', cost: 'often free via library' }
+      buy: 'Many Maine public libraries offer free patron access to AllData. Used Haynes/Chilton ~$25.', cost: 'often free via library' },
+    { id: 'spark-plug-socket', name: 'Spark-plug socket', icon: '🔌',
+      what: 'Deep socket with a rubber liner that grips the porcelain insulator without cracking it.',
+      when: 'Spark-plug replacement.',
+      buy: '$8–15 for the common 5/8" or 13/16" sizes.', cost: '$8–15' },
+    { id: 'gap-gauge', name: 'Spark-plug gap gauge', icon: '📏',
+      what: 'A small disc / wire tool that measures the gap between plug electrode and ground strap.',
+      when: 'Verifying gap on new spark plugs before installation.',
+      buy: '$3–10. Coin-style works; wire-style is more accurate.', cost: '$3–10' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -865,6 +873,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       correct: ['ac-recharge-can-with-gauge', 'safety-glasses', 'gloves'],
       distractors: ['oil-filter-wrench', 'crank-pulley-tool', 'multimeter'],
       why: 'A/C top-off is the can with built-in gauge + eye protection. Refrigerant burns are real.'
+    },
+    {
+      id: 'g-battery', label: 'Replacing a dead battery on your 2014 Toyota Camry. Kit?',
+      correct: ['socket-set', 'wrench-set', 'wire-brush', 'multimeter', 'gloves', 'safety-glasses'],
+      distractors: ['oil-filter-wrench', 'cam-locking-tools', 'crank-pulley-tool'],
+      why: 'Battery work is wrenches (10mm terminals usually), wire brush for corroded posts, multimeter to verify voltage + alternator, gloves + glasses for acid risk. NOT brakes/timing-belt gear.'
+    },
+    {
+      id: 'g-spark-plugs', label: 'Spark plug replacement on an inline-4. Kit?',
+      correct: ['socket-set', 'spark-plug-socket', 'torque-wrench', 'gap-gauge', 'gloves'],
+      distractors: ['c-clamp-or-piston-tool', 'jack', 'oil-drain-pan'],
+      why: 'Spark-plug socket (rubber-lined) + torque wrench for clean install. Gap gauge to verify pre-gapped plugs. No need for jack/drain-pan.'
+    },
+    {
+      id: 'g-coolant-flush', label: 'Coolant flush + refill. Kit?',
+      correct: ['socket-set', 'wrench-set', 'oil-drain-pan', 'jack', 'jack-stands', 'funnel', 'shop-rags', 'gloves', 'safety-glasses'],
+      distractors: ['oil-filter-wrench', 'spark-plug-socket', 'cam-locking-tools'],
+      why: 'Drain pan + jack + stands to access petcock; funnel for clean refill; safety glasses for hot-coolant splash risk. Filter / plug / cam tools not used.'
+    },
+    {
+      id: 'g-headlight', label: 'Headlight bulb burned out. Kit?',
+      correct: ['screwdriver-or-clip-release', 'gloves'],
+      distractors: ['torque-wrench', 'jack', 'oil-filter-wrench'],
+      why: 'Headlight bulb on most cars is a 5-minute job. Screwdriver / clip release for the connector cover; gloves so you don\'t touch the new bulb glass.'
+    },
+    {
+      id: 'g-wheel-bearing', label: 'You diagnose a failing wheel bearing (hum that changes pitch in turns). To replace it, kit?',
+      correct: ['socket-set', 'jack', 'jack-stands', 'wire-brush', 'torque-wrench', 'gloves'],
+      distractors: ['oil-filter-wrench', 'crank-pulley-tool', 'cam-locking-tools'],
+      why: 'Hub-style bearings are bolt-in. Sockets + jack + stands + torque wrench. Wire brush for the rusted hub face — Maine reality.'
     }
   ];
 
@@ -986,6 +1024,483 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     ],
     toolInvestment: 'Industry expectation: techs supply their own tools. A starting tool box for shop work is $5,000–10,000. A senior tech\'s box may be $30,000+. Many shops offer tool credit programs or starter kits.'
   };
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.4: DIAGNOSTIC DECISION TREES — symptom → likely cause
+  // The "what's wrong with my car?" flow. Six common symptoms; each runs
+  // through 1–3 questions to narrow to a likely cause + verify-it step +
+  // DIY/shop verdict. Builds active diagnostic reasoning vs card-lookup.
+  // ─────────────────────────────────────────────────────────
+  var DECISION_TREES = {
+    'no-start': {
+      id: 'no-start', name: 'Won\'t start', icon: '🔑',
+      intro: 'Pick the symptom that matches what your car is doing right now.',
+      nodes: {
+        'root': { question: 'Turn the key. What happens?',
+          choices: [
+            { label: '🔇 Nothing — completely dead, no dash lights', next: 'v-dead' },
+            { label: '🔔 Rapid clicking, no crank, dash lights stay bright', next: 'v-starter' },
+            { label: '💡 Dash lights dim or fade out when key turns', next: 'v-batt-weak' },
+            { label: '🔁 It cranks but won\'t fire (catch + die or just spin)', next: 'cranks' }
+          ] },
+        'cranks': { question: 'When does the no-start happen?',
+          choices: [
+            { label: '🥶 Hard to start when COLD; fine once warm', next: 'v-cold' },
+            { label: '🔥 Hard to start when HOT; fine when cool', next: 'v-hot' },
+            { label: '⛽ Always — no temperature pattern', next: 'v-fuel-spark' },
+            { label: '💨 Fires briefly then dies', next: 'v-immobilizer' }
+          ] },
+        'v-dead': { verdict: true,
+          likely: 'Battery is fully discharged, OR a main fuse / cable is open.',
+          why: 'No dash lights = no 12V to the cabin. Either the battery has zero output or the path to it is broken.',
+          verify: 'Multimeter at battery posts. <11V or 0V = dead battery. If battery reads 12+V but the cabin is dead, the negative ground cable or main fusible link is the issue.',
+          diy: 'Charge or replace battery. Wire-brush both terminals. Inspect ground cable from negative to engine block + body — corrosion underneath the bolt is the silent killer.',
+          shop: 'If battery + cables read healthy but cabin is still dead: shop diagnosis (could be a body-control module, ignition switch, or main fuse).'
+        },
+        'v-starter': { verdict: true,
+          likely: 'Starter solenoid is failing OR battery has insufficient amps for cranking (even though voltage looks OK).',
+          why: 'Rapid clicking = solenoid trying to engage repeatedly. If lights stay bright, voltage is there, but amps to the starter are not making the connection.',
+          verify: 'Try a jump start. If it fires after a jump, battery was the bottleneck. If it still won\'t crank with a jump, starter is bad.',
+          diy: 'Battery test (load test free at parts stores). Clean battery + starter cable terminals. Replace starter if accessible (often a 1–2 hour job).',
+          shop: 'Starter access on transverse engines can require subframe / intake removal — that becomes a shop job.'
+        },
+        'v-batt-weak': { verdict: true,
+          likely: 'Battery is weak — voltage sags under cranking load.',
+          why: 'Lights dimming = cranking is pulling voltage below the ignition threshold. Common in Maine winter when cold thickens oil and the battery is already weakened.',
+          verify: 'Multimeter at rest: should be 12.4–12.8V. Below 12.0V = needs charging or replacement. Load-test free at NAPA / O\'Reilly / AutoZone.',
+          diy: 'Replace battery. While you\'re there, check alternator output (13.8–14.7V running) so the new battery isn\'t sabotaged.',
+          shop: 'If new battery dies again in <2 weeks: parasitic draw test. Something is pulling battery overnight (stuck relay, phantom load).'
+        },
+        'v-cold': { verdict: true,
+          likely: 'Cold-start enrichment failure — usually fuel-pressure regulator, coolant temp sensor, or aged cold-start injector.',
+          why: 'Cold engine needs a richer fuel mixture. If the ECU\'s "I\'m cold" signal is wrong, the mixture stays lean and won\'t fire.',
+          verify: 'Scan tool live data: Coolant Temp Sensor reading at first key-on. Should match outside air temp on a fully-cold engine. If CTS reads "warm," that\'s the problem.',
+          diy: 'CTS replacement is often $20–40 + 30 min. Fuel-pressure regulator is moderate.',
+          shop: 'If injector pulse-width or fuel-pressure tests are needed, take it in.'
+        },
+        'v-hot': { verdict: true,
+          likely: 'Heat-soaked starter, vapor lock, or heat-sensitive crankshaft position sensor.',
+          why: 'Hot starter = solenoid contacts expand and lose grip. Vapor lock = fuel boils in the rail and the pump can\'t pressurize. CKP sensor heat failure is common on certain engines.',
+          verify: 'Pop the hood when it won\'t hot-start. Listen for fuel pump priming when key goes ON. No prime = pump or relay heat-failed.',
+          diy: 'Insulating wrap on the starter. CKP sensor replacement varies by engine.',
+          shop: 'Persistent hot-no-start with fuel and spark verified = shop. Often a heat-sensitive electronic module.'
+        },
+        'v-fuel-spark': { verdict: true,
+          likely: 'Either no spark or no fuel. Both possible — need to split the test.',
+          why: 'Engine cranking needs three things: fuel, spark, compression. Compression rarely vanishes overnight. So it\'s fuel or spark.',
+          verify: 'Key ON (don\'t crank). Listen for fuel pump prime (~2 second whir near the back of car). No prime = pump / relay / fuse. If prime is OK, pull a spark plug and check for spark on cranking (use a spark tester).',
+          diy: 'Fuel pump fuse is free to check. Fuel pump relay swap is cheap. Plugs + coils are doable. Crank-position sensor is often the culprit.',
+          shop: 'In-tank fuel pump replacement on most cars = $300–800 shop work (or experienced DIY). Crank sensor in some engines requires significant disassembly.'
+        },
+        'v-immobilizer': { verdict: true,
+          likely: 'Anti-theft (immobilizer) is killing fuel or spark immediately after start. Or the security light is flashing on the dash.',
+          why: 'Many cars cut fuel injection if the key chip isn\'t recognized. Engine fires for 1–2 seconds then dies.',
+          verify: 'Watch the security / key-shape icon on the dash during the start attempt. If it flashes, immobilizer is rejecting the key.',
+          diy: 'Try the spare key. If spare works, original key chip is failing. Some manufacturers have a "key relearn" procedure (key on, wait 10 min, off, repeat).',
+          shop: 'If neither key works, dealer key reprogramming. Worth looking up your specific year / make first — some are DIY-relearn, some need a scan tool.'
+        }
+      }
+    },
+    'misfire': {
+      id: 'misfire', name: 'Misfire / rough idle', icon: '〰️',
+      intro: 'Engine is running rough, hesitating, or shaking. Walk through what you\'re feeling.',
+      nodes: {
+        'root': { question: 'When you notice the misfire, the check-engine light is...',
+          choices: [
+            { label: '⚠️ Flashing (blinking on and off)', next: 'v-flashing-cel' },
+            { label: '🟡 Solid amber (steady on)', next: 'cel-solid' },
+            { label: '⚫ Off — no CEL', next: 'no-cel' }
+          ] },
+        'cel-solid': { question: 'Is the misfire on one cylinder or multiple?',
+          choices: [
+            { label: '🎯 One specific cylinder (P0301–P0312)', next: 'v-one-cyl' },
+            { label: '🌪️ Random / multiple (P0300)', next: 'v-multi-cyl' },
+            { label: '❓ I haven\'t pulled codes yet', next: 'v-pull-codes' }
+          ] },
+        'no-cel': { question: 'When does the rough idle happen?',
+          choices: [
+            { label: '🥶 Cold start only — clears once warm', next: 'v-cold-only' },
+            { label: '🛣️ Only under load (uphill, hard accel)', next: 'v-load-only' },
+            { label: '🅿️ Always at idle, never on the highway', next: 'v-idle-only' }
+          ] },
+        'v-flashing-cel': { verdict: true,
+          likely: 'SEVERE misfire — fuel is dumping into the exhaust unburnt.',
+          why: 'Flashing CEL = misfire bad enough that raw fuel is hitting the catalytic converter. Continued driving destroys the cat ($800–2500 to replace).',
+          verify: 'STOP DRIVING. Get it scanned (free at parts stores). Note the codes BEFORE clearing.',
+          diy: 'If you\'re close to home, drive gently. Otherwise tow it. Then diagnose plugs + coils + fuel injectors per the codes pulled.',
+          shop: 'If the cat is already glowing red or rattling, you\'re looking at cat replacement on top of misfire repair. Don\'t add to the bill.'
+        },
+        'v-one-cyl': { verdict: true,
+          likely: 'That cylinder\'s coil, plug, or injector. The "swap test" is the fastest diagnostic.',
+          why: 'Misfire on one cylinder narrows the cause to that cylinder\'s ignition or fuel components.',
+          verify: 'Swap the suspect coil with a known-good neighbor cylinder. Clear codes. Drive 5 minutes. If misfire MOVED (now on the swapped-to cylinder), coil is bad. If it stayed on the original cylinder, it\'s a plug, injector, or compression issue.',
+          diy: 'Coil $30–80 + 15 min. Plug $5–15 + 30 min. Injector swap test is the next step if both check out.',
+          shop: 'Compression test diagnosis = shop ($100–200) or experienced DIY with a compression tester.'
+        },
+        'v-multi-cyl': { verdict: true,
+          likely: 'Something common to multiple cylinders: fuel pressure, vacuum leak, bad gas, ignition system as a whole.',
+          why: 'Multi-cylinder misfire rules out a single coil/plug. Something the cylinders share is the issue.',
+          verify: 'Try a tank of fresh fuel + a fuel-system cleaner. If unchanged, smoke-test for vacuum leaks. Check fuel pressure with a gauge.',
+          diy: 'Fresh fuel is free. Vacuum-leak inspection (visual + brake-cleaner test on hoses) is free.',
+          shop: 'Fuel-pressure test, smoke test, MAF cleaning + relearn — usually shop work unless you have the gauges.'
+        },
+        'v-pull-codes': { verdict: false, terminal: true,
+          likely: 'You need codes first. Free at parts stores.',
+          why: 'A scan tells you cylinder-specific (P0301-P0312) vs random (P0300). Different repair paths.',
+          verify: 'Take it to NAPA / O\'Reilly / AutoZone — they read codes free. Write down ALL codes (often there are 2-3 related codes).',
+          diy: 'Free.',
+          shop: 'After codes, return to this tree and pick the matching branch.'
+        },
+        'v-cold-only': { verdict: true,
+          likely: 'Cold-start enrichment, coolant temp sensor, or one weak fuel injector showing only when ECU runs the cold-fuel map.',
+          why: 'Cold-only misfire happens because the ECU runs richer when cold. A weak injector that masks at warm operating temp will show when overworked at cold.',
+          verify: 'Scan tool while cold-cranking. Look for misfire counter on individual cylinders. The cylinder counting up is your suspect.',
+          diy: 'Plug swap on suspect cylinder. Injector cleaner in the tank. Both inexpensive.',
+          shop: 'Injector flow test ($150–250) if cleaner doesn\'t solve it.'
+        },
+        'v-load-only': { verdict: true,
+          likely: 'Ignition system can\'t maintain spark under high cylinder pressure. Worn plugs / failing coils / bad coil boot.',
+          why: 'Cylinder pressure under load is much higher than at idle. A weak spark fires fine at idle but breaks down under compression.',
+          verify: 'Pull plugs and inspect — gap, color, electrode wear. Check coil boot for tears or carbon tracks.',
+          diy: 'Plug + coil-boot replacement.',
+          shop: 'Coil-on-plug systems with multiple weak coils are usually a "while you\'re in there" full-set replacement.'
+        },
+        'v-idle-only': { verdict: true,
+          likely: 'Vacuum leak. Idle is when the engine is most sensitive to extra unmetered air.',
+          why: 'At highway speed, throttle is open and a tiny vacuum leak doesn\'t change the fuel ratio. At idle, throttle is nearly closed — a small leak is a big percentage of the air entering.',
+          verify: 'Spray brake cleaner (engine warm, idling) at intake hoses, gaskets, vacuum lines. RPM rises briefly when cleaner gets sucked into a leak.',
+          diy: 'Cracked intake boot $20–50 + 30 min. Bad PCV valve $10. Loose hose clamp = free fix.',
+          shop: 'Intake manifold gasket leaks (V6 / V8) require manifold removal.'
+        }
+      }
+    },
+    'brakes': {
+      id: 'brakes', name: 'Brake feel or sound', icon: '🛑',
+      intro: 'Something off with the brakes. Pick what you\'re feeling or hearing.',
+      nodes: {
+        'root': { question: 'What\'s the symptom?',
+          choices: [
+            { label: '🎵 Squeal or chirp at light pressure', next: 'v-squeal' },
+            { label: '🦷 Metal grinding at any pressure', next: 'v-grind' },
+            { label: '💓 Pedal pulses up and down when braking', next: 'v-pulse' },
+            { label: '🦴 Pedal goes soft / sinks toward floor', next: 'v-soft' },
+            { label: '↔️ Car pulls hard to one side when braking', next: 'v-pull' },
+            { label: '🚨 ABS light on; pedal feels different', next: 'v-abs' }
+          ] },
+        'v-squeal': { verdict: true,
+          likely: 'Wear-indicator tab is touching the rotor — pads have ~10% life left.',
+          why: 'Brake pads have a small spring tab designed to scrape the rotor when pads wear thin. The high-pitched squeal is by design — it\'s your warning.',
+          verify: 'Pull a wheel. Look at the pad thickness. Below 3/32" (2.4mm) is the replacement threshold.',
+          diy: 'Brake pads + rotors = moderate DIY ($80–150 parts per axle). Earlier in the wear cycle = easier job (no rust-locked caliper bolts yet).',
+          shop: 'First-time brake jobs benefit from shop or mentor supervision. Maine: rusted bleeders are a real risk.'
+        },
+        'v-grind': { verdict: true,
+          likely: 'Pads worn through; the steel pad backing is grinding the rotor.',
+          why: 'Once the friction material is gone, you\'re cutting grooves in the rotor with the steel backing plate.',
+          verify: 'Don\'t test-drive it more than necessary. The grinding is destroying rotors fast.',
+          diy: 'Replace pads AND rotors (the rotors are now scored). Allow extra time for rusted-on rotor removal.',
+          shop: 'If you delayed past this point and have heat-warped rotors or seized calipers, shop work likely needed.'
+        },
+        'v-pulse': { verdict: true,
+          likely: 'Warped rotors (or rust deposits creating uneven thickness). One axle is most common — usually front.',
+          why: 'When pad meets rotor at uneven thickness, brake force pulses through pedal. Warp is from heat (long downhills) or rust pitting (Maine after-winter classic).',
+          verify: 'Lift a wheel. Spin the rotor. Visual + a dial indicator catches warp. Or measure rotor thickness at multiple points.',
+          diy: 'Replace rotors + pads. Resurfacing (machining) is cheap if rotors are above minimum thickness.',
+          shop: 'If your rotors are below minimum thickness already, replacement is the only option.'
+        },
+        'v-soft': { verdict: true,
+          likely: 'Air in the brake lines, fluid leak, or master cylinder failing.',
+          why: 'Pedal sinking means hydraulic pressure isn\'t holding. Could be air (compressible — pedal is mushy), or fluid leaving (disappearing into a leak).',
+          verify: 'Check brake fluid reservoir level. Low + dropping = leak; find it (look at calipers, lines, master cylinder). Full + soft = air in lines (after a recent brake job?) or master cylinder bypass.',
+          diy: 'Brake bleed (manual or vacuum) is doable. Master cylinder $80–150 + 1–2 hours.',
+          shop: 'STOP DRIVING. A failing brake system is a not-driveable safety issue. Tow if needed.'
+        },
+        'v-pull': { verdict: true,
+          likely: 'Sticky caliper on the OPPOSITE side from the pull.',
+          why: 'If left caliper is dragging (always slightly applied), it doesn\'t apply HARDER when you brake — but the right caliper does, so the car pulls right when you brake.',
+          verify: 'After driving, carefully feel each wheel hub for heat. The hot one had a dragging caliper.',
+          diy: 'Caliper rebuild (new piston + seals + slide pins) ~$30–60 + 2 hours. Caliper replacement $50–150 + 1 hour. Brake fluid flush after.',
+          shop: 'If the caliper seized hard enough to overheat the rotor, that rotor needs replacement too.'
+        },
+        'v-abs': { verdict: true,
+          likely: 'ABS wheel-speed sensor (most common). Maine: salt corrosion on sensor or tone ring.',
+          why: 'ABS module is constantly checking sensor signal from each wheel. One wheel reading wrong = system disables ABS until fixed.',
+          verify: 'Scan tool with ABS support reads the C-codes (C0035, C0040, C0045, C0050) telling you which wheel.',
+          diy: 'Sensor replacement $30–80 + 30 min. The bolt is often rusted in Maine — penetrant + heat + patience.',
+          shop: 'Tone ring rusted = often a wheel-hub assembly replacement ($200–500).'
+        }
+      }
+    },
+    'overheating': {
+      id: 'overheating', name: 'Overheating', icon: '🌡️',
+      intro: 'Temp gauge is climbing or the engine is steaming. Pick the situation.',
+      nodes: {
+        'root': { question: 'How is the engine overheating?',
+          choices: [
+            { label: '📈 Slow creep above normal over 10+ min', next: 'creep' },
+            { label: '🚀 Sudden spike to red after a freeway run', next: 'v-fan' },
+            { label: '☁️ Steam under hood / out of the radiator', next: 'v-blown' },
+            { label: '❄️ Heater blows COLD when engine is hot', next: 'v-airlock' }
+          ] },
+        'creep': { question: 'When you check the coolant reservoir...',
+          choices: [
+            { label: '💧 Level is LOW or empty', next: 'v-leak' },
+            { label: '🟢 Level is fine; the gauge is what\'s wrong', next: 'v-thermostat' }
+          ] },
+        'v-leak': { verdict: true,
+          likely: 'Coolant leak — visible (radiator, hose, water pump) or invisible (head gasket, heater core inside cabin).',
+          why: 'Low coolant = there\'s a leak somewhere, OR the system is consuming coolant internally.',
+          verify: 'Walk around with the engine cold. Look for green / orange / pink crusty residue. Inside the cabin: pull carpet under passenger floor — wet + sweet smell = heater core. White exhaust smoke = head gasket.',
+          diy: 'Hose replacement $15–40. Radiator cap $10. Heater core: invasive ($300–800 in shop, often $50 part + 6 hours DIY through the dashboard).',
+          shop: 'Head gasket = $1500–3500. Water pump access varies; often shop work.'
+        },
+        'v-thermostat': { verdict: true,
+          likely: 'Thermostat stuck closed — coolant isn\'t circulating to the radiator.',
+          why: 'A closed thermostat traps coolant in the engine. Heat builds with nowhere to go.',
+          verify: 'Engine cold: open hood. Start engine. Watch the upper radiator hose. Within 5 min it should warm up + you should feel coolant flowing. Cold hose at 10+ min = stuck-closed thermostat.',
+          diy: 'Thermostat $15–30 + 1–2 hours (coolant work). Bleed system after.',
+          shop: 'If access requires intake removal (some V6/V8s), shop is reasonable.'
+        },
+        'v-fan': { verdict: true,
+          likely: 'Cooling fan failure. At highway speeds, ram-air cools the radiator. At low speeds (after exiting freeway, in traffic), the fan must engage — if it doesn\'t, temp spikes.',
+          why: 'Engine generates the same heat at idle as at speed; only airflow changes. No fan = no airflow at low speed.',
+          verify: 'Engine warm + idling. Watch the fan. Fan should kick on around 200°F (when AC is on, fan should kick on immediately). No fan = relay, fuse, or motor.',
+          diy: 'Fan relay swap $20 + 5 min. Fan motor $60–200 + 1–2 hours.',
+          shop: 'If the fan controller / module has failed (some modern cars), scan-tool diagnosis required.'
+        },
+        'v-blown': { verdict: true,
+          likely: 'Coolant has overpressurized — radiator cap or hose has burst, OR head gasket has failed and pressurized exhaust into the cooling system.',
+          why: 'Steam = coolant boiling. Either pressure dropped (cap / hose) and boiling point dropped, OR something is dumping heat into the cooling system faster than it can shed it.',
+          verify: 'STOP. Let it cool 30+ min. NEVER open a hot radiator cap. Cold check: smell coolant for exhaust smell, look for oil floating, white residue on dipstick.',
+          diy: 'Cap or hose replacement is straightforward.',
+          shop: 'Head gasket / cracked head / cracked block — STOP DRIVING. Tow it.'
+        },
+        'v-airlock': { verdict: true,
+          likely: 'Air pocket in the cooling system (often after a recent coolant change without proper bleed).',
+          why: 'Air trapped at the top of the heater core means the coolant can\'t move heat to the heater core. Engine can simultaneously overheat AND blow cold air at vents.',
+          verify: 'Engine cold. Open the highest bleed point (varies; some have a bleed screw, some don\'t). Run engine with reservoir cap off until air bubbles stop and steady stream returns.',
+          diy: 'Bleed procedure varies — some cars need running with heat on max + repeated top-ups. RTFM.',
+          shop: 'Persistent airlock after a proper bleed = head gasket failure pushing combustion gas into coolant.'
+        }
+      }
+    },
+    'charging': {
+      id: 'charging', name: 'Battery / charging', icon: '🔋',
+      intro: 'Dim lights, dashboard battery icon, repeated dead-battery mornings — narrow it down.',
+      nodes: {
+        'root': { question: 'When does the symptom show?',
+          choices: [
+            { label: '🌃 Battery dead every morning', next: 'v-parasitic' },
+            { label: '💡 Headlights dim at idle, brighter at RPM', next: 'v-low-charge' },
+            { label: '💡 Lights dim everywhere, even running', next: 'v-batt-or-ground' },
+            { label: '🔋 Dashboard battery icon stays lit', next: 'v-icon' }
+          ] },
+        'v-parasitic': { verdict: true,
+          likely: 'Parasitic draw — something is staying powered overnight.',
+          why: 'Even at rest, modern cars draw a tiny "keep-alive" current (~30–50mA). A stuck relay, glove box light, or aftermarket accessory can pull 1–3A and kill a battery overnight.',
+          verify: 'Multimeter in series with negative battery cable (set to 10A range). Should read <100mA after 20 min of "the car settling." Pull fuses one at a time; the one that drops the reading is the offender.',
+          diy: 'Fuse-pull testing. Aftermarket dashcam / amplifier / interior light. Glove box switch jammed.',
+          shop: 'If parasitic draw is on a non-fused circuit (alternator diode, ignition switch), shop work.'
+        },
+        'v-low-charge': { verdict: true,
+          likely: 'Alternator output is low or belt is slipping at idle RPM.',
+          why: 'Brighter lights at higher RPM = the alternator is making more voltage at higher RPM. At idle, output isn\'t keeping up with demand, so battery sags.',
+          verify: 'Multimeter on battery, engine running. Should be 13.8–14.7V at idle. Below 13.5V = weak alternator. Wiggle the serpentine belt — should be tight + crack-free.',
+          diy: 'Belt replacement $20–40. Alternator replacement varies by access.',
+          shop: 'Buried alternator (transverse engine, behind components) can become a multi-hour job.'
+        },
+        'v-batt-or-ground': { verdict: true,
+          likely: 'Battery is failing OR a ground cable / strap is corroded.',
+          why: 'A bad ground creates voltage drop. Symptoms feel like a weak battery even when battery tests OK.',
+          verify: 'Voltage drop test: multimeter from battery NEG to engine block (with engine cranking). Should read <0.5V drop. Higher = corroded ground.',
+          diy: 'Wire-brush all ground points. Replace ground strap $10. Battery test free at parts stores.',
+          shop: 'If voltage drops are mysterious, shop electrical diagnosis.'
+        },
+        'v-icon': { verdict: true,
+          likely: 'Charging system fault — alternator not output, broken belt, or sensor reporting fault.',
+          why: 'The dashboard battery icon means "the alternator is not charging the battery." It\'s a charging-system warning, not a battery warning.',
+          verify: 'Pop hood and visually verify the serpentine belt is intact. Multimeter on battery: <12.5V running = alternator definitely not charging. Check warning lamp circuit if alternator is verified working (sometimes the lamp itself is the fault).',
+          diy: 'Belt replacement. Alternator replacement.',
+          shop: 'Smart-charging systems (newer GM, Ford) need scan-tool diagnosis to verify the regulator is commanding correctly.'
+        }
+      }
+    },
+    'steering': {
+      id: 'steering', name: 'Steering / handling noise', icon: '🚗',
+      intro: 'Something\'s off in how the car steers, tracks, or sounds at the wheels.',
+      nodes: {
+        'root': { question: 'What\'s the symptom?',
+          choices: [
+            { label: '🎵 Hum that gets louder on one curve, quieter on the other', next: 'v-bearing' },
+            { label: '😱 Whine when turning the steering wheel', next: 'v-ps' },
+            { label: '🦴 Click click click in tight slow turns', next: 'v-cv' },
+            { label: '↗️ Pulls to one side on a flat road', next: 'pull' },
+            { label: '🪨 Clunk over bumps from one corner', next: 'v-suspension' }
+          ] },
+        'pull': { question: 'After driving 10 minutes, you check tire pressure. Is it equal across all four?',
+          choices: [
+            { label: '🟢 Yes — all four equal and at spec', next: 'v-alignment' },
+            { label: '🔴 One tire is 5+ psi lower', next: 'v-tire' }
+          ] },
+        'v-bearing': { verdict: true,
+          likely: 'Wheel bearing failing on the side that gets QUIETER in a turn.',
+          why: 'In a turn, the OUTSIDE wheel takes more load. If the right bearing is bad, going LEFT loads the right wheel and amplifies the hum; going RIGHT unloads it and the hum quiets.',
+          verify: 'Lift each wheel. Spin by hand — listen + feel for grinding. Grab top + bottom and rock — any play = bearing.',
+          diy: 'Hub-style bearings are bolt-in ($100–200 + 1–2 hours). Pressed-in bearings need a press.',
+          shop: 'Pressed-in bearings + rusted-on hubs = shop work in salt-state Maine.'
+        },
+        'v-ps': { verdict: true,
+          likely: 'Power-steering pump or low fluid (hydraulic systems only — electric steering whines differently).',
+          why: 'PS pump pressurizes fluid to assist your turning. Low fluid or worn pump = pump cavitates + whines.',
+          verify: 'Check PS reservoir level. Top up with the CORRECT spec fluid (not generic ATF — wrong fluid wrecks systems).',
+          diy: 'Top-up is free + 5 min. Pump replacement is moderate.',
+          shop: 'PS rack leak or pump replacement on tight engine bays = shop.'
+        },
+        'v-cv': { verdict: true,
+          likely: 'CV (constant-velocity) joint failing on a front-wheel-drive car. Outer joint clicks under load in turns.',
+          why: 'CV joint balls run in races packed with grease. When the boot tears, grease leaves + dirt enters. Eventually the balls and races wear and click.',
+          verify: 'Drive in a tight circle in an empty parking lot — both directions. Click in left turns = right CV; click in right turns = left CV.',
+          diy: 'Half-shaft (axle) replacement $80–200 + 2–4 hours. Mostly straightforward but rust-difficulty in Maine.',
+          shop: 'Stuck axle nut (often) requires impact and heat — pushes some DIYers to a shop.'
+        },
+        'v-alignment': { verdict: true,
+          likely: 'Alignment is off (toe / camber / caster). Cars that hit potholes or had recent suspension work commonly need alignment.',
+          why: 'Misaligned wheels make the car track to one side and wear tires unevenly (inside or outside edge).',
+          verify: 'Inspect tire wear pattern. Inside-edge wear = toe out. Outside-edge wear = toe in or worn camber. Feathered = alignment definitely off.',
+          diy: 'Not DIY — needs alignment rack and laser measurement.',
+          shop: '4-wheel alignment $80–150. Required after any suspension work and recommended once per year.'
+        },
+        'v-tire': { verdict: true,
+          likely: 'Slow leak on the under-pressure tire (pulling toward it).',
+          why: 'Lower-pressure tire has more rolling resistance, pulling the car toward that side.',
+          verify: 'Inflate to spec. Drive a week. Re-check pressure. Dropping again = leak — patch / plug / replace.',
+          diy: 'Tire plug kit $10. Soapy water finds the leak.',
+          shop: 'Sidewall punctures or holes in the tread shoulder = replacement.'
+        },
+        'v-suspension': { verdict: true,
+          likely: 'Worn sway-bar link, ball joint, or strut mount — corner-specific clunks usually trace to one of these.',
+          why: 'Bumps load suspension joints in compression and rebound. Worn bushings or bearings clunk audibly.',
+          verify: 'Lift the corner. Grab the wheel at 9 and 3 — rock for tie-rod play. Grab at 12 and 6 — rock for ball-joint play. Crawl under and pry on each link.',
+          diy: 'Sway-bar link $15–40 each + 30 min. Strut mount $40–80 + spring compressor required.',
+          shop: 'Ball joint replacement varies — some are bolt-in, some are pressed-in. Pressed = shop.'
+        }
+      }
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.45: ESTIMATE DECODER — read a shop quote, identify upsells
+  // Each common line item: what it actually means, fair price band, and
+  // whether it\'s legitimate at OEM interval, leverageable as DIY, or a
+  // common upsell to push back on. Maine independent shop rates as of 2026.
+  // ─────────────────────────────────────────────────────────
+  var ESTIMATE_ITEMS = [
+    { id: 'shop-rate', icon: '⏱️', name: 'Shop labor rate (per hour)',
+      what: 'How much labor costs per hour. Multiplied by the "book time" the shop estimates the job takes.',
+      fairPrice: 'Maine 2026: independent $90–150/hr; dealer $130–200/hr; specialty (German, Euro, performance) up to $250/hr.',
+      verdict: 'standard',
+      flag: 'Compare quotes from 2–3 shops. Same job, same parts — labor differences are real.' },
+    { id: 'diag-fee', icon: '🔍', name: 'Diagnostic fee',
+      what: 'Hourly charge to figure out what\'s wrong. Often waived if you have the work done at the same shop.',
+      fairPrice: '$80–150 typical. Dealer $130–200.',
+      verdict: 'standard',
+      flag: 'Always ask: "Will the diag fee be waived if I authorize the repair here?" Most shops will.' },
+    { id: 'shop-supplies', icon: '🧴', name: 'Shop supplies fee / environmental fee',
+      what: 'Catch-all for rags, brake cleaner, fluid disposal. Usually 5–10% of labor.',
+      fairPrice: '5–10% of labor is normal. >15% is high.',
+      verdict: 'standard',
+      flag: 'A separate $25 "environmental fee" added to a $300 job is normal. A $150 fee on a small job is excessive.' },
+    { id: 'cabin-filter', icon: '🌬️', name: 'Cabin air filter replacement',
+      what: 'Replaces the filter for HVAC airflow into the cabin (usually behind glove box).',
+      fairPrice: '$40–80 installed. DIY: $15 part + 5 minutes.',
+      verdict: 'diy',
+      flag: 'CLASSIC upsell. Filter is $15 at any parts store; installation is opening the glove box. If shop is "recommending" it during an oil change, do it yourself.' },
+    { id: 'engine-air-filter', icon: '💨', name: 'Engine air filter replacement',
+      what: 'Replaces the filter for engine intake.',
+      fairPrice: '$50–80 installed. DIY: $15–25 part + 5 minutes.',
+      verdict: 'diy',
+      flag: 'Same upsell category as cabin filter. The labor is opening 2–4 clips on the airbox.' },
+    { id: 'fuel-injection-flush', icon: '⛽', name: 'Fuel injection cleaning service',
+      what: 'Adds cleaner to fuel system OR runs a pressurized solvent through injectors.',
+      fairPrice: '$80–200.',
+      verdict: 'often-upsell',
+      flag: 'Only legitimate if you have measurable performance issues (rough idle, misfire codes). For a routine maintenance push, a $10 bottle of Techron in your gas tank does the same thing for most cars.' },
+    { id: 'engine-flush', icon: '🛢️', name: 'Engine oil flush',
+      what: 'Adds a strong solvent to the oil for ~10 minutes before draining; supposed to clean sludge.',
+      fairPrice: '$40–80.',
+      verdict: 'often-upsell',
+      flag: 'Aggressive flush on an older engine (>120K miles) can DISLODGE built-up sludge and clog oil passages. Most OEM service manuals do NOT recommend engine flushes. Decline this on older cars.' },
+    { id: 'transmission-flush', icon: '🔄', name: 'Transmission fluid flush',
+      what: 'Replaces transmission fluid via a machine that cycles fluid in/out.',
+      fairPrice: '$150–300.',
+      verdict: 'depends',
+      flag: 'Legitimate at OEM interval (60–100K miles). BUT: machine flush on an older trans that has never been serviced can dislodge debris and CAUSE transmission failure. If trans is over 100K with no service history, do a DRAIN-and-fill (no machine), not a flush.' },
+    { id: 'brake-fluid-flush', icon: '🛑', name: 'Brake fluid flush',
+      what: 'Bleeds and replaces hydraulic brake fluid throughout the system.',
+      fairPrice: '$80–150.',
+      verdict: 'standard',
+      flag: 'LEGITIMATE every 2–3 years (Maine humidity especially). Brake fluid absorbs water; old fluid lowers boiling point + corrodes ABS components.' },
+    { id: 'coolant-flush', icon: '💧', name: 'Coolant flush',
+      what: 'Drains and refills cooling system, often with a machine flush.',
+      fairPrice: '$100–200.',
+      verdict: 'standard',
+      flag: 'Legitimate at OEM interval (varies 30K–100K miles). Old coolant becomes acidic + eats water pumps.' },
+    { id: 'tire-rotation', icon: '🛞', name: 'Tire rotation',
+      what: 'Move tires front-to-back / cross-pattern to even out wear.',
+      fairPrice: '$20–50. Free at most shops where you bought the tires.',
+      verdict: 'diy',
+      flag: 'DIY-friendly with jack + stands + torque wrench. If you bought tires at a shop, free rotation is part of most warranties — use it.' },
+    { id: 'wheel-balance', icon: '⚖️', name: 'Wheel balance (per tire)',
+      what: 'Spin balance the wheel + tire on a machine; add weights to correct.',
+      fairPrice: '$15–30 per wheel. Free with new tire purchase.',
+      verdict: 'standard',
+      flag: 'Only needed if you have a shimmy at highway speeds. Skip if you don\'t feel a vibration.' },
+    { id: 'alignment', icon: '📐', name: 'Wheel alignment',
+      what: 'Adjust front (and rear, on independent-rear-suspension cars) wheel angles to spec.',
+      fairPrice: '$80–150 4-wheel; $50–80 front-only.',
+      verdict: 'standard',
+      flag: 'Required after suspension work, hitting a curb, uneven tire wear. Recommended annually. NOT routinely upsold during oil change unless evidence (tire wear).' },
+    { id: 'spark-plugs', icon: '⚡', name: 'Spark plug replacement',
+      what: 'Replaces all plugs at OEM interval (60K–100K miles for iridium).',
+      fairPrice: '$80–250 4-cylinder. $200–500 V6 with intake removal.',
+      verdict: 'depends',
+      flag: 'Legitimate at OEM interval. Quote varies enormously by access. Inline-4 cars can be $20 + 30 min DIY; transverse V6 with intake removal is real shop work.' },
+    { id: 'evap-smoke-test', icon: '💨', name: 'EVAP smoke test',
+      what: 'Pressurize fuel-vapor system with smoke to find leaks (P0455 / P0442 codes).',
+      fairPrice: '$80–150.',
+      verdict: 'standard',
+      flag: 'Legitimate diagnostic for evaporative emissions codes. Tightening a loose gas cap is the free first step before paying for a smoke test.' },
+    { id: 'computer-reset', icon: '💻', name: 'Computer reset / "ECU relearn"',
+      what: 'Clears the computer\'s adaptive memory after a battery / sensor change.',
+      fairPrice: '$50–100.',
+      verdict: 'often-upsell',
+      flag: 'Most cars relearn automatically after 50–100 miles of driving. Pay for this only on cars that explicitly require a scan-tool relearn (some VW / Audi / BMW).' },
+    { id: 'wiper-blades', icon: '🌧️', name: 'Wiper blade replacement (each)',
+      what: 'Swap wiper blades.',
+      fairPrice: '$25–40 installed. DIY: $15–30 + 5 minutes.',
+      verdict: 'diy',
+      flag: 'Pure DIY. Parts stores will install them for free if you buy there.' },
+    { id: 'serpentine-belt', icon: '🔗', name: 'Serpentine belt replacement',
+      what: 'Replace belt that drives accessories (alternator, AC, water pump).',
+      fairPrice: '$80–200.',
+      verdict: 'standard',
+      flag: 'Legitimate at OEM interval (60–100K miles) or if cracked/glazed. Belt + tensioner replacement together is "while you\'re in there" smart.' },
+    { id: 'tire-pressure-system', icon: '📡', name: 'TPMS sensor replacement',
+      what: 'Replace tire-pressure monitoring sensor in a wheel.',
+      fairPrice: '$80–150 per sensor.',
+      verdict: 'standard',
+      flag: 'Sensors die at ~7–10 years (battery embedded in sensor). Replace as a set when several go at once.' },
+    { id: 'headlight-restoration', icon: '✨', name: 'Headlight lens restoration',
+      what: 'Sand + polish + UV-clearcoat oxidized headlight lenses.',
+      fairPrice: '$80–150 both lenses.',
+      verdict: 'diy',
+      flag: 'Kits $15–25 from parts stores work as well as shop service. 30 min effort.' },
+    { id: 'a-c-recharge', icon: '❄️', name: 'A/C recharge',
+      what: 'Add refrigerant to A/C system.',
+      fairPrice: '$80–250 (more if leak repair needed).',
+      verdict: 'depends',
+      flag: 'Topping off slightly low system: DIY-able with a $30–50 can + gauge. Empty system: there\'s a LEAK that needs repair before refilling — refusing to find it is throwing money away.' }
+  ];
 
   // ─────────────────────────────────────────────────────────
   // SECTION 9.5: MAINE STATE INSPECTION — annual sticker walkthrough
@@ -1201,7 +1716,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q10', icon: '🌲',
       stem: 'You\'re a 16-year-old in rural Maine. Your inspection failed for "perforated frame rust." Can you DIY?',
       choices: ['Yes — weld a patch', 'No — frame work is structural and a Maine inspection station has to certify it. Plan to repair professionally or replace the vehicle.', 'Spray rust converter on it', 'Drive it to NH where the rules are different'],
-      correct: 1, why: 'Frame perforation is an unsafe-vehicle issue. Maine inspection stations have to certify the repair. Some structural rust isn\'t repairable and the car becomes a total loss.' }
+      correct: 1, why: 'Frame perforation is an unsafe-vehicle issue. Maine inspection stations have to certify the repair. Some structural rust isn\'t repairable and the car becomes a total loss.' },
+    { id: 'q11', icon: '🧤',
+      stem: 'You\'re working on a hybrid for the first time. You see ORANGE cables under the hood. What do they tell you?',
+      choices: ['Decorative, manufacturer color choice', 'These are 200–800 volt high-voltage lines — DO NOT touch without HV-rated insulated gloves and the proper service-disconnect procedure', 'They\'re for the radio', 'They\'re fuel lines'],
+      correct: 1, why: 'Orange = high voltage on every modern hybrid and EV (SAE J1772 standard). Unplanned contact with HV cables can be lethal. Always follow the manufacturer\'s HV-disable procedure first.' },
+    { id: 'q12', icon: '🛒',
+      stem: 'You\'re looking at a used 2012 Subaru in Maine. The seller has the engine warmed up before you arrive. What should you do?',
+      choices: ['Drive it — warm engine drives best', 'Insist on starting it COLD; warm engines hide cold-start knocks, misfires, and smoke', 'Skip the inspection because they prepped the car', 'Trust the seller'],
+      correct: 1, why: 'A cold start exposes problems that disappear once warm: bad starter, dead-cylinder misfire, valve-train tick, blue smoke. Sellers who refuse a cold start are hiding something.' },
+    { id: 'q13', icon: '🚩',
+      stem: 'You magnet-test the rocker panels of a used Maine car. The magnet slides off the lower rocker but sticks to the door above. What does this mean?',
+      choices: ['Magnet is broken', 'Lower rocker has filler / fiberglass over rust — body work was done', 'The car was painted recently', 'Normal'],
+      correct: 1, why: 'A magnet only sticks to steel. If it slides off the rocker but sticks to the door, the rocker has bondo or fiberglass body filler — usually patching salt-rust. Negotiate or walk.' },
+    { id: 'q14', icon: '〰️',
+      stem: 'Your check-engine light is FLASHING (blinking on/off, not solid). What\'s the right action?',
+      choices: ['Drive normally — flashing is just a warning', 'STOP DRIVING — flashing CEL means severe misfire that can destroy the catalytic converter ($800–2500 to replace)', 'Disconnect the battery to clear it', 'Add fuel additive'],
+      correct: 1, why: 'Flashing CEL = severe misfire dumping unburnt fuel into the exhaust. The catalytic converter glows red and can be permanently destroyed in minutes. Stop and tow if necessary.' },
+    { id: 'q15', icon: '🌧️',
+      stem: 'Your annual Maine inspection is in two days. What\'s a smart pre-walk move?',
+      choices: ['Wash the car well', 'Walk around at night, have someone press the brake, cycle every signal/headlight; honk horn; try every seatbelt — bulb / fuse / seatbelt fails are 5-minute fixes', 'Park in a dry garage', 'Add expensive premium fuel'],
+      correct: 1, why: 'The most common Maine inspection fails are simple — a burned-out bulb, an empty washer reservoir, a dead horn, a wiper that streaks. 10-minute pre-walk catches most.' },
+    { id: 'q16', icon: '💵',
+      stem: 'A shop quotes you "engine flush service — $60" during an oil change on a 130,000-mile car. What\'s your move?',
+      choices: ['Authorize — preventive maintenance', 'Decline — engine flushes on older engines can DISLODGE built-up sludge and clog oil passages; most OEM service manuals do not recommend it', 'Negotiate to $30', 'Ask for two flushes'],
+      correct: 1, why: 'Engine flush is a common upsell. Aggressive solvent on a high-mileage engine with built-up deposits can break loose chunks that clog oil galleries. Most manufacturers do not recommend.' },
+    { id: 'q17', icon: '⚡',
+      stem: 'EV regenerative braking lets pads last 3–5x longer. What problem does this create in salt-state Maine?',
+      choices: ['Pads get too cold', 'Pads + rotors that don\'t get used can corrode (rust onto rotor face); need annual brake-system cleaning + occasional friction-braking', 'Brakes overheat', 'Charging gets slower'],
+      correct: 1, why: 'Underused brakes + Maine salt = corrosion between pad and rotor. Periodic aggressive friction braking + annual cleaning keeps EV brakes healthy.' },
+    { id: 'q18', icon: '🔍',
+      stem: 'Your engine cranks but won\'t fire. You turn the key to ON (not crank) — what do you listen for first?',
+      choices: ['Stereo turning on', 'Fuel pump priming whir from the back of the car (~2 seconds)', 'Wipers parking', 'Door chime'],
+      correct: 1, why: 'Key-on (not cranking) primes the fuel pump for 2 seconds. No prime = no fuel = no start. This $0 test points to fuel-pump / fuse / relay before you condemn the starter or ignition.' },
+    { id: 'q19', icon: '🛑',
+      stem: 'You feel pulsing through the brake pedal when stopping. What\'s the most likely cause?',
+      choices: ['Worn pads', 'Warped rotors (or rust deposits creating uneven thickness — common in Maine after winter)', 'Soft pedal / air in lines', 'ABS sensor fault'],
+      correct: 1, why: 'Pulse in the pedal = uneven rotor thickness. Heat warp from long downhills OR rust pitting from sitting in salt. Resurfacing or replacement is the fix.' },
+    { id: 'q20', icon: '🛞',
+      stem: 'You hear a hum at speed that gets louder turning LEFT and quieter turning RIGHT. Which side has the bad bearing?',
+      choices: ['Left', 'Right (load shifts off it when turning right)', 'Both', 'Front-rear can\'t tell'],
+      correct: 1, why: 'In a turn, weight shifts to the OUTSIDE wheel. Turning left loads the right wheel — if right bearing is bad, hum gets louder. Turning right unloads it and quiet.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1315,14 +1870,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       function renderMenu() {
         var modules = [
           { id: 'diagnose', icon: '🔍', label: 'Diagnose', desc: 'OBD-II codes, listening cues, fluid analysis, visual inspection.' },
+          { id: 'tree', icon: '🌳', label: 'Decision tree', desc: 'Symptom → likely cause. 6 interactive flowcharts (no-start, misfire, brakes, overheating, charging, steering).' },
           { id: 'repair', icon: '🔧', label: 'Repair scenarios', desc: '12 step-by-step jobs, from oil change + battery to timing belt.' },
           { id: 'tools', icon: '🧰', label: 'Tool selection', desc: 'Pick the right tool for the job. Builds your mental toolkit.' },
           { id: 'safety', icon: '🛡️', label: 'Safety modules', desc: 'Jack stands, electrical, refrigerant, hot exhaust, springs, fluid disposal.' },
           { id: 'inspection', icon: '🌲', label: 'Maine inspection', desc: '8-area pre-walk before your annual sticker. Catch fails BEFORE the station does.' },
           { id: 'usedcar', icon: '🛒', label: 'Buying a used car', desc: '10 red flags + 9-step walkaround. Salt-state pre-purchase inspection.' },
+          { id: 'estimate', icon: '💵', label: 'Estimate decoder', desc: 'Read a shop quote. Identify standard, DIY-able, and upsell line items.' },
           { id: 'ev', icon: '⚡', label: 'EV / Hybrid', desc: 'High-voltage safety, regen braking, cold-weather range, charging — the future of the trade.' },
           { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
-          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '10 questions covering safety, diagnostics, repair.' },
+          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '20 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells.' },
           { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
         ];
         var badgeCount = Object.keys(badges).length;
@@ -2157,6 +2714,200 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // DECISION TREE view — interactive symptom → likely cause
+      // ─────────────────────────────────────────
+      function renderTree() {
+        var treeId = d.treeId || null;
+        var tree = treeId ? DECISION_TREES[treeId] : null;
+        var nodeId = d.treeNode || 'root';
+        var path = d.treePath || [];
+
+        function pickTree(id) {
+          updMulti({ treeId: id, treeNode: 'root', treePath: [] });
+          arAnnounce('Starting decision tree: ' + DECISION_TREES[id].name);
+        }
+        function selectChoice(choice) {
+          var newPath = path.concat([{ from: nodeId, choice: choice.label }]);
+          updMulti({ treeNode: choice.next, treePath: newPath });
+          arAnnounce('Next question.');
+        }
+        function reset() {
+          updMulti({ treeId: null, treeNode: 'root', treePath: [] });
+        }
+        function backOneStep() {
+          if (path.length === 0) { reset(); return; }
+          var newPath = path.slice(0, -1);
+          var prev = newPath.length === 0 ? 'root' : path[path.length - 1].from;
+          updMulti({ treeNode: prev, treePath: newPath });
+        }
+
+        if (!tree) {
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('🌳 Decision tree'),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌳 Symptom → likely cause'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'Active diagnostic reasoning. Pick a symptom; answer 1–3 questions; get a likely cause + verify-it step + DIY/shop verdict. Practice the THINKING, not just the lookup.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
+              Object.keys(DECISION_TREES).map(function(k) {
+                var t = DECISION_TREES[k];
+                return h('button', { key: k, 'data-ar-focusable': true,
+                  'aria-label': 'Start decision tree: ' + t.name,
+                  onClick: function() { pickTree(k); awardBadge('tree-explorer', 'Decision Tree Explorer'); },
+                  style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer' } },
+                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, t.icon),
+                  h('div', { style: { fontWeight: 700, fontSize: 15, color: T.text, marginBottom: 4 } }, t.name),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.4 } }, t.intro)
+                );
+              })
+            ),
+            disclaimerFooter()
+          );
+        }
+
+        var node = tree.nodes[nodeId];
+        if (!node) {
+          return h('div', { style: { padding: 20, color: T.bad } }, 'Decision tree node not found: ' + nodeId,
+            h('button', { onClick: reset, style: btnPrimary() }, '↺ Restart'));
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
+            h('button', { 'data-ar-focusable': true, 'aria-label': 'Back to tree list',
+              onClick: reset, style: btnGhost() }, '← Trees'),
+            h('span', { style: { fontSize: 22 } }, tree.icon),
+            h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, tree.name),
+            path.length > 0 && h('button', { 'data-ar-focusable': true, 'aria-label': 'Back one step in tree',
+              onClick: backOneStep, style: btnGhost({ marginLeft: 'auto' }) }, '↶ Back one step')
+          ),
+          path.length > 0 && h('div', { role: 'list', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14, fontSize: 12, color: T.muted } },
+            h('strong', { style: { color: T.accentHi } }, '🛤️ Your path: '),
+            path.map(function(p, i) {
+              return h('span', { key: i, role: 'listitem' },
+                (i > 0 ? ' → ' : ''),
+                h('span', { style: { color: T.text } }, p.choice)
+              );
+            })
+          ),
+          node.verdict ? h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, '🎯 Most likely cause'),
+              h('p', { style: { margin: 0, color: T.text, fontSize: 14, fontWeight: 700, lineHeight: 1.5 } }, node.likely)
+            ),
+            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.text } }, '🧠 Why: '), node.why),
+            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 10, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 Verify: '), node.verify),
+            !node.terminal && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, marginBottom: 10, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🔧 DIY: '), node.diy),
+            !node.terminal && h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, marginBottom: 14, fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.warn } }, '🏪 Shop: '), node.shop),
+            h('div', { style: { display: 'flex', gap: 8 } },
+              h('button', { 'data-ar-focusable': true, onClick: backOneStep, style: btnSecondary() }, '↶ Try a different answer'),
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, '🌳 New tree')
+            )
+          ) : h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 12px', fontSize: 15, color: T.text } }, node.question)
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              node.choices.map(function(c, i) {
+                return h('button', { key: i, 'data-ar-focusable': true,
+                  'aria-label': c.label,
+                  onClick: function() { selectChoice(c); },
+                  style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer', fontSize: 14, lineHeight: 1.5 } },
+                  c.label
+                );
+              })
+            )
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // ESTIMATE DECODER view
+      // ─────────────────────────────────────────
+      function renderEstimate() {
+        var picked = d.estPicked || null;
+        var pickedItem = picked ? ESTIMATE_ITEMS.find(function(i) { return i.id === picked; }) : null;
+        var verdictColor = function(v) {
+          if (v === 'standard') return T.good;
+          if (v === 'diy') return T.accentHi;
+          if (v === 'depends') return T.warn;
+          if (v === 'often-upsell') return T.bad;
+          return T.muted;
+        };
+        var verdictLabel = function(v) {
+          if (v === 'standard') return '✅ Standard service';
+          if (v === 'diy') return '🔧 DIY-friendly';
+          if (v === 'depends') return '⚠️ Depends on context';
+          if (v === 'often-upsell') return '🚩 Often an upsell';
+          return v;
+        };
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('💵 Estimate decoder'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '💵 Read a shop quote like a pro'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Tap a line item to see what it actually means, what fair pricing looks like, and whether it\'s legitimate, DIY-able, or a common upsell to push back on.'),
+            h('div', { style: { display: 'flex', gap: 8, fontSize: 11, flexWrap: 'wrap' } },
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.good, border: '1px solid ' + T.good, fontWeight: 700 } }, '✅ Standard'),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accentHi, fontWeight: 700 } }, '🔧 DIY'),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.warn, border: '1px solid ' + T.warn, fontWeight: 700 } }, '⚠️ Depends'),
+              h('span', { style: { padding: '4px 10px', borderRadius: 12, background: T.cardAlt, color: T.bad, border: '1px solid ' + T.bad, fontWeight: 700 } }, '🚩 Often upsell')
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
+            ESTIMATE_ITEMS.map(function(it) {
+              var sel = picked === it.id;
+              return h('button', { key: it.id, 'data-ar-focusable': true,
+                'aria-label': it.name,
+                'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('estPicked', sel ? null : it.id); awardBadge('estimate-decoder', 'Estimate Decoder'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#0f172a' : T.text,
+                  textAlign: 'left',
+                  fontWeight: sel ? 800 : 600,
+                  display: 'flex', flexDirection: 'column', gap: 2,
+                  borderColor: sel ? T.accent : verdictColor(it.verdict)
+                }) },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+                  h('span', { style: { fontSize: 16 } }, it.icon),
+                  h('span', { style: { fontSize: 12 } }, it.name)
+                ),
+                h('span', { style: { fontSize: 10, opacity: 0.85, color: sel ? '#0f172a' : verdictColor(it.verdict) } },
+                  verdictLabel(it.verdict))
+              );
+            })
+          ),
+          pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + verdictColor(pickedItem.verdict) } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 } },
+              h('span', { style: { fontSize: 24 } }, pickedItem.icon),
+              h('h4', { style: { margin: 0, fontSize: 16, color: T.text } }, pickedItem.name),
+              h('span', { style: { marginLeft: 'auto', padding: '4px 10px', borderRadius: 12, background: verdictColor(pickedItem.verdict), color: '#0f172a', fontSize: 11, fontWeight: 800 } },
+                verdictLabel(pickedItem.verdict))
+            ),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '📋 What it is: '), pickedItem.what),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.text } }, '💵 Fair price: '), pickedItem.fairPrice),
+            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + verdictColor(pickedItem.verdict), fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+              h('strong', { style: { color: verdictColor(pickedItem.verdict) } }, '🎯 What to know: '),
+              pickedItem.flag)
+          ),
+          h('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, '🛡️ Consumer rights in Maine: '),
+            'You have the right to a written estimate before any work begins, the old parts back if you ask, and an itemized invoice. The shop cannot exceed the estimate by more than 10% without your re-authorization. Maine Attorney General\'s consumer protection: ',
+            h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'maine.gov/ag/consumer')
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // INSPECTION view — Maine annual sticker prep
       // ─────────────────────────────────────────
       function renderInspection() {
@@ -2486,11 +3237,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       switch (view) {
         case 'diagnose':   return renderDiagnose();
+        case 'tree':       return renderTree();
         case 'repair':     return renderRepair();
         case 'tools':      return renderTools();
         case 'safety':     return renderSafety();
         case 'inspection': return renderInspection();
         case 'usedcar':    return renderUsedCar();
+        case 'estimate':   return renderEstimate();
         case 'ev':         return renderEv();
         case 'career':     return renderCareer();
         case 'quiz':       return renderQuiz();
