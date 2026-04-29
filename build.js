@@ -154,6 +154,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ViewOutlineModule',
+        filename: 'view_outline_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ExportHandlersModule',
         filename: 'export_handlers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -368,6 +373,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_atctower.js',
     'stem_lab/stem_tool_music.js',
     'stem_lab/stem_tool_climateExplorer.js',
+    'stem_lab/stem_tool_renewables.js',
     'stem_lab/stem_tool_fireecology.js',
     'stem_lab/stem_tool_moonmission.js',
     'stem_lab/stem_tool_beehive.js',
