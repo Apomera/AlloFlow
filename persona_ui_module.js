@@ -366,7 +366,7 @@ const InteractiveBlueprintCard = React.memo(({
   }))))), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.add'),
     onClick: handleAddStep,
-    className: "w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center justify-center gap-2 mb-4"
+    className: "w-full py-2 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 transition-all flex items-center justify-center gap-2 mb-4"
   }, /*#__PURE__*/React.createElement(Plus, {
     size: 14
   }), " ", t('blueprint.add_step'))) : /*#__PURE__*/React.createElement("div", {

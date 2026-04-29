@@ -2363,7 +2363,7 @@
         }].map(m => /*#__PURE__*/React.createElement("button", { "aria-label": m.label.replace(/[^\w\s]/g, '').trim() + ' mode',
           key: m.id,
           onClick: () => setStemLabCreateMode(m.id),
-          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-300 hover:text-indigo-600'}`
+          className: `px-4 py-2 rounded-xl text-sm font-bold transition-all ${stemLabCreateMode === m.id ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-slate-400 text-slate-600 hover:border-indigo-600 hover:text-indigo-600'}`
         }, m.label)), /*#__PURE__*/React.createElement("div", {
           className: "flex-1"
         }), /*#__PURE__*/React.createElement("button", { "aria-label": "Open assessment builder",
@@ -2385,7 +2385,7 @@
         }].map(s => /*#__PURE__*/React.createElement("button", { "aria-label": s.label + ' style',
           key: s.val,
           onClick: () => setMathMode(s.val),
-          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-300' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`
+          className: `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${mathMode === s.val ? 'bg-blue-100 text-blue-700 border border-blue-600' : 'bg-white border border-slate-400 text-slate-500 hover:border-blue-200'}`
         }, s.label))), /*#__PURE__*/React.createElement("div", {
           className: "bg-slate-50 rounded-xl p-4 border border-slate-400"
         }, /*#__PURE__*/React.createElement("textarea", {
@@ -3242,7 +3242,7 @@
                   if (typeof announceToSR === 'function') announceToSR(newFilter ? 'Showing ' + cat.label + ' tools' : 'Showing all tools');
                 },
                 className: "px-2.5 py-1 rounded-full text-[10px] font-bold transition-all border " +
-                  (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-300 hover:text-indigo-600')
+                  (isActive ? 'bg-indigo-600 text-white border-indigo-500 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:border-indigo-600 hover:text-indigo-600')
               }, cat.icon + ' ' + cat.label);
             })
           ),
@@ -3767,7 +3767,7 @@
                       _setStationTools(next);
                     },
                     className: "p-2 rounded-lg text-left text-[10px] font-bold transition-all border " +
-                      (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-300")
+                      (isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-800" : "bg-white border-slate-200 text-slate-600 hover:border-indigo-600")
                   },
                     React.createElement("span", { className: "text-lg block" }, tool.icon),
                     React.createElement("span", { className: "block truncate" }, tool.label)
