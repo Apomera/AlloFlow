@@ -667,6 +667,292 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   };
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 12.1: LESSON PLAN BUILDER data — Bloom's-aligned activities + assessments
+  // For each Bloom's level, suggested activity types + assessment formats
+  // matched to that cognitive level.
+  // ─────────────────────────────────────────────────────────
+  var BLOOMS_ACTIVITIES = {
+    remember: {
+      activities: ['Flashcard practice', 'Quizlet sets', 'Memorization games (Kahoot)', 'Labeling diagrams', 'Matching exercises', 'Fill-in-the-blank notes'],
+      assessments: ['Multiple-choice test', 'Fill-in-the-blank quiz', 'True/false quiz', 'Matching test', 'Recall checklist'],
+      assessmentVerbs: ['list', 'identify', 'name', 'recall', 'recognize', 'state']
+    },
+    understand: {
+      activities: ['Summarize a chapter in 3 sentences', 'Paraphrase a passage', 'Draw a concept map', 'Explain to a partner (think-pair-share)', 'Create a Venn diagram', 'Translate technical text into plain language'],
+      assessments: ['Short-answer questions', 'Concept map evaluation', 'One-paragraph summary', 'Oral explanation', 'Picture/word matching with explanation'],
+      assessmentVerbs: ['explain', 'describe', 'summarize', 'paraphrase', 'classify', 'compare']
+    },
+    apply: {
+      activities: ['Solve novel problems using learned formulas', 'Use a procedure on a new dataset', 'Demonstrate a technique', 'Role-play a scenario', 'Apply a model to current events', 'Conduct a case study'],
+      assessments: ['Word problems', 'Performance task', 'Lab report (procedure execution)', 'Real-world scenario response', 'Skill demonstration with rubric'],
+      assessmentVerbs: ['solve', 'demonstrate', 'execute', 'implement', 'use', 'interpret']
+    },
+    analyze: {
+      activities: ['Compare/contrast essay', 'Source analysis', 'Identifying logical fallacies in a text', 'Breaking down an argument', 'Distinguishing fact from opinion', 'Examining an artwork for techniques'],
+      assessments: ['Compare/contrast essay', 'Source critique', 'Argument map', 'Annotated bibliography', 'Pro/con analysis with evidence'],
+      assessmentVerbs: ['differentiate', 'organize', 'compare', 'contrast', 'examine', 'distinguish']
+    },
+    evaluate: {
+      activities: ['Defend a position in a debate', 'Critique a peer\'s work using a rubric', 'Judge competing solutions', 'Evaluate sources for credibility', 'Argue from multiple perspectives', 'Make + justify recommendations'],
+      assessments: ['Persuasive essay with sources', 'Peer-review with rubric', 'Decision matrix with justification', 'Debate (judged by rubric)', 'Position paper'],
+      assessmentVerbs: ['argue', 'defend', 'judge', 'critique', 'support', 'appraise']
+    },
+    create: {
+      activities: ['Design an experiment', 'Compose original work (poem, song, story)', 'Build a working model', 'Develop a business plan', 'Author a research proposal', 'Invent a solution to a real problem'],
+      assessments: ['Original product (creative work)', 'Design portfolio with documentation', 'Innovation showcase', 'Capstone project', 'Original research paper or experiment'],
+      assessmentVerbs: ['design', 'compose', 'construct', 'develop', 'invent', 'author']
+    }
+  };
+
+  var GRADE_BAND_GUIDANCE = {
+    elementary: 'K-5: Heavy on Remember + Understand. Begin Apply + simple Analyze (compare 2 things). Avoid abstract Evaluate + Create until cognitive maturity supports it.',
+    middle: '6-8: Apply + Analyze are the wheelhouse. Begin Evaluate. Create through scaffolded projects.',
+    highSchool: '9-12: Full range. Strong Evaluate + Create work. Push for self-directed analysis + argumentation.',
+    college: 'Full range with emphasis on Evaluate + Create. Synthesize across sources + frameworks.'
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.2: STRATEGY PICKER data — input-driven recommendations
+  // Given subject, time available, assessment type, and prior knowledge,
+  // recommend the matching evidence-backed strategies.
+  // ─────────────────────────────────────────────────────────
+  var STRATEGY_RECS = {
+    // High-utility strategies are recommended in nearly all cases
+    base: ['practice-testing', 'distributed-practice'],
+    // Conditional add-ons
+    byAssessment: {
+      'multiple-choice': ['practice-testing', 'self-quizzing'],
+      'short-answer': ['practice-testing', 'free-recall', 'self-explanation'],
+      'essay': ['outlining', 'self-explanation', 'elaborative-interrogation', 'peer-review'],
+      'performance-task': ['deliberate-practice', 'feedback-cycles', 'modeling-then-practice'],
+      'project': ['interleaving', 'spaced-checkpoints', 'self-explanation', 'iterative-feedback']
+    },
+    bySubject: {
+      'math': ['interleaving', 'worked-examples', 'self-explanation'],
+      'language-arts': ['active-reading-SQ3R', 'free-recall', 'elaborative-interrogation'],
+      'science': ['concept-mapping', 'practice-testing', 'self-explanation'],
+      'social-studies': ['active-reading-SQ3R', 'practice-testing', 'cause-effect-mapping'],
+      'foreign-language': ['spaced-repetition-flashcards', 'output-practice', 'comprehensible-input'],
+      'arts': ['deliberate-practice', 'feedback-cycles', 'critique-then-revise'],
+      'standardized-test': ['practice-testing', 'distributed-practice', 'mixed-problem-sets']
+    },
+    byTime: {
+      'cramming-tonight': ['practice-testing-only', 'CAVEAT-cramming-hurts-retention'],
+      'few-days': ['distributed-2-3-sessions', 'practice-testing', 'sleep-between-sessions'],
+      '1-2-weeks': ['distributed-5-7-sessions', 'spaced-retrieval', 'interleaving'],
+      'month-plus': ['spaced-repetition-app', 'interleaving', 'periodic-cumulative-review']
+    },
+    byPriorKnowledge: {
+      'novice': ['worked-examples-first', 'gradual-release', 'low-stakes-practice'],
+      'some-familiarity': ['retrieval-practice', 'self-explanation', 'concept-mapping'],
+      'strong': ['interleaving', 'elaborative-interrogation', 'creating-novel-problems']
+    }
+  };
+
+  var STRATEGY_DETAILS = {
+    'practice-testing': { name: 'Practice testing', what: 'Self-test with practice questions, flashcards, or free recall.' },
+    'distributed-practice': { name: 'Distributed practice (spacing)', what: 'Spread study sessions over multiple days.' },
+    'self-quizzing': { name: 'Self-quizzing', what: 'Cover answers + try to recall before checking.' },
+    'free-recall': { name: 'Free recall', what: 'Close the book + write everything you remember.' },
+    'self-explanation': { name: 'Self-explanation (Feynman)', what: 'Explain it aloud or in writing as if teaching.' },
+    'outlining': { name: 'Outlining', what: 'Hierarchical notes that show structure of an argument.' },
+    'elaborative-interrogation': { name: 'Elaborative interrogation', what: 'Ask "why?" about facts you\'re learning.' },
+    'peer-review': { name: 'Peer review with rubric', what: 'Trade work with a classmate; give specific feedback.' },
+    'deliberate-practice': { name: 'Deliberate practice', what: 'Focused, effortful practice on weak spots with feedback.' },
+    'feedback-cycles': { name: 'Feedback cycles', what: 'Practice → feedback → revise → repeat.' },
+    'modeling-then-practice': { name: 'Modeling then practice', what: 'Watch an expert; then attempt with their approach.' },
+    'interleaving': { name: 'Interleaving', what: 'Mix problem types instead of blocking them.' },
+    'spaced-checkpoints': { name: 'Spaced checkpoints', what: 'Small deadlines spread across project timeline.' },
+    'iterative-feedback': { name: 'Iterative feedback', what: 'Multiple draft cycles with input.' },
+    'worked-examples': { name: 'Worked examples first', what: 'Study completed solutions before attempting yours.' },
+    'active-reading-SQ3R': { name: 'SQ3R reading method', what: 'Survey, Question, Read, Recite, Review.' },
+    'concept-mapping': { name: 'Concept mapping (post-study, from memory)', what: 'Draw concept relationships from memory; check after.' },
+    'cause-effect-mapping': { name: 'Cause-effect mapping', what: 'Diagram how events flow into other events.' },
+    'spaced-repetition-flashcards': { name: 'Anki/Quizlet spaced flashcards', what: 'Software-scheduled review of cards.' },
+    'output-practice': { name: 'Output practice', what: 'Speak/write the language, don\'t just consume input.' },
+    'comprehensible-input': { name: 'Comprehensible input', what: 'Read/listen to material 10-20% above your level.' },
+    'critique-then-revise': { name: 'Critique then revise', what: 'Get feedback on a draft; revise; resubmit.' },
+    'mixed-problem-sets': { name: 'Mixed problem sets', what: 'Practice tests with mixed problem types (interleaved).' },
+    'practice-testing-only': { name: 'Practice testing (cram-mode)', what: 'Do as much retrieval practice as possible.' },
+    'CAVEAT-cramming-hurts-retention': { name: '⚠️ CAVEAT', what: 'Cramming may help next-day performance but cripples long-term retention. Only use as last resort. Schedule properly next time.' },
+    'distributed-2-3-sessions': { name: 'Distribute across 2-3 sessions', what: 'Even 3 days vs 1 night doubles retention.' },
+    'sleep-between-sessions': { name: 'Sleep between study sessions', what: 'Sleep consolidates memory. Spaced practice works better with sleep gaps.' },
+    'distributed-5-7-sessions': { name: 'Distribute across 5-7 sessions', what: 'A session every other day or daily for shorter periods.' },
+    'spaced-retrieval': { name: 'Spaced retrieval', what: 'Self-test at increasing intervals (1 day → 3 days → 1 week → 2 weeks).' },
+    'spaced-repetition-app': { name: 'Anki / Quizlet spaced-rep mode', what: 'Software handles the spacing schedule automatically.' },
+    'periodic-cumulative-review': { name: 'Periodic cumulative review', what: 'Every week or two, mix in older content.' },
+    'gradual-release': { name: 'I do / We do / You do', what: 'Watch model → guided practice → independent.' },
+    'low-stakes-practice': { name: 'Low-stakes practice', what: 'Practice without grade pressure to avoid anxiety load.' },
+    'creating-novel-problems': { name: 'Create your own novel problems', what: 'When you can write the problems, you understand it. Highest-level demonstration.' }
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.3: RECOMMENDED LEARNING PATH — 4-week curated walkthrough
+  // ─────────────────────────────────────────────────────────
+  var LEARNING_PATH = [
+    { week: 1, title: 'Week 1 — Foundation vocabulary', icon: '🧠',
+      theme: 'Build the mental models. The vocabulary you\'ll use in every later module.',
+      modules: [
+        { id: 'bloom', why: 'The most-referenced framework in education. You\'ll see Bloom\'s verbs in every textbook + curriculum guide. Get fluent here.' },
+        { id: 'cogload', why: 'Working memory limits explain why some lessons feel impossible. Understanding the 3 load types is half the battle for designing good learning.' },
+        { id: 'metacog', why: 'The single biggest predictor of academic outcomes beyond raw IQ. Get fluent in plan/monitor/evaluate.' },
+        { id: 'zpd', why: 'Vygotsky\'s ZPD + scaffolding fades — the architecture under most good teaching.' }
+      ],
+      outcome: 'You can describe a learning task in terms of Bloom\'s level + cognitive load demands + scaffolding needs. You\'ve self-rated your own metacognition.' },
+    { week: 2, title: 'Week 2 — UDL + the strategies that work', icon: '🎯',
+      theme: 'The framework + the practical kit. Most-evidence-backed practices.',
+      modules: [
+        { id: 'udlPrinciples', why: 'AlloFlow itself is built on UDL. Knowing the framework lets you use the platform deliberately + advocate for its principles in your own classes.' },
+        { id: 'spaced', why: 'The most underused practice in student life. 30 minutes here changes how you study forever.' },
+        { id: 'study', why: 'The Dunlosky 2013 ratings. Replace your low-utility habits (highlighting, rereading) with high-utility ones (practice testing, spacing).' },
+        { id: 'memory', why: 'Specific techniques (Feynman, mnemonic devices, dual coding, interleaving in detail). Pick 1-2 to try this week.' }
+      ],
+      outcome: 'You\'ve picked one strategy from Dunlosky\'s HIGH-utility list + tried it on real schoolwork this week. You\'ve identified 1 UDL guideline you want a teacher (or yourself) to use more.' },
+    { week: 3, title: 'Week 3 — Critical thinking + myth-busting', icon: '🚫',
+      theme: 'Distinguish what works from what feels right. Especially valuable for future teachers.',
+      modules: [
+        { id: 'myths', why: '8 myths every educator should reject. Quote-able rebuttals for when you encounter them.' },
+        { id: 'mindset', why: 'Quick visit. Honest about replication issues. Cross-link to the deep dive (sel_tool_growthmindset.js).' }
+      ],
+      outcome: 'You can rebut "but I\'m a visual learner" with the Pashler 2008 evidence. You can explain why Lumosity isn\'t making people smarter.' },
+    { week: 4, title: 'Week 4 — Apply it: lesson planning + strategy picking + careers', icon: '🎯',
+      theme: 'Active practice with the tools. + Career exploration.',
+      modules: [
+        { id: 'lessonPlan', why: 'Turn Bloom\'s vocabulary into actual learning objectives. Practice with a topic from your own life.' },
+        { id: 'strategyPicker', why: 'Input-driven: get evidence-backed strategy recommendations for a real assignment you have this week.' },
+        { id: 'careers-list', why: 'Education careers from teacher to school psych (Aaron\'s path) to instructional designer.' },
+        { id: 'maine-progs', why: 'Maine-specific degree pathways. USM, UMaine, UMF, etc.' }
+      ],
+      outcome: 'You\'ve drafted at least one Bloom\'s-aligned learning objective. You\'ve gotten strategy recommendations for a real assignment. You\'ve identified 1-2 careers worth more research. You\'re ready for the 50-question quiz.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.4: GLOSSARY — pedagogy + cognitive science terms
+  // ─────────────────────────────────────────────────────────
+  var GLOSSARY = [
+    // Bloom's + curriculum design
+    { term: 'Bloom\'s Taxonomy', tag: 'curriculum', def: '6-level hierarchy of cognitive demand (Remember → Understand → Apply → Analyze → Evaluate → Create). Revised 2001 by Anderson + Krathwohl.' },
+    { term: 'Learning objective', tag: 'curriculum', def: 'Measurable statement of what a student will be able to do. Uses a specific verb at the target Bloom\'s level.' },
+    { term: 'Backward design', tag: 'curriculum', def: 'Wiggins + McTighe. Design starting from the desired result + assessment, then plan instruction. Inverts traditional "cover the textbook" planning.' },
+    { term: 'Scope and sequence', tag: 'curriculum', def: 'A document showing what content is taught + in what order, across a unit, course, or grade.' },
+    // Cognitive science
+    { term: 'Cognitive load', tag: 'cogsci', def: 'Mental effort required by a task. Three types: intrinsic (task itself), extraneous (poor design), germane (schema-building).' },
+    { term: 'Working memory', tag: 'cogsci', def: 'Short-term mental workspace. Holds ~4 ± 1 novel chunks (Cowan 2001). Hard limit on how much info we can manipulate at once.' },
+    { term: 'Schema', tag: 'cogsci', def: 'A mental framework that organizes related knowledge. Experts have rich schemas; novices have fragmented ones.' },
+    { term: 'Chunking', tag: 'cogsci', def: 'Grouping individual pieces into a single meaningful unit. Expertise = better chunking. "1776" is one chunk for a US history student, four for a beginner.' },
+    { term: 'Long-term memory', tag: 'cogsci', def: 'Durable storage. Effectively unlimited capacity. Built through retrieval + spaced practice.' },
+    { term: 'Encoding', tag: 'cogsci', def: 'The process of converting incoming info into a memory trace. Active processing (self-explanation) encodes deeper than passive (rereading).' },
+    { term: 'Retrieval', tag: 'cogsci', def: 'Pulling info OUT of long-term memory. Each successful retrieval strengthens the path back to that memory.' },
+    { term: 'Forgetting curve (Ebbinghaus 1885)', tag: 'cogsci', def: 'Exponential decay of memory without practice. ~70% of new info forgotten within 24 hours. Spaced retrievals flatten the curve.' },
+    // Metacognition
+    { term: 'Metacognition', tag: 'metacog', def: 'Thinking about thinking. Self-monitoring + self-regulating + self-evaluating one\'s own learning processes.' },
+    { term: 'Calibration', tag: 'metacog', def: 'Match between predicted + actual performance. Well-calibrated learners know what they don\'t know.' },
+    { term: 'Self-efficacy', tag: 'metacog', def: 'Bandura. Belief that you can succeed at a specific task. Different from self-esteem.' },
+    { term: 'Illusion of fluency', tag: 'metacog', def: 'When familiarity from rereading or watching feels like understanding, but you can\'t actually use the knowledge.' },
+    // UDL
+    { term: 'UDL (Universal Design for Learning)', tag: 'udl', def: 'CAST framework. 3 principles (Engagement, Representation, Action+Expression) + 9 guidelines that anticipate learner variability up front.' },
+    { term: 'Multiple means of engagement', tag: 'udl', def: 'UDL principle. The WHY of learning. Choice, relevance, identity, sustaining effort.' },
+    { term: 'Multiple means of representation', tag: 'udl', def: 'UDL principle. The WHAT of learning. Multimodal info presentation, vocabulary support, comprehension scaffolds.' },
+    { term: 'Multiple means of action + expression', tag: 'udl', def: 'UDL principle. The HOW of learning. Multiple ways to interact + demonstrate learning.' },
+    // Vygotsky
+    { term: 'ZPD (Zone of Proximal Development)', tag: 'vygotsky', def: 'Vygotsky. Tasks the learner can do WITH HELP that they can\'t do alone. The sweet spot for instruction.' },
+    { term: 'Scaffolding', tag: 'vygotsky', def: 'Temporary support a more-capable peer or teacher provides; faded as learner gains competence.' },
+    { term: 'Gradual release of responsibility', tag: 'vygotsky', def: 'Pearson + Gallagher 1983. I do (model) → We do (joint) → You do (independent). Standard scaffolding sequence.' },
+    { term: 'More Knowledgeable Other (MKO)', tag: 'vygotsky', def: 'Vygotsky\'s term for the person providing scaffolding — could be a teacher, peer, parent, or even a tool.' },
+    // Strategies
+    { term: 'Practice testing (testing effect)', tag: 'strategy', def: 'Self-testing during study. HIGH utility per Dunlosky 2013. Strengthens retrieval paths.' },
+    { term: 'Distributed practice (spacing)', tag: 'strategy', def: 'Spreading study across multiple sessions over time vs. cramming. HIGH utility.' },
+    { term: 'Interleaving', tag: 'strategy', def: 'Mixing problem types in practice (vs. blocking). Forces discrimination, improves transfer.' },
+    { term: 'Elaborative interrogation', tag: 'strategy', def: 'Asking "why?" about facts you\'re learning. MODERATE utility.' },
+    { term: 'Self-explanation', tag: 'strategy', def: 'Explaining concepts aloud or in writing as if teaching someone. The Feynman technique.' },
+    { term: 'Free recall', tag: 'strategy', def: 'Closing the book + writing everything you remember. Pure retrieval practice.' },
+    { term: 'Cornell notes', tag: 'strategy', def: '3-section page (cues / notes / summary). Builds in retrieval practice via the post-class summary step.' },
+    { term: 'SQ3R', tag: 'strategy', def: 'Survey, Question, Read, Recite, Review. The Recite + Review steps are the empirically-supported parts.' },
+    { term: 'Mnemonic', tag: 'strategy', def: 'Memory aid using vivid imagery, acronyms, or songs. Useful for arbitrary lists; less useful for conceptual understanding.' },
+    { term: 'Method of loci', tag: 'strategy', def: 'Memory technique using a familiar physical space; place items along the route + walk through to recall.' },
+    { term: 'Dual coding', tag: 'strategy', def: 'Paivio. Combining verbal + visual representations of the same content strengthens memory.' },
+    // Mindset + motivation
+    { term: 'Growth mindset', tag: 'motivation', def: 'Dweck. Belief that ability develops with effort + good strategies. Modest evidence base; useful principles even if oversold by popular books.' },
+    { term: 'Fixed mindset', tag: 'motivation', def: 'Dweck. Belief that ability is innate + static.' },
+    { term: 'Self-determination theory', tag: 'motivation', def: 'Deci + Ryan. 3 needs: autonomy, competence, relatedness. When met, intrinsic motivation thrives.' },
+    { term: 'Intrinsic motivation', tag: 'motivation', def: 'Drive that comes from within (interest, curiosity). More durable than extrinsic.' },
+    { term: 'Extrinsic motivation', tag: 'motivation', def: 'Drive from external rewards/punishments (grades, praise, money). Useful in moderation; can crowd out intrinsic if overused.' },
+    { term: 'Stereotype threat', tag: 'motivation', def: 'Steele + Aronson. When awareness of a negative group stereotype reduces performance for members of that group on that task.' },
+    // Assessment
+    { term: 'Formative assessment', tag: 'assessment', def: 'Assessment FOR learning. Quick checks during instruction to adjust teaching. Exit tickets, mini-quizzes, drafts with feedback.' },
+    { term: 'Summative assessment', tag: 'assessment', def: 'Assessment OF learning. Measures attainment AT THE END. Final exam, end-of-unit project, standardized test.' },
+    { term: 'Validity', tag: 'assessment', def: 'Does the assessment measure what it claims to measure? A math test full of word problems may be measuring reading.' },
+    { term: 'Reliability', tag: 'assessment', def: 'Does the assessment give consistent results across raters + occasions? Inter-rater reliability for essays; test-retest for quizzes.' },
+    { term: 'Rubric', tag: 'assessment', def: 'Scoring guide with explicit criteria + performance levels. Improves reliability + makes expectations transparent.' },
+    // Accommodations + identity
+    { term: 'IEP (Individualized Education Program)', tag: 'sped', def: 'Legally-binding plan under IDEA for K-12 students with disabilities. Specifies services + accommodations + goals.' },
+    { term: '504 Plan', tag: 'sped', def: 'Section 504 of Rehabilitation Act. Provides accommodations (e.g., extended time) for students with disabilities; broader scope than IEP.' },
+    { term: 'Accommodation', tag: 'sped', def: 'A change in HOW a student accesses or demonstrates learning, without changing the standard. (E.g., extended time, audio version of text.)' },
+    { term: 'Modification', tag: 'sped', def: 'A change in WHAT a student is expected to learn or demonstrate. (E.g., learning a subset of grade-level standards.)' },
+    // EL Education
+    { term: 'EL Education / Expeditionary Learning', tag: 'el', def: 'Whole-school + curriculum model. Crew (advisory) + HOWLs (Habits of Work and Learning) + Expeditions (long-term projects).' },
+    { term: 'Crew', tag: 'el', def: 'EL Education advisory + character education time. "We are crew, not passengers" — community + accountability.' },
+    { term: 'HOWLs (Habits of Work and Learning)', tag: 'el', def: 'EL Education non-academic skills tracked alongside academics. Things like preparedness, perseverance, contribution.' },
+    { term: 'Expedition', tag: 'el', def: 'EL Education long-term (6-12 week) project-based learning unit centered on a compelling case study + culminating product.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.5: MEMORY + ACTIVE LEARNING TECHNIQUES
+  // Specific techniques beyond the Dunlosky overview. Concrete + actionable.
+  // ─────────────────────────────────────────────────────────
+  var MEMORY_TECHNIQUES = [
+    { id: 'feynman', icon: '🗣️', name: 'The Feynman Technique',
+      what: 'Explain a concept aloud, in plain language, as if teaching a 12-year-old. When you stumble, you\'ve found a knowledge gap.',
+      how: '(1) Pick a concept. (2) Explain it aloud + write it out without jargon. (3) Notice where you struggle or use vague words. (4) Go back to the source + fill those gaps. (5) Re-explain, simpler.',
+      when: 'After studying a topic; before a test; whenever you want to verify understanding.',
+      research: 'Self-explanation is in Dunlosky 2013 as moderate-utility. Named after Richard Feynman, Nobel-winning physicist who taught by simplification.',
+      example: 'Topic: photosynthesis. Try to explain WITHOUT using "chlorophyll" or "ATP" — just plain English. The places where the explanation breaks are exactly the places to study more.' },
+    { id: 'method-of-loci', icon: '🏛️', name: 'Method of loci (memory palace)',
+      what: 'Mentally walk a familiar route (your home, school, route to work). Place vivid images of items to remember at each location. Recall by mentally walking the route.',
+      how: '(1) Pick a route you know cold (10 stops). (2) Make each item to remember into a vivid, weird image. (3) Place each image at a specific location on the route. (4) To recall, walk the route mentally + look at each location.',
+      when: 'Memorizing arbitrary lists (presidents, periodic table, vocabulary). Less useful for conceptual understanding.',
+      research: 'Ancient technique (Romans, "Ad Herennium" 80 BCE). Modern study: Maguire et al. 2003 showed memory athletes use this technique + show specific brain activation patterns.',
+      example: 'Memorizing first 5 elements of periodic table: HYDROGEN bomb at your front door; HELIUM balloons in the hallway; LITHIUM batteries on the kitchen counter; etc.' },
+    { id: 'mnemonic-devices', icon: '🎵', name: 'Mnemonic devices',
+      what: 'Acronyms, rhymes, songs, or imagery that encode arbitrary information.',
+      how: 'Acronym: FANBOYS = coordinating conjunctions (For, And, Nor, But, Or, Yet, So). Rhyme: "30 days hath September..." Song: alphabet song. Imagery: Vivid mental pictures linking concepts.',
+      when: 'Lists where order or specific recall matters. Foreign vocabulary. Ordered procedures.',
+      research: 'Dunlosky 2013: "keyword mnemonic" rated LOW utility for general learning, but acronyms + rhymes work well for the specific task of remembering ordered lists.',
+      example: 'PEMDAS for order of operations (Parentheses, Exponents, Multiplication, Division, Addition, Subtraction). Or "Please Excuse My Dear Aunt Sally."' },
+    { id: 'dual-coding', icon: '🎨', name: 'Dual coding',
+      what: 'Combine verbal + visual representations of the same content. Words PLUS image strengthens both.',
+      how: 'When studying, draw or sketch concepts (don\'t copy textbook diagrams — make your own). Match words with images. Use diagrams + flowcharts. NOT just decorative pictures — functional visuals that show structure.',
+      when: 'Conceptual material with structure (cycles, processes, hierarchies, comparisons). Less useful for arbitrary lists.',
+      research: 'Paivio (1971). Dual coding theory: verbal + visual processing in parallel + integrated paths increase recall vs verbal-only.',
+      example: 'Studying photosynthesis: don\'t just read about it. Draw the chloroplast + arrows showing inputs (CO₂, water, sunlight) + outputs (glucose, O₂). The drawing is itself an act of encoding.' },
+    { id: 'interleaving-deep', icon: '🔀', name: 'Interleaved practice (deep dive)',
+      what: 'Mix problem types in practice instead of blocking. After learning quadratic + linear + exponential equations separately, practice with all three mixed.',
+      how: 'Take your textbook. Make a problem set with the LAST 3 chapters mixed together, problems shuffled. Solve each by first identifying which type, then applying the method.',
+      when: 'After initial blocked practice (when learning a method). Powerful for math, science, languages.',
+      research: 'Rohrer + Taylor (2007). Interleaving doubled long-term retention vs blocked practice. Birnbaum et al. (2013) replicated for category learning.',
+      example: 'Math: don\'t do 20 quadratic problems then 20 trig problems then 20 calc problems. Mix them. Yes, it FEELS harder. Yes, it WORKS better.',
+      caveat: 'Interleaving feels harder + you\'ll perform WORSE during practice (you\'re not in flow). Performance during practice ≠ learning. The harder practice produces durable memory.' },
+    { id: 'spacing-deep', icon: '⏰', name: 'Spaced repetition (deep dive)',
+      what: 'Review material at increasing intervals: 1 day, 3 days, 1 week, 2 weeks, 1 month, etc. Each successful retrieval extends the next interval.',
+      how: 'Use Anki or Quizlet (spaced-rep mode) — they handle the schedule automatically. Or paper flashcards with 5 boxes (Leitner system): cards you got right move to a box reviewed less often.',
+      when: 'Vocabulary, anatomy, dates, formulas, any cumulative content. Especially for foreign languages + medical school + bar/MCAT prep.',
+      research: 'Cepeda et al. (2008). Optimal spacing depends on retention interval — generally, the longer you need to remember, the longer the optimal gap.',
+      example: 'Foreign-language vocabulary: 500 cards in Anki. Each day, software shows you the cards "due" that day. Hard cards repeat sooner; easy cards stretch out. Compounds beautifully over months.' },
+    { id: 'free-recall-deep', icon: '✍️', name: 'Free recall (brain dump)',
+      what: 'Close the book + write everything you remember about a topic. Then check what you missed.',
+      how: '(1) Spend 15-20 minutes studying or reviewing notes. (2) Close everything. (3) Set a timer for 10 minutes. (4) Write everything you can recall on a blank page. (5) Open notes + check. Re-study what you missed. Repeat.',
+      when: 'Within 24 hours of first learning + at increasing intervals after.',
+      research: 'Karpicke + Roediger (2008). Free recall is one of the strongest forms of retrieval practice.',
+      example: 'After reading a chapter on the French Revolution, close the book. On a blank page, write a timeline + the 5 most important figures + 3 causes + 3 consequences — from memory only.' },
+    { id: 'concept-mapping-from-memory', icon: '🗺️', name: 'Concept mapping (from memory)',
+      what: 'Draw a map showing how concepts relate to each other — but FROM MEMORY, not while looking at notes.',
+      how: '(1) Pick a topic. (2) Without notes, draw a node for the central concept. (3) Branch out to related concepts; connect with labeled lines (cause, type-of, requires, etc.). (4) After drawing, open notes + correct + add what you missed.',
+      when: 'After reading a unit. Especially useful for biology, history, literature — anywhere relationships matter.',
+      research: 'Karpicke + Blunt (2011). Concept mapping FROM MEMORY beats concept mapping WHILE LOOKING AT NOTES. The retrieval is the active ingredient.',
+      example: 'Biology unit on cell respiration: blank page, central node = "cell respiration." Branch to glycolysis, Krebs, electron transport. Add inputs/outputs of each. Connect to ATP. THEN check your notes.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 13: KNOWLEDGE QUIZ — 40 questions across all modules
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -829,7 +1115,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     { id: 'q40', icon: '🛠️',
       stem: 'What\'s the SINGLE MOST ACTIONABLE next step in real life?',
       choices: ['Buy more books', 'Pick ONE technique (most beginners: practice testing on a current class topic) + use it once this week. Notice the difference. Hands-on > theory.', 'Quit school', 'Wait until college'],
-      correct: 1, why: 'The tool is a curriculum scaffold. The actual gains come from doing. Try retrieval practice ONCE this week on real content from a current class. Notice the difference vs your usual approach. That\'s the proof.' }
+      correct: 1, why: 'The tool is a curriculum scaffold. The actual gains come from doing. Try retrieval practice ONCE this week on real content from a current class. Notice the difference vs your usual approach. That\'s the proof.' },
+    { id: 'q41', icon: '✏️',
+      stem: 'A teacher writes the objective: "Students will DEFEND a position on whether AI should be regulated, citing 3 sources." Which Bloom\'s level is this targeting?',
+      choices: ['Remember', 'Understand', 'Apply', 'Evaluate'],
+      correct: 3, why: '"Defend" + "citing sources" + "position" = Evaluate (level 5). Argument with explicit criteria + evidence is the hallmark of Evaluate-level work.' },
+    { id: 'q42', icon: '🗣️',
+      stem: 'The Feynman Technique:',
+      choices: ['Solving physics problems', 'Explaining a concept aloud, in plain language, as if teaching a 12-year-old. Stumbles reveal knowledge gaps.', 'Reading slowly', 'Memorizing equations'],
+      correct: 1, why: 'Named after Richard Feynman, who taught by simplification. The places where your plain-language explanation breaks are exactly where you don\'t actually understand. Then study those gaps.' },
+    { id: 'q43', icon: '🏛️',
+      stem: 'You need to memorize the first 10 elements of the periodic table for tomorrow. Best technique?',
+      choices: ['Reread the table 10 times', 'Method of loci — place vivid images of each element along a familiar mental route', 'Highlight the textbook', 'Hope for the best'],
+      correct: 1, why: 'Method of loci is excellent for arbitrary ordered lists. Walking a familiar route mentally + placing vivid images at each location creates strong, durable memory.' },
+    { id: 'q44', icon: '🔀',
+      stem: 'A math student is told: "instead of 20 quadratic problems then 20 trig problems then 20 calc, do them all mixed together." This is interleaving. What should the student EXPECT to feel?',
+      choices: ['It will feel easier', 'Practice will feel HARDER + their error rate during practice will be HIGHER — but long-term retention + transfer will be significantly BETTER (Rohrer + Taylor 2007 doubled it)', 'No difference', 'They\'ll forget more'],
+      correct: 1, why: 'Performance during practice ≠ learning. Interleaving feels worse in the moment because you have to figure out which method to use, but that discrimination is exactly what produces durable + transferable knowledge.' },
+    { id: 'q45', icon: '🛤️',
+      stem: 'You\'re NEW to thinking about pedagogy. What\'s the smart way to work through Learning Lab\'s modules?',
+      choices: ['Take the quiz first', 'Use the Recommended Learning Path — 4-week curated walkthrough: Foundation vocabulary (Bloom\'s + cog load + metacog + ZPD) → UDL + strategies → critical thinking + myths → applying it (lesson plan, strategy picker, careers)', 'Random order', 'Skip everything'],
+      correct: 1, why: 'The Learning Path orders modules pedagogically: vocabulary first (week 1), UDL + practical strategies (week 2), critical-thinking + myth-busting (week 3), applied practice + career exploration (week 4). Each week has goals + outcomes you can verify.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -957,6 +1263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             modules: [
               { id: 'spaced', icon: '⏰', label: 'Spaced repetition + retrieval', desc: 'Ebbinghaus, testing effect, illusion of fluency.' },
               { id: 'study', icon: '📝', label: 'Study strategies', desc: 'Dunlosky 2013 ratings: high vs low utility.' },
+              { id: 'memory', icon: '🧠', label: 'Memory + active learning techniques', desc: 'Feynman, loci, mnemonic, dual coding, interleaving deep dive. 8 concrete techniques.' },
               { id: 'mindset', icon: '🌱', label: 'Growth mindset (brief)', desc: 'Dweck. Honest about replication. Links to Growth Mindset SEL tool.' },
               { id: 'myths', icon: '🚫', label: 'Neuromyth debunker', desc: '8 popular beliefs that research rejects.' }
             ]
@@ -968,10 +1275,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'maine-progs', icon: '🌲', label: 'Maine education programs', desc: 'USM, UMaine, UMF, UNE + cert pathway + EL Education.' }
             ]
           },
-          { id: 'progress', icon: '📊', name: 'Progress + reference',
-            desc: 'Self-test, achievements, citations.',
+          { id: 'apply', icon: '🎯', name: 'Apply it',
+            desc: 'Active practice. Use Bloom\'s + the strategies on YOUR work.',
             modules: [
-              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '40 questions across the full curriculum.' },
+              { id: 'lessonPlan', icon: '🎯', label: 'Lesson plan builder', desc: 'Topic + Bloom\'s level + grade band → matched verbs, activities, assessments.' },
+              { id: 'strategyPicker', icon: '💡', label: 'Strategy picker', desc: 'Subject + time + assessment + prior knowledge → evidence-backed strategy recommendations.' }
+            ]
+          },
+          { id: 'progress', icon: '📊', name: 'Progress + reference',
+            desc: 'Self-test, learning path, achievements, glossary, citations.',
+            modules: [
+              { id: 'path', icon: '🛤️', label: 'Recommended learning path', desc: 'New here? 4-week curated walkthrough through the modules.' },
+              { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ pedagogy + cog-sci terms with category filter.' },
+              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '45 questions across the full curriculum.' },
               { id: 'badges', icon: '🏆', label: 'Badge gallery', desc: 'All earned + unlockable badges.' },
               { id: 'resources', icon: '📚', label: 'Resources', desc: 'Cited papers + free + paid tools.' }
             ]
@@ -1741,13 +2057,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           { group: '📚 Strategies', items: [
             { id: 'spaced-rep-aware', icon: '⏰', name: 'Spaced Rep Aware', how: 'Mark the spaced-repetition module complete.' },
             { id: 'study-strategist', icon: '📝', name: 'Study Strategist', how: 'Tap any study strategy in the Dunlosky table.' },
+            { id: 'memory-explorer', icon: '🧠', name: 'Memory Explorer', how: 'Tap any technique in the Memory + Active Learning module.' },
             { id: 'myth-buster', icon: '🚫', name: 'Myth Buster', how: 'Tap any neuromyth in the debunker.' }
           ] },
           { group: '🏅 Career', items: [
             { id: 'career-explorer', icon: '🍎', name: 'Career Explorer', how: 'Tap any education career path.' }
           ] },
-          { group: '🧪 Self-test', items: [
-            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 40-question knowledge quiz.' }
+          { group: '🎯 Apply it', items: [
+            { id: 'lesson-builder', icon: '🎯', name: 'Lesson Builder', how: 'Pick a Bloom\'s level in the Lesson Plan Builder.' },
+            { id: 'strategy-picked', icon: '💡', name: 'Strategy Picker User', how: 'Fill in all 4 fields in the Strategy Picker.' }
+          ] },
+          { group: '🧪 Self-test + path', items: [
+            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 45-question knowledge quiz.' },
+            { id: 'path-graduate', icon: '🛤️', name: 'Learning Path Graduate', how: 'Mark all 14 Recommended Learning Path modules as visited.' },
+            { id: 'glossary-user', icon: '📖', name: 'Glossary User', how: 'Search the glossary at least once.' }
           ] }
         ];
 
@@ -1830,6 +2153,402 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
 
       // ─────────────────────────────────────────
+      // LESSON PLAN BUILDER view
+      // ─────────────────────────────────────────
+      function renderLessonPlan() {
+        var topic = d.lpTopic || '';
+        var grade = d.lpGrade || 'middle';
+        var pickedLevel = d.lpLevel || null;
+        var levelData = pickedLevel ? BLOOMS_LEVELS.find(function(l) { return l.id === pickedLevel; }) : null;
+        var activityData = pickedLevel ? BLOOMS_ACTIVITIES[pickedLevel] : null;
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🎯 Lesson plan builder'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 Bloom\'s-aligned lesson plan builder'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Enter your topic + pick a Bloom\'s level + grade band. Get matched verbs, activity ideas, and assessment formats. Use the output as a draft of a learning objective + activity plan.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '📚 Topic / content'),
+                h('input', { type: 'text', 'data-ll-focusable': true,
+                  'aria-label': 'Topic or content for the lesson',
+                  placeholder: 'e.g. photosynthesis, fractions, the French Revolution',
+                  value: topic,
+                  onChange: function(e) { upd('lpTopic', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '🎓 Grade band'),
+                h('select', { 'data-ll-focusable': true,
+                  'aria-label': 'Grade band for the lesson',
+                  value: grade,
+                  onChange: function(e) { upd('lpGrade', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
+                  h('option', { value: 'elementary' }, 'Elementary (K-5)'),
+                  h('option', { value: 'middle' }, 'Middle (6-8)'),
+                  h('option', { value: 'highSchool' }, 'High School (9-12)'),
+                  h('option', { value: 'college' }, 'College / Adult')
+                )
+              )
+            )
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📊 Pick your target Bloom\'s level'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 6 } },
+              BLOOMS_LEVELS.map(function(l) {
+                var sel = pickedLevel === l.id;
+                return h('button', { key: l.id, 'data-ll-focusable': true,
+                  'aria-label': 'Target ' + l.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('lpLevel', sel ? null : l.id); awardBadge('lesson-builder', 'Lesson Builder'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#fff' : T.text,
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', flexDirection: 'column', gap: 2,
+                    padding: 8, alignItems: 'center'
+                  }) },
+                  h('div', { style: { fontSize: 18 } }, l.icon),
+                  h('div', { style: { fontSize: 10, opacity: 0.85 } }, 'L' + l.n),
+                  h('strong', { style: { fontSize: 11 } }, l.name)
+                );
+              })
+            )
+          ),
+          pickedLevel && levelData && activityData && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 16, color: T.accentHi } },
+              levelData.icon + ' Lesson plan draft for: ',
+              h('em', null, topic || '[your topic]')),
+            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 10, fontSize: 13, color: T.text, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '📝 Suggested learning objective: '),
+              'Students will ',
+              h('strong', { style: { color: T.accent } }, levelData.verbs[0].toUpperCase()),
+              ' ' + (topic ? topic : '[topic]') + (pickedLevel === 'apply' || pickedLevel === 'analyze' || pickedLevel === 'evaluate' ? ' using [criteria/method].' : '.')),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '✏️ Verbs you can use'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              levelData.verbs.map(function(v) {
+                return h('span', { key: v, style: { padding: '3px 8px', borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.text, fontFamily: 'monospace' } }, v);
+              })
+            ),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '🎬 Activity ideas at this level'),
+            h('ul', { style: { margin: '0 0 10px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+              activityData.activities.map(function(a, i) { return h('li', { key: i }, a); })
+            ),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '📋 Assessment formats that match'),
+            h('ul', { style: { margin: '0 0 10px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+              activityData.assessments.map(function(a, i) { return h('li', { key: i }, a); })
+            ),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '🎯 Assessment verbs (the verb in the test prompt should match the objective verb)'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+              activityData.assessmentVerbs.map(function(v) {
+                return h('span', { key: v, style: { padding: '3px 8px', borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.good, fontSize: 11, color: T.good, fontFamily: 'monospace' } }, v);
+              })
+            ),
+            h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.warn } }, '🎓 Grade-band note: '), GRADE_BAND_GUIDANCE[grade])
+          ),
+          !pickedLevel && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
+            'Pick a Bloom\'s level above to generate a lesson-plan draft.'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // STRATEGY PICKER view
+      // ─────────────────────────────────────────
+      function renderStrategyPicker() {
+        var subj = d.spSubject || '';
+        var time = d.spTime || '';
+        var assessType = d.spAssess || '';
+        var prior = d.spPrior || '';
+        var hasInputs = subj && time && assessType && prior;
+
+        function recommend() {
+          if (!hasInputs) return null;
+          var strategies = STRATEGY_RECS.base.slice();
+          if (STRATEGY_RECS.byAssessment[assessType]) {
+            STRATEGY_RECS.byAssessment[assessType].forEach(function(s) { if (strategies.indexOf(s) === -1) strategies.push(s); });
+          }
+          if (STRATEGY_RECS.bySubject[subj]) {
+            STRATEGY_RECS.bySubject[subj].forEach(function(s) { if (strategies.indexOf(s) === -1) strategies.push(s); });
+          }
+          if (STRATEGY_RECS.byTime[time]) {
+            STRATEGY_RECS.byTime[time].forEach(function(s) { if (strategies.indexOf(s) === -1) strategies.push(s); });
+          }
+          if (STRATEGY_RECS.byPriorKnowledge[prior]) {
+            STRATEGY_RECS.byPriorKnowledge[prior].forEach(function(s) { if (strategies.indexOf(s) === -1) strategies.push(s); });
+          }
+          return strategies;
+        }
+        var recs = recommend();
+        if (recs) awardBadge('strategy-picked', 'Strategy Picker User');
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('💡 Strategy picker'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '💡 Get evidence-backed strategy recommendations'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Tell the picker about a real assignment or test you have coming up. It will return strategies matched to your situation, drawn from Dunlosky 2013 + supporting research.')
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, '📋 Tell us about your assignment'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '📚 Subject'),
+                h('select', { 'data-ll-focusable': true, 'aria-label': 'Subject', value: subj,
+                  onChange: function(e) { upd('spSubject', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
+                  h('option', { value: '' }, '— pick one —'),
+                  h('option', { value: 'math' }, 'Math'),
+                  h('option', { value: 'language-arts' }, 'Language arts / English'),
+                  h('option', { value: 'science' }, 'Science'),
+                  h('option', { value: 'social-studies' }, 'Social studies / history'),
+                  h('option', { value: 'foreign-language' }, 'Foreign language'),
+                  h('option', { value: 'arts' }, 'Arts'),
+                  h('option', { value: 'standardized-test' }, 'Standardized test (SAT, ACT, AP)')
+                )
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '⏰ Time available'),
+                h('select', { 'data-ll-focusable': true, 'aria-label': 'Time available', value: time,
+                  onChange: function(e) { upd('spTime', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
+                  h('option', { value: '' }, '— pick one —'),
+                  h('option', { value: 'cramming-tonight' }, 'Test is tomorrow (cramming-tonight)'),
+                  h('option', { value: 'few-days' }, 'A few days'),
+                  h('option', { value: '1-2-weeks' }, '1-2 weeks'),
+                  h('option', { value: 'month-plus' }, 'A month or more')
+                )
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '📋 Assessment type'),
+                h('select', { 'data-ll-focusable': true, 'aria-label': 'Assessment type', value: assessType,
+                  onChange: function(e) { upd('spAssess', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
+                  h('option', { value: '' }, '— pick one —'),
+                  h('option', { value: 'multiple-choice' }, 'Multiple choice'),
+                  h('option', { value: 'short-answer' }, 'Short answer'),
+                  h('option', { value: 'essay' }, 'Essay'),
+                  h('option', { value: 'performance-task' }, 'Performance task / demonstration'),
+                  h('option', { value: 'project' }, 'Project / paper')
+                )
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '🧠 Prior knowledge'),
+                h('select', { 'data-ll-focusable': true, 'aria-label': 'Prior knowledge of topic', value: prior,
+                  onChange: function(e) { upd('spPrior', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
+                  h('option', { value: '' }, '— pick one —'),
+                  h('option', { value: 'novice' }, 'Novice (just starting)'),
+                  h('option', { value: 'some-familiarity' }, 'Some familiarity'),
+                  h('option', { value: 'strong' }, 'Strong (review/refine)')
+                )
+              )
+            )
+          ),
+          recs && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🎯 Recommended strategies for your situation'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              recs.map(function(sId) {
+                var detail = STRATEGY_DETAILS[sId];
+                if (!detail) return null;
+                var isCaveat = sId.indexOf('CAVEAT') >= 0;
+                return h('div', { key: sId, style: { padding: 10, borderRadius: 8, background: isCaveat ? '#7c2d12' : T.cardAlt, border: '1px solid ' + (isCaveat ? T.warn : T.good) } },
+                  h('strong', { style: { fontSize: 13, color: isCaveat ? '#fed7aa' : T.accentHi, display: 'block', marginBottom: 4 } },
+                    isCaveat ? '⚠️ ' + detail.name : '→ ' + detail.name),
+                  h('div', { style: { fontSize: 12, color: isCaveat ? '#fed7aa' : T.text, lineHeight: 1.55 } }, detail.what)
+                );
+              })
+            ),
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🎯 Action: '),
+              'Pick 2-3 of these strategies. Use them on this assignment THIS WEEK. The first time always feels awkward — push through. Notice the difference vs your default approach. That\'s the proof.')
+          ),
+          !recs && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
+            'Fill in all 4 fields above to get strategy recommendations.'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // LEARNING PATH view
+      // ─────────────────────────────────────────
+      function renderPath() {
+        var done = d.pathDone || {};
+        var totalMods = LEARNING_PATH.reduce(function(acc, w) { return acc + w.modules.length; }, 0);
+        var doneCount = Object.keys(done).filter(function(k) { return done[k]; }).length;
+        var pct = totalMods > 0 ? Math.round((doneCount / totalMods) * 100) : 0;
+        if (doneCount === totalMods && totalMods > 0) awardBadge('path-graduate', 'Learning Path Graduate');
+
+        var MOD_LABELS = {
+          bloom: 'Bloom\'s Taxonomy', cogload: 'Cognitive Load', metacog: 'Metacognition', zpd: 'ZPD + scaffolding',
+          udlPrinciples: 'UDL framework', spaced: 'Spaced repetition + retrieval', study: 'Study strategies',
+          memory: 'Memory + active learning', mindset: 'Growth mindset', myths: 'Neuromyth debunker',
+          lessonPlan: 'Lesson plan builder', strategyPicker: 'Strategy picker',
+          'careers-list': 'Education careers', 'maine-progs': 'Maine programs'
+        };
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🛤️ Recommended learning path'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🛤️ A 4-week curated walkthrough'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'New here? This is the most valuable 4 weeks you can spend in this tool. Each week: theme + 2-6 target modules + measurable outcome. ',
+              h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalMods + ' (' + pct + '%)')
+          ),
+          LEARNING_PATH.map(function(w) {
+            var weekDoneCount = w.modules.filter(function(m) { return done['w' + w.week + '-' + m.id]; }).length;
+            return h('div', { key: w.week, style: { marginBottom: 14, padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (weekDoneCount === w.modules.length ? T.good : T.accent) } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                h('span', { style: { fontSize: 28 } }, w.icon),
+                h('div', { style: { flex: 1 } },
+                  h('h4', { style: { margin: 0, fontSize: 16, color: T.accentHi } }, w.title),
+                  h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, weekDoneCount + ' / ' + w.modules.length + ' modules touched')
+                ),
+                weekDoneCount === w.modules.length && h('span', { style: { fontSize: 22, color: T.good } }, '✓')
+              ),
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.text, lineHeight: 1.55, fontStyle: 'italic' } }, w.theme),
+              h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 } },
+                w.modules.map(function(m, i) {
+                  var key = 'w' + w.week + '-' + m.id;
+                  var isDone = !!done[key];
+                  var label = MOD_LABELS[m.id] || m.id;
+                  return h('button', { key: key, role: 'listitem', 'data-ll-focusable': true,
+                    'aria-label': label + (isDone ? ' (done)' : ''),
+                    onClick: function() {
+                      var nv = Object.assign({}, done); nv[key] = !nv[key];
+                      upd('pathDone', nv);
+                    },
+                    style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
+                      h('strong', { style: { fontSize: 13, color: isDone ? '#d1fae5' : T.accentHi, flex: 1 } }, '→ ' + label)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
+                      h('strong', { style: { color: T.dim } }, 'Why: '), m.why),
+                    h('div', { style: { marginTop: 6, marginLeft: 22 } },
+                      h('a', { href: '#', onClick: function(e) { e.preventDefault(); e.stopPropagation(); setView(m.id); },
+                        style: { fontSize: 11, color: T.link, textDecoration: 'underline' } },
+                        '🔗 Open ' + label + ' →'))
+                  );
+                })
+              ),
+              h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🎯 Outcome by end of week ' + w.week + ': '), w.outcome)
+            );
+          }),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // GLOSSARY view
+      // ─────────────────────────────────────────
+      function renderGlossary() {
+        var query = (d.glQuery || '').toLowerCase();
+        var tagFilter = d.glTag || 'all';
+        var tags = ['all', 'curriculum', 'cogsci', 'metacog', 'udl', 'vygotsky', 'strategy', 'motivation', 'assessment', 'sped', 'el'];
+        var filtered = GLOSSARY.filter(function(g) {
+          if (tagFilter !== 'all' && g.tag !== tagFilter) return false;
+          if (!query) return true;
+          return g.term.toLowerCase().indexOf(query) >= 0 || g.def.toLowerCase().indexOf(query) >= 0;
+        });
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📖 Glossary'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📖 50+ pedagogy + cognitive-science terms'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              'Reference glossary for the vocabulary used across this tool + most education + cognitive-science writing. Filter by category or search.'),
+            h('input', { type: 'search', 'data-ll-focusable': true,
+              'aria-label': 'Search glossary terms',
+              placeholder: 'Search terms or definitions...',
+              value: query,
+              onChange: function(e) { upd('glQuery', e.target.value); awardBadge('glossary-user', 'Glossary User'); },
+              style: { width: '100%', padding: 10, borderRadius: 8, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13, marginBottom: 10, boxSizing: 'border-box' } }),
+            h('div', { role: 'tablist', 'aria-label': 'Filter by category', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              tags.map(function(t) {
+                var active = tagFilter === t;
+                return h('button', { key: t, 'data-ll-focusable': true, role: 'tab',
+                  'aria-selected': active ? 'true' : 'false',
+                  onClick: function() { upd('glTag', t); },
+                  style: Object.assign({}, btnGhost(), { background: active ? T.accent : 'transparent', color: active ? '#fff' : T.muted, fontWeight: active ? 800 : 600 }) },
+                  t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 10 } }, filtered.length + ' of ' + GLOSSARY.length + ' terms'),
+          h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            filtered.map(function(g) {
+              return h('div', { key: g.term, role: 'listitem',
+                style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                  h('strong', { style: { fontSize: 14, color: T.accentHi } }, g.term),
+                  h('span', { style: { fontSize: 10, color: T.dim, padding: '2px 6px', borderRadius: 4, background: T.bg, border: '1px solid ' + T.border, textTransform: 'uppercase' } }, g.tag)
+                ),
+                h('div', { style: { fontSize: 13, color: T.text, lineHeight: 1.5 } }, g.def)
+              );
+            }),
+            filtered.length === 0 && h('div', { style: { padding: 14, textAlign: 'center', color: T.dim, fontSize: 13 } },
+              'No terms match. Try clearing the search or picking "All".')
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // MEMORY + ACTIVE LEARNING view
+      // ─────────────────────────────────────────
+      function renderMemory() {
+        var picked = d.memPicked || null;
+        var pickedTech = picked ? MEMORY_TECHNIQUES.find(function(t) { return t.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🧠 Memory + active learning techniques'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🧠 8 specific techniques'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Concrete + actionable. Pick one to try this week — you don\'t need all 8. Each: what it is, how to do it, when to use, research backing, example.')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+            MEMORY_TECHNIQUES.map(function(t) {
+              var sel = picked === t.id;
+              return h('button', { key: t.id, 'data-ll-focusable': true,
+                'aria-label': t.name,
+                'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('memPicked', sel ? null : t.id); awardBadge('memory-explorer', 'Memory Explorer'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left',
+                  fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, t.icon),
+                h('span', null, t.name)
+              );
+            })
+          ),
+          pickedTech && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedTech.icon + ' ' + pickedTech.name),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What it is: '), pickedTech.what),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '📋 How to do it: '), pickedTech.how),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🕐 When to use: '), pickedTech.when),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.text } }, '📋 Example: '), pickedTech.example),
+            pickedTech.caveat && h('div', { style: { padding: 8, borderRadius: 6, background: '#7c2d12', border: '1px solid ' + T.warn, fontSize: 11, color: '#fed7aa', lineHeight: 1.55, marginBottom: 8 } },
+              h('strong', null, '⚠️ Caveat: '), pickedTech.caveat),
+            h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+              h('strong', null, '📚 Research: '), pickedTech.research)
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -1844,6 +2563,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'myths':         return renderMyths();
         case 'careers-list':  return renderCareers();
         case 'maine-progs':   return renderMaineProgs();
+        case 'lessonPlan':    return renderLessonPlan();
+        case 'strategyPicker':return renderStrategyPicker();
+        case 'path':          return renderPath();
+        case 'glossary':      return renderGlossary();
+        case 'memory':        return renderMemory();
         case 'quiz':          return renderQuiz();
         case 'badges':        return renderBadges();
         case 'resources':     return renderResources();
