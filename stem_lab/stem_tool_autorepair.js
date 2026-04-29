@@ -3300,7 +3300,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q46', icon: '🌲',
       stem: 'A Maine teen wants year-round mechanic income. What\'s the smart pattern?',
       choices: ['Move south', 'Combine summer (lawn equipment, marine outboard, landscaping) with winter (snowmobile, ATV, plow truck service). Year-round flow.', 'Only work summers', 'Only work winters'],
-      correct: 1, why: 'Maine\'s seasonal economy rewards seasonal-stack mechanics. Summer = lawn/marine; winter = snowmobile/plow. Many independent Maine shops run this combo for steady year-round income.' }
+      correct: 1, why: 'Maine\'s seasonal economy rewards seasonal-stack mechanics. Summer = lawn/marine; winter = snowmobile/plow. Many independent Maine shops run this combo for steady year-round income.' },
+    { id: 'q47', icon: '🏆',
+      stem: 'You earn a badge when you complete a module milestone (full safety walk, first lab simulator scenario, full inspection self-walk, etc.). Where can you see all your earned + unearned badges?',
+      choices: ['Twitter', 'The Badge Gallery on the menu — shows everything earned + everything still locked, grouped by module', 'Print them out', 'They\'re hidden'],
+      correct: 1, why: 'Badge Gallery view shows your full progress across all 28 modules. Lets you see what you\'ve mastered + what\'s still ahead. Useful for self-pacing through the curriculum.' },
+    { id: 'q48', icon: '🛡️',
+      stem: 'You\'re working on a hybrid vehicle. The 12-volt battery is dead. Can you safely jump-start the high-voltage drive battery from another car\'s 12V?',
+      choices: ['Yes — same as a regular car', 'NO — never connect 12V to high-voltage components. The 12V auxiliary is what you jump (just like any car); the HV drive battery is sealed + serviced only with HV-rated equipment + procedures.', 'Only with adapter', 'Hybrids can\'t be jumped'],
+      correct: 1, why: 'Hybrids + EVs have BOTH a 12V auxiliary battery (powers the brain that wakes up the HV system) AND a separate HV drive battery (200-800V). Jumping the 12V is normal procedure; touching HV without training kills.' },
+    { id: 'q49', icon: '📚',
+      stem: 'Best free resource to translate an unfamiliar repair article term?',
+      choices: ['Google guess', 'This tool\'s Glossary — 50+ essential auto terms with category filter + search', 'AI hallucination', 'Skip it'],
+      correct: 1, why: 'The Glossary covers engine, electrical, brakes, drivetrain, fluids, and general terms. Search any word; filter by category. Built so you can read any auto-repair article without getting stuck on jargon like "stoichiometric," "blow-by," or "core charge."' },
+    { id: 'q50', icon: '🌲',
+      stem: 'You\'ve worked through this whole tool. What\'s the single most actionable next step in real life?',
+      choices: ['Buy every tool at once', 'Pick ONE module, pick ONE task, do it on a real car this weekend (your own or a friend\'s with permission). Hands-on beats theory by a wide margin.', 'Memorize all 50 quiz questions', 'Watch YouTube videos forever'],
+      correct: 1, why: 'The tool is a curriculum scaffold. The actual skills come from doing. Start small (oil change, wiper blades, tire rotation, battery test) on a real car. Use the Service Log to record it. The Service Log entry IS the proof you did it.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -3412,61 +3428,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // MENU view
       // ─────────────────────────────────────────
       function renderMenu() {
-        var modules = [
-          { id: 'firstcar', icon: '🚗', label: 'First car? Start here', desc: 'Just bought your first car. 30-day week-by-week plan: paperwork → fluids → undercarriage → inspection prep.' },
-          { id: 'vin', icon: '🆔', label: 'VIN decoder', desc: 'Decode your 17-character VIN — country, manufacturer, year, plant. Free recall + history lookup links.' },
-          { id: 'maint', icon: '📅', label: 'Maintenance schedule', desc: 'Personalized schedule from your odometer + last-service date. Shows what\'s overdue, soon, and OK.' },
-          { id: 'diagnose', icon: '🔍', label: 'Diagnose', desc: 'OBD-II codes, listening cues, fluid analysis, visual inspection.' },
-          { id: 'tree', icon: '🌳', label: 'Decision tree', desc: 'Symptom → likely cause. 6 interactive flowcharts (no-start, misfire, brakes, overheating, charging, steering).' },
-          { id: 'lab', icon: '🧪', label: 'Hands-on lab simulator', desc: '6 graded diagnostic scenarios. Customer car presents symptoms; you walk through decision points; get a letter grade + per-choice feedback.' },
-          { id: 'repair', icon: '🔧', label: 'Repair scenarios', desc: '12 step-by-step jobs, from oil change + battery to timing belt.' },
-          { id: 'tools', icon: '🧰', label: 'Tool selection', desc: 'Pick the right tool for the job. Builds your mental toolkit.' },
-          { id: 'safety', icon: '🛡️', label: 'Safety modules', desc: 'Jack stands, electrical, refrigerant, hot exhaust, springs, fluid disposal.' },
-          { id: 'inspection', icon: '🌲', label: 'Maine inspection', desc: '8-area pre-walk before your annual sticker. Catch fails BEFORE the station does.' },
-          { id: 'cold', icon: '🌨️', label: 'Cold-weather prep', desc: 'October–November Maine winter checklist: battery, tires, coolant, washer fluid, block heater, more.' },
-          { id: 'roadside', icon: '🚨', label: 'Roadside emergency', desc: 'Maine winter trunk kit (16 items) + 9-step breakdown response protocol.' },
-          { id: 'usedcar', icon: '🛒', label: 'Buying a used car', desc: '10 red flags + 9-step walkaround. Salt-state pre-purchase inspection.' },
-          { id: 'estimate', icon: '💵', label: 'Estimate decoder', desc: 'Read a shop quote. Identify standard, DIY-able, and upsell line items.' },
-          { id: 'scams', icon: '🚩', label: 'Common scams', desc: '12 known shop scams + how to spot them and what to ask. Maine consumer rights.' },
-          { id: 'damage', icon: '🔬', label: 'Damage ID game', desc: '15 visual-pattern cases. Identify part, cause, and severity. Builds tech eye.' },
-          { id: 'roi', icon: '💰', label: 'Repair ROI calculator', desc: 'Should I fix it or sell it? Math-based recommendation from value, repair cost, and looming work.' },
-          { id: 'log', icon: '📓', label: 'Service log', desc: 'Record your own maintenance history. Date + odometer + service + cost + notes. CSV export.' },
-          { id: 'ev', icon: '⚡', label: 'EV / Hybrid', desc: 'High-voltage safety, regen braking, cold-weather range, charging — the future of the trade.' },
-          { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ essential auto terms. Search and filter by category. So you can read any repair article.' },
-          { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
-          { id: 'race', icon: '🏁', label: 'Race mechanic (NASCAR)', desc: 'Pit crew roles, pit-stop choreography puzzle, chassis setup tuning, race-radio diagnostics, Maine + NE short-track guide. Path from HS auto shop to racing.' },
-          { id: 'build', icon: '🏗️', label: 'Project car build', desc: 'The $500 rust-bucket capstone. 6 phases (triage → strip → priority → body → inspection → daily-driver) + 12-item triage scoring rubric.' },
-          { id: 'diesel', icon: '🚜', label: 'Diesel & heavy equipment', desc: 'Maine working economy: log trucks, plow trucks, farm tractors, marine, class 8 OTR. Compression ignition, DPF/DEF, glow plugs, diesel codes.' },
-          { id: 'power', icon: '🛷', label: 'Powersports + small engine', desc: 'Snowmobile, ATV, lawn, outboard, generator, chainsaw. 2-stroke vs 4-stroke. Carb basics. Maine seasonal-stack career.' },
-          { id: 'shopbiz', icon: '🏪', label: 'Shop business basics', desc: 'Mobile mechanic startup, insurance, tool trucks, pricing, customer acquisition. For future shop owners.' },
-          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '46 questions across the full curriculum: safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab, scams, damage ID, ROI, race, project car, diesel, powersports.' },
-          { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
+        var categories = [
+          { id: 'owning', icon: '🚗', name: 'Owning + daily use',
+            desc: 'Just bought it / drive it / keep it healthy.',
+            modules: [
+              { id: 'firstcar', icon: '🚗', label: 'First car? Start here', desc: 'Just bought your first car. 30-day week-by-week plan.' },
+              { id: 'vin', icon: '🆔', label: 'VIN decoder', desc: '17-character VIN parse + free recall lookup.' },
+              { id: 'maint', icon: '📅', label: 'Maintenance schedule', desc: 'Personalized from your odometer.' },
+              { id: 'log', icon: '📓', label: 'Service log', desc: 'Record your own maintenance history.' },
+              { id: 'inspection', icon: '🌲', label: 'Maine inspection', desc: '8-area pre-walk before your annual sticker.' },
+              { id: 'cold', icon: '🌨️', label: 'Cold-weather prep', desc: 'Maine winter October-April checklist.' },
+              { id: 'roadside', icon: '🚨', label: 'Roadside emergency', desc: 'Trunk kit + breakdown protocol.' }
+            ]
+          },
+          { id: 'diagnose-cat', icon: '🔍', name: 'Diagnose + understand',
+            desc: 'What\'s wrong + why + how to find out.',
+            modules: [
+              { id: 'diagnose', icon: '🔍', label: 'Diagnose', desc: 'OBD-II, listening, fluids, visual.' },
+              { id: 'tree', icon: '🌳', label: 'Decision tree', desc: '6 interactive symptom flowcharts.' },
+              { id: 'lab', icon: '🧪', label: 'Hands-on lab simulator', desc: '6 graded diagnostic scenarios with letter grades.' },
+              { id: 'damage', icon: '🔬', label: 'Damage ID game', desc: '15 visual-pattern cases. Build tech eye.' },
+              { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ essential auto terms.' }
+            ]
+          },
+          { id: 'fix-cat', icon: '🔧', name: 'Fix it',
+            desc: 'Step-by-step repair + tool + safety.',
+            modules: [
+              { id: 'repair', icon: '🔧', label: 'Repair scenarios', desc: '12 step-by-step jobs.' },
+              { id: 'tools', icon: '🧰', label: 'Tool selection', desc: 'Library + tool-pick mini-game.' },
+              { id: 'safety', icon: '🛡️', label: 'Safety modules', desc: '6 safety areas. Jack stands, electrical, refrigerant, more.' }
+            ]
+          },
+          { id: 'consumer-cat', icon: '🛒', name: 'Savvy consumer',
+            desc: 'Buying, quoting, deciding when to fix vs sell.',
+            modules: [
+              { id: 'usedcar', icon: '🛒', label: 'Buying a used car', desc: '10 red flags + 9-step walkaround.' },
+              { id: 'estimate', icon: '💵', label: 'Estimate decoder', desc: '21 line items: standard, DIY, upsell.' },
+              { id: 'scams', icon: '🚩', label: 'Common scams', desc: '12 known shop scams + how to push back.' },
+              { id: 'roi', icon: '💰', label: 'Repair ROI calculator', desc: 'Should I fix it or sell it?' }
+            ]
+          },
+          { id: 'career-cat', icon: '🏅', name: 'Career paths',
+            desc: 'From "I love this" to "I do this for a living."',
+            modules: [
+              { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE + Maine vocational programs.' },
+              { id: 'shopbiz', icon: '🏪', label: 'Shop business basics', desc: 'Mobile mechanic startup, insurance, pricing.' },
+              { id: 'race', icon: '🏁', label: 'Race mechanic (NASCAR)', desc: 'Pit crew + setup + radio + Maine short-track.' },
+              { id: 'build', icon: '🏗️', label: 'Project car build', desc: 'The $500 rust-bucket capstone.' },
+              { id: 'diesel', icon: '🚜', label: 'Diesel & heavy equipment', desc: 'Log trucks, plows, farm, marine, OTR.' },
+              { id: 'power', icon: '🛷', label: 'Powersports + small engine', desc: 'Snowmobile, ATV, lawn, outboard, generator.' },
+              { id: 'ev', icon: '⚡', label: 'EV / Hybrid', desc: 'HV safety, regen braking, cold-weather range.' }
+            ]
+          },
+          { id: 'progress-cat', icon: '📊', name: 'Progress + reference',
+            desc: 'Self-test, achievements, full citation list.',
+            modules: [
+              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '50 questions across the full curriculum.' },
+              { id: 'badges', icon: '🏆', label: 'Badge gallery', desc: 'All earned + unlockable badges. Track your progress.' },
+              { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with working URL.' }
+            ]
+          }
         ];
         var badgeCount = Object.keys(badges).length;
-        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        var collapsedCats = d.collapsedCats || {};
+
+        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
           h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
             h('h1', { style: { margin: '0 0 6px', fontSize: 24, color: T.text } }, '🔧 Auto Repair Shop'),
             h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
               'Diagnose like a tech, repair like a pro, know when to stop and call a shop. Maine emphasis: oldest fleet in the country, salt + rust everywhere, rural distances. Pairs with ',
               h('strong', { style: { color: T.accentHi } }, 'RoadReady'), ' — you drive a car AND maintain it.')
           ),
-          badgeCount > 0 && h('div', { style: { marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted } },
-            h('span', { className: 'ar-pulse-ring', 'aria-hidden': true, style: { display: 'inline-block', width: 8, height: 8, background: '#fbbf24', borderRadius: '50%', marginRight: 8, verticalAlign: 'middle' } }),
-            h('strong', { style: { color: T.accentHi } }, '🏅 Badges earned: '), String(badgeCount), ' — ',
-            Object.keys(badges).map(function(k) { return badges[k].label; }).join(', ')
+          badgeCount > 0 && h('button', { 'data-ar-focusable': true,
+            'aria-label': 'View badge gallery',
+            onClick: function() { setView('badges'); },
+            style: { width: '100%', marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, cursor: 'pointer', textAlign: 'left' } },
+            h('strong', { style: { color: T.accentHi } }, '🏅 Badges earned: '), String(badgeCount), ' — tap to view gallery →'
           ),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 } },
-            modules.map(function(m) {
-              return h('button', { 'data-ar-focusable': true, key: m.id,
-                'aria-label': 'Open ' + m.label + ' module',
-                onClick: function() { setView(m.id); },
-                style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4 } },
-                h('div', { style: { fontSize: 28 } }, m.icon),
-                h('div', { style: { fontWeight: 700, fontSize: 15, color: T.text } }, m.label),
-                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.4 } }, m.desc)
-              );
-            })
-          ),
+          categories.map(function(cat) {
+            var collapsed = !!collapsedCats[cat.id];
+            return h('div', { key: cat.id, style: { marginBottom: 14 } },
+              h('button', { 'data-ar-focusable': true,
+                'aria-label': (collapsed ? 'Expand' : 'Collapse') + ' ' + cat.name,
+                'aria-expanded': collapsed ? 'false' : 'true',
+                onClick: function() {
+                  var nv = Object.assign({}, collapsedCats);
+                  nv[cat.id] = !nv[cat.id];
+                  upd('collapsedCats', nv);
+                },
+                style: { width: '100%', padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, color: T.text, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10 } },
+                h('span', { style: { fontSize: 26 } }, cat.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontWeight: 800, fontSize: 16, color: T.accentHi } }, cat.name),
+                  h('div', { style: { fontSize: 11, color: T.muted, marginTop: 2 } }, cat.desc + ' · ' + cat.modules.length + ' modules')
+                ),
+                h('span', { style: { fontSize: 14, color: T.dim } }, collapsed ? '▶' : '▼')
+              ),
+              !collapsed && h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 8 } },
+                cat.modules.map(function(m) {
+                  return h('button', { 'data-ar-focusable': true, key: m.id,
+                    'aria-label': 'Open ' + m.label + ' module',
+                    onClick: function() { setView(m.id); },
+                    style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: 4 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                      h('span', { style: { fontSize: 22 } }, m.icon),
+                      h('strong', { style: { fontWeight: 700, fontSize: 14, color: T.text } }, m.label)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, m.desc)
+                  );
+                })
+              )
+            );
+          }),
           h('div', { style: { marginTop: 16, padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
             h('strong', { style: { color: T.accentHi } }, '🌲 Maine reality: '),
             MAINE_CONTEXT.fleetAge, ' ', MAINE_CONTEXT.salt
@@ -6655,6 +6728,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // BADGE GALLERY view — progress dashboard
+      // ─────────────────────────────────────────
+      function renderBadges() {
+        // Catalog of all unlockable badges, grouped by module category.
+        // 'check' returns true if earned (looks at the badges object).
+        var BADGE_CATALOG = [
+          { group: '🚗 Owning + daily use', items: [
+            { id: 'first-log', icon: '📓', name: 'First Log Entry', how: 'Save your first service log entry.' },
+            { id: 'log-keeper', icon: '📓', name: 'Log Keeper', how: 'Reach 10 service log entries.' },
+            { id: 'inspection-prep', icon: '🌲', name: 'Inspection Self-Walk', how: 'Complete all 8 Maine inspection self-checks.' },
+            { id: 'winter-prep', icon: '🌨️', name: 'Maine Winter Prepped', how: 'Complete all 12 cold-weather prep items.' },
+            { id: 'kit-packed', icon: '🎒', name: 'Trunk Kit Packed', how: 'Pack all 16 roadside-emergency kit items.' },
+            { id: 'first-car-30day', icon: '🚗', name: '30-Day Plan Complete', how: 'Finish all 17 first-car-owner tasks.' }
+          ] },
+          { group: '🔍 Diagnose + understand', items: [
+            { id: 'obd-explorer', icon: '🔌', name: 'OBD Explorer', how: 'Tap any OBD-II code in the Diagnose module.' },
+            { id: 'listener', icon: '👂', name: 'Listener', how: 'Tap any listening cue in Diagnose.' },
+            { id: 'fluid-reader', icon: '🛢️', name: 'Fluid Reader', how: 'Tap any fluid in the Diagnose / Fluids tab.' },
+            { id: 'visual-inspector', icon: '👁️', name: 'Visual Inspector', how: 'Tap any visual-inspection item.' },
+            { id: 'tree-explorer', icon: '🌳', name: 'Decision Tree Explorer', how: 'Start any decision tree.' },
+            { id: 'lab-master', icon: '🏆', name: 'Lab Master', how: 'Complete all 6 lab simulator scenarios with 70%+.' },
+            { id: 'damage-id-ace', icon: '🔬', name: 'Damage ID Ace', how: 'Score 80%+ on the 15-case Damage ID game.' }
+          ] },
+          { group: '🔧 Fix it', items: [
+            { id: 'safety-jack-stands', icon: '🛡️', name: 'Safety: Jack stands', how: 'Tap the jack-stands safety module.' },
+            { id: 'safety-electrical', icon: '⚡', name: 'Safety: Electrical', how: 'Tap the electrical safety module.' },
+            { id: 'safety-refrigerant', icon: '🌬️', name: 'Safety: Refrigerant', how: 'Tap the refrigerant safety module.' },
+            { id: 'safety-hot-exhaust', icon: '🔥', name: 'Safety: Hot exhaust', how: 'Tap the hot-exhaust safety module.' },
+            { id: 'safety-spring-tension', icon: '💥', name: 'Safety: Spring tension', how: 'Tap the spring-tension safety module.' },
+            { id: 'safety-fluid-disposal', icon: '🌊', name: 'Safety: Fluid disposal', how: 'Tap the fluid-disposal safety module.' }
+          ] },
+          { group: '🛒 Savvy consumer', items: [
+            { id: 'used-car-buyer', icon: '🛒', name: 'Used Car Buyer', how: 'Complete all 9 used-car walkaround steps.' },
+            { id: 'estimate-decoder', icon: '💵', name: 'Estimate Decoder', how: 'Tap any estimate-decoder line item.' },
+            { id: 'scam-aware', icon: '🚩', name: 'Scam Aware', how: 'Tap any common-scam in the Scams module.' }
+          ] },
+          { group: '🏅 Career paths', items: [
+            { id: 'ev-safety-aware', icon: '⚡', name: 'EV Safety Aware', how: 'Tap any EV high-voltage safety rule.' },
+            { id: 'race-crew-explorer', icon: '🏁', name: 'Race Crew Explorer', how: 'Tap any pit-crew role in the Race Mechanic module.' },
+            { id: 'race-radio', icon: '📻', name: 'Race Radio Decoded', how: 'Tap any driver-radio quote in the Race module.' },
+            { id: 'pitstop-master', icon: '🏆', name: 'Pit Stop Master', how: 'Score 80%+ on the pit-stop choreography puzzle.' },
+            { id: 'build-master', icon: '🏗️', name: 'Project Car Master', how: 'Check off all 30+ project-car build tasks.' },
+            { id: 'diesel-aware', icon: '🚜', name: 'Diesel Aware', how: 'Tap any diesel key-difference in the Diesel module.' }
+          ] },
+          { group: '🧪 Self-test', items: [
+            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 50-question knowledge quiz.' }
+          ] }
+        ];
+
+        var totalBadges = 0;
+        var earnedBadges = 0;
+        BADGE_CATALOG.forEach(function(g) {
+          totalBadges += g.items.length;
+          g.items.forEach(function(b) {
+            if (badges[b.id]) earnedBadges++;
+          });
+        });
+        var pct = totalBadges > 0 ? Math.round((earnedBadges / totalBadges) * 100) : 0;
+        var pctColor = pct >= 80 ? T.good : pct >= 50 ? T.accentHi : pct >= 25 ? T.warn : T.dim;
+
+        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+          backBar('🏆 Badge gallery'),
+          h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + pctColor, marginBottom: 14, textAlign: 'center' } },
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, 'Curriculum mastery'),
+            h('div', { style: { fontSize: 36, fontWeight: 900, color: pctColor, lineHeight: 1, marginBottom: 6 } }, earnedBadges + ' / ' + totalBadges),
+            h('div', { style: { fontSize: 14, color: T.text, fontWeight: 700 } }, pct + '% complete'),
+            h('p', { style: { margin: '10px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              pct >= 90 ? '🏆 Curriculum mastered. Time to apply on a real car.' :
+              pct >= 70 ? '🎓 Strong progress. The remaining badges are good targets.' :
+              pct >= 40 ? '🚧 Good start. Pick a category and work through it.' :
+              pct >= 10 ? '🛠️ Just getting started. Each module takes ~10 minutes to walk through.' :
+              '📚 New here? Start with "First car? Start here" or "Diagnose."')
+          ),
+          BADGE_CATALOG.map(function(g) {
+            var groupEarned = g.items.filter(function(b) { return badges[b.id]; }).length;
+            return h('div', { key: g.group, style: { marginBottom: 14, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
+                h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, g.group),
+                h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, groupEarned + ' / ' + g.items.length)
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                g.items.map(function(b) {
+                  var earned = !!badges[b.id];
+                  return h('div', { key: b.id,
+                    style: { padding: 10, borderRadius: 8, background: earned ? '#064e3b' : T.cardAlt, border: '1px solid ' + (earned ? T.good : T.border), opacity: earned ? 1 : 0.65 } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                      h('span', { style: { fontSize: 22, filter: earned ? 'none' : 'grayscale(100%)' } }, b.icon),
+                      h('strong', { style: { fontSize: 13, color: earned ? '#d1fae5' : T.dim, flex: 1 } }, b.name),
+                      earned ? h('span', { style: { fontSize: 16, color: T.good } }, '✓') : h('span', { style: { fontSize: 14, color: T.dim } }, '🔒')
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                      h('strong', { style: { color: earned ? '#a7f3d0' : T.dim } }, earned ? '🏅 Earned: ' : '🔒 To earn: '), b.how)
+                  );
+                })
+              )
+            );
+          }),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -6685,6 +6860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'maint':      return renderMaint();
         case 'career':     return renderCareer();
         case 'quiz':       return renderQuiz();
+        case 'badges':     return renderBadges();
         case 'resources':  return renderResources();
         case 'menu':
         default:           return renderMenu();
