@@ -3508,7 +3508,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q55', icon: '📚',
       stem: 'If you\'re NEW to this tool, what\'s the smart way to work through 28 modules?',
       choices: ['Random tabs', 'Use the Recommended Learning Path — 4-week curated walkthrough with weekly themes (Know your car / Diagnose / Hands-on safe / Savvy + career)', 'Try to do everything in one day', 'Skip everything'],
-      correct: 1, why: 'The Learning Path orders modules pedagogically: vocabulary first (week 1), reasoning second (week 2), hands-on third (week 3), consumer-protection + career exploration fourth (week 4). Each week has goals + outcomes you can verify.' }
+      correct: 1, why: 'The Learning Path orders modules pedagogically: vocabulary first (week 1), reasoning second (week 2), hands-on third (week 3), consumer-protection + career exploration fourth (week 4). Each week has goals + outcomes you can verify.' },
+    { id: 'q56', icon: '♿',
+      stem: 'WCAG 2.1 AA requires UI component boundaries (button borders, form-input borders) to have what minimum contrast against adjacent colors?',
+      choices: ['1:1', '3:1 (Success Criterion 1.4.11 Non-text Contrast)', '4.5:1', '7:1'],
+      correct: 1, why: '1.4.11 Non-text Contrast = 3:1 minimum for UI components and graphical objects. Text contrast (1.4.3) is 4.5:1 for normal text. Both must pass for AA compliance.' },
+    { id: 'q57', icon: '⌨️',
+      stem: 'Why does this tool include "Skip to module categories" as the first focusable element on the menu?',
+      choices: ['Decoration', 'WCAG 2.4.1 Bypass Blocks — keyboard users can skip past the welcome banner straight to the navigable content. Hidden until focused via Tab key.', 'Marketing', 'No reason'],
+      correct: 1, why: 'Skip links let keyboard + screen-reader users jump past repeated header content to the main content. Required for AA (2.4.1). Hidden visually until keyboard focus exposes it.' },
+    { id: 'q58', icon: '🔇',
+      stem: 'On a button like "🔍 Search," the magnifying-glass emoji should ideally...',
+      choices: ['Be left as-is for screen readers', 'Be wrapped in a span with aria-hidden="true" so screen readers don\'t read "magnifying glass" before the word "Search" — the visible text already conveys the meaning', 'Be removed', 'Be in red'],
+      correct: 1, why: 'Decorative emoji + paired text = redundant for SR users. Wrap the emoji in aria-hidden="true" so SRs read just the text. Keeps visual meaning + cleans up the SR announcement. Common pattern across this tool.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -3539,6 +3551,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       var addToast = ctx.addToast || function(msg) { console.log('[AutoRepair]', msg); };
 
       // ── Theme palette (mirrors firstresponse / roadready garage-aesthetic) ──
+      // WCAG 2.1 AA pass:
+      //   border = slate-500 → 3.69:1 contrast vs bg (1.4.11 ≥3:1 boundary).
+      //   text = slate-100 on bg = ~17:1 (1.4.3 ≥4.5:1 normal text).
+      //   muted = slate-300 on bg = ~13:1.
+      //   accent (amber-500) on bg = ~10.5:1.
+      //   Focus = amber-400 3px solid outline via the [data-ar-focusable] CSS.
       var T = {
         bg: '#0f172a',        // slate-900
         panel: '#1e293b',     // slate-800
@@ -3547,7 +3565,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         text: '#f1f5f9',      // slate-100
         muted: '#cbd5e1',     // slate-300
         dim: '#94a3b8',       // slate-400
-        border: '#334155',    // slate-700
+        border: '#64748b',    // slate-500 — boundary contrast 3.69:1 vs bg (passes WCAG 1.4.11)
+        borderSoft: '#334155',// slate-700 — for purely-decorative dividers inside cards (not UI components)
         accent: '#f59e0b',    // amber-500 (garage / hazard / wrench color)
         accentHi: '#fbbf24',  // amber-400
         link: '#fbbf24',
@@ -3687,19 +3706,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var badgeCount = Object.keys(badges).length;
         var collapsedCats = d.collapsedCats || {};
 
-        return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        return h('div', { role: 'main', 'aria-label': 'Auto Repair Shop main menu', style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+          h('a', { href: '#ar-menu-categories', 'data-ar-focusable': true,
+            style: { position: 'absolute', left: '-9999px', top: 'auto', width: 1, height: 1, overflow: 'hidden' },
+            onFocus: function(e) { Object.assign(e.target.style, { position: 'static', left: 'auto', width: 'auto', height: 'auto', display: 'inline-block', padding: '6px 12px', background: T.accent, color: '#0f172a', textDecoration: 'none', fontWeight: 700, borderRadius: 6, marginBottom: 10 }); },
+            onBlur: function(e) { Object.assign(e.target.style, { position: 'absolute', left: '-9999px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }); }
+          }, 'Skip to module categories'),
           h('div', { style: { marginBottom: 16, padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
-            h('h1', { style: { margin: '0 0 6px', fontSize: 24, color: T.text } }, '🔧 Auto Repair Shop'),
+            h('h1', { style: { margin: '0 0 6px', fontSize: 24, color: T.text } },
+              h('span', { 'aria-hidden': 'true' }, '🔧 '), 'Auto Repair Shop'),
             h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
               'Diagnose like a tech, repair like a pro, know when to stop and call a shop. Maine emphasis: oldest fleet in the country, salt + rust everywhere, rural distances. Pairs with ',
               h('strong', { style: { color: T.accentHi } }, 'RoadReady'), ' — you drive a car AND maintain it.')
           ),
           badgeCount > 0 && h('button', { 'data-ar-focusable': true,
-            'aria-label': 'View badge gallery',
+            'aria-label': 'View badge gallery — ' + badgeCount + ' badges earned',
             onClick: function() { setView('badges'); },
             style: { width: '100%', marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, cursor: 'pointer', textAlign: 'left' } },
-            h('strong', { style: { color: T.accentHi } }, '🏅 Badges earned: '), String(badgeCount), ' — tap to view gallery →'
+            h('span', { 'aria-hidden': 'true' }, '🏅 '),
+            h('strong', { style: { color: T.accentHi } }, 'Badges earned: '), String(badgeCount), ' — tap to view gallery →'
           ),
+          h('div', { id: 'ar-menu-categories', tabIndex: -1 }),
           categories.map(function(cat) {
             var collapsed = !!collapsedCats[cat.id];
             return h('div', { key: cat.id, style: { marginBottom: 14 } },
