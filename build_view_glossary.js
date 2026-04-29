@@ -20,11 +20,14 @@ function GlossaryView(props) {
   var selectedLanguages = props.selectedLanguages;
   var displayLanguages = props.displayLanguages;
   var leveledTextLanguage = props.leveledTextLanguage;
+  var currentUiLanguage = props.currentUiLanguage;
+  var activeView = props.activeView;
   var isTeacherMode = props.isTeacherMode;
   var gradeLevel = props.gradeLevel;
   var inputText = props.inputText;
-  var originalText = props.originalText;
   var includeEtymology = props.includeEtymology;
+  // Derived state from host
+  var filteredGlossaryData = props.filteredGlossaryData;
   // Edit / add / lookup state
   var isEditingGlossary = props.isEditingGlossary;
   var isAddingTerm = props.isAddingTerm;
@@ -75,6 +78,8 @@ function GlossaryView(props) {
   // Word search
   var wordSearchLang = props.wordSearchLang;
   var showWordSearchAnswers = props.showWordSearchAnswers;
+  var selectedLetters = props.selectedLetters;
+  var foundWords = props.foundWords;
   // Setters
   var setGlossarySearchTerm = props.setGlossarySearchTerm;
   var setIsEditingGlossary = props.setIsEditingGlossary;
@@ -102,6 +107,10 @@ function GlossaryView(props) {
   var setBingoSettings = props.setBingoSettings;
   var setBingoState = props.setBingoState;
   var setWordSearchLang = props.setWordSearchLang;
+  var setGlossaryImageStyle = props.setGlossaryImageStyle;
+  var setNewGlossaryTerm = props.setNewGlossaryTerm;
+  var setShowHealthCheckPanel = props.setShowHealthCheckPanel;
+  var setGlossaryRefinementInputs = props.setGlossaryRefinementInputs;
   // Handlers
   var handleAddGlossaryTerm = props.handleAddGlossaryTerm;
   var handleQuickAddGlossary = props.handleQuickAddGlossary;
@@ -133,6 +142,13 @@ function GlossaryView(props) {
   var closeStudentBingo = props.closeStudentBingo;
   var handleToggleShowWordSearchAnswers = props.handleToggleShowWordSearchAnswers;
   var handlePrintGame = props.handlePrintGame;
+  var handleSetGameModeToNull = props.handleSetGameModeToNull;
+  var handleToggleShowHealthCheckPanel = props.handleToggleShowHealthCheckPanel;
+  var handleGlossarySelectAll = props.handleGlossarySelectAll;
+  var handleGlossarySelectionChange = props.handleGlossarySelectionChange;
+  var handleDeleteGlossaryItem = props.handleDeleteGlossaryItem;
+  var fetchReplacementSuggestion = props.fetchReplacementSuggestion;
+  var toggleLetterSelection = props.toggleLetterSelection;
   // Screener helpers
   var classifyScreeningRisk = props.classifyScreeningRisk;
   var advanceRoster = props.advanceRoster;
@@ -235,9 +251,11 @@ const moduleSrc = `/**
   };
   var ArrowDown = _lazyIcon('ArrowDown');
   var Award = _lazyIcon('Award');
+  var Ban = _lazyIcon('Ban');
   var Brain = _lazyIcon('Brain');
   var CheckCircle = _lazyIcon('CheckCircle');
   var CheckCircle2 = _lazyIcon('CheckCircle2');
+  var ChevronDown = _lazyIcon('ChevronDown');
   var Download = _lazyIcon('Download');
   var Eye = _lazyIcon('Eye');
   var GalleryHorizontal = _lazyIcon('GalleryHorizontal');
@@ -253,7 +271,9 @@ const moduleSrc = `/**
   var Printer = _lazyIcon('Printer');
   var RefreshCw = _lazyIcon('RefreshCw');
   var Search = _lazyIcon('Search');
+  var Send = _lazyIcon('Send');
   var Shuffle = _lazyIcon('Shuffle');
+  var Sparkles = _lazyIcon('Sparkles');
   var StopCircle = _lazyIcon('StopCircle');
   var Trash2 = _lazyIcon('Trash2');
   var Volume2 = _lazyIcon('Volume2');
