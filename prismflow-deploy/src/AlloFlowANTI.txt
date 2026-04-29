@@ -8111,19 +8111,26 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   };
   const handleInitializeMap = async () => {
     const _m = window.AlloModules && window.AlloModules.CmapHandlers;
-    if (_m && typeof _m.handleInitializeMap === "function") return _m.handleInitializeMap({
-        generatedContent,
-        conceptMapNodes,
-        conceptMapEdges,
-        mapContainerRef,
-        hasAutoLayoutRunRef,
-        setConceptMapNodes,
-        setConceptMapEdges,
-        setIsConceptMapReady,
-        parseFlowChartData,
-        handleAutoLayout,
-        warnLog,
-      });
+    if (_m && typeof _m.handleInitializeMap === "function") {
+      setIsProcessing(true);
+      try {
+        return await _m.handleInitializeMap({
+          generatedContent,
+          conceptMapNodes,
+          conceptMapEdges,
+          mapContainerRef,
+          hasAutoLayoutRunRef,
+          setConceptMapNodes,
+          setConceptMapEdges,
+          setIsConceptMapReady,
+          parseFlowChartData,
+          handleAutoLayout,
+          warnLog,
+        });
+      } finally {
+        setIsProcessing(false);
+      }
+    }
     throw new Error("[handleInitializeMap] CmapHandlers module not loaded - reload the page");
   };
   const handleAutoLayout = async (nodesInput, edgesInput) => {
