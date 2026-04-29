@@ -2616,6 +2616,216 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.965: RACE MECHANIC — NASCAR / short-track pit crew + setup tuning
+  // For kids who love racing — the actual mechanic career path runs THROUGH
+  // your high school auto-shop class. Maine has live short-track racing
+  // (Oxford Plains, Beech Ridge) where you can volunteer right now.
+  // ─────────────────────────────────────────────────────────
+  var NASCAR_OVERVIEW = {
+    bigPicture: 'NASCAR Cup Series teams employ 200-400 people each. About 80% are mechanical / engineering / fabrication roles. Competitive short-track racing (Maine Late Models, Modifieds, Pro Stocks) employs hundreds of weekend mechanics. The path from high school auto-shop → working pit crew is more direct than most people realize.',
+    pay: {
+      entry: '$30-50K/yr — short-track team mechanic, fabricator helper, tire-changer apprentice',
+      midNascar: '$60-110K/yr — NASCAR Cup pit crew (most positions, including travel + benefits)',
+      seniorNascar: '$120-300K+/yr — crew chief, race engineer, top-tier fabricator',
+      driverPaid: 'Note: race-team owners + drivers are different income tracks; this is the MECHANIC track.'
+    },
+    fitnessReality: 'NASCAR pit crew positions are now elite-athlete jobs. Tire changers + jackmen routinely come from college football / wrestling / weightlifting backgrounds. 4.5-second tire changes require strength + speed + repetition. Many teams scout at HBCUs + Olympic training centers. ASE certification + a sport background is the modern entry combo.',
+    schooling: 'NASCAR Technical Institute (Mooresville, NC) is the dominant pipeline; UTI also runs racing-tech programs. Maine\'s community college auto-tech AAS + a summer move to NC is a real path. Or: stay in Maine, work short-track, become a regional pro.',
+    where: 'NASCAR is concentrated in NC. But race work happens at every level. Maine + New England has dozens of short tracks running weekly April-October. Most need volunteers. That\'s the entry.'
+  };
+  var PIT_CREW_ROLES = [
+    { id: 'tire-changer', icon: '🔧', name: 'Tire changer (front + rear)',
+      what: 'Removes 5 lug nuts + old tire, installs new tire + 5 lug nuts. Two per car (front + rear).',
+      cycle: '~2-3 seconds per tire on a Cup-level pit stop.',
+      fitness: 'Elite. Most are former college athletes (football lineman, wrestlers). Air-gun grip strength + stamina + speed are non-negotiable.',
+      gear: 'Air gun (~22 lb), specialized 5-lug socket. Fire suit + helmet + gloves.',
+      training: 'NASCAR Pit Crew Combine (annual scouting event). Many teams have full-time pit-crew coaches.',
+      pay: '$80-120K/yr at Cup level. $30-50K at short-track level.',
+      origin: 'College athlete pipeline. ASE-certified mechanics for the rest of the work-week.' },
+    { id: 'tire-carrier', icon: '🛞', name: 'Tire carrier',
+      what: 'Carries fresh tire to the changer. Carries old tire away. Two per car (one per axle).',
+      cycle: '~1 second to deliver, 1 second to clear.',
+      fitness: 'Elite. Tire weighs ~70 lb. Carrying it at speed + setting it precisely on the hub repeatedly = serious athleticism.',
+      gear: 'Fire suit + helmet + gloves. Often the same athletes as tire changers.',
+      training: 'Same combine + team-coaching pipeline.',
+      pay: '$70-100K/yr at Cup level.',
+      origin: 'College athlete pipeline.' },
+    { id: 'jackman', icon: '🆙', name: 'Jackman',
+      what: 'Jacks the car (single-pump aluminum jack). Holds car up while tires are swapped. Drops car at end.',
+      cycle: '~2 pumps to lift, hold, 1 release.',
+      fitness: 'Strongest position on most teams. Pumping a 50-lb jack twice in 2 seconds while running around a car. Major-league strong.',
+      gear: 'Aluminum NASCAR-spec jack ($1500+). Fire suit.',
+      training: 'Combine + team coaching.',
+      pay: '$80-120K/yr at Cup.',
+      origin: 'Football lineman pipeline.' },
+    { id: 'fueler', icon: '⛽', name: 'Fueler / gas man',
+      what: 'Inserts the fuel can nozzle into the fuel-cell port. Holds for ~12 seconds while fuel transfers. Pulls out and steps clear.',
+      cycle: '~12 seconds (fuel transfer rate determines).',
+      fitness: 'Strong but not the same elite pipeline. Fuel can weighs ~80 lb full.',
+      gear: 'NASCAR-spec aluminum fuel can (12 gallons). Fire suit + helmet + face shield (fuel splash risk).',
+      training: 'Team-internal training; fuel safety is the priority. Bigger danger zone than tire changing.',
+      pay: '$60-90K/yr at Cup.',
+      origin: 'Often promoted from team mechanics. Strength + steady hands.' },
+    { id: 'fuel-catch', icon: '🪣', name: 'Fuel catch can holder (until 2018; now part of fueler\'s job)',
+      what: 'Historical role: held a small can to catch fuel overflow when tank was full. NASCAR streamlined this position out of pit stops in 2018 — fueler handles both cans now.',
+      cycle: 'N/A — position eliminated 2018.',
+      fitness: 'N/A — historical reference.',
+      gear: 'N/A.',
+      training: 'N/A — included for context. Older NASCAR videos show 7-person pit crews; modern is 5.',
+      pay: 'N/A.',
+      origin: 'Position no longer exists in NASCAR Cup. Some short-track series still use it.' },
+    { id: 'crew-chief', icon: '🎯', name: 'Crew chief',
+      what: 'Race-day decision-maker. Calls pit strategy (when to pit, how many tires, fuel-only vs 4-tire, when to gamble on track position vs fresh tires). Coaches driver via radio.',
+      cycle: 'Race-long mental load.',
+      fitness: 'Mental acuity + experience + ability to make $1M decisions in 3 seconds.',
+      gear: 'Pit box (mobile command center with telemetry, timing screens, radios).',
+      training: 'Decades of racing experience. Often former mechanics + race engineers who worked their way up.',
+      pay: '$120-300K/yr base + win bonuses. Top crew chiefs earn $500K+.',
+      origin: 'Engineering degree (race engineer track) OR decades-up-the-ladder mechanic with proven tactical instinct. Maine kids: aim for community-college auto-tech + a short-track team for year-1 hands-on experience.' },
+    { id: 'fabricator', icon: '🔨', name: 'Fabricator (chassis / body)',
+      what: 'Builds + repairs chassis tubes, body panels, sheet-metal. Welds, shapes, hand-fits. Race cars are often hand-built one-offs.',
+      cycle: 'Shop work all week between races.',
+      fitness: 'Workshop-strong; not race-day athletic.',
+      gear: 'Welding rig (TIG mostly), English wheel, planishing hammer, sheet brake, full machine shop.',
+      training: '1-2 year welding + sheet metal program. NASCAR Tech, UTI, or community college. Then apprenticeship at a race shop.',
+      pay: '$45-90K/yr depending on team + experience.',
+      origin: 'Strongest career path for hands-on mechanically-inclined kids who don\'t want race-day pressure. STEADY weekly shop work, no travel beyond test sessions.' }
+  ];
+
+  var PIT_STOP_STEPS = [
+    { n: 1, action: 'Pit road speed limiter button activated by driver (~45 mph)', who: 'Driver' },
+    { n: 2, action: 'Driver brakes hard at the pit stall mark', who: 'Driver' },
+    { n: 3, action: 'Jackman attacks RIGHT side first (always — entry order)', who: 'Jackman' },
+    { n: 4, action: 'Right-side tire changer starts loosening 5 lug nuts on RF tire', who: 'RF Changer' },
+    { n: 5, action: 'Right-side tire carrier delivers fresh RF tire', who: 'RF Carrier' },
+    { n: 6, action: 'Fueler inserts fuel can nozzle into fuel-cell port', who: 'Fueler' },
+    { n: 7, action: 'RF tire on; changer torques 5 lug nuts', who: 'RF Changer' },
+    { n: 8, action: 'RR (right rear) tire change runs in parallel', who: 'RR Crew' },
+    { n: 9, action: 'Jackman drops right side, runs to left side', who: 'Jackman' },
+    { n: 10, action: 'Jackman raises LEFT side', who: 'Jackman' },
+    { n: 11, action: 'LF + LR tire changes run in parallel', who: 'L Crew' },
+    { n: 12, action: 'Fueler waits for transfer to complete (~12 sec total)', who: 'Fueler' },
+    { n: 13, action: 'Jackman drops left side', who: 'Jackman' },
+    { n: 14, action: 'Fueler clears nozzle out of port', who: 'Fueler' },
+    { n: 15, action: 'Driver releases pit-road limiter as the car is dropped', who: 'Driver' },
+    { n: 16, action: 'Driver accelerates out of pit stall', who: 'Driver' }
+  ];
+
+  var SETUP_ADJUSTMENTS = [
+    { id: 'track-bar', icon: '⚖️', name: 'Track bar (Panhard bar)',
+      what: 'Lateral bar that locates the rear axle side-to-side. Adjusting changes the rear roll center height.',
+      higherBar: 'Raises rear roll center → tighter (less rear grip → less oversteer)',
+      lowerBar: 'Lowers rear roll center → looser (more rear grip → more oversteer / "loose")',
+      whenToUse: 'Big lever for fine-tuning rear grip during a race.',
+      cycle: 'Adjustable mid-race on most stock cars.' },
+    { id: 'wedge', icon: '⚖️', name: 'Wedge (cross-weight)',
+      what: 'Diagonal weight distribution: RF + LR vs LF + RR. Adjusted by changing spring height (turning the wedge bolt).',
+      higherWedge: 'More wedge → tighter (push) in left turns',
+      lowerWedge: 'Less wedge → looser (free) in left turns',
+      whenToUse: 'Adjusted during pit stops with a wedge wrench.',
+      cycle: 'Mid-race adjustment. Few clicks left or right.' },
+    { id: 'tire-pressure', icon: '💨', name: 'Tire pressure',
+      what: 'Single most-tunable variable mid-race. Pressure changes during the run as tires heat up; cold-set is critical.',
+      higher: 'Higher pressure → less grip, less heat buildup, longer tire life',
+      lower: 'Lower pressure → more grip, more heat, shorter tire life — but faster lap times short-term',
+      whenToUse: 'Set based on track temperature; adjust by 1-2 psi per pit stop based on wear pattern.',
+      cycle: 'Every pit stop.' },
+    { id: 'camber', icon: '↗️', name: 'Camber',
+      what: 'Tilt of the wheel/tire relative to vertical. Negative camber = top tilted in.',
+      moreNeg: 'More negative → more grip in turns, more inside-edge tire wear',
+      lessNeg: 'Less negative → more straight-line grip, more outside-edge wear',
+      whenToUse: 'Track-specific. Banked tracks need different camber than flat tracks.',
+      cycle: 'Pre-race setup; not adjustable mid-race.' },
+    { id: 'gear-ratio', icon: '⚙️', name: 'Gear ratio (final drive)',
+      what: 'Determines max RPM at top speed. Different rear-end gears for different tracks.',
+      higher: 'Higher (numerically larger) gear → quicker acceleration, lower top speed',
+      lower: 'Lower (numerically smaller) gear → slower accel, higher top speed',
+      whenToUse: 'Track-specific: short tracks use shorter gears (acceleration); superspeedways use long gears (top speed).',
+      cycle: 'Pre-race setup; pit-rebuild required to change.' },
+    { id: 'sway-bar', icon: '🔗', name: 'Sway bar',
+      what: 'Anti-roll bar links left + right suspension. Bigger bar = stiffer roll resistance on that axle.',
+      stifferFront: 'Stiffer front bar → tighter (push) — more understeer',
+      stifferRear: 'Stiffer rear bar → looser (free) — more oversteer',
+      whenToUse: 'Core balance lever. Adjusted between practice + qualifying + race based on driver feedback.',
+      cycle: 'Pre-race + practice; not mid-race.' },
+    { id: 'shock', icon: '💧', name: 'Shocks / dampers',
+      what: 'Controls the rate at which springs compress + extend. Different bump + rebound rates.',
+      stiffer: 'Stiffer → more responsive, less compliance over bumps',
+      softer: 'Softer → more compliance, more body roll, more weight transfer',
+      whenToUse: 'Track surface dictates. Smooth tracks = stiffer; bumpy = softer.',
+      cycle: 'Pre-race tuning.' },
+    { id: 'spoiler-angle', icon: '🪂', name: 'Spoiler angle (rear)',
+      what: 'Rear spoiler angle creates downforce vs drag tradeoff.',
+      moreAngle: 'More angle → more downforce (rear grip) + more drag (slower top speed)',
+      lessAngle: 'Less angle → less downforce + less drag (faster top speed)',
+      whenToUse: 'Fundamentally track-driven: short tracks max angle; superspeedways min angle.',
+      cycle: 'Pre-race only.' }
+  ];
+
+  var RACE_DIAGNOSTICS = [
+    { id: 'loose-entry', driverSays: '"Loose getting in" / "rear is sliding when I turn in"',
+      meaning: 'Rear grip is failing as the car enters the corner. Oversteer entering.',
+      causes: 'Rear tire pressure too low (heat buildup) | Front sway bar too stiff | Rear shock too soft | Track bar too low',
+      adjust: 'Stiffer rear bar, +1 psi rear tires, raise track bar. Check tire wear pattern after.' },
+    { id: 'tight-mid', driverSays: '"Tight in the middle" / "won\'t turn"',
+      meaning: 'Front grip can\'t rotate the car through the turn apex. Understeer mid-corner.',
+      causes: 'Front tire pressure too high | Front camber wrong for track | Track bar too high | Front sway bar too stiff',
+      adjust: '−1 psi front, soften front bar, lower track bar. Verify steering geometry isn\'t bent (pit hit).' },
+    { id: 'loose-exit', driverSays: '"Loose off" / "won\'t put the power down"',
+      meaning: 'Rear breaks loose as driver gets back to throttle exiting corner. Oversteer on power.',
+      causes: 'Rear gear too aggressive (over-driving tires) | Rear sway bar too stiff | Wedge wrong | Right-rear tire pressure too low',
+      adjust: 'Add wedge, +1 psi RR, soften rear bar. Sometimes a longer (smaller-number) gear helps.' },
+    { id: 'pushing', driverSays: '"Pushing" (NASCAR-speak for understeer)',
+      meaning: 'Front tires plow straight ahead instead of turning. Same as "tight" — both terms mean understeer.',
+      causes: 'Front grip insufficient — see "Tight in middle" causes',
+      adjust: 'See "Tight in middle" adjustments. Pushing on entry vs middle vs exit narrows the lever.' },
+    { id: 'free', driverSays: '"Free" (NASCAR-speak for oversteer)',
+      meaning: 'Rear wheels break loose, car wants to spin. Same as "loose."',
+      causes: 'Rear grip insufficient — see "Loose entry" or "Loose off" depending on phase',
+      adjust: 'Pinpoint the phase (entry / middle / exit) first.' },
+    { id: 'pickup', driverSays: '"Picking up debris on the tires"',
+      meaning: 'Tires are running too cold or pressure is too high — pad surface isn\'t shedding rubber, picking up track marbles.',
+      causes: 'Tire pressure too high | Driver running too far up the racetrack (in the marbles)',
+      adjust: '−1 psi all four. Driver may need to run a different line.' },
+    { id: 'cliff', driverSays: '"Tires went off a cliff" / "got real slow about lap 30"',
+      meaning: 'Tire wear hit the cliff — sudden grip loss after a wear threshold. Stop is needed NOW.',
+      causes: 'Aggressive setup wearing tires too hard | Wrong tire pressure | Asphalt temp climbed during the race',
+      adjust: 'Pit on the next caution. For the next set: +1 psi to slow heat buildup; consider a longer gear; stop pushing the right-side wear pattern.' },
+    { id: 'getting-good', driverSays: '"Coming to me" / "settling in"',
+      meaning: 'Driver has the car balanced and is fast. Crew chief\'s job: don\'t change anything.',
+      causes: 'Setup is right; driver is in rhythm.',
+      adjust: 'Hold. Watch lap times. Plan pit strategy around fuel + tire windows, not chassis changes.' }
+  ];
+
+  var NORTHEAST_RACING = {
+    intro: 'NASCAR-style stock car racing in New England runs from April through October. Most tracks need volunteers — that\'s how teen mechanics get started. Bring tools, ask "can I help?", and put in the hours.',
+    tracks: [
+      { name: 'Oxford Plains Speedway', loc: 'Oxford, ME', desc: '3/8-mile asphalt oval. Active. Annual Oxford 250 (Pro All Stars Series) is one of the biggest short-track races in the country.', url: 'https://oxfordplains.com' },
+      { name: 'Beech Ridge Motor Speedway', loc: 'Scarborough, ME', desc: '1/3-mile asphalt oval. Iconic Maine track running weekly. Pro All Stars Series + Late Models.', url: 'https://www.beechridge.com' },
+      { name: 'Wiscasset Speedway', loc: 'Wiscasset, ME', desc: '1/3-mile asphalt oval; mid-coast Maine. Late Models, Pro Stocks, Sport Mods.', url: null },
+      { name: 'Speedway 95', loc: 'Hermon, ME', desc: '3/8-mile asphalt oval; Bangor area. Family-friendly weekly racing.', url: null },
+      { name: 'Spud Speedway', loc: 'Caribou, ME', desc: 'Northern Maine\'s short track. Up north / Aroostook racing community.', url: null },
+      { name: 'Star Speedway', loc: 'Epping, NH', desc: '1/4-mile asphalt oval; just over the border. Strong Modified series.', url: 'https://www.starspeedway.com' },
+      { name: 'New Hampshire Motor Speedway', loc: 'Loudon, NH', desc: '1.058-mile oval. Hosts NASCAR Cup + Xfinity races. The big show in New England.', url: 'https://www.nhms.com' },
+      { name: 'Thompson Speedway', loc: 'Thompson, CT', desc: '5/8-mile oval. Major NASCAR Whelen Modified Tour stop.', url: null }
+    ],
+    series: [
+      { name: 'Pro All Stars Series (PASS)', desc: 'New England\'s top late-model series. Where short-track mechanics build resumes.' },
+      { name: 'NASCAR Whelen Modified Tour', desc: 'Top regional Modified series. Open-wheel-style with a roll cage. Northeast-rooted.' },
+      { name: 'American-Canadian Tour (ACT)', desc: 'Late Model series running into Canada. Maine teams compete regularly.' },
+      { name: 'NEMA (Northeastern Midget Association)', desc: 'Open-wheel midget cars. Different car, similar mechanical skills.' }
+    ],
+    howToStart: [
+      'Show up at a Friday or Saturday night race. Walk to the pit gate (separate from spectator entrance). Many tracks let you in for $20-30 with a wristband.',
+      'Find the team paddock. Most teams are 4-8 people working out of a trailer. Approach during prep (2-3 hours before the race), NOT 5 minutes before they go on track.',
+      'Ask a team member: "Looking for any extra help?" Bring a $30 NASCAR-style helper kit: gloves, basic socket set, multimeter, headlamp, work boots.',
+      'Volunteer hours = experience. After 2-3 race nights, ask if they\'d let you do tire prep, fuel work, or sponsorship-decal application.',
+      'Year 2-3: paid spotter, spotter assistant, sub-mechanic. Sometimes $50-100/race plus food.',
+      'Year 4+: become a regular mechanic on a competitive team. From there, the resume opens for traveling teams + summer-camp opportunities at NASCAR Tech.'
+    ]
+  };
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 9.97: SERVICE LOG — let user record their own maintenance history
   // Persists in toolData. Date + odo + service + cost + notes.
   // ─────────────────────────────────────────────────────────
@@ -2765,7 +2975,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q35', icon: '🌀',
       stem: 'A shop quotes you "your rotors are warped" but you suspect rust pitting from sitting all winter. What\'s the diagnostic difference?',
       choices: ['Both are the same', 'Real warp shows >0.005" runout on a dial indicator. Rust pitting causes pulse without runout. The fix differs.', 'Warp is more expensive', 'No way to tell'],
-      correct: 1, why: 'Real heat-warp = measurable runout. Rust-pitting = no runout but bumpy surface. Rust-pitted rotors sometimes clear up with aggressive bed-in driving; truly warped rotors don\'t.' }
+      correct: 1, why: 'Real heat-warp = measurable runout. Rust-pitting = no runout but bumpy surface. Rust-pitted rotors sometimes clear up with aggressive bed-in driving; truly warped rotors don\'t.' },
+    { id: 'q36', icon: '🏁',
+      stem: 'In NASCAR-speak, a driver radios "I\'m loose getting in." What does this mean and which way does it lean?',
+      choices: ['Pushing — front won\'t turn', 'Oversteer entering the corner — rear is sliding when turning in', 'Tires picking up debris', 'Engine misfire'],
+      correct: 1, why: '"Loose" = oversteer / "free." "Getting in" = corner entry. Rear grip is failing as the driver turns in. Adjust: stiffer rear bar, +1 psi rear, raise track bar.' },
+    { id: 'q37', icon: '🛞',
+      stem: 'On a NASCAR Cup pit stop, what runs in PARALLEL on the right side of the car?',
+      choices: ['Engine rebuild + body repair', 'Tire change (RF + RR) + fuel transfer all at once on the right side, with one jackman', 'Driver swap + tire change', 'Nothing — only one task at a time'],
+      correct: 1, why: 'Modern 5-person Cup pit crews work in parallel: jackman raises right side; RF + RR changers + carriers swap tires simultaneously; fueler runs the fuel transfer (~12 sec) the entire time. Then jackman switches to left side.' },
+    { id: 'q38', icon: '⚖️',
+      stem: 'What is "wedge" (cross-weight) in stock-car setup?',
+      choices: ['The driver\'s seat angle', 'Diagonal weight distribution (RF+LR vs LF+RR), adjusted by changing spring height with a wedge wrench', 'A type of tire compound', 'Engine timing'],
+      correct: 1, why: 'Wedge is diagonal weight distribution. More wedge = tighter (push) in left turns; less = looser (free). Adjusted mid-race during pit stops with a wedge wrench through a small port in the rear deck.' },
+    { id: 'q39', icon: '🌲',
+      stem: 'You\'re a Maine teen who loves NASCAR. What\'s the most realistic FIRST step to becoming a race mechanic?',
+      choices: ['Move to North Carolina immediately', 'Volunteer at a Maine short track (Oxford Plains, Beech Ridge, Wiscasset, Speedway 95) — show up at the pit gate, ask a team if they need help, bring basic tools', 'Buy your own race car', 'Apply directly to NASCAR Cup teams'],
+      correct: 1, why: 'Maine has 5+ active short tracks running weekly April-October. Volunteer pit work is the entry. After 2-3 seasons + an auto-tech program (community college or NASCAR Tech in NC), you\'re competitive for paid race-team work.' },
+    { id: 'q40', icon: '🪂',
+      stem: 'A short-track car runs MORE rear spoiler angle than a superspeedway car. Why?',
+      choices: ['It looks cooler', 'Short tracks need DOWNFORCE (rear grip in turns); superspeedways need TOP SPEED (less drag) — more spoiler = more downforce + more drag', 'Spoilers are mandatory at short tracks', 'Driver preference'],
+      correct: 1, why: 'Spoiler angle is a downforce-vs-drag tradeoff. Short tracks (lots of turning, low top speed) max angle for grip. Superspeedways (Daytona/Talladega — high speed, drafting) min angle for low drag. Same engineering tradeoff as airplane flaps.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -2899,8 +3129,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           { id: 'ev', icon: '⚡', label: 'EV / Hybrid', desc: 'High-voltage safety, regen braking, cold-weather range, charging — the future of the trade.' },
           { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ essential auto terms. Search and filter by category. So you can read any repair article.' },
           { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
+          { id: 'race', icon: '🏁', label: 'Race mechanic (NASCAR)', desc: 'Pit crew roles, pit-stop choreography puzzle, chassis setup tuning, race-radio diagnostics, Maine + NE short-track guide. Path from HS auto shop to racing.' },
           { id: 'shopbiz', icon: '🏪', label: 'Shop business basics', desc: 'Mobile mechanic startup, insurance, tool trucks, pricing, customer acquisition. For future shop owners.' },
-          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '35 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab, scams, damage ID, ROI.' },
+          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '40 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab, scams, damage ID, ROI, race mechanics.' },
           { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
         ];
         var badgeCount = Object.keys(badges).length;
@@ -5368,6 +5599,314 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // RACE MECHANIC view — NASCAR / short-track
+      // ─────────────────────────────────────────
+      function renderRace() {
+        var racView = d.racView || 'overview';
+        function tabBtn(id, label) {
+          var active = racView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('racView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function racOverview() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🏁 Race-day mechanic — the trade at speed'),
+              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, NASCAR_OVERVIEW.bigPicture),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                [
+                  { label: '🔰 Entry-level pay', val: NASCAR_OVERVIEW.pay.entry },
+                  { label: '🏎️ NASCAR Cup pit crew', val: NASCAR_OVERVIEW.pay.midNascar },
+                  { label: '🎯 Senior (crew chief, race engineer)', val: NASCAR_OVERVIEW.pay.seniorNascar },
+                  { label: '🏫 Schooling', val: NASCAR_OVERVIEW.schooling }
+                ].map(function(r) {
+                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4 } }, r.label),
+                    h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, r.val)
+                  );
+                })
+              )
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
+              h('strong', { style: { color: T.warn } }, '💪 Modern reality: '),
+              h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.55 } }, NASCAR_OVERVIEW.fitnessReality)
+            )
+          );
+        }
+
+        function racCrew() {
+          var picked = d.crewPicked || null;
+          var pickedRole = picked ? PIT_CREW_ROLES.find(function(r) { return r.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '👥 Pit crew + race team roles'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                '7 positions on a modern NASCAR Cup team. Modern pit crew has a 5-person over-the-wall crew (NASCAR rule since 2018). Tap a role to see what they do, what training, what pay.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              PIT_CREW_ROLES.map(function(r) {
+                var sel = picked === r.id;
+                return h('button', { key: r.id, 'data-ar-focusable': true,
+                  'aria-label': r.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('crewPicked', sel ? null : r.id); awardBadge('race-crew-explorer', 'Race Crew Explorer'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, r.icon),
+                  h('span', null, r.name)
+                );
+              })
+            ),
+            pickedRole && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, pickedRole.icon + ' ' + pickedRole.name),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                [
+                  { label: '🎯 What they do', val: pickedRole.what },
+                  { label: '⏱️ Pit-stop cycle', val: pickedRole.cycle },
+                  { label: '💪 Fitness reality', val: pickedRole.fitness },
+                  { label: '🧰 Gear', val: pickedRole.gear },
+                  { label: '🎓 Training pipeline', val: pickedRole.training },
+                  { label: '💵 Pay', val: pickedRole.pay },
+                  { label: '🛤️ Origin path', val: pickedRole.origin }
+                ].map(function(r) {
+                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4 } }, r.label),
+                    h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } }, r.val)
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function racPitstop() {
+          var ordered = d.pitOrdered || [];
+          var available = PIT_STOP_STEPS.filter(function(s) {
+            return ordered.indexOf(s.n) === -1;
+          });
+          var isComplete = ordered.length === PIT_STOP_STEPS.length;
+          var correctness = ordered.filter(function(n, i) { return n === (i + 1); }).length;
+          var pct = ordered.length > 0 ? Math.round((correctness / ordered.length) * 100) : 0;
+
+          function pickStep(n) {
+            upd('pitOrdered', ordered.concat([n]));
+          }
+          function reset() {
+            upd('pitOrdered', []);
+          }
+
+          if (isComplete) {
+            var fullPct = Math.round((correctness / PIT_STOP_STEPS.length) * 100);
+            if (fullPct >= 80) awardBadge('pitstop-master', 'Pit Stop Master');
+            return h('div', null,
+              h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + (fullPct >= 80 ? T.good : fullPct >= 60 ? T.warn : T.bad), marginBottom: 14, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, 'Pit stop choreography'),
+                h('div', { style: { fontSize: 36, fontWeight: 900, color: fullPct >= 80 ? T.good : fullPct >= 60 ? T.warn : T.bad, marginBottom: 6 } }, correctness + ' / ' + PIT_STOP_STEPS.length),
+                h('div', { style: { fontSize: 14, color: T.text } }, 'You got ' + fullPct + '% of the steps in the right slot'),
+                h('p', { style: { margin: '10px 0 0', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                  fullPct >= 90 ? '🏆 Choreography mastery. You could call this stop on the radio.' :
+                  fullPct >= 60 ? '🎓 Solid sequence understanding. Re-check the order vs the actual sequence below.' :
+                  '📚 Watch real Cup pit stops on YouTube — slowed-down 0.25x reveals the parallelism.')
+              ),
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '✅ The actual NASCAR Cup pit-stop sequence'),
+              h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+                PIT_STOP_STEPS.map(function(s) {
+                  return h('div', { key: s.n, role: 'listitem',
+                    style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border, display: 'flex', gap: 10, alignItems: 'flex-start' } },
+                    h('span', { style: { background: T.accent, color: '#0f172a', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 } }, s.n),
+                    h('span', { style: { flex: 1, fontSize: 12, color: T.text, lineHeight: 1.4 } }, s.action),
+                    h('span', { style: { fontSize: 10, color: T.dim, padding: '2px 6px', borderRadius: 4, background: T.bg, border: '1px solid ' + T.border } }, s.who)
+                  );
+                })
+              ),
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnPrimary() }, '🔁 Reset and try again')
+            );
+          }
+
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏁 Pit stop choreography puzzle'),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Put the 16 pit-stop steps in order. Tap each step in the order it happens during a NASCAR Cup pit stop. ',
+                h('strong', { style: { color: T.accentHi } }, 'Your accuracy on placed steps so far: '), pct + '%')
+            ),
+            ordered.length > 0 && h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14, fontSize: 12, color: T.muted } },
+              h('strong', { style: { color: T.accentHi } }, '📍 Your sequence so far: '),
+              ordered.map(function(n, i) {
+                var step = PIT_STOP_STEPS.find(function(s) { return s.n === n; });
+                var correct = n === (i + 1);
+                return h('span', { key: i, style: { display: 'inline-block', margin: '2px 4px 2px 0', padding: '2px 8px', borderRadius: 12, background: correct ? '#064e3b' : '#7f1d1d', color: correct ? '#d1fae5' : '#fee2e2', fontSize: 11 } },
+                  (i + 1) + '. ' + (step ? step.action.substring(0, 30) + '...' : '?'));
+              })
+            ),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.text } }, 'Pick the next step:'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              available.map(function(s) {
+                return h('button', { key: s.n, 'data-ar-focusable': true,
+                  'aria-label': s.action,
+                  onClick: function() { pickStep(s.n); },
+                  style: { textAlign: 'left', padding: 10, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer', fontSize: 12, lineHeight: 1.4, display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'flex-start' } },
+                  h('span', null, s.action),
+                  h('span', { style: { fontSize: 10, color: T.dim, padding: '2px 6px', borderRadius: 4, background: T.bg, border: '1px solid ' + T.border, whiteSpace: 'nowrap' } }, s.who)
+                );
+              })
+            ),
+            h('div', { style: { marginTop: 10, display: 'flex', gap: 8 } },
+              h('button', { 'data-ar-focusable': true, onClick: reset, style: btnGhost() }, '🔁 Reset'))
+          );
+        }
+
+        function racSetup() {
+          var picked = d.setupPicked || null;
+          var pickedAdj = picked ? SETUP_ADJUSTMENTS.find(function(a) { return a.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚖️ Setup tuning — chassis adjustments'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                '8 levers a setup engineer pulls to balance the car. Some are pre-race only; some are mid-race adjustments at every pit stop.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              SETUP_ADJUSTMENTS.map(function(a) {
+                var sel = picked === a.id;
+                return h('button', { key: a.id, 'data-ar-focusable': true,
+                  'aria-label': a.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('setupPicked', sel ? null : a.id); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, a.icon),
+                  h('span', null, a.name)
+                );
+              })
+            ),
+            pickedAdj && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedAdj.icon + ' ' + pickedAdj.name),
+              h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🎯 What it is: '), pickedAdj.what),
+              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
+                Object.keys(pickedAdj).filter(function(k) { return k !== 'id' && k !== 'icon' && k !== 'name' && k !== 'what' && k !== 'whenToUse' && k !== 'cycle'; }).map(function(k) {
+                  return h('div', { key: k, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('div', { style: { fontSize: 10, color: T.dim, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 } }, k.replace(/([A-Z])/g, ' $1').toLowerCase()),
+                    h('div', { style: { fontSize: 11, color: T.text, lineHeight: 1.45 } }, pickedAdj[k])
+                  );
+                })
+              ),
+              h('p', { style: { margin: '0 0 4px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.text } }, '🧪 When to use: '), pickedAdj.whenToUse),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.text } }, '🔄 Adjustment cycle: '), pickedAdj.cycle)
+            )
+          );
+        }
+
+        function racRadio() {
+          var picked = d.radioPicked || null;
+          var pickedRpt = picked ? RACE_DIAGNOSTICS.find(function(r) { return r.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📻 Driver radio → crew chief diagnosis'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Pick a driver-radio quote. See what it means + likely cause + which adjustment lever to pull. This is the diagnostic vocabulary of every crew chief.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              RACE_DIAGNOSTICS.map(function(r) {
+                var sel = picked === r.id;
+                return h('button', { key: r.id, 'data-ar-focusable': true,
+                  'aria-label': r.driverSays,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('radioPicked', sel ? null : r.id); awardBadge('race-radio', 'Race Radio Decoded'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600
+                  }) },
+                  h('span', { style: { fontFamily: 'monospace' } }, '📻 ' + r.driverSays)
+                );
+              })
+            ),
+            pickedRpt && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: '#1e3a8a', border: '1px solid #1e40af', color: '#dbeafe', marginBottom: 10, fontFamily: 'monospace', fontSize: 13 } },
+                '📻 ' + pickedRpt.driverSays),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔍 Meaning: '), pickedRpt.meaning),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '🎯 Likely causes: '), pickedRpt.causes),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.good } }, '🔧 Adjust: '), pickedRpt.adjust)
+            )
+          );
+        }
+
+        function racMaine() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌲 Maine + Northeast racing'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, NORTHEAST_RACING.intro)
+            ),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏁 Active short tracks'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              NORTHEAST_RACING.tracks.map(function(t) {
+                return h('div', { key: t.name, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 2 } }, t.name),
+                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, '📍 ' + t.loc),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, t.desc),
+                  t.url && h('a', { href: t.url, target: '_blank', rel: 'noopener',
+                    style: { display: 'inline-block', marginTop: 6, fontSize: 11, color: T.link, textDecoration: 'underline' } }, '🔗 ' + t.url.replace(/^https?:\/\//, '')))
+              })
+            ),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏆 Major series'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+              NORTHEAST_RACING.series.map(function(s) {
+                return h('div', { key: s.name, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { fontSize: 12, color: T.accentHi } }, s.name),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, s.desc));
+              })
+            ),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🚪 How to start volunteering'),
+            h('ol', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.text, lineHeight: 1.7 } },
+              NORTHEAST_RACING.howToStart.map(function(s, i) {
+                return h('li', { key: i, style: { marginBottom: 4 } }, s);
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🏁 Race mechanic'),
+          h('div', { role: 'tablist', 'aria-label': 'Race mechanic sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('crew', '👥 Pit crew roles'),
+            tabBtn('pitstop', '🏁 Pit stop puzzle'),
+            tabBtn('setup', '⚖️ Setup tuning'),
+            tabBtn('radio', '📻 Race radio'),
+            tabBtn('maine', '🌲 Maine racing')
+          ),
+          racView === 'overview' && racOverview(),
+          racView === 'crew' && racCrew(),
+          racView === 'pitstop' && racPitstop(),
+          racView === 'setup' && racSetup(),
+          racView === 'radio' && racRadio(),
+          racView === 'maine' && racMaine(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -5384,6 +5923,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'damage':     return renderDamage();
         case 'roi':        return renderROI();
         case 'log':        return renderLog();
+        case 'race':       return renderRace();
         case 'ev':         return renderEv();
         case 'glossary':   return renderGlossary();
         case 'cold':       return renderColdPrep();
