@@ -5014,64 +5014,65 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/view_outline_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/view_faq_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5082,7 +5083,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@ccb55c0/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@b9603f8/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -31812,155 +31813,14 @@ Return only the corrected version of this exact text:`;
                         </div>
                     </div>
                 )}
-                {activeView === 'faq' && (
-                  <div className="space-y-6">
-                      {isPlaying && playingContentId === 'faq-active' && (
-                        <div className="sticky top-0 z-20 bg-white/95 backdrop-blur shadow-sm rounded-lg p-3 mb-4 border border-cyan-100 flex items-center justify-between animate-in fade-in slide-in-from-top-2">
-                             <div className="flex items-center gap-3">
-                                <div className="h-2 w-2 rounded-full bg-cyan-500 animate-pulse"/>
-                                <span className="text-sm font-medium text-cyan-800">Reading FAQ...</span>
-                             </div>
-                             <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2 bg-slate-100 rounded-full px-2 py-1">
-                                    <span className="text-[11px] uppercase font-bold text-slate-600">Speed</span>
-                                    <input aria-label={t('common.speed')}
-                                        type="range"
-                                        min="0.5"
-                                        max="2"
-                                        step="0.1"
-                                        defaultValue={voiceSpeed}
-                                        onChange={(e) => setVoiceSpeed(parseFloat(e.target.value))}
-                                        className="w-16 h-1 bg-slate-300 rounded-lg appearance-none cursor-pointer accent-cyan-500"
-                                    />
-                                </div>
-                                <button
-                                    aria-label={t('common.stop')}
-                                    onClick={(e) => { e.stopPropagation(); audioRef.current?.pause(); playbackSessionRef.current = null; window.speechSynthesis.cancel(); setIsPlaying(false); setPlayingContentId(null); }}
-                                    className="p-1.5 hover:bg-rose-100 text-rose-600 rounded-md transition-colors"
-                                    title={t('common.stop')}
-                                >
-                                    <span className="font-bold text-xs uppercase px-1">Stop</span>
-                                </button>
-                             </div>
-                        </div>
-                      )}
-                    <div className="bg-cyan-50 p-4 rounded-lg border border-cyan-100 mb-6 flex justify-between items-center flex-wrap gap-4" data-help-key="faq_goal_panel">
-                        <p className="text-sm text-cyan-800 max-w-xl"><strong>UDL Goal:</strong> Clarifying language and symbols. FAQs help anticipate misconceptions and provide quick reference.</p>
-                        {isTeacherMode && (
-                        <button
-                            aria-label={t('common.toggle_edit_faq')}
-                            onClick={handleToggleIsEditingFaq}
-                            data-help-key="faq_edit_toggle"
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingFaq ? 'bg-cyan-700 text-white hover:bg-cyan-700' : 'bg-white text-cyan-700 border border-cyan-200 hover:bg-cyan-50'}`}
-                        >
-                            {isEditingFaq ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
-                            {isEditingFaq ? t('common.done_editing') : t('faq.edit')}
-                        </button>
-                        )}
-                    </div>
-                    <div className="space-y-4">
-                        {(() => {
-                            let sentenceCounter = 0;
-                            return generatedContent?.data.map((faq, idx) => (
-                            <div key={idx} className="bg-white p-5 rounded-lg border border-slate-400 shadow-sm" data-help-key="faq_item">
-                                <div className="flex items-start gap-3">
-                                    <div className="bg-cyan-100 text-cyan-700 font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1">Q</div>
-                                    <div className="flex-grow space-y-2">
-                                        {isEditingFaq ? (
-                                            <>
-                                                <textarea
-                                                    aria-label={t('faq.edit_question') || 'Edit FAQ question'}
-                                                    value={faq.question}
-                                                    onChange={(e) => handleFaqChange(idx, 'question', e.target.value)}
-                                                    className="w-full font-bold text-slate-800 text-lg bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
-                                                    rows={getRows(faq.question)}
-                                                    placeholder={t('faq.question_placeholder')}
-                                                />
-                                                {(faq.question_en !== undefined || leveledTextLanguage !== 'English') && (
-                                                    <textarea
-                                                        aria-label={t('faq.edit_question_translation') || 'Edit FAQ question translation'}
-                                                        value={faq.question_en || ''}
-                                                        onChange={(e) => handleFaqChange(idx, 'question_en', e.target.value)}
-                                                        className="w-full text-sm text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-slate-50 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
-                                                        rows={getRows(faq.question_en || '')}
-                                                        placeholder={t('common.placeholder_question_trans')}
-                                                    />
-                                                )}
-                                                <div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm space-y-2">
-                                                    <textarea
-                                                        aria-label={t('faq.edit_answer') || 'Edit FAQ answer'}
-                                                        value={faq.answer}
-                                                        onChange={(e) => handleFaqChange(idx, 'answer', e.target.value)}
-                                                        className="w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all"
-                                                        rows={getRows(faq.answer)}
-                                                        placeholder={t('faq.answer_placeholder')}
-                                                    />
-                                                    {(faq.answer_en !== undefined || leveledTextLanguage !== 'English') && (
-                                                        <textarea
-                                                            aria-label={t('faq.edit_answer_translation') || 'Edit FAQ answer translation'}
-                                                            value={faq.answer_en || ''}
-                                                            onChange={(e) => handleFaqChange(idx, 'answer_en', e.target.value)}
-                                                            className="w-full text-xs text-slate-600 italic bg-transparent border border-transparent hover:border-slate-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-none transition-all pt-2 border-t border-slate-200"
-                                                            rows={getRows(faq.answer_en || '')}
-                                                            placeholder={t('common.placeholder_answer_trans')}
-                                                        />
-                                                    )}
-                                                </div>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <h4 className="font-bold text-slate-800 text-lg mb-1 leading-relaxed">
-                                                    {(() => {
-                                                        const qSentences = splitTextToSentences(faq.question).filter(s => s && s.trim().length > 0);
-                                                        return qSentences.map((s, sIdx) => {
-                                                            const currentGlobalIdx = sentenceCounter;
-                                                            sentenceCounter++;
-                                                            const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                                                            return (
-                                                                <span
-                                                                    key={sIdx}
-                                                                    id={`sentence-${currentGlobalIdx}`}
-                                                                    className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-50'}`}
-                                                                    onClick={(e) => { e.stopPropagation(); handleSpeak(s, 'faq-active', currentGlobalIdx); }}
-                                                                >
-                                                                    {formatInteractiveText(s, false)}{" "}
-                                                                </span>
-                                                            );
-                                                        });
-                                                    })()}
-                                                </h4>
-                                                {faq.question_en && <p className="text-sm text-slate-600 italic mb-2">({faq.question_en})</p>}
-                                                <div className="bg-slate-50 p-3 rounded border-l-4 border-cyan-400 text-slate-600 text-sm leading-relaxed">
-                                                    {(() => {
-                                                        const aSentences = splitTextToSentences(faq.answer).filter(s => s && s.trim().length > 0);
-                                                        return aSentences.map((s, sIdx) => {
-                                                            const currentGlobalIdx = sentenceCounter;
-                                                            sentenceCounter++;
-                                                            const isActive = isPlaying && playingContentId === 'faq-active' && playbackState.currentIdx === currentGlobalIdx;
-                                                            return (
-                                                                <span
-                                                                    key={sIdx}
-                                                                    id={`sentence-${currentGlobalIdx}`}
-                                                                    className={`transition-colors duration-300 rounded px-1 py-0.5 box-decoration-clone cursor-pointer ${isActive ? 'bg-yellow-400 text-black shadow-lg font-medium' : 'hover:bg-cyan-100'}`}
-                                                                    onClick={(e) => { e.stopPropagation(); handleSpeak(s, 'faq-active', currentGlobalIdx); }}
-                                                                >
-                                                                    {formatInteractiveText(s, false)}{" "}
-                                                                </span>
-                                                            );
-                                                        });
-                                                    })()}
-                                                    {faq.answer_en && <p className="text-xs text-slate-600 mt-2 pt-2 border-t border-slate-200 italic">({faq.answer_en})</p>}
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ));
-                    })()}
-                    </div>
-                  </div>
-                )}
+                {activeView === 'faq' && window.AlloModules && window.AlloModules.FaqView && React.createElement(window.AlloModules.FaqView, {
+                    t, generatedContent, isPlaying, playingContentId, voiceSpeed,
+                    isTeacherMode, isEditingFaq, leveledTextLanguage, playbackState,
+                    audioRef, playbackSessionRef,
+                    setVoiceSpeed, setIsPlaying, setPlayingContentId,
+                    handleToggleIsEditingFaq, handleFaqChange, handleSpeak,
+                    getRows, splitTextToSentences, formatInteractiveText
+                })}
                 {activeView === 'sentence-frames' && (
                   <div className="space-y-6">
                       <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex justify-between items-center gap-4" data-help-key="scaffolds_goal_panel">
