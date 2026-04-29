@@ -57,6 +57,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if (document.head) document.head.appendChild(st);
   })();
 
+  // ── Visual flair — hover lift, badge glow, hazard blink, stripe progress ──
+  // Targeted via the existing [data-ar-focusable] attribute so card markup
+  // stays untouched. All animations bypassed by the global motion-reduce CSS.
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-ar-flair-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-ar-flair-css';
+    st.textContent = [
+      '@keyframes ar-stripe {',
+      '  0%   { background-position: 0 0; }',
+      '  100% { background-position: 28px 0; }',
+      '}',
+      '@keyframes ar-warning-blink {',
+      '  0%, 100% { opacity: 1.0; filter: drop-shadow(0 0 4px rgba(245,158,11,0.7)); }',
+      '  50%      { opacity: 0.55; filter: drop-shadow(0 0 0 rgba(245,158,11,0)); }',
+      '}',
+      '@keyframes ar-pulse-ring {',
+      '  0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }',
+      '  50%      { box-shadow: 0 0 0 8px rgba(245,158,11,0); }',
+      '}',
+      'button[data-ar-focusable] {',
+      '  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease !important;',
+      '}',
+      'button[data-ar-focusable]:hover {',
+      '  transform: translateY(-2px);',
+      '  border-color: #f59e0b !important;',
+      '  box-shadow: 0 6px 14px rgba(245,158,11,0.18);',
+      '}',
+      'button[data-ar-focusable]:focus-visible {',
+      '  transform: translateY(-2px);',
+      '}',
+      'button[data-ar-focusable][aria-pressed="true"] {',
+      '  border-color: #fbbf24 !important;',
+      '  box-shadow: 0 4px 10px rgba(251,191,36,0.25);',
+      '}',
+      '.ar-stripe-anim {',
+      '  background-image: repeating-linear-gradient(45deg, rgba(245,158,11,0.35) 0 8px, rgba(245,158,11,0.10) 8px 16px);',
+      '  background-size: 28px 28px;',
+      '  animation: ar-stripe 1.0s linear infinite;',
+      '}',
+      '.ar-warning-blink { animation: ar-warning-blink 1.4s ease-in-out infinite; display: inline-block; }',
+      '.ar-pulse-ring    { animation: ar-pulse-ring 1.6s ease-out infinite; display: inline-block; border-radius: 9999px; }',
+      // Print stylesheet — strip motion, hide nav/back, expand details, force white bg
+      '@media print {',
+      '  button[data-ar-focusable] { display: none !important; }',
+      '  .ar-stripe-anim, .ar-warning-blink, .ar-pulse-ring { animation: none !important; }',
+      '  body { background: white !important; color: black !important; }',
+      '}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(st);
+  })();
+
   var _arPoliteTimer = null;
   function arAnnounce(text) {
     if (typeof document === 'undefined') return;
@@ -2616,6 +2669,234 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.96A: PROJECT CAR BUILD — the $500 rust-bucket capstone
+  // ─────────────────────────────────────────────────────────
+  var BUILD_PHASES = [
+    { id: 'triage', n: 1, name: 'Triage — is this saveable?', icon: '🔍', time: '1-2 days',
+      goal: 'Decide if this car is worth bringing back BEFORE you spend money.',
+      tasks: [
+        { do: 'Run the VIN through nhtsa.gov/recalls (free). Note any open recalls.', why: 'Recall repair is FREE at any dealer — actually a value-add, not a deal-breaker.' },
+        { do: 'CarFax or Bumper.com history check ($40 well spent).', why: 'Salvage / rebuilt title cuts resale value 50-60%; theft history kills financing.' },
+        { do: 'Magnet test rocker panels, lower fenders, around wheel wells.', why: 'Bondo over rust = body work was hidden. Filler over salt damage = imminent structural failure.' },
+        { do: 'Crawl under (or jack safely). Inspect frame rails, brake lines, fuel lines, exhaust.', why: 'PERFORATED FRAME = walk away. Not repairable in Maine in most cases. Brake-line scaling = budget repair.' },
+        { do: 'Cold start. Listen for knocks, ticks, smoke from exhaust on first crank.', why: 'Warm engine HIDES problems. If seller refuses cold start, walk.' },
+        { do: 'Pull dipstick + oil cap. Color + smell + foam check.', why: 'Milky / foamy = head gasket = $$$$ unless you got the car free. Black + burnt = overdue oil change at minimum.' },
+        { do: 'OBD-II scan codes (free at parts stores).', why: 'Pulls all stored codes. Use this tool\'s OBD library to translate.' },
+        { do: 'Score it: see triage rubric below. Total score determines: BUY / NEGOTIATE / WALK.', why: 'Math beats romance. A "fixable" car at the wrong price is still a money pit.' }
+      ]
+    },
+    { id: 'strip', n: 2, name: 'Strip-down inspection', icon: '🛠️', time: '1-2 weekends',
+      goal: 'Bought it. Now find every hidden issue before you start spending real money on parts.',
+      tasks: [
+        { do: 'All four wheels off; full brake inspection (pads, rotors, calipers, lines).', why: 'You can\'t see most of the brake system without the wheels off. Maine: bleeders rust-locked is the silent budget-killer.' },
+        { do: 'Air filter, cabin filter, all fluid levels + colors.', why: 'Cheap baseline. Tells you what previous owner ignored.' },
+        { do: 'Battery + alternator load test (free at parts store).', why: 'Battery replacement is $150; alternator is $300. Plan accordingly.' },
+        { do: 'Pull spark plugs. Inspect color + gap + electrode wear per cylinder.', why: 'Mismatched wear across cylinders = clue to hidden problem (one cylinder lean, weak coil, etc.).' },
+        { do: 'Photograph EVERY rust spot, EVERY broken trim piece, EVERY mystery wire under the dash.', why: 'A photo journal saves "wait, what was that?" moments 6 months in. Phone notes app.' },
+        { do: 'Test every electrical: power windows, locks, every light, A/C cold, heat hot, all turn signals, brake lights, reverse lights, dashboard cluster.', why: 'Quirky electrical issues are time + frustration sinks. Identify them all up front.' }
+      ]
+    },
+    { id: 'priority', n: 3, name: 'Repair priority sequence', icon: '📋', time: '4-12 weeks',
+      goal: 'Fix in priority order: SAFETY → LEGAL → RELIABILITY → COMFORT → COSMETIC. Don\'t skip levels.',
+      tasks: [
+        { do: 'TIER 1 SAFETY: brakes (pads + rotors + lines), tires (replace any below 4/32"), seatbelts (must retract + latch), suspension (no clunks, no play).', why: 'Don\'t drive an unsafe car even once. A bad brake line in salt-state Maine has killed people.' },
+        { do: 'TIER 2 LEGAL: lights all working, horn, wipers, exhaust no holes upstream of cat (Maine inspection).', why: 'Required to register + drive. Many are 5-min DIY fixes.' },
+        { do: 'TIER 3 RELIABILITY: oil change, coolant flush if old/contaminated, battery if weak, belt + hoses if cracked, fuel filter if external + ancient.', why: 'These are the things that strand you. Fix before you depend on the car for daily transportation.' },
+        { do: 'TIER 4 COMFORT: A/C if missing or low (FIND THE LEAK), heater core if leaking, blower motor if dead, radio.', why: 'You can drive without these but Maine winter without working heat is a real problem.' },
+        { do: 'TIER 5 COSMETIC: dents, paint touch-ups, interior. ONLY after Tiers 1-4 are complete.', why: 'A pretty car that breaks down is a worse outcome than a plain car that\'s reliable.' },
+        { do: 'After each tier: re-evaluate budget remaining + time remaining vs original goal. Don\'t fall into "just one more thing" cycle.', why: 'Sunk-cost fallacy ruins more project cars than any single mechanical issue.' }
+      ]
+    },
+    { id: 'body', n: 4, name: 'Body + rust mitigation', icon: '🎨', time: 'ongoing',
+      goal: 'Stop active rust + cosmetically address what you can.',
+      tasks: [
+        { do: 'Annual undercarriage rinse (spring after salt season). Self-serve car wash with underbody spray = $5.', why: 'Maine\'s biggest project-car-killer. A $5 spring habit extends a frame\'s life by years.' },
+        { do: 'Active rust spots: wire-wheel to bare metal, treat with rust converter ($10), prime + paint.', why: 'Surface rust treated early stops. Surface rust ignored becomes scaling becomes perforation.' },
+        { do: 'Undercoating: applied over clean undercarriage. Fluid Film + Woolwax are the Maine standards (penetrating, lanolin-based, re-applied annually).', why: 'Hard undercoatings can trap moisture; penetrating undercoatings push moisture out + leave a self-renewing barrier.' },
+        { do: 'Rocker / quarter-panel rust holes: small can be patched with sheet steel + welding. Large = professional body work.', why: 'A welded rocker patch is a real skill — local CTE programs teach it. Bondo over rust without metal repair fails in 1-2 years.' },
+        { do: 'Paint chips: touch-up paint matched to OEM color code (door jamb sticker). Prevents bare-metal rust starts.', why: 'A chipped front bumper rust-starts in one Maine winter. Touch-up takes 2 minutes.' }
+      ]
+    },
+    { id: 'inspection', n: 5, name: 'Inspection prep + first inspection', icon: '🌲', time: '1 week',
+      goal: 'Pre-walk + pass Maine state safety inspection on the first try.',
+      tasks: [
+        { do: 'Re-walk all 8 inspection areas (this tool\'s Inspection module).', why: 'A failed inspection is 60 days to repair. Pre-catch saves the re-inspection trip.' },
+        { do: 'Schedule inspection at a station you trust. Ask for a pre-check ($20-30; some stations free).', why: 'A pre-check at a station is cheaper than a fail + return.' },
+        { do: 'Bring the title + registration + insurance proof.', why: 'Required at inspection. No paperwork = no inspection.' },
+        { do: 'After PASS: $12.50 sticker. Affix to driver-side windshield in lower corner.', why: 'Sticker placement matters. Inspect the sticker placement + expiration date now so future-you doesn\'t blow the renewal.' }
+      ]
+    },
+    { id: 'complete', n: 6, name: 'Daily-driver shakedown', icon: '✅', time: '2-4 weeks',
+      goal: 'Drive it every day for a month. Iron out any "what was that?" moments.',
+      tasks: [
+        { do: 'Drive in varied conditions: highway, stop-and-go, twisty back roads, in cold + hot temperatures.', why: 'Many issues only show up in specific conditions. A month covers most of them.' },
+        { do: 'Keep notes: anything noisy, anything off. Add to Service Log if you fix it.', why: 'Pattern recognition. The third time you hear that hum at 50 mph, you\'ll have a hypothesis.' },
+        { do: 'Plan a 6-month "deep service" reminder: brake fluid flush check, full inspection, fluid swap if anything looked rough at purchase.', why: 'Project cars often need second-pass service after you live with them a while.' },
+        { do: 'Decide: keep + drive, sell at improved value, or pass to next driver.', why: 'A finished project car has 3 reasonable outcomes. Make the call deliberately.' }
+      ]
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.96B: DIESEL & HEAVY EQUIPMENT
+  // ─────────────────────────────────────────────────────────
+  var DIESEL_OVERVIEW = {
+    bigPicture: 'Diesel engines power Maine\'s working economy: log trucks, plow trucks, dairy + potato farm equipment, lobster boats, school buses, generators. They\'re built differently than gasoline engines and require specialized service.',
+    pay: { entry: '$40-55K (light-duty diesel, dealership entry)', mid: '$60-90K (heavy-duty, fleet, agricultural)', senior: '$90-140K (master diesel tech, mobile heavy-equipment service)', specialist: '$100-160K (Caterpillar + John Deere certified, fleet management)' },
+    aseDiesel: 'ASE A9 (Light Vehicle Diesel) for diesel pickups + light trucks. ASE Medium/Heavy Truck series (T1-T8) for class 6-8 trucks. Caterpillar + John Deere have their own factory certifications for heavy equipment.',
+    schooling: 'Maine: Northern Maine Community College + Eastern Maine Community College have diesel/heavy-equipment AAS. UTI + Lincoln Tech have national diesel programs. Many farms + logging operations hire mechanic apprentices straight out of high school.',
+    where: 'Maine demand: every county has dairy farms, logging operations, plow contractors, marine engines (lobstermen). Diesel-trained techs are scarce + paid well.'
+  };
+  var DIESEL_KEY_DIFFS = [
+    { topic: 'Compression ignition (no spark plugs)',
+      what: 'Diesels compress air to ~500 PSI + 1000°F. Fuel injected at the top of compression auto-ignites — no spark needed.',
+      implication: 'No ignition coils, no spark plugs to replace. INSTEAD: glow plugs to pre-warm the cylinder for cold start.' },
+    { topic: 'Glow plugs',
+      what: 'Small electric heaters in the cylinder head. On cold start, they pre-heat the combustion chamber so compression ignition works.',
+      implication: 'Glow-plug failure = no-start in cold weather. Maine winters expose this fast. Glow plug replacement is $10-25/each + 30-90 min, depending on access.' },
+    { topic: 'High-pressure fuel injection',
+      what: 'Modern common-rail diesels run fuel pressure of 25,000-40,000+ PSI (vs ~50 PSI gasoline injection).',
+      implication: 'NEVER troubleshoot a fuel-rail leak with your hand near the leak. Diesel at 30,000 PSI cuts through skin invisibly + deposits fuel into bloodstream. Genuine medical emergency.' },
+    { topic: 'No throttle butterfly',
+      what: 'Diesels control power by changing fuel injection volume, not air. Air goes in at full atmospheric all the time.',
+      implication: 'No "throttle plate" to clean. But airflow restrictions (clogged DPF, bad turbo) are bigger issues than on gasoline engines.' },
+    { topic: 'DPF (Diesel Particulate Filter)',
+      what: 'Filter in the exhaust that traps soot. Required since 2007 on most US diesels. Clogs over time + needs to "regen" (burn off the soot at high temp).',
+      implication: 'Highway driving regens automatically. Stop-and-go driving (delivery trucks, plow trucks) clogs DPF + triggers active regen warnings. Forced regen at a shop is a $150-300 service. Replacement DPF is $2,000-5,000.' },
+    { topic: 'DEF (Diesel Exhaust Fluid)',
+      what: 'Urea-water solution sprayed into exhaust to neutralize NOx emissions. Required since 2010 on most US diesels. Stored in a separate blue-cap tank.',
+      implication: 'Run out of DEF = engine derates (limps to dealer at 5 mph in some) OR refuses to start (modern). Refill at every fuel stop. ~$15-30/gallon at most truck stops.' },
+    { topic: 'Higher torque, lower RPM',
+      what: 'Diesels make peak torque around 1500-2000 RPM (vs 4000+ for gasoline). Built for pulling, not revving.',
+      implication: 'Drive train (transmission, differential) is heavier-duty. Trans fluid + diff fluid intervals are different. Heavy-duty cooling system is essential.' },
+    { topic: 'Black smoke = rich mixture',
+      what: 'Black exhaust smoke = too much fuel for available air. White smoke = unburnt fuel (cold or injection timing). Blue smoke = engine oil burning.',
+      implication: 'Reading exhaust color is a key diesel diagnostic skill. Coal-roller "tuning" that produces black smoke is illegal under EPA + Maine state law (and bad for the engine).' }
+  ];
+  var DIESEL_CODES = [
+    { code: 'P2002', name: 'DPF efficiency below threshold (Bank 1)',
+      meaning: 'The DPF isn\'t filtering well — either nearly full of ash or sensor disagreement.',
+      fix: 'Forced regen at the dealer ($150-300). If regen fails, DPF replacement ($2,000-5,000) or DPF clean service.' },
+    { code: 'P20EE', name: 'SCR NOx catalyst efficiency below threshold',
+      meaning: 'DEF / SCR system not reducing NOx enough. Could be DEF quality, SCR catalyst aging, sensor failure.',
+      fix: 'Check DEF level + quality (refractometer reads urea concentration). Sometimes a software update; sometimes catalyst replacement.' },
+    { code: 'P0234', name: 'Turbocharger overboost',
+      meaning: 'Turbo pressure exceeded the commanded level. Boost-control valve issue, sensor, or wastegate.',
+      fix: 'Inspect wastegate actuator + boost-pressure sensor. Bad turbo = $1,500-4,000 replacement.' },
+    { code: 'P0299', name: 'Turbocharger underboost',
+      meaning: 'Turbo isn\'t making the boost it should. Leaky boost hose, restricted intake, failing turbo.',
+      fix: 'Inspect intake boots for cracks (most common). Then turbo function. Maine winter: cracked boots from cold + flex are routine.' },
+    { code: 'P0671-P0680', name: 'Glow plug circuit (cylinder N)',
+      meaning: 'Glow plug for that cylinder isn\'t responding to control. Could be plug failure or wiring.',
+      fix: 'Test glow plug resistance (~0.5-2 ohm typical). Replace failed plugs. Maine cold-start no-start often points here.' },
+    { code: 'P00FE', name: 'DEF tank dosing system',
+      meaning: 'Failure in the DEF dosing pump or quality sensor. Engine may derate.',
+      fix: 'Verify DEF level + quality. Often the dosing pump or quality sensor fails — sensor diagnosis required.' }
+  ];
+  var HEAVY_EQUIPMENT = [
+    { id: 'log-truck', icon: '🌲', name: 'Log truck / forestry',
+      what: 'Class 8 trucks hauling pulpwood, logs, chips. Maine has a strong logging industry (especially northern Maine + Western Mountains).',
+      typical: 'Mack, Kenworth, Peterbilt, Western Star with Cummins ISX or Detroit DD15. Air brakes, 18-speed manual or automated manual transmission, 6x4 or 6x6 drive.',
+      maintenance: 'Heavy-duty oil intervals (15K-25K miles), DPF regens, brake adjustments, heavy clutch service. Driveline articulation specific to logging trucks.',
+      mainePay: '$55-90K shop tech; $70-110K mobile-service tech; $90-130K master diesel.',
+      schooling: 'EMCC + NMCC + UTI heavy-truck programs. Some companies hire + train.' },
+    { id: 'farm-tractor', icon: '🚜', name: 'Farm tractor + dairy equipment',
+      what: 'Maine dairy farms (especially Aroostook potato + central Maine dairy) run fleets of tractors + harvesters + skid-steers.',
+      typical: 'John Deere, Kubota, Case IH, New Holland. Tier 4 emissions on all modern tractors (DPF + DEF). Hydraulic complexity is significant.',
+      maintenance: 'Hydraulic service (filters every 500-1000 hr), engine oil per spec, driveline lubrication, implement maintenance (mowers, balers, etc.).',
+      mainePay: '$40-70K dealership tech; $50-85K independent / mobile farm-equipment service.',
+      schooling: 'John Deere / Case IH / Kubota dealer training programs. NMCC heavy-equipment AAS.' },
+    { id: 'plow-truck', icon: '❄️', name: 'Plow truck / municipal fleet',
+      what: 'State + town + private snow-clearing fleets. Maine is the East Coast plowing capital. Old workhorses + brand-new heavy-duty trucks side-by-side.',
+      typical: 'Ford F-450/F-550, Ram 4500/5500, International, Mack. 6.7L Powerstroke / Cummins / DD8 engines. Plow + spreader hydraulics + electrical control.',
+      maintenance: 'Engine block heater + maintenance, plow hydraulic + cylinder service, salt-spreader chains + augers, chassis lubrication, electrical (lots of plow lights + controls).',
+      mainePay: '$45-75K municipal mechanic; $55-90K private fleet; some seasonal premium.',
+      schooling: 'EMCC heavy-equipment AAS. Many municipalities hire from local CTE.' },
+    { id: 'marine', icon: '⛵', name: 'Marine diesel (lobster + commercial fishing)',
+      what: 'Maine lobster boats + offshore commercial fishing fleets run almost entirely on marine diesel. Engines are isolated from Maine\'s salt-air corrosion environment.',
+      typical: 'Cummins QSM11, John Deere 6068, Yanmar, Volvo Penta. Heat-exchanger cooling (no radiator — uses sea water). Heavy salt-corrosion mitigation.',
+      maintenance: 'Sacrificial anodes (replaced every 6-12 months), heat-exchanger service, raw-water pump impellers (annually), zinc anodes.',
+      mainePay: '$50-85K marine diesel mechanic. Demand strongly outpaces supply at most coastal Maine ports.',
+      schooling: 'Maine Maritime Academy has marine engineering. Most marine mechanics learn on-the-job + manufacturer training.' },
+    { id: 'class8-otr', icon: '🚛', name: 'Class 8 over-the-road truck',
+      what: 'Long-haul tractor-trailers. Run by trucking companies + owner-operators. Heaviest commercial vehicles on US roads.',
+      typical: 'Freightliner, Peterbilt, Kenworth, Volvo. Cummins X15 / Detroit DD15 / Volvo D13. 12 or 13-speed automated manuals; 18-speed manuals on older.',
+      maintenance: 'Annual DOT inspection (federally mandated). Brake adjustments. Tire management. Frequent fluid services. Pre-trip inspection daily.',
+      mainePay: '$55-95K shop tech; $70-110K mobile heavy-truck service.',
+      schooling: 'UTI, Lincoln Tech, Wyotech all have heavy-truck programs. Some Maine fleets sponsor schooling for commitment to work after.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.96C: SMALL ENGINE / POWERSPORTS
+  // Year-round Maine work: snowmobile + ATV + lawn + outboard + generator
+  // + chainsaw service. Simpler systems = lower entry barrier; huge volume.
+  // ─────────────────────────────────────────────────────────
+  var POWERSPORTS_OVERVIEW = {
+    bigPicture: 'Maine has more snowmobiles + ATVs per capita than almost any other state. Add lawn equipment, marine outboards, generators, chainsaws — small engines power Maine\'s recreation + working life. Simpler systems = lower entry barrier; huge volume = steady work.',
+    seasonal: 'Smart Maine pattern: lawn/marine/landscaping shop work in summer + snowmobile/ATV service in winter = year-round income. Many techs run their own seasonal businesses.',
+    pay: { entry: '$30-45K dealership entry-level (Polaris, Ski-Doo, Honda, Kubota, John Deere)', mid: '$45-65K certified small-engine tech with 2-3 years', senior: '$65-95K master tech / shop owner / mobile service' },
+    schooling: 'Manufacturer training (Polaris MORE, BRP/Ski-Doo, Honda, Kubota all run dealer-tech programs). Maine community-college small-engine + outdoor power-equipment programs. Strong "learn on the job" tradition.'
+  };
+  var POWERSPORTS_PLATFORMS = [
+    { id: 'snowmobile', icon: '🛷', name: 'Snowmobile',
+      engine: '2-stroke (older) or 4-stroke (newer high-performance + family models). 600-900cc typical.',
+      keyService: 'Annual: track inspection + tension, suspension grease, oil change (4-stroke), spark plug, carburetor / fuel-injection service, belt + clutch inspection.',
+      mainePeak: 'November (pre-season prep) + March (post-season storage prep) are peak service windows.',
+      common: 'Bad belt = #1 service. Fuel-system fouling from old fuel sitting all summer = #2. Track + ski wear = #3.',
+      careerPath: 'Polaris MORE (Master Of Recreational Equipment), Ski-Doo / BRP technician training, Yamaha SnowSure programs.' },
+    { id: 'atv-utv', icon: '🏔️', name: 'ATV / UTV',
+      engine: '4-stroke single or twin, 250cc-1000cc. CVT (continuously variable) belt drive on most. EFI on modern.',
+      keyService: 'CVT belt is THE service item. Air filter (dust kills these fast). Driveline grease zerks. Brake service.',
+      mainePeak: 'Spring tune-up (post-winter) + fall tune-up (pre-hunting season + winter use). Year-round work.',
+      common: 'Bad CVT belt. Air filter neglect (in dusty / muddy use). Battery (these sit unused often).',
+      careerPath: 'Same as snowmobile — many dealers sell both. Polaris RZR + Can-Am Maverick are big in Maine.' },
+    { id: 'lawn', icon: '🌱', name: 'Lawn equipment',
+      engine: 'Briggs & Stratton, Honda, Kawasaki, Kohler. 4-stroke single or twin, 6-25 HP.',
+      keyService: 'Annual: oil + filter, air filter, spark plug, blade sharpen + balance, belt + cable inspection. Carburetor service if 2-stroke or older 4-stroke.',
+      mainePeak: 'March-April (pre-season prep) is THE busy season. October winterization is the second peak.',
+      common: 'Bad fuel sitting all winter. Carb gummed up. Battery dead. Blade dull. Belt cracked.',
+      careerPath: 'Briggs & Stratton + Honda + Kawasaki + Kohler all have factory training. Many independent shops are owner-tech operations.' },
+    { id: 'outboard', icon: '🛥️', name: 'Outboard (marine)',
+      engine: '2-stroke (older) or 4-stroke (modern). 9.9-300+ HP. Mercury, Yamaha, Honda, Suzuki dominant.',
+      keyService: 'Annual: lower-unit gear oil, spark plugs, water pump impeller, fuel filter, anode replacement (corrosion).',
+      mainePeak: 'April-May (commissioning) + October (winterization fogging + storage). Maine coastal commercial fleets year-round.',
+      common: 'Water-pump impeller failure = overheat. Carb/EFI fuel issues from ethanol fuel sitting. Lower-unit water intrusion (gear oil milky).',
+      careerPath: 'Mercury Marine / Yamaha Marine / Honda Marine certified tech programs. Maine Maritime Academy marine engineering.' },
+    { id: 'generator', icon: '⚡', name: 'Generator (portable + standby)',
+      engine: '4-stroke single or twin (portable); larger diesel (standby home generators). Briggs, Generac, Honda, Kohler.',
+      keyService: 'Run monthly (prevents fuel + carb issues). Annual oil change, air filter, spark plug. Standby: every 100-200 hours.',
+      mainePeak: 'October-November (pre-winter checkup). Post-storm spike (Maine ice storms + nor\'easters drive demand).',
+      common: 'Old fuel sitting in carburetor. Battery dead on standby units. Air filter clogged.',
+      careerPath: 'Generac certified service + dealer programs. Cross-training with home electrical (transfer switches) opens whole-home-generator install work.' },
+    { id: 'chainsaw', icon: '🪓', name: 'Chainsaw / 2-stroke handhelds',
+      engine: '2-stroke single, 30-90cc. Stihl, Husqvarna, Echo dominate.',
+      keyService: 'Air filter (huge for 2-stroke), spark plug, fuel + air mix (40:1 or 50:1), bar oil, chain sharpen + tension.',
+      mainePeak: 'Year-round. Fall/winter tree-clearing + firewood season is busiest.',
+      common: 'Bad fuel mix (no oil = seized engine in 30 sec). Chain dull = unsafe + slow. Air filter clogged.',
+      careerPath: 'Stihl + Husqvarna dealer-tech programs. Often combined with lawn equipment shop work. Chainsaw safety training is its own specialty.' }
+  ];
+  var TWO_STROKE_FOUR_STROKE = [
+    { topic: 'Fuel + oil',
+      twoStroke: 'Pre-mix oil + fuel (e.g., 40:1 or 50:1). Oil burns with fuel. Use the manufacturer-spec ratio.',
+      fourStroke: 'Separate engine oil (sump). Fresh oil at intervals. Don\'t mix oil with fuel.' },
+    { topic: 'Lubrication',
+      twoStroke: 'Oil-in-fuel mist lubricates rings + bearings. No oil = seized engine in seconds.',
+      fourStroke: 'Pressurized oil pump circulates oil. Oil pressure failure = engine damage but slower than 2-stroke.' },
+    { topic: 'Power-to-weight',
+      twoStroke: 'Lighter + more power per cc. Used in chainsaws, leaf blowers, smaller dirt bikes, older snowmobiles.',
+      fourStroke: 'Heavier + cleaner-running. Used in lawn mowers, 4-stroke snowmobiles, ATVs, generators, outboards.' },
+    { topic: 'Emissions',
+      twoStroke: 'Higher hydrocarbon emissions (oil burns with fuel). EPA has tightened 2-stroke regulations; many small markets switching to 4-stroke.',
+      fourStroke: 'Cleaner emissions. Required on most marine outboards now (post-2010). Slow phase-out of 2-strokes in many categories.' },
+    { topic: 'Service intervals',
+      twoStroke: 'Carburetor, spark plug, air filter, gear oil (if drive system). No engine oil change.',
+      fourStroke: 'Engine oil change is the central service. Plus everything 2-stroke needs.' },
+    { topic: 'Storage prep',
+      twoStroke: 'Drain or fuel-stabilize. Old fuel sitting in carb is the #1 spring start-failure cause.',
+      fourStroke: 'Same fuel concern + change oil before storage (acid in old oil corrodes bearings).' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 9.965: RACE MECHANIC — NASCAR / short-track pit crew + setup tuning
   // For kids who love racing — the actual mechanic career path runs THROUGH
   // your high school auto-shop class. Maine has live short-track racing
@@ -2995,7 +3276,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q40', icon: '🪂',
       stem: 'A short-track car runs MORE rear spoiler angle than a superspeedway car. Why?',
       choices: ['It looks cooler', 'Short tracks need DOWNFORCE (rear grip in turns); superspeedways need TOP SPEED (less drag) — more spoiler = more downforce + more drag', 'Spoilers are mandatory at short tracks', 'Driver preference'],
-      correct: 1, why: 'Spoiler angle is a downforce-vs-drag tradeoff. Short tracks (lots of turning, low top speed) max angle for grip. Superspeedways (Daytona/Talladega — high speed, drafting) min angle for low drag. Same engineering tradeoff as airplane flaps.' }
+      correct: 1, why: 'Spoiler angle is a downforce-vs-drag tradeoff. Short tracks (lots of turning, low top speed) max angle for grip. Superspeedways (Daytona/Talladega — high speed, drafting) min angle for low drag. Same engineering tradeoff as airplane flaps.' },
+    { id: 'q41', icon: '🔍',
+      stem: 'You\'re evaluating a $500 project car in Maine. Which finding should make you walk away?',
+      choices: ['Burnt-out headlight bulb', 'Perforated frame rails (holes you can put a screwdriver through)', 'Old wiper blades', 'Faded paint'],
+      correct: 1, why: 'Frame perforation is the Maine project-car deal-killer. Most other issues are budget items; frame rot is structurally unsafe + Maine inspection-fail + often not repairable.' },
+    { id: 'q42', icon: '📋',
+      stem: 'Repair priority sequence on a project car should be:',
+      choices: ['Cosmetic first', 'Whatever\'s easiest', 'SAFETY → LEGAL → RELIABILITY → COMFORT → COSMETIC', 'Engine rebuild first'],
+      correct: 2, why: 'Don\'t skip levels. A pretty car that breaks down is worse than a plain car that\'s reliable. Tier 1 safety (brakes, tires, suspension) is non-negotiable; cosmetics last.' },
+    { id: 'q43', icon: '⛽',
+      stem: 'Why does a modern diesel engine have GLOW PLUGS instead of spark plugs?',
+      choices: ['Decoration', 'Diesels use compression ignition (no spark needed). Glow plugs pre-warm the cylinder for cold start so compression-heated air can ignite the fuel.', 'They\'re cheaper than spark plugs', 'Government mandate'],
+      correct: 1, why: 'Diesels don\'t use spark — they compress air to ~500 PSI / 1000°F + inject fuel that auto-ignites. Cold cylinders make this hard, so glow plugs heat the chamber for the first few seconds of cold-start.' },
+    { id: 'q44', icon: '💧',
+      stem: 'A diesel pickup driver says "the truck won\'t go above 5 mph and it\'s flashing a DEF warning." What\'s likely happening?',
+      choices: ['Engine seized', 'DEF tank ran dry — modern diesels derate (limp-mode) or refuse to start when DEF is empty. Refill DEF + clear codes.', 'Transmission failure', 'Tires flat'],
+      correct: 1, why: 'DEF (Diesel Exhaust Fluid) is required by EPA on modern diesels. Empty tank → limp-mode by federal regulation. ~$15-30 fill at any truck stop and the truck recovers.' },
+    { id: 'q45', icon: '🛷',
+      stem: 'You service a 2-stroke chainsaw without mixing oil into the fuel. What happens?',
+      choices: ['Better fuel economy', 'Engine seizes within 30 seconds — 2-stroke engines rely on oil-in-fuel to lubricate piston rings + bearings. No oil = catastrophic engine damage.', 'Improved performance', 'Quieter operation'],
+      correct: 1, why: '2-strokes have NO separate oil sump. Lubrication comes from oil mixed with fuel (typically 40:1 or 50:1). Running straight gas seizes the engine in seconds.' },
+    { id: 'q46', icon: '🌲',
+      stem: 'A Maine teen wants year-round mechanic income. What\'s the smart pattern?',
+      choices: ['Move south', 'Combine summer (lawn equipment, marine outboard, landscaping) with winter (snowmobile, ATV, plow truck service). Year-round flow.', 'Only work summers', 'Only work winters'],
+      correct: 1, why: 'Maine\'s seasonal economy rewards seasonal-stack mechanics. Summer = lawn/marine; winter = snowmobile/plow. Many independent Maine shops run this combo for steady year-round income.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -3130,8 +3435,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ essential auto terms. Search and filter by category. So you can read any repair article.' },
           { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
           { id: 'race', icon: '🏁', label: 'Race mechanic (NASCAR)', desc: 'Pit crew roles, pit-stop choreography puzzle, chassis setup tuning, race-radio diagnostics, Maine + NE short-track guide. Path from HS auto shop to racing.' },
+          { id: 'build', icon: '🏗️', label: 'Project car build', desc: 'The $500 rust-bucket capstone. 6 phases (triage → strip → priority → body → inspection → daily-driver) + 12-item triage scoring rubric.' },
+          { id: 'diesel', icon: '🚜', label: 'Diesel & heavy equipment', desc: 'Maine working economy: log trucks, plow trucks, farm tractors, marine, class 8 OTR. Compression ignition, DPF/DEF, glow plugs, diesel codes.' },
+          { id: 'power', icon: '🛷', label: 'Powersports + small engine', desc: 'Snowmobile, ATV, lawn, outboard, generator, chainsaw. 2-stroke vs 4-stroke. Carb basics. Maine seasonal-stack career.' },
           { id: 'shopbiz', icon: '🏪', label: 'Shop business basics', desc: 'Mobile mechanic startup, insurance, tool trucks, pricing, customer acquisition. For future shop owners.' },
-          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '40 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab, scams, damage ID, ROI, race mechanics.' },
+          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '46 questions across the full curriculum: safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab, scams, damage ID, ROI, race, project car, diesel, powersports.' },
           { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
         ];
         var badgeCount = Object.keys(badges).length;
@@ -3143,6 +3451,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('strong', { style: { color: T.accentHi } }, 'RoadReady'), ' — you drive a car AND maintain it.')
           ),
           badgeCount > 0 && h('div', { style: { marginBottom: 14, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted } },
+            h('span', { className: 'ar-pulse-ring', 'aria-hidden': true, style: { display: 'inline-block', width: 8, height: 8, background: '#fbbf24', borderRadius: '50%', marginRight: 8, verticalAlign: 'middle' } }),
             h('strong', { style: { color: T.accentHi } }, '🏅 Badges earned: '), String(badgeCount), ' — ',
             Object.keys(badges).map(function(k) { return badges[k].label; }).join(', ')
           ),
@@ -5907,6 +6216,445 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // PROJECT CAR BUILD view
+      // ─────────────────────────────────────────
+      function renderBuild() {
+        var bView = d.bView || 'phases';
+        function tabBtn(id, label) {
+          var active = bView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('bView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function phasesTab() {
+          var picked = d.bPhasePicked || null;
+          var pickedPhase = picked ? BUILD_PHASES.find(function(p) { return p.id === picked; }) : null;
+          var done = d.bDone || {};
+          var totalTasks = BUILD_PHASES.reduce(function(acc, p) { return acc + p.tasks.length; }, 0);
+          var doneCount = Object.keys(done).filter(function(k) { return done[k]; }).length;
+          if (doneCount === totalTasks && totalTasks > 0) awardBadge('build-master', 'Project Car Master');
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚗 6 phases — triage to daily-driver'),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'Tap a phase to see the tasks. Check off as you complete each. Total tasks: ',
+                h('strong', { style: { color: T.accentHi } }, totalTasks),
+                ' · Completed: ',
+                h('strong', { style: { color: T.good } }, doneCount))
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              BUILD_PHASES.map(function(p) {
+                var sel = picked === p.id;
+                var phaseDone = p.tasks.filter(function(_, i) { return done[p.id + '-' + i]; }).length;
+                return h('button', { key: p.id, 'data-ar-focusable': true,
+                  'aria-label': p.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('bPhasePicked', sel ? null : p.id); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', flexDirection: 'column', gap: 4
+                  }) },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    h('span', { style: { fontSize: 22 } }, p.icon),
+                    h('strong', null, 'Phase ' + p.n + ': ' + p.name)
+                  ),
+                  h('div', { style: { fontSize: 11, opacity: 0.85 } }, '⏱️ ' + p.time + ' · ' + phaseDone + '/' + p.tasks.length + ' done')
+                );
+              })
+            ),
+            pickedPhase && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } }, pickedPhase.icon + ' Phase ' + pickedPhase.n + ': ' + pickedPhase.name),
+              h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🎯 Goal: '), pickedPhase.goal),
+              h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                pickedPhase.tasks.map(function(t, i) {
+                  var key = pickedPhase.id + '-' + i;
+                  var isDone = !!done[key];
+                  return h('button', { key: key, role: 'listitem', 'data-ar-focusable': true,
+                    'aria-label': t.do + (isDone ? ' (done)' : ''),
+                    'aria-pressed': isDone ? 'true' : 'false',
+                    onClick: function() {
+                      var nv = Object.assign({}, done); nv[key] = !nv[key];
+                      upd('bDone', nv);
+                    },
+                    style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                    h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
+                      h('strong', { style: { fontSize: 12, color: isDone ? '#d1fae5' : T.text, flex: 1, lineHeight: 1.5 } }, t.do)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
+                      h('strong', { style: { color: T.dim } }, 'Why: '), t.why)
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function rubricTab() {
+          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 Triage scoring rubric'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Score the candidate before you commit. Two MUST-PASS items are deal-breakers regardless of score. Otherwise: total ≥80 = buy. 60-79 = negotiate hard. <60 = walk.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              BUILD_TRIAGE_RUBRIC.map(function(it, i) {
+                var critical = it.critical;
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (critical ? T.bad : T.border) } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                    h('strong', { style: { fontSize: 13, color: critical ? T.bad : T.accentHi, flex: 1 } }, it.item),
+                    h('span', { style: { fontSize: 11, color: critical ? T.bad : T.good, fontWeight: 700, padding: '2px 8px', borderRadius: 12, background: T.bg, border: '1px solid ' + (critical ? T.bad : T.good) } },
+                      critical ? '🚫 MUST-PASS' : ('+' + it.score + ' pts'))
+                  ),
+                  h('div', { style: { fontSize: 12, color: T.text, marginBottom: 4 } },
+                    h('strong', { style: { color: T.good } }, '✅ Good = '), it.good),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, it.detail)
+                );
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🚗 Project car build'),
+          h('div', { role: 'tablist', 'aria-label': 'Project car sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('phases', '📋 6 phases'),
+            tabBtn('rubric', '🎯 Triage rubric')
+          ),
+          bView === 'phases' && phasesTab(),
+          bView === 'rubric' && rubricTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // DIESEL & HEAVY EQUIPMENT view
+      // ─────────────────────────────────────────
+      function renderDiesel() {
+        var dView = d.dView || 'overview';
+        function tabBtn(id, label) {
+          var active = dView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('dView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function dOverview() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🚜 Diesel + heavy equipment — Maine\'s working economy'),
+              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, DIESEL_OVERVIEW.bigPicture),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                [
+                  { label: '🔰 Entry', val: DIESEL_OVERVIEW.pay.entry },
+                  { label: '⚙️ Mid', val: DIESEL_OVERVIEW.pay.mid },
+                  { label: '🏆 Senior', val: DIESEL_OVERVIEW.pay.senior },
+                  { label: '🎯 Specialist', val: DIESEL_OVERVIEW.pay.specialist }
+                ].map(function(r) {
+                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
+                    h('div', { style: { fontSize: 12, color: T.good, fontWeight: 700 } }, r.val)
+                  );
+                })
+              )
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, '🎓 ASE certifications'),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } }, DIESEL_OVERVIEW.aseDiesel),
+              h('h4', { style: { margin: '8px 0 6px', fontSize: 14, color: T.accentHi } }, '🏫 Maine schools'),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } }, DIESEL_OVERVIEW.schooling),
+              h('h4', { style: { margin: '8px 0 6px', fontSize: 14, color: T.accentHi } }, '🌲 Where the work is'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, DIESEL_OVERVIEW.where)
+            )
+          );
+        }
+
+        function diffsTab() {
+          var picked = d.dDiffPicked || null;
+          var pickedItem = picked != null ? DIESEL_KEY_DIFFS[picked] : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔄 What\'s different from gasoline'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                '8 key differences a tech transitioning to diesel needs to know.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              DIESEL_KEY_DIFFS.map(function(it, i) {
+                var sel = picked === i;
+                return h('button', { key: i, 'data-ar-focusable': true,
+                  'aria-label': it.topic,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('dDiffPicked', sel ? null : i); awardBadge('diesel-aware', 'Diesel Aware'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600
+                  }) }, it.topic);
+              })
+            ),
+            pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedItem.topic),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔍 What it is: '), pickedItem.what),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.warn } }, '🎯 Implication: '), pickedItem.implication)
+            )
+          );
+        }
+
+        function codesTab() {
+          var picked = d.dCodePicked || null;
+          var pickedCode = picked ? DIESEL_CODES.find(function(c) { return c.code === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔌 Diesel-specific OBD codes'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Codes you\'ll see on diesel pickups + heavy trucks. Most are emissions-related (DPF / DEF / SCR).')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
+              DIESEL_CODES.map(function(c) {
+                var sel = picked === c.code;
+                return h('button', { key: c.code, 'data-ar-focusable': true,
+                  'aria-label': c.code + ': ' + c.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('dCodePicked', sel ? null : c.code); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                    fontWeight: sel ? 800 : 600
+                  }) }, c.code);
+              })
+            ),
+            pickedCode && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                h('span', { style: { fontFamily: 'monospace', fontSize: 16, fontWeight: 800, color: T.accentHi } }, pickedCode.code),
+                h('span', { style: { fontSize: 13, color: T.text, fontWeight: 700 } }, pickedCode.name)
+              ),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, 'Meaning: '), pickedCode.meaning),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.good } }, '🔧 Fix: '), pickedCode.fix)
+            )
+          );
+        }
+
+        function equipTab() {
+          var picked = d.dEquipPicked || null;
+          var pickedEq = picked ? HEAVY_EQUIPMENT.find(function(e) { return e.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚛 Maine heavy-equipment specialties'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                '5 distinct Maine career paths. Each pays well + has more demand than supply of trained techs.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              HEAVY_EQUIPMENT.map(function(e) {
+                var sel = picked === e.id;
+                return h('button', { key: e.id, 'data-ar-focusable': true,
+                  'aria-label': e.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('dEquipPicked', sel ? null : e.id); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, e.icon),
+                  h('span', null, e.name)
+                );
+              })
+            ),
+            pickedEq && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedEq.icon + ' ' + pickedEq.name),
+              [
+                { label: 'What it is', val: pickedEq.what },
+                { label: 'Typical equipment', val: pickedEq.typical },
+                { label: 'Maintenance focus', val: pickedEq.maintenance },
+                { label: '🌲 Maine pay', val: pickedEq.mainePay },
+                { label: '🎓 Schooling', val: pickedEq.schooling }
+              ].map(function(r, i) {
+                return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                  h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🚜 Diesel & heavy equipment'),
+          h('div', { role: 'tablist', 'aria-label': 'Diesel sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('diffs', '🔄 vs gas'),
+            tabBtn('codes', '🔌 Codes'),
+            tabBtn('equip', '🚛 Specialties')
+          ),
+          dView === 'overview' && dOverview(),
+          dView === 'diffs' && diffsTab(),
+          dView === 'codes' && codesTab(),
+          dView === 'equip' && equipTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // SMALL ENGINE / POWERSPORTS view
+      // ─────────────────────────────────────────
+      function renderPower() {
+        var pView = d.pView || 'overview';
+        function tabBtn(id, label) {
+          var active = pView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('pView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function pOverview() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🛷 Small engine + powersports — Maine\'s recreation economy'),
+              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, POWERSPORTS_OVERVIEW.bigPicture)
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, '📅 The seasonal stack'),
+              h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, POWERSPORTS_OVERVIEW.seasonal)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 } },
+              [
+                { label: '🔰 Entry', val: POWERSPORTS_OVERVIEW.pay.entry },
+                { label: '⚙️ Mid', val: POWERSPORTS_OVERVIEW.pay.mid },
+                { label: '🏆 Senior', val: POWERSPORTS_OVERVIEW.pay.senior }
+              ].map(function(r) {
+                return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, r.label),
+                  h('div', { style: { fontSize: 12, color: T.good, fontWeight: 700 } }, r.val)
+                );
+              })
+            ),
+            h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🎓 Schooling: '), POWERSPORTS_OVERVIEW.schooling)
+          );
+        }
+
+        function platformsTab() {
+          var picked = d.pPlatPicked || null;
+          var pickedPl = picked ? POWERSPORTS_PLATFORMS.find(function(p) { return p.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏷️ 6 powersport platforms'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Each: engine type, key annual service, Maine peak season, common failures, career path.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              POWERSPORTS_PLATFORMS.map(function(pl) {
+                var sel = picked === pl.id;
+                return h('button', { key: pl.id, 'data-ar-focusable': true,
+                  'aria-label': pl.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('pPlatPicked', sel ? null : pl.id); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, pl.icon),
+                  h('span', null, pl.name)
+                );
+              })
+            ),
+            pickedPl && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, pickedPl.icon + ' ' + pickedPl.name),
+              [
+                { label: '⚙️ Engine', val: pickedPl.engine },
+                { label: '🔧 Key annual service', val: pickedPl.keyService },
+                { label: '📅 Maine peak season', val: pickedPl.mainePeak },
+                { label: '🚩 Most common failures', val: pickedPl.common },
+                { label: '🎓 Career path', val: pickedPl.careerPath }
+              ].map(function(r, i) {
+                return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                  h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+              })
+            )
+          );
+        }
+
+        function strokesTab() {
+          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚙️ 2-stroke vs 4-stroke — what changes'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Two engine architectures with very different service realities. 2-strokes are simpler but less forgiving (no oil = seized engine in 30 sec).'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              TWO_STROKE_FOUR_STROKE.map(function(t, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 6 } }, t.topic),
+                  h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                    h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.border } },
+                      h('div', { style: { fontSize: 11, color: T.warn, fontWeight: 700, marginBottom: 4 } }, '🔄 2-stroke'),
+                      h('div', { style: { fontSize: 11, color: T.text, lineHeight: 1.5 } }, t.twoStroke)
+                    ),
+                    h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.border } },
+                      h('div', { style: { fontSize: 11, color: T.good, fontWeight: 700, marginBottom: 4 } }, '🔁 4-stroke'),
+                      h('div', { style: { fontSize: 11, color: T.text, lineHeight: 1.5 } }, t.fourStroke)
+                    )
+                  )
+                );
+              })
+            )
+          );
+        }
+
+        function carbsTab() {
+          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔧 Carburetor basics'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Most modern cars are fuel-injected, but small engines are often still carbureted. Knowing carbs is core to small-engine + older-vehicle work. The #1 spring-failure cause: old fuel sitting in carb all winter.'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              CARB_BASICS.map(function(c, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 4 } }, c.step),
+                  h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5, marginBottom: 4 } },
+                    h('strong', null, 'What: '), c.what),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                    h('strong', { style: { color: T.warn } }, '💡 Tip: '), c.tip)
+                );
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🛷 Powersports + small engine'),
+          h('div', { role: 'tablist', 'aria-label': 'Powersports sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('platforms', '🏷️ Platforms'),
+            tabBtn('strokes', '⚙️ 2-vs-4'),
+            tabBtn('carbs', '🔧 Carbs')
+          ),
+          pView === 'overview' && pOverview(),
+          pView === 'platforms' && platformsTab(),
+          pView === 'strokes' && strokesTab(),
+          pView === 'carbs' && carbsTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -5924,6 +6672,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'roi':        return renderROI();
         case 'log':        return renderLog();
         case 'race':       return renderRace();
+        case 'build':      return renderBuild();
+        case 'diesel':     return renderDiesel();
+        case 'power':      return renderPower();
         case 'ev':         return renderEv();
         case 'glossary':   return renderGlossary();
         case 'cold':       return renderColdPrep();
