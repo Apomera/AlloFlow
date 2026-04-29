@@ -1674,6 +1674,342 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   ];
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.8: GLOSSARY — 50+ terms a teen needs to follow a repair article
+  // Sorted by tag (engine / electrical / brakes / drivetrain / fluids / body
+  // / general). Each term: short def + a clarifying sentence + Maine note
+  // when relevant.
+  // ─────────────────────────────────────────────────────────
+  var GLOSSARY = [
+    // Engine
+    { term: 'OBD-II', tag: 'electrical', def: 'On-Board Diagnostics version 2. Federally mandated since 1996. The standardized diagnostic port + protocol. Plug a scanner in to read trouble codes.' },
+    { term: 'CEL (Check Engine Light)', tag: 'electrical', def: 'The dashboard light that comes on when the engine computer logs a fault. SOLID = drive-careful; FLASHING = stop, severe misfire damaging the cat.' },
+    { term: 'ECU / PCM', tag: 'electrical', def: 'Engine Control Unit / Powertrain Control Module. The "brain" — reads sensors, fires injectors and coils, manages emissions. PCM also controls the transmission.' },
+    { term: 'MAF', tag: 'engine', def: 'Mass Airflow sensor. Measures air entering the engine. Dirty MAF = wrong fuel mixture. Clean with MAF cleaner spray ($8) — never touch the sensing wire.' },
+    { term: 'O2 sensor', tag: 'engine', def: 'Oxygen sensor in the exhaust. Tells the ECU if fuel mixture was rich or lean. Upstream + downstream pairs; downstream is the cat-monitor.' },
+    { term: 'CKP / CMP', tag: 'engine', def: 'Crankshaft / Camshaft Position sensors. Tell the ECU where the engine is in its rotation, so injection + ignition can fire at the right moment. CKP failure = no-start.' },
+    { term: 'TPS', tag: 'engine', def: 'Throttle Position Sensor. Tells the ECU how far you\'re pressing the gas. Failing TPS = surging idle, sluggish response.' },
+    { term: 'IAC', tag: 'engine', def: 'Idle Air Control valve (older cars). Bypasses the throttle plate to control idle RPM when foot is off pedal. Modern electronic-throttle cars don\'t have one.' },
+    { term: 'EGR', tag: 'engine', def: 'Exhaust Gas Recirculation. Routes a metered amount of exhaust back into intake to lower combustion temp + reduce NOx emissions. Clogs with carbon over time.' },
+    { term: 'PCV', tag: 'engine', def: 'Positive Crankcase Ventilation valve. Routes blow-by gases from the crankcase back into intake to be re-burned. A stuck PCV causes oil leaks + rough idle.' },
+    { term: 'Stoichiometric', tag: 'engine', def: '"Just right" air-fuel ratio for gasoline (14.7:1 by mass). Engines target this at cruise. Lean = above; rich = below.' },
+    { term: 'Misfire', tag: 'engine', def: 'A cylinder failed to fire on its turn. Codes: P0300 (random), P0301–P0312 (specific cylinder).' },
+    { term: 'Compression', tag: 'engine', def: 'How well a cylinder seals its mixture during the power stroke. Tested with a compression gauge. Low compression = bent valve, broken ring, head gasket.' },
+    { term: 'Blow-by', tag: 'engine', def: 'Combustion gases that leak past worn piston rings into the crankcase. Some is normal; lots is a sign of engine wear.' },
+    { term: 'Knock', tag: 'engine', def: 'Combustion-detonation noise. Pre-ignition. Causes: low octane, hot intake, carbon deposits, advanced timing. Persistent knock = engine damage.' },
+    { term: 'Timing belt vs chain', tag: 'engine', def: 'Belt = rubber/aramid, replace every 60–100K miles. Chain = steel, usually lifetime. Check your engine.' },
+    { term: 'Interference engine', tag: 'engine', def: 'An engine where pistons + valves can collide if timing slips. A snapped belt = bent valves = $$$. Non-interference engines just stop running.' },
+    { term: 'VVT', tag: 'engine', def: 'Variable Valve Timing. Cam phasing changes with RPM for efficiency + power. Oil-controlled — bad oil = VVT codes (P0011, P0014).' },
+    // Electrical
+    { term: 'Alternator', tag: 'electrical', def: 'Belt-driven generator. Charges battery + powers electronics while engine runs. Healthy: 13.8–14.7V at battery with engine running.' },
+    { term: 'Starter', tag: 'electrical', def: 'Electric motor that cranks the engine on key-on. Has a solenoid that engages a small gear into the flywheel.' },
+    { term: 'CCA (Cold Cranking Amps)', tag: 'electrical', def: 'How many amps a battery delivers at 0°F for 30 seconds. Maine: aim for 700+ CCA on most cars.' },
+    { term: 'Parasitic draw', tag: 'electrical', def: 'Current the car pulls while parked (off). Normal: <50mA. High = stuck relay, glove-box light, aftermarket accessory. Kills batteries overnight.' },
+    { term: 'Ground / chassis ground', tag: 'electrical', def: 'The metal of the car body returns current to the battery negative. A corroded ground bolt = mysterious electrical faults.' },
+    { term: 'Fuse / fusible link', tag: 'electrical', def: 'A weak link designed to blow before downstream wiring. Fuse box under hood + under dash. Fusible links are inline wires that act as fuses for high-current circuits.' },
+    { term: 'Relay', tag: 'electrical', def: 'A small electromagnet switch. Low-current trigger (from a button or computer) closes a high-current contact. Stuck relays cause dead-battery overnight problems.' },
+    { term: 'BCM', tag: 'electrical', def: 'Body Control Module. Manages interior electrics — locks, lights, wipers, security. Water in a BCM = mysterious failures.' },
+    // Brakes
+    { term: 'Pad / rotor', tag: 'brakes', def: 'Pad: the friction material that gets squeezed against the rotor. Rotor (or "disc"): the spinning metal disc the pad clamps onto.' },
+    { term: 'Caliper', tag: 'brakes', def: 'The C-shaped bracket that holds the pads + the piston that squeezes them. "Sticky caliper" = piston not retracting after release.' },
+    { term: 'Wear-indicator tab', tag: 'brakes', def: 'Small spring on a brake pad designed to scrape the rotor when pad gets thin. The squeal is your warning to replace pads.' },
+    { term: 'ABS', tag: 'brakes', def: 'Anti-lock Braking System. Pulses the brakes faster than you can to prevent wheel lockup. Disabled in winter slush only by panic-pumping.' },
+    { term: 'Bleeder / bleed screw', tag: 'brakes', def: 'A small screw on each caliper that lets air out of the brake fluid system. Notorious for snapping off in salt-state Maine.' },
+    { term: 'Master cylinder', tag: 'brakes', def: 'The hydraulic pump in the brake system. Driver presses pedal → master cylinder pushes fluid → calipers squeeze pads. Failing master = soft pedal.' },
+    { term: 'DOT 3 / DOT 4 / DOT 5', tag: 'brakes', def: 'Brake fluid specifications. DOT 3 + 4 are glycol-based + interchangeable in most cars. DOT 5 is silicone, NOT compatible with the others.' },
+    // Drivetrain
+    { term: 'Transmission', tag: 'drivetrain', def: 'Gearbox between engine + drive wheels. Manual = clutch + stick. Automatic = hydraulic + planetary gears. CVT = continuous belt + pulleys.' },
+    { term: 'Differential', tag: 'drivetrain', def: 'Gears that let driven wheels turn at different speeds in turns. Front-drive cars have one in the transaxle; rear-drive have one in the rear axle.' },
+    { term: 'CV joint', tag: 'drivetrain', def: 'Constant-velocity joint. Lets a half-shaft (drive axle) flex with suspension while still rotating. Inner + outer per side. Click in turns = bad outer joint.' },
+    { term: 'U-joint', tag: 'drivetrain', def: 'Universal joint. Older drive shafts use these. Squeak / clunk on acceleration in a rear-drive truck = worn u-joint.' },
+    { term: 'Axle / half-shaft', tag: 'drivetrain', def: 'The shaft from the differential to the wheel hub. Includes CV joints. Comes as a complete assembly for most replacement work.' },
+    { term: 'Clutch (manual)', tag: 'drivetrain', def: 'Friction disc between engine + transmission. Driver pushes pedal to disconnect engine from trans for shifting. Replacement is a transmission-out job.' },
+    // Fluids
+    { term: 'Synthetic vs conventional oil', tag: 'fluids', def: 'Synthetic = chemically engineered; longer drain interval, better cold flow, costs more. Conventional = refined from crude. Most modern cars require synthetic.' },
+    { term: 'Viscosity (5W-30)', tag: 'fluids', def: 'How thick oil is. 5W = winter flow rating (lower = thinner cold). 30 = operating-temp viscosity (higher = thicker hot). Use what your owner\'s manual specifies.' },
+    { term: 'Coolant / antifreeze', tag: 'fluids', def: 'Mix of ethylene glycol + water + corrosion inhibitors. Lowers freeze point + raises boil point. Different chemistries (HOAT/OAT/IAT) — DON\'T mix.' },
+    { term: 'ATF', tag: 'fluids', def: 'Automatic Transmission Fluid. Many specs (Dexron VI, Mercon, ATF+4, etc.). Wrong ATF damages trans. Match the OEM spec.' },
+    { term: 'Power steering fluid', tag: 'fluids', def: 'Hydraulic fluid for hydraulic-assist steering. Some cars use ATF; some use dedicated PSF. Wrong fluid wrecks the pump. Electric power steering uses no fluid.' },
+    // General / body
+    { term: 'VIN', tag: 'general', def: 'Vehicle Identification Number — 17-character unique ID. On dash + door jamb + title + registration. Decode online for engine, country, plant.' },
+    { term: 'TSB', tag: 'general', def: 'Technical Service Bulletin. Manufacturer\'s "we know about this issue, here\'s the fix" memo to dealer techs. Free database at nhtsa.gov.' },
+    { term: 'Recall', tag: 'general', def: 'Federally mandated free repair for a safety defect. Search by VIN at nhtsa.gov/recalls. Repair is FREE at any dealer regardless of where you bought.' },
+    { term: 'Rust scaling vs surface rust', tag: 'general', def: 'Surface rust = brown haze, structurally fine, can be cleaned + sealed. Scaling = thick chunks flaking off, structurally bad. Maine spring inspection focus.' },
+    { term: 'Salt / brine', tag: 'general', def: 'Maine de-ices with both. Brine penetrates undercarriage seams and accelerates rust. Spring undercarriage wash extends frame life by years.' },
+    { term: 'Inspection sticker', tag: 'general', def: 'Maine annual safety inspection ($12.50). Failed sticker = 60 days to repair OR stop driving. Don\'t go to inspection unprepared.' },
+    { term: 'OEM vs aftermarket', tag: 'general', def: 'OEM = Original Equipment Manufacturer (the brand the car came with). Aftermarket = third-party. OEM is more expensive but exact-fit; quality aftermarket is often fine.' },
+    { term: 'Reman / remanufactured', tag: 'general', def: 'A used part rebuilt to OEM spec by a remanufacturer. Cheaper than new with similar warranty. Common for alternators, starters, calipers. Brings a "core charge" you get back when you turn in the old one.' },
+    { term: 'Core charge', tag: 'general', def: '$10–80 deposit on a reman part to motivate you to return the old one for recycling. You get it back when you bring the old part to the parts store.' },
+    { term: 'Torque spec', tag: 'general', def: 'Manufacturer-specified tightness for a fastener (e.g., 80 ft-lb on lug nuts). Use a torque wrench. Over-tight strips threads; under-tight loosens.' },
+    { term: 'ASE', tag: 'general', def: 'National Institute for Automotive Service Excellence. Industry-standard tech credential. A1–A8 areas + advanced (L-series). Master Tech = all 8 of A1–A8.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.85: COLD-WEATHER PREP — Maine winter checklist
+  // What to do in October-November so February doesn't strand you.
+  // ─────────────────────────────────────────────────────────
+  var COLD_WEATHER_CHECKLIST = [
+    { id: 'battery-test', icon: '🔋', urgency: 'Oct–Nov',
+      task: 'Load-test the battery',
+      detail: 'Cold weather doubles cranking load while cutting battery output. A weak battery in November is a dead battery in February. Free at NAPA / O\'Reilly / AutoZone.',
+      action: 'If load test fails or battery is >5 years old: replace before snow flies.' },
+    { id: 'tires-check', icon: '🛞', urgency: 'Oct–Nov',
+      task: 'Tire tread depth + pressure',
+      detail: 'Below 4/32" tread = unsafe in slush. Below 2/32" = illegal. Cold drops tire pressure ~1 psi per 10°F drop — a 70°F to 0°F swing drops pressure 7 psi.',
+      action: 'Penny test (Lincoln\'s head visible = replace). Set pressure to door-jamb spec on a cold morning. Consider dedicated winter tires (Maine: a real upgrade for control).' },
+    { id: 'antifreeze', icon: '❄️',
+      urgency: 'Oct–Nov',
+      task: 'Coolant strength test',
+      detail: 'A coolant tester (hydrometer or refractometer, $5–15) tells you the freeze point. Should protect to at least -34°F. Old / contaminated coolant freezes higher.',
+      action: 'If freeze protection is weak: drain + refill with correct 50/50 pre-mix. Hose-end coolant testers $5 at parts stores.' },
+    { id: 'wiper-fluid', icon: '🌧️', urgency: 'Oct–Nov',
+      task: 'Switch to -30°F or -40°F washer fluid',
+      detail: 'Standard summer washer fluid freezes around 32°F. In Maine, that fluid sits in the reservoir frozen for 4 months — and shatters the reservoir if it expands.',
+      action: 'Drain summer fluid by spraying it out. Refill with -30°F (blue gallon at hardware stores) or colder. Top up monthly — slush eats it fast.' },
+    { id: 'wipers', icon: '🌨️', urgency: 'Oct–Nov',
+      task: 'Wiper blades + winter blade upgrade',
+      detail: 'Summer-worn blades chatter on first slush storm. Full-frame "winter blades" handle ice better than sleek beam blades.',
+      action: 'Replace if streaking. Maine: winter blades $25–35 each are worth it.' },
+    { id: 'block-heater', icon: '🔌', urgency: 'Oct–Nov',
+      task: 'Block heater + extension cord',
+      detail: 'Block heater = a small heating element in the engine block, plugged in overnight. Warms oil + coolant for easier cold start. Many Maine homes have an outlet near the driveway for exactly this.',
+      action: 'If your car has one (look for a plug hanging out the front grille), use it below 0°F. If it doesn\'t and you live in northern Maine, install one ($30–80 part + 1 hour).' },
+    { id: 'oil-grade', icon: '🛢️', urgency: 'Oct–Nov',
+      task: 'Verify oil grade for cold flow',
+      detail: 'Below 0°F, conventional oil thickens and starves the engine on cold start. Most modern cars spec 0W-20 or 5W-30 full-synthetic — verify yours and switch to synthetic if you\'re not already.',
+      action: 'Check oil cap or owner\'s manual for the spec. Synthetic 0W-20 is the gold standard for Maine winters.' },
+    { id: 'belts-hoses', icon: '🔗', urgency: 'Oct–Nov',
+      task: 'Belt + hose inspection',
+      detail: 'Cold makes rubber stiffer. A cracked serpentine belt that\'s been "fine" all summer can snap on the first -10°F morning. Hoses can burst.',
+      action: 'Visual: belt cracks every inch or more = replace. Squeeze hoses cold — soft / mushy = replace. Cheap insurance.' },
+    { id: 'emergency-kit', icon: '🎒', urgency: 'Nov–Dec',
+      task: 'Build winter emergency trunk kit',
+      detail: 'Maine rural drivers can be stranded in below-zero temps for hours waiting on AAA or a tow. The trunk kit is genuine survival equipment.',
+      action: 'See the Roadside Emergency module for the full Maine winter kit list (jumper cables, tow strap, sand/kitty litter, blanket, food, flares, flashlight, hand warmers, phone charger).' },
+    { id: 'door-locks', icon: '🚪', urgency: 'Nov–Dec',
+      task: 'Lubricate door locks + hinges',
+      detail: 'Frozen door locks at 6am on a Tuesday is the most Maine-of-Maine moments. Graphite lock lubricant (NOT oil — oil collects ice).',
+      action: 'Spray graphite into each door lock cylinder. Silicone spray on rubber door + trunk seals so they don\'t freeze stuck.' },
+    { id: 'windshield-wash', icon: '🧊', urgency: 'Nov–Dec',
+      task: 'Inspect windshield for chips',
+      detail: 'A small chip in November becomes a coast-to-coast crack on the first -20°F morning when you turn the defroster on. Thermal shock is real.',
+      action: 'Repair chips while still chips ($50–80; insurance often $0 deductible). Replacement is $300–800 once cracked.' },
+    { id: 'undercarriage-rinse', icon: '🚿', urgency: 'Mar–Apr',
+      task: 'Spring undercarriage wash + inspection',
+      detail: 'After winter, undercarriage is caked with salt brine. Rinse off ASAP and inspect for new rust scaling on brake/fuel lines, frame, exhaust.',
+      action: 'A self-serve car wash with the underbody spray is $5. Some Maine touchless car washes have 360° underspray. Then crawl under and inspect.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.86: ROADSIDE EMERGENCY — trunk kit + breakdown response
+  // Maine winter rural breakdown can be a survival situation. This is what
+  // belongs in your trunk + what to do when it happens.
+  // ─────────────────────────────────────────────────────────
+  var TRUNK_KIT = [
+    { id: 'jumper-cables', icon: '🔌', name: 'Jumper cables (heavy gauge, 16ft+)',
+      why: 'Most-needed item. Maine winter dead-battery rate spikes in January. You\'ll be jumping yourself or a stranger several times per winter.',
+      cost: '$25–50' },
+    { id: 'jump-pack', icon: '🔋', name: 'Lithium jump-starter pack (bonus)',
+      why: 'Self-contained — no second car needed. Starts most 4-cylinders. Charges via USB-C. Worth keeping in addition to cables.',
+      cost: '$60–120' },
+    { id: 'tow-strap', icon: '⛓️', name: 'Tow strap (10K+ lb rating)',
+      why: 'Pull a friend out of a snowbank. NEVER use ratchet-strap or rope — they snap and hurt people.',
+      cost: '$25–40' },
+    { id: 'shovel-folding', icon: '🪣', name: 'Folding shovel',
+      why: 'Dig snow out from around tires. Stranded-in-a-drift response.',
+      cost: '$20–40' },
+    { id: 'sand-kitty-litter', icon: '🐈', name: 'Sand or non-clumping kitty litter (small bag)',
+      why: 'Spread under drive wheels for traction on ice. Doubles as weight in the trunk for rear-drive cars.',
+      cost: '$5–10' },
+    { id: 'blanket', icon: '🛏️', name: 'Wool or mylar emergency blanket',
+      why: 'If you\'re stuck waiting for a tow at -10°F, this is survival equipment. Mylar reflects body heat; wool insulates even when wet.',
+      cost: '$10–25' },
+    { id: 'flashlight', icon: '🔦', name: 'Headlamp + spare batteries',
+      why: 'Hands-free light. Changing a tire in the dark with your phone in your mouth is no fun.',
+      cost: '$15–40' },
+    { id: 'flares-triangles', icon: '🚧', name: 'Reflective triangles (or LED road flares)',
+      why: 'Visibility for oncoming traffic when broken down. LEDs are reusable and don\'t burn fingers like chemical flares.',
+      cost: '$20–50' },
+    { id: 'first-aid', icon: '🩹', name: 'First-aid kit',
+      why: 'Cuts during a roadside fix. Pair with the First Response Lab tool.',
+      cost: '$15–40' },
+    { id: 'tire-gauge', icon: '📏', name: 'Tire-pressure gauge + portable inflator',
+      why: 'Fix a slow-leak roadside instead of swapping the spare. 12V plug-in inflators are cheap.',
+      cost: '$25–50' },
+    { id: 'snacks', icon: '🥜', name: 'Granola bars + water (rotate)',
+      why: 'Stranded in rural Maine waiting for the plow. Sugar + calories matter when you\'re cold.',
+      cost: '$10–20' },
+    { id: 'phone-charger', icon: '🔌', name: 'Phone charger + portable battery bank',
+      why: 'Your phone is your lifeline. A dead phone in a stranded car is the worst-case Maine scenario.',
+      cost: '$25–50' },
+    { id: 'gloves-hat', icon: '🧤', name: 'Spare gloves + winter hat',
+      why: 'You may be in dress clothes when you break down. Heavy gloves + a wool hat in the trunk save the day.',
+      cost: '$20–40' },
+    { id: 'hand-warmers', icon: '🔥', name: 'Chemical hand warmers (4-pack)',
+      why: 'Activate + drop in gloves or socks. 8 hours of heat. Critical if you\'re stuck overnight.',
+      cost: '$5–10' },
+    { id: 'duct-tape', icon: '📎', name: 'Duct tape + zip ties',
+      why: 'Temporary fixes for everything: a flapping bumper, a torn radiator hose patch, holding a heat shield up.',
+      cost: '$10–15' },
+    { id: 'gas-can', icon: '⛽', name: '2-gallon gas can (empty in trunk)',
+      why: 'Run out of gas in rural Maine = walk to nearest station. An empty can means you can fill up there + return.',
+      cost: '$15–25' }
+  ];
+
+  var BREAKDOWN_PROTOCOL = [
+    { phase: 'IMMEDIATE', step: 1,
+      title: 'Get safely off the road',
+      do: 'Hazard lights ON immediately. Coast to the right shoulder if possible. Steeper shoulder = less safe, but better than a lane.',
+      avoid: 'Don\'t stop in an active travel lane unless physically impossible to move.' },
+    { phase: 'IMMEDIATE', step: 2,
+      title: 'Stay in the car if traffic is heavy',
+      do: 'Buckle up + stay inside. The car is a steel cage between you and a 60mph distracted driver. In Maine winter cold, the engine still has heat for a while.',
+      avoid: 'Don\'t stand outside near traffic. Don\'t walk on the shoulder of an interstate.' },
+    { phase: 'IMMEDIATE', step: 3,
+      title: 'Set out reflective triangles or flares',
+      do: 'If you DO need to be outside (e.g., changing a tire on a residential road), set triangles 50–100 ft behind the car so traffic sees you with time to react.',
+      avoid: 'Don\'t place them in a way that lures traffic toward your work zone.' },
+    { phase: 'ASSESS', step: 4,
+      title: 'What\'s wrong?',
+      do: 'Use this tool\'s Decision Tree if needed. Common: dead battery, flat tire, run out of gas, overheating, no-start.',
+      avoid: 'Don\'t try to fix something you don\'t understand on the side of an interstate. Tow.' },
+    { phase: 'ASSESS', step: 5,
+      title: 'Can I drive it (slowly) somewhere safer?',
+      do: 'Limp to the nearest exit / gas station / wide-shoulder. Going 30mph with hazards on a slow-traffic shoulder is often safer than waiting on an interstate.',
+      avoid: 'Driving on a flat tire ruins the rim ($300+). Driving overheating ruins the engine ($3000+). Know which limp is worth it.' },
+    { phase: 'CALL', step: 6,
+      title: 'Call for help (in this order)',
+      do: '1) AAA if you have it — towing is the cheapest way out. 2) Insurance roadside — many policies include it. 3) Friend with truck + tow strap (small jobs). 4) Local tow company.',
+      avoid: 'Don\'t accept "help" from random tow trucks that pull up uninvited. Some are scams that hold the car hostage.' },
+    { phase: 'CALL', step: 7,
+      title: 'Tell them WHERE',
+      do: 'Give location FIRST. Mile marker, exit number, GPS coordinates from your phone, nearest cross street. Help can roll while you explain the rest.',
+      avoid: 'Don\'t describe the problem before the location. Lost-call after location-first = help is already coming.' },
+    { phase: 'WAIT', step: 8,
+      title: 'Stay warm + visible',
+      do: 'Maine winter: blanket on, hand warmers if cold, run engine for 10 min/hour for heat (CHECK exhaust isn\'t snow-blocked = CO risk). Phone on charger.',
+      avoid: 'Don\'t run engine if exhaust pipe is buried in snow. CO accumulates in cabin.' },
+    { phase: 'WAIT', step: 9,
+      title: 'Tell someone where you are',
+      do: 'Text a family member or friend your location, ETA of help, and a check-in time. Especially important on rural roads.',
+      avoid: 'Don\'t go silent. People worry; protocols exist for a reason.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.87: SHOP BUSINESS BASICS — for the future shop owner / mobile
+  // mechanic. Maine independent shop reality + mobile-mechanic pathway.
+  // ─────────────────────────────────────────────────────────
+  var SHOP_BUSINESS = {
+    overview: 'After a few years as a tech you\'ll think about running your own. Three Maine paths: stay employed (steady paycheck, no risk), buy into an existing shop (often when an owner retires), or start fresh (highest risk, highest ceiling). The mobile-mechanic route lets you start without a shop lease.',
+    mobilePath: {
+      title: 'The mobile-mechanic startup',
+      pros: ['Customer comes to you (or you go to them) — no shop lease', 'Lower overhead — work van + tools', 'Niche underserved in rural Maine — fleet + farm + senior in-driveway service', 'Can scale to a shop later'],
+      cons: ['Weather kills outdoor work in Maine winters', 'You\'re your own scheduler / dispatcher / accountant / sales', 'No second-tech backup if a job runs over', 'Marketing is on you — Google, NextDoor, word-of-mouth'],
+      startupCost: '$25–60K total: van ($5–25K used), basic tool inventory ($10–20K), insurance ($2–4K/yr), marketing ($1–3K), business setup (LLC, EIN, ~$500).',
+      revenue: '$60K–120K/yr is realistic gross in years 1–3. Net after tools, insurance, taxes, fuel: $35–70K. Compare to $50–70K employed without the risk.',
+      scaling: 'Many mobile mechanics scale to a brick-and-mortar shop in years 3–5 once they have a customer book + cash flow.'
+    },
+    insurance: [
+      { type: 'Garage Liability', who: 'Required to legally work on customer cars', why: 'Covers damage YOU cause to a customer\'s vehicle while servicing. Without it, one bad transmission install = financial ruin.', cost: '$1500–4000/yr' },
+      { type: 'Garage Keepers', who: 'If you keep customer vehicles overnight', why: 'Covers customer cars on your premises (theft, fire, weather damage).', cost: '$500–1500/yr' },
+      { type: 'Workers Comp', who: 'Required by Maine law for any employees', why: 'Covers injuries to employees on the job. Single-owner LLC may be exempt; verify with Maine Bureau of Insurance.', cost: '$2000–5000/yr per employee' },
+      { type: 'General Liability', who: 'Standard small-business cover', why: 'Customer slips in your shop, claims your work caused damage. Different from garage liability.', cost: '$500–1500/yr' },
+      { type: 'Commercial Auto', who: 'Required on a work truck/van', why: 'Personal auto insurance does NOT cover commercial use. Driving customer cars on personal insurance = uncovered.', cost: '$1500–3000/yr' }
+    ],
+    toolTrucks: [
+      { name: 'Snap-on', desc: 'Premium tier. Top quality, top price, lifetime warranty. Most expensive financing terms.', tier: 'premium' },
+      { name: 'Mac Tools', desc: 'High-quality, slightly less expensive than Snap-on. Lifetime warranty.', tier: 'premium' },
+      { name: 'Matco', desc: 'Mid-premium. Lifetime warranty. Often more flexible financing.', tier: 'premium' },
+      { name: 'Cornwell', desc: 'Premium tier with regional strength.', tier: 'premium' },
+      { name: 'Harbor Freight (Icon, Pittsburgh Pro)', desc: 'No truck route — store + online. Massive cost savings. Lower-quality on the cheap line; Icon line competes with brand-name tools.', tier: 'budget' }
+    ],
+    toolFinancingWarning: 'Tool truck financing is the #1 way young techs get into long-term debt. A $4,000 tool box + $200/week payment over 3 years = $30K+ paid for $20K of tools. Buy what you NEED for current work; finance only after you know the cash flow supports it. Many master techs buy mostly Harbor Freight + Snap-on for the few items where quality matters most.',
+    pricing: [
+      { item: 'Labor rate (independent)', maine: '$90–150/hr', national: '$100–180/hr', note: 'Set based on what your local market bears + your overhead. Don\'t race to the bottom — undercutting kills profit.' },
+      { item: 'Labor rate (mobile)', maine: '$80–125/hr', national: '$100–150/hr', note: 'Slightly under shop rate because customer perceives lower overhead. But your travel time is real cost.' },
+      { item: 'Parts markup', maine: '20–40%', national: '25–50%', note: 'Standard practice. Buying parts at trade discount + selling at near-retail. Don\'t hide it; itemize on invoices.' },
+      { item: 'Diagnostic fee', maine: '$80–150', national: '$100–200', note: 'Often waived if customer authorizes the repair. Captures the cost of figuring out the problem.' },
+      { item: 'Trip fee (mobile)', maine: '$40–80', national: '$50–100', note: 'Shows up on the invoice. Customers accept it because they\'re saving the tow.' }
+    ],
+    customerAcquisition: [
+      { channel: 'Word of mouth', cost: '$0', effective: 'highest', detail: 'A satisfied customer tells 3 people. A great one tells 10. Build trust = inbound work.' },
+      { channel: 'Google Business Profile', cost: '$0', effective: 'high', detail: 'Free to set up. Reviews drive 70%+ of new customer searches. Ask every happy customer for a Google review.' },
+      { channel: 'NextDoor + local Facebook groups', cost: '$0', effective: 'high', detail: 'Maine specific: small towns run on these. Be helpful in posts (not just sales). Become "the mechanic in town."' },
+      { channel: 'Fleet + farm contracts', cost: 'time', effective: 'highest-stable', detail: 'A landscape company with 4 trucks = $10–30K/yr in steady work. Contractors talk to other contractors.' },
+      { channel: 'Local newspaper ads', cost: '$200–500/mo', effective: 'medium', detail: 'Older demographic still reads. Less effective for younger customers.' },
+      { channel: 'Yard signs / vehicle graphics', cost: '$300–1000', effective: 'medium', detail: 'Truck wrap costs more but advertises everywhere you drive. Cheap yard signs at customer sites work in small towns.' }
+    ],
+    pitfalls: [
+      'Working without garage liability — one mistake bankrupts you.',
+      'Tool-truck debt growing faster than revenue.',
+      'Pricing too low to "build clientele" — you teach them to expect cheap, then can\'t raise prices.',
+      'No emergency fund — one slow month is a crisis without a buffer.',
+      'Mixing personal + business money — get a separate bank account day one.',
+      'Skipping quarterly tax payments — IRS will catch you with a year-end bill + penalties.',
+      'Saying yes to every job — the wrong customer is worse than no customer.'
+    ]
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.88: FIRST-CAR 30-DAY PLAN — week-by-week onboarding
+  // Just bought your first car. Here\'s what to do over the next month
+  // so you don\'t miss anything important.
+  // ─────────────────────────────────────────────────────────
+  var FIRST_CAR_PLAN = [
+    { week: 1, title: 'Week 1 — Paperwork + safety walk',
+      tasks: [
+        { do: 'Title transfer at Maine BMV (within 30 days; faster is better). Bring bill of sale, old title, ID. ~$35.',
+          why: 'Driving on the seller\'s title is illegal after 30 days. BMV is busy — go early.' },
+        { do: 'Insurance: switch coverage to your name, add this car to your policy. Get quotes from 2–3 carriers (Geico, Progressive, AAA, local agent).',
+          why: 'You\'re uninsured the moment you drive off the seller\'s lot if you didn\'t arrange this in advance. Maine minimum: 50/100/25 liability + $50/$100K UM.' },
+        { do: 'Find the owner\'s manual. Read the maintenance section.',
+          why: 'Tells you fluid specs, service intervals, fuse locations, recommended tires. The single most useful 30 minutes you spend.' },
+        { do: 'Check all lights externally with a friend pressing the brake.',
+          why: 'Burnt bulb is a $5 + 5-min fix you want to discover NOW, not at inspection.' },
+        { do: 'NHTSA recall check on VIN: nhtsa.gov/recalls.',
+          why: 'Recalls are FREE at any dealer. Schedule them now.' }
+      ]
+    },
+    { week: 2, title: 'Week 2 — Fluids + filters baseline',
+      tasks: [
+        { do: 'Oil change with the correct grade (per owner\'s manual). Note the mileage on a sticker.',
+          why: 'You don\'t know when the previous owner last changed it. Start your own clock.' },
+        { do: 'Top off all 5 fluids (or note for service): coolant, brake fluid, power steering (if hydraulic), washer fluid, transmission (if dipstick).',
+          why: 'Establishes baseline and catches any seller-hidden low-fluid issues.' },
+        { do: 'Replace cabin air filter ($15) and engine air filter ($20) if visibly dirty.',
+          why: 'Cheap insurance for your first 6 months of clean baseline. 10 minutes total.' },
+        { do: 'Inspect wiper blades. Replace if streaking.',
+          why: 'Maine: do this before slush season. New blades cost less than one re-inspection visit.' }
+      ]
+    },
+    { week: 3, title: 'Week 3 — Underbody + tires',
+      tasks: [
+        { do: 'Crawl under (or jack up safely) and inspect frame, brake lines, fuel lines, exhaust.',
+          why: 'Maine salt damage hides until you look. You want to know NOW, not when something fails.' },
+        { do: 'Penny test all 4 tires + sidewall inspection.',
+          why: 'Old / unsafe tires are negotiating leverage with the seller (small-claims if hidden) and a winter-safety issue.' },
+        { do: 'Set tire pressure to door-jamb spec on a cold morning.',
+          why: 'Most cars are run under-inflated, which wears tires faster + cuts fuel economy 1–3%.' },
+        { do: 'Test the spare. Where is it? Is it inflated? Where\'s the jack + lug wrench?',
+          why: 'You don\'t want to be looking for the spare in a snowstorm at 6am.' }
+      ]
+    },
+    { week: 4, title: 'Week 4 — Maine inspection prep + emergency kit',
+      tasks: [
+        { do: 'Pre-walk Maine inspection (this tool\'s Inspection Prep module).',
+          why: 'Schedule the actual inspection with confidence. Catch fails BEFORE the sticker visit.' },
+        { do: 'Build winter trunk kit (this tool\'s Roadside Emergency module).',
+          why: 'Maine rural drivers should not be without jumper cables, blanket, flashlight, and snacks in the trunk.' },
+        { do: 'Set up service-record system. Phone notes app or a small notebook in the glovebox.',
+          why: 'Future-you (or the next buyer) needs records. A car with records sells for more.' },
+        { do: 'Schedule first oil change reminder for 5,000 miles or 6 months from now.',
+          why: 'Your phone calendar is more reliable than memory. The pattern is the win, not any single change.' },
+        { do: 'Drive it in different conditions before winter: highway, hard accel, hard brake, sharp turns. Listen for new noises.',
+          why: 'You\'re building a baseline of what NORMAL sounds like. Future deviations are easier to notice.' }
+      ]
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 10: KNOWLEDGE QUIZ — 10 questions covering safety, diagnostic, repair
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -1756,7 +2092,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q20', icon: '🛞',
       stem: 'You hear a hum at speed that gets louder turning LEFT and quieter turning RIGHT. Which side has the bad bearing?',
       choices: ['Left', 'Right (load shifts off it when turning right)', 'Both', 'Front-rear can\'t tell'],
-      correct: 1, why: 'In a turn, weight shifts to the OUTSIDE wheel. Turning left loads the right wheel — if right bearing is bad, hum gets louder. Turning right unloads it and quiet.' }
+      correct: 1, why: 'In a turn, weight shifts to the OUTSIDE wheel. Turning left loads the right wheel — if right bearing is bad, hum gets louder. Turning right unloads it and quiet.' },
+    { id: 'q21', icon: '❄️',
+      stem: 'It\'s late October in Maine. Your washer fluid reservoir is full of clear blue summer fluid (freezes at 32°F). What should you do?',
+      choices: ['Leave it — it\'ll dilute', 'Spray it out + refill with -30°F (or colder) winter washer fluid; standard fluid freezes and can crack the reservoir', 'Add salt to lower the freeze point', 'Drain it and leave empty for winter'],
+      correct: 1, why: 'Frozen washer fluid expands and shatters reservoirs. Maine washer fluid should be rated to at least -30°F. The blue-bottle "winter" fluid is sold at every parts and hardware store starting in October.' },
+    { id: 'q22', icon: '🌳',
+      stem: 'Your car cranks but won\'t fire. Following the no-start decision tree, what\'s your first FREE diagnostic move?',
+      choices: ['Replace the starter', 'Key ON (don\'t crank) and listen for the fuel pump priming whir', 'Replace plugs and coils', 'Tow to dealer'],
+      correct: 1, why: 'Fuel-pump prime test costs nothing. No prime = pump or relay or fuse problem. Prime + still no fire = spark issue. Splits the diagnosis in 2 seconds.' },
+    { id: 'q23', icon: '💵',
+      stem: 'A shop estimate has a separate $150 "shop supplies fee" on a $500 labor job. Is this reasonable?',
+      choices: ['Yes — always pay', 'No — shop supplies fees are typically 5–10% of labor; $150 on $500 labor (30%) is excessive', 'Try to negotiate to $200', 'Switch shops immediately'],
+      correct: 1, why: 'Shop supplies fee covers rags, brake clean, fluid disposal — typically 5–10% of labor (so ~$25–50 on $500). A 30% fee is a red flag and should be questioned or negotiated.' },
+    { id: 'q24', icon: '🚗',
+      stem: 'You just bought your first used car in Maine. Within 30 days you must do which of these?',
+      choices: ['Repaint it', 'Title transfer at the BMV; switch insurance to your name', 'Replace the engine', 'Buy a tow truck'],
+      correct: 1, why: 'Maine law: title transfer within 30 days. Insurance must be active in your name from the moment you drive off the seller\'s lot. Both are legal-not-optional.' },
+    { id: 'q25', icon: '🧰',
+      stem: 'You\'re a Maine high school junior thinking about an auto-tech career. What\'s the SMARTEST entry?',
+      choices: ['Buy a $30K Snap-on tool box on credit before you start', 'Apply to the half-day CTE auto-tech program at Region 9, PATHS, Mid-Coast, or your local school. Earn ASE Student Certifications by graduation.', 'Open your own shop without experience', 'Skip school'],
+      correct: 1, why: 'Maine has strong half-day CTE programs that get you to ASE entry-level by graduation. Tool buying comes after you\'re working — start with the basics from a starter-kit allowance, not $30K of debt before earning a paycheck.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1869,17 +2225,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       function renderMenu() {
         var modules = [
+          { id: 'firstcar', icon: '🚗', label: 'First car? Start here', desc: 'Just bought your first car. 30-day week-by-week plan: paperwork → fluids → undercarriage → inspection prep.' },
           { id: 'diagnose', icon: '🔍', label: 'Diagnose', desc: 'OBD-II codes, listening cues, fluid analysis, visual inspection.' },
           { id: 'tree', icon: '🌳', label: 'Decision tree', desc: 'Symptom → likely cause. 6 interactive flowcharts (no-start, misfire, brakes, overheating, charging, steering).' },
           { id: 'repair', icon: '🔧', label: 'Repair scenarios', desc: '12 step-by-step jobs, from oil change + battery to timing belt.' },
           { id: 'tools', icon: '🧰', label: 'Tool selection', desc: 'Pick the right tool for the job. Builds your mental toolkit.' },
           { id: 'safety', icon: '🛡️', label: 'Safety modules', desc: 'Jack stands, electrical, refrigerant, hot exhaust, springs, fluid disposal.' },
           { id: 'inspection', icon: '🌲', label: 'Maine inspection', desc: '8-area pre-walk before your annual sticker. Catch fails BEFORE the station does.' },
+          { id: 'cold', icon: '🌨️', label: 'Cold-weather prep', desc: 'October–November Maine winter checklist: battery, tires, coolant, washer fluid, block heater, more.' },
+          { id: 'roadside', icon: '🚨', label: 'Roadside emergency', desc: 'Maine winter trunk kit (16 items) + 9-step breakdown response protocol.' },
           { id: 'usedcar', icon: '🛒', label: 'Buying a used car', desc: '10 red flags + 9-step walkaround. Salt-state pre-purchase inspection.' },
           { id: 'estimate', icon: '💵', label: 'Estimate decoder', desc: 'Read a shop quote. Identify standard, DIY-able, and upsell line items.' },
           { id: 'ev', icon: '⚡', label: 'EV / Hybrid', desc: 'High-voltage safety, regen braking, cold-weather range, charging — the future of the trade.' },
+          { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ essential auto terms. Search and filter by category. So you can read any repair article.' },
           { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
-          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '20 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells.' },
+          { id: 'shopbiz', icon: '🏪', label: 'Shop business basics', desc: 'Mobile mechanic startup, insurance, tool trucks, pricing, customer acquisition. For future shop owners.' },
+          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '25 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business.' },
           { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
         ];
         var badgeCount = Object.keys(badges).length;
@@ -3233,6 +3594,429 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // GLOSSARY view — search-filterable term list
+      // ─────────────────────────────────────────
+      function renderGlossary() {
+        var query = (d.glossaryQuery || '').toLowerCase();
+        var tagFilter = d.glossaryTag || 'all';
+        var tags = ['all', 'engine', 'electrical', 'brakes', 'drivetrain', 'fluids', 'general'];
+        var filtered = GLOSSARY.filter(function(g) {
+          if (tagFilter !== 'all' && g.tag !== tagFilter) return false;
+          if (!query) return true;
+          return g.term.toLowerCase().indexOf(query) >= 0 || g.def.toLowerCase().indexOf(query) >= 0;
+        });
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📖 Glossary'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📖 50+ essential auto terms'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              'A glossary so you can read a repair article without getting stuck. Filter by category or search any word.'),
+            h('input', { type: 'search', 'data-ar-focusable': true,
+              'aria-label': 'Search glossary terms',
+              placeholder: 'Search terms or definitions...',
+              value: query,
+              onChange: function(e) { upd('glossaryQuery', e.target.value); },
+              style: { width: '100%', padding: 10, borderRadius: 8, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13, marginBottom: 10, boxSizing: 'border-box' } }),
+            h('div', { role: 'tablist', 'aria-label': 'Filter by category', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              tags.map(function(t) {
+                var active = tagFilter === t;
+                return h('button', { key: t, 'data-ar-focusable': true, role: 'tab',
+                  'aria-selected': active ? 'true' : 'false',
+                  onClick: function() { upd('glossaryTag', t); },
+                  style: Object.assign({}, btnGhost(), { background: active ? T.accent : 'transparent', color: active ? '#0f172a' : T.muted, fontWeight: active ? 800 : 600 }) },
+                  t === 'all' ? 'All' : t.charAt(0).toUpperCase() + t.slice(1)
+                );
+              })
+            )
+          ),
+          h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 10 } }, filtered.length + ' of ' + GLOSSARY.length + ' terms'),
+          h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            filtered.map(function(g) {
+              return h('div', { key: g.term, role: 'listitem',
+                style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 } },
+                  h('strong', { style: { fontSize: 14, color: T.accentHi } }, g.term),
+                  h('span', { style: { fontSize: 10, color: T.dim, padding: '2px 6px', borderRadius: 4, background: T.bg, border: '1px solid ' + T.border, textTransform: 'uppercase' } }, g.tag)
+                ),
+                h('div', { style: { fontSize: 13, color: T.text, lineHeight: 1.5 } }, g.def)
+              );
+            }),
+            filtered.length === 0 && h('div', { style: { padding: 14, textAlign: 'center', color: T.dim, fontSize: 13 } },
+              'No terms match. Try clearing the search or picking "All".')
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // COLD-WEATHER PREP view — Maine winter checklist
+      // ─────────────────────────────────────────
+      function renderColdPrep() {
+        var checked = d.coldChecked || {};
+        var done = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
+        var total = COLD_WEATHER_CHECKLIST.length;
+        var pct = Math.round((done / total) * 100);
+        if (done === total) awardBadge('winter-prep', 'Maine Winter Prepped');
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🌨️ Cold-weather prep'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌨️ Maine winter prep — October through April'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Doing this in October–November means February doesn\'t strand you. Most items are 5–30 minute jobs. ',
+              h('strong', { style: { color: T.accentHi } }, 'Progress: '), done + ' / ' + total + ' (' + pct + '%)')
+          ),
+          h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            COLD_WEATHER_CHECKLIST.map(function(item) {
+              var isChecked = !!checked[item.id];
+              return h('button', { key: item.id, role: 'listitem', 'data-ar-focusable': true,
+                'aria-label': item.task + (isChecked ? ' (done)' : ''),
+                'aria-pressed': isChecked ? 'true' : 'false',
+                onClick: function() {
+                  var nv = Object.assign({}, checked); nv[item.id] = !nv[item.id];
+                  upd('coldChecked', nv);
+                },
+                style: { textAlign: 'left', padding: 12, borderRadius: 8, background: isChecked ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isChecked ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, item.icon),
+                  h('strong', { style: { fontSize: 14, color: isChecked ? '#d1fae5' : T.accentHi, flex: 1 } }, item.task),
+                  h('span', { style: { fontSize: 10, color: T.dim, padding: '2px 8px', borderRadius: 12, background: T.bg, border: '1px solid ' + T.border } }, item.urgency),
+                  isChecked && h('span', { style: { fontSize: 16, color: T.good } }, '✓')
+                ),
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, item.detail),
+                h('div', { style: { fontSize: 12, color: isChecked ? '#a7f3d0' : T.text, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.accentHi } }, '🎯 Action: '), item.action)
+              );
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // ROADSIDE EMERGENCY view — trunk kit + breakdown protocol
+      // ─────────────────────────────────────────
+      function renderRoadside() {
+        var rsView = d.rsView || 'overview';
+        function tabBtn(id, label) {
+          var active = rsView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('rsView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function rsOverview() {
+          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🚨 If you break down on a Maine road...'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
+              'Maine rural breakdowns can become survival situations in winter. Below-zero temperatures + 30+ minute tow waits + sparse cell coverage = real risk. Two parts: ',
+              h('strong', { style: { color: T.accentHi } }, 'what\'s in your trunk'), ' (Kit tab) and ',
+              h('strong', { style: { color: T.accentHi } }, 'what you do'), ' (Protocol tab).'),
+            h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', fontSize: 13, color: '#fed7aa', lineHeight: 1.55 } },
+              h('strong', null, '⚠️ Critical Maine winter rule: '),
+              'If your exhaust pipe is buried in snow, DO NOT idle the engine to stay warm. Carbon monoxide accumulates in the cabin in minutes. Clear the exhaust before idling, OR run engine 10 minutes per hour with a window cracked.')
+          );
+        }
+
+        function rsKit() {
+          var packed = d.kitPacked || {};
+          var done = Object.keys(packed).filter(function(k) { return packed[k]; }).length;
+          var total = TRUNK_KIT.length;
+          if (done === total) awardBadge('kit-packed', 'Trunk Kit Packed');
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎒 Maine winter trunk kit'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Tap each item as you pack it. Total kit cost: ~$300–$600. ',
+                h('strong', null, 'Done: '), done + ' / ' + total)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+              TRUNK_KIT.map(function(it) {
+                var isPacked = !!packed[it.id];
+                return h('button', { key: it.id, 'data-ar-focusable': true,
+                  'aria-label': it.name + (isPacked ? ' (packed)' : ''),
+                  'aria-pressed': isPacked ? 'true' : 'false',
+                  onClick: function() {
+                    var nv = Object.assign({}, packed); nv[it.id] = !nv[it.id];
+                    upd('kitPacked', nv);
+                  },
+                  style: { textAlign: 'left', padding: 12, borderRadius: 8, background: isPacked ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isPacked ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                    h('span', { style: { fontSize: 20 } }, it.icon),
+                    h('strong', { style: { fontSize: 13, color: isPacked ? '#d1fae5' : T.text, flex: 1 } }, it.name),
+                    isPacked && h('span', { style: { fontSize: 14, color: T.good } }, '✓')
+                  ),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } }, it.why),
+                  h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700 } }, it.cost)
+                );
+              })
+            )
+          );
+        }
+
+        function rsProtocol() {
+          var phaseColor = function(p) {
+            if (p === 'IMMEDIATE') return T.bad;
+            if (p === 'ASSESS') return T.warn;
+            if (p === 'CALL') return T.accentHi;
+            return T.good;
+          };
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🛣️ Breakdown response protocol'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                '9 steps in 4 phases. Order matters — get safe first, then assess.')
+            ),
+            h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              BREAKDOWN_PROTOCOL.map(function(p) {
+                return h('div', { key: p.step, role: 'listitem',
+                  style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + phaseColor(p.phase) } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { background: phaseColor(p.phase), color: '#0f172a', borderRadius: 999, width: 28, height: 28, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 } }, p.step),
+                    h('span', { style: { padding: '2px 10px', borderRadius: 12, background: phaseColor(p.phase), color: '#0f172a', fontSize: 10, fontWeight: 800 } }, p.phase),
+                    h('strong', { style: { fontSize: 14, color: T.text, flex: 1 } }, p.title)
+                  ),
+                  h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5, marginBottom: 4 } },
+                    h('strong', { style: { color: T.good } }, '✅ Do: '), p.do),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                    h('strong', { style: { color: T.bad } }, '❌ Avoid: '), p.avoid)
+                );
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🚨 Roadside emergency'),
+          h('div', { role: 'tablist', 'aria-label': 'Roadside sub-modes',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('kit', '🎒 Trunk kit'),
+            tabBtn('protocol', '🛣️ Protocol')
+          ),
+          rsView === 'overview' && rsOverview(),
+          rsView === 'kit' && rsKit(),
+          rsView === 'protocol' && rsProtocol(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // SHOP BUSINESS view — running your own / mobile-mechanic
+      // ─────────────────────────────────────────
+      function renderShopBiz() {
+        var sbView = d.sbView || 'overview';
+        function tabBtn(id, label) {
+          var active = sbView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('sbView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function sbOverview() {
+          var mp = SHOP_BUSINESS.mobilePath;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🏪 Running your own — three Maine paths'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } }, SHOP_BUSINESS.overview)
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🚐 ' + mp.title),
+              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 10 } },
+                h('div', null,
+                  h('strong', { style: { color: T.good, fontSize: 12 } }, '✅ Pros'),
+                  h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                    mp.pros.map(function(p, i) { return h('li', { key: i }, p); }))
+                ),
+                h('div', null,
+                  h('strong', { style: { color: T.bad, fontSize: 12 } }, '❌ Cons'),
+                  h('ul', { style: { margin: '4px 0 0', paddingLeft: 16, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                    mp.cons.map(function(c, i) { return h('li', { key: i }, c); }))
+                )
+              ),
+              h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.muted } },
+                h('strong', { style: { color: T.accentHi } }, '💵 Startup cost: '), mp.startupCost),
+              h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.muted } },
+                h('strong', { style: { color: T.accentHi } }, '📈 Revenue: '), mp.revenue),
+              h('p', { style: { margin: 0, fontSize: 12, color: T.muted } },
+                h('strong', { style: { color: T.accentHi } }, '⏫ Scaling: '), mp.scaling)
+            )
+          );
+        }
+
+        function sbInsurance() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🛡️ Insurance you need'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                'Customer cars + customer property + employees + your work vehicle. One missing policy = bankruptcy on a single claim.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              SHOP_BUSINESS.insurance.map(function(ins) {
+                return h('div', { key: ins.type, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                    h('strong', { style: { fontSize: 14, color: T.accentHi, flex: 1 } }, ins.type),
+                    h('span', { style: { fontSize: 12, color: T.good, fontWeight: 700 } }, ins.cost)
+                  ),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5, marginBottom: 4 } },
+                    h('strong', { style: { color: T.text } }, 'Who needs: '), ins.who),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+                    h('strong', { style: { color: T.text } }, 'Why: '), ins.why)
+                );
+              })
+            )
+          );
+        }
+
+        function sbTools() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚚 Tool truck financing reality'),
+              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                SHOP_BUSINESS.toolFinancingWarning),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+                SHOP_BUSINESS.toolTrucks.map(function(t) {
+                  return h('div', { key: t.name, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + (t.tier === 'premium' ? T.accent : T.good) } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                      h('strong', { style: { fontSize: 13, color: t.tier === 'premium' ? T.accentHi : T.good } }, t.name),
+                      h('span', { style: { fontSize: 9, color: T.dim, padding: '2px 6px', borderRadius: 4, background: T.bg, border: '1px solid ' + T.border, textTransform: 'uppercase' } }, t.tier)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, t.desc)
+                  );
+                })
+              )
+            )
+          );
+        }
+
+        function sbPricing() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '💵 Pricing your work'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Maine 2026 ranges + national comparison. Don\'t race to the bottom — pricing too low signals "low quality" and traps you under your costs.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              SHOP_BUSINESS.pricing.map(function(p, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                    h('strong', { style: { fontSize: 13, color: T.accentHi, flex: 1 } }, p.item),
+                    h('span', { style: { fontSize: 11, color: T.good, fontWeight: 700 } }, '🌲 Maine: ' + p.maine),
+                    h('span', { style: { fontSize: 11, color: T.muted, fontWeight: 600 } }, '🇺🇸 US: ' + p.national)
+                  ),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, p.note)
+                );
+              })
+            )
+          );
+        }
+
+        function sbAcquisition() {
+          var effColor = function(e) {
+            if (e === 'highest' || e === 'highest-stable') return T.good;
+            if (e === 'high') return T.accentHi;
+            if (e === 'medium') return T.warn;
+            return T.muted;
+          };
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📣 Getting customers'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Customer-acquisition channels ranked. Maine small-town reality: word-of-mouth + Google reviews dominate. Don\'t spend on paid ads until the free channels are saturated.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              SHOP_BUSINESS.customerAcquisition.map(function(c, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + effColor(c.effective) } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                    h('strong', { style: { fontSize: 13, color: T.accentHi, flex: 1 } }, c.channel),
+                    h('span', { style: { fontSize: 11, color: T.muted } }, '💵 ' + c.cost),
+                    h('span', { style: { padding: '2px 8px', borderRadius: 12, background: effColor(c.effective), color: '#0f172a', fontSize: 10, fontWeight: 800 } }, c.effective.replace('-', ' '))
+                  ),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, c.detail)
+                );
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', fontSize: 12, color: '#fed7aa' } },
+              h('strong', null, '⚠️ Common pitfalls: '),
+              h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 } },
+                SHOP_BUSINESS.pitfalls.map(function(p, i) { return h('li', { key: i }, p); })
+              )
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🏪 Shop business'),
+          h('div', { role: 'tablist', 'aria-label': 'Shop business sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('insurance', '🛡️ Insurance'),
+            tabBtn('tools', '🚚 Tool trucks'),
+            tabBtn('pricing', '💵 Pricing'),
+            tabBtn('acquire', '📣 Customers')
+          ),
+          sbView === 'overview' && sbOverview(),
+          sbView === 'insurance' && sbInsurance(),
+          sbView === 'tools' && sbTools(),
+          sbView === 'pricing' && sbPricing(),
+          sbView === 'acquire' && sbAcquisition(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // FIRST-CAR view — 30-day onboarding plan
+      // ─────────────────────────────────────────
+      function renderFirstCar() {
+        var done = d.firstCarDone || {};
+        var totalTasks = FIRST_CAR_PLAN.reduce(function(acc, w) { return acc + w.tasks.length; }, 0);
+        var doneCount = Object.keys(done).filter(function(k) { return done[k]; }).length;
+        var pct = Math.round((doneCount / totalTasks) * 100);
+        if (doneCount === totalTasks) awardBadge('first-car-30day', '30-Day Plan Complete');
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🚗 First car — 30 day plan'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚗 Just bought your first car?'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Week-by-week 30-day plan to set yourself up. Don\'t skip steps — Week 1 paperwork is non-negotiable Maine law. ',
+              h('strong', { style: { color: T.accentHi } }, 'Progress: '), doneCount + ' / ' + totalTasks + ' (' + pct + '%)')
+          ),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
+            FIRST_CAR_PLAN.map(function(w) {
+              return h('div', { key: w.week, style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
+                h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, w.title),
+                h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                  w.tasks.map(function(t, i) {
+                    var key = 'w' + w.week + '-' + i;
+                    var isDone = !!done[key];
+                    return h('button', { key: key, role: 'listitem', 'data-ar-focusable': true,
+                      'aria-label': t.do + (isDone ? ' (done)' : ''),
+                      'aria-pressed': isDone ? 'true' : 'false',
+                      onClick: function() {
+                        var nv = Object.assign({}, done); nv[key] = !nv[key];
+                        upd('firstCarDone', nv);
+                      },
+                      style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isDone ? '#064e3b' : T.cardAlt, border: '1px solid ' + (isDone ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                      h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 } },
+                        h('span', { 'aria-hidden': 'true', style: { fontSize: 14, color: isDone ? T.good : T.dim, marginTop: 2 } }, isDone ? '☑' : '☐'),
+                        h('strong', { style: { fontSize: 13, color: isDone ? '#d1fae5' : T.text, flex: 1, lineHeight: 1.5 } }, t.do)
+                      ),
+                      h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 22 } },
+                        h('strong', { style: { color: T.dim } }, 'Why: '), t.why)
+                    );
+                  })
+                )
+              );
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -3245,6 +4029,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'usedcar':    return renderUsedCar();
         case 'estimate':   return renderEstimate();
         case 'ev':         return renderEv();
+        case 'glossary':   return renderGlossary();
+        case 'cold':       return renderColdPrep();
+        case 'roadside':   return renderRoadside();
+        case 'shopbiz':    return renderShopBiz();
+        case 'firstcar':   return renderFirstCar();
         case 'career':     return renderCareer();
         case 'quiz':       return renderQuiz();
         case 'resources':  return renderResources();
