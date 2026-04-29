@@ -2414,6 +2414,215 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.94: COMMON SCAMS — what unscrupulous shops do + how to push back
+  // Maine consumer protection law: written estimate required, old parts on
+  // request, itemized invoice, can't exceed estimate by >10% without re-auth.
+  // ─────────────────────────────────────────────────────────
+  var SCAMS = [
+    { id: 'overnight-hostage', icon: '🔒', name: 'Overnight hostage',
+      pitch: '"We need to keep it overnight to run more tests" with no specific reason.',
+      truth: 'A shop that can\'t finish or articulate next steps in a same-day window is sometimes stalling to inflate the bill — or to discover problems you didn\'t come in for.',
+      askFor: 'Ask: "What specific test do you need to run that requires the car to stay?" and "What\'s your written estimate for that test?"',
+      doNow: 'You can take possession of your car at any time. If they refuse to release it without payment for unauthorized work, that\'s mechanic\'s lien territory — Maine AG.' },
+    { id: 'phantom-cv', icon: '🦴', name: 'Phantom CV joint click',
+      pitch: '"Your CV joints are clicking" — usually shown by a tech who tilts a half-shaft on a workbench (not yours).',
+      truth: 'CV joints make a distinctive click ONLY in tight low-speed turns. If your car doesn\'t click in turns, your CV joints are fine. Some shops keep a damaged half-shaft as a prop.',
+      askFor: 'Ask: "Can you show me the symptom on MY car? I want to drive in a tight circle and listen."',
+      doNow: 'Drive in a parking lot, full lock both directions. No click = no CV failure. Get a second opinion if pushed.' },
+    { id: 'fake-evap', icon: '💨', name: 'Fake EVAP leak quote',
+      pitch: '"You have a P0455 EVAP code — the smoke test is $150 and the repair is $400."',
+      truth: 'P0455 (large EVAP leak) is most often a loose gas cap. Tightening to 3 clicks + 2-3 drive cycles often clears the code. The smoke test is real, but it\'s a step 2 — never step 1.',
+      askFor: 'Ask: "Did you tighten the gas cap and drive it 50 miles before quoting the smoke test?"',
+      doNow: 'Tighten your own gas cap. Drive 50+ miles. Have codes re-read free at a parts store. If still showing, then smoke test is reasonable.' },
+    { id: 'lifetime-align', icon: '📐', name: 'Lifetime alignment packages',
+      pitch: '"Buy our lifetime alignment for $200 — alignments forever!"',
+      truth: 'Most cars need an alignment every 2-3 years OR after suspension work. Math: $200 buys ~2.5 alignments at $80 each. Worth it ONLY if you do a lot of suspension work or tend to hit curbs. Most people don\'t recoup it.',
+      askFor: 'Ask: "How many alignments per year does your average customer get?" The honest answer is 0.5 (every 2 years).',
+      doNow: 'Skip lifetime packages unless you ALSO bought tires there + plan to keep the car 5+ years.' },
+    { id: 'synth-markup', icon: '🛢️', name: 'Synthetic oil at extreme markup',
+      pitch: '"Full synthetic oil change — $99" for a 5-quart car.',
+      truth: 'Bulk synthetic oil is $4-7/quart. 5 quarts + $10 filter + 30 min labor = $50-70 fair shop price. $99+ is dealer-tier on a non-dealer vehicle.',
+      askFor: 'Ask: "What\'s the breakdown — oil, filter, labor?" Itemized invoice is your right in Maine.',
+      doNow: 'DIY at $30-50 saves the labor. Or shop around — Walmart auto, Jiffy Lube, indep shops are typically $50-75 for synthetic.' },
+    { id: 'brake-flush-upsell', icon: '🛑', name: 'Brake-flush upsell on every visit',
+      pitch: '"Your brake fluid is dark — you need a flush, $150."',
+      truth: 'Brake fluid darkens slowly. Once every 2-3 years (Maine humidity) is the right interval. If you flushed it last year and the shop is recommending it again, that\'s the upsell.',
+      askFor: 'Ask: "When was the last brake-fluid flush done? What\'s the moisture content read on a tester?"',
+      doNow: 'Brake-fluid moisture tester strips $5 — DIY check before authorizing. If <2% moisture, fluid is fine.' },
+    { id: 'battery-cable', icon: '🔌', name: '"Battery cable cleaning" service',
+      pitch: '"Your battery terminals are corroded — we can clean them for $80."',
+      truth: '$5 worth of baking soda water + a wire brush + 10 minutes of work. Some shops bill 0.5 hours labor for this.',
+      askFor: 'Ask: "Can I buy the parts and have a technician show me how to do it once? I\'ll handle it after that."',
+      doNow: 'DIY: disconnect negative first. Mix baking soda + water. Apply to terminals. Wire-brush. Rinse. Re-connect (positive first). $5 + 10 min.' },
+    { id: 'engine-flush-old', icon: '🌀', name: 'Engine flush on high-mileage cars',
+      pitch: '"Your engine has 130K miles and never had a flush — we recommend it for $80."',
+      truth: 'Engine flushes use aggressive solvents. On older engines with built-up sludge, the flush can DISLODGE chunks that clog oil passages — turning a $0 problem into a $3000 engine. Most OEMs do not recommend.',
+      askFor: 'Ask: "Where in my owner\'s manual does the manufacturer recommend an engine flush?" Almost no manuals do.',
+      doNow: 'Decline. If you want sludge prevention, just stick to OEM oil-change intervals. High-mileage oil formulations have detergents that work over thousands of miles, gently.' },
+    { id: 'ac-recharge-no-leak', icon: '❄️', name: 'A/C recharge without leak repair',
+      pitch: '"Your A/C is low on refrigerant — recharge for $150."',
+      truth: 'A/C is a SEALED system. If it\'s low, there\'s a LEAK. Recharging without finding the leak just sends $150 of refrigerant into the atmosphere over the next 6 months — illegal under EPA Section 608 + a violation if you knew.',
+      askFor: 'Ask: "Did you find the leak? What\'s your dye-test or smoke-test result?"',
+      doNow: 'Refuse a recharge-only quote. The shop should find + fix the leak first OR be upfront that the recharge is a temporary 6-month patch.' },
+    { id: 'computer-reset', icon: '💻', name: '"ECU relearn / computer reset" for $80',
+      pitch: '"After your battery replacement, we need to relearn the computer for $80."',
+      truth: 'Most cars relearn automatically after 50-100 miles of normal driving. A few specific vehicles (some VW, Audi, BMW) genuinely need a scan-tool relearn. For most cars, the shop is selling air.',
+      askFor: 'Ask: "Does my specific vehicle require a scan-tool relearn? Where in the service manual is that procedure?"',
+      doNow: 'Drive normally for a week. If the engine doesn\'t learn (rough idle persists), THEN authorize the procedure on confirmed-needed vehicles only.' },
+    { id: 'warped-just-dirty', icon: '🛞', name: 'Rotor "warp" that\'s just rust',
+      pitch: '"Your rotors are warped — we need to replace both fronts and the pads, $400."',
+      truth: 'Many "warped" rotor diagnoses on Maine cars are actually rust-pitting from sitting. After a few aggressive brake applications, surface rust burns off and the pulse goes away.',
+      askFor: 'Ask: "Did you measure runout with a dial indicator? What\'s the number?" Real warp is >0.005" runout. Surface rust shows no runout but pulses anyway.',
+      doNow: 'Drive your car aggressively-but-safely 5-10 brake-from-50mph stops on an empty road. Often the pulse clears. If not, then rotors need work.' },
+    { id: 'tow-hostage', icon: '🚛', name: 'Tow-truck hostage scenario',
+      pitch: 'A "helpful" tow truck pulls up to your breakdown without you calling. They\'re willing to tow you to "their preferred shop."',
+      truth: 'Some predatory tow operators have arrangements with shops. They tow you, the shop charges 2-3x going rates, and the tow operator gets a kickback. Maine law: you have the right to choose your shop.',
+      askFor: 'Ask the tow operator: "Whose customer am I?" and "Can you tow me to [your chosen shop]?" Refuse if they pressure you.',
+      doNow: 'Always call YOUR roadside service (AAA, insurance, or known tow company) FIRST. Decline uninvited tows even if they\'re convenient.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.95: DAMAGE ID GAME — described visual patterns, scored
+  // 12 cases of "what does this look like + what is it + what to do."
+  // Each case: visual description + 3 multi-choice questions (part / cause /
+  // severity). Builds pattern recognition.
+  // ─────────────────────────────────────────────────────────
+  var DAMAGE_CASES = [
+    { id: 'd1', visual: '🛢️ Black, sticky residue dripping from above the oil filter, running down the side of the engine block. Low oil level on dipstick.',
+      part: { q: 'What\'s leaking?', a: ['Coolant', 'Oil', 'Transmission fluid', 'Brake fluid'], correct: 1 },
+      cause: { q: 'Most likely cause?', a: ['Gas-cap loose', 'Valve cover gasket failure (oil leaking down from above)', 'Head gasket', 'Worn tires'], correct: 1 },
+      sev: { q: 'How urgent?', a: ['Drive normally — small leak', 'Top off oil + plan repair within 30 days; check level weekly', 'Stop driving', 'No action needed'], correct: 1 } },
+    { id: 'd2', visual: '🛞 Rotor with a sharp raised ridge around the outer edge (where the pad doesn\'t reach) — about 3/16" tall ridge. Friction surface looks heat-blued.',
+      part: { q: 'What part is this?', a: ['Brake rotor', 'Wheel hub', 'Engine flywheel', 'Brake caliper'], correct: 0 },
+      cause: { q: 'What does the ridge tell you?', a: ['New rotor', 'Rotor has worn down significantly + heat-cycled — replace, not resurface', 'Manufacturing defect', 'Tire pressure issue'], correct: 1 },
+      sev: { q: 'Action?', a: ['Resurface and reuse', 'Replace + new pads (heat-blued surface won\'t bed in pads correctly)', 'Drive 10K more miles', 'Add brake fluid'], correct: 1 } },
+    { id: 'd3', visual: '🛞 Tire with the INSIDE edge worn down to the wear bars while the outside still has good tread. Tread looks feathered.',
+      part: { q: 'What\'s this called?', a: ['Centerline wear', 'Inside-edge wear with feathering', 'Cupped wear', 'Plug failure'], correct: 1 },
+      cause: { q: 'Most likely cause?', a: ['Over-inflation', 'Toe alignment is OUT (pointing too far in or out) — alignment overdue', 'Bad shock', 'Brake fluid leak'], correct: 1 },
+      sev: { q: 'Action?', a: ['Wait until outside also wears down', 'Replace tire + 4-wheel alignment within next month', 'Rotate to back', 'Add air'], correct: 1 } },
+    { id: 'd4', visual: '🟢 Green crusty deposit forming on the radiator cap, with a slight wet trail down to the upper radiator hose connection.',
+      part: { q: 'What system is this?', a: ['Brake', 'Cooling (coolant residue)', 'Fuel', 'Oil'], correct: 1 },
+      cause: { q: 'What\'s happening?', a: ['Normal evaporation', 'Coolant slow-leaking + drying — radiator cap or hose-clamp issue', 'Air bubble', 'Brake fluid leak'], correct: 1 },
+      sev: { q: 'Action?', a: ['Ignore', 'Pressure-test the cap; tighten or replace cap + clamp; top up coolant; monitor', 'Stop driving', 'Replace engine'], correct: 1 } },
+    { id: 'd5', visual: '🔋 Battery terminals with a thick, fluffy white-and-blue powder caked around the post and clamp.',
+      part: { q: 'What is this powder?', a: ['Snow', 'Lead-acid battery corrosion (sulfate + air reaction)', 'Anti-freeze', 'Engine oil'], correct: 1 },
+      cause: { q: 'What\'s causing it?', a: ['Cold weather only', 'Acid escape from a leaking or aging battery + air exposure', 'Overcharging', 'No specific cause'], correct: 1 },
+      sev: { q: 'Action?', a: ['Cosmetic — leave alone', 'Disconnect (negative first), neutralize with baking soda + water, wire-brush, anti-corrosion spray. If recurring, the battery may be leaking — replace.', 'Pour water on it', 'Drive more often'], correct: 1 } },
+    { id: 'd6', visual: '🌧️ Wiper blade leaving streaks across the windshield in a 4" gap on the driver-side. Other parts of the sweep are clean.',
+      part: { q: 'What\'s wrong with the wiper?', a: ['Motor failure', 'A torn or worn section of the blade rubber', 'Wrong fluid', 'Cracked windshield'], correct: 1 },
+      cause: { q: 'Most likely cause?', a: ['Fluid contamination', 'Age + UV + ice cycles tore the rubber', 'Manufacturer defect', 'Cold weather alone'], correct: 1 },
+      sev: { q: 'Action?', a: ['Drive carefully', 'Replace blade ($15 + 5 min) — and do the other side too if you haven\'t recently', 'Replace whole arm', 'No action'], correct: 1 } },
+    { id: 'd7', visual: '🟤 Engine oil dipstick reading is HIGH (above max) and the oil smells like gasoline.',
+      part: { q: 'What\'s the issue?', a: ['Normal — recently changed', 'Fuel diluting the engine oil', 'Coolant in oil', 'Sludge'], correct: 1 },
+      cause: { q: 'What causes fuel-diluted oil?', a: ['Cold weather', 'Failed fuel injector dribbling fuel into a cylinder + past the rings into the crankcase. Or excessive cold-start short-trips without full warm-up.', 'Loose oil cap', 'High-mileage'], correct: 1 },
+      sev: { q: 'Action?', a: ['Top up to max', 'Diagnose injectors + change oil immediately. Continued operation washes oil from cylinder walls + accelerates engine wear.', 'No action', 'Add detergent'], correct: 1 } },
+    { id: 'd8', visual: '🛑 Brake pad worn down to the steel backing plate. Shiny grooves cut into the rotor face.',
+      part: { q: 'How worn?', a: ['New', 'Pads have been ground down to STEEL on STEEL — past wear-indicator stage', 'Half-worn', 'No way to tell'], correct: 1 },
+      cause: { q: 'How did it get this bad?', a: ['Just one drive', 'Driver ignored squealing wear-indicator for thousands of miles', 'Defective pads', 'Brake fluid issue'], correct: 1 },
+      sev: { q: 'Action?', a: ['Resurface + new pads', 'Replace BOTH pads AND rotors (rotor is grooved past wear) + new pads. Maine: brake-line bleeders may be seized at this age.', 'Pads only', 'Drive carefully'], correct: 1 } },
+    { id: 'd9', visual: '🔧 Frame rail with thick, flaking, layered rust scaling. Pieces flake off when poked. Visible holes.',
+      part: { q: 'What\'s the structural concern?', a: ['Surface rust — paint touch-up will fix', 'Frame perforation — structural integrity compromised', 'Cosmetic only', 'Wax helps'], correct: 1 },
+      cause: { q: 'Maine cause?', a: ['Sun', 'Multi-year salt brine + moisture cycling — Maine-classic frame rot', 'Manufacturing', 'Hit a curb'], correct: 1 },
+      sev: { q: 'Maine state inspection?', a: ['Pass with notation', 'INSPECTION FAIL — vehicle may be uninspectable; some frame rot is unrepairable + vehicle becomes a total loss', 'Pass', 'Re-inspect'], correct: 1 } },
+    { id: 'd10', visual: '⚙️ Serpentine belt with deep cracks across each rib, every 1-2 inches. Rib edges look frayed.',
+      part: { q: 'What is this?', a: ['Timing belt', 'Serpentine (accessory) belt', 'V-belt', 'A/C compressor belt'], correct: 1 },
+      cause: { q: 'How aged is this belt?', a: ['New', 'End of service life — cracks + frayed edges = imminent failure', 'Mid-life', 'Newly installed wrong'], correct: 1 },
+      sev: { q: 'Action?', a: ['Drive 50K more miles', 'Replace belt + tensioner pulley while you\'re in there ($30-60 part + 30-60 min). A snapped serpentine belt strands you (no power steering, no charging, no water pump).', 'Realign it', 'No action'], correct: 1 } },
+    { id: 'd11', visual: '💨 Black soot ring around the tip of the exhaust tailpipe — when wiped, leaves a heavy black smudge on the rag.',
+      part: { q: 'What is the soot?', a: ['Normal exhaust', 'Excessive carbon = engine running RICH (too much fuel, not enough air)', 'Coolant burning', 'Oil burning (would be blue-tinted, oily)'], correct: 1 },
+      cause: { q: 'Likely causes?', a: ['Cold weather only', 'Failing O2 sensor, dirty MAF, leaky fuel injector, or fuel-pressure regulator stuck high', 'New filter', 'No specific cause'], correct: 1 },
+      sev: { q: 'Action?', a: ['Drive — it\'ll burn off', 'OBD scan first (often a P0172 rich code). Then clean MAF / replace O2 / fuel-pressure check.', 'Add fuel additive', 'Stop driving'], correct: 1 } },
+    { id: 'd12', visual: '🦶 Brake pedal goes nearly to the floor before the car stops. No squealing, no grinding, no pulling.',
+      part: { q: 'What system has the issue?', a: ['Brake pads (mechanical)', 'Brake hydraulics (master cylinder, lines, or air)', 'Tires', 'Suspension'], correct: 1 },
+      cause: { q: 'Most likely?', a: ['Pads completely worn', 'Air in brake lines (after a recent service?), fluid leak, OR master cylinder bypassing internally', 'Tire pressure', 'Engine issue'], correct: 1 },
+      sev: { q: 'Action?', a: ['Drive carefully', 'STOP DRIVING. A failing brake system is a not-driveable safety issue. Check fluid level + look for leaks, then bleed system or replace master cylinder.', 'Add brake fluid + drive', 'No action needed'], correct: 1 } },
+    { id: 'd13', visual: '🌀 Front tire with a sidewall bulge the size of a marble, on the inside sidewall.',
+      part: { q: 'What does the bulge represent?', a: ['Air pocket from filling', 'Internal cord damage — tire structurally compromised', 'Manufacturer feature', 'Patched plug'], correct: 1 },
+      cause: { q: 'Most likely cause?', a: ['Old age', 'Curb hit, pothole hit, or run-flat damage that broke internal cords', 'Over-inflation', 'No specific cause'], correct: 1 },
+      sev: { q: 'Action?', a: ['Drive normally', 'REPLACE THE TIRE. A bulged sidewall can blow at any moment — at speed it can cause loss of control.', 'Patch it', 'Lower pressure'], correct: 1 } },
+    { id: 'd14', visual: '🛢️ Oil dipstick with a brown FOAM coating. Oil-cap underside has the same foamy residue.',
+      part: { q: 'What is this foam?', a: ['Normal', 'Coolant + oil emulsion = "milkshake" oil', 'Old oil', 'Air bubbles'], correct: 1 },
+      cause: { q: 'What causes coolant in oil?', a: ['Loose oil cap', 'Failed head gasket OR cracked block OR cracked head', 'Wrong oil type', 'Cold weather only'], correct: 1 },
+      sev: { q: 'Action?', a: ['Top up oil + drive carefully', 'STOP DRIVING. Continued operation destroys bearings + crankshaft. Tow to shop. Often $1500-3500 head-gasket job; sometimes total loss.', 'Add stop-leak', 'No action'], correct: 1 } },
+    { id: 'd15', visual: '⚡ Spark plug pulled from cyl 3 — electrode is glazed, slightly melted at the tip, with a thin tan deposit.',
+      part: { q: 'What\'s the plug telling you?', a: ['Healthy plug', 'Plug ran HOTTER than design — wrong heat range, ignition timing too advanced, or pre-ignition', 'Normal wear', 'Worn from age only'], correct: 1 },
+      cause: { q: 'Likely root cause?', a: ['Bad fuel only', 'Lean fuel mixture (not enough fuel) OR knock-controller failure OR vacuum leak on this cylinder', 'Defective plug', 'Cold weather'], correct: 1 },
+      sev: { q: 'Action?', a: ['Replace plug, drive on', 'Replace plug AND diagnose root cause — running plugs hot will continue burning new plugs + can damage the piston / valve seats.', 'Adjust gap wider', 'No action'], correct: 1 } }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.96: REPAIR ROI CALCULATOR — keep-or-sell decision tool
+  // Inputs: vehicle value, repair cost, age (years), mileage, looming issues.
+  // Output: rule-based recommendation with reasoning.
+  // ─────────────────────────────────────────────────────────
+  function repairROI(opts) {
+    var vehicleValue = opts.vehicleValue || 0;
+    var repairCost = opts.repairCost || 0;
+    var age = opts.age || 0;
+    var miles = opts.miles || 0;
+    var loomingCost = opts.loomingCost || 0;
+    var attachment = opts.attachment || 'medium';
+    var ratio = vehicleValue > 0 ? (repairCost / vehicleValue) : 999;
+    var totalLooming = repairCost + loomingCost;
+    var loomingRatio = vehicleValue > 0 ? (totalLooming / vehicleValue) : 999;
+
+    var reasons = [];
+    var verdict = 'fix';
+
+    if (ratio > 0.50) {
+      verdict = 'consider-selling';
+      reasons.push('Repair cost (' + Math.round(ratio * 100) + '% of vehicle value) exceeds the 50% threshold where the math typically favors selling.');
+    } else if (ratio > 0.30) {
+      verdict = 'fix-cautiously';
+      reasons.push('Repair is ' + Math.round(ratio * 100) + '% of vehicle value — high but not yet a deal-breaker. Check if other items are looming.');
+    } else {
+      reasons.push('Repair is ' + Math.round(ratio * 100) + '% of vehicle value — usually worth fixing.');
+    }
+
+    if (loomingRatio > 0.70) {
+      verdict = 'consider-selling';
+      reasons.push('Total of this repair + looming work (' + Math.round(loomingRatio * 100) + '% of value) tips the math toward selling.');
+    } else if (loomingCost > 0) {
+      reasons.push('Looming work adds $' + loomingCost + ' on top — total ' + Math.round(loomingRatio * 100) + '% of value.');
+    }
+
+    if (age >= 15) {
+      reasons.push('Age ' + age + ' years: every repair is closer to "the next thing breaking." Maine salt-state cars at 15+ accelerate downhill.');
+      if (verdict === 'fix') verdict = 'fix-cautiously';
+    }
+
+    if (miles >= 200000) {
+      reasons.push('Mileage ' + miles.toLocaleString() + ': mainstream cars at 200K+ are end-of-design-life. Some makes (Toyota, Honda, certain diesels) go 300K+; many do not.');
+      if (verdict === 'fix') verdict = 'fix-cautiously';
+    }
+
+    if (attachment === 'high' && verdict === 'consider-selling') {
+      reasons.push('You said you\'re emotionally attached. The math says sell, but life isn\'t only math. Just go in eyes-open.');
+    }
+    if (attachment === 'low' && verdict === 'fix') {
+      reasons.push('Low attachment + favorable math = repair is rational. But also a fine moment to upgrade if you wanted to.');
+    }
+
+    var summary;
+    if (verdict === 'consider-selling') {
+      summary = 'Math suggests selling as-is or for parts. Get 2-3 trade-in or junk quotes; compare to (vehicle value − repair cost). If repair cost is more than the difference, sell.';
+    } else if (verdict === 'fix-cautiously') {
+      summary = 'Repair is borderline. Worth doing IF nothing else is about to break. Get a comprehensive inspection ($80-150) before authorizing.';
+    } else {
+      summary = 'Math favors repair. Get a written estimate, ask about warranty on parts + labor, and approve.';
+    }
+
+    return { verdict: verdict, summary: summary, reasons: reasons, ratio: ratio, loomingRatio: loomingRatio };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.97: SERVICE LOG — let user record their own maintenance history
+  // Persists in toolData. Date + odo + service + cost + notes.
+  // ─────────────────────────────────────────────────────────
+  // Service log entries shape:
+  // { id: 'log_<timestamp>', date: 'YYYY-MM-DD', odo: 85432, service: 'Oil + filter', cost: 45, notes: 'Synthetic 0W-20, OEM filter' }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 10: KNOWLEDGE QUIZ — 10 questions covering safety, diagnostic, repair
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -2536,7 +2745,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q30', icon: '🔧',
       stem: 'You\'re running a diagnostic in the Lab Simulator. A customer\'s no-start has rapid clicking + bright dash lights. What\'s the highest-scoring first test?',
       choices: ['Replace the starter immediately', 'Multimeter on battery posts (engine off) — costs nothing, splits the diagnosis instantly', 'Tow to dealer', 'Jump start it without testing first'],
-      correct: 1, why: 'Multimeter test is free + diagnostic. <12.0V = battery is the bottleneck. Throwing parts (starter, alternator) before testing is "parts cannon" thinking — and a low score in any graded scenario.' }
+      correct: 1, why: 'Multimeter test is free + diagnostic. <12.0V = battery is the bottleneck. Throwing parts (starter, alternator) before testing is "parts cannon" thinking — and a low score in any graded scenario.' },
+    { id: 'q31', icon: '🚛',
+      stem: 'You break down on I-95 in Maine. A tow truck pulls up uninvited and offers to take you to "their preferred shop." What\'s the right move?',
+      choices: ['Accept — they\'re here', 'Politely decline; call YOUR roadside service (AAA, insurance, or known tow company); choose your own shop. Maine law gives you the right.', 'Pay them in cash to avoid the bill', 'Get out and run'],
+      correct: 1, why: 'Predatory tow operators sometimes work with shops that overcharge. Maine law: you choose your shop. Always call your own roadside provider first.' },
+    { id: 'q32', icon: '❄️',
+      stem: 'A shop tells you "your A/C is low — recharge for $150." What\'s the right question to ask?',
+      choices: ['Can you do it cheaper?', '"Did you find the leak? A/C is a sealed system — if it\'s low, there\'s a leak."', 'Will it last forever?', 'Is the refrigerant green?'],
+      correct: 1, why: 'A/C is sealed. Low refrigerant = leak. Recharging without finding the leak just sends $150 of refrigerant into the air over 6 months — illegal under EPA Section 608.' },
+    { id: 'q33', icon: '🛞',
+      stem: 'You see a tire with the INSIDE edge worn down to the wear bars while the outside still has good tread. What\'s the most likely cause?',
+      choices: ['Over-inflation', 'Toe alignment is OUT — wheels pointing too far in or out — overdue for an alignment', 'Bad tire from manufacturer', 'Cold weather'],
+      correct: 1, why: 'Inside-edge feathered wear = toe alignment off. After replacing the tire (because it\'s ruined), get a 4-wheel alignment immediately or the new tire wears the same way.' },
+    { id: 'q34', icon: '💵',
+      stem: 'Your 12-year-old car (worth $4,000) needs a $2,500 transmission rebuild AND has another $1,500 of looming work. ROI math?',
+      choices: ['Always repair', 'Repair-cost (62%) + looming (38%) = 100% of car value. Math suggests selling as-is or for parts and replacing the vehicle.', 'Always sell', 'Get the transmission rebuilt then sell'],
+      correct: 1, why: '$2500 + $1500 = $4000 on a $4000 car. The 70% threshold rule says consider selling. A pre-purchase inspection on a comparable replacement is a better use of the same money.' },
+    { id: 'q35', icon: '🌀',
+      stem: 'A shop quotes you "your rotors are warped" but you suspect rust pitting from sitting all winter. What\'s the diagnostic difference?',
+      choices: ['Both are the same', 'Real warp shows >0.005" runout on a dial indicator. Rust pitting causes pulse without runout. The fix differs.', 'Warp is more expensive', 'No way to tell'],
+      correct: 1, why: 'Real heat-warp = measurable runout. Rust-pitting = no runout but bumpy surface. Rust-pitted rotors sometimes clear up with aggressive bed-in driving; truly warped rotors don\'t.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -2663,11 +2892,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           { id: 'roadside', icon: '🚨', label: 'Roadside emergency', desc: 'Maine winter trunk kit (16 items) + 9-step breakdown response protocol.' },
           { id: 'usedcar', icon: '🛒', label: 'Buying a used car', desc: '10 red flags + 9-step walkaround. Salt-state pre-purchase inspection.' },
           { id: 'estimate', icon: '💵', label: 'Estimate decoder', desc: 'Read a shop quote. Identify standard, DIY-able, and upsell line items.' },
+          { id: 'scams', icon: '🚩', label: 'Common scams', desc: '12 known shop scams + how to spot them and what to ask. Maine consumer rights.' },
+          { id: 'damage', icon: '🔬', label: 'Damage ID game', desc: '15 visual-pattern cases. Identify part, cause, and severity. Builds tech eye.' },
+          { id: 'roi', icon: '💰', label: 'Repair ROI calculator', desc: 'Should I fix it or sell it? Math-based recommendation from value, repair cost, and looming work.' },
+          { id: 'log', icon: '📓', label: 'Service log', desc: 'Record your own maintenance history. Date + odometer + service + cost + notes. CSV export.' },
           { id: 'ev', icon: '⚡', label: 'EV / Hybrid', desc: 'High-voltage safety, regen braking, cold-weather range, charging — the future of the trade.' },
           { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ essential auto terms. Search and filter by category. So you can read any repair article.' },
           { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
           { id: 'shopbiz', icon: '🏪', label: 'Shop business basics', desc: 'Mobile mechanic startup, insurance, tool trucks, pricing, customer acquisition. For future shop owners.' },
-          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '30 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab simulator.' },
+          { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '35 questions covering safety, diagnostics, repair, EV, used-car, inspection, upsells, business, VIN, lab, scams, damage ID, ROI.' },
           { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
         ];
         var badgeCount = Object.keys(badges).length;
@@ -4771,6 +5004,370 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // SCAMS view — common shop scams + how to push back
+      // ─────────────────────────────────────────
+      function renderScams() {
+        var picked = d.scamPicked || null;
+        var pickedScam = picked ? SCAMS.find(function(s) { return s.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🚩 Common scams'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚩 12 shop scams to recognize'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Most shops are honest. A few aren\'t. Knowing the most common pitches makes you a savvier customer — and you can push back politely.'),
+            h('p', { style: { margin: 0, color: T.dim, fontSize: 11, lineHeight: 1.5 } },
+              h('strong', null, '🛡️ Maine consumer rights: '),
+              'written estimate before work, old parts on request, itemized invoice, can\'t exceed estimate by 10% without re-authorization. Maine AG: ',
+              h('a', { href: 'https://www.maine.gov/ag/consumer', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'maine.gov/ag/consumer'))
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+            SCAMS.map(function(s) {
+              var sel = picked === s.id;
+              return h('button', { key: s.id, 'data-ar-focusable': true,
+                'aria-label': s.name,
+                'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('scamPicked', sel ? null : s.id); awardBadge('scam-aware', 'Scam Aware'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#0f172a' : T.text,
+                  textAlign: 'left',
+                  fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, s.icon),
+                h('span', null, s.name)
+              );
+            })
+          ),
+          pickedScam && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.bad } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.bad } }, pickedScam.icon + ' ' + pickedScam.name),
+            h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
+              h('strong', { style: { color: '#fed7aa' } }, '🎤 The pitch: '),
+              h('em', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedScam.pitch)
+            ),
+            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '✅ The truth: '), pickedScam.truth),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.good } }, '💬 What to ask: '), pickedScam.askFor),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.accentHi } }, '🎯 What to do now: '), pickedScam.doNow)
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // DAMAGE ID view — game where user identifies what they\'re seeing
+      // ─────────────────────────────────────────
+      function renderDamage() {
+        var idx = d.damageIdx || 0;
+        var answers = d.damageAnswers || {};
+        var theCase = DAMAGE_CASES[idx];
+
+        if (!theCase) {
+          var score = 0;
+          var total = 0;
+          DAMAGE_CASES.forEach(function(c) {
+            ['part', 'cause', 'sev'].forEach(function(k) {
+              total++;
+              var key = c.id + '_' + k;
+              if (answers[key] === c[k].correct) score++;
+            });
+          });
+          var pct = Math.round((score / total) * 100);
+          if (pct >= 80) awardBadge('damage-id-ace', 'Damage ID Ace');
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('🔬 Damage ID — complete'),
+            h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + (pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad) } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 18, color: T.accentHi } }, '🔬 Damage ID complete'),
+              h('div', { style: { fontSize: 36, fontWeight: 800, color: pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad, marginBottom: 8 } }, score + ' / ' + total + ' (' + pct + '%)'),
+              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+                pct >= 90 ? '🏆 Visual diagnostic ace — you\'re seeing what techs see.' :
+                pct >= 80 ? '🎓 Strong pattern recognition. A few details to refine.' :
+                pct >= 60 ? '🚧 Good baseline. Re-read the cases to fix the misses.' :
+                '📚 Worth another pass with the original cases for context.'),
+              h('button', { 'data-ar-focusable': true, onClick: function() { updMulti({ damageIdx: 0, damageAnswers: {} }); }, style: btnPrimary() }, '🔄 Restart')
+            ),
+            disclaimerFooter()
+          );
+        }
+
+        var partKey = theCase.id + '_part';
+        var causeKey = theCase.id + '_cause';
+        var sevKey = theCase.id + '_sev';
+        var answeredAll = answers[partKey] != null && answers[causeKey] != null && answers[sevKey] != null;
+
+        function answerFor(key, q, correct) {
+          var picked = answers[key];
+          var submitted = picked != null;
+          return h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 8 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.accentHi } }, q.q),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              q.a.map(function(opt, i) {
+                var isPicked = picked === i;
+                var isCorrect = i === q.correct;
+                var bg, border, color;
+                if (submitted) {
+                  if (isCorrect) { bg = '#064e3b'; border = T.good; color = '#d1fae5'; }
+                  else if (isPicked) { bg = '#7f1d1d'; border = T.bad; color = '#fee2e2'; }
+                  else { bg = T.bg; border = T.border; color = T.muted; }
+                } else if (isPicked) {
+                  bg = T.accent; border = T.accent; color = '#0f172a';
+                } else { bg = T.bg; border = T.border; color = T.text; }
+                return h('button', { key: i, 'data-ar-focusable': true,
+                  'aria-label': opt, disabled: submitted,
+                  onClick: function() { var nv = Object.assign({}, answers); nv[key] = i; upd('damageAnswers', nv); },
+                  style: { padding: 10, borderRadius: 6, background: bg, color: color, border: '1px solid ' + border, cursor: submitted ? 'default' : 'pointer', textAlign: 'left', fontSize: 12, lineHeight: 1.5 } },
+                  String.fromCharCode(65 + i) + '. ' + opt
+                );
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🔬 Damage ID'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 8 } }, 'Case ' + (idx + 1) + ' of ' + DAMAGE_CASES.length),
+            h('h3', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.6 } }, '👁️ What you see: ' + theCase.visual)
+          ),
+          answerFor(partKey, theCase.part),
+          answerFor(causeKey, theCase.cause),
+          answerFor(sevKey, theCase.sev),
+          answeredAll && h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 10 } },
+            h('button', { 'data-ar-focusable': true, onClick: function() { upd('damageIdx', idx + 1); }, style: btnPrimary() },
+              idx + 1 < DAMAGE_CASES.length ? '→ Next case' : '🎉 Finish')
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // ROI CALCULATOR view — keep-or-sell decision tool
+      // ─────────────────────────────────────────
+      function renderROI() {
+        var vehVal = parseInt(d.roiVehVal || 0, 10) || 0;
+        var repCost = parseInt(d.roiRepCost || 0, 10) || 0;
+        var age = parseInt(d.roiAge || 0, 10) || 0;
+        var miles = parseInt(d.roiMiles || 0, 10) || 0;
+        var loomingCost = parseInt(d.roiLooming || 0, 10) || 0;
+        var attachment = d.roiAttach || 'medium';
+        var result = (vehVal > 0 && repCost > 0) ? repairROI({ vehicleValue: vehVal, repairCost: repCost, age: age, miles: miles, loomingCost: loomingCost, attachment: attachment }) : null;
+        var verdictColor = function(v) {
+          if (v === 'fix') return T.good;
+          if (v === 'fix-cautiously') return T.warn;
+          if (v === 'consider-selling') return T.bad;
+          return T.muted;
+        };
+        var verdictLabel = function(v) {
+          if (v === 'fix') return '✅ Math favors REPAIR';
+          if (v === 'fix-cautiously') return '⚠️ Repair, but cautiously';
+          if (v === 'consider-selling') return '🚩 Consider SELLING';
+          return v;
+        };
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('💵 Repair ROI calculator'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '💵 Should I fix it or sell it?'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Rule of thumb: when repair cost exceeds 50% of vehicle value (or 70% with looming work added), the math typically favors selling. Inputs below.'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } },
+              [
+                { id: 'roiVehVal', label: '🚗 Current vehicle value ($)', placeholder: '4000', val: vehVal, type: 'number' },
+                { id: 'roiRepCost', label: '🔧 Repair cost quoted ($)', placeholder: '2500', val: repCost, type: 'number' },
+                { id: 'roiLooming', label: '⏳ Other looming work ($)', placeholder: '0', val: loomingCost, type: 'number' },
+                { id: 'roiAge', label: '📅 Vehicle age (years)', placeholder: '12', val: age, type: 'number' },
+                { id: 'roiMiles', label: '🛣️ Mileage', placeholder: '180000', val: miles, type: 'number' }
+              ].map(function(f) {
+                return h('label', { key: f.id, style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                  h('span', { style: { fontWeight: 700 } }, f.label),
+                  h('input', { type: f.type, 'data-ar-focusable': true,
+                    'aria-label': f.label,
+                    placeholder: f.placeholder,
+                    value: f.val || '',
+                    onChange: function(e) { upd(f.id, e.target.value); },
+                    style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+                );
+              }),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 12, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '❤️ Emotional attachment'),
+                h('select', { 'data-ar-focusable': true,
+                  'aria-label': 'Emotional attachment to vehicle',
+                  value: attachment,
+                  onChange: function(e) { upd('roiAttach', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } },
+                  h('option', { value: 'low' }, 'Low — would happily upgrade'),
+                  h('option', { value: 'medium' }, 'Medium — fine either way'),
+                  h('option', { value: 'high' }, 'High — sentimental value')
+                )
+              )
+            )
+          ),
+          result && h('div', { style: { padding: 16, borderRadius: 10, background: T.card, border: '2px solid ' + verdictColor(result.verdict), marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Recommendation'),
+            h('div', { style: { fontSize: 22, fontWeight: 800, color: verdictColor(result.verdict), marginBottom: 8 } },
+              verdictLabel(result.verdict)),
+            h('p', { style: { margin: '0 0 12px', fontSize: 14, color: T.text, lineHeight: 1.55 } }, result.summary),
+            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, 'Reasoning'),
+            h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+              result.reasons.map(function(r, i) { return h('li', { key: i }, r); })
+            )
+          ),
+          !result && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
+            'Enter vehicle value + repair cost to see the recommendation.'),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, '🎯 How to find vehicle value: '),
+            h('a', { href: 'https://www.kbb.com/whats-my-car-worth/', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'Kelley Blue Book'),
+            ' or ',
+            h('a', { href: 'https://www.edmunds.com/appraisal/', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'Edmunds appraisal'),
+            '. Use the "Private Party Sale" or "Trade-in" value, NOT the dealer-retail price (which inflates your input).'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // SERVICE LOG view — user records their own maintenance history
+      // ─────────────────────────────────────────
+      function renderLog() {
+        var entries = d.serviceLog || [];
+        var draft = d.logDraft || { date: '', odo: '', service: '', cost: '', notes: '' };
+
+        function updateDraft(key, val) {
+          var newDraft = Object.assign({}, draft); newDraft[key] = val;
+          upd('logDraft', newDraft);
+        }
+        function saveEntry() {
+          if (!draft.date || !draft.service) {
+            arAnnounce('Please enter at least date and service.');
+            return;
+          }
+          var entry = {
+            id: 'log_' + Date.now(),
+            date: draft.date,
+            odo: parseInt(draft.odo, 10) || 0,
+            service: draft.service,
+            cost: parseFloat(draft.cost) || 0,
+            notes: draft.notes || ''
+          };
+          var newEntries = [entry].concat(entries);
+          updMulti({ serviceLog: newEntries, logDraft: { date: '', odo: '', service: '', cost: '', notes: '' } });
+          arAnnounce('Service entry saved.');
+          if (newEntries.length === 1) awardBadge('first-log', 'First Log Entry');
+          if (newEntries.length === 10) awardBadge('log-keeper', 'Log Keeper (10 entries)');
+        }
+        function deleteEntry(id) {
+          var newEntries = entries.filter(function(e) { return e.id !== id; });
+          upd('serviceLog', newEntries);
+          arAnnounce('Entry removed.');
+        }
+        function exportCSV() {
+          var lines = ['date,odometer,service,cost,notes'];
+          entries.forEach(function(e) {
+            lines.push([e.date, e.odo, '"' + (e.service || '').replace(/"/g, '""') + '"', e.cost, '"' + (e.notes || '').replace(/"/g, '""') + '"'].join(','));
+          });
+          var csv = lines.join('\n');
+          if (typeof navigator !== 'undefined' && navigator.clipboard) {
+            navigator.clipboard.writeText(csv);
+            addToast('CSV copied to clipboard');
+          } else {
+            console.log(csv);
+            addToast('CSV in console (clipboard unavailable)');
+          }
+        }
+        var totalSpent = entries.reduce(function(acc, e) { return acc + (e.cost || 0); }, 0);
+        var quickServices = ['Oil + filter change', 'Tire rotation', 'Brake pads (front)', 'Brake fluid flush', 'Coolant flush', 'Air filter', 'Cabin air filter', 'Wiper blades', 'Battery replacement', 'Spark plugs', 'Maine state inspection', 'Tire replacement (set)', 'Alignment'];
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📓 Service log'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📓 Your maintenance history'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Record every service you do (DIY or shop) so future you (or the next buyer) has documentation. Saved automatically. ',
+              h('strong', { style: { color: T.accentHi } }, 'Total tracked: '), entries.length + ' entries · $' + totalSpent.toFixed(2))
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, '➕ Add service'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 8 } },
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '📅 Date'),
+                h('input', { type: 'date', 'data-ar-focusable': true, 'aria-label': 'Service date',
+                  value: draft.date,
+                  onChange: function(e) { updateDraft('date', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '🛣️ Odometer'),
+                h('input', { type: 'number', 'data-ar-focusable': true, 'aria-label': 'Odometer mileage',
+                  placeholder: '85432',
+                  value: draft.odo,
+                  onChange: function(e) { updateDraft('odo', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+              ),
+              h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text } },
+                h('span', { style: { fontWeight: 700 } }, '💵 Cost'),
+                h('input', { type: 'number', step: '0.01', 'data-ar-focusable': true, 'aria-label': 'Cost in dollars',
+                  placeholder: '45.00',
+                  value: draft.cost,
+                  onChange: function(e) { updateDraft('cost', e.target.value); },
+                  style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+              )
+            ),
+            h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
+              h('span', { style: { fontWeight: 700 } }, '🔧 Service'),
+              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': 'Service description', list: 'log-quick-services',
+                placeholder: 'Oil + filter change',
+                value: draft.service,
+                onChange: function(e) { updateDraft('service', e.target.value); },
+                style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } }),
+              h('datalist', { id: 'log-quick-services' },
+                quickServices.map(function(s, i) { return h('option', { key: i, value: s }); }))
+            ),
+            h('label', { style: { display: 'flex', flexDirection: 'column', gap: 4, fontSize: 11, color: T.text, marginBottom: 8 } },
+              h('span', { style: { fontWeight: 700 } }, '📝 Notes (oil grade, parts brand, shop name, etc.)'),
+              h('input', { type: 'text', 'data-ar-focusable': true, 'aria-label': 'Service notes',
+                placeholder: 'Synthetic 0W-20, OEM filter, Mike\'s Auto on Main St',
+                value: draft.notes,
+                onChange: function(e) { updateDraft('notes', e.target.value); },
+                style: { padding: 8, borderRadius: 6, background: T.bg, color: T.text, border: '1px solid ' + T.border, fontSize: 13 } })
+            ),
+            h('button', { 'data-ar-focusable': true,
+              'aria-label': 'Save service log entry',
+              onClick: saveEntry,
+              style: btnPrimary() }, '💾 Save entry')
+          ),
+          entries.length > 0 && h('div', null,
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 } },
+              h('h4', { style: { margin: 0, fontSize: 14, color: T.accentHi } }, '📋 Entries (newest first)'),
+              h('button', { 'data-ar-focusable': true,
+                'aria-label': 'Export log as CSV', onClick: exportCSV, style: btnGhost() }, '📤 Export CSV')
+            ),
+            h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              entries.map(function(e) {
+                return h('div', { key: e.id, role: 'listitem',
+                  style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' } },
+                    h('strong', { style: { fontSize: 13, color: T.accentHi } }, e.service),
+                    h('span', { style: { fontSize: 11, color: T.muted } }, '📅 ' + e.date),
+                    h('span', { style: { fontSize: 11, color: T.muted } }, '🛣️ ' + (e.odo || '—').toLocaleString()),
+                    h('span', { style: { fontSize: 11, color: T.good, fontWeight: 700 } }, '💵 $' + e.cost.toFixed(2)),
+                    h('button', { 'data-ar-focusable': true,
+                      'aria-label': 'Delete this entry',
+                      onClick: function() { deleteEntry(e.id); },
+                      style: Object.assign({}, btnGhost(), { marginLeft: 'auto', color: T.bad, fontSize: 10 }) }, '🗑️ Delete')
+                  ),
+                  e.notes && h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 2 } }, e.notes)
+                );
+              })
+            )
+          ),
+          entries.length === 0 && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13, marginTop: 14 } },
+            'No entries yet. Add your first one above.'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -4783,6 +5380,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'inspection': return renderInspection();
         case 'usedcar':    return renderUsedCar();
         case 'estimate':   return renderEstimate();
+        case 'scams':      return renderScams();
+        case 'damage':     return renderDamage();
+        case 'roi':        return renderROI();
+        case 'log':        return renderLog();
         case 'ev':         return renderEv();
         case 'glossary':   return renderGlossary();
         case 'cold':       return renderColdPrep();
