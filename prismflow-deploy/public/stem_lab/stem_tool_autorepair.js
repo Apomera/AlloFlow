@@ -575,6 +575,150 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         'Some V6 engines have one belt for the front cam and another for the rear bank — different procedure. RTFM.'
       ],
       verdict: 'Shop work for first-timers. Experienced DIY-ers with the manual + cam locking tools can do it. The price gap is real — $700–1500 at a shop is not an overcharge for what it takes.'
+    },
+    {
+      id: 'battery', name: 'Battery replacement',
+      icon: '🔋', difficulty: 1, time: '20–40 min',
+      cost: { diy: '$120–250', shop: '$200–350' },
+      universal: 'Easy and saves the markup. The battery itself costs the same; the shop labor is ~$30–80 you keep.',
+      tools: ['socket-set', 'wrench-set', 'wire-brush', 'multimeter', 'gloves', 'safety-glasses'],
+      consumables: 'New battery (correct group size + CCA — see owner\'s manual or pull the old battery and read its label). Optional: anti-corrosion terminal spray ($5).',
+      safety: ['battery-disconnect-required', 'eye-protection-required', 'acid-burn-risk', 'spark-near-fuel-risk'],
+      steps: [
+        { n: 1, do: 'Verify the battery is the problem first. Multimeter on terminals: rested battery should read 12.4–12.8V. Below 12.0V = needs charge or replacement. Most parts stores load-test batteries free.' },
+        { n: 2, do: 'Note radio code / saved settings. Some older cars need a radio anti-theft code re-entered after disconnection. Check the owner\'s manual now.' },
+        { n: 3, do: 'Optional but smart: plug a 12V memory-saver into the OBD-II port or the cigarette lighter. Keeps the radio code and the ECU short-term memory alive while the battery is out.' },
+        { n: 4, do: 'Loosen the negative (-) terminal first with the correct wrench (usually 10mm). Slide the cable off and tuck it AWAY from the battery so it can\'t spring back and touch the post.' },
+        { n: 5, do: 'Loosen the positive (+) terminal. Same — tuck cable away.' },
+        { n: 6, do: 'Remove the battery hold-down (a clamp at the base or a strap across the top). Note hardware orientation.' },
+        { n: 7, do: 'Lift the battery out. They\'re HEAVY (30–50 lb). Use both hands and the molded handle. Keep upright — never tilt sideways (acid spill).' },
+        { n: 8, do: 'Wire-brush both cable ends + the battery tray. Salt-Maine corrosion on a tray can be aggressive. Baking-soda water neutralizes acid; rinse + dry.' },
+        { n: 9, do: 'Place new battery in the same orientation (positive post on the same side). Reinstall hold-down.' },
+        { n: 10, do: 'Connect POSITIVE (+) terminal first. Snug firm but don\'t crank — overtightening cracks the post.' },
+        { n: 11, do: 'Connect NEGATIVE (-) terminal last.' },
+        { n: 12, do: 'Optional: anti-corrosion spray on terminals.' },
+        { n: 13, do: 'Start the engine. Verify charging voltage at battery terminals: 13.8–14.7V running = alternator healthy. Re-enter radio code if needed.' },
+        { n: 14, do: 'Bring the OLD battery to a parts store. Most places give you a $10–25 core refund — they recycle the lead.' }
+      ],
+      gotchas: [
+        'Wrong group size won\'t fit the tray or cables won\'t reach the posts. CHECK the owner\'s manual or read the OEM battery label.',
+        'CCA (cold cranking amps) matters in Maine. A 500 CCA battery in Maine is borderline; aim for 700+ CCA on anything bigger than a small car.',
+        'Top-post vs side-post: Most modern cars are top-post. Some older GMs are side-post. Different cable terminals. Match what came out.',
+        'Acid burns: a leaking or cracked battery has acid you don\'t want on skin or clothes. Gloves + glasses non-negotiable.',
+        'Order matters: NEGATIVE OFF first, POSITIVE OFF second. POSITIVE ON first, NEGATIVE ON last. Prevents wrench-shorts.'
+      ],
+      verdict: 'DIY-friendly. The savings beat the time. Maine: in winter check the battery in November, not in February when you\'re stranded.'
+    },
+    {
+      id: 'spark-plugs', name: 'Spark plug replacement',
+      icon: '⚡', difficulty: 2, time: '30 min – 2 hours',
+      cost: { diy: '$20–80', shop: '$80–250' },
+      universal: 'Common interval at ~60K–100K miles for iridium plugs. Engine-layout dependent — inline 4 is easy; transverse V6 with rear-bank plugs under intake is hard.',
+      tools: ['socket-set', 'spark-plug-socket', 'torque-wrench', 'gap-gauge', 'gloves'],
+      consumables: 'Correct spark plugs (look up the OEM part number — wrong plug = misfires). Anti-seize on threads (sparingly — too much changes torque readings). Dielectric grease on coil boot.',
+      safety: ['engine-cool-required', 'plug-thread-fragile', 'no-cross-thread'],
+      steps: [
+        { n: 1, do: 'Engine MUST be cool. Hot aluminum heads + steel plug threads = stripped threads. Cold or warm only.' },
+        { n: 2, do: 'Locate the coil packs / plug wires. Modern cars: one coil per plug, on top of each plug. Older cars: a distributor with wires running to each plug.' },
+        { n: 3, do: 'Disconnect ONE coil (squeeze the clip + lift). Photograph wire routing if you have plug wires.' },
+        { n: 4, do: 'Compressed air or a shop vac to clean debris OUT of the plug well — anything sitting there falls into the cylinder when you remove the plug.' },
+        { n: 5, do: 'Use the spark-plug socket (rubber-lined) on a long extension. Loosen the plug. Lift it out — note the condition (color, gap, electrode wear) for each cylinder. Different colors across cylinders = clue to a weak cylinder.' },
+        { n: 6, do: 'Verify gap on the new plug with a gap gauge. Iridium plugs come pre-gapped — DO NOT bend the iridium tip; you\'ll break it. Just verify.' },
+        { n: 7, do: 'Light dab of anti-seize on the THREADS only (not the electrode tip). Some plug brands say no anti-seize — read the package.' },
+        { n: 8, do: 'Hand-thread the plug into the head FIRST — never cross-thread. If it doesn\'t turn freely with your fingers, back out and try again.' },
+        { n: 9, do: 'After hand-tight, switch to torque wrench. Torque to spec (typically 13–25 ft-lb depending on plug type — RTFM).' },
+        { n: 10, do: 'Dab dielectric grease inside the coil boot. Reinstall the coil. Click it home. Reconnect electrical clip.' },
+        { n: 11, do: 'Repeat for all cylinders (4 / 6 / 8). Do them ONE AT A TIME so wire / coil order can\'t get mixed up.' },
+        { n: 12, do: 'Start engine. Idle should be smooth. Listen for misfire. Drive 5 minutes; if any misfire codes, back off torque on the suspect plug or recheck gap.' }
+      ],
+      gotchas: [
+        'Cross-threading aluminum heads = head pulled for thread repair. Hand-thread always.',
+        'Wrong plug heat range = pre-ignition or fouling. OEM number matters; "looks the same" isn\'t.',
+        'Dropping the plug = chipped electrode = misfire. Drop it, replace it.',
+        'On transverse V6s, the back bank plugs may require removing the upper intake. That\'s a 3-hour job, not 30 minutes. Check accessibility before committing.',
+        'Don\'t reuse old coil boots if torn — they leak voltage and cause misfires.'
+      ],
+      verdict: 'DIY on inline-4 / pickup-truck V8s. Shop or experienced-DIY for transverse V6 / anything with intake-removal access.'
+    },
+    {
+      id: 'wipers', name: 'Wiper blade replacement',
+      icon: '🌧️', difficulty: 1, time: '5–10 min',
+      cost: { diy: '$15–40', shop: '$40–80' },
+      universal: '5-minute job. Maine: do this twice a year (spring + fall). Salt-spray winters destroy blades fast.',
+      tools: ['none-significant'],
+      consumables: 'Pair of wiper blades (correct lengths — driver and passenger may differ). Optional: rear blade.',
+      safety: ['windshield-spring-back-risk'],
+      steps: [
+        { n: 1, do: 'Look up the correct lengths for your vehicle (parts-store kiosks have catalogs by year/make/model).' },
+        { n: 2, do: 'Lift the wiper arm AWAY from the windshield. Most cars: arm clicks into a "service" position pointing straight up.' },
+        { n: 3, do: 'Find the release on the blade. Most modern: a small tab or button on the underside where blade meets arm. Press tab + slide blade DOWN the arm (or hinge it depending on attachment).' },
+        { n: 4, do: 'Remove old blade. Note the attachment style (hook, pinch-tab, side-pin, top-lock).' },
+        { n: 5, do: 'Install new blade in same orientation. Listen for the click — that\'s the lock engaging.' },
+        { n: 6, do: 'Lower arm gently to windshield. NEVER let it spring back — a wiper arm slamming the windshield can crack the glass.' },
+        { n: 7, do: 'Mist windshield + run wipers. Listen for chatter. If new blades chatter, the arm angle may be slightly bent — adjust gently.' }
+      ],
+      gotchas: [
+        'Wrong length: too long = blades hit each other or arm strikes the body. Too short = streaks.',
+        'Wrong attachment style: bring the OLD blade with you to the parts store to match.',
+        'Arm spring-back: hold the arm with your spare hand whenever the blade is off. A bare arm hits hard enough to crack windshields.',
+        'Maine winter: full-frame "winter blades" + a windshield-fluid rated for -30°F is the difference between seeing and not seeing on slush days.'
+      ],
+      verdict: 'Fully DIY. If anything, do it BEFORE you need to see in a snowstorm.'
+    },
+    {
+      id: 'headlight-bulb', name: 'Headlight bulb replacement',
+      icon: '💡', difficulty: 1, time: '10–30 min',
+      cost: { diy: '$15–60', shop: '$50–150' },
+      universal: 'Easy on most cars; some require bumper-cover removal which pushes it to a shop.',
+      tools: ['screwdriver-or-clip-release', 'gloves'],
+      consumables: 'Replacement bulb — match the type (H11, 9006, H7, etc.) on the old bulb. Pair-replace: old bulb fading is the partner\'s soon-future.',
+      safety: ['bulb-glass-skin-oils-burn-out', 'engine-cool-cooler-better'],
+      steps: [
+        { n: 1, do: 'Open the hood. Locate the back of the headlight assembly. The bulb is in a connector + rubber boot or twist-lock.' },
+        { n: 2, do: 'Disconnect the electrical connector. Either a slide-back tab or a squeeze-and-pull.' },
+        { n: 3, do: 'Remove the rubber boot if present. Then twist-lock the bulb 1/4 turn counterclockwise OR release the wire clip holding the bulb in.' },
+        { n: 4, do: 'Pull old bulb straight back. Set aside.' },
+        { n: 5, do: 'CRITICAL: handle the new bulb by its plastic base, NEVER touch the glass. Skin oils create hot spots that burn out the bulb in days. If you do touch the glass, wipe with rubbing alcohol before installing.' },
+        { n: 6, do: 'Insert new bulb. Twist-lock or wire-clip it home in the SAME orientation as the old bulb.' },
+        { n: 7, do: 'Replace rubber boot. Reconnect electrical connector — listen for the click.' },
+        { n: 8, do: 'Test before closing hood. Turn headlights on / high beam / low beam. If the new bulb doesn\'t light, recheck connector.' }
+      ],
+      gotchas: [
+        'Bumper-cover access: some cars (newer Honda Odyssey, some Audis) require removing the bumper cover to reach the bulb. That pushes labor from 5 minutes to 1 hour. Look up your specific vehicle BEFORE buying the bulb.',
+        'Skin oils on halogen glass = early failure. Cotton glove or paper towel between fingers and glass.',
+        'Wrong bulb type: H11 ≠ 9005. The connector is keyed but mismatch causes fitment + heat issues.',
+        'Pair replace: bulbs from the same lot fail close together. Replace both even if only one is out — saves a second 10-minute job in 2 weeks.',
+        'LED conversion bulbs sold for halogen housings often produce glare to oncoming traffic + may not be street-legal. DOT-compliant options exist; Maine inspection station can fail noncompliant LEDs.'
+      ],
+      verdict: 'Fully DIY when accessible. Shop when bumper-cover removal is required.'
+    },
+    {
+      id: 'coolant-flush', name: 'Coolant flush + refill',
+      icon: '💧', difficulty: 2, time: '1–2 hours',
+      cost: { diy: '$30–80', shop: '$100–250' },
+      universal: 'Manufacturer interval is 30K–100K miles depending on coolant type. Old coolant is acidic; it eats water pumps and heater cores.',
+      tools: ['socket-set', 'wrench-set', 'oil-drain-pan', 'jack', 'jack-stands', 'funnel', 'shop-rags', 'gloves', 'safety-glasses'],
+      consumables: 'Correct coolant for your vehicle (color is NOT a reliable spec — read the owner\'s manual; HOAT, OAT, IAT are different chemistries). Pre-mixed 50/50 is foolproof.',
+      safety: ['engine-cool-required', 'antifreeze-toxic-pets', 'cap-pressure-on-hot', 'jack-stands-required'],
+      steps: [
+        { n: 1, do: 'Engine MUST be COLD. Coolant under pressure at 200°F+ scalds. If you\'ve driven recently, wait 2 hours.' },
+        { n: 2, do: 'Lift the front of the vehicle on jack stands. Set drain pan under the radiator drain ("petcock") — usually a plastic plug at the lower-corner of the radiator.' },
+        { n: 3, do: 'Remove the radiator cap on top to break the vacuum. NOW open the petcock SLOWLY. Drain takes 5–15 minutes.' },
+        { n: 4, do: 'Check engine block drain plugs (if accessible) — some V6/V8s have block drains for a more complete flush.' },
+        { n: 5, do: 'Close petcock. Refill the radiator with distilled water. Open petcock to drain water. This rinses old coolant residue. Repeat until water runs clear.' },
+        { n: 6, do: 'Close petcock. Refill with the correct coolant. Many systems specify pre-mixed 50/50; some take concentrate diluted with distilled water.' },
+        { n: 7, do: 'Bleed the cooling system. Procedure varies by vehicle: some have a bleeder valve; some require running with the heater on max + topping up as air burps out. RTFM — incorrect bleed = air pocket = overheating.' },
+        { n: 8, do: 'Run engine to operating temp with the heater on. Watch the temp gauge. After cool-down, top up the reservoir.' },
+        { n: 9, do: 'Recycle old coolant at a hazardous-waste day or auto shop with a coolant-recycling tank. NEVER pour it on the ground — ethylene glycol is toxic and sweet (kills pets).' }
+      ],
+      gotchas: [
+        'Wrong coolant chemistry: HOAT mixed with IAT gels into a sludge that blocks the radiator. Match the OEM spec.',
+        'Air pocket from incomplete bleed = the heater blows cold + the engine overheats but the temp gauge reads normal (sensor is exposed to the air pocket, not coolant). Verify heat at vents AND that you can fully top up after cool.',
+        'Maine: salt-rusted bolts on a steel petcock can break off in the radiator. Soak with PB Blaster the night before.',
+        'Pet warning: if you spill, clean up THOROUGHLY. Animals will lick antifreeze and die. A sweet-smelling puddle on a Maine driveway is lethal.',
+        'A "small flush" with just the radiator only changes about 1/3 of system coolant; the rest stays in the engine block. Manufacturer intervals assume a full flush procedure.'
+      ],
+      verdict: 'DIY for a basic radiator-only flush. Shop for a full machine-flush ($100–200) if you want every drop replaced.'
     }
   ];
 
@@ -844,6 +988,177 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   };
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 9.5: MAINE STATE INSPECTION — annual sticker walkthrough
+  // Maine requires annual safety inspection ($12.50 fee). Failed sticker =
+  // 60 days to repair + recertify or stop driving. This module is the
+  // pre-inspection self-walk: what they look at, what fails, what you can DIY.
+  // ─────────────────────────────────────────────────────────
+  var INSPECTION_ITEMS = [
+    { id: 'brakes', icon: '🛑', area: 'Brakes',
+      whatTheyCheck: 'Pad thickness (minimum ~3/32" / 2.4mm), rotor thickness vs minimum spec, brake-line corrosion, parking brake function, hydraulic leaks, ABS warning light.',
+      commonFails: 'Pads worn below minimum. Rotor below minimum thickness. Rust-perforated brake line. Parking brake won\'t hold the vehicle on a slope. ABS light on.',
+      diy: 'Pads + rotors are doable DIY ($80–150 per axle parts).',
+      shop: 'Brake-line replacement ($150–500+). Rusted bleeders snap during a DIY brake job and force shop completion.',
+      tip: 'Stick your finger through the wheel onto the rotor. A flat-topped rotor is fine; a deep ridge at the outer edge means rotors are at the wear limit.' },
+    { id: 'lights', icon: '💡', area: 'Lights + signals',
+      whatTheyCheck: 'Headlights low + high, taillights, brake lights, turn signals (front, rear, side markers if equipped), license plate light, hazard lights, dash warning lights cleared (no stuck CEL or ABS light during inspection).',
+      commonFails: 'Burned-out bulb (most common). Lens cloudy enough to fail beam pattern. Aftermarket LED conversion that produces glare. Stuck CEL.',
+      diy: 'Bulb replacement is 5–30 minutes. Lens-restoration kits ($15) clear up cloudy headlights.',
+      shop: 'Wiring shorts. Multi-bulb failure pointing to a body-control module issue.',
+      tip: 'Walk around the car the night before. Have someone press the brake pedal while you check rear lights. Cycle turn signals, hazards, reverse (someone in seat). 5 minutes saves a re-inspection trip.' },
+    { id: 'tires', icon: '🛞', area: 'Tires',
+      whatTheyCheck: 'Tread depth (minimum 2/32" — penny test, Lincoln\'s head visible = fail). Sidewall cracks. Bulges. Plug count (some stations limit to 1–2 plugs). Mismatched sizes across an axle. Donut spare on a drive axle.',
+      commonFails: 'Inside-edge wear (alignment was overdue). Cracked sidewall from age. Bulges from a curb hit.',
+      diy: 'Pre-test with a penny: insert head-first. If you see all of Lincoln\'s head, replace.',
+      shop: 'New tires must be installed at a shop unless you have your own machine + balancer.',
+      tip: 'Rotate every other oil change. Inspect inside edges — they wear first when alignment is off and you can\'t see them without crouching.' },
+    { id: 'frame-body', icon: '🏗️', area: 'Frame + structure',
+      whatTheyCheck: 'Frame perforation (rust holes you can put a screwdriver through). Cab mount rot. Subframe perforation. Body mounting integrity. Rocker panels structural to inspection in some districts.',
+      commonFails: 'PERFORATED FRAME = unsafe-vehicle fail. This is THE Maine fail item. Cabs separating from frames on old trucks.',
+      diy: 'Surface rust is fine. Anything you can poke a screwdriver through is structural. NO DIY weld-plate fix is inspection-acceptable.',
+      shop: 'Frame welding by a certified shop is required for inspection. Some frame damage is unrepairable — vehicle is totaled.',
+      tip: 'Crawl under in spring after salt season. Look for scaling that flakes off in big chunks vs. healthy surface rust. If in doubt, ask the inspection station to look BEFORE you commit (some will pre-check for free).' },
+    { id: 'exhaust', icon: '💨', area: 'Exhaust',
+      whatTheyCheck: 'Holes anywhere in exhaust upstream of the muffler (a hole upstream of the cat is an emissions fail in a CAA-area too). Loose hangers. Excessively loud. Modifications that delete cat / mufflers.',
+      commonFails: 'Rusted-out flex pipe (Maine classic). Rotted muffler. Rusted-off hanger letting the system drag.',
+      diy: 'Hanger replacement ($8 + 30 min). Clamp-and-sleeve patch on a small hole ($10) is a temporary fix.',
+      shop: 'Welded exhaust repair, full system replacement ($200–800).',
+      tip: 'Listen for the unmistakable "louder than it should be" rumble. If neighbors notice your car is suddenly loud, you have a hole.' },
+    { id: 'wipers-glass', icon: '🌧️', area: 'Wipers + glass',
+      whatTheyCheck: 'Wipers must clear effectively (no chatter / streaks / torn rubber). Washers spray. Windshield: cracks in driver\'s line of sight, star cracks, multiple chips. Other glass: structural integrity.',
+      commonFails: 'Worn wipers. Empty washer fluid. Crack across the windshield in driver\'s view.',
+      diy: 'Wipers $15–30, 5 min. Washer fluid $4. A windshield chip can be repaired for $50–80 BEFORE it cracks; once cracked, replacement.',
+      shop: 'Windshield replacement ($300–800; insurance often covers with $0 deductible).',
+      tip: 'Maine: get a -30°F rated washer fluid in November. Standard fluid freezes and shatters the reservoir.' },
+    { id: 'horn-mirrors', icon: '📯', area: 'Horn, mirrors, seatbelts',
+      whatTheyCheck: 'Horn audible. Both side mirrors plus interior present. All seatbelts function (auto-retract, latch, no fraying). Airbag light off (none deployed undeployed status).',
+      commonFails: 'Horn dead (fuse or contact). Seatbelt won\'t retract. Side mirror missing post-collision.',
+      diy: 'Fuse replacement is a 5-second job ($1 fuse). Seatbelt cleaning sometimes restores retraction.',
+      shop: 'Airbag system fault. Seatbelt buckle replacement.',
+      tip: 'Honk the horn before you go. Try every seatbelt — buckle and retract. Surprise fails are expensive.' },
+    { id: 'suspension-steering', icon: '🚗', area: 'Suspension + steering',
+      whatTheyCheck: 'Loose tie rod ends, ball joints, sway-bar links. Dead struts (bouncy ride). Power-steering fluid leaks. Steering wheel play (excessive freeplay).',
+      commonFails: 'Worn ball joints (clunk over bumps). Tie rod end with play. Bent strut.',
+      diy: 'Sway-bar links $15–40 + 30 min. Tie rod end $30–80 + 1 hour but requires re-alignment after.',
+      shop: 'Ball joints, struts, control arms, steering rack. After ANY suspension work: 4-wheel alignment ($80–150).',
+      tip: 'Bounce each corner of the car hard. Should rebound once and stop. Multiple bounces = dead strut on that corner.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.6: USED CAR PRE-PURCHASE INSPECTION — Maine salt-state edition
+  // The 30-minute walkaround a Maine teen should learn before buying their
+  // first car. Salt-state cars hide problems in places New Mexico cars don\'t.
+  // ─────────────────────────────────────────────────────────
+  var USED_CAR_CHECK = {
+    intro: 'In Maine, the cheap-on-paper used car often has $3,000–$8,000 of hidden rust and deferred maintenance. A 30-minute pre-purchase inspection catches 80% of it. Bring this checklist to the seller.',
+    redFlags: [
+      { id: 'frame-rust', area: 'Underbody', flag: 'Perforated frame rails',
+        what: 'Crawl under (or have the seller jack it up). Look for HOLES you can put a screwdriver through, not just surface rust.',
+        ifFound: 'WALK AWAY unless seller drops the price by what a frame replacement / total-loss buyout would cost. This is the #1 Maine deal-killer.' },
+      { id: 'rocker', area: 'Body', flag: 'Bondo or fiberglass over rocker panels',
+        what: 'Magnet test the rockers (lower edge of doors). Magnet should stick to steel. If it slides off or sticks weakly = filler over rust.',
+        ifFound: 'Body work is cosmetic, but a rotted rocker can be structural. Get an estimate before buying. If the seller hid it, walk.' },
+      { id: 'oil-leaks', area: 'Engine', flag: 'Wet shine on oil pan, valve cover, transmission',
+        what: 'Look at the engine and trans from above. Streaks of dark oil = leak. White-coolant residue around hose clamps = small coolant leak.',
+        ifFound: 'Small leaks are negotiable. Heavy leaks ($200–800 to fix) should be priced in.' },
+      { id: 'milky-oil', area: 'Engine', flag: 'Milky oil on dipstick',
+        what: 'Pull the dipstick. Healthy = amber to brown. Milky / chocolate-milk = head gasket failure. Check oil cap underside for the same residue.',
+        ifFound: 'WALK AWAY. Head gasket on most cars is $1,500–$3,500. Often turns into a much bigger job.' },
+      { id: 'trans-fluid', area: 'Trans', flag: 'Burnt or dark transmission fluid',
+        what: 'If the car has a trans dipstick, pull it. Healthy = bright cherry red. Dark + burnt-smell = trans is going.',
+        ifFound: 'Trans rebuild = $2,500–5,000. Negotiate steeply or walk.' },
+      { id: 'no-cold-start', area: 'Test', flag: 'Seller already has the engine warmed up',
+        what: 'A cold-start is a diagnostic moment. Bad starter, dead-cylinder misfire, valve-train tick — all louder cold. A warm engine HIDES problems.',
+        ifFound: 'Insist on starting the car COLD. If they refuse, walk.' },
+      { id: 'modifications', area: 'Mods', flag: 'Aftermarket exhaust, suspension, ECU tune',
+        what: 'Mods can be fun but: they may void warranty, fail Maine inspection (loud exhaust, glare LEDs), and signal hard driving.',
+        ifFound: 'Investigate why each mod is there. A "race tune" on a daily driver is a yellow flag for engine wear.' },
+      { id: 'no-records', area: 'History', flag: 'No service records + seller "doesn\'t remember"',
+        what: 'Owner\'s manual, oil-change stickers in the corner of the windshield, receipts in the glove box. Lots of records = car was cared for.',
+        ifFound: 'Run a CarFax + check the title. No-records cars often have something hidden.' },
+      { id: 'salvage', area: 'Title', flag: 'Salvage / rebuilt title',
+        what: 'CarFax / VIN check shows accident + salvage rebuild.',
+        ifFound: 'Salvage cars are worth ~50–60% of clean-title comps. The price should reflect that. Insurance is harder.' },
+      { id: 'open-recall', area: 'Safety', flag: 'Open safety recall not addressed',
+        what: 'Plug the VIN into nhtsa.gov/recalls. Some recalls are major (Takata airbags).',
+        ifFound: 'Recalls are FREE to repair at any dealer. Just factor in the time. Not a deal-killer but a leverage point.' }
+    ],
+    walkaround: [
+      { step: 1, do: 'CarFax / NHTSA recall check via VIN BEFORE you drive to look at it. Free at nhtsa.gov/recalls; CarFax is paid but worth it.' },
+      { step: 2, do: 'Cold start: engine NOT warmed up. Listen at startup — knocks, ticks, rough idle, smoke from exhaust on first start.' },
+      { step: 3, do: 'Walk around the body. Magnet test rocker panels and lower fenders. Look at panel gaps for prior collision repair.' },
+      { step: 4, do: 'Open hood. Look for wet leaks. Pull oil dipstick (color + smell). Check coolant in reservoir (clear color, no oil floating). Pull trans dipstick if present.' },
+      { step: 5, do: 'Crawl under (or have it jacked up). Check frame for perforation. Look at brake lines + fuel lines for rust scaling. Check oil pan + trans pan for active drips.' },
+      { step: 6, do: 'Inside the car: every electrical accessory — power windows, locks, A/C cold + heat hot, all 4 turn signals from outside, headlights low + high, brake lights (someone presses pedal).' },
+      { step: 7, do: 'Test drive: 30 minutes minimum. Hard acceleration to highway speed (listen for misfire). Hard braking (listen + feel for pulsing). Sharp turns each direction (wheel-bearing hum). Bumps (suspension clunks).' },
+      { step: 8, do: 'After driving: park, leave running. Go look at exhaust pipe for smoke color. Walk around for new fluid drips.' },
+      { step: 9, do: 'Pre-purchase inspection (PPI): for $80–150 at an independent shop, a tech checks the things you can\'t see. ALWAYS DO THIS for any car over $5,000. Sellers who refuse a PPI are hiding something.' }
+    ]
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 9.7: EV / HYBRID MODULE — high-voltage safety, regen, cold-weather
+  // What a tech transitioning to EVs needs to know. Maine: cold drops range
+  // 30%+; charging infrastructure is sparse but growing. ASE L3 covers this.
+  // ─────────────────────────────────────────────────────────
+  var EV_OVERVIEW = {
+    bigPicture: 'EV + hybrid sales were ~10% of Maine new-car sales in 2024 and rising. Maine\'s climate keeps full BEV adoption slower than coastal warm-state markets — but every dealer service department now sees EVs/hybrids weekly. Techs who can work on them are scarce.',
+    aseCert: 'ASE Light Duty Hybrid/Electric Vehicle Specialist (L3) is the industry credential. Two years experience + L1 (Advanced Engine Performance) is a prerequisite. Test fee ~$70.',
+    tooling: 'EV-specific tools: Class 0 insulated gloves ($60–150, retest every 6 months), high-voltage CAT III/IV multimeter ($150–400), insulated tool set ($300–800), HV personal-protective equipment.',
+    salaryDelta: 'EV-trained techs earn $5–15/hr above general-tech rates. Tesla-certified, hybrid-specialist, and EV-fleet shops pay top of market in Maine.',
+    where: 'Maine EV training: Cumberland County RSU, NMCC, CMCC have begun adding EV modules. Tesla Service Tech program (in-house). Manufacturer-specific training (Ford Pro, GM Service, Hyundai/Kia EV, Toyota Prius/Camry hybrid).'
+  };
+  var EV_SAFETY = [
+    { id: 'orange-cables', icon: '🟠', name: 'Orange cables = HIGH VOLTAGE',
+      rule: 'Any orange-shielded cable under the hood, under the vehicle, or in the trunk = 200–800 volts DC. Touching it is potentially LETHAL.',
+      detail: 'Orange is the universal automotive HV color (SAE J1772 standard). Drive battery cables, motor cables, A/C compressor cables, on-board charger cables. ALL are orange.',
+      action: 'Don\'t touch. Don\'t cut. Don\'t pierce with a test probe. Don\'t lean a wrench against. Treat as live until you have proven it\'s safe.' },
+    { id: 'hv-disable', icon: '🔌', name: 'HV system disable procedure',
+      rule: 'Before any work near HV components: vehicle in park, ignition off, 12V negative disconnected, MAINTENANCE PLUG / SERVICE DISCONNECT removed, then 5–10 minute capacitor discharge wait.',
+      detail: 'The service disconnect physically opens the HV bus into two halves so even if both ends were touched, current can\'t flow. Procedure varies by manufacturer — every EV has its own.',
+      action: 'NEVER skip. Use the manufacturer\'s service procedure. The few minutes saved is not worth electrocution.' },
+    { id: 'class-0-gloves', icon: '🧤', name: 'Class 0 insulated gloves',
+      rule: 'Worn whenever there is any possibility of HV contact. Rated to 1000V AC, but only when CURRENT and INTACT.',
+      detail: 'Class 0 gloves must be air-tested every use (roll the cuff to inflate, listen for leaks). Pressure-tested at a lab every 6 months. Pinholes from a wedding ring or a tool nick fail them silently.',
+      action: 'Inspect + air-test before each use. Pair with leather over-gloves to protect the rubber from punctures.' },
+    { id: 'do-not-touch-while-charging', icon: '⚡', name: 'DO NOT service while charging',
+      rule: 'A vehicle on a charger has live HV at the on-board charger and the battery. Charging port is hot.',
+      detail: 'Even a Level 1 (120V) charger feeds power that goes to high voltage internally. Always unplug + lock-out before HV service.',
+      action: 'Unplug. Visually verify unplugged. Do not service plugged-in.' },
+    { id: 'thermal-runaway', icon: '🔥', name: 'Thermal runaway / battery fire',
+      rule: 'A damaged or punctured lithium-ion battery can overheat exponentially and ignite. Once started, it self-sustains for hours and cannot be put out with water.',
+      detail: 'Symptoms: bulging battery pack, off-gassing smell, smoke, hissing. NHTSA + Tesla guidance: large volumes of water (continuous flow) + EVACUATE.',
+      action: 'If a damaged HV battery shows ANY warning sign: clear the area, call professional fire response, do not attempt to disassemble.' },
+    { id: 'lvi-still-matters', icon: '🔋', name: 'The 12V battery still matters',
+      rule: 'EVs and hybrids still have a 12V auxiliary battery. It powers the brain that wakes the HV system up. A dead 12V = car won\'t even unlock.',
+      detail: 'Hybrid 12V failures are common — many drivers don\'t realize they need to swap them on a normal car-battery interval (~5 years).',
+      action: 'Routine 12V testing + replacement is standard tech work — same procedure as a regular car. Don\'t miss this.' }
+  ];
+  var EV_KEY_DIFFERENCES = [
+    { topic: 'No oil change',
+      what: 'No engine = no oil. EV maintenance is mostly tire rotation, brake fluid, coolant (battery + motor), reducer-gear oil, A/C filter.',
+      maintenanceShift: 'Service intervals lengthen. Annual + 30K-mile checks. Lower revenue per car for shops, BUT: higher labor on the things that DO need work (HV system, sensors, battery diagnostics).' },
+    { topic: 'Regenerative braking',
+      what: 'Slowing the car charges the battery instead of dissipating heat through the brake pads. Pads last 3–5x longer.',
+      maintenanceShift: 'BUT: pads + rotors that don\'t get used can corrode (pad rusting to rotor face). Especially in salt-Maine. Annual brake-system cleaning + occasional aggressive friction-braking is needed to keep brakes healthy.' },
+    { topic: 'Cold weather range',
+      what: 'A 250-mile EV in Maine February drops to 150–180 miles. Battery chemistry slows below freezing; cabin heat draws from the battery.',
+      maintenanceShift: 'Pre-conditioning (heat the battery + cabin while plugged in, BEFORE unplugging) reclaims most of the loss. Heat-pump-equipped EVs lose less. This is a customer-education moment as much as a tech moment.' },
+    { topic: 'Charging types',
+      what: 'Level 1 (120V household, ~3 mi/hr — emergency only). Level 2 (240V wall, 20–40 mi/hr — daily). Level 3 / DC fast charge (CCS / NACS, 100–250 mi in 20–30 min — road trips).',
+      maintenanceShift: 'Charge port faults, J1772 vs CCS vs NACS connector wear, charging cable damage are common failure points. Connector replacement is a real service item.' },
+    { topic: 'Diagnostic tools',
+      what: 'Generic OBD-II scanners only see a fraction of EV codes. EV-specific scan tools read battery cell voltages, motor inverter state, charging system state.',
+      maintenanceShift: 'Tooling cost is real ($1500–5000+ for a capable EV scan tool). Independent shops without this tooling refer EVs out.' },
+    { topic: 'Hybrid still has an engine',
+      what: 'Hybrid = small ICE engine + electric motor + smaller HV battery. Both systems need service.',
+      maintenanceShift: 'Same oil-change intervals on hybrids (longer than ICE because miles vs. engine-running hours diverge). Check engine-oil based on engine-running hours, not just odometer miles.' },
+    { topic: 'Tires wear faster',
+      what: 'EVs are heavier (battery weight). Instant torque accelerates tire wear. EV-specific tires are designed for the weight + low rolling resistance.',
+      maintenanceShift: 'Tire-rotation interval may be 5,000 miles instead of 7,500. Recommend EV-rated tires; cheap tires get destroyed quickly.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 10: KNOWLEDGE QUIZ — 10 questions covering safety, diagnostic, repair
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -1000,9 +1315,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       function renderMenu() {
         var modules = [
           { id: 'diagnose', icon: '🔍', label: 'Diagnose', desc: 'OBD-II codes, listening cues, fluid analysis, visual inspection.' },
-          { id: 'repair', icon: '🔧', label: 'Repair scenarios', desc: '7 step-by-step jobs, from oil change to timing belt.' },
+          { id: 'repair', icon: '🔧', label: 'Repair scenarios', desc: '12 step-by-step jobs, from oil change + battery to timing belt.' },
           { id: 'tools', icon: '🧰', label: 'Tool selection', desc: 'Pick the right tool for the job. Builds your mental toolkit.' },
           { id: 'safety', icon: '🛡️', label: 'Safety modules', desc: 'Jack stands, electrical, refrigerant, hot exhaust, springs, fluid disposal.' },
+          { id: 'inspection', icon: '🌲', label: 'Maine inspection', desc: '8-area pre-walk before your annual sticker. Catch fails BEFORE the station does.' },
+          { id: 'usedcar', icon: '🛒', label: 'Buying a used car', desc: '10 red flags + 9-step walkaround. Salt-state pre-purchase inspection.' },
+          { id: 'ev', icon: '⚡', label: 'EV / Hybrid', desc: 'High-voltage safety, regen braking, cold-weather range, charging — the future of the trade.' },
           { id: 'career', icon: '🏅', label: 'Career path', desc: 'ASE certification, Maine vocational programs, salary data.' },
           { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '10 questions covering safety, diagnostics, repair.' },
           { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every cited org with a working URL.' }
@@ -1839,18 +2157,346 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       }
 
       // ─────────────────────────────────────────
+      // INSPECTION view — Maine annual sticker prep
+      // ─────────────────────────────────────────
+      function renderInspection() {
+        var picked = d.inspectionPicked || null;
+        var pickedItem = picked ? INSPECTION_ITEMS.find(function(i) { return i.id === picked; }) : null;
+        var checked = d.inspectionChecked || {};
+        var doneCount = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
+        var totalCount = INSPECTION_ITEMS.length;
+        var pct = Math.round((doneCount / totalCount) * 100);
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🌲 Maine inspection prep'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌲 Maine annual safety inspection'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'Maine requires annual safety inspection ($12.50 fee at any licensed station). Failed sticker = 60 days to repair + recertify, or you stop driving. ',
+              h('strong', { style: { color: T.accentHi } }, 'Pre-walk your car using this 8-area checklist BEFORE you drive in.'),
+              ' Many fails are 5-minute DIY fixes — bulb, fuse, washer fluid.'),
+            h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, color: T.muted, marginTop: 8 } },
+              h('span', { style: { color: T.accentHi, fontWeight: 700 } }, 'Self-walk progress:'),
+              h('span', { style: { fontFamily: 'monospace' } }, doneCount + ' / ' + totalCount + ' areas checked (' + pct + '%)')
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+            INSPECTION_ITEMS.map(function(item) {
+              var sel = picked === item.id;
+              var isChecked = !!checked[item.id];
+              return h('button', { key: item.id, 'data-ar-focusable': true,
+                'aria-label': item.area + (isChecked ? ' (checked)' : ''),
+                'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('inspectionPicked', sel ? null : item.id); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : (isChecked ? '#064e3b' : T.cardAlt),
+                  color: sel ? '#0f172a' : (isChecked ? '#d1fae5' : T.text),
+                  textAlign: 'left',
+                  fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'center', gap: 8
+                }) },
+                h('span', { style: { fontSize: 20 } }, item.icon),
+                h('span', null, item.area, isChecked ? ' ✓' : '')
+              );
+            })
+          ),
+          pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, pickedItem.icon + ' ' + pickedItem.area),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What they check: '), pickedItem.whatTheyCheck),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.bad } }, '🚩 Common fails: '), pickedItem.commonFails),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.good } }, '🔧 DIY: '), pickedItem.diy),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.warn } }, '🏪 Shop: '), pickedItem.shop),
+            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.5 } },
+              h('strong', { style: { color: T.accentHi } }, '💡 Pre-walk tip: '), pickedItem.tip),
+            h('div', { style: { marginTop: 10 } },
+              h('button', { 'data-ar-focusable': true,
+                'aria-label': 'Mark ' + pickedItem.area + ' as self-checked',
+                onClick: function() {
+                  var nv = Object.assign({}, checked); nv[pickedItem.id] = !nv[pickedItem.id];
+                  upd('inspectionChecked', nv);
+                  if (Object.keys(nv).filter(function(k){return nv[k];}).length === totalCount) {
+                    awardBadge('inspection-prep', 'Inspection Self-Walk');
+                  }
+                },
+                style: btnPrimary() }, isChecked ? '✓ Checked — uncheck' : '✓ Mark this area self-checked')
+            )
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, '🌲 Maine reality: '), MAINE_CONTEXT.inspection, ' ', MAINE_CONTEXT.sticker),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // USED CAR view — pre-purchase inspection
+      // ─────────────────────────────────────────
+      function renderUsedCar() {
+        var ucView = d.ucView || 'overview';
+        function tabBtn(id, label) {
+          var active = ucView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('ucView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function ucOverview() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🛒 Buying a used car in Maine'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, USED_CAR_CHECK.intro)
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '✅ Best practices'),
+              h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+                h('li', null, 'Run a CarFax + NHTSA recall check via VIN BEFORE you go look. ($40 well spent.)'),
+                h('li', null, 'Insist on a COLD start. Warm engines hide problems.'),
+                h('li', null, 'Pay for a $80–150 pre-purchase inspection (PPI) at an independent shop on anything over $5,000.'),
+                h('li', null, 'Get the title and registration in your name within 30 days (Maine requirement).'),
+                h('li', null, 'Test drive 30+ minutes including highway, stop-and-go, and bumpy back-roads.'),
+                h('li', null, 'Ask for service records. The owner who says "I don\'t have any" is selling a car someone else didn\'t care about.')
+              )
+            )
+          );
+        }
+
+        function ucFlags() {
+          var picked = d.ucFlagPicked || null;
+          var pickedFlag = picked ? USED_CAR_CHECK.redFlags.find(function(f) { return f.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚩 10 red flags'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'If you see any of these, slow down. Each one is negotiable. Each one tells you something the seller may or may not be telling you.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              USED_CAR_CHECK.redFlags.map(function(f) {
+                var sel = picked === f.id;
+                return h('button', { key: f.id, 'data-ar-focusable': true,
+                  'aria-label': f.flag,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('ucFlagPicked', sel ? null : f.id); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', justifyContent: 'space-between', gap: 8
+                  }) },
+                  h('span', null, '🚩 ', f.flag),
+                  h('span', { style: { fontSize: 11, opacity: 0.75 } }, f.area)
+                );
+              })
+            ),
+            pickedFlag && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.bad } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.bad } }, '🚩 ' + pickedFlag.flag),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔍 What to look for: '), pickedFlag.what),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '🎯 If found: '), pickedFlag.ifFound)
+            )
+          );
+        }
+
+        function ucWalk() {
+          var checked = d.ucWalkChecked || {};
+          var done = Object.keys(checked).filter(function(k) { return checked[k]; }).length;
+          var total = USED_CAR_CHECK.walkaround.length;
+          if (done === total) awardBadge('used-car-buyer', 'Used Car Buyer');
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚶 9-step walkaround'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Tap each step to mark complete. Practice the routine on a friend\'s car BEFORE you go look at one to buy. ',
+                h('strong', null, 'Done: '), done + ' / ' + total)
+            ),
+            h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              USED_CAR_CHECK.walkaround.map(function(s) {
+                var isChecked = !!checked[s.step];
+                return h('button', { key: s.step, role: 'listitem', 'data-ar-focusable': true,
+                  'aria-label': 'Step ' + s.step + (isChecked ? ' (done)' : ''),
+                  'aria-pressed': isChecked ? 'true' : 'false',
+                  onClick: function() {
+                    var nv = Object.assign({}, checked); nv[s.step] = !nv[s.step];
+                    upd('ucWalkChecked', nv);
+                  },
+                  style: { textAlign: 'left', padding: 10, borderRadius: 8, background: isChecked ? T.cardAlt : T.bg, border: '1px solid ' + (isChecked ? T.accent : T.border), color: T.text, cursor: 'pointer', display: 'flex', gap: 10, alignItems: 'flex-start' } },
+                  h('span', { 'aria-hidden': 'true', style: { background: isChecked ? T.accent : T.dim, color: '#0f172a', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, s.step),
+                  h('span', { style: { fontSize: 13, lineHeight: 1.5, color: T.text } }, s.do)
+                );
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🛒 Used car buying'),
+          h('div', { role: 'tablist', 'aria-label': 'Used-car sub-modes',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('flags', '🚩 Red flags'),
+            tabBtn('walk', '🚶 Walkaround')
+          ),
+          ucView === 'overview' && ucOverview(),
+          ucView === 'flags' && ucFlags(),
+          ucView === 'walk' && ucWalk(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // EV / HYBRID view
+      // ─────────────────────────────────────────
+      function renderEv() {
+        var evView = d.evView || 'overview';
+        function tabBtn(id, label) {
+          var active = evView === id;
+          return h('button', { 'data-ar-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('evView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function evOverview() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '⚡ EV / hybrid service — the future of the trade'),
+              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.6 } }, EV_OVERVIEW.bigPicture),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                [
+                  { label: '🏅 Industry credential', val: EV_OVERVIEW.aseCert },
+                  { label: '🧰 Tool investment', val: EV_OVERVIEW.tooling },
+                  { label: '💵 Pay differential', val: EV_OVERVIEW.salaryDelta },
+                  { label: '🌲 Where to train (Maine)', val: EV_OVERVIEW.where }
+                ].map(function(r) {
+                  return h('div', { key: r.label, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4 } }, r.label),
+                    h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, r.val)
+                  );
+                })
+              )
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
+              h('strong', { style: { color: T.warn } }, '⚠️ Critical: '),
+              h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.5 } },
+                'EV high-voltage work is regulated specialty work. Without proper training, insulated PPE, and the manufacturer\'s service procedure, ',
+                h('strong', null, 'do not service HV components. '),
+                'A 400V battery system can kill you faster than you can let go. This module is overview-level for awareness, not a substitute for training.')
+            )
+          );
+        }
+
+        function evSafetyTab() {
+          var picked = d.evSafetyPicked || null;
+          var pickedItem = picked ? EV_SAFETY.find(function(s) { return s.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚠️ EV-specific safety'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Six rules that override your general-tech instinct on a hybrid or EV.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+              EV_SAFETY.map(function(s) {
+                var sel = picked === s.id;
+                return h('button', { key: s.id, 'data-ar-focusable': true,
+                  'aria-label': s.name,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('evSafetyPicked', sel ? null : s.id); awardBadge('ev-safety-aware', 'EV Safety Aware'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, s.icon),
+                  h('span', null, s.name)
+                );
+              })
+            ),
+            pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.bad } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.bad } }, pickedItem.icon + ' ' + pickedItem.name),
+              h('div', { style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid #ea580c', marginBottom: 10 } },
+                h('strong', { style: { color: '#fed7aa' } }, '⚠️ Rule: '),
+                h('span', { style: { color: '#fed7aa', fontSize: 13, lineHeight: 1.5 } }, pickedItem.rule)
+              ),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔬 Detail: '), pickedItem.detail),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.text } }, '🎯 What to do: '), pickedItem.action)
+            )
+          );
+        }
+
+        function evDiffsTab() {
+          var picked = d.evDiffPicked || null;
+          var pickedItem = picked ? EV_KEY_DIFFERENCES[picked] : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔄 What changes vs ICE service'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                '7 places where hybrid/EV maintenance diverges from gasoline service. Half are about what NOT to do.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              EV_KEY_DIFFERENCES.map(function(d2, i) {
+                var sel = picked === i;
+                return h('button', { key: i, 'data-ar-focusable': true,
+                  'aria-label': d2.topic,
+                  'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('evDiffPicked', sel ? null : i); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#0f172a' : T.text,
+                    textAlign: 'left',
+                    fontWeight: sel ? 800 : 600
+                  }) }, d2.topic);
+              })
+            ),
+            pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, pickedItem.topic),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', null, '🔍 What it is: '), pickedItem.what),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔧 Maintenance shift: '), pickedItem.maintenanceShift)
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('⚡ EV / Hybrid'),
+          h('div', { role: 'tablist', 'aria-label': 'EV sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('safety', '⚠️ HV safety'),
+            tabBtn('diffs', '🔄 vs ICE')
+          ),
+          evView === 'overview' && evOverview(),
+          evView === 'safety' && evSafetyTab(),
+          evView === 'diffs' && evDiffsTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
-        case 'diagnose':  return renderDiagnose();
-        case 'repair':    return renderRepair();
-        case 'tools':     return renderTools();
-        case 'safety':    return renderSafety();
-        case 'career':    return renderCareer();
-        case 'quiz':      return renderQuiz();
-        case 'resources': return renderResources();
+        case 'diagnose':   return renderDiagnose();
+        case 'repair':     return renderRepair();
+        case 'tools':      return renderTools();
+        case 'safety':     return renderSafety();
+        case 'inspection': return renderInspection();
+        case 'usedcar':    return renderUsedCar();
+        case 'ev':         return renderEv();
+        case 'career':     return renderCareer();
+        case 'quiz':       return renderQuiz();
+        case 'resources':  return renderResources();
         case 'menu':
-        default:          return renderMenu();
+        default:           return renderMenu();
       }
       } catch(e) {
         console.error('[AutoRepair] render error', e);
