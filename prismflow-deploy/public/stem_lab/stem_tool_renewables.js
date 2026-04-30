@@ -2497,6 +2497,175 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           ),
           (function() { if (renewablesShare >= 60) awardBadge('mix_designer', 'Mix Designer (60%+ renewable)'); return null; })(),
           (function() { if (renewablesShare >= 90 && co2 < 60) awardBadge('mix_master', 'Mix Master (90%+ renewable, <60g CO₂)'); return null; })(),
+          // ── 24-hour grid balance simulator ──
+          // Shows hourly supply (stacked by source) vs demand. Storage smooths
+          // the gap. The whole point of renewable integration in one chart.
+          (function() {
+            // Diurnal supply profiles (fraction of nameplate per hour, 0..23)
+            // Solar: bell curve peaking ~noon; zero at night.
+            // Wind: noisy but generally peaks at night; mean ~0.4
+            // Baseload (hydro/geo/nuclear/gas): flat
+            var solarP = [0,0,0,0,0,0.05,0.15,0.30,0.50,0.70,0.85,0.95,1.00,0.95,0.85,0.70,0.50,0.30,0.15,0.05,0,0,0,0];
+            var windP  = [0.55,0.60,0.62,0.60,0.55,0.50,0.45,0.40,0.35,0.32,0.30,0.30,0.32,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.65,0.60,0.55,0.55];
+            // Demand: residential-style with morning + evening peaks
+            var demand = [0.45,0.40,0.40,0.40,0.45,0.55,0.70,0.80,0.75,0.65,0.60,0.60,0.65,0.65,0.65,0.70,0.80,0.95,1.00,0.95,0.85,0.75,0.60,0.50];
+            // Build hourly supply: each share% × profile gives a normalized fraction
+            // Express in arbitrary units where total demand peak = 1.0
+            // Calibrate so that if total share = 100 with average CF ~0.5 → matches demand
+            // Simpler: just use share/100 directly as a multiplier for nameplate, then × profile
+            var hours = [];
+            var batteryLevel = 0;
+            // Storage capacity in "kWh per kW peak demand-hours" — slider
+            var battCap = d.gridBattHrs != null ? d.gridBattHrs : 4;
+            var battEff = 0.92;
+            var summary = { totalSupply: 0, totalDemand: 0, unmetHrs: 0, curtailHrs: 0, battThroughput: 0 };
+            for (var hr = 0; hr < 24; hr++) {
+              var sUnits = (mixSolar / 100) * solarP[hr];
+              var wUnits = (mixWind  / 100) * windP[hr];
+              var bUnits = (mixHydro / 100) * 0.55 + (mixGeo / 100) * 0.85 + (mixNuclear / 100) * 0.92 + (mixGas / 100) * 0.55;
+              var supply = sUnits + wUnits + bUnits;
+              var dem = demand[hr] * 1.0;  // peak-normalized
+              summary.totalSupply += supply;
+              summary.totalDemand += dem;
+              // Battery dynamics
+              var net = supply - dem;
+              var battDelta = 0, served = supply, curtailed = 0;
+              if (net > 0) {
+                // Surplus — try to fill battery
+                var room = battCap - batteryLevel;
+                var stored = Math.min(net, room);
+                batteryLevel += stored * battEff;
+                curtailed = net - stored;
+                battDelta = stored;
+                if (curtailed > 0.01) summary.curtailHrs++;
+                summary.battThroughput += stored;
+              } else if (net < 0) {
+                // Deficit — try to drain battery
+                var need = -net;
+                var drawn = Math.min(need, batteryLevel);
+                batteryLevel -= drawn;
+                served = supply + drawn;
+                if (drawn < need - 0.01) summary.unmetHrs++;
+                battDelta = -drawn;
+              }
+              hours.push({ hr: hr, sUnits: sUnits, wUnits: wUnits, bUnits: bUnits, supply: supply, demand: dem, served: served, batt: batteryLevel, battDelta: battDelta });
+            }
+            // SVG chart
+            var W = 600, H = 240;
+            var pad = { l: 36, r: 14, t: 18, b: 30 };
+            var maxY = 1.4;  // headroom
+            var sx = function(hr) { return pad.l + (hr / 23) * (W - pad.l - pad.r); };
+            var sy = function(v)  { return pad.t + (1 - v / maxY) * (H - pad.t - pad.b); };
+            // Build stacked path: baseload (bottom), wind, solar
+            function pathFill(getStart, getEnd) {
+              var top = []; var bot = [];
+              for (var i = 0; i < 24; i++) {
+                top.push([sx(i), sy(getEnd(hours[i]))]);
+                bot.push([sx(i), sy(getStart(hours[i]))]);
+              }
+              return 'M ' + top.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ') +
+                     ' L ' + bot.reverse().map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ') + ' Z';
+            }
+            var basePath = pathFill(function() { return 0; }, function(p) { return p.bUnits; });
+            var windPath = pathFill(function(p) { return p.bUnits; }, function(p) { return p.bUnits + p.wUnits; });
+            var solarPath = pathFill(function(p) { return p.bUnits + p.wUnits; }, function(p) { return p.supply; });
+            // Demand line
+            var demPts = hours.map(function(p) { return [sx(p.hr), sy(p.demand)]; });
+            var demLine = 'M ' + demPts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
+            return h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '2px solid ' + T.accent, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '⚡ 24-hour grid balance'),
+              h('p', { style: { margin: '0 0 10px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                'Stacked supply (baseload + wind + solar) vs hourly demand for a residential grid. Adjust the storage slider to see how batteries smooth the gap.'),
+              // Storage slider
+              h('div', { style: { marginBottom: 12 } },
+                h('label', { htmlFor: 'grid-batt', style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } },
+                  h('span', null, '🔋 Battery capacity'),
+                  h('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, battCap.toFixed(1) + ' h')
+                ),
+                h('input', { id: 'grid-batt', 'data-rn-focusable': true, type: 'range',
+                  min: 0, max: 12, step: 0.5, value: battCap,
+                  'aria-label': 'Battery capacity in hours of peak demand',
+                  onChange: function(e) { upd('gridBattHrs', parseFloat(e.target.value)); },
+                  style: { width: '100%', accentColor: T.accent, cursor: 'pointer' }
+                }),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2 } },
+                  '0 h = no storage. 4 h ≈ typical Tesla Powerwall stack. 8+ h needed for high-renewable grids.')
+              ),
+              h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
+                role: 'img',
+                'aria-label': '24-hour grid balance chart. Total supply ' + summary.totalSupply.toFixed(1) + ' demand units, total demand ' + summary.totalDemand.toFixed(1) + '. Unmet hours: ' + summary.unmetHrs + '. Curtailed hours: ' + summary.curtailHrs + '.',
+                style: { background: '#0b1020', borderRadius: 8 } },
+                // Hour gridlines
+                [0, 6, 12, 18, 23].map(function(hr) {
+                  return h('g', { key: hr },
+                    h('line', { x1: sx(hr), y1: pad.t, x2: sx(hr), y2: H - pad.b, stroke: '#1f2937', strokeWidth: 1 }),
+                    h('text', { x: sx(hr), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: T.dim }, hr + ':00')
+                  );
+                }),
+                // Y axis ticks
+                [0.5, 1.0].map(function(v) {
+                  return h('g', { key: v },
+                    h('line', { x1: pad.l, y1: sy(v), x2: W - pad.r, y2: sy(v), stroke: '#1f2937', strokeWidth: 1 }),
+                    h('text', { x: pad.l - 4, y: sy(v) + 3, textAnchor: 'end', fontSize: 9, fill: T.dim }, v.toFixed(1))
+                  );
+                }),
+                // Stacked supply
+                h('path', { d: basePath, fill: '#a78bfa', opacity: 0.55 }),
+                h('path', { d: windPath, fill: '#7dd3fc', opacity: 0.65 }),
+                h('path', { d: solarPath, fill: '#facc15', opacity: 0.75 }),
+                // Demand line
+                h('path', { d: demLine, fill: 'none', stroke: '#f87171', strokeWidth: 2.5, strokeDasharray: '6 3' }),
+                // Axes
+                h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
+                h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
+                // Legend
+                h('rect', { x: pad.l, y: 4, width: 10, height: 10, fill: '#a78bfa', opacity: 0.55 }),
+                h('text', { x: pad.l + 14, y: 13, fontSize: 10, fill: '#a78bfa' }, 'Baseload'),
+                h('rect', { x: pad.l + 70, y: 4, width: 10, height: 10, fill: '#7dd3fc', opacity: 0.65 }),
+                h('text', { x: pad.l + 84, y: 13, fontSize: 10, fill: '#7dd3fc' }, 'Wind'),
+                h('rect', { x: pad.l + 124, y: 4, width: 10, height: 10, fill: '#facc15', opacity: 0.75 }),
+                h('text', { x: pad.l + 138, y: 13, fontSize: 10, fill: '#facc15' }, 'Solar'),
+                h('line', { x1: pad.l + 178, y1: 9, x2: pad.l + 198, y2: 9, stroke: '#f87171', strokeWidth: 2.5, strokeDasharray: '6 3' }),
+                h('text', { x: pad.l + 202, y: 13, fontSize: 10, fill: '#f87171' }, 'Demand')
+              ),
+              // Summary cards
+              h('div', { style: { marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10 } },
+                h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Daily supply / demand'),
+                  h('div', { style: { fontSize: 16, fontWeight: 800, color: summary.totalSupply >= summary.totalDemand ? T.accent : T.warm, fontFamily: 'monospace' } },
+                    summary.totalSupply.toFixed(1) + ' / ' + summary.totalDemand.toFixed(1)),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, summary.totalSupply >= summary.totalDemand ? 'Sufficient capacity' : 'Capacity shortfall')
+                ),
+                h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + (summary.unmetHrs > 0 ? T.danger : T.border) } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Hours of unmet demand'),
+                  h('div', { style: { fontSize: 22, fontWeight: 800, color: summary.unmetHrs > 0 ? T.danger : T.accent, fontFamily: 'monospace' } },
+                    summary.unmetHrs + ' h'),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, summary.unmetHrs === 0 ? '✓ Always served' : 'Blackouts likely')
+                ),
+                h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Hours of curtailed surplus'),
+                  h('div', { style: { fontSize: 22, fontWeight: 800, color: summary.curtailHrs > 6 ? T.warm : T.text, fontFamily: 'monospace' } },
+                    summary.curtailHrs + ' h'),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, summary.curtailHrs > 0 ? 'Energy wasted' : '✓ All used')
+                ),
+                h('div', { style: { padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border } },
+                  h('div', { style: { fontSize: 10, color: T.dim } }, 'Battery throughput / day'),
+                  h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accentHi, fontFamily: 'monospace' } },
+                    summary.battThroughput.toFixed(2)),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, '× peak-demand-hours')
+                )
+              ),
+              // Teaching notes
+              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.bg, border: '1px dashed ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, 'What to notice: '),
+                summary.unmetHrs > 0
+                  ? 'Your grid has ' + summary.unmetHrs + ' hour(s) of blackout. Either add more dispatchable capacity (hydro / geo / nuclear) or scale up battery storage.'
+                  : (summary.curtailHrs > 6
+                      ? 'You\'re generating MORE than you can use ' + summary.curtailHrs + ' hours/day. Either curtail (waste), store more, or export. Real grids face this challenge constantly.'
+                      : 'Well-balanced. Storage is filling during surplus and discharging when needed.')
+              )
+            );
+          })(),
           footer()
         );
       }

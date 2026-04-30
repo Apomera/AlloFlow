@@ -2222,11 +2222,206 @@ if (!(window.SelHub.isRegistered && window.SelHub.isRegistered('selfAdvocacy')))
 
       // ── Disclosure Decisions view ──
       function renderDisclose() {
+        // \u2500\u2500 Disclosure Decision Wizard \u2500\u2500
+        // Walks the user through 4 questions, then renders a personalized
+        // recommendation. State stored on toolData so refresh keeps progress.
+        var dwAns = d.dwAns || {};
+        var dwStep = d.dwStep != null ? d.dwStep : 0;
+        function setDw(patch) { upd('dwAns', Object.assign({}, dwAns, patch)); }
+        function setDwStep(n) { upd('dwStep', n); }
+        function resetWizard() { upd({ dwAns: {}, dwStep: 0 }); }
+        var DW_STEPS = [
+          { key: 'audience', label: 'Who is the audience?', opts: [
+            { id: 'teacher', label: 'Teacher / professor', tone: 'support' },
+            { id: 'boss',    label: 'Employer / supervisor / interviewer', tone: 'business' },
+            { id: 'friend',  label: 'Friend / dating partner', tone: 'personal' },
+            { id: 'family',  label: 'Family member who hasn\'t known', tone: 'personal' },
+            { id: 'medical', label: 'Doctor / counselor / clinician', tone: 'medical' },
+            { id: 'public',  label: 'A wider audience (social media, classroom presentation)', tone: 'public' }
+          ]},
+          { key: 'goal', label: 'What\'s your goal?', opts: [
+            { id: 'access',     label: 'Get an accommodation or specific support I need' },
+            { id: 'context',    label: 'Help them understand my behavior so they don\'t misread it' },
+            { id: 'trust',      label: 'Build authentic connection / be fully known' },
+            { id: 'safety',     label: 'Address a safety concern (medication, allergy, seizure, etc.)' },
+            { id: 'inform',     label: 'Educate / advocate (representation, awareness)' }
+          ]},
+          { key: 'trust', label: 'How well do you know this person?', opts: [
+            { id: 'high',   label: 'Very well \u2014 I trust them with hard things' },
+            { id: 'med',    label: 'Some \u2014 friendly but new to this kind of conversation' },
+            { id: 'low',    label: 'Barely \u2014 colleague, classmate, or someone I just met' }
+          ]},
+          { key: 'risk', label: 'What\'s the realistic downside if it goes badly?', opts: [
+            { id: 'minimal', label: 'Minimal \u2014 they might just be awkward' },
+            { id: 'social',  label: 'Social \u2014 could be gossiped about or treated differently' },
+            { id: 'practical', label: 'Practical \u2014 could affect grade, job, or evaluation' },
+            { id: 'unknown', label: 'I genuinely don\'t know yet' }
+          ]}
+        ];
+        function recommendation() {
+          // Build a recommendation from the 4 inputs.
+          var aud = dwAns.audience, goal = dwAns.goal, trust = dwAns.trust, risk = dwAns.risk;
+          var level, levelLabel, headline, share, skip, sampleStart, sampleFull, cautions = [];
+          // Level: minimal / functional / contextual / full
+          var levelScore = 0;
+          if (goal === 'access' || goal === 'safety') levelScore += 2;
+          if (goal === 'context' || goal === 'inform') levelScore += 1;
+          if (goal === 'trust') levelScore += 3;
+          if (trust === 'high') levelScore += 2;
+          if (trust === 'med') levelScore += 1;
+          if (risk === 'minimal') levelScore += 1;
+          if (risk === 'practical') levelScore -= 1;
+          if (risk === 'unknown') levelScore -= 1;
+          if (aud === 'public') levelScore -= 1;
+          if (aud === 'medical') levelScore += 2;
+          if (levelScore <= 1) { level = 'minimal'; levelLabel = 'Minimal \u2014 function only, no labels'; }
+          else if (levelScore <= 3) { level = 'functional'; levelLabel = 'Functional \u2014 what you need, no diagnosis'; }
+          else if (levelScore <= 5) { level = 'contextual'; levelLabel = 'Contextual \u2014 name the condition + what helps'; }
+          else { level = 'full'; levelLabel = 'Full \u2014 diagnosis, story, what you\'re working on'; }
+          // Headline based on audience
+          if (aud === 'teacher')      headline = 'For a teacher, lead with what you NEED, not what you ARE.';
+          else if (aud === 'boss')    headline = 'For an employer, frame disclosure around accommodations + your work, not your life story.';
+          else if (aud === 'friend')  headline = 'For a friend or partner, you choose the pace. Disclosure can be staged over weeks.';
+          else if (aud === 'family')  headline = 'Family disclosure is rarely a one-shot conversation. Plan for follow-ups.';
+          else if (aud === 'medical') headline = 'Medical providers need full information to help you safely.';
+          else                        headline = 'Wider audiences amplify both support and judgment. Be intentional about what you share.';
+          // Share + skip recommendations
+          if (level === 'minimal') {
+            share = 'A specific request only ("I need to take notes on my laptop", "I sometimes need a quiet break").';
+            skip = 'Diagnosis, history, family details, what therapy you\'re in.';
+            sampleStart = '"Hey, I\'ve found that ___ helps me focus. Would that be okay?"';
+            sampleFull = '"Hey [name], I work best when I can ___. Is that something we could try?"';
+          } else if (level === 'functional') {
+            share = 'What you need + a brief functional reason ("I have a focus condition; extra time on tests really helps").';
+            skip = 'Specific diagnoses, medications, deepest struggles.';
+            sampleStart = '"I have a learning difference that affects ___. Can we set up ___?"';
+            sampleFull = '"I wanted to let you know I have a learning difference that mostly shows up as [trouble with ___]. The accommodation that really helps is [extra time on tests / preferential seating / etc.]. Is that something we can put in place?"';
+          } else if (level === 'contextual') {
+            share = 'The name of your condition + what it looks like for you + what helps + what you\'re still figuring out.';
+            skip = 'Diagnosis pursuit history, your family\'s reaction, anything you wouldn\'t put in writing.';
+            sampleStart = '"I have ADHD. Here\'s how it shows up for me, and here\'s what helps."';
+            sampleFull = '"I have [diagnosis]. For me, it shows up as [specific functional things]. What helps me is [accommodations / strategies]. I wanted you to know because [reason \u2014 so you don\'t misread me / so we can work better together / so I can ask for ___].";';
+          } else {
+            share = 'The full story you\'re comfortable telling \u2014 diagnosis, journey, current state, what you\'re working on, how you want this person to show up.';
+            skip = 'Anything you don\'t fully consent to sharing in this moment. "Full" doesn\'t mean "everything."';
+            sampleStart = '"There\'s something I\'ve been wanting to share with you..."';
+            sampleFull = '"There\'s something I\'ve been wanting to share with you. I have [diagnosis]. It\'s been part of my life since [when], and it shapes [how I think / how I feel in groups / how I work]. I\'m sharing because [you matter to me / I want our friendship to be real / so you understand]. I\'m not asking you to fix anything. Mostly I just want you to know."';
+          }
+          // Cautions
+          if (aud === 'boss' && level === 'full') cautions.push('Employers usually do not need diagnosis details. Stick to what helps you do the job.');
+          if (aud === 'public') cautions.push('Public disclosure cannot be undone. If you wouldn\'t want a future employer or partner to read this, post it more privately.');
+          if (risk === 'practical') cautions.push('Higher-stakes settings (grades, jobs) \u2014 request accommodations through formal channels (504/IEP coordinator, HR) rather than casual conversation.');
+          if (trust === 'low' && level !== 'minimal') cautions.push('Lower-trust audiences often respond better to functional disclosure than to full disclosure.');
+          if (goal === 'safety') cautions.push('For safety-relevant info (medication, seizure, allergy), most people you spend time with should know. This is not optional in the way other disclosure can be.');
+          return { level: level, levelLabel: levelLabel, headline: headline, share: share, skip: skip, sampleStart: sampleStart, sampleFull: sampleFull, cautions: cautions };
+        }
+        var allAnswered = DW_STEPS.every(function(s) { return dwAns[s.key]; });
+        var rec = allAnswered ? recommendation() : null;
+
         return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
           h('h2', { className: 'text-2xl font-black text-indigo-200' }, '\uD83D\uDD11 Disclosure Decisions'),
           h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-amber-900/40 to-orange-900/40 border border-amber-500/30' },
             h('h3', { className: 'text-sm font-black text-amber-200 mb-2' }, 'Core idea'),
             h('p', { className: 'text-xs text-slate-100 leading-relaxed' }, DISCLOSURE_CORE_IDEA)
+          ),
+
+          // \u2500\u2500 Decision wizard \u2500\u2500
+          h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border-2 border-indigo-500/50' },
+            h('div', { className: 'flex items-center justify-between mb-3 flex-wrap gap-2' },
+              h('h3', { className: 'text-sm font-black text-indigo-200' }, '\uD83E\uDDED Disclosure Wizard \u2014 get a personalized recommendation'),
+              (allAnswered || dwStep > 0) && h('button', {
+                onClick: resetWizard,
+                className: 'text-xs px-2 py-1 rounded bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700',
+                'aria-label': 'Restart wizard'
+              }, '\u21BB Restart')
+            ),
+            !allAnswered && h('div', null,
+              // Progress dots
+              h('div', { className: 'flex gap-2 mb-4', 'aria-hidden': 'true' },
+                DW_STEPS.map(function(_step, i) {
+                  var done = !!dwAns[DW_STEPS[i].key];
+                  var active = i === dwStep && !done;
+                  return h('div', { key: i, className: 'h-1.5 flex-1 rounded',
+                    style: { background: done ? '#10b981' : (active ? '#6366f1' : '#334155') } });
+                })
+              ),
+              (function() {
+                // Find next unanswered step
+                var nextUnanswered = DW_STEPS.findIndex(function(s) { return !dwAns[s.key]; });
+                if (nextUnanswered === -1) return null;
+                var step = DW_STEPS[nextUnanswered];
+                return h('div', null,
+                  h('div', { className: 'text-xs font-bold text-indigo-300 mb-1' }, 'Question ' + (nextUnanswered + 1) + ' of ' + DW_STEPS.length),
+                  h('div', { className: 'text-base font-black text-indigo-100 mb-3' }, step.label),
+                  h('div', { role: 'radiogroup', 'aria-label': step.label, className: 'space-y-2' },
+                    step.opts.map(function(opt) {
+                      return h('button', {
+                        key: opt.id,
+                        role: 'radio',
+                        'aria-checked': 'false',
+                        onClick: function() {
+                          var patch = {}; patch[step.key] = opt.id;
+                          setDw(patch);
+                          setDwStep(nextUnanswered + 1);
+                        },
+                        className: 'block w-full text-left p-3 rounded-lg bg-slate-900/60 border-2 border-slate-700 hover:border-indigo-400 hover:bg-slate-800 transition focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm text-slate-100'
+                      }, opt.label);
+                    })
+                  ),
+                  nextUnanswered > 0 && h('button', {
+                    onClick: function() {
+                      var prev = DW_STEPS[nextUnanswered - 1];
+                      var patch = {}; patch[prev.key] = undefined;
+                      var nextAns = Object.assign({}, dwAns); delete nextAns[prev.key];
+                      upd('dwAns', nextAns);
+                      setDwStep(nextUnanswered - 1);
+                    },
+                    className: 'mt-3 text-xs text-slate-400 hover:text-slate-200',
+                    'aria-label': 'Back to previous question'
+                  }, '\u2190 Change previous answer')
+                );
+              })()
+            ),
+            // Recommendation
+            allAnswered && rec && h('div', { className: 'space-y-3', 'aria-live': 'polite' },
+              h('div', { className: 'p-4 rounded-lg bg-emerald-900/30 border-2 border-emerald-500/50' },
+                h('div', { className: 'text-xs font-bold text-emerald-300 mb-1 uppercase tracking-wider' }, '\uD83C\uDFAF Recommended disclosure level'),
+                h('div', { className: 'text-lg font-black text-emerald-100 mb-2' }, rec.levelLabel),
+                h('p', { className: 'text-xs text-slate-200 italic' }, rec.headline)
+              ),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                h('div', { className: 'p-3 rounded-lg bg-emerald-900/20 border border-emerald-500/30' },
+                  h('div', { className: 'text-xs font-bold text-emerald-300 mb-1' }, '\u2713 What to share'),
+                  h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, rec.share)
+                ),
+                h('div', { className: 'p-3 rounded-lg bg-amber-900/20 border border-amber-500/30' },
+                  h('div', { className: 'text-xs font-bold text-amber-300 mb-1' }, '\u2716 What to skip'),
+                  h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, rec.skip)
+                )
+              ),
+              h('div', { className: 'p-4 rounded-lg bg-slate-900/60 border border-indigo-500/30' },
+                h('div', { className: 'text-xs font-bold text-indigo-300 mb-2' }, '\uD83D\uDDE3\uFE0F Sample script \u2014 pick one to start, expand if welcomed'),
+                h('div', { className: 'space-y-2' },
+                  h('div', { className: 'p-2 rounded bg-slate-800/60' },
+                    h('div', { className: 'text-xs text-slate-400 mb-1' }, 'Brief opener:'),
+                    h('div', { className: 'text-sm text-slate-100 italic font-mono' }, rec.sampleStart)
+                  ),
+                  h('div', { className: 'p-2 rounded bg-slate-800/60' },
+                    h('div', { className: 'text-xs text-slate-400 mb-1' }, 'Fuller version (if the conversation goes well):'),
+                    h('div', { className: 'text-sm text-slate-100 italic' }, rec.sampleFull)
+                  )
+                )
+              ),
+              rec.cautions.length > 0 && h('div', { className: 'p-3 rounded-lg bg-rose-900/20 border border-rose-500/40' },
+                h('div', { className: 'text-xs font-bold text-rose-300 mb-2' }, '\u26A0 Things to consider'),
+                h('ul', { className: 'space-y-1 text-xs text-slate-200 list-disc list-inside' },
+                  rec.cautions.map(function(c, i) { return h('li', { key: i }, c); })
+                )
+              ),
+              h('div', { className: 'text-xs text-slate-400 italic text-center pt-2' },
+                'This is a starting point, not a verdict. You always get the final say. Many people change their disclosure choices over time.'
+              )
+            )
           ),
 
           h('section', { className: 'p-4 rounded-xl bg-slate-800/60 border border-indigo-500/30' },

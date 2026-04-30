@@ -4054,7 +4054,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             h('div', { className: 'absolute top-0 bottom-0 bg-sky-400/60', style: { left: ((ci68.low - 40) / 120 * 100) + '%', width: ((ci68.high - ci68.low) / 120 * 100) + '%' } }),
             h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-white', style: { left: ((score - 40) / 120 * 100) + '%' } }),
             h('div', { className: 'relative text-xs text-white font-bold text-center pt-1' }, 'SS ' + score + ' (95% CI ' + ci95.low + '–' + ci95.high + ')')
-          )
+          ),
+          // Bell-curve visualization — score + 95% CI band rendered on the
+          // standard-score normal distribution. Brings percentile rank to life.
+          (function() {
+            var W = 480, H = 200;
+            var pad = { l: 28, r: 12, t: 18, b: 32 };
+            var xMin = 40, xMax = 160;  // SS range
+            var sxFn = function(x) { return pad.l + ((x - xMin) / (xMax - xMin)) * (W - pad.l - pad.r); };
+            var pdf = function(ss) {
+              var z = (ss - 100) / 15;
+              return Math.exp(-z * z / 2) / Math.sqrt(2 * Math.PI);
+            };
+            // Find max pdf for y-scaling (peak at SS=100)
+            var peakY = pdf(100);
+            var syFn = function(p) { return pad.t + (1 - p / peakY) * (H - pad.t - pad.b - 4); };
+            // Sample points across the curve
+            var nSamples = 80;
+            var curvePts = [];
+            for (var k = 0; k <= nSamples; k++) {
+              var ss = xMin + (xMax - xMin) * (k / nSamples);
+              curvePts.push([sxFn(ss), syFn(pdf(ss))]);
+            }
+            // CI95 region — fill under the curve between ci95.low and ci95.high
+            var ciFillPts = [];
+            ciFillPts.push([sxFn(ci95.low), H - pad.b]);
+            for (var k2 = 0; k2 <= nSamples; k2++) {
+              var ss2 = ci95.low + (ci95.high - ci95.low) * (k2 / nSamples);
+              ciFillPts.push([sxFn(ss2), syFn(pdf(ss2))]);
+            }
+            ciFillPts.push([sxFn(ci95.high), H - pad.b]);
+            // Build SVG path strings
+            var curvePath = 'M ' + curvePts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
+            var ciPath = 'M ' + ciFillPts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ') + ' Z';
+            // Standard band labels at -2sd, -1sd, mean, +1sd, +2sd (SS=70,85,100,115,130)
+            var bandTicks = [70, 85, 100, 115, 130];
+            return h('div', { className: 'mt-4' },
+              h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, 'Where this score lands on the normal distribution'),
+              h('svg', {
+                width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
+                role: 'img',
+                'aria-label': 'Normal distribution with score ' + score + ' marked. 95% confidence interval shaded from ' + ci95.low + ' to ' + ci95.high + '. Percentile rank ' + percentile(score).toFixed(1) + '%.',
+                style: { background: '#0f172a', borderRadius: 8 }
+              },
+                // 95% CI band fill under the curve
+                h('path', { d: ciPath, fill: '#0ea5e9', opacity: 0.40 }),
+                // Bell curve outline
+                h('path', { d: curvePath, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2 }),
+                // Standard-score band gridlines (every 1 SD)
+                bandTicks.map(function(t, ti) {
+                  return h('g', { key: ti },
+                    h('line', { x1: sxFn(t), y1: pad.t, x2: sxFn(t), y2: H - pad.b, stroke: '#475569', strokeWidth: 1, strokeDasharray: '2 3', opacity: 0.45 }),
+                    h('text', { x: sxFn(t), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, t)
+                  );
+                }),
+                // Score marker — vertical line + label
+                h('line', { x1: sxFn(score), y1: pad.t - 4, x2: sxFn(score), y2: H - pad.b, stroke: '#fef3c7', strokeWidth: 2 }),
+                h('text', { x: sxFn(score), y: pad.t - 6, textAnchor: 'middle', fontSize: 12, fontWeight: 800, fill: '#fef3c7' },
+                  'SS ' + score
+                ),
+                // 95% CI bracket above the curve
+                h('line', { x1: sxFn(ci95.low), y1: H - pad.b - 4, x2: sxFn(ci95.high), y2: H - pad.b - 4, stroke: '#0ea5e9', strokeWidth: 2 }),
+                h('line', { x1: sxFn(ci95.low), y1: H - pad.b - 8, x2: sxFn(ci95.low), y2: H - pad.b, stroke: '#0ea5e9', strokeWidth: 2 }),
+                h('line', { x1: sxFn(ci95.high), y1: H - pad.b - 8, x2: sxFn(ci95.high), y2: H - pad.b, stroke: '#0ea5e9', strokeWidth: 2 }),
+                // Axis label
+                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, 'Standard Score (mean 100, SD 15) — blue band = 95% CI')
+              ),
+              h('div', { className: 'mt-2 text-xs text-slate-300 italic' },
+                'The 95% CI band reflects the score\'s real uncertainty. A "true score" anywhere in the blue band is consistent with what we observed. Notice how the band widens dramatically when you drag reliability down.'
+              )
+            );
+          })(),
+          // Reliability → SEM curve: shows how SEM grows as reliability drops
+          (function() {
+            var W = 480, H = 140;
+            var pad = { l: 36, r: 12, t: 14, b: 28 };
+            var rMin = 0.50, rMax = 1.00;
+            var sxFn2 = function(r) { return pad.l + ((r - rMin) / (rMax - rMin)) * (W - pad.l - pad.r); };
+            var maxSem = 15 * Math.sqrt(1 - rMin);  // ~10.6 at r=0.5
+            var syFn2 = function(s) { return pad.t + (1 - s / maxSem) * (H - pad.t - pad.b); };
+            var pts = [];
+            for (var k = 0; k <= 60; k++) {
+              var r = rMin + (rMax - rMin) * (k / 60);
+              var sm = 15 * Math.sqrt(1 - r);
+              pts.push([sxFn2(r), syFn2(sm)]);
+            }
+            var path = 'M ' + pts.map(function(p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' L ');
+            return h('div', { className: 'mt-4' },
+              h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, 'Reliability vs SEM — drag the reliability slider to see your point move along this curve'),
+              h('svg', {
+                width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
+                role: 'img', 'aria-label': 'Curve showing how the standard error of measurement grows as reliability drops below 1.0.',
+                style: { background: '#0f172a', borderRadius: 8 }
+              },
+                // Axes
+                h('line', { x1: pad.l, y1: H - pad.b, x2: W - pad.r, y2: H - pad.b, stroke: '#475569' }),
+                h('line', { x1: pad.l, y1: pad.t, x2: pad.l, y2: H - pad.b, stroke: '#475569' }),
+                // Curve
+                h('path', { d: path, fill: 'none', stroke: '#0ea5e9', strokeWidth: 2 }),
+                // Current-point marker
+                h('circle', { cx: sxFn2(rel), cy: syFn2(sem), r: 5, fill: '#fef3c7', stroke: '#0f172a', strokeWidth: 2 }),
+                h('text', { x: sxFn2(rel) + 8, y: syFn2(sem) - 6, fontSize: 10, fill: '#fef3c7', fontWeight: 700 },
+                  'r=' + rel.toFixed(2) + '  SEM=±' + sem.toFixed(1)
+                ),
+                // Tick labels
+                [0.60, 0.70, 0.80, 0.90, 0.99].map(function(r0, ti) {
+                  return h('g', { key: ti },
+                    h('line', { x1: sxFn2(r0), y1: H - pad.b, x2: sxFn2(r0), y2: H - pad.b + 4, stroke: '#475569' }),
+                    h('text', { x: sxFn2(r0), y: H - pad.b + 14, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, r0.toFixed(2))
+                  );
+                }),
+                [0, 5, 10].map(function(sm0, ti) {
+                  return h('text', { key: ti, x: pad.l - 4, y: syFn2(sm0) + 4, textAnchor: 'end', fontSize: 10, fill: '#94a3b8' }, sm0);
+                }),
+                h('text', { x: W / 2, y: H - 4, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, 'Reliability →   (lower reliability = larger SEM = wider CIs)'),
+                h('text', { x: 6, y: H / 2, textAnchor: 'start', fontSize: 10, fill: '#94a3b8', transform: 'rotate(-90 6 ' + (H / 2) + ')' }, 'SEM')
+              )
+            );
+          })()
         ),
 
         h('section', { className: 'p-4 rounded-xl bg-amber-900/30 border border-amber-500/40' },

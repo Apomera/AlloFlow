@@ -504,6 +504,227 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
 
       // ─────────────────────────────────────────────────────
+      // INTERACTIVE VISUAL HELPERS — Donut chart, daily-intake bars, food compare
+      // ─────────────────────────────────────────────────────
+      // PHYSIOLOGY-FIRST visuals, NEVER framed as goals. All numbers are
+      // informational: "what the meal contributed", not "what you should eat".
+
+      // Macro donut: carbs/protein/fat as percent of meal energy.
+      function MacroDonut(props) {
+        var c_g = props.c || 0, p_g = props.p || 0, f_g = props.f || 0;
+        var c_kcal = c_g * 4, p_kcal = p_g * 4, f_kcal = f_g * 9;
+        var total = c_kcal + p_kcal + f_kcal;
+        if (total <= 0) return h('div', { className: 'text-sm italic text-slate-700 text-center py-6' },
+          'Add foods to see how your meal\'s energy is split between carbs, protein, and fat.');
+        var W = 220, H = 220;
+        var cx = W / 2, cy = H / 2, rOuter = 90, rInner = 60;
+        function arcPath(startFrac, endFrac) {
+          if (endFrac - startFrac >= 0.999) {
+            // Full circle — render as two half-circles to avoid degenerate path
+            return 'M ' + (cx - rOuter) + ',' + cy +
+                   ' A ' + rOuter + ',' + rOuter + ' 0 1 1 ' + (cx + rOuter) + ',' + cy +
+                   ' A ' + rOuter + ',' + rOuter + ' 0 1 1 ' + (cx - rOuter) + ',' + cy +
+                   ' L ' + (cx - rInner) + ',' + cy +
+                   ' A ' + rInner + ',' + rInner + ' 0 1 0 ' + (cx + rInner) + ',' + cy +
+                   ' A ' + rInner + ',' + rInner + ' 0 1 0 ' + (cx - rInner) + ',' + cy + ' Z';
+          }
+          var a0 = startFrac * 2 * Math.PI - Math.PI / 2;
+          var a1 = endFrac * 2 * Math.PI - Math.PI / 2;
+          var x0o = cx + rOuter * Math.cos(a0), y0o = cy + rOuter * Math.sin(a0);
+          var x1o = cx + rOuter * Math.cos(a1), y1o = cy + rOuter * Math.sin(a1);
+          var x0i = cx + rInner * Math.cos(a0), y0i = cy + rInner * Math.sin(a0);
+          var x1i = cx + rInner * Math.cos(a1), y1i = cy + rInner * Math.sin(a1);
+          var largeArc = (endFrac - startFrac) > 0.5 ? 1 : 0;
+          return 'M ' + x0o + ',' + y0o +
+                 ' A ' + rOuter + ',' + rOuter + ' 0 ' + largeArc + ' 1 ' + x1o + ',' + y1o +
+                 ' L ' + x1i + ',' + y1i +
+                 ' A ' + rInner + ',' + rInner + ' 0 ' + largeArc + ' 0 ' + x0i + ',' + y0i + ' Z';
+        }
+        var slices = [
+          { kcal: c_kcal, color: '#d97706', label: 'Carbs',   g: c_g, kcalPerG: 4 },
+          { kcal: p_kcal, color: '#be123c', label: 'Protein', g: p_g, kcalPerG: 4 },
+          { kcal: f_kcal, color: '#a16207', label: 'Fat',     g: f_g, kcalPerG: 9 }
+        ];
+        var cum = 0;
+        var paths = [];
+        slices.forEach(function(s, i) {
+          if (s.kcal <= 0) return;
+          var startF = cum / total, endF = (cum + s.kcal) / total;
+          paths.push(h('path', { key: i, d: arcPath(startF, endF), fill: s.color }));
+          cum += s.kcal;
+        });
+        var pctRow = function(s, i) {
+          var pct = total > 0 ? (s.kcal / total * 100) : 0;
+          return h('div', { key: i, className: 'flex items-center gap-2 text-xs' },
+            h('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 12, height: 12, borderRadius: 3, background: s.color } }),
+            h('span', { className: 'text-slate-800 font-semibold' }, s.label, ': '),
+            h('span', { className: 'font-mono text-slate-800' }, s.g.toFixed(0) + ' g'),
+            h('span', { className: 'text-slate-700' }, ' (' + s.kcal.toFixed(0) + ' kcal · ' + pct.toFixed(0) + '%)')
+          );
+        };
+        return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+          h('div', { className: 'flex flex-col md:flex-row items-center gap-5' },
+            h('svg', {
+              width: W, height: H, viewBox: '0 0 ' + W + ' ' + H,
+              role: 'img',
+              'aria-label': 'Energy split for this meal: carbs ' + c_kcal.toFixed(0) + ' kcal, protein ' + p_kcal.toFixed(0) + ' kcal, fat ' + f_kcal.toFixed(0) + ' kcal. Total ' + total.toFixed(0) + ' kcal.'
+            },
+              paths,
+              h('text', { x: cx, y: cy - 4, textAnchor: 'middle', fontSize: 22, fontWeight: 800, fill: '#1e293b' }, total.toFixed(0)),
+              h('text', { x: cx, y: cy + 16, textAnchor: 'middle', fontSize: 11, fill: '#475569' }, 'kcal in plate')
+            ),
+            h('div', { className: 'flex-1 space-y-2' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Energy split'),
+              slices.map(pctRow),
+              h('p', { className: 'text-[11px] text-slate-700 italic mt-3 leading-relaxed' },
+                'Each gram of carb or protein gives ~4 kcal; each gram of fat gives ~9 kcal. The split varies normally across meals — there\'s no single "right" ratio.')
+            )
+          )
+        );
+      }
+
+      // Daily-intake bars: how this meal compares to typical adolescent
+      // daily targets. Framing: this is INFORMATIONAL, not a goal-per-meal.
+      // Targets from NIH/USDA Dietary Reference Intakes for ages 14-18.
+      function DailyIntakeBars(props) {
+        var t = props.totals || {};
+        // Adolescent (14-18) DRI references — used as informational anchors only.
+        var REFS = [
+          { label: 'Carbs',   value: t.c || 0,   target: 130, unit: 'g', note: 'RDA min for adolescents — minimum to fuel the brain.' },
+          { label: 'Protein', value: t.p || 0,   target: 52,  unit: 'g', note: 'Roughly 0.85 g/kg body weight; varies widely with body size.' },
+          { label: 'Fat',     value: t.f || 0,   target: 70,  unit: 'g', note: '25–35% of daily energy. Dietary fat is essential, not optional.' },
+          { label: 'Fiber',   value: t.fib || 0, target: 28,  unit: 'g', note: 'Most US teens get only ~half this. Fiber feeds gut microbes.' }
+        ];
+        if ((t.c || 0) + (t.p || 0) + (t.f || 0) + (t.fib || 0) <= 0) return null;
+        var W = 480, H = 200;
+        var pad = { l: 80, r: 12, t: 14, b: 28 };
+        var maxLabelTarget = REFS.reduce(function(m, r) { return Math.max(m, r.target * 1.4); }, 0);
+        var barH = (H - pad.t - pad.b) / REFS.length - 4;
+        return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+          h('div', { className: 'flex items-baseline justify-between mb-2 gap-2 flex-wrap' },
+            h('div', { className: 'text-sm font-black text-slate-800' }, 'How this plate stacks against a typical day'),
+            h('div', { className: 'text-[11px] text-slate-700 italic' }, 'Informational only — not a goal per meal.')
+          ),
+          h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Bar chart comparing this meal\'s nutrients to typical adolescent daily reference intakes.' },
+            // Background grid: 25%/50%/75%/100% of the typical daily target
+            REFS.map(function(r, i) {
+              var y = pad.t + i * (barH + 4) + barH / 2;
+              var targetX = pad.l + (r.target / maxLabelTarget) * (W - pad.l - pad.r);
+              var valueX = pad.l + Math.min(r.value, maxLabelTarget) / maxLabelTarget * (W - pad.l - pad.r);
+              var pctOfDay = r.target > 0 ? (r.value / r.target * 100) : 0;
+              return h('g', { key: i },
+                // Label
+                h('text', { x: pad.l - 8, y: y + 4, textAnchor: 'end', fontSize: 12, fontWeight: 700, fill: '#1e293b' }, r.label),
+                // Daily target band (faded, behind the value bar)
+                h('rect', { x: pad.l, y: y - barH / 2, width: targetX - pad.l, height: barH, fill: '#cbd5e1', opacity: 0.45, rx: 4 }),
+                // Tick at exactly the target
+                h('line', { x1: targetX, y1: y - barH / 2 - 2, x2: targetX, y2: y + barH / 2 + 2, stroke: '#475569', strokeWidth: 1.5, strokeDasharray: '3 3' }),
+                h('text', { x: targetX, y: y - barH / 2 - 4, textAnchor: 'middle', fontSize: 9, fill: '#334155', fontWeight: 700 }, '~' + r.target + r.unit + ' / day'),
+                // Actual value bar
+                h('rect', { x: pad.l, y: y - barH / 2 + 2, width: Math.max(2, valueX - pad.l), height: barH - 4, fill: r.label === 'Fiber' ? '#15803d' : (r.label === 'Protein' ? '#9f1239' : (r.label === 'Fat' ? '#a16207' : '#b45309')), rx: 3 }),
+                // Value annotation
+                h('text', { x: Math.max(valueX, pad.l + 30), y: y + 4, fontSize: 11, fontWeight: 700, fill: '#fff', textAnchor: 'end', dx: -4 },
+                  r.value.toFixed(0) + r.unit
+                ),
+                h('text', { x: W - pad.r, y: y + 4, textAnchor: 'end', fontSize: 10, fill: '#64748b', fontFamily: 'monospace' },
+                  pctOfDay.toFixed(0) + '% of typical daily reference'
+                )
+              );
+            })
+          ),
+          h('details', { className: 'mt-2' },
+            h('summary', { className: 'text-xs font-bold text-slate-700 cursor-pointer hover:text-slate-900' }, 'What these reference values mean'),
+            h('div', { className: 'mt-2 text-xs text-slate-700 leading-relaxed space-y-1' },
+              REFS.map(function(r, i) { return h('div', { key: i }, h('strong', { className: 'text-slate-800' }, r.label + ' (~' + r.target + r.unit + '/day): '), r.note); }),
+              h('p', { className: 'italic mt-2' },
+                'Reference Intakes from NIH / USDA for ages 14–18. Real needs vary by body size, sex, and activity. This is a science-literacy reference, not a meal target.'
+              )
+            )
+          )
+        );
+      }
+
+      // Food-comparison side-by-side. Two pickers; bar chart per nutrient.
+      function FoodComparePanel() {
+        var pickA = useState(d.fc_a || 'salmon');
+        var pickB = useState(d.fc_b || 'chicken');
+        var fA_id = pickA[0], setA = pickA[1];
+        var fB_id = pickB[0], setB = pickB[1];
+        useEffect(function() { upd('fc_a', fA_id); }, [fA_id]);
+        useEffect(function() { upd('fc_b', fB_id); }, [fB_id]);
+        var fA = FOOD_BY_ID[fA_id], fB = FOOD_BY_ID[fB_id];
+        if (!fA || !fB) return null;
+        var ROWS = [
+          { key: 'kcal', label: 'Energy', unit: 'kcal' },
+          { key: 'c',    label: 'Carbs',  unit: 'g' },
+          { key: 'p',    label: 'Protein', unit: 'g' },
+          { key: 'f',    label: 'Fat',    unit: 'g' },
+          { key: 'fib',  label: 'Fiber',  unit: 'g' }
+        ];
+        var maxes = {};
+        ROWS.forEach(function(r) { maxes[r.key] = Math.max(fA[r.key] || 0, fB[r.key] || 0, 1); });
+        var W = 480, H = 240;
+        var pad = { l: 70, r: 60, t: 18, b: 18 };
+        var barH = (H - pad.t - pad.b) / ROWS.length - 6;
+        return h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+          h('div', { className: 'flex items-center justify-between mb-3 gap-2 flex-wrap' },
+            h('div', { className: 'text-sm font-black text-slate-800' }, '⚖️ Compare two foods side-by-side'),
+            h('div', { className: 'text-[11px] text-slate-700 italic' }, 'No good/bad — just what each one brings.')
+          ),
+          h('div', { className: 'grid grid-cols-2 gap-3 mb-4' },
+            h('label', { className: 'text-xs font-bold text-slate-700' },
+              h('span', { style: { color: '#0d9488' } }, '◆ Food A'),
+              h('select', {
+                value: fA_id, onChange: function(e) { setA(e.target.value); },
+                className: 'mt-1 block w-full rounded-lg border-2 border-slate-300 p-2 text-sm font-semibold focus:outline-none focus:ring-2 ring-emerald-500',
+                'aria-label': 'Food A'
+              },
+                FOODS.map(function(f) { return h('option', { key: f.id, value: f.id }, f.emoji + ' ' + f.name); })
+              )
+            ),
+            h('label', { className: 'text-xs font-bold text-slate-700' },
+              h('span', { style: { color: '#9f1239' } }, '◇ Food B'),
+              h('select', {
+                value: fB_id, onChange: function(e) { setB(e.target.value); },
+                className: 'mt-1 block w-full rounded-lg border-2 border-slate-300 p-2 text-sm font-semibold focus:outline-none focus:ring-2 ring-rose-500',
+                'aria-label': 'Food B'
+              },
+                FOODS.map(function(f) { return h('option', { key: f.id, value: f.id }, f.emoji + ' ' + f.name); })
+              )
+            )
+          ),
+          h('div', { className: 'text-[11px] font-mono text-slate-700 mb-2' },
+            fA.name + ' — ' + fA.serving + '   vs   ' + fB.name + ' — ' + fB.serving
+          ),
+          h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+            'aria-label': 'Side-by-side comparison of ' + fA.name + ' and ' + fB.name + ' across energy, carbs, protein, fat, and fiber.' },
+            ROWS.map(function(r, i) {
+              var yMid = pad.t + i * (barH + 6) + barH / 2;
+              var aVal = fA[r.key] || 0, bVal = fB[r.key] || 0;
+              var maxV = maxes[r.key];
+              var barRange = (W - pad.l - pad.r) / 2 - 6;
+              var aW = (aVal / maxV) * barRange;
+              var bW = (bVal / maxV) * barRange;
+              var midX = (W) / 2;
+              return h('g', { key: r.key },
+                h('text', { x: midX, y: yMid + 4, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#334155' }, r.label),
+                // Food A bar (left, growing toward left)
+                h('rect', { x: midX - 36 - aW, y: yMid - barH / 2 + 4, width: Math.max(2, aW), height: barH - 8, fill: '#0d9488', rx: 3 }),
+                h('text', { x: midX - 38 - aW - 4, y: yMid + 4, textAnchor: 'end', fontSize: 11, fill: '#0d9488', fontWeight: 700, fontFamily: 'monospace' }, aVal + r.unit),
+                // Food B bar (right, growing toward right)
+                h('rect', { x: midX + 36, y: yMid - barH / 2 + 4, width: Math.max(2, bW), height: barH - 8, fill: '#9f1239', rx: 3 }),
+                h('text', { x: midX + 38 + bW + 4, y: yMid + 4, fontSize: 11, fill: '#9f1239', fontWeight: 700, fontFamily: 'monospace' }, bVal + r.unit)
+              );
+            })
+          ),
+          h('div', { className: 'mt-3 text-xs text-slate-700 leading-relaxed bg-slate-50 border border-slate-200 rounded-lg p-3' },
+            h('strong', { className: 'text-slate-800' }, 'Reading the chart: '),
+            'Each row shows one nutrient. Longer bar = more of that nutrient per typical serving. Two foods can both be excellent for different reasons — there are no winners or losers here, just different physiological roles.'
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // MODULE 1: MACRONUTRIENT LAB
       // ─────────────────────────────────────────────────────
       // Click-to-add plate composer. PHYSIOLOGY-FIRST framing: feedback always
@@ -660,6 +881,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h(StatCard, { label: 'Fiber',   value: totals.fib.toFixed(0) + 'g', color: 'text-emerald-700' }),
               h(StatCard, { label: 'Energy',  value: totals.kcal.toFixed(0), unit: 'kcal (informational)', color: 'text-slate-700' })
             ),
+            // Visual: macro donut showing carbs/protein/fat split by energy
+            h(MacroDonut, { c: totals.c, p: totals.p, f: totals.f }),
+            // Visual: daily-intake reference bars (informational only)
+            plate.length > 0 && h(DailyIntakeBars, { totals: totals }),
+            // Interactive: side-by-side food comparison
+            h(FoodComparePanel),
             // Physiology benefit readout
             plate.length > 0 && h('div', {
               'aria-live': 'polite',

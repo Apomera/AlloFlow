@@ -487,6 +487,407 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   ];
 
   // ─────────────────────────────────────────────────────────
+  // WELFARE & ETHICS DATA — 4 pillars: spay/neuter, adoption,
+  // declawing, outdoor cats. Welfare-science voice; sources inline.
+  // ─────────────────────────────────────────────────────────
+  var WELFARE_DATA = {
+    spayNeuter: {
+      icon: '✂️', label: 'Spay & Neuter',
+      lead: 'Surgical sterilization (spay = ovaries/uterus removed; neuter = testicles removed) is the highest-leverage thing an owner can do for population welfare AND individual-pet welfare.',
+      health: [
+        { species: 'Female dogs / cats', benefit: 'Spaying before first heat reduces mammary cancer risk dramatically (≈0.5% if spayed before 1st heat vs ≈26% later for dogs). Eliminates risk of pyometra (life-threatening uterine infection) and ovarian cancer.' },
+        { species: 'Male dogs / cats', benefit: 'Eliminates testicular cancer risk. Reduces prostate disease in dogs. Reduces FIV transmission in cats (driven by unneutered males roaming + fighting).' },
+        { species: 'Rabbits', benefit: 'Female rabbits have ~80% rate of uterine cancer by age 5 if not spayed (House Rabbit Society). Spaying is medical necessity, not optional.' }
+      ],
+      behavior: [
+        'Reduced roaming (intact dogs + cats roam farther seeking mates → traffic + fight injuries)',
+        'Reduced inter-male aggression (especially in cats; fewer abscesses, fewer FIV transmissions)',
+        'Reduced urine marking in male cats (a primary intake-to-shelter reason)',
+        'No more heat cycles in females (no yowling, no blood, no mating attempts)'
+      ],
+      timing: 'Traditional age: 6 months. Modern guidance varies: AAFP recommends 5 months for cats; AVMA + 2013 large-breed dog research suggests waiting until skeletal maturity (12-18 mo) for some giant breeds. Talk to your vet about timing for your specific animal.',
+      math: 'One unspayed female cat + her descendants can produce hundreds of kittens within 7 years if all survive and reproduce. Most of those kittens will end up in shelters or as ferals. Use the calculator below to see the compounding.',
+      cost: 'Spay/neuter is far cheaper than treating one accidental pregnancy or one mammary tumor or one pyometra. Many programs offer low-cost or free service.',
+      maine: 'SpayMaine (mobile clinic, statewide) — spaymaine.org. Animal Refuge League of Greater Portland — sliding scale. ASPCA national database for low-cost programs near you.',
+      cite: 'AVMA position statement 2018 · AAFP guideline 2017 · House Rabbit Society · ASPCA spay/neuter database'
+    },
+    adoption: {
+      icon: '🏠', label: 'Adopt-don\'t-shop',
+      lead: 'About 6.3 million companion animals enter US shelters every year. Roughly 920,000 are euthanized annually — down from 2.6 million in 2011 thanks to the rise of adoption + spay/neuter (ASPCA 2024). Every adoption is one less.',
+      whyAdopt: [
+        '🐾 Adoption literally saves a life. Shelter intake exceeds capacity in most US shelters seasonally.',
+        '💰 $50–$300 typical adoption fee vs $1,500–$3,500 from a breeder; usually includes spay/neuter, vaccines, microchip.',
+        '👀 Adult dogs and cats from shelters come pre-evaluated for temperament, health, and household fit. Less surprise than a 9-week puppy.',
+        '🧬 Mixed-breed dogs (≥50% of shelter dogs) tend to have FEWER concentrated genetic disorders than closed-studbook purebreds (see Genetics tile).',
+        '🧑‍🤝‍🧑 You\'re directly relieving overcrowding — fostering or adopting opens a kennel slot for the next animal.'
+      ],
+      breedSpecificRescues: 'If you genuinely need a specific breed (allergies, working role, household constraint), breed-specific rescues exist for almost every breed. Search "[breed] rescue" or use Petfinder\'s breed filter. About a quarter of shelter dogs are purebred.',
+      whenBreederIsOK: [
+        'Working dogs requiring specific genetic traits (livestock guardians, service-dog candidates from purpose-bred lines, herding stock)',
+        'Documented severe allergies AND specific breed coat type tested (allergens are dander/saliva, not just hair — testing matters)',
+        'A specific medical or accessibility need that requires a particular size + temperament profile not reliably available in shelters'
+      ],
+      reputableBreederChecklist: [
+        '✓ OFA / CHIC health testing on parent dogs (hips, elbows, eyes, heart, breed-specific genetic conditions)',
+        '✓ Will let you visit the home / kennel and meet the dam (mother)',
+        '✓ Asks YOU questions — about lifestyle, fence, plans for vet care, willingness to return the dog',
+        '✓ Lifetime takeback policy: you return the dog to them, no questions asked, if you ever can\'t keep it',
+        '✓ Doesn\'t sell to pet stores or third parties',
+        '✓ Doesn\'t breed multiple breeds at high volume (red flag: "rare colors," "miniature" of breeds that aren\'t naturally small)',
+        '✓ Lets puppies stay with mom + littermates until at least 8 weeks (not 6 — that\'s a backyard breeder cue)'
+      ],
+      cite: 'ASPCA Pet Statistics 2024 · Best Friends Animal Society 2025 · HSUS Pets by the Numbers · Petfinder shelter directory'
+    },
+    declawing: {
+      icon: '⚠️', label: 'Declawing — what it actually is',
+      lead: 'Declawing (onychectomy) is NOT trimming or removing nails. It is the surgical AMPUTATION of the third phalanx — the last bone of each toe. The human equivalent is amputating every finger at the last knuckle.',
+      anatomicalTruth: 'In a healthy cat, the claw is part of the bone — claws can\'t be "removed" without amputating the bone they\'re attached to. The standard surgical method severs the third phalanx (P3) at the joint with the second phalanx, using either a guillotine clipper, a scalpel disarticulating each joint, or a CO₂ laser. In all methods, the cat permanently loses the last segment of every toe.',
+      pain: 'Pain is acute post-op and often becomes chronic. A 2018 study (Martell-Moran, JFMS) found that declawed cats had 3× the rate of long-term back/limb pain and 7× the rate of unwanted behaviors compared to clawed cats. Bone chips left from imperfect surgery can cause lifelong neuropathic pain.',
+      behaviorConsequences: [
+        '↑ Biting (claws were the primary defense — bite becomes the only option)',
+        '↑ Litter box avoidance (sand on amputation sites is painful → cat associates the box with pain → pees elsewhere → often surrendered to shelter)',
+        '↑ Aggression toward humans + other pets',
+        '↓ Climbing + healthy stretching (toes can\'t grip; balance permanently altered)'
+      ],
+      vetConsensus: 'Opposed by AVMA (updated 2020), AAFP (Position Statement 2017), AVA (Australia), BSAVA (UK), CVMA (Canada), and the Cat Friendly Practice program. Banned in most of the EU, Israel, the UK, Australia, New Zealand, and Brazil. Banned in NY (2019), MD (2022), Pittsburgh, Denver, San Francisco, LA, and several other US cities.',
+      alternatives: [
+        '🪵 Tall vertical scratching posts + horizontal scratchers (cats scratch to mark territory + maintain claws — they NEED to scratch; provide many surfaces in different orientations)',
+        '✂️ Regular nail trims (every 2–3 weeks; takes 30 seconds with a sharp clipper once the cat is acclimated)',
+        '🧢 Soft Paws / Soft Claws (vinyl nail caps glued on; last 4–6 weeks; no pain, no surgery)',
+        '🎯 Positive-reinforcement training (treat-reward when cat uses the post; never punish when they scratch furniture — instead remove + redirect)',
+        '🛋️ Furniture-protection strategies (double-sided tape, foil, citrus scent on couches you want protected; aluminum foil deters most cats)'
+      ],
+      cite: 'AVMA position statement (2020) · AAFP Position Statement (2017) · Patronek 2001 (J Am Vet Med Assoc) · Martell-Moran et al. 2018 (J Feline Medicine and Surgery) · Curcio 2006'
+    },
+    outdoorCats: {
+      icon: '🐦', label: 'Outdoor cats and wildlife',
+      lead: 'Free-roaming domestic cats (owned cats let outdoors + stray + feral) are the single largest direct human-caused source of wild bird mortality in the United States — ahead of building strikes, vehicles, and wind turbines combined.',
+      data: 'Loss et al. 2013 (Nature Communications, Smithsonian Migratory Bird Center): free-roaming cats kill 1.3–4 billion birds and 6.3–22.3 billion mammals per year in the US alone. Conservative midpoint: 2.4 billion birds. Cats are the #1 direct source of bird mortality from human activity.',
+      whyItMatters: 'Domestic cats are an introduced predator on every continent except Antarctica. Native bird species evolved without ground predators of cats\' size, agility, and abundance. Cats hunt regardless of whether they\'re fed at home — predation is instinct, not hunger. Bell collars reduce kills by ~30–50% but don\'t eliminate them.',
+      ownCatLifespan: 'Indoor cats average 12–18 years. Outdoor cats average 2–5. Causes: traffic (≈half of outdoor-cat deaths in suburban areas), predation (coyotes, owls, fishers in Maine, larger dogs), parasites (fleas, ticks, intestinal worms, FIV/FeLV transmitted in fights), poisoning (antifreeze, rodenticide secondary), weather, theft.',
+      tnrControversy: 'Trap-Neuter-Return (TNR) sterilizes existing feral colonies. AVMA + most major shelters support TNR as the only humane large-scale tool for already-established colonies. American Bird Conservancy + National Audubon argue TNR alone doesn\'t reduce predation enough fast enough to protect threatened bird species — they advocate sanctuaries / removal. Both sides are operating from real data; the disagreement is about strategy, not facts.',
+      whatIndividualsCanDo: [
+        '🏠 Keep owned cats indoors. The single highest-impact action.',
+        '🦮 Leash-train cats (yes — see Cat training in BehaviorLab). Many cats accept harness + lead with patient training; outdoor enrichment without predation.',
+        '🌿 Build a catio (enclosed outdoor patio for cats). DIY guides everywhere; ~$200–$2,000 depending on scale.',
+        '🪟 Bird-window collisions: Acopian BirdSavers, FeatherFriendly decals, or hanging string curtains on outside-facing windows reduce window strikes by ~90%.',
+        '🐈 Adopt a feral cat to indoor life if it\'s young enough (often possible under 6 months; harder for adult ferals).',
+        '🦅 Volunteer for Maine Audubon bird counts or shorebird-monitoring (locally-relevant action).'
+      ],
+      maine: 'Maine Audubon — maineaudubon.org — runs bird surveys + habitat-restoration volunteer days. Birds of Maine app from Maine Audubon. Maine has ~400 native bird species; declines in grassland + shorebird species are well-documented.',
+      cite: 'Loss, Will, Marra 2013 (Nat Commun) · Smithsonian Migratory Bird Center · American Bird Conservancy "Cats Indoors" initiative · Maine Audubon · Veterinary Centers of America indoor-cat lifespan data'
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // PET-CARE WEEK SIM — daily events per species. Each event has
+  // a list of choices; each choice impacts welfare meters + human
+  // resources (energy, money). Realistic trade-offs, not punishment.
+  // ─────────────────────────────────────────────────────────
+  var CARE_SIM_DAYS = {
+    dog: [
+      { day: 1, label: 'Day 1 — establish the routine',
+        prompt: 'It\'s the first morning with your new dog. Setting expectations now will define the next 10–15 years. What\'s your morning plan?',
+        choices: [
+          { id: 'full', label: 'Full routine: 30-min walk, breakfast, brief training, set up daytime enrichment',
+            effects: { phys: +12, ment: +10, soc: +8, env: +6, en: -15, money: 0 },
+            note: 'Strong start. Routines reduce anxiety in dogs and let you predict their needs.' },
+          { id: 'quick', label: 'Quick: 10-min potty walk, food, off to my day',
+            effects: { phys: +4, ment: +1, soc: +2, env: +2, en: -5, money: 0 },
+            note: 'Functional but minimal. Dogs left this lightly-engaged often develop attention-seeking behaviors over time.' },
+          { id: 'skip', label: 'Skip the walk — just let them in the yard',
+            effects: { phys: -2, ment: -3, soc: -2, env: 0, en: -1, money: 0 },
+            note: 'Yard time isn\'t a substitute for walks. Walks provide novelty + scent enrichment + mental work.' }
+        ]
+      },
+      { day: 2, label: 'Day 2 — friend texts at walk time',
+        prompt: 'A friend invites you to a movie that starts at your usual evening walk time. Walks are 45 min for your high-energy dog.',
+        choices: [
+          { id: 'walk_first', label: 'Walk first, meet friend after the movie',
+            effects: { phys: +10, ment: +6, soc: +5, env: 0, en: -10, money: -8 },
+            note: 'Pet first when their needs are time-sensitive. Friendship can flex; dog\'s bladder cannot.' },
+          { id: 'morning_double', label: 'Skip evening, do a longer morning walk tomorrow',
+            effects: { phys: -3, ment: -3, soc: -2, env: 0, en: -2, money: -8 },
+            note: 'Compromise. Dogs handle one missed walk fine if they get extra attention; just don\'t let it become the pattern.' },
+          { id: 'long_alone', label: 'Skip walk; dog is alone 6 extra hours',
+            effects: { phys: -5, ment: -7, soc: -8, env: -3, en: 0, money: -8 },
+            note: 'A young dog left this long without a midday break is likely to have an indoor accident — and to associate alone-time with stress.' }
+        ]
+      },
+      { day: 3, label: 'Day 3 — anxiety signals',
+        prompt: 'You notice your dog yawning, lip-licking, and pacing when you grab your bag in the morning. (See Body Language Decoder — calming signals.) What do you do?',
+        choices: [
+          { id: 'reduce', label: 'Lower the cue intensity — pick up bag without leaving for a few days',
+            effects: { phys: 0, ment: +6, soc: +6, env: +2, en: -4, money: 0 },
+            note: 'Counter-conditioning the cue. Classic separation-anxiety prep — break the chain bag → "you\'re leaving me."' },
+          { id: 'kong', label: 'Give a stuffed Kong on departure',
+            effects: { phys: +1, ment: +5, soc: +3, env: +2, en: -3, money: -5 },
+            note: 'Kong on departure = "alone time predicts good things." Pairs nicely with the previous strategy.' },
+          { id: 'ignore', label: 'It\'s probably nothing — proceed normally',
+            effects: { phys: -1, ment: -4, soc: -3, env: 0, en: 0, money: 0 },
+            note: 'Calming signals are early warnings. Ignored, they often progress to destruction or vocalization. Worth catching early.' }
+        ]
+      },
+      { day: 4, label: 'Day 4 — vet bill arrives',
+        prompt: 'Routine annual vet visit + shots due. The estimate is $280. Your dog also has a small lump the vet wants to aspirate ($80 add-on, peace of mind).',
+        choices: [
+          { id: 'all', label: 'Do everything including the aspiration',
+            effects: { phys: +10, ment: +1, soc: +1, env: +1, en: -5, money: -360 },
+            note: 'Lumps in middle-aged + senior dogs are usually benign, but aspiration costs $80 and rules out the bad outcome with confidence.' },
+          { id: 'core_only', label: 'Just the routine visit + shots; skip the aspiration this year',
+            effects: { phys: +5, ment: 0, soc: 0, env: 0, en: -3, money: -280 },
+            note: 'Reasonable if budget is tight, BUT make a calendar reminder: any change in lump size = aspirate. Mast-cell tumors mimic fatty lumps.' },
+          { id: 'skip', label: 'Skip vet entirely — they seem fine',
+            effects: { phys: -8, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
+            note: 'Annual exams catch dental, weight, joint, organ, parasite, vaccine, and tumor issues early. Skipping costs more long-term.' }
+        ]
+      },
+      { day: 5, label: 'Day 5 — pouring rain',
+        prompt: 'Cold rain all day. Your dog is staring at you expectantly. What\'s the move?',
+        choices: [
+          { id: 'short_outside', label: 'Short walk in rain gear, then indoor enrichment + nose-work games',
+            effects: { phys: +6, ment: +9, soc: +6, env: 0, en: -8, money: 0 },
+            note: 'Mental work is exhausting. 15 minutes of nose-work or training equals 30+ minutes of physical exercise for tiring out a dog.' },
+          { id: 'puzzle_only', label: 'Skip the walk; food puzzle + couch snuggles all day',
+            effects: { phys: -2, ment: +5, soc: +5, env: +2, en: -2, money: -3 },
+            note: 'Pleasant for both of you, but high-energy breeds (especially under 5 years) will be wired by evening.' },
+          { id: 'nothing', label: 'Treat them like furniture today',
+            effects: { phys: -4, ment: -6, soc: -5, env: -2, en: 0, money: 0 },
+            note: 'Bored dogs invent jobs. Often those jobs involve your couch or your shoes.' }
+        ]
+      },
+      { day: 6, label: 'Day 6 — vacation request',
+        prompt: 'Your family is going to Boston for the weekend (Friday–Sunday). Pick the dog\'s coverage.',
+        choices: [
+          { id: 'kennel', label: 'Reputable boarding kennel ($55/night × 2 = $110)',
+            effects: { phys: +2, ment: +2, soc: -5, env: +3, en: 0, money: -110 },
+            note: 'Predictable care, supervised. Dogs miss their humans but stay healthy. Kennel cough is real — current bordetella vaccine matters.' },
+          { id: 'sitter', label: 'Trusted friend stays at your house ($80 thank-you)',
+            effects: { phys: +5, ment: +5, soc: +3, env: +5, en: 0, money: -80 },
+            note: 'Best welfare option if the friend is reliable. Dog stays in their own environment with their own routine.' },
+          { id: 'alone_visits', label: 'Friend drops by twice a day for feeds + walks ($30 thanks)',
+            effects: { phys: 0, ment: -5, soc: -8, env: -3, en: 0, money: -30 },
+            note: 'Cheaper, but a young/anxious dog alone overnight + most of the day will likely regress on training and may have accidents.' }
+        ]
+      },
+      { day: 7, label: 'Day 7 — family BBQ',
+        prompt: 'Your family is grilling. A guest offers your dog a chocolate brownie. What happens next?',
+        choices: [
+          { id: 'intercept', label: 'Politely intercept; offer guest a "dog-safe treat" to give instead',
+            effects: { phys: +5, ment: +3, soc: +5, env: 0, en: -2, money: -3 },
+            note: 'Theobromine in chocolate is metabolized too slowly by dogs — a brownie can be life-threatening for a small dog. You also taught the guest, kindly.' },
+          { id: 'allow', label: 'Let them have it. "It\'s just a little."',
+            effects: { phys: -10, ment: 0, soc: 0, env: 0, en: 0, money: -200 },
+            note: 'Vet emergency call ($95–$200 advice line) likely. Dark chocolate is significantly worse than milk; smaller dogs at higher risk per gram. Chocolate is the #1 reason dogs end up in pet poison hotlines.' },
+          { id: 'shoo', label: 'Just put the dog outside while you eat',
+            effects: { phys: -1, ment: -3, soc: -4, env: 0, en: -1, money: 0 },
+            note: 'Fine in a pinch but the dog learns that family events = exclusion. With a bit of training, dogs can lie on a mat during meals.' }
+        ]
+      }
+    ],
+    cat: [
+      { day: 1, label: 'Day 1 — bringing home the cat',
+        prompt: 'Your newly-adopted cat is hiding under the bed. It\'s been 4 hours.',
+        choices: [
+          { id: 'space', label: 'Set up food/water/litter in a quiet single room; let them come out on their own time',
+            effects: { phys: +6, ment: +8, soc: +5, env: +10, en: -3, money: 0 },
+            note: 'Standard shelter advice. New cats often need 3–7 days to relax. Forcing interaction triggers stress hiding for weeks.' },
+          { id: 'pull', label: 'Pull them out so they get used to you',
+            effects: { phys: -3, ment: -8, soc: -10, env: 0, en: -2, money: 0 },
+            note: 'You\'ve set up the wrong association — your hand = trapped. Recovery takes weeks of slow re-introduction.' },
+          { id: 'leave', label: 'Leave them alone all day; they\'ll figure it out',
+            effects: { phys: 0, ment: -3, soc: -2, env: +2, en: 0, money: 0 },
+            note: 'Better than forcing, but cats settle faster when you\'re calmly nearby (reading, working) than when the room is empty and "different" all day.' }
+        ]
+      },
+      { day: 2, label: 'Day 2 — the litter box',
+        prompt: 'You have one cat. How many litter boxes should you set up, and where?',
+        choices: [
+          { id: 'two', label: 'Two boxes, in two different rooms (one per cat + 1)',
+            effects: { phys: +6, ment: +5, soc: +3, env: +10, en: -2, money: -25 },
+            note: 'Industry standard: 1 box per cat + 1 extra. Even one cat benefits from 2 — different placements catch different urgency moments. Reduces "missing the box" surrenders dramatically.' },
+          { id: 'one_quiet', label: 'One box, in the laundry room',
+            effects: { phys: +2, ment: +1, soc: 0, env: +3, en: -1, money: -20 },
+            note: 'Minimum acceptable. Make sure it\'s scooped daily — cats refuse dirty boxes and pee elsewhere instead.' },
+          { id: 'one_corner', label: 'One box, tucked next to the dryer + furnace',
+            effects: { phys: -2, ment: -3, soc: 0, env: -3, en: -1, money: -20 },
+            note: 'Loud noises near the box = ambush trauma in cats\' minds. They\'ll start avoiding it.' }
+        ]
+      },
+      { day: 3, label: 'Day 3 — outdoor temptation',
+        prompt: 'Your cat is staring out the window, batting at the screen. A neighbor says "just let them out, cats love it."',
+        choices: [
+          { id: 'indoor_enrich', label: 'Stay indoor; add a window perch, food puzzles, daily play sessions',
+            effects: { phys: +8, ment: +12, soc: +5, env: +5, en: -6, money: -40 },
+            note: 'Indoor cats live 12–18 years; outdoor 2–5. See Welfare & Ethics for the bird-mortality data + your cat\'s safety.' },
+          { id: 'leash', label: 'Try harness + leash training for supervised outdoor time',
+            effects: { phys: +6, ment: +10, soc: +8, env: +3, en: -10, money: -25 },
+            note: 'Yes, cats can be leash-trained. Takes patience but gives outdoor enrichment without predation or risk. Best of both worlds.' },
+          { id: 'free_roam', label: 'Open the door; "they know where home is"',
+            effects: { phys: -8, ment: +3, soc: 0, env: 0, en: 0, money: 0 },
+            note: 'Owned outdoor cat lifespan ~5 years on average. They\'ll also kill an estimated dozens of birds/mammals per year. See Welfare & Ethics for the data.' }
+        ]
+      },
+      { day: 4, label: 'Day 4 — scratching the couch',
+        prompt: 'Your cat has been using the couch corner as a scratching post for two weeks. Friends are suggesting "just declaw."',
+        choices: [
+          { id: 'multi_post', label: 'Buy 2 tall vertical posts (sisal + cardboard) + redirect with treats',
+            effects: { phys: +6, ment: +5, soc: +3, env: +6, en: -4, money: -45 },
+            note: 'Cats scratch to mark + groom claws — they NEED to scratch. Provide many surfaces in different orientations. Couch cover or double-sided tape on the spot they\'re hitting now.' },
+          { id: 'caps', label: 'Soft Paws nail caps + regular trims',
+            effects: { phys: +3, ment: 0, soc: 0, env: +5, en: -3, money: -25 },
+            note: 'Vinyl caps glue over nails for 4–6 weeks. No pain, no surgery. Pair with scratching posts so the urge has somewhere to go.' },
+          { id: 'declaw', label: 'Schedule a declaw appointment',
+            effects: { phys: -15, ment: -10, soc: -8, env: 0, en: 0, money: -350 },
+            note: 'Declawing is amputation of the last bone of every toe (P3). AVMA + AAFP oppose. Banned in most of Europe + NY/MD. ~3× higher chronic-pain rate, 7× higher rate of biting + litter-box problems (Martell-Moran 2018). See Welfare & Ethics.' }
+        ]
+      },
+      { day: 5, label: 'Day 5 — sudden vet visit',
+        prompt: 'Your cat hasn\'t eaten in 24 hours and has been hiding more than usual. They\'re a 5-year-old indoor cat.',
+        choices: [
+          { id: 'vet_today', label: 'Vet appointment same day ($120 visit + $80 bloodwork)',
+            effects: { phys: +12, ment: +2, soc: +2, env: 0, en: -5, money: -200 },
+            note: 'Cats hide illness — appetite loss + hiding for 24+ hr is a red flag, especially in cats prone to hepatic lipidosis. Catching urinary blockage in male cats is a 24-hour emergency.' },
+          { id: 'wait_24', label: 'Wait another day; offer different food',
+            effects: { phys: -3, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
+            note: 'Risky in cats. They develop "fatty liver" (hepatic lipidosis) within 48–72 hr of food refusal — life-threatening cascade. 24 hr is the max-watch window.' },
+          { id: 'wait_week', label: '"Cats are like that" — wait a week',
+            effects: { phys: -15, ment: -5, soc: -3, env: 0, en: 0, money: -800 },
+            note: 'You\'ll likely face an emergency vet bill (~$800–$2,000) in 2–3 days, plus risk of permanent damage. Cats hide illness as prey-animal instinct.' }
+        ]
+      },
+      { day: 6, label: 'Day 6 — vacation: 3 days',
+        prompt: 'Family weekend trip Friday–Sunday. Cat coverage:',
+        choices: [
+          { id: 'sitter_visits', label: 'Cat sitter twice a day ($25/visit × 6 = $150). Litter, food, play, brush.',
+            effects: { phys: +5, ment: +5, soc: +3, env: +6, en: 0, money: -150 },
+            note: 'Cats often handle alone-time better than dogs, but daily check-ins catch sudden illness AND maintain litter freshness so the cat doesn\'t protest-pee.' },
+          { id: 'auto_feed', label: 'Auto-feeder + extra water + clean litter; check on Sunday',
+            effects: { phys: -3, ment: -3, soc: -3, env: -8, en: 0, money: -60 },
+            note: 'Three-day litter without scooping is gross enough that many cats stop using it. Auto-feeders fail, water bowls get knocked. Risky.' },
+          { id: 'boarding', label: 'Boarding facility ($55/night × 2 = $110)',
+            effects: { phys: 0, ment: -8, soc: -10, env: -3, en: 0, money: -110 },
+            note: 'Cats experience boarding as significantly more stressful than dogs. Their environment IS their territory — moving them = trauma. Sitter at home is better welfare for cats.' }
+        ]
+      },
+      { day: 7, label: 'Day 7 — guest with allergies',
+        prompt: 'A friend with cat allergies is visiting for a long weekend. They\'re asking you to "just let the cat be outside while I\'m here."',
+        choices: [
+          { id: 'guest_room', label: 'Set up a quiet room for cat with all comforts; HEPA filter where guest sleeps',
+            effects: { phys: +3, ment: +2, soc: 0, env: +4, en: -4, money: -30 },
+            note: 'Cat\'s territory remains intact. Friend takes their allergy meds + uses the HEPA. Both sides of the disagreement get respected.' },
+          { id: 'outside_temp', label: 'Yes, let cat outside for the weekend',
+            effects: { phys: -8, ment: -5, soc: -3, env: 0, en: 0, money: 0 },
+            note: 'Indoor cats unfamiliar with outdoors are at high risk of getting lost, hit, or attacked. They\'re also catching anything from outside (fleas, ticks, FIV/FeLV exposure).' },
+          { id: 'reschedule', label: 'Suggest the friend stay at a hotel this trip',
+            effects: { phys: +4, ment: 0, soc: -1, env: +2, en: -2, money: 0 },
+            note: 'Honest answer: hosting people who can\'t share space with your pet sometimes means hotel for them. Your animal isn\'t a temporary inconvenience.' }
+        ]
+      }
+    ],
+    rabbit: [
+      { day: 1, label: 'Day 1 — the cage question',
+        prompt: 'Your bunny\'s pet-store cage is 30" × 18". You\'re re-doing the setup. What works?',
+        choices: [
+          { id: 'free_roam', label: 'Free-roam in a bunny-proofed room (cords covered, baseboards protected)',
+            effects: { phys: +12, ment: +12, soc: +8, env: +8, en: -10, money: -100 },
+            note: 'Best welfare. Rabbits are crepuscular athletes — they need to run + binky + dig. House Rabbit Society standard.' },
+          { id: 'big_pen', label: '4×4 ft exercise pen with 3 hours daily out-of-pen time',
+            effects: { phys: +6, ment: +8, soc: +5, env: +5, en: -6, money: -80 },
+            note: 'Acceptable middle ground. Make sure out-of-pen time is daily and predictable.' },
+          { id: 'cage', label: 'Keep the original cage',
+            effects: { phys: -8, ment: -10, soc: -3, env: -8, en: 0, money: 0 },
+            note: 'Pet-store cages are inhumane for rabbits — they cause foot sores ("hock disease"), aggression from confinement, and severely compressed lifespan. RSPCA + HRS both call this welfare failure.' }
+        ]
+      },
+      { day: 2, label: 'Day 2 — diet',
+        prompt: 'You\'re at the pet store. The clerk recommends a "complete rabbit kibble" diet.',
+        choices: [
+          { id: 'hay_first', label: 'Buy unlimited timothy hay + small pellet portion + leafy greens',
+            effects: { phys: +12, ment: +5, soc: +2, env: +3, en: -3, money: -45 },
+            note: 'Correct. Hay = 80% of diet. Pellets = supplement only (1/4 cup/day max for adults). Iceberg lettuce dangerous — use romaine, parsley, basil.' },
+          { id: 'pellets_main', label: 'Pellets are the main meal; hay is a treat',
+            effects: { phys: -10, ment: -3, soc: 0, env: 0, en: -1, money: -25 },
+            note: 'Causes obesity, dental disease (rabbit teeth grow forever — they need hay\'s grinding action), and GI stasis. Surprisingly common cause of vet visits.' },
+          { id: 'free_food', label: 'Free-fed pellets, occasional hay',
+            effects: { phys: -12, ment: -4, soc: 0, env: 0, en: 0, money: -20 },
+            note: 'GI stasis emergency likely within months. The #1 cause of rabbit ER visits. Vet bill ~$300–$1,500 if caught early; fatal if not.' }
+        ]
+      },
+      { day: 3, label: 'Day 3 — pair bonding',
+        prompt: 'Rabbits are highly social — most happiest in bonded pairs. Should you adopt a friend?',
+        choices: [
+          { id: 'shelter_bond', label: 'Adopt a second rabbit from a shelter; do supervised intros',
+            effects: { phys: +6, ment: +12, soc: +15, env: 0, en: -8, money: -80 },
+            note: 'Shelter staff often "speed-date" rabbits to find compatible pairs. Both must be spayed/neutered first. Bonding takes weeks of supervised intros — patience pays off.' },
+          { id: 'solo', label: 'Keep solo; spend lots of one-on-one time instead',
+            effects: { phys: 0, ment: -3, soc: -2, env: 0, en: -5, money: 0 },
+            note: 'Possible if you genuinely have hours daily, but most working/school people can\'t match what another bun does. Switzerland makes solo rabbit ownership ILLEGAL for this reason.' },
+          { id: 'just_add', label: 'Buy another, no introductions',
+            effects: { phys: -10, ment: -5, soc: -5, env: 0, en: 0, money: -50 },
+            note: 'Rabbits are territorial — unbonded buns can fight to serious injury. Introductions on neutral territory, both spayed/neutered, takes weeks.' }
+        ]
+      },
+      { day: 4, label: 'Day 4 — spay surgery',
+        prompt: 'Your female rabbit is 6 months old. The exotic vet recommends spaying. Cost estimate: $400.',
+        choices: [
+          { id: 'spay', label: 'Schedule the spay',
+            effects: { phys: +18, ment: +3, soc: +3, env: 0, en: -5, money: -400 },
+            note: 'Female rabbits have ~80% rate of uterine cancer by age 5 if not spayed (House Rabbit Society / Saunders 2003). Spay nearly eliminates this. Plus reduces aggression + spraying.' },
+          { id: 'wait', label: 'Wait until she shows symptoms',
+            effects: { phys: -15, ment: 0, soc: 0, env: 0, en: 0, money: -1500 },
+            note: 'By the time symptoms (blood in urine, lethargy) show, cancer is often advanced + spread. Spay-now is preventive + far cheaper than later treatment.' },
+          { id: 'never', label: '"She\'s a pet — why bother?"',
+            effects: { phys: -25, ment: -3, soc: -3, env: 0, en: 0, money: 0 },
+            note: 'Far higher cancer mortality. Also: hormones in unspayed females cause aggression + spraying that often gets rabbits surrendered. See Welfare & Ethics for the broader picture.' }
+        ]
+      },
+      { day: 5, label: 'Day 5 — GI stasis warning',
+        prompt: 'Your rabbit hasn\'t pooped in 12 hours and is hunched in the corner. (See Body Language: tooth grinding, hunched posture.) What now?',
+        choices: [
+          { id: 'er', label: 'Exotic vet ER visit IMMEDIATELY ($300+ overnight)',
+            effects: { phys: +20, ment: +2, soc: +2, env: 0, en: -8, money: -350 },
+            note: 'GI stasis (gut shutdown) is THE rabbit emergency. 12 hours without pooping = TIME-SENSITIVE. Subcutaneous fluids, motility drugs, pain control. Caught early: ~85% recovery. Caught late: high mortality.' },
+          { id: 'wait_morning', label: 'Wait until morning to call',
+            effects: { phys: -20, ment: -3, soc: 0, env: 0, en: 0, money: -1200 },
+            note: 'You may face a much larger bill (or worse). GI stasis cascades fast. The 12-hr rule from House Rabbit Society is non-negotiable.' },
+          { id: 'home_remedy', label: 'Try gentle tummy massage + offer treats',
+            effects: { phys: -15, ment: -2, soc: 0, env: 0, en: -3, money: 0 },
+            note: 'Massage is fine but not a treatment. Stasis usually has an underlying cause (dental, blockage, stress, poor diet). Vet diagnosis matters.' }
+        ]
+      },
+      { day: 6, label: 'Day 6 — kid wants to hold',
+        prompt: 'A young niece (age 6) is visiting and wants to hold the rabbit. The rabbit is recently bonded but not yet handling-confident.',
+        choices: [
+          { id: 'floor_visit', label: 'Sit on floor with niece; let rabbit approach on its terms',
+            effects: { phys: +3, ment: +5, soc: +5, env: +2, en: -3, money: 0 },
+            note: 'Rabbits are prey animals — being held high (above eye-level) triggers predator-grab instinct. Floor-level interactions are far better welfare.' },
+          { id: 'hold_briefly', label: 'Carefully hand the rabbit to her for 30 seconds',
+            effects: { phys: -3, ment: -3, soc: -5, env: 0, en: -2, money: 0 },
+            note: 'Many rabbits stress-freeze in human arms (they\'re not enjoying it — they\'re terrified). Adults can usually hold safely; kids almost always misjudge.' },
+          { id: 'no', label: 'Tell niece "no — rabbits are not for holding"; offer brushing instead',
+            effects: { phys: +5, ment: +3, soc: +3, env: +1, en: -2, money: 0 },
+            note: 'Honest answer. Brushing a willing rabbit is delightful for both species. Holding is a risk for the rabbit and a teach-them-now moment for the niece.' }
+        ]
+      },
+      { day: 7, label: 'Day 7 — long-term reality check',
+        prompt: 'You\'ve been a rabbit owner for one week. A friend mentions getting one. What do you tell them?',
+        choices: [
+          { id: 'honest', label: '"They\'re wonderful but high-effort. Plan 8–12 years, exotic vets, daily greens + hay, free-roam space, almost certainly pair-bonded. Read House Rabbit Society first."',
+            effects: { phys: +5, ment: +5, soc: +5, env: +3, en: -2, money: 0 },
+            note: 'Honest counsel. Rabbits are surrendered to shelters at high rates because they\'re the third-most popular pet sold and routinely sold without honest expectations.' },
+          { id: 'easy', label: '"Yeah easy starter pet — basically a vegetarian cat"',
+            effects: { phys: -5, ment: -5, soc: 0, env: -3, en: 0, money: 0 },
+            note: 'You just contributed to a future shelter rabbit. House Rabbit Society explicitly says rabbits are NOT good first pets for kids. The friend\'s rabbit will pay the price.' },
+          { id: 'unsure', label: '"Honestly, no. They\'re harder than I thought."',
+            effects: { phys: 0, ment: 0, soc: 0, env: 0, en: 0, money: 0 },
+            note: 'Also valid. Rabbits aren\'t for everyone. Honest about your experience saves the friend from making the same surprise.' }
+        ]
+      }
+    ]
+  };
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 8: TOOL REGISTRATION + RENDER (helpers + view router)
   // Render functions added in subsequent edits.
   // ─────────────────────────────────────────────────────────
@@ -628,6 +1029,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'genetics',     icon: '🧬', label: 'Domestication & Breeding', desc: 'Artificial selection, breed traits, inbreeding consequences.' },
       { id: 'zoonoses',     icon: '🦠', label: 'Zoonoses & One Health', desc: 'Diseases that cross species. Maine ticks. Rabies.' },
       { id: 'service',      icon: '♿', label: 'Service & Support Animals', desc: 'Service dog vs ESA vs therapy: legal + scientific distinctions.' },
+      { id: 'welfare',      icon: '🛡️', label: 'Welfare & Ethics',     desc: 'Spay/neuter, adoption vs breeding, declawing, outdoor cats. Sourced inline.' },
+      { id: 'careSim',      icon: '📅', label: 'Pet-Care Week (sim)',  desc: 'Live a week with a dog/cat/rabbit. Decisions affect 4 welfare meters.' },
       { id: 'picker',       icon: '🏠', label: 'Pet Picker',           desc: 'Match species/breed-class to your housing + lifestyle.' },
       { id: 'bodyLang',     icon: '👀', label: 'Body Language Decoder', desc: 'Read dogs, cats, rabbits, birds. Stress + appeasement signals.' },
       { id: 'cost',         icon: '💵', label: 'Lifetime Cost Calc',   desc: 'First-year + annual + emergency fund. Time + space too.' },
@@ -790,6 +1193,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         crossLink('Cat training is real', h('span', null,
           'For the operant theory of how cats learn, see ', h('strong', { style: { color: T.text } }, 'BehaviorLab'),
           '. Cats train readily with food rewards + clickers — see the Pet Training tile. The "cats can\'t be trained" myth is in Myths Busted.')),
+        crossLink('Two welfare topics specific to cats', h('span', null,
+          'Two cat-welfare debates are worth understanding deeply: ',
+          h('strong', { style: { color: T.text } }, 'declawing'),
+          ' (it\'s amputation of the last bone of every toe — not nail trimming — and there are alternatives that work) and ',
+          h('strong', { style: { color: T.text } }, 'outdoor vs indoor'),
+          ' (free-roaming cats are the #1 human-caused source of US bird mortality, AND outdoor cats live ~3× shorter lives than indoor). See the ',
+          h('strong', { style: { color: T.accentHi } }, 'Welfare & Ethics'),
+          ' tile for the data + sources + practical alternatives.')),
         footer());
     }
 
@@ -956,8 +1367,277 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           how: 'Hold finger / perch in front of belly + cue "step up." Reward generously when they step up. NEVER chase a parrot — handle on their schedule. Recall is built with two trainers + treats, increasing distance.',
           species: 'Parrots' }
       ];
+      // Sub-mode: 'read' (default scenario listing) or 'sim' (operant trainer game)
+      var trMode = d.trMode || 'read';
+      function setTrMode(m) { upd('trMode', m); petsAnnounce(m === 'sim' ? 'Operant trainer simulator' : 'Reading mode'); }
+      // ── Operant trainer game ──
+      // Goal: train "sit" over 10 rounds. Each round, the dog does something
+      // (sometimes the target, sometimes random). Student picks a response
+      // within a conceptual 3-second window. Updates a behavior-probability
+      // bar. Teaches: reinforcement timing, 3-second rule, the cost of
+      // reinforcing the wrong thing, the difference between marker-only +
+      // marker-then-treat, and that punishment poisons the relationship.
+      var TR_MOMENTS = [
+        // type: 'target' = the desired behavior (sit), 'almost' = close to it,
+        // 'wrong' = unrelated behavior. Each moment includes a description.
+        { type: 'target',  desc: 'You hold a treat above your puppy\'s nose. Their butt drops to the floor.', label: '✓ Sat fully' },
+        { type: 'wrong',   desc: 'Your puppy is sniffing the corner of the rug, ignoring you.', label: '× Distracted, sniffing' },
+        { type: 'almost',  desc: 'You say "sit." The puppy stares at you, doesn\'t move.', label: '~ Looking at you, not sitting' },
+        { type: 'target',  desc: 'After "sit," the puppy lowers all the way to a clean sit.', label: '✓ Sat fully' },
+        { type: 'wrong',   desc: 'The puppy jumps up to lick your face.', label: '× Jumped up' },
+        { type: 'target',  desc: 'You wait quietly. The puppy offers a sit on their own.', label: '✓ Offered a sit' },
+        { type: 'almost',  desc: 'The puppy starts to lower, then stands back up.', label: '~ Half-sit' },
+        { type: 'target',  desc: 'You say "sit." The puppy sits faster than before.', label: '✓ Quick sit on cue' },
+        { type: 'wrong',   desc: 'The puppy starts barking at a noise outside.', label: '× Barking at noise' },
+        { type: 'target',  desc: 'You say "sit." The puppy holds the sit for 3 seconds.', label: '✓ Sustained sit' }
+      ];
+      var trSim = d.trSim || null;  // { idx, choices, prob, trust, log }
+      function startTrSim() {
+        upd('trSim', { idx: 0, choices: [], prob: 0.20, trust: 1.00, done: false, log: [] });
+      }
+      function newTrSim() { upd('trSim', null); startTrSim(); }
+      function pickResponse(rxn) {
+        if (!trSim) return;
+        if (trSim.done) return;
+        if ((trSim.choices || [])[trSim.idx] != null) return;  // already answered this round
+        var moment = TR_MOMENTS[trSim.idx];
+        var dProb = 0, dTrust = 0, verdict;
+        // Reinforcement model — simplified for pedagogy
+        // rxn: 'treat3s' (treat within 3s), 'click' (marker only), 'wait', 'correct'
+        if (moment.type === 'target') {
+          if (rxn === 'treat3s') { dProb = +0.10; verdict = 'Excellent timing. Reinforced the desired behavior right when it happened. The puppy is learning what works.'; }
+          else if (rxn === 'click') { dProb = +0.05; verdict = 'Marker without a treat works ONCE in a while if you pair markers with food consistently. Long-term you need to back it up with reinforcement.'; }
+          else if (rxn === 'wait')  { dProb = -0.04; verdict = 'You watched the desired behavior happen and did nothing. To the puppy, sitting "didn\'t pay" — they\'ll try other things next time.'; }
+          else if (rxn === 'correct') { dProb = -0.12; dTrust = -0.10; verdict = 'You just punished the RIGHT behavior. Devastating: the puppy now thinks sitting causes scolding. This is called "poisoning the cue."'; }
+        } else if (moment.type === 'almost') {
+          if (rxn === 'treat3s') { dProb = +0.04; verdict = 'You reinforced an approximation. This is called "shaping" — useful for building behavior step by step.'; }
+          else if (rxn === 'click') { dProb = +0.06; verdict = 'Marking an approximation without giving the full treat is classic shaping. The marker tells the puppy "that\'s the move." Excellent.'; }
+          else if (rxn === 'wait')  { dProb = +0.00; verdict = 'Reasonable — you\'re holding out for a clean sit. Just be patient.'; }
+          else if (rxn === 'correct') { dTrust = -0.08; verdict = 'Correcting an approximation makes the puppy hesitant to try anything. They\'ll shut down.'; }
+        } else {  // wrong
+          if (rxn === 'treat3s') { dProb = -0.15; verdict = 'You reinforced the WRONG behavior. The puppy now thinks barking / jumping / sniffing earned the treat. Common mistake.'; }
+          else if (rxn === 'click') { dProb = -0.08; verdict = 'Marking the wrong behavior plants the wrong association. Try not to mark unrelated behaviors.'; }
+          else if (rxn === 'wait')  { dProb = +0.02; verdict = 'Correct — ignoring undesired behavior is "extinction." If it doesn\'t pay, the puppy stops doing it.'; }
+          else if (rxn === 'correct') { dTrust = -0.07; verdict = 'Verbal corrections add stress without teaching what TO do. Modern training (AVSAB) recommends redirect + reward the alternative.'; }
+        }
+        var newProb = Math.max(0, Math.min(1, trSim.prob + dProb));
+        var newTrust = Math.max(0, Math.min(1, trSim.trust + dTrust));
+        var nextChoices = (trSim.choices || []).slice();
+        nextChoices[trSim.idx] = { rxn: rxn, dProb: dProb, dTrust: dTrust, verdict: verdict, momentLabel: moment.label, momentType: moment.type };
+        upd('trSim', Object.assign({}, trSim, {
+          choices: nextChoices,
+          prob: newProb,
+          trust: newTrust,
+          log: (trSim.log || []).concat([{ rd: trSim.idx + 1, prob: newProb, trust: newTrust, dProb: dProb }])
+        }));
+      }
+      function nextTrRound() {
+        if (!trSim) return;
+        if (trSim.idx < TR_MOMENTS.length - 1) {
+          upd('trSim', Object.assign({}, trSim, { idx: trSim.idx + 1 }));
+        } else {
+          // Done
+          var finalScore = Math.round(trSim.prob * 100);
+          var trustScore = Math.round(trSim.trust * 100);
+          if (finalScore >= 70 && trustScore >= 80) awardBadge('pets_trainer', 'Reinforcement Trainer');
+          upd('trSim', Object.assign({}, trSim, { done: true }));
+        }
+      }
+      function renderTrainerSim() {
+        if (!trSim) {
+          return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
+            h('div', { style: { fontSize: 32, marginBottom: 8 } }, '🐕'),
+            h('h3', { style: { margin: '0 0 6px', color: T.accentHi, fontSize: 17 } }, 'Train "Sit" — 10-round operant simulator'),
+            h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 8px' } },
+              'Your puppy is in the kitchen. Each round, they do something. You have ~3 seconds to respond. Pick: treat-within-3s · marker-only · wait · verbal correction.'
+            ),
+            h('p', { style: { color: T.dim, fontSize: 12, lineHeight: 1.55, margin: '0 0 14px', fontStyle: 'italic' } },
+              'Reach 70%+ behavior probability while keeping trust above 80% to earn the Reinforcement Trainer badge.'
+            ),
+            h('button', { 'data-pets-focusable': true,
+              onClick: startTrSim,
+              style: btnPrimary({ padding: '12px 22px', fontSize: 14 })
+            }, '▶ Start 10-round trainer')
+          );
+        }
+        if (trSim.done) {
+          var finalScore = Math.round(trSim.prob * 100);
+          var trustScore = Math.round(trSim.trust * 100);
+          var headline = finalScore >= 70 && trustScore >= 80 ? '🏆 Solid trainer.'
+            : finalScore >= 50 ? '👍 Decent — review the moments where probability dropped.'
+            : finalScore >= 30 ? '🤔 Behavior is wobbly. You may have reinforced the wrong things or punished too much.'
+            : '😬 The puppy learned the wrong lessons. Re-read the scenarios above and try again.';
+          var trustNote = trustScore < 70 ? '⚠ Trust is low — corrections damaged the relationship. The puppy will be hesitant going forward.'
+            : trustScore < 90 ? 'Trust took a small hit. Build back with positive sessions.'
+            : '✓ Trust is strong. The puppy is engaged and willing.';
+          // Render a probability/trust line over rounds
+          var W = 360, H = 100;
+          var pad = { l: 22, r: 8, t: 8, b: 18 };
+          var sx = function(i) { return pad.l + (i / (TR_MOMENTS.length - 1)) * (W - pad.l - pad.r); };
+          var sy = function(p) { return pad.t + (1 - p) * (H - pad.t - pad.b); };
+          var probPath = 'M ' + (trSim.log || []).map(function(pt, i) { return sx(i) + ',' + sy(pt.prob); }).join(' L ');
+          var trustPath = 'M ' + (trSim.log || []).map(function(pt, i) { return sx(i) + ',' + sy(pt.trust); }).join(' L ');
+          return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '2px solid ' + (finalScore >= 70 && trustScore >= 80 ? T.ok : T.accent) } },
+            h('div', { style: { fontSize: 18, fontWeight: 900, color: T.text, marginBottom: 6 } }, headline),
+            h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 8px' } }, trustNote),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 12 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim } }, 'Behavior probability'),
+                h('div', { style: { fontSize: 26, fontWeight: 800, color: finalScore >= 70 ? T.ok : finalScore >= 40 ? T.accentHi : T.danger, fontFamily: 'monospace' } },
+                  finalScore + '%'),
+                h('div', { style: { fontSize: 10, color: T.dim } }, 'Likelihood the puppy will offer "sit" on cue')
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim } }, 'Relationship trust'),
+                h('div', { style: { fontSize: 26, fontWeight: 800, color: trustScore >= 80 ? T.ok : trustScore >= 60 ? T.warm : T.danger, fontFamily: 'monospace' } },
+                  trustScore + '%'),
+                h('div', { style: { fontSize: 10, color: T.dim } }, 'Willingness to engage and try things')
+              )
+            ),
+            // Trajectory
+            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, marginBottom: 12 } },
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Trajectory across 10 rounds'),
+              h('svg', { width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H, role: 'img',
+                'aria-label': 'Behavior probability and trust trajectory across 10 rounds.',
+                style: { background: T.bg, borderRadius: 4 } },
+                // Y reference lines at 0.5 and 1.0
+                [0.5, 1.0].map(function(v, i) {
+                  return h('g', { key: i },
+                    h('line', { x1: pad.l, y1: sy(v), x2: W - pad.r, y2: sy(v), stroke: '#374151', strokeWidth: 1, strokeDasharray: '2 3' }),
+                    h('text', { x: pad.l - 3, y: sy(v) + 3, textAnchor: 'end', fontSize: 8, fill: T.dim }, v)
+                  );
+                }),
+                h('path', { d: probPath, fill: 'none', stroke: T.accent, strokeWidth: 2 }),
+                h('path', { d: trustPath, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '4 3' }),
+                h('text', { x: W - pad.r, y: pad.t + 6, fontSize: 9, fill: T.accent, textAnchor: 'end' }, 'Behavior'),
+                h('text', { x: W - pad.r, y: pad.t + 18, fontSize: 9, fill: '#7dd3fc', textAnchor: 'end' }, 'Trust')
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('button', { 'data-pets-focusable': true,
+                onClick: newTrSim,
+                style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
+              }, '🔁 New session'),
+              h('button', { 'data-pets-focusable': true,
+                onClick: function() { setTrMode('read'); },
+                style: btn({ padding: '10px 18px', fontSize: 13 })
+              }, '📚 Back to scenarios')
+            )
+          );
+        }
+        // Active round
+        var moment = TR_MOMENTS[trSim.idx];
+        var thisChoice = (trSim.choices || [])[trSim.idx];
+        var revealed = thisChoice != null;
+        var probPct = Math.round(trSim.prob * 100);
+        var trustPct = Math.round(trSim.trust * 100);
+        var responseBtns = [
+          { id: 'treat3s', label: '🍖 Treat (within 3s)', desc: 'Mark + reinforce' },
+          { id: 'click',   label: '👍 Marker only ("yes!")', desc: 'Click without food' },
+          { id: 'wait',    label: '⏸ Wait / ignore', desc: 'No response' },
+          { id: 'correct', label: '❌ Verbal correction ("no!")', desc: 'Punishment' }
+        ];
+        return h('div', null,
+          // Status bars
+          h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, marginBottom: 12 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginBottom: 4 } },
+              h('span', null, 'Round ' + (trSim.idx + 1) + ' / ' + TR_MOMENTS.length),
+              h('span', null, 'Behavior ' + probPct + '%  ·  Trust ' + trustPct + '%')
+            ),
+            // Behavior probability bar
+            h('div', { style: { height: 8, background: T.bg, borderRadius: 4, overflow: 'hidden', marginBottom: 4 }, 'aria-hidden': 'true' },
+              h('div', { style: { width: probPct + '%', height: '100%', background: probPct >= 60 ? T.ok : probPct >= 30 ? T.accentHi : T.danger, transition: 'width 0.3s' } })
+            ),
+            // Trust bar
+            h('div', { style: { height: 4, background: T.bg, borderRadius: 2, overflow: 'hidden' }, 'aria-hidden': 'true' },
+              h('div', { style: { width: trustPct + '%', height: '100%', background: '#7dd3fc', transition: 'width 0.3s' } })
+            )
+          ),
+          // The moment
+          h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, '🐕 What the puppy does'),
+            h('div', { style: { fontSize: 16, color: T.text, fontWeight: 600, lineHeight: 1.5 } }, moment.desc),
+            h('div', { style: { fontSize: 11, color: T.dim, marginTop: 8, fontStyle: 'italic' } }, 'You have ~3 seconds in real life — pick your response now.')
+          ),
+          // Response choices
+          h('div', { role: 'radiogroup', 'aria-label': 'Choose your response',
+            style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 12 } },
+            responseBtns.map(function(b) {
+              var isPicked = revealed && thisChoice.rxn === b.id;
+              return h('button', {
+                key: b.id, role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+                'data-pets-focusable': true,
+                disabled: revealed,
+                onClick: function() { pickResponse(b.id); },
+                style: btn({
+                  padding: '12px 14px', fontSize: 13,
+                  background: isPicked ? 'rgba(245,158,11,0.15)' : T.card,
+                  border: '2px solid ' + (isPicked ? T.accent : T.border),
+                  cursor: revealed ? 'default' : 'pointer',
+                  textAlign: 'center'
+                })
+              },
+                h('div', { style: { fontWeight: 700, marginBottom: 2 } }, b.label),
+                h('div', { style: { fontSize: 11, color: T.dim, fontWeight: 400 } }, b.desc)
+              );
+            })
+          ),
+          // Reveal + next
+          revealed && h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt,
+              borderLeft: '4px solid ' + (thisChoice.dProb > 0 ? T.ok : thisChoice.dProb < 0 ? T.danger : T.dim),
+              marginBottom: 12 } },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 6 } },
+                h('span', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Result'),
+                h('span', { style: { fontSize: 12, fontFamily: 'monospace', color: thisChoice.dProb > 0 ? T.ok : thisChoice.dProb < 0 ? T.danger : T.dim, fontWeight: 700 } },
+                  (thisChoice.dProb >= 0 ? '+' : '') + Math.round(thisChoice.dProb * 100) + '% behavior' +
+                  (thisChoice.dTrust !== 0 ? ', ' + (thisChoice.dTrust >= 0 ? '+' : '') + Math.round(thisChoice.dTrust * 100) + '% trust' : '')
+                )
+              ),
+              h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, thisChoice.verdict)
+            ),
+            h('button', { 'data-pets-focusable': true,
+              onClick: nextTrRound,
+              style: btnPrimary({ padding: '10px 22px', fontSize: 13, width: '100%' })
+            }, trSim.idx < TR_MOMENTS.length - 1 ? 'Next round →' : 'See results ✓')
+          )
+        );
+      }
+      // Mode toggle
+      var trModeBar = h('div', { role: 'tablist', 'aria-label': 'Training mode',
+        style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
+        ['read', 'sim'].map(function(m) {
+          var sel = trMode === m;
+          return h('button', {
+            key: m, role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            'data-pets-focusable': true,
+            'aria-label': m === 'read' ? 'Reading mode — scenarios reference' : 'Simulator mode — operant trainer game',
+            onClick: function() { setTrMode(m); },
+            style: btn({
+              padding: '8px 14px', fontSize: 13,
+              background: sel ? T.accent : T.card,
+              color: sel ? '#1f1612' : T.text,
+              border: '2px solid ' + (sel ? T.accent : T.border),
+              fontWeight: sel ? 800 : 600
+            })
+          }, (m === 'read' ? '📚 Read scenarios' : '🎯 Trainer simulator'));
+        })
+      );
+      if (trMode === 'sim') {
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🎯 Pet Training (applied)'),
+          trModeBar,
+          renderTrainerSim(),
+          crossLink('Theory deep-dive: BehaviorLab', h('span', null,
+            'For interactive operant conditioning theory (reinforcement schedules, shaping, extinction, chains), open ',
+            h('strong', { style: { color: T.text } }, 'BehaviorLab'),
+            '. This trainer applies that theory to a puppy in a kitchen.')),
+          footer()
+        );
+      }
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('🎯 Pet Training (applied)'),
+        trModeBar,
         h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, 'This tile assumes the operant theory'),
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -1092,10 +1772,180 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               ' linked to white-coat genes (Dalmatians, blue-eyed white cats, double-merle dogs). Up to 30% of Dalmatians have hearing loss in at least one ear.'),
             h('li', null, h('strong', { style: { color: T.warm } }, 'Hypertrophic cardiomyopathy'),
               ' (Maine Coon, Ragdoll cats): genetic test exists for the major mutations; reputable breeders screen.'))),
-        h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border } },
+        h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'Designer-breed reality'),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
             'F1 "doodle" hybrids (Goldendoodle, Labradoodle) are genuinely first-generation crosses with hybrid vigor and unpredictable coats / sizes / temperaments. F2+ generations (doodle × doodle) lose the predictability AND can stack health risks from both parents. "Hypoallergenic" is overstated — allergens are in saliva + dander, not just hair, and no breed is truly hypoallergenic.')),
+
+        // ── Interactive Punnett square: Labrador coat color (2 loci) ──
+        // B locus: B (black) dominant over b (chocolate). E locus: E allows
+        // expression of pigment; ee masks pigment so dog is yellow regardless
+        // of B/b. Two black Labs with hidden b or e can absolutely have a
+        // chocolate or yellow puppy — students see WHY in the 16 squares.
+        (function() {
+          var pa1 = d.geneP1 || 'BbEe';
+          var pa2 = d.geneP2 || 'BbEe';
+          // Generate gametes from a 2-locus genotype like 'BbEe'
+          function gametes(geno) {
+            // geno is 4 chars: B/b at index 0-1, E/e at index 2-3 (e.g. 'BbEe', 'BBEe', 'bbee')
+            var b1 = geno[0], b2 = geno[1], e1 = geno[2], e2 = geno[3];
+            // 4 unique gametes (with duplicates if homozygous): [B,E] [B,e] [b,E] [b,e]
+            var bs = (b1 === b2) ? [b1] : [b1, b2];
+            var es = (e1 === e2) ? [e1] : [e1, e2];
+            var out = [];
+            bs.forEach(function(bb) {
+              es.forEach(function(ee) {
+                out.push(bb + ee);
+              });
+            });
+            // Pad to 4 by repetition (so the Punnett grid is consistent 4×4)
+            while (out.length < 4) out.push(out[out.length - 1]);
+            return out;
+          }
+          // Phenotype from offspring (4-char genotype string like 'BBEe' or unsorted)
+          function phenotype(b1, b2, e1, e2) {
+            // Order by dominant first
+            var hasE = (e1 === 'E' || e2 === 'E');
+            if (!hasE) return { color: 'Yellow', hex: '#fbbf24', text: '#1f1612' };
+            var hasB = (b1 === 'B' || b2 === 'B');
+            if (hasB) return { color: 'Black', hex: '#1f2937', text: '#fef3c7' };
+            return { color: 'Chocolate', hex: '#78350f', text: '#fef3c7' };
+          }
+          // Sort genotype letters so 'BB' / 'Bb' (not 'bB')
+          function sortAlleles(a, b) {
+            // Uppercase first
+            if (a.toUpperCase() === a && b.toUpperCase() !== b) return a + b;
+            if (b.toUpperCase() === b && a.toUpperCase() !== a) return b + a;
+            return [a, b].sort().join('');
+          }
+          var g1 = gametes(pa1);
+          var g2 = gametes(pa2);
+          // Build the 4×4 Punnett grid
+          var grid = [];
+          var counts = { Black: 0, Chocolate: 0, Yellow: 0 };
+          for (var ri = 0; ri < 4; ri++) {
+            grid[ri] = [];
+            for (var ci = 0; ci < 4; ci++) {
+              var ga = g1[ri], gb = g2[ci];
+              var bGeno = sortAlleles(ga[0], gb[0]);
+              var eGeno = sortAlleles(ga[1], gb[1]);
+              var pheno = phenotype(ga[0], gb[0], ga[1], gb[1]);
+              counts[pheno.color]++;
+              grid[ri][ci] = { geno: bGeno + eGeno, pheno: pheno };
+            }
+          }
+          var GENOTYPE_OPTIONS = [
+            { id: 'BBEE', label: 'BBEE — Pure black' },
+            { id: 'BBEe', label: 'BBEe — Black, carrier for yellow' },
+            { id: 'BbEE', label: 'BbEE — Black, carrier for chocolate' },
+            { id: 'BbEe', label: 'BbEe — Black, carrier for both (most common pet)' },
+            { id: 'bbEE', label: 'bbEE — Pure chocolate' },
+            { id: 'bbEe', label: 'bbEe — Chocolate, carrier for yellow' },
+            { id: 'BBee', label: 'BBee — Yellow (B hidden by ee)' },
+            { id: 'Bbee', label: 'Bbee — Yellow (B hidden by ee)' },
+            { id: 'bbee', label: 'bbee — Yellow with brown pigment (nose, eye rims)' }
+          ];
+          return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } }, '🧪 Punnett square: Labrador coat color (B/b · E/e)'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              'Two genes determine Lab color. ',
+              h('strong', { style: { color: T.text } }, 'B'), ' (black) is dominant over ',
+              h('strong', { style: { color: T.text } }, 'b'), ' (chocolate). ',
+              h('strong', { style: { color: T.text } }, 'E'), ' allows pigment expression; ',
+              h('strong', { style: { color: T.text } }, 'ee'), ' masks pigment so the dog is yellow regardless of B/b. Pick two parents to see all 16 possible offspring genotypes and the resulting phenotype ratio.'
+            ),
+            // Parent pickers
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 14 } },
+              ['1', '2'].map(function(num) {
+                var key = num === '1' ? 'geneP1' : 'geneP2';
+                var val = num === '1' ? pa1 : pa2;
+                var ph = phenotype(val[0], val[1], val[2], val[3]);
+                return h('div', { key: num },
+                  h('label', { htmlFor: 'pets-gene-p' + num, style: { display: 'block', fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 4 } }, 'Parent ' + num),
+                  h('select', {
+                    id: 'pets-gene-p' + num,
+                    'data-pets-focusable': true,
+                    value: val,
+                    onChange: function(e) { upd(key, e.target.value); },
+                    style: { width: '100%', padding: 8, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+                  },
+                    GENOTYPE_OPTIONS.map(function(opt) {
+                      return h('option', { key: opt.id, value: opt.id }, opt.label);
+                    })
+                  ),
+                  h('div', { style: { marginTop: 6, padding: '6px 10px', borderRadius: 6, background: ph.hex, color: ph.text, fontSize: 11, fontWeight: 700, textAlign: 'center' } },
+                    ph.color + ' Lab'
+                  )
+                );
+              })
+            ),
+            // Punnett grid
+            h('div', { style: { overflowX: 'auto' } },
+              h('table', { style: { width: '100%', maxWidth: 540, margin: '0 auto', borderCollapse: 'collapse', fontFamily: 'monospace' },
+                'aria-label': 'Punnett square 4 by 4 grid showing 16 offspring genotypes and phenotypes' },
+                h('thead', null,
+                  h('tr', null,
+                    h('th', { style: { padding: 6, color: T.dim, fontSize: 10 } }, ''),
+                    g2.map(function(gam, i) {
+                      return h('th', { key: i, style: { padding: 6, color: T.accentHi, fontSize: 12, fontWeight: 800, background: T.cardAlt, border: '1px solid ' + T.border } }, gam);
+                    })
+                  )
+                ),
+                h('tbody', null,
+                  grid.map(function(row, ri) {
+                    return h('tr', { key: ri },
+                      h('td', { style: { padding: 6, color: T.accentHi, fontSize: 12, fontWeight: 800, background: T.cardAlt, border: '1px solid ' + T.border, textAlign: 'center' } }, g1[ri]),
+                      row.map(function(cell, ci) {
+                        return h('td', { key: ci, style: {
+                          padding: 6, border: '1px solid ' + T.border,
+                          background: cell.pheno.hex, color: cell.pheno.text,
+                          textAlign: 'center', fontSize: 12, fontWeight: 700, minWidth: 70
+                        } },
+                          h('div', null, cell.geno),
+                          h('div', { style: { fontSize: 10, fontWeight: 500, marginTop: 2, opacity: 0.85 } }, cell.pheno.color)
+                        );
+                      })
+                    );
+                  })
+                )
+              )
+            ),
+            // Phenotype ratios
+            h('div', { style: { marginTop: 14, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 } },
+              ['Black', 'Chocolate', 'Yellow'].map(function(color, i) {
+                var ph = phenotype(color === 'Black' ? 'B' : 'b', color === 'Black' ? 'B' : 'b',
+                                   color === 'Yellow' ? 'e' : 'E', color === 'Yellow' ? 'e' : 'E');
+                var pct = (counts[color] / 16 * 100).toFixed(0);
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: ph.hex, color: ph.text, textAlign: 'center' } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, opacity: 0.85 } }, color),
+                  h('div', { style: { fontSize: 22, fontWeight: 800 } }, counts[color] + '/16'),
+                  h('div', { style: { fontSize: 11, opacity: 0.85 } }, pct + '%')
+                );
+              })
+            ),
+            // Teaching note tied to the current cross
+            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              (function() {
+                if (pa1 === 'BbEe' && pa2 === 'BbEe') return h('div', null,
+                  h('strong', { style: { color: T.text } }, 'Why this matters: '),
+                  'Two black Labs (BbEe × BbEe) can produce ANY of the three Lab colors. The 9:3:4 ratio (black:chocolate:yellow) is the classic Mendelian outcome with epistasis. The "ee" alleles mask whatever B/b a yellow Lab carries — that\'s why a yellow Lab can have any nose color from black to brown.');
+                if (counts.Yellow === 16) return h('div', null,
+                  h('strong', { style: { color: T.text } }, 'All yellow: '),
+                  'Both parents are ee (homozygous recessive at the E locus) so neither can express B or b pigment. 100% of puppies will be yellow regardless of what B/b alleles they carry.');
+                if (counts.Black === 16) return h('div', null,
+                  h('strong', { style: { color: T.text } }, 'All black: '),
+                  'No recessive alleles to surface. The puppies are all black, but their carrier status varies depending on parents\' genotypes.');
+                return h('div', null,
+                  h('strong', { style: { color: T.text } }, 'Phenotype ratio: '),
+                  counts.Black + ' black : ' + counts.Chocolate + ' chocolate : ' + counts.Yellow + ' yellow. Try a different cross — especially Bbee × bbEe — to see how recessive alleles surface.'
+                );
+              })()
+            ),
+            h('div', { style: { marginTop: 8, fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.55 } },
+              'Real Lab genetics also include modifier genes (intensity, dilution) that produce variations like silver and champagne — those are minor genetic tweaks on this same B/b · E/e backbone. Reputable breeders test for both loci before mating.'
+            )
+          );
+        })(),
         footer());
     }
 
@@ -1431,11 +2281,198 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           { signal: 'Feather plucking / overgrooming', meaning: 'Boredom / stress / medical — needs investigation', color: T.warm }
         ]}
       ];
-      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
-        backBar('👀 Body Language Decoder'),
-        h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
-          h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Most pet bites + stress incidents are predictable from body language minutes in advance. Learning to read these signals is the single highest-impact thing a pet-owning household can do.')),
+      // Flatten all signals for quiz mode
+      var allSignals = [];
+      sets.forEach(function(g) {
+        g.items.forEach(function(it) {
+          allSignals.push({ species: g.species, signal: it.signal, meaning: it.meaning, color: it.color });
+        });
+      });
+      var blMode = d.blMode || 'read';
+      // Quiz state
+      var blQuiz = d.blQuiz || null;  // { idx, qs, answers, score }
+      function setMode(m) { upd('blMode', m); petsAnnounce(m === 'quiz' ? 'Body language quiz mode' : 'Reference reading mode'); }
+      function startQuiz() {
+        // Pick 10 distinct signals at random; each becomes a question with 1 correct + 3 distractors from same species (where possible)
+        var pool = allSignals.slice();
+        for (var i = pool.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+        }
+        var qs = pool.slice(0, 10).map(function(item) {
+          // 3 distractors: prefer same species, fall back to others
+          var sameSpecies = allSignals.filter(function(x) { return x.species === item.species && x.meaning !== item.meaning; });
+          for (var k = sameSpecies.length - 1; k > 0; k--) {
+            var jj = Math.floor(Math.random() * (k + 1));
+            var tt = sameSpecies[k]; sameSpecies[k] = sameSpecies[jj]; sameSpecies[jj] = tt;
+          }
+          var distractors = sameSpecies.slice(0, 3).map(function(x) { return x.meaning; });
+          while (distractors.length < 3) {
+            var rand = allSignals[Math.floor(Math.random() * allSignals.length)];
+            if (rand.meaning !== item.meaning && distractors.indexOf(rand.meaning) === -1) {
+              distractors.push(rand.meaning);
+            }
+          }
+          var choices = distractors.concat([item.meaning]);
+          // Shuffle the 4 choices
+          for (var c = choices.length - 1; c > 0; c--) {
+            var cj = Math.floor(Math.random() * (c + 1));
+            var ct = choices[c]; choices[c] = choices[cj]; choices[cj] = ct;
+          }
+          var correctIdx = choices.indexOf(item.meaning);
+          return {
+            species: item.species, signal: item.signal,
+            choices: choices, correct: correctIdx, color: item.color
+          };
+        });
+        upd('blQuiz', { idx: 0, qs: qs, answers: [], score: 0 });
+      }
+      function answerQuiz(choiceIdx) {
+        if (!blQuiz) return;
+        var existing = blQuiz.answers || [];
+        if (existing[blQuiz.idx] != null) return;  // already answered
+        var nextAns = existing.slice();
+        nextAns[blQuiz.idx] = choiceIdx;
+        var isCorrect = choiceIdx === blQuiz.qs[blQuiz.idx].correct;
+        upd('blQuiz', Object.assign({}, blQuiz, {
+          answers: nextAns,
+          score: blQuiz.score + (isCorrect ? 1 : 0)
+        }));
+        petsAnnounce(isCorrect ? 'Correct.' : 'Not quite — see explanation.');
+      }
+      function nextQuiz() {
+        if (!blQuiz) return;
+        if (blQuiz.idx < blQuiz.qs.length - 1) {
+          upd('blQuiz', Object.assign({}, blQuiz, { idx: blQuiz.idx + 1 }));
+        } else {
+          // Done — award badge if score ≥ 8
+          if (blQuiz.score >= 8) awardBadge('pets_body_lang', 'Body Language Reader');
+          upd('blQuiz', Object.assign({}, blQuiz, { idx: blQuiz.qs.length, done: true }));
+        }
+      }
+      function newQuiz() { upd('blQuiz', null); startQuiz(); }
+      // Mode switcher UI
+      var modeBar = h('div', { role: 'tablist', 'aria-label': 'Body language mode',
+        style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
+        ['read', 'quiz'].map(function(m) {
+          var sel = blMode === m;
+          return h('button', {
+            key: m, role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            'data-pets-focusable': true,
+            'aria-label': m === 'read' ? 'Reference reading mode' : 'Quiz mode',
+            onClick: function() { setMode(m); },
+            style: btn({
+              padding: '8px 14px', fontSize: 13,
+              background: sel ? T.accent : T.card,
+              color: sel ? '#1f1612' : T.text,
+              border: '2px solid ' + (sel ? T.accent : T.border),
+              fontWeight: sel ? 800 : 600
+            })
+          }, (m === 'read' ? '📚 Read (reference)' : '🎯 Quiz mode'));
+        })
+      );
+      // Quiz mode rendering
+      function renderQuizMode() {
+        if (!blQuiz) {
+          return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
+            h('div', { style: { fontSize: 32, marginBottom: 8 } }, '🎯'),
+            h('h3', { style: { margin: '0 0 8px', color: T.accentHi, fontSize: 17 } }, 'Body Language Quiz'),
+            h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 14px' } },
+              '10 signals across 4 species. For each, pick the most likely meaning. Score 8/10 or higher to earn the Body Language Reader badge.'
+            ),
+            h('button', { 'data-pets-focusable': true,
+              onClick: startQuiz,
+              style: btnPrimary({ padding: '12px 22px', fontSize: 14 })
+            }, '▶ Start 10-question quiz')
+          );
+        }
+        if (blQuiz.done) {
+          var pct = (blQuiz.score / blQuiz.qs.length * 100).toFixed(0);
+          var praise = blQuiz.score >= 9 ? 'Outstanding — you can read pets like a pro.'
+                     : blQuiz.score >= 7 ? 'Strong — you\'ll spot most danger signals before they escalate.'
+                     : blQuiz.score >= 5 ? 'Solid foundation — review the Read tab to sharpen specific species.'
+                     : 'These signals take practice. Re-read the species sections, then try again.';
+          return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '2px solid ' + (blQuiz.score >= 8 ? T.ok : T.accent) } },
+            h('div', { style: { fontSize: 28, fontWeight: 900, color: T.text, marginBottom: 6 } },
+              'Score: ' + blQuiz.score + ' / ' + blQuiz.qs.length + '  (' + pct + '%)'),
+            blQuiz.score >= 8 && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 8 } }, '🏅 Badge earned: Body Language Reader'),
+            h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 14px' } }, praise),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('button', { 'data-pets-focusable': true,
+                onClick: newQuiz,
+                style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
+              }, '🔁 New quiz'),
+              h('button', { 'data-pets-focusable': true,
+                onClick: function() { setMode('read'); },
+                style: btn({ padding: '10px 18px', fontSize: 13 })
+              }, '📚 Back to reference')
+            )
+          );
+        }
+        var q = blQuiz.qs[blQuiz.idx];
+        var picked = (blQuiz.answers || [])[blQuiz.idx];
+        var revealed = picked != null;
+        return h('div', null,
+          // Progress + score
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, color: T.dim } }, 'Question ' + (blQuiz.idx + 1) + ' / ' + blQuiz.qs.length),
+            h('div', { style: { flex: 1, height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden' }, 'aria-hidden': 'true' },
+              h('div', { style: { width: ((blQuiz.idx + (revealed ? 1 : 0)) / blQuiz.qs.length * 100) + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
+            ),
+            h('div', { style: { fontSize: 12, color: T.accentHi, fontWeight: 700 } }, blQuiz.score + ' correct')
+          ),
+          // The signal
+          h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('div', { style: { fontSize: 12, color: T.accentHi, fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, q.species),
+            h('div', { style: { fontSize: 16, color: T.text, fontWeight: 700, lineHeight: 1.5 } }, q.signal),
+            h('div', { style: { fontSize: 12, color: T.muted, marginTop: 8, fontStyle: 'italic' } }, 'What is this animal most likely communicating?')
+          ),
+          // Choices
+          h('div', { role: 'radiogroup', 'aria-label': 'Choose the most likely meaning',
+            style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
+            q.choices.map(function(choice, ci) {
+              var isPicked = picked === ci;
+              var isCorrect = ci === q.correct;
+              var bg = T.card, border = T.border, text = T.text;
+              if (revealed) {
+                if (isCorrect) { bg = 'rgba(132,204,22,0.18)'; border = T.ok; text = T.ok; }
+                else if (isPicked) { bg = 'rgba(220,38,38,0.18)'; border = T.danger; text = '#fca5a5'; }
+              } else if (isPicked) {
+                bg = 'rgba(245,158,11,0.18)'; border = T.accent;
+              }
+              return h('button', {
+                key: ci, role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+                'data-pets-focusable': true,
+                disabled: revealed,
+                onClick: function() { answerQuiz(ci); },
+                style: btn({
+                  padding: '12px 14px', fontSize: 13,
+                  background: bg, color: text,
+                  border: '2px solid ' + border,
+                  cursor: revealed ? 'default' : 'pointer',
+                  fontWeight: 600, lineHeight: 1.5
+                })
+              },
+                h('span', { style: { fontWeight: 800, marginRight: 8, color: T.accentHi } }, String.fromCharCode(65 + ci) + '.'),
+                choice,
+                revealed && isCorrect && h('span', { style: { color: T.ok, marginLeft: 8, fontWeight: 800 } }, ' ✓ correct'),
+                revealed && isPicked && !isCorrect && h('span', { style: { color: T.danger, marginLeft: 8, fontWeight: 800 } }, ' ✗')
+              );
+            })
+          ),
+          // Reveal + next
+          revealed && h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, borderLeft: '3px solid ' + q.color, marginBottom: 12 } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: q.color, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Why'),
+            h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, q.choices[q.correct])
+          ),
+          revealed && h('button', { 'data-pets-focusable': true,
+            onClick: nextQuiz,
+            style: btnPrimary({ padding: '10px 22px', fontSize: 13, width: '100%' })
+          }, blQuiz.idx < blQuiz.qs.length - 1 ? 'Next signal →' : 'See score ✓')
+        );
+      }
+      // Read mode: original listing
+      var readContent = h('div', null,
         sets.map(function(g) {
           return h('div', { key: g.species, style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, g.species),
@@ -1444,7 +2481,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('div', { style: { fontSize: 12, color: T.text, fontWeight: 600, marginBottom: 2 } }, it.signal),
                 h('div', { style: { fontSize: 12, color: it.color, lineHeight: 1.5 } }, '↳ ' + it.meaning));
             }));
-        }),
+        })
+      );
+      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        backBar('👀 Body Language Decoder'),
+        h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+          h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
+            'Most pet bites + stress incidents are predictable from body language minutes in advance. Learning to read these signals is the single highest-impact thing a pet-owning household can do.')),
+        modeBar,
+        blMode === 'quiz' ? renderQuizMode() : readContent,
         footer());
     }
 
@@ -2352,6 +3397,450 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         footer());
     }
 
+    // ─────────────────────────────────────────
+    // WELFARE & ETHICS
+    // ─────────────────────────────────────────
+    function renderWelfare() {
+      var welfareSec = d.welfareSec || 'spayNeuter';
+      function setSec(id) { upd('welfareSec', id); petsAnnounce(WELFARE_DATA[id].label); }
+      // Track which sections have been visited for the welfare-aware badge
+      var welfareVisited = d.welfareVisited || {};
+      if (!welfareVisited[welfareSec]) {
+        var nv = Object.assign({}, welfareVisited); nv[welfareSec] = true;
+        upd('welfareVisited', nv);
+        if (Object.keys(nv).length >= 4) awardBadge('pets_welfare_aware', 'Welfare-Aware');
+      }
+      var sectionTabs = h('div', { role: 'tablist', 'aria-label': 'Welfare topic',
+        style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
+        Object.keys(WELFARE_DATA).map(function(k) {
+          var s = WELFARE_DATA[k];
+          var sel = welfareSec === k;
+          var visited = !!welfareVisited[k];
+          return h('button', {
+            key: k, role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            'data-pets-focusable': true,
+            'aria-label': s.label + (visited ? ' (visited)' : ''),
+            onClick: function() { setSec(k); },
+            style: btn({
+              padding: '8px 14px', fontSize: 13,
+              background: sel ? T.accent : (visited ? T.cardAlt : T.card),
+              color: sel ? '#1f1612' : T.text,
+              border: '2px solid ' + (sel ? T.accent : (visited ? T.warm : T.border)),
+              fontWeight: sel ? 800 : 600
+            })
+          }, s.icon + ' ' + s.label);
+        })
+      );
+      var sec = WELFARE_DATA[welfareSec];
+      var body;
+      if (welfareSec === 'spayNeuter') {
+        var years = d.litterYears != null ? d.litterYears : 5;
+        // Compound: each generation produces 2 litters/yr × 4 kittens × 50% female × ~80% survive to reproduce
+        // Simplified: total cats(t) ≈ Σ generation cats. Use HSUS-style estimate.
+        // Females per generation grow by factor ~3.2/year (2 litters × 4 × 0.5 × 0.8)
+        var growthFactor = 3.2;
+        var totalCats = 0;
+        var generations = [];
+        var alive = 1;  // start: 1 unspayed female
+        for (var y = 0; y <= years; y++) {
+          generations.push({ year: y, count: Math.round(alive) });
+          totalCats += Math.round(alive);
+          alive *= growthFactor;
+          if (alive > 100000) alive = 100000;  // safety cap
+        }
+        body = h('div', null,
+          h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.6 } }, sec.lead),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🩺 Health benefits'),
+            sec.health.map(function(h2, i) {
+              return h('div', { key: i, style: { padding: 8, borderRadius: 8, background: T.cardAlt, marginBottom: 6 } },
+                h('strong', { style: { color: T.text, fontSize: 13 } }, h2.species),
+                h('div', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55, marginTop: 2 } }, h2.benefit)
+              );
+            })
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧠 Behavioral benefits'),
+            h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.muted, lineHeight: 1.65 } },
+              sec.behavior.map(function(b, i) { return h('li', { key: i }, b); })
+            )
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '⏱️ Timing'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } }, sec.timing)
+          ),
+          // Interactive litter-math calculator
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '2px solid ' + T.warm, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.warm } }, '🧮 The litter math'),
+            h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.55 } }, sec.math),
+            h('label', { htmlFor: 'litter-years',
+              style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, fontWeight: 700, color: T.text, marginBottom: 4 } },
+              h('span', null, 'Years of unchecked breeding'),
+              h('span', { style: { color: T.warm, fontFamily: 'monospace' } }, years + ' yr')
+            ),
+            h('input', { id: 'litter-years', 'data-pets-focusable': true, type: 'range',
+              min: 1, max: 7, step: 1, value: years,
+              'aria-label': 'Years of unchecked breeding',
+              onChange: function(e) { upd('litterYears', parseInt(e.target.value, 10)); },
+              style: { width: '100%', accentColor: T.warm, cursor: 'pointer' }
+            }),
+            h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.bg, border: '1px solid ' + T.border, textAlign: 'center' } },
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } }, 'Estimated descendants from one unspayed female'),
+              h('div', { style: { fontSize: 32, fontWeight: 900, color: T.warm, fontFamily: 'monospace' } },
+                totalCats.toLocaleString()
+              ),
+              h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4 } }, 'cats over ' + years + ' years (HSUS conservative estimate, assuming 50% survival to reproduction)')
+            ),
+            // Mini-chart
+            h('div', { style: { marginTop: 12, padding: 8, borderRadius: 6, background: T.bg, display: 'flex', alignItems: 'flex-end', gap: 4, height: 80 }, 'aria-hidden': 'true' },
+              generations.map(function(g, i) {
+                var h_pct = Math.min(100, (g.count / Math.max(1, generations[generations.length - 1].count)) * 100);
+                return h('div', { key: i, style: { flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 } },
+                  h('div', { style: { width: '100%', height: h_pct + '%', background: T.warm, borderRadius: '3px 3px 0 0', minHeight: 2 } }),
+                  h('div', { style: { fontSize: 9, color: T.dim } }, 'y' + g.year)
+                );
+              })
+            )
+          ),
+          h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.ok, marginBottom: 8 } },
+            h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.ok } }, '💵 Affordability'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, sec.cost),
+            h('p', { style: { margin: '6px 0 0', color: T.text, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🌲 Maine: '), sec.maine)
+          ),
+          h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', padding: 8 } }, 'Sources: ' + sec.cite)
+        );
+      } else if (welfareSec === 'adoption') {
+        body = h('div', null,
+          h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.6 } }, sec.lead),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '✓ Why adopt'),
+            h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.muted, lineHeight: 1.7 } },
+              sec.whyAdopt.map(function(item, i) { return h('li', { key: i, style: { marginBottom: 4 } }, item); })
+            )
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 13, color: T.text } }, '🐕 Need a specific breed?'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, sec.breedSpecificRescues)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, '🤔 When a breeder IS appropriate'),
+            h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, fontStyle: 'italic' } }, 'These are real cases, not excuses. The bar for "I genuinely need a breeder" is high but not zero.'),
+            h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.muted, lineHeight: 1.65 } },
+              sec.whenBreederIsOK.map(function(item, i) { return h('li', { key: i, style: { marginBottom: 4 } }, item); })
+            )
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '2px solid ' + T.ok, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.ok } }, '✓ Reputable breeder checklist'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12 } }, 'If a breeder fails ANY of these, walk away.'),
+            h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.text, lineHeight: 1.65, listStyleType: 'none' } },
+              sec.reputableBreederChecklist.map(function(item, i) { return h('li', { key: i, style: { marginBottom: 4 } }, item); })
+            )
+          ),
+          h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', padding: 8 } }, 'Sources: ' + sec.cite)
+        );
+      } else if (welfareSec === 'declawing') {
+        body = h('div', null,
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '2px solid ' + T.danger, marginBottom: 14 } },
+            h('p', { style: { margin: 0, color: '#fde2e2', fontSize: 14, lineHeight: 1.6, fontWeight: 700 } }, sec.lead)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🦴 The anatomical truth'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, sec.anatomicalTruth)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '😖 Pain (acute and chronic)'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, sec.pain)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧠 Behavioral consequences'),
+            h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.muted, lineHeight: 1.65 } },
+              sec.behaviorConsequences.map(function(b, i) { return h('li', { key: i, style: { marginBottom: 3 } }, b); })
+            )
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.warm, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.warm } }, '⚖️ Veterinary consensus + legal status'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, sec.vetConsensus)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '2px solid ' + T.ok, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.ok } }, '✓ Alternatives that actually work'),
+            h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.text, lineHeight: 1.65, listStyleType: 'none' } },
+              sec.alternatives.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 6 } }, a); })
+            )
+          ),
+          h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', padding: 8 } }, 'Sources: ' + sec.cite)
+        );
+      } else if (welfareSec === 'outdoorCats') {
+        body = h('div', null,
+          h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 14, lineHeight: 1.6 } }, sec.lead),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '2px solid ' + T.warm, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.warm } }, '📊 The numbers'),
+            h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.7 } }, sec.data)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🐦 Why it matters ecologically'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, sec.whyItMatters)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🐈 Risk to your own cat'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } }, sec.ownCatLifespan)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.warm, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 13, color: T.warm } }, '⚖️ TNR — where the welfare community disagrees'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.65 } }, sec.tnrControversy)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '2px solid ' + T.ok, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.ok } }, '✓ What individuals can do'),
+            h('ul', { style: { margin: 0, paddingLeft: 20, fontSize: 13, color: T.text, lineHeight: 1.7, listStyleType: 'none' } },
+              sec.whatIndividualsCanDo.map(function(a, i) { return h('li', { key: i, style: { marginBottom: 6 } }, a); })
+            )
+          ),
+          h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, marginBottom: 8 } },
+            h('strong', { style: { color: T.accentHi } }, '🌲 Maine: '),
+            h('span', { style: { color: T.muted, fontSize: 13, lineHeight: 1.55 } }, sec.maine)
+          ),
+          h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic', padding: 8 } }, 'Sources: ' + sec.cite)
+        );
+      }
+      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        backBar('🛡️ Welfare & Ethics'),
+        h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
+          h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.65 } },
+            'Four welfare topics where the science is clear but the cultural defaults haven\'t caught up. Browse all four to earn the ',
+            h('strong', { style: { color: T.accentHi } }, 'Welfare-Aware'), ' badge.'
+          )
+        ),
+        sectionTabs,
+        body,
+        crossLink('Apply this — practical actions',
+          h('span', null,
+            'See ', h('strong', { style: { color: T.text } }, '🌱 Take Action'),
+            ' for the concrete community-level moves: foster, TNR support, adopt-don\'t-shop, and civic-level animal welfare.'
+          )
+        ),
+        footer()
+      );
+    }
+
+    // ─────────────────────────────────────────
+    // PET-CARE WEEK SIMULATOR
+    // ─────────────────────────────────────────
+    function renderCareSim() {
+      var careSim = d.careSim || null;
+      function startSim(species) {
+        upd('careSim', {
+          species: species, day: 0, choices: [],
+          phys: 50, ment: 50, soc: 50, env: 50,
+          en: 100, money: 500, lowMoney: false, done: false
+        });
+      }
+      function chooseAction(choiceId) {
+        if (!careSim || careSim.done) return;
+        var dayObj = CARE_SIM_DAYS[careSim.species][careSim.day];
+        var choice = null;
+        for (var i = 0; i < dayObj.choices.length; i++) if (dayObj.choices[i].id === choiceId) { choice = dayObj.choices[i]; break; }
+        if (!choice) return;
+        var existing = careSim.choices || [];
+        if (existing[careSim.day] != null) return;  // already chose for this day
+        var nextChoices = existing.slice();
+        nextChoices[careSim.day] = { dayLabel: dayObj.label, choiceId: choiceId, choiceLabel: choice.label, note: choice.note, effects: choice.effects };
+        var clamp = function(v) { return Math.max(0, Math.min(100, v)); };
+        var newPhys = clamp(careSim.phys + (choice.effects.phys || 0));
+        var newMent = clamp(careSim.ment + (choice.effects.ment || 0));
+        var newSoc  = clamp(careSim.soc  + (choice.effects.soc  || 0));
+        var newEnv  = clamp(careSim.env  + (choice.effects.env  || 0));
+        var newEn   = clamp(careSim.en   + (choice.effects.en   || 0));
+        var newMoney = careSim.money + (choice.effects.money || 0);
+        upd('careSim', Object.assign({}, careSim, {
+          choices: nextChoices,
+          phys: newPhys, ment: newMent, soc: newSoc, env: newEnv,
+          en: newEn, money: newMoney,
+          lowMoney: careSim.lowMoney || newMoney < 0
+        }));
+      }
+      function nextDay() {
+        if (!careSim) return;
+        if (careSim.day < CARE_SIM_DAYS[careSim.species].length - 1) {
+          upd('careSim', Object.assign({}, careSim, { day: careSim.day + 1 }));
+        } else {
+          // Done — assess + award badge if criteria met
+          var c = careSim;
+          var earned = (c.phys >= 70 && c.ment >= 70 && c.soc >= 70 && !c.lowMoney);
+          if (earned) awardBadge('pets_caregiver', 'Caring Pet-Owner (week complete)');
+          upd('careSim', Object.assign({}, careSim, { done: true, badgeEarned: earned }));
+        }
+      }
+      function reset() { upd('careSim', null); }
+      // Species picker
+      if (!careSim) {
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📅 Pet-Care Week (sim)'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 16 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, '🎮 Live a week as a pet owner'),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.65 } },
+              'Pick a species and walk through 7 days of decisions. Real trade-offs: walks vs. plans, vet bills vs. budget, comfort vs. enrichment. Four welfare meters track how the pet is doing; your energy + money meters track how YOU are doing.'
+            ),
+            h('p', { style: { margin: 0, color: T.dim, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
+              'Earn the Caring Pet-Owner badge for a week where Physical, Mental, and Social welfare all stay ≥70% AND money never goes negative.'
+            )
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
+            [
+              { id: 'dog',    icon: '🐕', label: 'Dog (high-energy young)', sub: 'Daily walks, training, social needs, emergency-prone' },
+              { id: 'cat',    icon: '🐈', label: 'Cat (newly adopted)',     sub: 'Litter, enrichment, indoor decisions, sudden-illness risk' },
+              { id: 'rabbit', icon: '🐰', label: 'Rabbit (newly home)',     sub: 'GI stasis vigilance, free-roam space, exotic-vet costs' }
+            ].map(function(sp) {
+              return h('button', { key: sp.id, 'data-pets-focusable': true,
+                onClick: function() { startSim(sp.id); },
+                style: btn({ padding: 16, fontSize: 14, textAlign: 'left', minHeight: 100 })
+              },
+                h('div', { style: { fontSize: 28, marginBottom: 4 } }, sp.icon),
+                h('div', { style: { fontWeight: 800, color: T.accentHi, fontSize: 15, marginBottom: 4 } }, sp.label),
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sp.sub)
+              );
+            })
+          ),
+          footer()
+        );
+      }
+      // Active sim — render meters + current day
+      var allDays = CARE_SIM_DAYS[careSim.species];
+      var dayObj = careSim.day < allDays.length ? allDays[careSim.day] : null;
+      var thisChoice = (careSim.choices || [])[careSim.day];
+      var hasChosen = thisChoice != null;
+      // End of week
+      if (careSim.done) {
+        var c = careSim;
+        var avg = (c.phys + c.ment + c.soc + c.env) / 4;
+        var verdict = avg >= 80 ? '🌟 Excellent week. Your pet is thriving — and you stayed sustainable.'
+          : avg >= 65 ? '👍 Solid. A few rough decisions but the pet is broadly healthy and safe.'
+          : avg >= 45 ? '😬 Mixed week. Real welfare gaps. Notice where the meters dropped.'
+          : '🚨 Welfare crisis. This pet would likely need rehoming — and that\'s often a moral injury for both pet and owner.';
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📅 Pet-Care Week — Reflection'),
+          h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + (avg >= 70 ? T.ok : T.accent), marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: T.text } }, verdict),
+            c.badgeEarned && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 6 } }, '🏅 Badge earned: Caring Pet-Owner'),
+            c.lowMoney && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } }, '⚠ Money went negative this week. In real life this often forces hard choices — surrendering the pet, skipping vet care, or going into debt.'),
+            // Final meters
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginTop: 10 } },
+              [
+                { l: '💪 Physical',      v: c.phys,  desc: 'Health, exercise, vet care' },
+                { l: '🧠 Mental',        v: c.ment,  desc: 'Enrichment, novelty' },
+                { l: '🧑‍🤝‍🧑 Social',         v: c.soc,   desc: 'Bonding, training' },
+                { l: '🏠 Environmental', v: c.env,   desc: 'Clean, safe, appropriate' }
+              ].map(function(m, i) {
+                var col = m.v >= 70 ? T.ok : m.v >= 40 ? T.accentHi : T.danger;
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                  h('div', { style: { fontSize: 11, color: T.dim } }, m.l),
+                  h('div', { style: { fontSize: 26, fontWeight: 800, color: col, fontFamily: 'monospace' } }, Math.round(m.v) + '%'),
+                  h('div', { style: { fontSize: 10, color: T.dim } }, m.desc)
+                );
+              })
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginTop: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim } }, '⚡ Your energy left'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: c.en >= 30 ? T.ok : T.warm, fontFamily: 'monospace' } }, Math.round(c.en) + '%')
+              ),
+              h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
+                h('div', { style: { fontSize: 11, color: T.dim } }, '💰 Money'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: c.money >= 100 ? T.ok : c.money >= 0 ? T.accentHi : T.danger, fontFamily: 'monospace' } }, '$' + Math.round(c.money))
+              )
+            )
+          ),
+          // Decisions log
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+            h('h3', { style: { margin: '0 0 10px', fontSize: 14, color: T.accentHi } }, '📋 Your decisions this week'),
+            (c.choices || []).map(function(ch, i) {
+              if (!ch) return null;
+              return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, marginBottom: 6 } },
+                h('div', { style: { fontSize: 11, fontWeight: 700, color: T.dim, marginBottom: 2 } }, ch.dayLabel),
+                h('div', { style: { fontSize: 12, color: T.text, marginBottom: 3 } }, h('strong', null, '→ '), ch.choiceLabel),
+                h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, ch.note)
+              );
+            })
+          ),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+            h('button', { 'data-pets-focusable': true, onClick: reset,
+              style: btnPrimary({ padding: '10px 18px' })
+            }, '🔁 Try a different species'),
+            h('button', { 'data-pets-focusable': true,
+              onClick: function() { upd('view', 'welfare'); },
+              style: btn({ padding: '10px 18px' })
+            }, '🛡️ Welfare & Ethics'),
+            h('button', { 'data-pets-focusable': true,
+              onClick: function() { upd('view', 'cost'); },
+              style: btn({ padding: '10px 18px' })
+            }, '💵 Lifetime Cost')
+          ),
+          footer()
+        );
+      }
+      // Active day
+      var meters = h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, marginBottom: 12 } },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: T.dim, marginBottom: 6 } },
+          h('span', null, 'Day ' + (careSim.day + 1) + ' / ' + allDays.length),
+          h('span', null,
+            '⚡ ', Math.round(careSim.en), '%   ',
+            h('span', { style: { color: careSim.money >= 0 ? T.text : T.danger } }, '💰 $' + Math.round(careSim.money))
+          )
+        ),
+        // 4 welfare bars
+        [
+          { l: '💪 Phys',  v: careSim.phys, color: T.ok },
+          { l: '🧠 Ment',  v: careSim.ment, color: '#7dd3fc' },
+          { l: '🧑‍🤝‍🧑 Soc', v: careSim.soc,  color: T.accentHi },
+          { l: '🏠 Env',   v: careSim.env,  color: '#a78bfa' }
+        ].map(function(m, i) {
+          return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+            h('span', { style: { fontSize: 10, color: T.dim, minWidth: 56 } }, m.l),
+            h('div', { style: { flex: 1, height: 8, background: T.bg, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
+              h('div', { style: { width: m.v + '%', height: '100%', background: m.color, transition: 'width 0.3s' } })
+            ),
+            h('span', { style: { fontSize: 11, color: T.text, fontFamily: 'monospace', minWidth: 32, textAlign: 'right' } }, Math.round(m.v) + '%')
+          );
+        })
+      );
+      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        backBar('📅 Pet-Care Week — ' + careSim.species.charAt(0).toUpperCase() + careSim.species.slice(1)),
+        meters,
+        h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+          h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' } }, dayObj.label),
+          h('p', { style: { margin: 0, fontSize: 15, color: T.text, lineHeight: 1.6 } }, dayObj.prompt)
+        ),
+        h('div', { role: 'radiogroup', 'aria-label': 'Choose your action',
+          style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
+          dayObj.choices.map(function(ch) {
+            var isPicked = hasChosen && thisChoice.choiceId === ch.id;
+            return h('button', {
+              key: ch.id, role: 'radio', 'aria-checked': isPicked ? 'true' : 'false',
+              'data-pets-focusable': true,
+              disabled: hasChosen,
+              onClick: function() { chooseAction(ch.id); },
+              style: btn({
+                padding: '12px 14px', fontSize: 13,
+                background: isPicked ? 'rgba(245,158,11,0.15)' : T.card,
+                border: '2px solid ' + (isPicked ? T.accent : T.border),
+                cursor: hasChosen ? 'default' : 'pointer',
+                fontWeight: 600, lineHeight: 1.5
+              })
+            }, ch.label);
+          })
+        ),
+        hasChosen && h('div', null,
+          h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, borderLeft: '4px solid ' + T.accentHi, marginBottom: 12 } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'What happens'),
+            h('p', { style: { margin: 0, fontSize: 13, color: T.text, lineHeight: 1.6 } }, thisChoice.note)
+          ),
+          h('button', { 'data-pets-focusable': true, onClick: nextDay,
+            style: btnPrimary({ padding: '12px 24px', fontSize: 14, width: '100%' })
+          }, careSim.day < allDays.length - 1 ? 'Next day →' : 'See week summary ✓')
+        ),
+        footer()
+      );
+    }
+
     // VIEW ROUTER
     switch (view) {
       case 'dogs':         return renderDogs();
@@ -2364,6 +3853,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       case 'genetics':     return renderGenetics();
       case 'zoonoses':     return renderZoonoses();
       case 'service':      return renderService();
+      case 'welfare':      return renderWelfare();
+      case 'careSim':      return renderCareSim();
       case 'picker':       return renderPicker();
       case 'bodyLang':     return renderBodyLang();
       case 'cost':         return renderCost();
