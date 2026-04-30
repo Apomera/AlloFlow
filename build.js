@@ -194,6 +194,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ViewMathModule',
+        filename: 'view_math_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ExportHandlersModule',
         filename: 'export_handlers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -443,6 +448,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_bakingscience.js',
     'stem_lab/stem_tool_allobotsage.js',
     'stem_lab/stem_tool_skatelab.js',
+    'stem_lab/stem_tool_statslab.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
