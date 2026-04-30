@@ -2430,7 +2430,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         dim: '#94a3b8',       // slate-400
         border: '#64748b',    // slate-500 — WCAG 1.4.11 pass
         borderSoft: '#334155',// slate-700 — for decorative dividers only
-        accent: '#a855f7',    // purple-500 (Learning Lab — distinct from Auto Repair amber)
+        accent: '#9333ea',    // purple-600 — WCAG 1.4.3 pass: 5.39:1 with white text (purple-500 fails 4.08:1)
         accentHi: '#c084fc',  // purple-400
         link: '#c084fc',
         good: '#10b981',
