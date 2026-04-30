@@ -5075,6 +5075,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_evolab.js',
         'stem_lab/stem_tool_weldlab.js',
         'stem_lab/stem_tool_nutritionlab.js',
+        'stem_lab/stem_tool_birdlab.js',
         'stem_lab/stem_tool_bakingscience.js',
         'stem_lab/stem_tool_allobotsage.js',
         'stem_lab/stem_tool_skatelab.js',
@@ -5707,9 +5708,33 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => {
       if (isChunkReaderActive && chunkReaderIdx >= 0) {
           const el = document.querySelector('[data-sentence-idx="' + chunkReaderIdx + '"]');
-          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (el) {
+              const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+          }
       }
   }, [chunkReaderIdx, isChunkReaderActive]);
+  useEffect(() => {
+      if (!isChunkReaderActive) return;
+      const handler = (e) => {
+          const tgt = e.target;
+          if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.isContentEditable)) return;
+          if (e.key === 'ArrowRight') { e.preventDefault(); setChunkReaderIdx(prev => prev + 1); }
+          else if (e.key === 'ArrowLeft') { e.preventDefault(); setChunkReaderIdx(prev => Math.max(0, prev - 1)); }
+          else if (e.code === 'Space') { e.preventDefault(); setChunkReaderAutoPlay(p => !p); }
+          else if (e.key === 'Home') { e.preventDefault(); setChunkReaderIdx(0); }
+          else if (e.key === 'End') {
+              e.preventDefault();
+              const all = document.querySelectorAll('[data-sentence-idx]');
+              let max = 0;
+              all.forEach(n => { const i = parseInt(n.getAttribute('data-sentence-idx'), 10); if (!isNaN(i) && i > max) max = i; });
+              setChunkReaderIdx(max);
+          }
+          else if (e.key === 'Escape') { e.preventDefault(); setIsChunkReaderActive(false); setChunkReaderAutoPlay(false); }
+      };
+      window.addEventListener('keydown', handler);
+      return () => window.removeEventListener('keydown', handler);
+  }, [isChunkReaderActive]);
   const handleCloseImmersiveReader = useCallback(() => setIsImmersiveReaderActive(false), []);
   const handleCloseStudentWelcome = useCallback(() => setShowStudentWelcome(false), []);
   const handleCloseStudentEntry = useCallback(() => { setShowStudentEntry(false); setHasSelectedRole(false); }, []);

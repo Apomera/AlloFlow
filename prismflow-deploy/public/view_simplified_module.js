@@ -352,7 +352,7 @@
         "data-sentence-idx": assignedIdx,
         style: {
           ...(isChunkDimmed ? {
-            opacity: 0.2
+            opacity: 0.45
           } : {}),
           transition: 'all 0.3s ease',
           ...(isChunkHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {

@@ -8,6 +8,12 @@
 var LanguageContext = window.AlloLanguageContext;
 var useState = React.useState; var useEffect = React.useEffect; var useRef = React.useRef;
 var useContext = React.useContext; var useMemo = React.useMemo; var useCallback = React.useCallback;
+
+// Defensive translation helper: AlloFlow's t() returns the literal key string
+// when no translation exists, so the pervasive `t(key) || fallback` pattern
+// can never reach its fallback (a literal key is truthy). safeT detects that
+// case and returns the human-readable fallback instead.
+const safeT = (t, key, fb) => { const r = t(key); return (r && r !== key) ? r : fb; };
 var _lazyIcon = function(name) { return function(props) { var I = window.AlloIcons && window.AlloIcons[name]; return I ? React.createElement(I, props) : null; }; };
 var ArrowLeft = _lazyIcon('ArrowLeft');
 var ArrowRight = _lazyIcon('ArrowRight');
@@ -191,11 +197,11 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
         <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
+                    <button onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.strong }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base" style={{ color: c.strong }}>{t('immersive.focus_mode') || 'Focus Mode'}</span>
+                        <span className="font-bold text-base" style={{ color: c.strong }}>{safeT(t, 'immersive.focus_mode', 'Focus Mode')}</span>
                         <span className="text-xs" style={{ color: c.light }}>
                             {chunkIdx + 1} / {chunks.length} · {rsvp ? 'single-word RSVP' : `${chunkSize}-word chunks · bold-assist`}
                         </span>
@@ -209,7 +215,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
                     </label>
                     <label className="flex items-center gap-2">
                         <span style={{ color: c.light }}>SPEED</span>
-                        <input aria-label={t('common.speed') || 'Words per minute'} type="range" min="100" max="900" step="25" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-28 accent-indigo-600" />
+                        <input aria-label={safeT(t, 'common.speed', 'Words per minute')} type="range" min="100" max="900" step="25" value={wpm} onChange={e => setWpm(parseInt(e.target.value))} className="w-28 accent-indigo-600" />
                         <span className="font-mono w-16 text-right">{wpm} wpm</span>
                     </label>
                     <label className="flex items-center gap-2">
@@ -393,66 +399,66 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <ToggleButton
                 active={!!focusReaderActive}
                 onClick={toggleFocusReader}
-                title={t('immersive.focus_mode_title') || 'Focus Mode — single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)'}
+                title={safeT(t, 'immersive.focus_mode_title', 'Focus Mode — single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)')}
                 activeColor="bg-sky-500 text-white"
                 data-help-key="immersive_focus_mode"
               >
-                <Zap size={14} className="mr-1 inline"/> {t('immersive.focus_mode') || 'Focus Mode'}
+                <Zap size={14} className="mr-1 inline"/> {safeT(t, 'immersive.focus_mode', 'Focus Mode')}
               </ToggleButton>
             )}
             <ToggleButton
               active={isChunkReaderActive}
               onClick={onToggleChunkReader}
-              title={(t('immersive.chunk_read') || 'Chunk Read')}
+              title={safeT(t, 'immersive.chunk_read', 'Chunk Read')}
               activeColor="bg-emerald-700 text-white"
               data-help-key="immersive_chunk_reader"
             >
-              <List size={14} className="mr-1 inline"/> {(t('immersive.chunk_read') || 'Chunk Read')}
+              <List size={14} className="mr-1 inline"/> {safeT(t, 'immersive.chunk_read', 'Chunk Read')}
             </ToggleButton>
             {onToggleCrawlReader && (
               <ToggleButton
                 active={!!isCrawlReaderActive}
                 onClick={onToggleCrawlReader}
-                title={(t('immersive.cinematic_crawl') || 'Cinematic Crawl — receding-perspective scroll')}
+                title={safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl — receding-perspective scroll')}
                 activeColor="bg-amber-500 text-slate-900"
                 data-help-key="immersive_perspective_crawl"
               >
-                <Zap size={14} className="mr-1 inline"/> {(t('immersive.cinematic_crawl') || 'Crawl')}
+                <Zap size={14} className="mr-1 inline"/> {safeT(t, 'immersive.cinematic_crawl', 'Crawl')}
               </ToggleButton>
             )}
             {onToggleKaraokeOverlay && (
               <ToggleButton
                 active={!!isKaraokeOverlayActive}
                 onClick={onToggleKaraokeOverlay}
-                title={(t('immersive.focus_reader_title') || 'Focus Reader — full-screen read-along with sentence-sweep visuals')}
+                title={safeT(t, 'immersive.focus_reader_title', 'Focus Reader — full-screen read-along with sentence-sweep visuals')}
                 activeColor="bg-fuchsia-600 text-white"
                 data-help-key="immersive_karaoke_overlay"
                 aria-pressed={!!isKaraokeOverlayActive}
               >
-                <Volume2 size={14} className="mr-1 inline"/> {(t('immersive.focus_reader') || 'Focus Reader')}
+                <Volume2 size={14} className="mr-1 inline"/> {safeT(t, 'immersive.focus_reader', 'Focus Reader')}
               </ToggleButton>
             )}
         </div>
         {setInteractionMode && (
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
-          <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={t('immersive.tap_mode') || 'Tap action'}>
-            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{t('immersive.tap_mode') || 'Tap'}</span>
+          <div className="flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5" role="group" aria-label={safeT(t, 'immersive.tap_mode', 'Tap action')}>
+            <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2">{safeT(t, 'immersive.tap_mode', 'Tap')}</span>
             <button
               onClick={() => setInteractionMode('read')}
               aria-pressed={interactionMode !== 'define' && interactionMode !== 'phonics'}
-              title={t('immersive.tap_speak') || 'Tap a word to hear it'}
+              title={safeT(t, 'immersive.tap_speak', 'Tap a word to hear it')}
               className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode !== 'define' && interactionMode !== 'phonics' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
             >
-              <Volume2 size={12}/> {t('immersive.speak') || 'Speak'}
+              <Volume2 size={12}/> {safeT(t, 'immersive.speak', 'Speak')}
             </button>
             <button
               onClick={() => setInteractionMode('define')}
               aria-pressed={interactionMode === 'define'}
-              title={t('immersive.tap_define') || 'Tap a word to see its definition and picture'}
+              title={safeT(t, 'immersive.tap_define', 'Tap a word to see its definition and picture')}
               className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode === 'define' ? 'bg-yellow-500 text-white shadow-sm' : 'text-slate-600 hover:text-slate-800'}`}
             >
-              <BookOpen size={12}/> {t('immersive.define') || 'Define'}
+              <BookOpen size={12}/> {safeT(t, 'immersive.define', 'Define')}
             </button>
           </div>
           </>
@@ -465,7 +471,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             <span className="text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center">{chunkReaderIdx + 1} / {totalSentences}</span>
             <button onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={t('common.next')}><ChevronRight size={14}/></button>
             <div className="h-4 w-px bg-slate-200"></div>
-            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={chunkReaderAutoPlay ? t('common.pause') : (t('common.auto_play') || 'Auto')}>
+            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')}>
               {chunkReaderAutoPlay ? <Pause size={12} className="inline"/> : <Play size={12} className="inline"/>}
             </button>
             <div className="flex items-center gap-1">
@@ -483,7 +489,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                   className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderReadAlong ? 'bg-fuchsia-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
                   data-help-key="immersive_chunk_read_along"
                 >
-                  <Volume2 size={12} className="inline"/> {(t('immersive.read_along') || 'Read Along')}
+                  <Volume2 size={12} className="inline"/> {safeT(t, 'immersive.read_along', 'Read Along')}
                 </button>
               </>
             )}
@@ -540,9 +546,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             "inherit from the surrounding theme" so we don't force a font on
             readers who are happy with the default. */}
         <div className="flex items-center gap-2 shrink-0">
-            <span className="text-xs font-bold text-slate-600">{t('immersive.font') || 'Font'}</span>
+            <span className="text-xs font-bold text-slate-600">{safeT(t, 'immersive.font', 'Font')}</span>
             <select
-              aria-label={t('immersive.font_family') || 'Font family'}
+              aria-label={safeT(t, 'immersive.font_family', 'Font family')}
               value={settings.fontFamily || ''}
               onChange={(e) => setSettings(prev => ({ ...prev, fontFamily: e.target.value }))}
               className="text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700"
@@ -560,9 +566,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
         </div>
         <div className="h-4 w-px bg-slate-300 shrink-0"></div>
         <div className="flex items-center gap-2 shrink-0 relative">
-            <span className="text-xs font-bold text-slate-600">{t('immersive.colors') || 'Colors'}</span>
+            <span className="text-xs font-bold text-slate-600">{safeT(t, 'immersive.colors', 'Colors')}</span>
             <select
-              aria-label={t('immersive.color_preset') || 'Color preset'}
+              aria-label={safeT(t, 'immersive.color_preset', 'Color preset')}
               value=""
               onChange={(e) => {
                 const presets = {
@@ -580,7 +586,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               }}
               className="text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
             >
-              <option value="" disabled>{t('immersive.presets') || 'Presets'}</option>
+              <option value="" disabled>{safeT(t, 'immersive.presets', 'Presets')}</option>
               <option value="warm">☀️ Warm</option>
               <option value="dark">🌙 Dark</option>
               <option value="high-contrast">◼️ High Contrast</option>
@@ -590,10 +596,10 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
               <option value="rose">🌸 Rose</option>
             </select>
             <div className="flex items-center gap-1.5">
-              <label className="text-[11px] text-slate-600">{t('immersive.bg') || 'Bg'}</label>
-              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={t('immersive.bg_color') || 'Background color'}/>
-              <label className="text-[11px] text-slate-600">{t('immersive.text') || 'Text'}</label>
-              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={t('immersive.text_color') || 'Text color'}/>
+              <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.bg', 'Bg')}</label>
+              <input type="color" value={settings.bgColor || '#fdfbf7'} onChange={(e) => setSettings(prev => ({...prev, bgColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.bgColor}} aria-label={safeT(t, 'immersive.bg_color', 'Background color')}/>
+              <label className="text-[11px] text-slate-600">{safeT(t, 'immersive.text', 'Text')}</label>
+              <input type="color" value={settings.fontColor || '#1e293b'} onChange={(e) => setSettings(prev => ({...prev, fontColor: e.target.value}))} className="w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none" style={{backgroundColor: settings.fontColor}} aria-label={safeT(t, 'immersive.text_color', 'Text color')}/>
             </div>
         </div>
       </div>
@@ -620,9 +626,6 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // ============================================================================
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
-    // t() returns the literal key when no translation exists (AlloFlowANTI useTranslation),
-    // so `t(key) || fallback` never fires its fallback. tt() detects that case.
-    const tt = (key, fb) => { const r = t(key); return (r && r !== key) ? r : fb; };
     const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
     const [isPlaying, setIsPlaying] = useState(true);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
@@ -790,10 +793,10 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
         <div className="fixed inset-0 z-[300] flex flex-col" style={{ backgroundColor: p.bg, color: p.text }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.55)' }}>
                 <div className="flex items-center gap-3">
-                    <button onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full" style={{ color: p.text }}>
+                    <button onClick={onClose} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full" style={{ color: p.text }}>
                         <ArrowLeft size={22} />
                     </button>
-                    <span className="font-bold text-base">{tt('immersive.cinematic_crawl', 'Cinematic Crawl')}</span>
+                    <span className="font-bold text-base">{safeT(t, 'immersive.cinematic_crawl', 'Cinematic Crawl')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
                     <label className="flex items-center gap-2">
@@ -1190,11 +1193,11 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
         <div className="fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200" style={{ backgroundColor: c.bg, color: c.ink }}>
             <div className="p-4 flex justify-between items-center gap-3 flex-wrap">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => { hardStop(); onClose(); }} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
+                    <button onClick={() => { hardStop(); onClose(); }} aria-label={safeT(t, 'common.close', 'Close')} className="p-2 rounded-full hover:bg-black/5" style={{ color: c.ink }}>
                         <ArrowLeft size={22} />
                     </button>
                     <div className="flex flex-col">
-                        <span className="font-bold text-base">{t('immersive.focus_reader') || 'Focus Reader'}</span>
+                        <span className="font-bold text-base">{safeT(t, 'immersive.focus_reader', 'Focus Reader')}</span>
                         <span className="text-xs" style={{ color: c.dim }}>Sentence {sentenceIdx + 1} / {sentences.length} · read-along sweep</span>
                     </div>
                 </div>

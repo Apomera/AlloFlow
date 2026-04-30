@@ -39,6 +39,10 @@ var useRef = React.useRef;
 var useContext = React.useContext;
 var useMemo = React.useMemo;
 var useCallback = React.useCallback;
+const safeT = (t, key, fb) => {
+  const r = t(key);
+  return r && r !== key ? r : fb;
+};
 var _lazyIcon = function(name) {
   return function(props) {
     var I = window.AlloIcons && window.AlloIcons[name];
@@ -181,7 +185,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     const boldLen = Math.max(1, Math.ceil(w.length * 0.4));
     return /* @__PURE__ */ React.createElement("span", { key: i }, /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 900, color: c.strong } }, w.slice(0, boldLen)), /* @__PURE__ */ React.createElement("span", { style: { fontWeight: 400, color: c.light } }, w.slice(boldLen)), i < currentChunk.length - 1 ? " " : "");
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full hover:bg-black/5", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base", style: { color: c.strong } }, t("immersive.focus_mode") || "Focus Mode"), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunkIdx + 1, " / ", chunks.length, " \xB7 ", rsvp ? "single-word RSVP" : `${chunkSize}-word chunks \xB7 bold-assist`))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Words per chunk", type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-right" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": t("common.speed") || "Words per minute", type: "range", min: "100", max: "900", step: "25", value: wpm, onChange: (e) => setWpm(parseInt(e.target.value)), className: "w-28 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-right" }, wpm, " wpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.light, background: c.bg, color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600 Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.strong } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base", style: { color: c.strong } }, safeT(t, "immersive.focus_mode", "Focus Mode")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.light } }, chunkIdx + 1, " / ", chunks.length, " \xB7 ", rsvp ? "single-word RSVP" : `${chunkSize}-word chunks \xB7 bold-assist`))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "WORDS"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Words per chunk", type: "range", min: "1", max: "6", value: chunkSize, onChange: (e) => setChunkSize(parseInt(e.target.value)), className: "w-16 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-4 text-right" }, chunkSize)), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": safeT(t, "common.speed", "Words per minute"), type: "range", min: "100", max: "900", step: "25", value: wpm, onChange: (e) => setWpm(parseInt(e.target.value)), className: "w-28 accent-indigo-600" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-16 text-right" }, wpm, " wpm")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.light } }, "THEME"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Theme", value: theme, onChange: (e) => setTheme(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: c.light, background: c.bg, color: c.strong } }, /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600 Warm"), /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"), /* @__PURE__ */ React.createElement("option", { value: "sepia" }, "\u{1F4DC} Sepia"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setPunctPauses((v) => !v),
@@ -295,73 +299,73 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     {
       active: !!focusReaderActive,
       onClick: toggleFocusReader,
-      title: t("immersive.focus_mode_title") || "Focus Mode \u2014 single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)",
+      title: safeT(t, "immersive.focus_mode_title", "Focus Mode \u2014 single-word RSVP or multi-word chunks with bold-assist (drag the WORDS slider once open)"),
       activeColor: "bg-sky-500 text-white",
       "data-help-key": "immersive_focus_mode"
     },
     /* @__PURE__ */ React.createElement(Zap, { size: 14, className: "mr-1 inline" }),
     " ",
-    t("immersive.focus_mode") || "Focus Mode"
+    safeT(t, "immersive.focus_mode", "Focus Mode")
   ), /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
       active: isChunkReaderActive,
       onClick: onToggleChunkReader,
-      title: t("immersive.chunk_read") || "Chunk Read",
+      title: safeT(t, "immersive.chunk_read", "Chunk Read"),
       activeColor: "bg-emerald-700 text-white",
       "data-help-key": "immersive_chunk_reader"
     },
     /* @__PURE__ */ React.createElement(List, { size: 14, className: "mr-1 inline" }),
     " ",
-    t("immersive.chunk_read") || "Chunk Read"
+    safeT(t, "immersive.chunk_read", "Chunk Read")
   ), onToggleCrawlReader && /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
       active: !!isCrawlReaderActive,
       onClick: onToggleCrawlReader,
-      title: t("immersive.cinematic_crawl") || "Cinematic Crawl \u2014 receding-perspective scroll",
+      title: safeT(t, "immersive.cinematic_crawl", "Cinematic Crawl \u2014 receding-perspective scroll"),
       activeColor: "bg-amber-500 text-slate-900",
       "data-help-key": "immersive_perspective_crawl"
     },
     /* @__PURE__ */ React.createElement(Zap, { size: 14, className: "mr-1 inline" }),
     " ",
-    t("immersive.cinematic_crawl") || "Crawl"
+    safeT(t, "immersive.cinematic_crawl", "Crawl")
   ), onToggleKaraokeOverlay && /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
       active: !!isKaraokeOverlayActive,
       onClick: onToggleKaraokeOverlay,
-      title: t("immersive.focus_reader_title") || "Focus Reader \u2014 full-screen read-along with sentence-sweep visuals",
+      title: safeT(t, "immersive.focus_reader_title", "Focus Reader \u2014 full-screen read-along with sentence-sweep visuals"),
       activeColor: "bg-fuchsia-600 text-white",
       "data-help-key": "immersive_karaoke_overlay",
       "aria-pressed": !!isKaraokeOverlayActive
     },
     /* @__PURE__ */ React.createElement(Volume2, { size: 14, className: "mr-1 inline" }),
     " ",
-    t("immersive.focus_reader") || "Focus Reader"
-  )), setInteractionMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5", role: "group", "aria-label": t("immersive.tap_mode") || "Tap action" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2" }, t("immersive.tap_mode") || "Tap"), /* @__PURE__ */ React.createElement(
+    safeT(t, "immersive.focus_reader", "Focus Reader")
+  )), setInteractionMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 shrink-0 bg-slate-100 rounded-full p-0.5", role: "group", "aria-label": safeT(t, "immersive.tap_mode", "Tap action") }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider px-2" }, safeT(t, "immersive.tap_mode", "Tap")), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setInteractionMode("read"),
       "aria-pressed": interactionMode !== "define" && interactionMode !== "phonics",
-      title: t("immersive.tap_speak") || "Tap a word to hear it",
+      title: safeT(t, "immersive.tap_speak", "Tap a word to hear it"),
       className: `inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode !== "define" && interactionMode !== "phonics" ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:text-slate-800"}`
     },
     /* @__PURE__ */ React.createElement(Volume2, { size: 12 }),
     " ",
-    t("immersive.speak") || "Speak"
+    safeT(t, "immersive.speak", "Speak")
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setInteractionMode("define"),
       "aria-pressed": interactionMode === "define",
-      title: t("immersive.tap_define") || "Tap a word to see its definition and picture",
+      title: safeT(t, "immersive.tap_define", "Tap a word to see its definition and picture"),
       className: `inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold rounded-full transition-colors ${interactionMode === "define" ? "bg-yellow-500 text-white shadow-sm" : "text-slate-600 hover:text-slate-800"}`
     },
     /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }),
     " ",
-    t("immersive.define") || "Define"
-  ))), isChunkReaderActive && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1)), disabled: chunkReaderIdx <= 0, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: t("common.previous") }, /* @__PURE__ */ React.createElement(ChevronLeft, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center" }, chunkReaderIdx + 1, " / ", totalSentences), /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1)), disabled: chunkReaderIdx >= totalSentences - 1, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: t("common.next") }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderAutoPlay(!chunkReaderAutoPlay), className: `px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`, title: chunkReaderAutoPlay ? t("common.pause") : t("common.auto_play") || "Auto" }, chunkReaderAutoPlay ? /* @__PURE__ */ React.createElement(Pause, { size: 12, className: "inline" }) : /* @__PURE__ */ React.createElement(Play, { size: 12, className: "inline" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "1s"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "1000", max: "8000", step: "500", value: chunkReaderSpeed, onChange: (e) => setChunkReaderSpeed(parseInt(e.target.value)), disabled: !!chunkReaderReadAlong, className: `w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? "opacity-30" : ""}`, title: chunkReaderReadAlong ? "Disabled while Read Along is on \u2014 audio length drives the pace" : `${(chunkReaderSpeed / 1e3).toFixed(1)}s`, "aria-label": t("immersive.speed") }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 tabular-nums" }, (chunkReaderSpeed / 1e3).toFixed(1), "s")), onToggleChunkReaderReadAlong && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
+    safeT(t, "immersive.define", "Define")
+  ))), isChunkReaderActive && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1)), disabled: chunkReaderIdx <= 0, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: t("common.previous") }, /* @__PURE__ */ React.createElement(ChevronLeft, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center" }, chunkReaderIdx + 1, " / ", totalSentences), /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1)), disabled: chunkReaderIdx >= totalSentences - 1, className: "p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all", title: t("common.next") }, /* @__PURE__ */ React.createElement(ChevronRight, { size: 14 })), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("button", { onClick: () => setChunkReaderAutoPlay(!chunkReaderAutoPlay), className: `px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? "bg-emerald-700 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`, title: chunkReaderAutoPlay ? safeT(t, "common.pause", "Pause") : safeT(t, "common.auto_play", "Auto") }, chunkReaderAutoPlay ? /* @__PURE__ */ React.createElement(Pause, { size: 12, className: "inline" }) : /* @__PURE__ */ React.createElement(Play, { size: 12, className: "inline" })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "1s"), /* @__PURE__ */ React.createElement("input", { type: "range", min: "1000", max: "8000", step: "500", value: chunkReaderSpeed, onChange: (e) => setChunkReaderSpeed(parseInt(e.target.value)), disabled: !!chunkReaderReadAlong, className: `w-14 h-1 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-500 ${chunkReaderReadAlong ? "opacity-30" : ""}`, title: chunkReaderReadAlong ? "Disabled while Read Along is on \u2014 audio length drives the pace" : `${(chunkReaderSpeed / 1e3).toFixed(1)}s`, "aria-label": t("immersive.speed") }), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 tabular-nums" }, (chunkReaderSpeed / 1e3).toFixed(1), "s")), onToggleChunkReaderReadAlong && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: onToggleChunkReaderReadAlong,
@@ -372,7 +376,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     },
     /* @__PURE__ */ React.createElement(Volume2, { size: 12, className: "inline" }),
     " ",
-    t("immersive.read_along") || "Read Along"
+    safeT(t, "immersive.read_along", "Read Along")
   )))), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.grammar_label")), /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
@@ -417,10 +421,10 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     },
     t("immersive.adverbs"),
     isGeneratingPOS && settings.showAdverbs ? " \u2026" : ""
-  )), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.font") || "Font"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, safeT(t, "immersive.font", "Font")), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("immersive.font_family") || "Font family",
+      "aria-label": safeT(t, "immersive.font_family", "Font family"),
       value: settings.fontFamily || "",
       onChange: (e) => setSettings((prev) => ({ ...prev, fontFamily: e.target.value })),
       className: "text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-700",
@@ -434,10 +438,10 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement("option", { value: "'Inter', system-ui, sans-serif" }, "Sans (Inter)"),
     /* @__PURE__ */ React.createElement("option", { value: "'Comic Sans MS', 'Comic Neue', cursive" }, "Comic Sans"),
     /* @__PURE__ */ React.createElement("option", { value: "ui-monospace, 'SF Mono', Consolas, monospace" }, "Monospace")
-  )), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0 relative" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.colors") || "Colors"), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0 relative" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, safeT(t, "immersive.colors", "Colors")), /* @__PURE__ */ React.createElement(
     "select",
     {
-      "aria-label": t("immersive.color_preset") || "Color preset",
+      "aria-label": safeT(t, "immersive.color_preset", "Color preset"),
       value: "",
       onChange: (e) => {
         const presets = {
@@ -455,7 +459,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
       },
       className: "text-xs bg-slate-100 border border-slate-400 rounded-full px-2 py-1 cursor-pointer hover:bg-slate-200 transition-all font-medium text-slate-600"
     },
-    /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, t("immersive.presets") || "Presets"),
+    /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, safeT(t, "immersive.presets", "Presets")),
     /* @__PURE__ */ React.createElement("option", { value: "warm" }, "\u2600\uFE0F Warm"),
     /* @__PURE__ */ React.createElement("option", { value: "dark" }, "\u{1F319} Dark"),
     /* @__PURE__ */ React.createElement("option", { value: "high-contrast" }, "\u25FC\uFE0F High Contrast"),
@@ -463,7 +467,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement("option", { value: "blue-wash" }, "\u{1F4A7} Blue Wash"),
     /* @__PURE__ */ React.createElement("option", { value: "green-tint" }, "\u{1F33F} Green Tint"),
     /* @__PURE__ */ React.createElement("option", { value: "rose" }, "\u{1F338} Rose")
-  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, t("immersive.bg") || "Bg"), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.bgColor || "#fdfbf7", onChange: (e) => setSettings((prev) => ({ ...prev, bgColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.bgColor }, "aria-label": t("immersive.bg_color") || "Background color" }), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, t("immersive.text") || "Text"), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.fontColor || "#1e293b", onChange: (e) => setSettings((prev) => ({ ...prev, fontColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.fontColor }, "aria-label": t("immersive.text_color") || "Text color" })))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, safeT(t, "immersive.bg", "Bg")), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.bgColor || "#fdfbf7", onChange: (e) => setSettings((prev) => ({ ...prev, bgColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.bgColor }, "aria-label": safeT(t, "immersive.bg_color", "Background color") }), /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600" }, safeT(t, "immersive.text", "Text")), /* @__PURE__ */ React.createElement("input", { type: "color", value: settings.fontColor || "#1e293b", onChange: (e) => setSettings((prev) => ({ ...prev, fontColor: e.target.value })), className: "w-5 h-5 rounded-full border border-slate-400 cursor-pointer p-0 appearance-none", style: { backgroundColor: settings.fontColor }, "aria-label": safeT(t, "immersive.text_color", "Text color") })))), /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.close_word_wall"),
@@ -476,10 +480,6 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 });
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
-  const tt = (key, fb) => {
-    const r = t(key);
-    return r && r !== key ? r : fb;
-  };
   const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
   const [isPlaying, setIsPlaying] = useState(true);
   const [translateY, setTranslateY] = useState(0);
@@ -643,7 +643,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       setIsPlaying(true);
     } else setIsPlaying((pl) => !pl);
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, tt("immersive.cinematic_crawl", "Cinematic Crawl"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-right" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Palette", value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: p.text, background: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col", style: { backgroundColor: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap backdrop-blur-sm", style: { background: "rgba(0,0,0,0.55)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: onClose, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full", style: { color: p.text } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.cinematic_crawl", "Cinematic Crawl"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 text-xs font-bold flex-wrap" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "SPEED"), /* @__PURE__ */ React.createElement("input", { "aria-label": "Crawl speed", type: "range", min: "10", max: "140", value: speedPxPerSec, onChange: (e) => setSpeedPxPerSec(parseInt(e.target.value)), className: "w-24 accent-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "font-mono w-14 text-right" }, speedPxPerSec, "px/s")), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { style: { opacity: 0.7 } }, "PALETTE"), /* @__PURE__ */ React.createElement("select", { "aria-label": "Palette", value: palette, onChange: (e) => setPalette(e.target.value), className: "text-xs rounded px-2 py-1 border", style: { borderColor: p.text, background: p.bg, color: p.text } }, /* @__PURE__ */ React.createElement("option", { value: "gold" }, "Golden"), /* @__PURE__ */ React.createElement("option", { value: "teal" }, "Aqua"), /* @__PURE__ */ React.createElement("option", { value: "paper" }, "Paper"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setAmbientOn((a) => !a),
@@ -1028,7 +1028,7 @@ const KaraokeReaderOverlay = React.memo(({ text, onClose, isOpen, getAudioUrl })
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex flex-col animate-in fade-in duration-200", style: { backgroundColor: c.bg, color: c.ink } }, /* @__PURE__ */ React.createElement("div", { className: "p-4 flex justify-between items-center gap-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("button", { onClick: () => {
     hardStop();
     onClose();
-  }, "aria-label": t("common.close") || "Close", className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, t("immersive.focus_reader") || "Focus Reader"), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: autoAdvance, onChange: (e) => setAutoAdvance(e.target.checked), "aria-label": "Auto-advance to next sentence" }), /* @__PURE__ */ React.createElement("span", { style: { color: c.ink } }, "Auto-advance")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": "Playback speed" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "SPEED"), [0.75, 1, 1.25, 1.5].map((rate) => /* @__PURE__ */ React.createElement(
+  }, "aria-label": safeT(t, "common.close", "Close"), className: "p-2 rounded-full hover:bg-black/5", style: { color: c.ink } }, /* @__PURE__ */ React.createElement(ArrowLeft, { size: 22 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-base" }, safeT(t, "immersive.focus_reader", "Focus Reader")), /* @__PURE__ */ React.createElement("span", { className: "text-xs", style: { color: c.dim } }, "Sentence ", sentenceIdx + 1, " / ", sentences.length, " \xB7 read-along sweep"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4 flex-wrap text-xs font-bold" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 cursor-pointer" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: autoAdvance, onChange: (e) => setAutoAdvance(e.target.checked), "aria-label": "Auto-advance to next sentence" }), /* @__PURE__ */ React.createElement("span", { style: { color: c.ink } }, "Auto-advance")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": "Playback speed" }, /* @__PURE__ */ React.createElement("span", { style: { color: c.dim } }, "SPEED"), [0.75, 1, 1.25, 1.5].map((rate) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: rate,
