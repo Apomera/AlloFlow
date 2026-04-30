@@ -5014,71 +5014,72 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/view_simplified_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/view_math_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5089,7 +5090,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5be2d9d/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@703be99/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -5161,6 +5162,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_bakingscience.js',
         'stem_lab/stem_tool_allobotsage.js',
         'stem_lab/stem_tool_skatelab.js',
+        'stem_lab/stem_tool_statslab.js',
         'stem_lab/stem_tool_typingpractice.js',
         'stem_lab/stem_tool_llm_literacy.js',
         'stem_lab/stem_tool_assessmentliteracy.js',
@@ -31141,573 +31143,26 @@ Return ONLY valid JSON:
                         </div>
                     );
                 })()}
-                {activeView === 'math' && generatedContent && generatedContent?.data && (
-                    <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10" data-help-key="math_panel">
-                        <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
-                            <div className="flex justify-between items-start mb-3">
-                                <span className="text-xs font-black text-indigo-600 uppercase tracking-widest">
-                                    {generatedContent.meta ? generatedContent.meta.split(' - ')[0] : mathSubject}
-                                </span>
-                                <div className="flex gap-2">
-                                    {isTeacherMode && (
-                                        <button
-                                            aria-label={t('common.hide')}
-                                            onClick={handleToggleShowMathAnswers}
-                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${showMathAnswers ? 'bg-indigo-600 text-white shadow-md' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'}`}
-                                            data-help-key="math_toggle_answers"
-                                        >
-                                            {showMathAnswers ? <EyeOff size={14}/> : <Eye size={14}/>}
-                                            {showMathAnswers ? t('math.display.hide_answers') : t('math.display.reveal_answers')}
-                                        </button>
-                                    )}
-                                    <button onClick={handleToggleMathSelfGrade}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${mathSelfGradeMode ? 'bg-emerald-700 text-white shadow-md' : 'bg-white text-emerald-600 border border-emerald-600 hover:bg-emerald-50'}`}>
-                                        ✏️ {mathSelfGradeMode ? t('math.exit_self_grade') : t('math.self_grade')}
-                                    </button>
-                                    {mathSelfGradeMode && (
-                                        <button onClick={submitMathSelfGrade}
-                                            className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md hover:from-emerald-600 hover:to-teal-600 transition-all">
-                                            📊 Submit Assessment
-                                        </button>
-                                    )}
-                                    <button
-                                        aria-label={t('common.copy')}
-                                        onClick={() => {
-                                            const text = generatedContent?.data.problems.map((p, i) => `${i+1}. ${formatMathQuestion(p)}\nAnswer: ${p.answer}`).join('\n\n');
-                                            copyToClipboard(text);
-                                        }}
-                                        className="text-indigo-600 hover:text-indigo-600 p-1.5 rounded-md hover:bg-indigo-100 transition-colors"
-                                        title={t('math.display.copy_all')}
-                                    >
-                                        <Copy size={14}/>
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="text-2xl md:text-3xl font-bold text-indigo-900 font-serif leading-tight">
-                                {generatedContent?.data.title}
-                            </div>
-                        </div>
-                        {generatedContent?.data.graphData && (
-                            <div className="bg-white p-6 rounded-xl border border-slate-400 shadow-sm animate-in fade-in slide-in-from-bottom-2">
-                                <h4 className="text-xs font-black text-purple-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                    <ImageIcon size={14}/> {t('math.display.visual_header')}
-                                </h4>
-                                <div
-                                    className="w-full h-auto flex justify-center bg-slate-50 rounded-lg border border-slate-100 p-4 overflow-hidden svg-container"
-                                    dangerouslySetInnerHTML={{ __html: sanitizeHtml(generatedContent?.data.graphData) }}
-                                    data-help-key="math_graph"
-                                />
-                            </div>
-                        )}
-                        {(generatedContent?.data.problems || [{
-                            question: generatedContent?.data.problem,
-                            answer: generatedContent?.data.answer,
-                            steps: generatedContent?.data.steps,
-                            realWorld: generatedContent?.data.realWorld
-                        }]).map((problem, pIdx) => (
-                            <div key={pIdx} className="space-y-4 border-b border-slate-100 pb-8 last:border-0" data-help-key="math_problem">
-                                <div className={`bg-white p-4 rounded-xl border shadow-sm flex gap-4 items-start ${isMathEditing(pIdx) ? 'border-amber-300 ring-2 ring-amber-100' : 'border-indigo-100'}`}>
-                                    <div className="bg-indigo-600 text-white font-bold w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-sm mt-0.5 shadow-sm">
-                                        {pIdx + 1}
-                                    </div>
-                                    <div className="flex-grow">
-                                        {isMathEditing(pIdx) ? (
-                                            <textarea
-                                                aria-label={t('math.edit_problem_question') || `Edit math problem ${pIdx + 1}`}
-                                                className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none resize-y bg-amber-50/50 font-serif text-lg leading-relaxed text-slate-800 min-h-[60px]"
-                                                value={problem.question || problem.problem || ''}
-                                                onChange={(e) => handleMathProblemEdit(pIdx, 'question', e.target.value)}
-                                                placeholder={t('common.placeholder_enter_problem_question')}
-                                            />
-                                        ) : (
-                                            <div className="text-lg font-medium text-slate-800 font-serif">
-                                                {formatInlineText(formatMathQuestion(problem), false)}
-                                            </div>
-                                        )}
-                                        {problem._verification && <span style={{ fontSize: "11px", marginLeft: "6px", opacity: 0.8 }} title={problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""}>{problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : ""}</span>}
-                                    </div>
-                                    {isTeacherMode && (
-                                        <button
-                                            aria-label={isMathEditing(pIdx) ? "Save edits" : "Edit problem"}
-                                            onClick={() => toggleMathEdit(pIdx)}
-                                            className={`shrink-0 p-1.5 rounded-lg transition-all ${isMathEditing(pIdx) ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'text-slate-600 hover:text-amber-600 hover:bg-amber-50'}`}
-                                            title={isMathEditing(pIdx) ? "Done editing" : "Edit this problem"}
-                                        >
-                                            {isMathEditing(pIdx) ? <CheckCircle2 size={16} /> : <Pencil size={14} />}
-                                        </button>
-                                    )}
-                                </div>
-                                {isTeacherMode ? (
-                                    <>
-                                    {isIndependentMode && (
-                                        <div className="ml-4 sm:ml-12 mt-4 mb-4 space-y-3">
-                                            {problem.manipulativeSupport && (
-                                               <button onClick={() => {
-                                                  setStemLabTool(problem.manipulativeSupport.tool);
-                                                  if (problem.manipulativeSupport.tool === 'coordinate' && problem.manipulativeSupport.state?.points) {
-                                                     setGridPoints(problem.manipulativeSupport.state.points);
-                                                  } else if (problem.manipulativeSupport.tool === 'base10' && problem.manipulativeSupport.state) {
-                                                     setBase10Value(problem.manipulativeSupport.state);
-                                                  }
-                                                  setShowStemLab(true);
-                                                  setStemLabTab('explore');
-                                               }} className="flex items-center gap-2 px-3 py-1.5 bg-blue-50 text-blue-700 font-bold rounded-lg border border-blue-600 hover:bg-blue-100 transition-all text-sm mb-2">
-                                                   <span className="text-lg">📂</span> Open Visual Support ({problem.manipulativeSupport.tool})
-                                               </button>
-                                            )}
-                                            {problem.manipulativeResponse ? (
-                                                <div className="bg-emerald-50 bg-opacity-50 p-4 rounded-xl border border-emerald-200">
-                                                    <p className="text-sm text-emerald-800 font-bold mb-3 flex items-center gap-2">🧩 Solve this problem using the {problem.manipulativeResponse.tool} manipulative instead of typing.</p>
-                                                    <div className="flex gap-2">
-                                                        <button onClick={() => { setStemLabTool(problem.manipulativeResponse.tool);
-                                                            if (problem.manipulativeResponse.tool === 'numberline' && problem.manipulativeResponse.state?.range) {
-                                                                setNumberLineRange(problem.manipulativeResponse.state.range);
-                                                            } else if (problem.manipulativeResponse.tool === 'fractions' && problem.manipulativeResponse.state) {
-                                                                setFractionPieces({ numerator: 0, denominator: problem.manipulativeResponse.state.denominator || 8 });
-                                                            } else if (problem.manipulativeResponse.tool === 'volume' && problem.manipulativeResponse.state?.dims) {
-                                                                setCubeDims({ l: 1, w: 1, h: 1 });
-                                                            } else if (problem.manipulativeResponse.tool === 'protractor') {
-                                                                setAngleValue(0);
-                                                            }
-                                                            setShowStemLab(true); setStemLabTab('explore'); }} className="px-4 py-2 bg-white text-emerald-700 font-bold rounded-lg border border-emerald-300 hover:bg-emerald-100 transition-all text-sm shadow-sm flex items-center gap-2">
-                                                           Open {problem.manipulativeResponse.tool}
-                                                        </button>
-                                                        <button onClick={() => {
-                                                           let isCorrect = false;
-                                                            const target = problem.manipulativeResponse.state || {};
-                                                            if (problem.manipulativeResponse.tool === 'coordinate') {
-                                                                const targetPts = (target.points || []).map(p => `${p.x},${p.y}`).sort();
-                                                                const studentPts = gridPoints.map(p => `${p.x},${p.y}`).sort();
-                                                                isCorrect = targetPts.length === studentPts.length && targetPts.every((v, i) => v === studentPts[i]);
-                                                            } else if (problem.manipulativeResponse.tool === 'base10') {
-                                                                isCorrect = base10Value.hundreds === (target.hundreds || 0) &&
-                                                                            base10Value.tens === (target.tens || 0) &&
-                                                                            base10Value.ones === (target.ones || 0);
-                                                            } else if (problem.manipulativeResponse.tool === 'numberline') {
-                                                                const targetMarkers = (target.markers || []).map(m => m.value).sort((a,b) => a-b);
-                                                                const studentMarkers = numberLineMarkers.map(m => m.value).sort((a,b) => a-b);
-                                                                isCorrect = targetMarkers.length === studentMarkers.length && targetMarkers.every((v, i) => Math.abs(v - studentMarkers[i]) < 0.01);
-                                                            } else if (problem.manipulativeResponse.tool === 'fractions') {
-                                                                isCorrect = fractionPieces.numerator === (target.numerator || 0) && fractionPieces.denominator === (target.denominator || 1);
-                                                            } else if (problem.manipulativeResponse.tool === 'volume') {
-                                                                const td = target.dims || {};
-                                                                isCorrect = cubeDims.l === (td.l || 1) && cubeDims.w === (td.w || 1) && cubeDims.h === (td.h || 1);
-                                                            } else if (problem.manipulativeResponse.tool === 'protractor') {
-                                                                isCorrect = Math.abs(angleValue - (target.angle || 0)) <= 2;
-                                                            } else if (problem.manipulativeResponse.tool === 'funcGrapher') {
-                                                                const lt = labToolData.funcGrapher;
-                                                                isCorrect = lt.type === (target.type || 'quadratic') && Math.abs(lt.a - (target.a || 0)) < 0.1 && Math.abs(lt.b - (target.b || 0)) < 0.1 && Math.abs(lt.c - (target.c || 0)) < 0.1;
-                                                            } else if (problem.manipulativeResponse.tool === 'physics') {
-                                                                const lp = labToolData.physics;
-                                                                isCorrect = Math.abs(lp.angle - (target.angle || 45)) <= 2 && Math.abs(lp.velocity - (target.velocity || 20)) <= 1;
-                                                            } else if (problem.manipulativeResponse.tool === 'chemBalance') {
-                                                                const lc = labToolData.chemBalance;
-                                                                const tc = target.coefficients || [];
-                                                                isCorrect = tc.length > 0 && lc.coefficients.length === tc.length && lc.coefficients.every((v, i) => v === tc[i]);
-                                                            } else if (problem.manipulativeResponse.tool === 'punnett') {
-                                                                const lpn = labToolData.punnett;
-                                                                isCorrect = JSON.stringify(lpn.parent1.sort()) === JSON.stringify((target.parent1 || []).sort()) && JSON.stringify(lpn.parent2.sort()) === JSON.stringify((target.parent2 || []).sort());
-                                                            } else if (problem.manipulativeResponse.tool === 'circuit') {
-                                                                const lcr = labToolData.circuit;
-                                                                isCorrect = Math.abs(lcr.voltage - (target.voltage || 9)) < 0.5;
-                                                            } else if (problem.manipulativeResponse.tool === 'dataPlot') {
-                                                                const ldp = labToolData.dataPlot;
-                                                                const tPts = (target.points || []).map(p => `${Math.round(p.x)},${Math.round(p.y)}`).sort();
-                                                                const sPts = ldp.points.map(p => `${Math.round(p.x)},${Math.round(p.y)}`).sort();
-                                                                isCorrect = tPts.length === sPts.length && tPts.every((v, i) => v === sPts[i]);
-                                                            } else if (problem.manipulativeResponse.tool === 'inequality') {
-                                                                const li = labToolData.inequality;
-                                                                isCorrect = li.expr.replace(/\s/g,'') === (target.expr || '').replace(/\s/g,'');
-                                                            } else if (problem.manipulativeResponse.tool === 'molecule') {
-                                                                const lm = labToolData.molecule;
-                                                                isCorrect = lm.formula.replace(/\s/g,'').toLowerCase() === (target.formula || '').replace(/\s/g,'').toLowerCase();
-                                                            } else if (problem.manipulativeResponse.tool === 'calculus') {
-                                                                const lcl = labToolData.calculus;
-                                                                isCorrect = lcl.mode === (target.mode || 'riemann') && Math.abs(lcl.xMin - (target.xMin || 0)) < 0.1 && Math.abs(lcl.xMax - (target.xMax || 4)) < 0.1 && lcl.n === (target.n || 8);
-                                                            } else if (problem.manipulativeResponse.tool === 'wave') {
-                                                                const lw = labToolData.wave;
-                                                                isCorrect = Math.abs(lw.amplitude - (target.amplitude || 1)) < 0.1 && Math.abs(lw.frequency - (target.frequency || 1)) < 0.1;
-                                                            } else if (problem.manipulativeResponse.tool === 'cell') {
-                                                                const lce = labToolData.cell;
-                                                                isCorrect = lce.selectedOrganelle === (target.selectedOrganelle || null);
-                                                                const lcl = labToolData.calculus;
-                                                                isCorrect = lcl.mode === (target.mode || 'riemann') && Math.abs(lcl.xMin - (target.xMin || 0)) < 0.1 && Math.abs(lcl.xMax - (target.xMax || 4)) < 0.1 && lcl.n === (target.n || 8);
-                                                            } else if (problem.manipulativeResponse.tool === 'wave') {
-                                                                const lw = labToolData.wave;
-                                                                isCorrect = Math.abs(lw.amplitude - (target.amplitude || 1)) < 0.1 && Math.abs(lw.frequency - (target.frequency || 1)) < 0.1;
-                                                            } else if (problem.manipulativeResponse.tool === 'cell') {
-                                                                const lce = labToolData.cell;
-                                                                isCorrect = lce.selectedOrganelle === (target.selectedOrganelle || null);
-                                                            }
-                                                           handleStudentInput(generatedContent.id, pIdx, isCorrect ? '(Manipulative: CORRECT ✅)' : '(Manipulative: INCORRECT ❌)');
-                                                           addToast(isCorrect ? 'Manipulative match correct! 🎉' : 'Manipulative geometry incorrect. Keep trying!', isCorrect ? 'success' : 'error');
-                                                        }} className="px-4 py-2 bg-emerald-700 text-white font-bold rounded-lg hover:bg-emerald-700 transition-all text-sm shadow-sm">
-                                                           Check My Manipulative
-                                                        </button>
-                                                    </div>
-                                                    {studentResponses[generatedContent.id]?.[pIdx] && (
-                                                        <div className={`mt-3 text-sm font-bold ${studentResponses[generatedContent.id]?.[pIdx].includes('CORRECT') ? 'text-green-600' : 'text-red-600'}`}>
-                                                            {studentResponses[generatedContent.id]?.[pIdx]}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ) : (
-                                                <div className="relative">
-                                                    <div className="absolute top-3 left-3 text-slate-600">
-                                                        <Pencil size={16} />
-                                                    </div>
-                                                    <textarea
-                                                        aria-label={t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`}
-                                                        className="w-full p-3 pl-10 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
-                                                        placeholder={t('math.display.placeholder_work')}
-                                                        value={studentResponses[generatedContent.id]?.[pIdx] || ''}
-                                                        onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
-                                                        data-help-key="math_student_work"
-                                                    />
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                    {showMathAnswers ? (
-                                        <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                                            {problem.steps && problem.steps.length > 0 && (
-                                            <div className="ml-4 pl-4 border-l-2 border-slate-200 space-y-4 mt-4">
-                                                {problem.steps.map((step, idx) => (
-                                                    <div key={idx} className="bg-white p-4 rounded-lg border border-slate-100 shadow-sm">
-                                                        <div className="flex items-start gap-3">
-                                                            <div className="text-xs font-bold text-slate-600 uppercase tracking-widest mt-1">{t('math.display.step_label')} {idx + 1}</div>
-                                                            <div className="flex-grow w-full overflow-hidden">
-                                                                {isMathEditing(pIdx) ? (
-                                                                    <div className="space-y-2">
-                                                                        <textarea
-                                                                            aria-label={t('math.edit_step_explanation') || `Edit step ${idx + 1} explanation`}
-                                                                            className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-y bg-amber-50/50 text-sm text-slate-700 min-h-[40px]"
-                                                                            value={step.explanation || ''}
-                                                                            onChange={(e) => handleMathProblemEdit(pIdx, 'step_explanation', e.target.value, idx)}
-                                                                            placeholder={t('common.placeholder_step_explanation')}
-                                                                        />
-                                                                        <input
-                                                                            aria-label={t('math.edit_step_latex') || `Edit step ${idx + 1} LaTeX expression`}
-                                                                            type="text"
-                                                                            className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 text-sm font-mono text-slate-600"
-                                                                            value={step.latex || ''}
-                                                                            onChange={(e) => handleMathProblemEdit(pIdx, 'step_latex', e.target.value, idx)}
-                                                                            placeholder={t('common.placeholder_latex_expression_optional')}
-                                                                        />
-                                                                    </div>
-                                                                ) : (
-                                                                    <>
-                                                                <div className="text-slate-700 mb-2 leading-relaxed font-medium text-sm">
-                                                                    {formatInlineText(step.explanation, false)}
-                                                                </div>
-                                                                {step.latex && (
-                                                                    <div className="bg-slate-50 p-3 rounded text-center border border-slate-100 overflow-x-auto flex justify-center">
-                                                                        <span className="text-lg font-serif text-slate-800 inline-block">
-                                                                            <MathSymbol text={step.latex} />
-                                                                        </span>
-                                                                    </div>
-                                                                )}
-                                                                    </>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            )}
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-4 mt-4">
-                                                <div className="bg-green-50 p-4 rounded-xl border border-green-200 shadow-sm">
-                                                    <h4 className="text-xs font-black text-green-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                        <CheckCircle2 size={14}/> {t('math.display.answer_header')}
-                                                    </h4>
-                                                     {isMathEditing(pIdx) ? (
-                                                         <input
-                                                             type="text"
-                                                             className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 font-serif text-lg font-bold text-green-900"
-                                                             value={problem.answer || ''}
-                                                             onChange={(e) => handleMathProblemEdit(pIdx, 'answer', e.target.value)}
-                                                             placeholder={t('common.placeholder_enter_answer')}
-                                                         />
-                                                     ) : (
-                                                         <div className="text-lg font-bold text-green-900 font-serif">
-                                                             <MathSymbol text={problem.answer} />
-                                                         </div>
-                                                     )}
-                                                </div>
-                                                {problem.realWorld && (
-                                                <div className="bg-orange-50 p-4 rounded-xl border border-orange-200 shadow-sm">
-                                                    <h4 className="text-xs font-black text-orange-600 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                                        <Globe size={14}/> {t('math.display.connection_header')}
-                                                    </h4>
-                                                     {isMathEditing(pIdx) ? (
-                                                         <textarea
-                                                             aria-label={t('math.edit_real_world') || 'Edit real-world connection'}
-                                                             className="w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none resize-y bg-amber-50/50 text-sm text-orange-900 min-h-[40px]"
-                                                             value={problem.realWorld || ''}
-                                                             onChange={(e) => handleMathProblemEdit(pIdx, 'realWorld', e.target.value)}
-                                                             placeholder={t('common.placeholder_real_world_connection')}
-                                                         />
-                                                     ) : (
-                                                    <p className="text-sm text-orange-900 leading-relaxed font-medium">
-                                                        {problem.realWorld}
-                                                    </p>
-                                                     )}
-                                                </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="ml-12 p-3 bg-slate-50 border border-slate-400 rounded-lg text-center text-sm text-slate-600 italic flex items-center justify-center gap-2 mt-4">
-                                            {isIndependentMode ? (
-                                                <button
-                                                    aria-label={t('common.show_math_answers')}
-                                                    onClick={handleSetShowMathAnswersToTrue}
-                                                    className="flex items-center gap-2 text-indigo-500 hover:text-indigo-700 font-bold transition-colors py-2 px-4 hover:bg-white rounded-lg"
-                                                >
-                                                    <Eye size={16} /> {t('math.display.reveal_solution')}
-                                                </button>
-                                            ) : (
-                                                <><EyeOff size={14} /> {t('math.display.answer_hidden')}</>
-                                            )}
-                                        </div>
-                                    )}
-                                    </>
-                                ) : (
-                                    <div className="ml-4 sm:ml-12 mt-4 space-y-3">
-                                        <div className="relative">
-                                            <div className="absolute top-3 left-3 text-slate-600">
-                                                <Pencil size={16} />
-                                            </div>
-                                            <textarea
-                                                aria-label={t('math.display.student_work') || `Show your work for problem ${pIdx + 1}`}
-                                                className="w-full p-3 pl-10 border border-slate-400 rounded-xl focus:ring-2 focus:ring-indigo-200 focus:border-indigo-300 outline-none resize-y bg-slate-50/50 focus:bg-white transition-all font-serif text-lg leading-relaxed text-slate-700 placeholder:text-slate-600 min-h-[120px]"
-                                                placeholder={t('math.display.placeholder_work') || 'Show your work here... Type your answer and explain your thinking.'}
-                                                value={studentResponses[generatedContent.id]?.[pIdx] || ''}
-                                                onChange={(e) => handleStudentInput(generatedContent.id, pIdx, e.target.value)}
-                                                disabled={mathCheckResults[generatedContent.id]?.[pIdx]?.checking}
-                                            />
-                                        </div>
-                                        {(() => {
-                                            const checkResult = mathCheckResults[generatedContent.id]?.[pIdx];
-                                            const studentWork = studentResponses[generatedContent.id]?.[pIdx] || '';
-                                            return (
-                                                <>
-                                                    {!checkResult?.checked && (
-                                                        <button
-                                                            onClick={() => handleCheckMathWork(
-                                                                generatedContent.id, pIdx,
-                                                                problem.question || problem.problem,
-                                                                problem.answer,
-                                                                problem.steps,
-                                                                studentWork
-                                                            )}
-                                                            disabled={!studentWork || studentWork.trim().length < 5 || checkResult?.checking}
-                                                            className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl font-bold text-sm transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700 hover:shadow-md active:scale-[0.98]"
-                                                            data-help-key="math_check_work"
-                                                        >
-                                                            {checkResult?.checking ? (
-                                                                <><RefreshCw size={16} className="animate-spin" /> {t('math.check.checking') || 'Evaluating your work...'}</>
-                                                            ) : (
-                                                                <><Sparkles size={16} /> {t('math.check.button') || 'Check My Work'}</>
-                                                            )}
-                                                        </button>
-                                                    )}
-{/* 💡 Hint System */ }
-{
-    !checkResult?.checked && (() => {
-        const hintKey = `${generatedContent.id}_${pIdx}`;
-        const hintInfo = mathHintData[hintKey] || { hints: [], loading: false, count: 0 };
-        return (
-            <div className="space-y-2">
-                {hintInfo.hints.map((hint, hIdx) => (
-                    <div key={hIdx} className="flex gap-2 items-start p-3 rounded-xl bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 animate-in fade-in slide-in-from-top-1 duration-200">
-                        <span className="text-lg flex-shrink-0">{hIdx === 0 ? '💡' : hIdx === 1 ? 'ðŸ”¦' : 'ðŸ”'}</span>
-                        <div className="flex-1">
-                            <span className="text-[11px] font-black text-amber-600 uppercase tracking-widest">Hint {hIdx + 1} of 3</span>
-                            <p className="text-sm text-amber-900 font-medium leading-relaxed mt-0.5">{hint}</p>
-                        </div>
-                    </div>
-                ))}
-                {hintInfo.count < 3 && (
-                    <button
-                        onClick={() => handleGetMathHint(generatedContent.id, pIdx, problem.question || problem.problem, problem.answer, problem.steps)}
-                        disabled={hintInfo.loading}
-                        className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl font-bold text-xs transition-all border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 hover:border-amber-400 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
-                    >
-                        {hintInfo.loading ? (
-                            <><RefreshCw size={14} className="animate-spin" /> Thinking...</>
-                        ) : (
-                            <><span className="text-sm">💡</span> {hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)'}</>
-                        )}
-                    </button>
-                )}
-            </div>
-        );
-    })()
-}
-                                                    {checkResult?.checked && (
-                                                        <div className={`rounded-xl border-2 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ${
-                                                            checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' :
-                                                            checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' :
-                                                            'border-red-300 bg-red-50'
-                                                        }`}>
-                                                            <div className={`px-4 py-3 flex items-center justify-between ${
-                                                                checkResult.verdict === 'correct' ? 'bg-green-100' :
-                                                                checkResult.verdict === 'partial' ? 'bg-amber-100' :
-                                                                'bg-red-100'
-                                                            }`}>
-                                                                <div className="flex items-center gap-2">
-                                                                    <span className="text-xl">
-                                                                        {checkResult.verdict === 'correct' ? '✅' : checkResult.verdict === 'partial' ? '🟡' : '❌'}
-                                                                    </span>
-                                                                    <span className={`font-black text-sm uppercase tracking-wider ${
-                                                                        checkResult.verdict === 'correct' ? 'text-green-700' :
-                                                                        checkResult.verdict === 'partial' ? 'text-amber-700' :
-                                                                        'text-red-700'
-                                                                    }`}>
-                                                                        {checkResult.verdict === 'correct' ? (t('math.check.verdict_correct') || 'Correct!')
-                                                                         : checkResult.verdict === 'partial' ? (t('math.check.verdict_partial') || 'Partially Correct')
-                                                                         : (t('math.check.verdict_incorrect') || 'Not Quite Right')}
-                                                                    </span>
-                                                                </div>
-                                                                <div className={`px-3 py-1 rounded-full text-xs font-black ${
-                                                                    checkResult.score >= 80 ? 'bg-green-200 text-green-800' :
-                                                                    checkResult.score >= 40 ? 'bg-amber-200 text-amber-800' :
-                                                                    'bg-red-200 text-red-800'
-                                                                }`}>
-                                                                    {checkResult.score}% · {checkResult.hintsUsed > 0 ? `-${checkResult.hintsUsed} hint${checkResult.hintsUsed > 1 ? 's' : ''} · ` : ''}+{Math.round((checkResult.score / 10) * Math.max(0.25, 1 - (checkResult.hintsUsed || 0) * 0.25))} XP
-                                                                </div>
-                                                            </div>
-                                                            <div className="px-4 py-3">
-                                                                <p className={`text-sm leading-relaxed font-medium ${
-                                                                    checkResult.verdict === 'correct' ? 'text-green-800' :
-                                                                    checkResult.verdict === 'partial' ? 'text-amber-800' :
-                                                                    'text-red-800'
-                                                                }`}>
-                                                                    {checkResult.feedback}
-                                                                </p>
-                                                            </div>
-                                                            <div className="px-4 pb-3 flex justify-end">
-                                                                <button
-                                                                    onClick={() => handleResetMathCheck(generatedContent.id, pIdx)}
-                                                                    className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full transition-colors ${
-                                                                        checkResult.verdict === 'correct'
-                                                                            ? 'text-green-600 hover:bg-green-100'
-                                                                            : 'text-indigo-600 hover:bg-indigo-100'
-                                                                    }`}
-                                                                >
-                                                                    <RefreshCw size={12} />
-                                                                    {checkResult.verdict === 'correct'
-                                                                        ? (t('math.check.try_another') || 'Revise Answer')
-                                                                        : (t('math.check.try_again') || 'Try Again')
-                                                                    }
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    {checkResult?.checked && problem.steps && problem.steps.length > 0 && (
-                                                        <details className="mt-3 group">
-                                                            <summary className="flex items-center gap-2 cursor-pointer select-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:from-blue-100 hover:to-indigo-100 transition-all">
-                                                                <span className="text-sm">📖</span>
-                                                                <span className="text-xs font-bold text-blue-700">{t('math.show_solution_steps') || 'Show Solution Steps'}</span>
-                                                                <ChevronDown size={14} className="text-blue-400 ml-auto group-open:rotate-180 transition-transform" />
-                                                            </summary>
-                                                            <div className="mt-2 space-y-2 pl-2 border-l-3 border-blue-200">
-                                                                {problem.steps.map((step, sIdx) => (
-                                                                    <div key={sIdx} className="flex gap-3 items-start p-3 bg-white rounded-lg border border-slate-100 shadow-sm animate-in fade-in slide-in-from-top-1 duration-200" style={{ animationDelay: `${sIdx * 80}ms` }}>
-                                                                        <div className="flex-shrink-0 w-7 h-7 bg-gradient-to-br from-blue-500 to-indigo-500 text-white rounded-full flex items-center justify-center text-xs font-black shadow-sm">
-                                                                            {sIdx + 1}
-                                                                        </div>
-                                                                        <div className="flex-1 min-w-0">
-                                                                            <p className="text-sm text-slate-700 font-medium leading-relaxed">{step.explanation}</p>
-                                                                            {step.latex && (
-                                                                                <div className="mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 text-xs text-indigo-700 overflow-x-auto">
-                                                                                    <MathSymbol text={step.latex} />
-                                                                                </div>
-                                                                            )}
-                                                                            {step.expression && !step.latex && (
-                                                                                <div className="mt-1.5 px-3 py-1.5 bg-slate-50 rounded-md border border-slate-400 font-mono text-xs text-indigo-700">
-                                                                                    <MathSymbol text={step.expression} />
-                                                                                </div>
-                                                                            )}
-                                                                        </div>
-                                                                    </div>
-                                                                ))}
-                                                                {problem.answer && (
-                                                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200 flex items-center gap-2">
-                                                                        <span className="text-sm">✅</span>
-                                                                        <span className="text-sm font-bold text-green-700">Answer: {problem.answer}</span>
-                                                                        {(mathSubject === 'Geometry' || /volum|prism|cube|dimension|rectangular/i.test(problem.question || problem.title || '')) && (
-                                                                            <button onClick={() => { setShowStemLab(true); setStemLabTab('explore'); setStemLabTool('volume'); setCubeBuilderMode('freeform'); setCubePositions(new Set()); const vol = parseInt(String(problem.answer).replace(/[^\d]/g,'')); if (vol && vol > 0 && vol <= 100) { setCubeBuilderChallenge({type:'volume', answer: vol, shape:'any'}); setCubeBuilderFeedback(null); } }} className="ml-auto text-[11px] font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-600 rounded-full px-2.5 py-0.5 transition-all hover:shadow-sm">
-                                                                                📦 Try with cubes
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        </details>
-                                                    )}
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                        {(generatedContent?.data.problems?.length === 1 || (!generatedContent?.data.problems && generatedContent?.data.problem)) && (
-                            <div className="mt-8 flex justify-center pb-4">
-                                <button aria-label={t('common.generate_content')}
-                                    onClick={handleGenerateSimilar}
-                                    disabled={isProcessing} aria-busy={isProcessing}
-                                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-full font-bold shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100"
-                                    data-help-key="math_generate_similar"
-                                >
-                                    {isProcessing ? <RefreshCw size={18} className="animate-spin"/> : <RefreshCw size={18}/>}
-                                    {t('math.display.generate_similar')}
-                                </button>
-                            </div>
-                        )}
-                        {isTeacherMode && generatedContent?.data?.problems?.length > 0 && (
-                            <div className="mt-6 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 p-3">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-sm">✏️</span>
-                                    <span className="text-xs font-bold text-indigo-700">{t('math.edit_with_allobot')}</span>
-                                    <span className="text-[11px] text-indigo-400 font-medium">{t('math.edit_helper')}</span>
-                                </div>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={mathEditInput}
-                                        onChange={(e) => setMathEditInput(e.target.value)}
-                                        onKeyDown={(e) => { if (e.key === "Enter" && mathEditInput.trim() && !isMathEditingChat) handleMathEdit(mathEditInput); }}
-                                        placeholder="e.g. Make these easier, add 2 more division problems, change to a space theme..."
-                                        className="flex-1 px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-400"
-                                        aria-label="Edit math problems"
-                                        disabled={isMathEditingChat}
-                                    />
-                                    <button
-                                        onClick={() => handleMathEdit(mathEditInput)}
-                                        disabled={!mathEditInput.trim() || isMathEditingChat}
-                                        className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold text-sm rounded-lg hover:from-indigo-600 hover:to-purple-600 disabled:opacity-40 transition-all flex items-center gap-2 shadow-md"
-                                    >
-                                        {isMathEditingChat ? <><RefreshCw size={14} className="animate-spin" /> Editing...</> : "✏️ Apply"}
-                                    </button>
-                                </div>
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                    {["Make easier", "Make harder", "Add word problems", "Add more problems", "Change theme", "Simplify steps"].map(suggestion => (
-                                        <button key={suggestion}
-                                            onClick={() => { setMathEditInput(suggestion); handleMathEdit(suggestion); }}
-                                            disabled={isMathEditing}
-                                            className="px-2 py-1 text-[11px] font-bold text-indigo-600 bg-white border border-indigo-600 rounded-full hover:bg-indigo-100 transition-all disabled:opacity-40"
-                                        >
-                                            {suggestion}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                )}
+                {activeView === 'math' && window.AlloModules && window.AlloModules.MathView && React.createElement(window.AlloModules.MathView, {
+                    t, generatedContent, isTeacherMode, isIndependentMode, isProcessing,
+                    showMathAnswers, mathSelfGradeMode, mathEditInput, isMathEditingChat,
+                    mathHintData, mathCheckResults, mathSubject, studentResponses,
+                    gridPoints, base10Value, numberLineMarkers, fractionPieces,
+                    cubeDims, angleValue, labToolData, cubeBuilderMode, cubePositions,
+                    setStemLabTool, setStemLabTab, setShowStemLab,
+                    setGridPoints, setBase10Value, setNumberLineRange,
+                    setFractionPieces, setCubeDims, setAngleValue, setMathEditInput,
+                    setCubeBuilderMode, setCubePositions, setCubeBuilderChallenge, setCubeBuilderFeedback,
+                    handleToggleShowMathAnswers, handleSetShowMathAnswersToTrue,
+                    handleToggleMathSelfGrade, submitMathSelfGrade,
+                    handleStudentInput, handleMathProblemEdit,
+                    handleCheckMathWork, handleResetMathCheck, handleGetMathHint,
+                    handleGenerateSimilar, handleMathEdit,
+                    isMathEditing, toggleMathEdit,
+                    formatMathQuestion, formatInlineText, sanitizeHtml,
+                    copyToClipboard, addToast,
+                    MathSymbol
+                })}
                 {activeView === 'lesson-plan' && generatedContent?.data && (
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
                         <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
