@@ -5014,77 +5014,78 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_concept_sort_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_persona_chat_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5095,7 +5096,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -23095,905 +23096,32 @@ Return ONLY valid JSON:
             />
           </ErrorBoundary>
       )}
-      {isPersonaChatOpen && (personaState.selectedCharacter || (personaState.mode === 'panel' && personaState.selectedCharacters.length > 0)) && ReactDOM.createPortal(
-        <ErrorBoundary fallbackMessage="Interview Interface encountered an error. Please close and reopen.">
-        <div
-            className="fixed inset-0 z-[9999] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300"
-            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
-        >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-7xl relative border-4 border-yellow-200 overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-[85vh]">
-                {personaState.mode === 'panel' ? (
-                    <div className="bg-slate-50 w-full h-full flex flex-col overflow-hidden relative">
-                        <div className="shrink-0 p-4 border-b border-indigo-100 bg-white z-20 relative flex justify-center items-center shadow-sm">
-                             <div className="absolute left-4 flex items-center gap-3">
-                                 <span className="font-black text-indigo-900 text-lg uppercase tracking-tight hidden md:block">
-                                     {t('persona.panel_header')}
-                                 </span>
-                                 <div className="flex items-center gap-1.5 bg-gradient-to-r from-yellow-50 to-amber-50 px-2 py-1 rounded-lg border border-yellow-200 hidden md:flex">
-                                     <Star size={14} className="text-yellow-500" />
-                                     <span className="text-xs font-black text-yellow-600">
-                                         {((personaState.selectedCharacters?.[0]?.accumulatedXP || 0) + (personaState.selectedCharacters?.[1]?.accumulatedXP || 0))}
-                                     </span>
-                                     <span className="text-[11px] text-slate-600">{t('common.xp')}</span>
-                                 </div>
-                             </div>
-                             <div className="w-full max-w-lg transition-all duration-500">
-                                <HarmonyMeter score={personaState.harmonyScore ?? 10} />
-                             </div>
-                             <button
-                                data-help-key="persona_close" data-help-ignore
-                                onClick={handleClosePersonaChat}
-                                className="absolute right-4 p-2 text-slate-600 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
-                                aria-label={t('common.close')}
-                             >
-                                <X size={20} />
-                             </button>
-                        </div>
-                        <div className="shrink-0 px-4 py-2 border-b border-slate-200 bg-slate-50/80 flex flex-wrap items-center justify-center gap-2">
-                            <button
-                                aria-label={t('common.volume')}
-                                onClick={() => {
-                                    const newState = !personaAutoRead;
-                                    setPersonaAutoRead(newState);
-                                    if (!newState) stopPlayback();
-                                }}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                    personaAutoRead
-                                    ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                }`}
-                                title={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
-                                data-help-key="persona_auto_read"
-                            >
-                                {personaAutoRead ? <Volume2 size={16} className="animate-pulse"/> : <VolumeX size={16}/>}
-                                <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_read_label')}</span>
-                            </button>
-                            <button
-                                data-help-key="persona_auto_send"
-                                onClick={handleTogglePersonaAutoSend}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                    personaAutoSend
-                                    ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                }`}
-                                title={personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send')}
-                            >
-                                <Zap size={16} className={personaAutoSend ? "fill-current" : ""} />
-                                <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_send')}</span>
-                            </button>
-                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                            {isPersonaFreeResponse && (
-                                <button
-                                    aria-label={t('common.show')}
-                                    data-help-key="persona_show_hints"
-                                    onClick={handleToggleShowPersonaHints}
-                                    className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                        !showPersonaHints
-                                        ? 'bg-red-50 text-red-600 border-red-200 shadow-inner'
-                                        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                    }`}
-                                    title={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
-                                >
-                                    {showPersonaHints ? <Eye size={16} /> : <EyeOff size={16} />}
-                                    <span className="text-xs font-bold hidden sm:inline">
-                                        {showPersonaHints ? t('persona.hints_on') : t('persona.hints_off')}
-                                    </span>
-                                </button>
-                            )}
-                            {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
-                            <button
-                                aria-label={t('common.message')}
-                                data-help-key="persona_response_mode"
-                                onClick={() => {
-                                    const newMode = !isPersonaFreeResponse;
-                                    setIsPersonaFreeResponse(newMode);
-                                    if (!newMode) setShowPersonaHints(true);
-                                }}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                    !isPersonaFreeResponse
-                                    ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-sm ring-1 ring-purple-200'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                }`}
-                                title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
-                            >
-                                {isPersonaFreeResponse ? <MessageSquare size={16} /> : <ListChecks size={16} />}
-                                <span className="text-xs font-bold hidden sm:inline">
-                                    {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
-                                </span>
-                            </button>
-                            )}
-                            <button
-                                data-help-key="persona_topic_spark"
-                                onClick={handlePersonaTopicSpark}
-                                disabled={personaState.isLoading || (personaState.topicSparkCount || 0) >= 2}
-                                className={`p-2 rounded-lg border shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                                    (personaState.topicSparkCount || 0) >= 2
-                                    ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
-                                    : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
-                                }`}
-                                title={`Get a topic suggestion (${2 - (personaState.topicSparkCount || 0)} remaining)`}
-                            >
-                                <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse" : ""}/>
-                            </button>
-                            <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                            <button
-                                aria-label={t('common.save')}
-                                data-help-key="persona_save_chat"
-                                onClick={handleSavePersonaChat}
-                                disabled={personaState.chatHistory.length === 0}
-                                className="p-2 rounded-lg bg-emerald-100 text-emerald-700 border border-emerald-200 hover:bg-emerald-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                                title={t('persona.save_tooltip')}
-                            >
-                                <Save size={16}/>
-                            </button>
-                            <button
-                                aria-label={t('common.check')}
-                                data-help-key="persona_conclude"
-                                onClick={() => {
-                                    handleGenerateReflectionPrompt();
-                                    setIsPersonaReflectionOpen(true);
-                                }}
-                                disabled={!((personaState.harmonyScore || 0) >= 50 || ((personaState.selectedCharacters?.[0]?.accumulatedXP || 0) + (personaState.selectedCharacters?.[1]?.accumulatedXP || 0)) >= 100)}
-                                className={`flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all text-xs font-bold ${
-                                    ((personaState.harmonyScore || 0) >= 50 || ((personaState.selectedCharacters?.[0]?.accumulatedXP || 0) + (personaState.selectedCharacters?.[1]?.accumulatedXP || 0)) >= 100)
-                                    ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700'
-                                    : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'
-                                }`}
-                                title={t('persona.conclude_tooltip')}
-                            >
-                                {((personaState.harmonyScore || 0) >= 50 || ((personaState.selectedCharacters?.[0]?.accumulatedXP || 0) + (personaState.selectedCharacters?.[1]?.accumulatedXP || 0)) >= 100)
-                                    ? <CheckCircle2 size={16}/>
-                                    : <Lock size={16}/>}
-                                <span className="hidden sm:inline">{t('persona.conclude_button')}</span>
-                            </button>
-                        </div>
-                        <div className="flex-1 flex overflow-hidden">
-                            <div className="w-1/4 min-w-[250px] border-r border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex">
-                                <CharacterColumn character={personaState.selectedCharacters[0]} side="left" onRetryPortrait={handleRetryPortraitGeneration} />
-                            </div>
-                            <div className="flex-1 flex flex-col bg-slate-50/50 relative min-w-[320px]">
-                                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-label="Interview conversation">
-                                    {personaState.chatHistory.map((msg, idx) => {
-                                        const isUser = msg.role === 'user';
-                                        const isCharB = !isUser && msg.speakerName === personaState.selectedCharacters[1]?.name;
-                                        const speakerLabel = isUser ? 'You' : msg.speakerName;
-                                        return (
-                                            <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`} aria-label={speakerLabel + ' said: ' + msg.text.substring(0, 100)}>
-                                                 <div
-                                                    className={`max-w-[85%] p-4 rounded-2xl text-sm shadow-sm leading-relaxed border ${
-                                                    isUser ? 'bg-indigo-100 text-indigo-900 border-indigo-200 rounded-br-none' :
-                                                    isCharB ? 'bg-rose-50 text-slate-800 border-rose-200 rounded-br-none mr-2' :
-                                                    'bg-white text-slate-700 border-slate-200 rounded-bl-none ml-2'
-                                                    }`}
-                                                    aria-label={!isUser ? 'Message from ' + speakerLabel + '. Click any sentence to hear it read aloud.' : undefined}
-                                                 >
-                                                    {isUser ? (
-                                                        msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')
-                                                    ) : (
-                                                        (() => {
-                                                            const paragraphs = msg.text.split(/\n{2,}/);
-                                                            let sentenceCounter = 0;
-                                                            return paragraphs.map((para, pIdx) => {
-                                                                const sentences = splitTextToSentences(para);
-                                                                if (sentences.length === 0) return null;
-                                                                return (
-                                                                    <p key={pIdx} className="mb-2 last:mb-0">
-                                                                        {sentences.map((s, sIdx) => {
-                                                                            const currentGlobalIdx = sentenceCounter;
-                                                                            sentenceCounter++;
-                                                                            const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-                                                                            const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
-                                                                            const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
-                                                                            const isHeader = s.trim().startsWith('#') || isHtmlHeader;
-                                                                            const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
-                                                                            return (
-                                                                                <span
-                                                                                    key={sIdx}
-                                                                                    onClick={(e) => {
-                                                                                        e.stopPropagation();
-                                                                                        handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
-                                                                                    }}
-                                                                                    onKeyDown={(e) => {
-                                                                                        if (e.key === 'Enter' || e.key === ' ') {
-                                                                                            e.preventDefault();
-                                                                                            e.stopPropagation();
-                                                                                            handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
-                                                                                        }
-                                                                                    }}
-                                                                                    role="button"
-                                                                                    tabIndex={0}
-                                                                                    className={`transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-300 text-black shadow-sm' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
-                                                                                    title={t('common.click_to_read')}
-                                                                                    aria-label={`Sentence ${currentGlobalIdx + 1}. Click to read aloud.`}
-                                                                                >
-                                                                                    {formatInteractiveText(cleanText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1'))}
-                                                                                    {" "}
-                                                                                </span>
-                                                                            );
-                                                                        })}
-                                                                    </p>
-                                                                );
-                                                            });
-                                                        })()
-                                                    )}
-                                                    {!isUser && <span className="block text-[11px] text-slate-600 mt-1 opacity-70">🔊 Click any sentence to listen</span>}
-                                                 </div>
-                                                 <span className="text-[11px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider">
-                                                    {speakerLabel}
-                                                 </span>
-                                            </div>
-                                        );
-                                    })}
-                                    {personaState.isLoading && (
-                                        <div className="flex justify-center p-4">
-                                            <div className="bg-white px-4 py-2 rounded-full border border-slate-400 shadow-sm flex items-center gap-2 text-xs font-bold text-slate-600 animate-pulse">
-                                                <RefreshCw size={12} className="animate-spin"/> {t('persona.status_deliberating')}
-                                            </div>
-                                        </div>
-                                    )}
-                                    {panelTtsPending.length > 0 && (
-                                        <div className="flex justify-center p-2">
-                                            <div className="bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 flex items-center gap-2 text-xs font-medium text-violet-600 animate-pulse">
-                                                <Volume2 size={12} className="animate-bounce"/> Waiting to speak...
-                                            </div>
-                                        </div>
-                                    )}
-                                    {personaDefinitionData && (
-                                        <div
-                                            className="fixed z-[9999] bg-white rounded-xl shadow-2xl border-2 border-indigo-200 p-4 max-w-sm animate-in zoom-in-95 duration-150"
-                                            style={{
-                                                left: Math.min(personaDefinitionData.x + 10, window.innerWidth - 320),
-                                                top: Math.min(personaDefinitionData.y + 10, window.innerHeight - 150)
-                                            }}
-                                            role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}
-                                        >
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="font-bold text-lg text-indigo-600">{personaDefinitionData.word}</span>
-                                                <button
-                                                    aria-label={t('common.close_definition')}
-                                                    onClick={handleSetPersonaDefinitionDataToNull}
-                                                    className="text-slate-600 hover:text-slate-600 p-1"
-                                                >
-                                                    <X size={16}/>
-                                                </button>
-                                            </div>
-                                            {isPersonaDefining ? (
-                                                <div className="flex items-center gap-2 text-slate-600 text-sm">
-                                                    <RefreshCw size={14} className="animate-spin"/>
-                                                    Looking up definition...
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <p className="text-sm text-slate-700 leading-relaxed mb-3">
-                                                        {personaDefinitionData.text}
-                                                    </p>
-                                                    <button
-                                                        aria-label={t('common.volume')}
-                                                        onClick={() => handleSpeak(personaDefinitionData.text, 'persona-definition', 0)}
-                                                        className="flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1.5 rounded-full"
-                                                    >
-                                                        <Volume2 size={12}/> Speak Definition
-                                                    </button>
-                                                </>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                {(personaState.panelSuggestions || []).length > 0 && !personaState.isLoading ? (
-                                    <div className="p-4 bg-white border-t border-slate-200">
-                                        <p className="text-xs text-slate-600 text-center mb-3 font-medium">{t('persona.panel_choose_response')}</p>
-                                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-1.5">
-                                            {personaState.panelSuggestions.map((opt, i) => (
-                                                <button
-                                                    key={i}
-                                                    onClick={(e) => {
-                                                        const btn = e.currentTarget;
-                                                        const feedbackColor = opt.tier === 'good' ? 'bg-emerald-200 border-emerald-400' :
-                                                                              opt.tier === 'poor' ? 'bg-rose-200 border-rose-400' :
-                                                                              'bg-amber-200 border-amber-400';
-                                                        btn.className = btn.className.replace(/bg-indigo-50|border-indigo-200|hover:bg-indigo-100|hover:border-indigo-300/g, '') + ' ' + feedbackColor;
-                                                        setTimeout(() => {
-                                                            setPersonaState(prev => ({ ...prev, panelSuggestions: [] }));
-                                                            handlePanelChatSubmit(opt.text);
-                                                        }, 400);
-                                                    }}
-                                                    className="text-left px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all duration-300 shadow-sm hover:scale-[1.01] active:scale-[0.99] bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 hover:border-indigo-300"
-                                                >
-                                                    <span className="opacity-50 mr-2">{String.fromCharCode(65+i)}.</span>
-                                                    {opt.text}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="p-4 bg-white border-t border-slate-200">
-                                        <div className="flex gap-2">
-                                            <input aria-label={t('common.enter_persona_input')}
-                                                value={personaInput}
-                                                onChange={(e) => setPersonaInput(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && handlePanelChatSubmit(personaInput)}
-                                                className="flex-1 p-3 border-2 border-indigo-600 rounded-xl focus:border-indigo-400 outline-none transition-all placeholder:text-slate-600"
-                                                placeholder={t('persona.panel_question_placeholder')}
-                                                disabled={personaState.isLoading}
-                                            />
-                                            <button
-                                                aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send message to interview subject'}
-                                                aria-busy={personaState.isLoading ? 'true' : 'false'}
-                                                onClick={() => handlePanelChatSubmit(personaInput)}
-                                                disabled={!personaInput.trim() || personaState.isLoading}
-                                                className="bg-indigo-600 text-white p-3 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                {personaState.isLoading ? <RefreshCw size={20} className="animate-spin"/> : <Send size={20} />}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            <div className="w-1/4 min-w-[250px] border-l border-slate-200 bg-white flex flex-col p-4 overflow-hidden hidden md:flex">
-                                <CharacterColumn character={personaState.selectedCharacters[1]} side="right" onRetryPortrait={handleRetryPortraitGeneration} />
-                            </div>
-                        </div>
-                        {isPersonaReflectionOpen && (
-                            <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in fade-in duration-300">
-                                {reflectionFeedback ? (
-                                    <>
-                                        <div className="text-center mb-6 relative">
-                                            <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in zoom-in duration-300">
-                                                <Sparkles size={40} className="fill-current" />
-                                            </div>
-                                            <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
-                                            <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
-                                        </div>
-                                        <div className="flex-1 overflow-y-auto space-y-4">
-                                            <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
-                                                <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedback.score}<span className="text-2xl text-indigo-400">/100</span></div>
-                                                <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.quality_score') || 'Quality Score'}</div>
-                                            </div>
-                                            <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
-                                                <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md"><Star size={24} className="fill-current" /></div>
-                                                <div>
-                                                    <div className="text-2xl font-black text-yellow-600">+{reflectionFeedback.xpEarned} XP</div>
-                                                    <div className="text-xs text-yellow-700 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
-                                                </div>
-                                            </div>
-                                            <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
-                                                <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1"><MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}</h4>
-                                                <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
-                                            </div>
-                                        </div>
-                                        <div className="mt-6">
-                                            <button aria-expanded={isPersonaReflectionOpen} onClick={() => { setReflectionFeedback(null); setIsPersonaReflectionOpen(false); setPersonaReflectionInput(''); setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single', harmonyScore: 10 })); }} className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
-                                                <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
-                                            </button>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="text-center mb-6 relative">
-                                            <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm"><PenTool size={32} /></div>
-                                            <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
-                                            <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
-                                        </div>
-                                        <div className="flex-1 overflow-y-auto">
-                                            <div className="space-y-4">
-                                                <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                                                    <h4 className="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">{t('persona.reflection_prompt_label') || 'Reflection Question'}</h4>
-                                                    {isGeneratingReflectionPrompt ? (
-                                                        <div className="flex items-center gap-2 text-indigo-500 text-sm italic"><RefreshCw size={14} className="animate-spin"/> {t('persona.status_generating_prompt')}</div>
-                                                    ) : (
-                                                        <p className="text-slate-700 text-sm leading-relaxed">{dynamicReflectionQuestion || t('persona.default_reflection_prompt')}</p>
-                                                    )}
-                                                </div>
-                                                <textarea aria-label={t('persona.reflection_input') || 'Write your reflection'} value={personaReflectionInput} onChange={(e) => setPersonaReflectionInput(e.target.value)} placeholder={t('persona.reflection_placeholder')} className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600" disabled={isGradingReflection} />
-                                            </div>
-                                        </div>
-                                        <div className="mt-6 flex gap-3">
-                                            <button onClick={handleSetIsPersonaReflectionOpenToFalse} disabled={isGradingReflection} className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed">{t('persona.back_to_chat')}</button>
-                                            <button aria-label={t('common.submit_reflection_for_grading')} onClick={handleSaveReflection} disabled={!personaReflectionInput.trim() || isGradingReflection} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                                                {isGradingReflection ? <RefreshCw size={18} className="animate-spin"/> : <Sparkles size={18} className="text-yellow-400 fill-current"/>}
-                                                {isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')}
-                                            </button>
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                <>
-                <div className="w-full md:w-1/3 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-6 flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar">
-                     <div className="w-48 h-72 md:w-80 md:h-[28rem] bg-yellow-100 rounded-2xl border-4 border-white shadow-xl overflow-hidden mb-6 shrink-0 relative group">
-                         {personaState.avatarUrl && (
-                             <img loading="lazy"
-                                 src={personaState.avatarUrl}
-                                 alt={personaState.selectedCharacter.name}
-                                 className={`w-full h-full object-cover transition-all duration-500 hover:scale-105 ${personaState.isImageLoading ? 'blur-[2px] opacity-90 scale-105' : ''}`}
-                                 style={{ objectPosition: 'top center' }}
-                             />
-                         )}
-                         {personaState.isImageLoading && (
-                             <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/10 backdrop-blur-[1px] transition-all">
-                                 <div className="bg-white/20 p-3 rounded-full backdrop-blur-md border border-white/30 shadow-lg">
-                                     <RefreshCw size={32} className="text-white animate-spin drop-shadow-md"/>
-                                 </div>
-                             </div>
-                         )}
-                         {!personaState.avatarUrl && !personaState.isImageLoading && (
-                             <div className="w-full h-full flex flex-col items-center justify-center gap-3 p-4">
-                                 <History size={64} className="text-yellow-300/50"/>
-                                 <button
-                                     aria-label={t('common.refresh')}
-                                     onClick={() => handleRetryPortraitGeneration(personaState.selectedCharacter)}
-                                     className="bg-yellow-500 hover:bg-yellow-600 text-yellow-900 px-4 py-2 rounded-full text-sm text-slate-600 group-hover:text-indigo-700 transition-colors flex items-center gap-2 transition-all shadow-md hover:shadow-lg"
-                                 >
-                                     <RefreshCw size={16} />
-                                     {t('persona.generate_portrait')}
-                                 </button>
-                                 {personaState.avatarGenerationFailed && (
-                                     <span className="text-xs text-yellow-600/70 italic text-center">
-                                         {t('persona.portrait_retry_hint')}
-                                     </span>
-                                 )}
-                             </div>
-                         )}
-                     </div>
-                     <h3 className="font-black text-2xl md:text-3xl text-slate-800 leading-tight mb-2">{personaState.selectedCharacter.name}</h3>
-                     <div className="bg-yellow-100 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-6 border border-yellow-200 shadow-sm">
-                        {personaState.selectedCharacter.role} ({personaState.selectedCharacter.year})
-                     </div>
-                     <div className="w-full bg-white p-4 rounded-xl border border-slate-400 text-sm text-slate-600 leading-relaxed font-serif italic shadow-sm relative">
-                         <Quote size={16} className="absolute top-2 left-2 text-slate-200 fill-current" />
-                         "{personaState.selectedCharacter.context}"
-                     </div>
-                     <div className="w-full mt-6">
-                         <div className="flex justify-between items-end mb-1">
-                             <label className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">Trust / Rapport</label>
-                             <span className={`text-xs font-bold ${
-                                 (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'text-green-600' :
-                                 (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'text-yellow-600' : 'text-red-500'
-                             }`}>
-                                 {personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport}%
-                             </span>
-                         </div>
-                         <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-400">
-                             <div
-                                 className={`h-full transition-all duration-500 ease-out ${
-                                     (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 70 ? 'bg-green-500' :
-                                     (personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport) >= 30 ? 'bg-yellow-400' : 'bg-red-500'
-                                 }`}
-                                 style={{ width: `${personaState.selectedCharacter.rapport ?? personaState.selectedCharacter.initialRapport}%` }}
-                             ></div>
-                         </div>
-                     </div>
-                     {personaState.selectedCharacter.quests && personaState.selectedCharacter.quests.length > 0 && (
-                         <div className="w-full mt-6 text-left">
-                             <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
-                                 <Search size={12}/> Secrets to Uncover
-                             </h4>
-                             <div className="space-y-2">
-                                 {personaState.selectedCharacter.quests.map((quest, qIdx) => (
-                                     <div key={qIdx} className={`p-3 rounded-lg border text-xs transition-all ${quest.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : 'bg-white border-slate-100 text-slate-600'}`}>
-                                         <div className="flex items-start gap-2">
-                                             <div className={`mt-0.5 ${quest.isCompleted ? 'text-green-500' : 'text-slate-600'}`}>
-                                                 {quest.isCompleted ? <CheckCircle2 size={14}/> : <div className="w-3.5 h-3.5 rounded-full border-2 border-current"></div>}
-                                             </div>
-                                             <div>
-                                                 <span className={`font-bold block mb-0.5 ${quest.isCompleted ? 'line-through opacity-70' : ''}`}>
-                                                     {quest.text}
-                                                 </span>
-                                                 {!quest.isCompleted && (
-                                                     <span className="text-[11px] uppercase tracking-wider font-bold opacity-60">
-                                                         Requires {quest.difficulty}% Trust
-                                                     </span>
-                                                 )}
-                                             </div>
-                                         </div>
-                                     </div>
-                                 ))}
-                             </div>
-                         </div>
-                     )}
-                </div>
-                <div className="flex-1 flex flex-col h-full bg-white relative min-w-0">
-                    <button
-                        onClick={handleClosePersonaChat}
-                        className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-50"
-                        aria-label={t('common.close')}
-                    >
-                        <X size={24} />
-                    </button>
-                    <div className="bg-white border-b border-slate-100 p-3 pr-14 flex items-center justify-between gap-2 shrink-0 z-20 shadow-sm">
-                        <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-50 to-amber-50 px-3 py-1.5 rounded-lg border border-yellow-200">
-                            <Star size={16} className="text-yellow-500" />
-                            <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{t('common.xp')}</span>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-sm font-black text-yellow-600">
-                                        {personaState.selectedCharacter?.accumulatedXP || 0}
-                                    </span>
-                                    <span className="text-[11px] text-slate-600">/ 300</span>
-                                </div>
-                            </div>
-                            <div className="w-16 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all duration-500"
-                                    style={{ width: `${Math.min(100, ((personaState.selectedCharacter?.accumulatedXP || 0) / 300) * 100)}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                        <button
-                            aria-label={t('common.volume')}
-                            data-help-key="persona_auto_read"
-                            onClick={() => {
-                                const newState = !personaAutoRead;
-                                setPersonaAutoRead(newState);
-                                if (!newState) stopPlayback();
-                            }}
-                            className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                personaAutoRead
-                                ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
-                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                            }`}
-                            title={personaAutoRead ? t('persona.auto_read_off') : t('persona.auto_read_on')}
-                        >
-                            {personaAutoRead ? <Volume2 size={16} className="animate-pulse"/> : <VolumeX size={16}/>}
-                            <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_read_label')}</span>
-                        </button>
-                        <button
-                            data-help-key="persona_auto_send"
-                            onClick={handleTogglePersonaAutoSend}
-                            className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                personaAutoSend
-                                ? 'bg-yellow-400 text-indigo-900 border-yellow-500 shadow-sm'
-                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                            }`}
-                            title={personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send')}
-                        >
-                            <Zap size={16} className={personaAutoSend ? "fill-current" : ""} />
-                            <span className="text-xs font-bold hidden sm:inline">{t('persona.auto_send')}</span>
-                        </button>
-                        <div className="w-px h-6 bg-slate-300 mx-1"></div>
-                        <button
-                            aria-label={t('common.show')}
-                            data-help-key="persona_hints_toggle"
-                            onClick={handleToggleShowPersonaHints}
-                                className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                    !showPersonaHints
-                                    ? 'bg-red-50 text-red-600 border-red-200 shadow-inner'
-                                    : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                                }`}
-                                title={showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip')}
-                            >
-                                {showPersonaHints ? <Eye size={16} /> : <EyeOff size={16} />}
-                                <span className="text-xs font-bold hidden sm:inline">
-                                    {showPersonaHints ? t('persona.hints_on') : t('persona.hints_off')}
-                                </span>
-                            </button>
-                        {(isTeacherMode || studentProjectSettings.allowPersonaFreeResponse) && (
-                        <button
-                            aria-label={t('common.message')}
-                            data-help-key="persona_response_mode"
-                            onClick={() => {
-                                const newMode = !isPersonaFreeResponse;
-                                setIsPersonaFreeResponse(newMode);
-                                if (!newMode) setShowPersonaHints(true);
-                            }}
-                            className={`p-2 rounded-lg border transition-all flex items-center gap-2 ${
-                                !isPersonaFreeResponse
-                                ? 'bg-purple-100 text-purple-900 border-purple-300 shadow-sm ring-1 ring-purple-200'
-                                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
-                            }`}
-                            title={isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free')}
-                        >
-                            {isPersonaFreeResponse ? <MessageSquare size={16} /> : <ListChecks size={16} />}
-                            <span className="text-xs font-bold hidden sm:inline">
-                                {isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')}
-                            </span>
-                        </button>
-                        )}
-                        <button
-                            data-help-key="persona_topic_spark"
-                            onClick={handlePersonaTopicSpark}
-                            disabled={personaState.isLoading || (personaState.topicSparkCount || 0) >= 2}
-                            className={`p-2 rounded-lg border shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                                (personaState.topicSparkCount || 0) >= 2
-                                ? 'bg-slate-100 text-slate-600 border-slate-200 cursor-not-allowed'
-                                : 'bg-white text-indigo-600 border-slate-200 hover:bg-indigo-50 hover:border-indigo-200'
-                            }`}
-                            title={t('persona.topic_spark_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
-                            aria-label={t('persona.topic_spark_tooltip', { remaining: 2 - (personaState.topicSparkCount || 0) })}
-                        >
-                            <Lightbulb size={16} className={personaState.isLoading ? "animate-pulse" : ""}/>
-                        </button>
-                        <button
-                            data-help-key="persona_save_chat"
-                            onClick={handleSavePersonaChat}
-                            disabled={personaState.chatHistory.length === 0}
-                            className="p-2 rounded-lg bg-white text-slate-600 border border-slate-400 shadow-sm hover:bg-slate-50 hover:border-indigo-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                            title={t('persona.chat_save')}
-                            aria-label={t('persona.chat_save')}
-                        >
-                            <Save size={16}/>
-                        </button>
-                        <button
-                            aria-label={t('common.check')}
-                            data-help-key="persona_conclude"
-                            onClick={() => {
-                                handleGenerateReflectionPrompt();
-                                setIsPersonaReflectionOpen(true);
-                            }}
-                            disabled={!((personaState.selectedCharacter?.rapport || 0) >= 50 || (personaState.selectedCharacter?.accumulatedXP || 0) >= 100)}
-                            className={`flex items-center gap-2 px-3 py-2 rounded-lg border shadow-md active:scale-95 transition-all text-xs font-bold ${
-                                ((personaState.selectedCharacter?.rapport || 0) >= 50 || (personaState.selectedCharacter?.accumulatedXP || 0) >= 100)
-                                ? 'bg-indigo-600 text-white border-indigo-500 hover:bg-indigo-700'
-                                : 'bg-slate-200 text-slate-600 border-slate-300 cursor-not-allowed'
-                            }`}
-                            title={((personaState.selectedCharacter?.rapport || 0) >= 50 || (personaState.selectedCharacter?.accumulatedXP || 0) >= 100)
-                                ? t('persona.conclude_tooltip')
-                                : t('persona.conclude_locked')}
-                        >
-                            {((personaState.selectedCharacter?.rapport || 0) >= 50 || (personaState.selectedCharacter?.accumulatedXP || 0) >= 100)
-                                ? <CheckCircle2 size={16}/>
-                                : <Lock size={16}/>}
-                            <span className="hidden sm:inline">{t('persona.conclude_button')}</span>
-                        </button>
-                        </div>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} role="log" aria-live="polite" aria-label="Interview conversation with character">
-                        {(!personaState.chatHistory || personaState.chatHistory.length === 0) && (
-                            <div className="text-center py-10 text-slate-600 italic">
-                                {t('persona.empty_chat_instruction')}
-                            </div>
-                        )}
-                        {(personaState.chatHistory || []).map((msg, idx) => {
-                             const isUser = msg.role === 'user';
-                             let bubbleClass = 'bg-white text-slate-700 border-slate-200 rounded-bl-none font-serif text-base';
-                             let speakerName = isUser ? t('common.you') : (personaState.selectedCharacter?.name || t('common.character'));
-                             let avatarUrl = null;
-                             if (!isUser && msg.speakerName && personaState.selectedCharacters.length > 0) {
-                                 speakerName = msg.speakerName;
-                                 const charIndex = personaState.selectedCharacters.findIndex(c => c.name === msg.speakerName);
-                                 const charData = personaState.selectedCharacters.find(c => c.name === msg.speakerName);
-                                 if (charData) avatarUrl = charData.avatarUrl;
-                                 if (charIndex === 1) {
-                                     bubbleClass = 'bg-rose-50 text-slate-800 border-rose-200 rounded-bl-none border';
-                                 } else {
-                                     bubbleClass = 'bg-white text-slate-700 border-slate-200 rounded-bl-none border font-serif';
-                                 }
-                             } else if (isUser) {
-                                 bubbleClass = 'bg-indigo-50 text-indigo-900 border-indigo-200 rounded-br-none border';
-                             }
-                             return (
-                             <div key={idx} className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
-                                 <div className={`flex gap-3 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                                     {!isUser && avatarUrl && (
-                                         <div className="flex-shrink-0 mt-1">
-                                             <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-400 shadow-sm bg-white">
-                                                 <img loading="lazy" src={avatarUrl} alt={speakerName} className="w-full h-full object-cover" />
-                                             </div>
-                                         </div>
-                                     )}
-                                     <div className={`p-4 rounded-2xl text-sm shadow-sm leading-relaxed ${bubbleClass}`}>
-                                         {(() => {
-                                             const paragraphs = msg.text.split(/\n{2,}/);
-                                             let sentenceCounter = 0;
-                                             return paragraphs.map((para, pIdx) => {
-                                                 const sentences = splitTextToSentences(para);
-                                                 if (sentences.length === 0) return null;
-                                                 return (
-                                                     <p key={pIdx} className="mb-2 last:mb-0">
-                                                         {sentences.map((s, sIdx) => {
-                                                             const currentGlobalIdx = sentenceCounter;
-                                                             sentenceCounter++;
-                                                             const isMessagePlaying = playingContentId === `persona-message-${idx}`;
-                                                             const isActive = isMessagePlaying && currentGlobalIdx === playbackState.currentIdx;
-                                                             const isHtmlHeader = /^<h([1-6])[^>]*>/i.test(s.trim());
-                                                             const isHeader = s.trim().startsWith('#') || isHtmlHeader;
-                                                             const cleanText = isHeader ? (isHtmlHeader ? s.trim().replace(/<\/?h[1-6][^>]*>/gi, '') : s.trim().replace(/^#+\s*/, '')) : s;
-                                                             return (
-                                                                 <span
-                                                                     key={sIdx}
-                                                                     onClick={(e) => {
-                                                                         e.stopPropagation();
-                                                                         handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
-                                                                     }}
-                                                                     className={`transition-colors duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-300 text-black shadow-sm' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`}
-                                                                     title={t('common.click_to_read')}
-                                                                 >
-                                                                     {formatInteractiveText(cleanText)}
-                                                                     {" "}
-                                                                 </span>
-                                                             );
-                                                         })}
-                                                     </p>
-                                                 );
-                                             });
-                                         })()}
-                                     </div>
-                                 </div>
-                                 <span className={`text-[11px] text-slate-600 mt-1 px-1 font-bold uppercase tracking-wider ${!isUser && avatarUrl ? 'ml-11' : ''}`}>
-                                     {speakerName}
-                                 </span>
-                             </div>
-                             );
-                        })}
-                        {personaState.isLoading && (
-                            <div className="flex items-start">
-                                <div className="bg-white p-3 rounded-2xl border border-slate-400 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-2 shadow-sm animate-pulse">
-                                    <History size={14} className="animate-spin text-yellow-600"/>
-                                    {t('persona.status_thinking', { name: personaState.selectedCharacter?.name })}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    <div className="bg-white border-t border-slate-100 flex flex-col shrink-0 z-20 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-                        {isPersonaFreeResponse && !showPersonaHints && !personaState.isLoading && (
-                            <div className="px-4 pt-2 pb-0 flex justify-center animate-in slide-in-from-bottom-2 fade-in">
-                                <span className={`text-[11px] font-bold px-3 py-1 rounded-full border shadow-sm transition-colors ${!personaTurnHintsViewed ? 'bg-green-50 text-green-700 border-green-200' : 'bg-orange-50 text-orange-600 border-orange-200'}`}>
-                                    {!personaTurnHintsViewed ? t('persona.hard_mode_active') : t('persona.hints_viewed_status')}
-                                </span>
-                            </div>
-                        )}
-                        {(showPersonaHints || !isPersonaFreeResponse) && (personaState.suggestions || []).length > 0 && !personaState.isLoading && (
-                            <div className={`px-4 pt-3 flex gap-2 ${
-                                isPersonaFreeResponse
-                                ? 'overflow-x-auto no-scrollbar pb-1'
-                                : 'flex-wrap pb-4 justify-center'
-                            }`}>
-                                {personaState.suggestions.map((q, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => handlePersonaChatSubmit(q)}
-                                        className={`whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors shadow-sm ${
-                                            isPersonaFreeResponse
-                                            ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0'
-                                            : 'bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 w-full sm:w-[48%] py-3 text-sm'
-                                        }`}
-                                    >
-                                        {!isPersonaFreeResponse && <span className="mr-2 opacity-50">{String.fromCharCode(65+i)}.</span>}
-                                        {q}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        {isPersonaFreeResponse && (
-                            <div className="p-4 flex gap-2">
-                                <input aria-label={t('common.enter_persona_input')}
-                                    type="text"
-                                    value={personaInput}
-                                    onChange={(e) => setPersonaInput(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && !personaState.isLoading && handlePanelChatSubmit()}
-                                    placeholder={t('persona.character_question_placeholder', {name: personaState.selectedCharacter?.name})}
-                                    className="flex-grow text-sm p-3 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-yellow-100 focus:border-yellow-400 outline-none transition-all placeholder:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-slate-50"
-                                    autoFocus
-                                    disabled={personaState.isLoading}
-                                />
-                                <button
-                                    aria-label={personaState.isLoading ? 'Waiting for response...' : 'Send question to ' + (personaState.selectedCharacter?.name || 'character')}
-                                    aria-busy={personaState.isLoading ? 'true' : 'false'}
-                                    onClick={() => handlePersonaChatSubmit()}
-                                    disabled={!personaInput.trim() || personaState.isLoading}
-                                    className="bg-yellow-500 hover:bg-yellow-600 text-indigo-900 font-bold p-3 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center active:scale-95"
-                                >
-                                    {personaState.isLoading ? <RefreshCw size={20} className="animate-spin"/> : <Send size={20}/>}
-                                </button>
-                            </div>
-                        )}
-                        {!isPersonaFreeResponse && personaState.isLoading && (
-                            <div className="p-8 text-center text-slate-600 italic text-xs flex items-center justify-center gap-2">
-                                <RefreshCw size={14} className="animate-spin"/> {t('persona.status_generating_options')}
-                            </div>
-                        )}
-                    </div>
-                    {isPersonaReflectionOpen && (
-                        <div className="absolute inset-0 bg-white/95 backdrop-blur-sm z-50 flex flex-col p-8 animate-in fade-in duration-300">
-                            {reflectionFeedback ? (
-                                <>
-                                    <div className="text-center mb-6 relative">
-                                        <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4 text-white shadow-lg animate-in zoom-in duration-300">
-                                            <Sparkles size={40} className="fill-current" />
-                                        </div>
-                                        <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_complete') || 'Great Reflection!'}</h2>
-                                        <p className="text-slate-600 text-sm">{reflectionFeedback.subjectName}</p>
-                                    </div>
-                                    <div className="flex-1 overflow-y-auto space-y-4">
-                                        <div className="bg-gradient-to-br from-indigo-50 to-purple-50 p-6 rounded-2xl border border-indigo-100 text-center">
-                                            <div className="text-5xl font-black text-indigo-600 mb-2">{reflectionFeedback.score}<span className="text-2xl text-indigo-400">/100</span></div>
-                                            <div className="text-xs font-bold text-indigo-500 uppercase tracking-wider">{t('persona.quality_score') || 'Quality Score'}</div>
-                                        </div>
-                                        <div className="bg-gradient-to-r from-yellow-50 to-amber-50 p-4 rounded-xl border border-yellow-200 flex items-center justify-center gap-3">
-                                            <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white shadow-md">
-                                                <Star size={24} className="fill-current" />
-                                            </div>
-                                            <div>
-                                                <div className="text-2xl font-black text-yellow-600">+{reflectionFeedback.xpEarned} XP</div>
-                                                <div className="text-xs text-yellow-700 font-medium">{t('persona.xp_earned') || 'Experience Earned'}</div>
-                                            </div>
-                                        </div>
-                                        <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
-                                            <h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 flex items-center gap-1">
-                                                <MessageSquare size={12} /> {t('persona.teacher_feedback') || 'Teacher Feedback'}
-                                            </h4>
-                                            <div className="text-slate-700 leading-relaxed prose prose-sm prose-slate max-w-none" dangerouslySetInnerHTML={{ __html: (reflectionFeedback.feedback || '').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>').replace(/\n/g, '<br/>') }} />
-                                        </div>
-                                    </div>
-                                    <div className="mt-6">
-                                        <button
-                                            aria-label={t('common.check')}
-                                            onClick={() => {
-                                                setReflectionFeedback(null);
-                                                setIsPersonaReflectionOpen(false);
-                                                setPersonaReflectionInput('');
-                                                setPersonaState(prev => ({ ...prev, selectedCharacter: null, chatHistory: [], suggestions: [], selectedCharacters: [], mode: 'single' }));
-                                            }}
-                                            className="w-full py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 text-lg"
-                                        >
-                                            <CheckCircle2 size={22} /> {t('common.continue') || 'Continue'}
-                                        </button>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="text-center mb-6 relative">
-                                        <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm">
-                                            <PenTool size={32} />
-                                        </div>
-                                        <h2 className="text-2xl font-black text-slate-800">{t('persona.reflection_title')}</h2>
-                                        <p className="text-slate-600 text-sm">{t('persona.reflection_subtitle')}</p>
-                                    </div>
-                                    <div className="flex-1 overflow-y-auto">
-                                        <div className="space-y-4">
-                                            <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
-                                                <h4 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2">{t('persona.prompt_label')}</h4>
-                                                {isGeneratingReflectionPrompt ? (
-                                                    <div className="flex items-center gap-2 text-indigo-600 font-medium animate-pulse">
-                                                        <RefreshCw size={16} className="animate-spin"/> {t('persona.generating_question')}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-slate-700 font-medium">
-                                                        {dynamicReflectionQuestion || `What is one surprising thing you learned from ${personaState.selectedCharacter?.name}, and how does it connect to what you already knew?`}
-                                                    </p>
-                                                )}
-                                            </div>
-                                            <textarea
-                                                aria-label={t('persona.reflection_input') || 'Write your reflection'}
-                                                value={personaReflectionInput} data-help-key="persona_reflection_input"
-                                                onChange={(e) => setPersonaReflectionInput(e.target.value)}
-                                                placeholder={t('persona.reflection_placeholder')}
-                                                className="w-full h-48 p-4 border-2 border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm leading-relaxed resize-none disabled:bg-slate-50 disabled:text-slate-600"
-                                                disabled={isGradingReflection}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="mt-6 flex gap-3">
-                                        <button
-                                            aria-label={t('common.refresh')}
-                                            onClick={handleSetIsPersonaReflectionOpenToFalse} data-help-key="persona_back_btn"
-                                            disabled={isGradingReflection}
-                                            className="flex-1 py-3 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            {t('persona.back_to_chat')}
-                                        </button>
-                                        <button aria-label={t('common.submit_reflection_for_grading')}
-                                            onClick={handleSaveReflection} data-help-key="persona_submit_btn"
-                                            disabled={!personaReflectionInput.trim() || isGradingReflection}
-                                            className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                        >
-                                            {isGradingReflection ? <RefreshCw size={18} className="animate-spin"/> : <Sparkles size={18} className="text-yellow-400 fill-current"/>}
-                                            {isGradingReflection ? t('persona.status_grading') : t('persona.submit_xp')}
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    )}
-                </div>
-                </>
-                )}
-            </div>
-        </div>
-        </ErrorBoundary>,
+      {isPersonaChatOpen && (personaState.selectedCharacter || (personaState.mode === 'panel' && personaState.selectedCharacters.length > 0)) && window.AlloModules && window.AlloModules.PersonaChatView && ReactDOM.createPortal(
+        React.createElement(window.AlloModules.PersonaChatView, {
+            personaState, t,
+            isPersonaFreeResponse, showPersonaHints, personaAutoRead,
+            personaInput, personaAutoSend,
+            isPersonaReflectionOpen, personaDefinitionData, reflectionFeedback,
+            isGradingReflection, personaReflectionInput, isPersonaDefining,
+            isGeneratingReflectionPrompt,
+            isTeacherMode, studentProjectSettings,
+            dynamicReflectionQuestion, panelTtsPending,
+            personaTurnHintsViewed, playingContentId, playbackState,
+            personaScrollRef,
+            setPersonaState, setPersonaInput, setPersonaAutoRead, setShowPersonaHints,
+            setIsPersonaFreeResponse, setIsPersonaReflectionOpen,
+            setPersonaReflectionInput, setReflectionFeedback,
+            handleClosePersonaChat, handleGenerateReflectionPrompt,
+            handlePanelChatSubmit, handlePersonaChatSubmit,
+            handlePersonaTopicSpark, handleRetryPortraitGeneration,
+            handleSavePersonaChat, handleSaveReflection,
+            handleSetIsPersonaReflectionOpenToFalse,
+            handleSetPersonaDefinitionDataToNull,
+            handleSpeak, handleTogglePersonaAutoSend,
+            handleToggleShowPersonaHints, stopPlayback,
+            splitTextToSentences, formatInteractiveText,
+            ErrorBoundary, CharacterColumn, HarmonyMeter
+        }),
         document.body
       )}
       {/* Diff View modal — word-level (or sentence/char) diff of source
