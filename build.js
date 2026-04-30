@@ -229,6 +229,21 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ViewSpotlightTourModule',
+        filename: 'view_spotlight_tour_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewProjectSettingsModule',
+        filename: 'view_project_settings_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewLaunchPadModule',
+        filename: 'view_launch_pad_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ExportHandlersModule',
         filename: 'export_handlers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
