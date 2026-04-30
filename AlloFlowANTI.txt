@@ -5742,6 +5742,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               all.forEach(n => { const i = parseInt(n.getAttribute('data-sentence-idx'), 10); if (!isNaN(i) && i > max) max = i; });
               setChunkReaderIdx(max);
           }
+          else if (e.key === 'Enter') {
+              // Skip typewriter reveal: jump active sentence to fully revealed.
+              // No-op for other moods (the typewriter useEffect only reads this
+              // when mood === 'typewriter'; the renderer's wordStartChar < idx
+              // check is satisfied for any high value).
+              e.preventDefault();
+              setChunkTypewriterCharIdx(99999);
+          }
           else if (e.key === 'Escape') { e.preventDefault(); setIsChunkReaderActive(false); setChunkReaderAutoPlay(false); }
       };
       window.addEventListener('keydown', handler);

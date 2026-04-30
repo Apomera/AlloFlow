@@ -496,19 +496,22 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
             {setChunkReaderMood && (
               <>
                 <div className="h-4 w-px bg-slate-200"></div>
-                <select
-                  aria-label={safeT(t, 'immersive.chunk_mood', 'Chunk Read animation mood')}
-                  value={chunkReaderMood || 'highlight'}
-                  onChange={e => setChunkReaderMood(e.target.value)}
-                  title="Animation mood for active chunk"
-                  className="text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200"
-                  data-help-key="immersive_chunk_mood"
-                >
-                  <option value="highlight">✨ Sweep</option>
-                  <option value="typewriter">⌨️ Typewriter</option>
-                  <option value="popin">🎈 Pop-In</option>
-                  <option value="pulse">💗 Pulse</option>
-                </select>
+                <label className="flex items-center gap-1">
+                  <span className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">{safeT(t, 'immersive.chunk_mood_label', 'Mood')}</span>
+                  <select
+                    aria-label={safeT(t, 'immersive.chunk_mood', 'Chunk Read animation mood')}
+                    value={chunkReaderMood || 'highlight'}
+                    onChange={e => setChunkReaderMood(e.target.value)}
+                    title="Animation mood for active chunk · Enter skips typewriter reveal"
+                    className="text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200"
+                    data-help-key="immersive_chunk_mood"
+                  >
+                    <option value="highlight">✨ Sweep</option>
+                    <option value="typewriter">⌨️ Typewriter</option>
+                    <option value="popin">🎈 Pop-In</option>
+                    <option value="pulse">💗 Pulse</option>
+                  </select>
+                </label>
               </>
             )}
           </div>

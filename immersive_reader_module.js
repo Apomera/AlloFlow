@@ -377,13 +377,13 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement(Volume2, { size: 12, className: "inline" }),
     " ",
     safeT(t, "immersive.read_along", "Read Along")
-  )), setChunkReaderMood && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
+  )), setChunkReaderMood && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider" }, safeT(t, "immersive.chunk_mood_label", "Mood")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": safeT(t, "immersive.chunk_mood", "Chunk Read animation mood"),
       value: chunkReaderMood || "highlight",
       onChange: (e) => setChunkReaderMood(e.target.value),
-      title: "Animation mood for active chunk",
+      title: "Animation mood for active chunk \xB7 Enter skips typewriter reveal",
       className: "text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200",
       "data-help-key": "immersive_chunk_mood"
     },
@@ -391,7 +391,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement("option", { value: "typewriter" }, "\u2328\uFE0F Typewriter"),
     /* @__PURE__ */ React.createElement("option", { value: "popin" }, "\u{1F388} Pop-In"),
     /* @__PURE__ */ React.createElement("option", { value: "pulse" }, "\u{1F497} Pulse")
-  )))), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.grammar_label")), /* @__PURE__ */ React.createElement(
+  ))))), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.grammar_label")), /* @__PURE__ */ React.createElement(
     ToggleButton,
     {
       active: settings.showNouns,
