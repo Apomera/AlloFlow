@@ -1239,6 +1239,371 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   ];
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 12.9: LAB SIMULATOR — graded "advise a struggling student" cases
+  // Mirrors Auto Repair Lab pattern. Customer-style scenario, decision
+  // points, scored choices, letter grade + per-step feedback. Trains
+  // diagnostic + intervention thinking using all the prior modules.
+  // ─────────────────────────────────────────────────────────
+  var LAB_SCENARIOS = [
+    {
+      id: 'lab-quiet-underperformer', name: 'The quiet underperformer', icon: '😐', difficulty: 2,
+      intro: 'A 7th-grade social studies teacher consults you. "Maya is a quiet, polite student. She participates when called on + her in-class work is solid. But she\'s failing tests — getting 50-60% on multiple-choice tests over material she clearly engaged with."',
+      student: { grade: '7', subject: 'Social studies', mileage: '4 months into school year', history: 'Honor roll in 6th grade. No prior IEP/504. No reported anxiety.' },
+      observations: ['Engaged in class', 'Participates when called on', 'In-class work is strong', 'Test scores are 50-60%', 'Says "I studied" but can\'t describe HOW'],
+      steps: [
+        { id: 's1', prompt: 'First diagnostic move?',
+          choices: [
+            { id: 'a', label: 'Recommend the family pay for tutoring', score: -5,
+              fb: 'PREMATURE. You haven\'t diagnosed yet. Tutoring helps for content gaps; this looks like a strategy gap.' },
+            { id: 'b', label: 'Ask Maya HOW she studies — specific behaviors, time, materials', score: 10,
+              fb: 'CORRECT. The performance gap (engaged in class, fails tests) suggests a metacognitive / study-strategy issue. Diagnose before treating.' },
+            { id: 'c', label: 'Refer to school psych for evaluation', score: 0,
+              fb: 'POSSIBLE later but not first. One semester of underperformance with engaged in-class behavior doesn\'t warrant evaluation yet. Try strategy intervention first.' }
+          ] },
+        { id: 's2', prompt: 'Maya says: "I read the chapter twice + highlight the important parts. The night before the test I reread my highlights." What does this tell you?',
+          choices: [
+            { id: 'a', label: 'She\'s studying enough; the tests must be unfair', score: -10,
+              fb: 'WRONG diagnosis. Teacher trust + working backwards from "she studied so the tests are wrong" doesn\'t explain her in-class engagement that suggests she IS learning.' },
+            { id: 'b', label: 'She\'s using LOW-utility strategies (rereading + highlighting per Dunlosky 2013) — the illusion of fluency. Familiarity feels like understanding.', score: 10,
+              fb: 'CORRECT. Maya is doing what most students do — and what doesn\'t work. Familiarity from rereading creates the FEELING of knowing without actual retrieval-strengthened memory.' },
+            { id: 'c', label: 'She has a learning disability', score: -5,
+              fb: 'JUMPING. The pattern is consistent with ineffective strategies, not LD. Try the obvious fix first.' }
+          ] },
+        { id: 's3', prompt: 'What strategies do you teach her?',
+          choices: [
+            { id: 'a', label: 'Add a 3rd reread before the test', score: -10,
+              fb: 'WORSE. Rereading is the LOW-utility strategy. More of it = more illusion of fluency. The intervention should REPLACE rereading, not amplify it.' },
+            { id: 'b', label: 'Practice testing (free recall + flashcards) + distributed practice (3 sessions across the week, not 1 the night before)', score: 10,
+              fb: 'CORRECT. The two HIGH-utility strategies from Dunlosky 2013. Replace cram-night with spaced retrieval. Replace rereading with self-testing.' },
+            { id: 'c', label: 'Make her quit social studies', score: -10,
+              fb: 'WAT.' }
+          ] },
+        { id: 's4', prompt: 'Maya says she "tried flashcards once but they didn\'t help." What might be going on?',
+          choices: [
+            { id: 'a', label: 'Flashcards just don\'t work for her — try something else', score: -5,
+              fb: 'PREMATURE. Practice testing is so well-supported across populations that "doesn\'t work for her" is unlikely to be true after one try.' },
+            { id: 'b', label: 'She likely flipped cards passively without trying to recall first ("desirable difficulty" missed). Coach the active-recall + spacing protocol explicitly.', score: 10,
+              fb: 'CORRECT. The retrieval EFFORT is the active ingredient. Flipping cards = passive reading. The discipline is: TRY to recall first, then check.' },
+            { id: 'c', label: 'Tell her flashcards are obsolete, use AI instead', score: -5,
+              fb: 'NO. Mechanism matters more than format. Active retrieval works whether the question is on a card, in software, or in your head.' }
+          ] }
+      ],
+      truth: 'Maya was running the modal student pattern: engaged in class (because the teacher does the cognitive work), then "studying" with low-utility strategies (rereading + highlighting) that produce illusion of fluency without retrieval-strengthened memory. Coached protocol: distributed practice (3 sessions over the week before each test) + active recall (close the book + write what you remember + check) + flashcards with TRY-first-then-flip discipline. Result by end of year: 78% test average, up from 55%.'
+    },
+    {
+      id: 'lab-test-anxious', name: 'Knows it in class, blanks on tests', icon: '😰', difficulty: 2,
+      intro: 'A 10th-grade math teacher: "Jacob does great in class. Volunteers answers, helps peers, gets A\'s on homework. But on tests his scores plummet — sometimes Cs, sometimes Ds. He says he just blanks."',
+      student: { grade: '10', subject: 'Algebra II', mileage: 'Years of pattern', history: 'Strong middle school math. Both parents in pressured careers; talk often about college admissions.' },
+      observations: ['Strong in class + on homework', 'Test scores 30-40% below class performance', 'Self-reports "blanking"', 'Visible physical tension during tests', 'No identified disability or 504/IEP'],
+      steps: [
+        { id: 's1', prompt: 'Most likely primary diagnosis?',
+          choices: [
+            { id: 'a', label: 'Knowledge gap', score: -10,
+              fb: 'WRONG. The class performance + homework refutes this. He KNOWS the math.' },
+            { id: 'b', label: 'Test anxiety with strong physiological component', score: 10,
+              fb: 'CORRECT. The classic test-anxiety pattern: knowledge intact in low-stakes contexts, working memory crashes under high-stakes arousal. Yerkes-Dodson at the high end.' },
+            { id: 'c', label: 'He\'s lying about studying', score: -10,
+              fb: 'STOP. Don\'t pathologize a struggling student. The pattern is well-documented test anxiety.' }
+          ] },
+        { id: 's2', prompt: 'First intervention?',
+          choices: [
+            { id: 'a', label: 'Tell him to "just relax" + study more', score: -10,
+              fb: 'COUNTERPRODUCTIVE. "Just relax" doesn\'t work + adds shame. Studying more reinforces that the issue is knowledge — which it isn\'t.' },
+            { id: 'b', label: 'Teach a calming technique (4-7-8 breathing or box breathing) + practice it WHEN HE\'S NOT IN A TEST so it\'s available when he is', score: 10,
+              fb: 'CORRECT. Skill must be practiced before it\'s needed. Tactical breathing builds the autopilot.' },
+            { id: 'c', label: 'Refer to therapist immediately', score: 5,
+              fb: 'OK escalation but not first move. Try in-school strategies first; refer if those don\'t move the needle.' }
+          ] },
+        { id: 's3', prompt: 'Mid-intervention, you\'re also coaching cognitive reframes. Which is the MOST evidence-backed?',
+          choices: [
+            { id: 'a', label: '"You\'re smart, you\'ll be fine"', score: -5,
+              fb: 'FIXED-MINDSET praise. Doesn\'t address the mechanism. May add pressure.' },
+            { id: 'b', label: '"Your racing heart is your body preparing you to perform — same physiology as athletes before a game" (Jamieson 2010 reappraisal)', score: 10,
+              fb: 'CORRECT. Jamieson et al. 2010 (GRE study): students taught to reframe arousal as helpful outperformed control. SAME body state, different meaning, different outcome.' },
+            { id: 'c', label: '"Don\'t think about the test"', score: -5,
+              fb: 'IRONIC PROCESS. Telling someone not to think of X makes them think of X.' }
+          ] },
+        { id: 's4', prompt: 'Should you also pursue a 504 Plan for testing accommodations?',
+          choices: [
+            { id: 'a', label: 'No, accommodations are crutches', score: -10,
+              fb: 'WRONG (and harmful). Accommodations are legal protections that level the playing field. Documented test anxiety often qualifies.' },
+            { id: 'b', label: 'Yes, in parallel with the strategy work. Extended time + quiet room may be appropriate. School psych + counselor handle the eval.', score: 10,
+              fb: 'CORRECT. Pursue both: skills (breathing, reframes, study habits) AND accommodations. Belt + suspenders. Many test-anxious students have both.' },
+            { id: 'c', label: 'Skip school + try homeschool', score: -10,
+              fb: 'NO.' }
+          ] }
+      ],
+      truth: 'Jacob\'s pattern was severe test anxiety with strong physiological arousal. Multi-pronged plan: (1) 4-7-8 breathing taught + practiced 2x daily for a month before next test; (2) Jamieson-style cognitive reframe coached weekly; (3) School psych eval led to 504 with extended time + separate quiet room; (4) Continued in-class confidence-building. Within one quarter: test scores within 10 points of class performance. Within a year: test scores matched class.'
+    },
+    {
+      id: 'lab-math-phobic-elementary', name: 'Math-phobic 5th grader', icon: '🔢', difficulty: 3,
+      intro: 'A 5th-grade teacher consults you: "Aiyana flat-out says \'I\'m bad at math.\' She refuses to attempt new problems. She freezes at the board. But in her notebook, when she tries on her own at home, she gets a lot right."',
+      student: { grade: '5', subject: 'Math', mileage: 'Pattern getting worse since 4th grade', history: 'Older sister got into a magnet school for math; family talks often about \'Aiyana isn\'t a math person.\'' },
+      observations: ['Refuses to attempt at the board', 'Freezes when called on', 'Self-identifies as "not a math person"', 'Solitary practice produces correct work', 'Family-narrative reinforces "not a math person"'],
+      steps: [
+        { id: 's1', prompt: 'Primary diagnosis?',
+          choices: [
+            { id: 'a', label: 'Math learning disability', score: -5,
+              fb: 'NOT YET. Her solo work shows she CAN do the math. The blockage is contextual (board, called on) — points to anxiety + self-concept, not LD.' },
+            { id: 'b', label: 'Performance anxiety + fixed-mindset self-concept ("I\'m not a math person") combined with stereotype-threat-style family narrative', score: 10,
+              fb: 'CORRECT. Multiple factors: identity ("I\'m not a math person") + public-performance anxiety (board, called on) + family narrative reinforcing the identity. The math itself is intact.' },
+            { id: 'c', label: 'Defiant behavior', score: -10,
+              fb: 'WRONG framing. Pathologizing a 5th-grader\'s avoidance as defiance misses the protective function of avoidance for someone who\'s anxious + ashamed.' }
+          ] },
+        { id: 's2', prompt: 'Conversation with her family. What do you suggest?',
+          choices: [
+            { id: 'a', label: '"Stop telling Aiyana her sister is the math one"', score: 5,
+              fb: 'PARTIALLY RIGHT but blunt. Family won\'t hear it as helpful. Reframe the request positively.' },
+            { id: 'b', label: 'Coach the family to (a) praise Aiyana\'s SPECIFIC effort + strategy when they see it, (b) avoid comparison language, (c) frame ability as developable ("you\'re learning this YET")', score: 10,
+              fb: 'CORRECT. Dweck-style growth-mindset framing for the family — but practical + specific. Process praise + remove comparative narratives + the "yet" framing.' },
+            { id: 'c', label: 'Tell the family it\'s their fault', score: -10,
+              fb: 'BLAMING. The narrative is real but not evil-intentioned. Bring family in as partners.' }
+          ] },
+        { id: 's3', prompt: 'In-class strategy?',
+          choices: [
+            { id: 'a', label: 'Force her to come to the board until she gets used to it', score: -10,
+              fb: 'EXPOSURE WITHOUT SCAFFOLDING. Forcing high-anxiety performance reinforces the threat. Will increase avoidance long-term.' },
+            { id: 'b', label: 'Build a graduated exposure: low-stakes pair-share (1 partner) → small group → optional volunteer → cold-call only after she\'s succeeded several times', score: 10,
+              fb: 'CORRECT. Graduated exposure with success at each step. Builds competence (SDT need) before raising stakes. Pairs with growth-mindset framing.' },
+            { id: 'c', label: 'Skip her on cold-calls forever', score: 0,
+              fb: 'AVOIDANCE-ENABLING. Doesn\'t address the underlying issue + may communicate that you\'ve given up on her.' }
+          ] },
+        { id: 's4', prompt: 'How do you measure progress?',
+          choices: [
+            { id: 'a', label: 'Test scores only', score: -5,
+              fb: 'TOO NARROW. Test scores might lag the underlying mindset shift by months. Multiple indicators give richer picture.' },
+            { id: 'b', label: 'Multiple indicators: (1) attempts (not just successes), (2) self-identity statements, (3) classroom participation, (4) work completion rate, (5) test scores last', score: 10,
+              fb: 'CORRECT. The early indicators of recovery are behavioral (attempts, willingness, engagement) + identity (self-talk). Test scores follow once those shift.' },
+            { id: 'c', label: 'Just trust your gut', score: 0,
+              fb: 'OK as one input, not as the only one.' }
+          ] }
+      ],
+      truth: 'Aiyana\'s case combined performance anxiety + fixed-mindset identity + family narrative. 12-week plan: (1) graduated exposure starting at 1-partner pair-share, (2) explicit growth-mindset coaching with the "yet" frame, (3) family meeting reframing process praise + removing comparison language, (4) celebrating ATTEMPTS not just successes. By end of year: voluntary participation + self-statement shift from "I\'m not a math person" to "I\'m getting better at math."'
+    },
+    {
+      id: 'lab-burnout-senior', name: 'High-achiever burning out', icon: '🔥', difficulty: 3,
+      intro: 'A 12th grader, valedictorian-track. "I just can\'t do it anymore. I haven\'t slept more than 5 hours in months. My grades are slipping. I cried in the library yesterday. But if I take a break I\'ll lose my GPA + my college apps."',
+      student: { grade: '12', subject: 'AP everything', mileage: '4 years of escalating pressure', history: 'Perfectionist family. Older sibling at Ivy League. Self-described as "the smart one." 4 AP classes + leadership in 3 clubs + varsity sport.' },
+      observations: ['Sleep < 5 hours nightly', 'Visible physical exhaustion', 'Crying in public spaces', 'Grades declining', 'Unable to relax even when given time', 'Self-identity tied to academic performance'],
+      steps: [
+        { id: 's1', prompt: 'Primary concern?',
+          choices: [
+            { id: 'a', label: 'She just needs to push through senior year', score: -10,
+              fb: 'DANGEROUS. The signs (chronic sleep deprivation, public crying, declining performance) are red flags for burnout AND possibly clinical anxiety/depression. "Push through" risks crisis.' },
+            { id: 'b', label: 'Burnout with significant mental-health concern. Sleep deprivation alone is a medical issue + psychological risk factor. Crying + helplessness add concern.', score: 10,
+              fb: 'CORRECT. The pattern is concerning. Recovery requires both immediate relief (sleep, decompression) + structural change (load reduction).' },
+            { id: 'c', label: 'She\'s making excuses to slack', score: -10,
+              fb: 'BLAMING. Don\'t pathologize a kid who\'s asking for help.' }
+          ] },
+        { id: 's2', prompt: 'First action?',
+          choices: [
+            { id: 'a', label: 'Tell her to drop everything except academics', score: -5,
+              fb: 'INCOMPLETE. Academics are likely PART of the load. Need a holistic look + ALSO mental-health check.' },
+            { id: 'b', label: 'Refer to school counselor + school psych (concurrent) for assessment + connect with family for medical referral. Sleep loss + crying jags warrant clinical attention. Triage immediate safety.', score: 10,
+              fb: 'CORRECT. Don\'t handle this alone. Burnout in a high-achiever can mask depression, anxiety, or risk. Multi-disciplinary safety net first; structural changes follow.' },
+            { id: 'c', label: 'Buy her coffee + tell her to keep going', score: -10,
+              fb: 'WRONG. Caffeine + chronic sleep loss = compound problem.' }
+          ] },
+        { id: 's3', prompt: 'Once she\'s safety-checked, what about the academic load?',
+          choices: [
+            { id: 'a', label: 'Don\'t change anything; she\'ll feel like she failed', score: -5,
+              fb: 'PROTECTING IDENTITY at the cost of her health. Reframe: dropping a class isn\'t failure, it\'s sustainability.' },
+            { id: 'b', label: 'Have a no-blame conversation about reducing 1-2 commitments. Frame as long-game (college admissions favor sustained excellence over crashed-and-burned), not as defeat.', score: 10,
+              fb: 'CORRECT. Reduce load enough to allow sleep + recovery. Frame strategically: a B- in 4 APs after burnout is worse than an A in 3 APs at a sustainable pace.' },
+            { id: 'c', label: 'Add another AP to make up for it', score: -10,
+              fb: 'NO.' }
+          ] },
+        { id: 's4', prompt: 'Long-term: what skill should she build during recovery?',
+          choices: [
+            { id: 'a', label: 'Time management techniques', score: 5,
+              fb: 'PARTIAL. Time management is a tool, but the issue is identity + boundaries, not minutes.' },
+            { id: 'b', label: 'Self-determination work: identifying her own values + interests (autonomy) vs externally-driven achievement; recovery from "I am only my GPA" identity', score: 10,
+              fb: 'CORRECT. SDT-aligned: she\'s been operating in introjected/external regulation ("I\'ll feel like a failure if not perfect"). Building autonomy + intrinsic motivation around fewer, deeper interests is the real growth work.' },
+            { id: 'c', label: 'Just learn to grind harder', score: -10,
+              fb: 'NO.' }
+          ] }
+      ],
+      truth: 'Classic high-achiever burnout with risk markers. 6-month plan: (1) Counselor + school psych concurrent, (2) Pediatrician referral led to evaluation for major depression + anxiety; pharm + therapy began, (3) Dropped 1 AP + 1 leadership role with college-counselor coaching on framing for college essays, (4) Sleep coaching: hard 11pm lights-out commitment, (5) SDT work on autonomy + identity beyond GPA. By spring: mental health stabilized; college apps included a powerful essay about learning to balance ambition with sustainability.'
+    },
+    {
+      id: 'lab-adhd-procrastinator', name: 'ADHD student facing project deadline', icon: '📅', difficulty: 2,
+      intro: 'A 9th grader with diagnosed ADHD has a 3-week research project due in 2 days. He\'s done nothing on it. Says he wants to do it but every time he sits down he ends up on his phone. His mom is panicking.',
+      student: { grade: '9', subject: 'English', mileage: '3 weeks given, 0 done', history: 'ADHD diagnosis since 3rd grade. Has 504 with extended time + chunked assignments. Stimulant medication. Parents engaged but exhausted.' },
+      observations: ['Wants to do the project (motivation present)', 'Cannot initiate (executive function deficit)', 'Phone is the most common avoidance behavior', 'Past pattern of late-night last-minute completion', '504 in place but project-management not specifically scaffolded'],
+      steps: [
+        { id: 's1', prompt: 'How should the immediate next 48 hours be structured?',
+          choices: [
+            { id: 'a', label: 'Tell him to power through; this is how he learns consequences', score: -10,
+              fb: 'CRUEL + WRONG. ADHD task initiation isn\'t about willpower. He\'s already failed once at "powering through." Repeating that lesson confirms helplessness.' },
+            { id: 'b', label: 'Triage: scope down the project to a minimum viable submission. Use Pomodoro 25/5 + body doubling (working in same room as parent) + phone in another room. Generous use of his 504 extended-time accommodation.', score: 10,
+              fb: 'CORRECT. ADHD intervention: (1) reduce overwhelm (scope down), (2) external structure (Pomodoro), (3) co-regulation (body doubling), (4) remove distraction (phone elsewhere), (5) leverage his accommodation.' },
+            { id: 'c', label: 'Tell him to skip the assignment', score: -10,
+              fb: 'NO. Submission is achievable + practice in completing under pressure has value. Just needs scaffolding.' }
+          ] },
+        { id: 's2', prompt: 'After the immediate crisis, what STRUCTURAL change for the next project?',
+          choices: [
+            { id: 'a', label: 'Hope he learned his lesson', score: -10,
+              fb: 'WON\'T HAPPEN. ADHD doesn\'t respond to "lessons learned" the way neurotypical brains do. Build the structure.' },
+            { id: 'b', label: 'Update his 504 to include explicit project-management scaffolding: weekly check-ins with the teacher, broken-down sub-deadlines, and parent + teacher alignment on chunking the next project.', score: 10,
+              fb: 'CORRECT. ADHD students need EXTERNAL executive function until internal develops. Sub-deadlines + check-ins are evidence-backed accommodations. The 504 is the legal vehicle.' },
+            { id: 'c', label: 'Just give him medication', score: -5,
+              fb: 'INCOMPLETE. Medication helps but doesn\'t replace skills + structure. Pair pharm with environmental + behavioral supports.' }
+          ] },
+        { id: 's3', prompt: 'Long-term goal for this student?',
+          choices: [
+            { id: 'a', label: 'Cure the ADHD', score: -10,
+              fb: 'WRONG framework. ADHD is neurodevelopmental + lifelong. Goal is competence + accommodation, not cure.' },
+            { id: 'b', label: 'Build a personal scaffolding toolkit: external timers, body-doubling habits, broken-down task lists, calendar reminders, environmental controls. By college he should be his own EF coach.', score: 10,
+              fb: 'CORRECT. SDT-aligned competence-building. ADHD adults function well when they\'ve built personalized external systems. Ages 9-18 is the time to develop those habits.' },
+            { id: 'c', label: 'Hope he grows out of it', score: -5,
+              fb: 'PARTIAL — ADHD presentation does shift in adulthood, but executive-function challenges persist. Build skills.' }
+          ] }
+      ],
+      truth: 'Classic ADHD task-initiation failure. 48-hr plan: scoped project to minimum viable + 4 Pomodoro sessions with mom in the room + phone in the kitchen. Submitted on time at 70% quality (passed). Structural change: 504 updated with weekly project check-ins. Built habit of: (1) immediate task-decomposition into sub-deadlines, (2) external timer use, (3) body-doubling for hard initiation moments. By end of 9th grade: 80% project-completion rate vs 30% prior. By 11th: managing his own systems.'
+    },
+    {
+      id: 'lab-el-content-vocab', name: 'EL learner vs content vocabulary', icon: '🌐', difficulty: 3,
+      intro: 'A 6th-grade science teacher: "Carlos has been in the US for 18 months. His conversational English is improving. But on science assessments he scores well below his ability — he can do the science when I show him pictures or demonstrate, but the written tests destroy him."',
+      student: { grade: '6', subject: 'Science', mileage: '18 months in US', history: 'EL (English Learner) status. Native Spanish speaker. Strong academic record in Mexico in 4th-5th grade. Receives 30 min/day of pull-out ESL.' },
+      observations: ['Conversational English improving', 'Visual + demo science = strong understanding', 'Written assessments tank scores', 'Vocabulary gap on academic + content terms', 'Cognitive ability is high'],
+      steps: [
+        { id: 's1', prompt: 'Primary diagnosis?',
+          choices: [
+            { id: 'a', label: 'Carlos is bad at science', score: -10,
+              fb: 'WRONG. The hands-on + visual evidence shows he UNDERSTANDS the science. The gap is language access to demonstrate it.' },
+            { id: 'b', label: 'Language gap masking content competence — he knows the science but can\'t access OR express it through English-only academic-vocabulary tests', score: 10,
+              fb: 'CORRECT. Cummins\' BICS vs CALP distinction: conversational fluency (BICS, ~2 yrs) develops faster than cognitive academic language proficiency (CALP, ~5-7 yrs). Carlos has BICS but is still building CALP.' },
+            { id: 'c', label: 'He needs to be in a lower grade', score: -10,
+              fb: 'NO. His cognitive ability is grade-appropriate. The issue is language scaffolding, not cognitive level.' }
+          ] },
+        { id: 's2', prompt: 'Most evidence-aligned classroom intervention?',
+          choices: [
+            { id: 'a', label: 'Just teach him English faster', score: -5,
+              fb: 'CALP develops on a 5-7 year timeline. Don\'t make him wait that long to access science.' },
+            { id: 'b', label: 'Allow alternative demonstrations (lab, demo, oral, draw + label) + explicit content-vocabulary frontloading + bilingual glossary access + dual-coded representations (UDL: multiple means of representation + expression)', score: 10,
+              fb: 'CORRECT. UDL in action. Multiple means of representation (visual + dual-coded text + native-language scaffolds) + multiple means of expression (alternatives to written assessment). Lets him show what he knows while building English.' },
+            { id: 'c', label: 'Don\'t grade him on tests until he\'s fluent', score: 0,
+              fb: 'EXTREME. Better: change HOW he\'s assessed, don\'t exempt him from showing his learning.' }
+          ] },
+        { id: 's3', prompt: 'What about home-language support?',
+          choices: [
+            { id: 'a', label: '"He needs English-only at home to catch up faster"', score: -10,
+              fb: 'HARMFUL ADVICE — and false. Strong native-language literacy SUPPORTS English literacy (cross-linguistic transfer). Maintaining + developing Spanish helps English learning, not the reverse.' },
+            { id: 'b', label: 'Encourage continued reading + writing in Spanish at home + Spanish-content tools where available. Cross-linguistic transfer + identity + family connection all benefit.', score: 10,
+              fb: 'CORRECT. Cummins\' interdependence hypothesis. Strong L1 (native language) supports L2 (English) acquisition. Plus identity + family + heritage benefits. "Lose Spanish to gain English" is a false trade.' },
+            { id: 'c', label: 'Tell parents to switch to English-only at home', score: -10,
+              fb: 'WRONG (and identity-eroding). See above.' }
+          ] },
+        { id: 's4', prompt: 'How do you measure progress?',
+          choices: [
+            { id: 'a', label: 'Standardized test scores in English only', score: -5,
+              fb: 'INCOMPLETE — these will lag his actual learning by years. Use multiple indicators.' },
+            { id: 'b', label: 'Multiple indicators: science-content mastery (via varied formats), academic-vocabulary growth, English production complexity, and standardized scores LAST. WIDA ACCESS scores for EL progress.', score: 10,
+              fb: 'CORRECT. Use the right tool for each thing you\'re measuring. Content mastery via demonstration. Vocabulary via writing samples. EL progress via WIDA. Don\'t conflate language with content.' },
+            { id: 'c', label: 'Wait until he\'s fully bilingual', score: -10,
+              fb: 'TOO LONG. Iterate while he\'s learning.' }
+          ] }
+      ],
+      truth: 'Classic EL CALP-gap with strong cognitive ability. UDL-aligned plan: (1) science assessments offered in alternative formats (lab demo, oral, drawing+label, written) — Carlos picked, (2) content-vocab frontloading with Spanish glossary + visuals dual-coded, (3) home Spanish literacy encouraged, (4) family connected to bilingual community resources. By end of year: science content mastery at grade level (verified via demos) while English continued to develop. By 8th grade: testing in English with full content access; bilingual literacy as an asset.'
+    }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.10: NOTE-TAKING DEEP DIVE — 5 systems
+  // The most popular study skill, often badly executed. 5 systems with
+  // structure + when-to-use + research backing.
+  // ─────────────────────────────────────────────────────────
+  var NOTE_SYSTEMS = [
+    { id: 'cornell', icon: '📓', name: 'Cornell notes',
+      structure: '3 sections on every page: cues column (left, ~30%), main notes (right, ~70%), summary (bottom, full width). Take notes during class in the right column. AFTER class, fill in cue column with questions/keywords + write a 2-3 sentence summary at the bottom.',
+      goodFor: 'Lecture-heavy classes (history, biology, social studies). Especially valuable for STUDENTS who commit to the post-lecture review step.',
+      badFor: 'Math (the structure doesn\'t fit step-by-step problem solving). Improvisational discussion. Highly visual content.',
+      research: 'Pauk 2007. Less rigorous research base than retrieval-practice itself, but the cue-column + summary steps are essentially built-in retrieval practice — the empirically-supported parts.',
+      pitfall: 'Most students skip the post-class processing (cues + summary). Without it, Cornell is just "notes with extra columns." The processing IS the technique.' },
+    { id: 'mind-map', icon: '🌳', name: 'Mind mapping (radial)',
+      structure: 'Central concept in middle of page. Branches radiate out to related ideas. Each branch sub-branches. Use color, images, single keywords (not full sentences). Hierarchy emerges visually.',
+      goodFor: 'Brainstorming. Capturing relationships among ideas. Pre-writing for essays. Concept review where structure matters more than chronology.',
+      badFor: 'Sequential / chronological content. Step-by-step procedures. Linear arguments. Heavy detail or quotes.',
+      research: 'Buzan popularized; mixed evidence base. Strongest support: mind-mapping as a REVIEW or PRE-WRITING tool, less as primary in-lecture note-taking.',
+      pitfall: 'Looks cool but can be slow. Don\'t mind-map during a fast lecture; use it for review/synthesis afterward.' },
+    { id: 'outline', icon: '📋', name: 'Outline / hierarchical',
+      structure: 'Indented hierarchy: I. Main topic. A. Subtopic. 1. Detail. a. Sub-detail. Roman numerals → letters → numbers → letters. Each level represents a step deeper.',
+      goodFor: 'Already-structured content (textbooks, well-organized lectures). Pre-writing essays. Test review. STEM problem sets where logical structure matters.',
+      badFor: 'Loosely-organized discussion. Visual content. Improvisational classes. Capturing relationships across topics.',
+      research: 'Foundational structure underlying many other systems. Strong as a thinking tool; weaker as a SOLE note-taking format.',
+      pitfall: 'Can become a transcription exercise (copying text) rather than processing. Add your own commentary in the margins or as separate sub-points.' },
+    { id: 'sketchnote', icon: '🎨', name: 'Sketchnoting (visual notes)',
+      structure: 'Combine handwriting + drawings + arrows + boxes + visual hierarchy. Mike Rohde\'s framework: type, image, and structure. Aesthetics matter less than clarity.',
+      goodFor: 'Conferences. Single-session presentations. Concepts that benefit from dual coding (verbal + visual). Students who are visual processors.',
+      badFor: 'Dense factual content. Math. Anything where every detail matters.',
+      research: 'Dual coding (Paivio 1971) supports the verbal+visual encoding. Sketchnoting popularized by Rohde 2013. Less rigorous research, but the dual-coding mechanism is solid.',
+      pitfall: 'Imposter\'s blocker: "I can\'t draw." Stick figures + simple symbols are fine — function over art. The visual processing is the active ingredient, not artistic quality.' },
+    { id: 'two-column', icon: '📊', name: 'Two-column / charting',
+      structure: 'Two (or more) columns side-by-side. Top of each column = a category. Fill in details in each column for direct comparison. Variations: T-chart, comparison matrix, before/after, cause/effect.',
+      goodFor: 'Compare/contrast content. Multiple perspectives on one issue. Cause-effect analysis. Data with parallel structure.',
+      badFor: 'Single-thread narrative. Procedural content. Lectures that meander.',
+      research: 'Charting + comparing forces analytical thinking (Bloom\'s level 4). Useful for transforming information from passive to active.',
+      pitfall: 'Can become cramped if you don\'t leave space. Use full-page columns. Use a fresh page per comparison.' }
+  ];
+
+  var NOTE_TAKING_PRINCIPLES = [
+    { rule: 'Hand > laptop for retention',
+      detail: 'Mueller + Oppenheimer (2014). Students taking notes by hand outperform laptop-takers on conceptual questions. Proposed mechanism: handwriting forces summarization (you can\'t keep up with the speaker verbatim) which forces processing.',
+      caveat: 'The Mueller study has had replication concerns; the effect is smaller in some replications. Hand still likely wins for conceptual material; laptops may be fine for fact-recall.' },
+    { rule: 'Process matters more than format',
+      detail: 'Any of the 5 systems above CAN be effective. The active ingredient is processing the information (translating into your own structure) — not the system itself.',
+      caveat: 'Picking a system is meaningless without commitment to active processing.' },
+    { rule: 'Review notes within 24 hours',
+      detail: 'Ebbinghaus forgetting curve: ~70% of new info forgotten within 24 hours. A 10-min review the same day cuts forgetting dramatically.',
+      caveat: 'Most students never review their notes again before the test. The notes had value; the lack of review wasted it.' },
+    { rule: 'Summary at the end',
+      detail: 'Whatever system: end every note-taking session with a 2-3 sentence summary IN YOUR OWN WORDS. This is retrieval practice + self-explanation in one move.',
+      caveat: 'Skip this and you\'ve created a record without the learning benefit.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.11: SLEEP + LEARNING
+  // Sleep consolidates memory. Sleep deprivation tanks working memory +
+  // mood + immune system. This is the single most under-discussed factor
+  // in academic underperformance.
+  // ─────────────────────────────────────────────────────────
+  var SLEEP_FACTS = {
+    consolidation: 'During sleep — especially Stage 2 (spindles) + REM — the brain replays + transfers info from hippocampus to cortex. This is when learning becomes durable. Sleep AFTER learning is essentially a free 30-50% boost to retention (Stickgold 2005).',
+    deprivation: 'Even one night of bad sleep (4-5 hours) impairs working memory by 10-15%, attention by 20-30%, and mood significantly. Chronic sleep deprivation (< 7 hrs nightly for weeks) approaches the cognitive impairment of legal alcohol intoxication (Williamson + Feyer 2000).',
+    teenagers: 'Adolescent circadian shift (Carskadon et al.): puberty pushes bedtime later (around 11pm) + sleep need stays at 8-10 hours. Most US schools start before adolescent biology is ready. AAP recommends school start no earlier than 8:30am.',
+    adults: 'Adults need 7-9 hours. The "I do fine on 5" claim is almost always wrong — most short sleepers are operating below their capacity without realizing it (the "well-rested" experience has been gone too long to compare).',
+    naps: 'Two flavors: power nap (15-30 min, no deep sleep, immediate alertness boost) vs full cycle nap (90 min, includes one full sleep cycle, supports memory consolidation). Avoid the 45-75 min middle-zone — wakes you mid-deep-sleep with grogginess.',
+    caffeine: 'Caffeine half-life ~5-6 hours. Coffee at 3pm = caffeine still in your system at 11pm. Even when you can fall asleep, sleep architecture (especially deep sleep) is degraded. Cut off ~8 hrs before bed.'
+  };
+
+  var SLEEP_FOR_LEARNING = [
+    { id: 'sleep-before', icon: '🌙', name: 'Sleep BEFORE big learning',
+      what: 'A well-rested brain encodes new information much better than a sleep-deprived one.',
+      practical: 'Don\'t pull all-nighters before exams or big learning events. The cost in encoding far exceeds the gain from extra study hours.',
+      research: 'Walker 2017. Working memory + attention + encoding all degrade with sleep loss.' },
+    { id: 'sleep-after', icon: '💤', name: 'Sleep AFTER big learning',
+      what: 'Memory consolidation happens in sleep. Sleeping after studying is when the brain transfers info to long-term storage.',
+      practical: 'Study in the early evening, sleep at usual time. The night\'s sleep does the consolidation work for free.',
+      research: 'Stickgold 2005, Diekelmann + Born 2010. Multiple studies show post-learning sleep produces 30-50% better recall vs equivalent waking time.' },
+    { id: 'all-nighters', icon: '🚫', name: 'All-nighters: false economy',
+      what: 'Pulling all-nighters can create the FEELING of preparedness through familiarity, but tanks both retention + next-day cognition.',
+      practical: 'A 5-hour study session + 8 hours of sleep beats a 13-hour study session + 0 hours of sleep, every time.',
+      research: 'Pilcher + Walters 1997. All-nighter students performed worse + thought they performed better than well-rested controls.' },
+    { id: 'consistency', icon: '⏰', name: 'Consistency > Duration',
+      what: 'Going to bed at the same time every night (even on weekends) supports better sleep architecture than 8 hrs Mon-Fri + 12 hrs Sat-Sun.',
+      practical: 'Pick a bedtime + wake time. Hold them within ~1 hour even on weekends. "Social jet lag" from weekend over-sleeping degrades Mon-Wed performance.',
+      research: 'Wittmann et al. 2006. Social jet lag correlates with academic underperformance + worse mood.' },
+    { id: 'naps', icon: '😴', name: 'Naps: power vs full cycle',
+      what: 'Two effective formats: 20-minute power nap (alertness boost without grogginess) OR 90-minute full-cycle nap (memory + mood). Avoid 45-75 min.',
+      practical: 'Power nap before a test or hard study session. Full-cycle nap if you\'ve been sleep-deprived AND have 90 min before resuming serious cognitive work.',
+      research: 'Mednick et al. 2003. Naps consolidate memory similarly to a full night of sleep for narrowly-targeted material.' },
+    { id: 'screens', icon: '📱', name: 'Screens before bed',
+      what: 'Bright light (especially blue) suppresses melatonin. Phones + laptops + TV before bed delay sleep onset.',
+      practical: 'Hard cutoff 30-60 min before bed. Screens in another room, on a charger, NOT in the bedroom.',
+      research: 'Gradisar et al. 2013. Screen use within 1 hour of bedtime delays sleep onset by 20-30+ minutes.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 13: KNOWLEDGE QUIZ — 40 questions across all modules
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -1441,7 +1806,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     { id: 'q50', icon: '🏆',
       stem: 'In the hierarchy of educational research evidence, which is STRONGEST?',
       choices: ['Anecdote ("I tried it and it worked")', 'Single case study', 'Single randomized controlled trial', 'Systematic review / meta-analysis of multiple high-quality studies'],
-      correct: 3, why: 'A systematic review (e.g., Dunlosky 2013, Pashler 2008) synthesizes ALL high-quality studies on a question. Far stronger than any single study because it accounts for variation + replication. Always trust meta-analyses over single eye-catching studies.' }
+      correct: 3, why: 'A systematic review (e.g., Dunlosky 2013, Pashler 2008) synthesizes ALL high-quality studies on a question. Far stronger than any single study because it accounts for variation + replication. Always trust meta-analyses over single eye-catching studies.' },
+    { id: 'q51', icon: '🎓',
+      stem: 'A 7th grader does great in class + on homework but bombs tests. Most likely diagnosis BEFORE jumping to evaluation?',
+      choices: ['She has a learning disability', 'Strategy gap — likely using low-utility study techniques (rereading + highlighting). Diagnose by asking HOW she studies; treat by coaching practice testing + distributed practice.', 'Tests are unfair', 'She\'s lying about studying'],
+      correct: 1, why: 'Engaged in class + strong homework + failed tests is the modal pattern of "studied with low-utility strategies + experienced illusion of fluency." Diagnose strategy first; refer for evaluation only if strategy intervention fails.' },
+    { id: 'q52', icon: '😴',
+      stem: 'Why is sleep AFTER studying so important?',
+      choices: ['It\'s not', 'During sleep (especially Stage 2 + REM), the brain consolidates + transfers new info from hippocampus to long-term cortical storage. Sleep is essentially a free 30-50% retention boost (Stickgold 2005).', 'Sleep prevents you from over-thinking', 'It\'s superstition'],
+      correct: 1, why: 'Memory consolidation is sleep-dependent. Studying then sleeping produces dramatically better retention than studying then staying awake. All-nighters defeat both encoding (sleep-deprived brain) AND consolidation (no sleep).' },
+    { id: 'q53', icon: '📓',
+      stem: 'A student is using Cornell notes but says "they\'re not helping me retain anything." Most likely problem?',
+      choices: ['Cornell is just a bad system', 'She\'s skipping the post-class processing — filling in cue questions + writing the bottom summary. Without that step, Cornell is just "notes with extra columns." The processing IS the technique.', 'Wrong color pen', 'Wrong notebook'],
+      correct: 1, why: 'The active ingredient in Cornell isn\'t the column structure — it\'s the post-class summary + cue-column processing (which is essentially built-in retrieval practice). Skip those + you\'ve created a record without the learning.' },
+    { id: 'q54', icon: '🌐',
+      stem: 'A 6th-grade EL learner has been in the US 18 months. Strong in hands-on + visual science but bombs written tests. Best UDL-aligned intervention?',
+      choices: ['Move him to a lower grade', '"English-only at home"', 'Multiple means of expression (allow lab/oral/drawing assessments) + content-vocabulary frontloading + bilingual glossary access + maintain home-language literacy (cross-linguistic transfer supports English).', 'Wait for him to "catch up"'],
+      correct: 2, why: 'Cummins\' BICS vs CALP: conversational fluency develops in ~2 yrs but academic language proficiency takes 5-7. Don\'t wait + don\'t demote. UDL multiple means of expression lets him show what he knows while building English. Home-language literacy SUPPORTS English (Cummins\' interdependence hypothesis).' },
+    { id: 'q55', icon: '🧪',
+      stem: 'You\'re running a Lab Simulator scenario. The student\'s teacher reports failing tests + says "she just doesn\'t care." Highest-scoring response?',
+      choices: ['Tell the teacher she\'s right', 'Reframe: "Doesn\'t care" usually masks a different issue (anxiety, strategy gap, executive dysfunction, life stressor, identity threat). Diagnose carefully before accepting the label.', 'Punish the student', 'Drop her from the class'],
+      correct: 1, why: 'Pathologizing student behavior as character flaw ("doesn\'t care," "lazy," "defiant") closes the door on real diagnosis. Almost every "doesn\'t care" pattern reveals an underlying barrier when investigated with care.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1571,6 +1956,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'spaced', icon: '⏰', label: 'Spaced repetition + retrieval', desc: 'Ebbinghaus, testing effect, illusion of fluency.' },
               { id: 'study', icon: '📝', label: 'Study strategies', desc: 'Dunlosky 2013 ratings: high vs low utility.' },
               { id: 'memory', icon: '🧠', label: 'Memory + active learning techniques', desc: 'Feynman, loci, mnemonic, dual coding, interleaving deep dive. 8 concrete techniques.' },
+              { id: 'noteTaking', icon: '📓', label: 'Note-taking systems', desc: 'Cornell, mind-mapping, outline, sketchnoting, two-column. When to use each + universal principles.' },
+              { id: 'sleep', icon: '😴', label: 'Sleep + learning', desc: 'Memory consolidation, all-nighter myth, naps, caffeine, screens. The single most under-discussed factor.' },
               { id: 'testAnxiety', icon: '😰', label: 'Test anxiety + performance', desc: 'Yerkes-Dodson, pre/during/after-test routines, 6 calming techniques, when to seek help.' },
               { id: 'mindset', icon: '🌱', label: 'Growth mindset (brief)', desc: 'Dweck. Honest about replication. Links to Growth Mindset SEL tool.' },
               { id: 'myths', icon: '🚫', label: 'Neuromyth debunker', desc: '8 popular beliefs that research rejects.' },
@@ -1588,7 +1975,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             desc: 'Active practice. Use Bloom\'s + the strategies on YOUR work.',
             modules: [
               { id: 'lessonPlan', icon: '🎯', label: 'Lesson plan builder', desc: 'Topic + Bloom\'s level + grade band → matched verbs, activities, assessments.' },
-              { id: 'strategyPicker', icon: '💡', label: 'Strategy picker', desc: 'Subject + time + assessment + prior knowledge → evidence-backed strategy recommendations.' }
+              { id: 'strategyPicker', icon: '💡', label: 'Strategy picker', desc: 'Subject + time + assessment + prior knowledge → evidence-backed strategy recommendations.' },
+              { id: 'lab', icon: '🧪', label: 'Hands-on lab simulator', desc: '6 graded "advise a struggling student" cases. Letter grade + per-step feedback.' }
             ]
           },
           { id: 'progress', icon: '📊', name: 'Progress + reference',
@@ -2368,6 +2756,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             { id: 'spaced-rep-aware', icon: '⏰', name: 'Spaced Rep Aware', how: 'Mark the spaced-repetition module complete.' },
             { id: 'study-strategist', icon: '📝', name: 'Study Strategist', how: 'Tap any study strategy in the Dunlosky table.' },
             { id: 'memory-explorer', icon: '🧠', name: 'Memory Explorer', how: 'Tap any technique in the Memory + Active Learning module.' },
+            { id: 'note-explorer', icon: '📓', name: 'Note-Taking Explorer', how: 'Tap any note-taking system.' },
+            { id: 'sleep-aware', icon: '😴', name: 'Sleep Aware', how: 'Tap any sleep-for-learning principle.' },
             { id: 'anxiety-toolkit', icon: '😰', name: 'Anxiety Toolkit', how: 'Tap any calming technique in the Test Anxiety module.' },
             { id: 'myth-buster', icon: '🚫', name: 'Myth Buster', how: 'Tap any neuromyth in the debunker.' },
             { id: 'research-literate', icon: '🔬', name: 'Research Literate', how: 'Tap any stats term in Research Literacy.' }
@@ -2377,7 +2767,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
           ] },
           { group: '🎯 Apply it', items: [
             { id: 'lesson-builder', icon: '🎯', name: 'Lesson Builder', how: 'Pick a Bloom\'s level in the Lesson Plan Builder.' },
-            { id: 'strategy-picked', icon: '💡', name: 'Strategy Picker User', how: 'Fill in all 4 fields in the Strategy Picker.' }
+            { id: 'strategy-picked', icon: '💡', name: 'Strategy Picker User', how: 'Fill in all 4 fields in the Strategy Picker.' },
+            { id: 'lab-master', icon: '🏆', name: 'Lab Master', how: 'Complete all 6 lab simulator cases with 70%+ scores.' }
           ] },
           { group: '🧪 Self-test + path', items: [
             { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 45-question knowledge quiz.' },
@@ -3225,6 +3616,273 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
 
       // ─────────────────────────────────────────
+      // LAB SIMULATOR view — graded "advise a struggling student" scenarios
+      // ─────────────────────────────────────────
+      function renderLab() {
+        var labId = d.labId || null;
+        var lab = labId ? LAB_SCENARIOS.find(function(s) { return s.id === labId; }) : null;
+        var stepIdx = d.labStep || 0;
+        var answers = d.labAnswers || {};
+
+        function pickLab(id) {
+          updMulti({ labId: id, labStep: 0, labAnswers: {} });
+          llAnnounce('Starting case: ' + LAB_SCENARIOS.find(function(s) { return s.id === id; }).name);
+        }
+        function reset() {
+          updMulti({ labId: null, labStep: 0, labAnswers: {} });
+        }
+        function selectChoice(stepId, choice) {
+          var nv = Object.assign({}, answers); nv[stepId] = choice.id;
+          var newStep = stepIdx + 1;
+          updMulti({ labAnswers: nv, labStep: newStep });
+        }
+        var diffStars = function(d2) { return '★'.repeat(d2) + '☆'.repeat(4 - d2); };
+
+        if (!lab) {
+          var labsCompleted = (d.labsCompleted || []).length;
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('🧪 Hands-on lab simulator'),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🧪 Diagnostic + intervention thinking, scored'),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'A teacher consults you about a struggling student. You walk through diagnostic + intervention decisions. Each choice is scored: ',
+                h('strong', { style: { color: T.good } }, '+10 = best'), ', ',
+                h('strong', { style: { color: T.accentHi } }, '+5 = OK'), ', ',
+                h('strong', { style: { color: T.bad } }, '−5 to −10 = harmful or pathologizing'), '. Final letter grade + per-step feedback.'),
+              h('div', { style: { fontSize: 12, color: T.muted } },
+                h('strong', { style: { color: T.accentHi } }, 'Cases completed: '), labsCompleted + ' / ' + LAB_SCENARIOS.length)
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 10 } },
+              LAB_SCENARIOS.map(function(s) {
+                var done = (d.labsCompleted || []).indexOf(s.id) >= 0;
+                return h('button', { key: s.id, 'data-ll-focusable': true,
+                  'aria-label': 'Start case: ' + s.name + (done ? ' (completed)' : ''),
+                  onClick: function() { pickLab(s.id); },
+                  style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + (done ? T.good : T.border), color: T.text, cursor: 'pointer' } },
+                  h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
+                  h('div', { style: { fontWeight: 700, fontSize: 14, color: T.text, marginBottom: 4 } }, s.name, done && ' ✓'),
+                  h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6, fontFamily: 'monospace' } }, diffStars(s.difficulty), ' · ', s.steps.length, ' decision points'),
+                  h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, s.intro.substring(0, 140) + '...')
+                );
+              })
+            ),
+            disclaimerFooter()
+          );
+        }
+
+        var totalSteps = lab.steps.length;
+        if (stepIdx >= totalSteps) {
+          var totalScore = 0; var maxScore = 0;
+          lab.steps.forEach(function(step) {
+            var picked = answers[step.id];
+            var maxStep = Math.max.apply(Math, step.choices.map(function(c) { return c.score; }));
+            maxScore += maxStep;
+            if (picked) {
+              var pickedChoice = step.choices.find(function(c) { return c.id === picked; });
+              if (pickedChoice) totalScore += pickedChoice.score;
+            }
+          });
+          var pct = Math.round((totalScore / maxScore) * 100);
+          var grade = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
+          var gradeColor = pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad;
+          var completed = d.labsCompleted || [];
+          if (completed.indexOf(lab.id) === -1 && pct >= 70) {
+            upd('labsCompleted', completed.concat([lab.id]));
+            awardBadge('lab-' + lab.id, 'Solved: ' + lab.name);
+            if (completed.length + 1 === LAB_SCENARIOS.length) awardBadge('lab-master', 'Lab Master (all cases)');
+          }
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border } },
+              h('button', { 'data-ll-focusable': true, onClick: reset, style: btnGhost() }, '← Cases'),
+              h('span', { style: { fontSize: 24 } }, lab.icon),
+              h('h2', { style: { margin: 0, fontSize: 17, color: T.text } }, lab.name + ' — Results')),
+            h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + gradeColor, marginBottom: 14, textAlign: 'center' } },
+              h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, 'Final score'),
+              h('div', { style: { fontSize: 56, fontWeight: 900, color: gradeColor, lineHeight: 1, marginBottom: 6 } }, grade),
+              h('div', { style: { fontSize: 18, color: T.text, fontWeight: 700 } }, totalScore + ' / ' + maxScore + ' (' + pct + '%)'),
+              h('p', { style: { margin: '10px 0 0', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
+                pct >= 90 ? '🏆 Master diagnostician. Diagnose first, intervention-match, dignify the student.' :
+                pct >= 80 ? '🎓 Strong educator thinking. Minor optimizations.' :
+                pct >= 70 ? '🚧 Apprentice level. Re-read the per-choice feedback below.' :
+                pct >= 60 ? '🛠️ Hands need work. Review the foundation modules + retake.' :
+                '📚 The traps are pathologizing language + jumping to intervention before diagnosis. Walk through the framework modules.')
+            ),
+            h('h3', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🔍 Step-by-step feedback'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+              lab.steps.map(function(step, i) {
+                var picked = answers[step.id];
+                var pickedChoice = step.choices.find(function(c) { return c.id === picked; });
+                var bestChoice = step.choices.reduce(function(best, c) { return c.score > best.score ? c : best; }, step.choices[0]);
+                var scoreColor = pickedChoice ? (pickedChoice.score >= 10 ? T.good : pickedChoice.score >= 5 ? T.accentHi : T.bad) : T.muted;
+                return h('div', { key: step.id, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + scoreColor } },
+                  h('div', { style: { fontSize: 12, color: T.dim, marginBottom: 4 } }, 'Step ' + (i + 1)),
+                  h('div', { style: { fontSize: 13, color: T.text, fontWeight: 700, marginBottom: 8 } }, step.prompt),
+                  pickedChoice && h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, marginBottom: 6 } },
+                    h('div', { style: { fontSize: 11, color: scoreColor, fontWeight: 700, marginBottom: 4 } },
+                      'Your choice (' + (pickedChoice.score >= 0 ? '+' : '') + pickedChoice.score + ' pts):'),
+                    h('div', { style: { fontSize: 12, color: T.text, marginBottom: 4 } }, pickedChoice.label),
+                    h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', lineHeight: 1.5 } }, pickedChoice.fb)),
+                  pickedChoice && pickedChoice.id !== bestChoice.id && h('div', { style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.good } },
+                    h('div', { style: { fontSize: 11, color: T.good, fontWeight: 700, marginBottom: 4 } }, 'Best choice (+' + bestChoice.score + ' pts):'),
+                    h('div', { style: { fontSize: 12, color: T.text } }, bestChoice.label)));
+              })
+            ),
+            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
+              h('strong', { style: { color: T.accentHi } }, '✅ What was actually going on (with the evidence-aligned plan): '),
+              h('span', { style: { color: T.text, fontSize: 13, lineHeight: 1.55 } }, lab.truth)),
+            h('div', { style: { display: 'flex', gap: 8 } },
+              h('button', { 'data-ll-focusable': true, onClick: function() { pickLab(lab.id); }, style: btnSecondary() }, '🔁 Retry'),
+              h('button', { 'data-ll-focusable': true, onClick: reset, style: btnPrimary() }, '🧪 Pick another')),
+            disclaimerFooter()
+          );
+        }
+
+        var step = lab.steps[stepIdx];
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border, flexWrap: 'wrap' } },
+            h('button', { 'data-ll-focusable': true, onClick: reset, style: btnGhost() }, '← Quit case'),
+            h('span', { style: { fontSize: 24 } }, lab.icon),
+            h('h2', { style: { margin: 0, fontSize: 17, color: T.text, flex: 1 } }, lab.name),
+            h('span', { style: { fontSize: 11, color: T.muted, fontFamily: 'monospace' } }, 'Step ' + (stepIdx + 1) + ' / ' + totalSteps)),
+          stepIdx === 0 && h('div', { style: { padding: 12, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '👤 Student case'),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55, fontStyle: 'italic' } }, lab.intro),
+            h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+              h('div', null, h('strong', { style: { color: T.text } }, 'Grade: '), lab.student.grade + ' · ' + lab.student.subject),
+              h('div', null, h('strong', { style: { color: T.text } }, 'Context: '), lab.student.history),
+              h('div', { style: { marginTop: 6 } }, h('strong', { style: { color: T.text } }, 'Observations: ')),
+              h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                lab.observations.map(function(o, i) { return h('li', { key: i, style: { color: T.text } }, o); })))),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 12px', fontSize: 15, color: T.text } }, step.prompt)),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            step.choices.map(function(c) {
+              return h('button', { key: c.id, 'data-ll-focusable': true,
+                'aria-label': c.label,
+                onClick: function() { selectChoice(step.id, c); },
+                style: { textAlign: 'left', padding: 12, borderRadius: 8, background: T.cardAlt, color: T.text, border: '1px solid ' + T.border, cursor: 'pointer', fontSize: 13, lineHeight: 1.5 } },
+                c.label);
+            })),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // NOTE-TAKING DEEP DIVE view
+      // ─────────────────────────────────────────
+      function renderNoteTaking() {
+        var picked = d.notePicked || null;
+        var pickedSys = picked ? NOTE_SYSTEMS.find(function(s) { return s.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📓 Note-taking systems'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📓 5 note-taking systems + 4 universal principles'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'The most popular study skill, often badly executed. Each system has a structure + ideal use case + research backing + the pitfall most students fall into. ',
+              h('strong', { style: { color: T.accentHi } }, 'Picking a system is meaningless without commitment to active processing.'))
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎨 5 systems'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+            NOTE_SYSTEMS.map(function(s) {
+              var sel = picked === s.id;
+              return h('button', { key: s.id, 'data-ll-focusable': true,
+                'aria-label': s.name, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('notePicked', sel ? null : s.id); awardBadge('note-explorer', 'Note-Taking Explorer'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, s.icon),
+                h('span', null, s.name));
+            })
+          ),
+          pickedSys && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedSys.icon + ' ' + pickedSys.name),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '📐 Structure: '), pickedSys.structure),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '✅ Good for: '), pickedSys.goodFor),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.bad } }, '❌ Bad for: '), pickedSys.badFor),
+            h('p', { style: { margin: '0 0 8px', color: T.dim, fontSize: 11, fontStyle: 'italic' } },
+              h('strong', { style: { color: T.text } }, '📚 Research: '), pickedSys.research),
+            h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.warn } }, '⚠️ Common pitfall: '), pickedSys.pitfall)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 4 universal principles'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            NOTE_TAKING_PRINCIPLES.map(function(p, i) {
+              return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 4 } }, '→ ' + p.rule),
+                h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, p.detail),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.dim, lineHeight: 1.5, fontStyle: 'italic' } },
+                  h('strong', null, 'Caveat: '), p.caveat));
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // SLEEP + LEARNING view
+      // ─────────────────────────────────────────
+      function renderSleep() {
+        var picked = d.sleepPicked || null;
+        var pickedItem = picked ? SLEEP_FOR_LEARNING.find(function(s) { return s.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('😴 Sleep + learning'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '😴 The single most under-discussed factor in academic performance'),
+            h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, 'Memory consolidation happens in sleep. '),
+              'During Stage 2 (sleep spindles) + REM, the brain replays + transfers info from hippocampus to cortex — that\'s when learning becomes durable. Sleep AFTER learning produces 30-50% better retention vs equivalent waking time (Stickgold 2005).')
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, '⚠️ Sleep deprivation costs'),
+            h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, SLEEP_FACTS.deprivation),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
+              h('strong', { style: { color: T.text } }, 'Adolescent note: '), SLEEP_FACTS.teenagers)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 6 sleep-for-learning principles'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+            SLEEP_FOR_LEARNING.map(function(s) {
+              var sel = picked === s.id;
+              return h('button', { key: s.id, 'data-ll-focusable': true,
+                'aria-label': s.name, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('sleepPicked', sel ? null : s.id); awardBadge('sleep-aware', 'Sleep Aware'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, s.icon),
+                h('span', null, s.name));
+            })
+          ),
+          pickedItem && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedItem.icon + ' ' + pickedItem.name),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedItem.what),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🎯 Practical: '), pickedItem.practical),
+            h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+              h('strong', null, '📚 Research: '), pickedItem.research)
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+            h('h5', { style: { margin: '0 0 6px', fontSize: 13, color: T.accentHi } }, '🛏️ Sleep facts at a glance'),
+            h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: T.text } }, 'Consolidation: '), SLEEP_FACTS.consolidation),
+            h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: T.text } }, 'Adult need: '), SLEEP_FACTS.adults),
+            h('div', { style: { marginBottom: 6 } }, h('strong', { style: { color: T.text } }, 'Naps: '), SLEEP_FACTS.naps),
+            h('div', null, h('strong', { style: { color: T.text } }, 'Caffeine: '), SLEEP_FACTS.caffeine)
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -3247,6 +3905,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'testAnxiety':   return renderTestAnxiety();
         case 'sdt':           return renderSDT();
         case 'researchLit':   return renderResearchLit();
+        case 'lab':           return renderLab();
+        case 'noteTaking':    return renderNoteTaking();
+        case 'sleep':         return renderSleep();
         case 'quiz':          return renderQuiz();
         case 'badges':        return renderBadges();
         case 'resources':     return renderResources();
