@@ -472,106 +472,9 @@ const safeRemoveItem = (key) => {
     try { localStorage.removeItem(key); } catch(e) { /* silent */ }
 };
 const _applyTextSurgery = (prevHtml, effectiveText) => {
-    if (!window.Diff || typeof window.Diff.diffWordsWithSpace !== 'function') {
-        throw new Error('jsdiff library not loaded');
-    }
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(prevHtml, 'text/html');
-    if (!doc || !doc.body) throw new Error('HTML failed to parse');
-    const rejectParents = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT']);
-    const walker = doc.createTreeWalker(doc.documentElement, NodeFilter.SHOW_TEXT, {
-        acceptNode: (n) => {
-            let p = n.parentElement;
-            while (p) {
-                if (rejectParents.has(p.tagName)) return NodeFilter.FILTER_REJECT;
-                p = p.parentElement;
-            }
-            return NodeFilter.FILTER_ACCEPT;
-        }
-    });
-    const nodes = [];
-    const map = []; // map[i] = { nodeIdx, offsetInNode }
-    let domText = '';
-    while (walker.nextNode()) {
-        const node = walker.currentNode;
-        const nodeIdx = nodes.length;
-        nodes.push(node);
-        const content = node.textContent || '';
-        for (let i = 0; i < content.length; i++) {
-            map.push({ nodeIdx: nodeIdx, offsetInNode: i });
-        }
-        domText += content;
-    }
-    if (nodes.length === 0) {
-        return { html: prevHtml, coverage: 0, reason: 'no-text-nodes' };
-    }
-    const surgicalHunks = window.Diff.diffWordsWithSpace(domText, effectiveText);
-    const edits = [];
-    let cursor = 0;
-    for (const h of surgicalHunks) {
-        if (!h.added && !h.removed) {
-            cursor += h.value.length;
-        } else if (h.removed) {
-            edits.push({ type: 'delete', offset: cursor, length: h.value.length });
-            cursor += h.value.length;
-        } else if (h.added) {
-            edits.push({ type: 'insert', offset: cursor, text: h.value });
-        }
-    }
-    edits.sort((a, b) => b.offset - a.offset);
-    const applyDelete = (offset, length) => {
-        const groups = []; // { nodeIdx, start, end }
-        for (let i = offset; i < offset + length && i < map.length; i++) {
-            const m = map[i];
-            const last = groups[groups.length - 1];
-            if (last && last.nodeIdx === m.nodeIdx && last.end === m.offsetInNode) {
-                last.end = m.offsetInNode + 1;
-            } else {
-                groups.push({ nodeIdx: m.nodeIdx, start: m.offsetInNode, end: m.offsetInNode + 1 });
-            }
-        }
-        groups.sort((a, b) => a.nodeIdx === b.nodeIdx ? b.start - a.start : 0);
-        for (const g of groups) {
-            const node = nodes[g.nodeIdx];
-            const c = node.textContent || '';
-            node.textContent = c.substring(0, g.start) + c.substring(g.end);
-        }
-    };
-    const applyInsert = (offset, text) => {
-        if (offset === 0) {
-            const first = nodes[0];
-            first.textContent = text + (first.textContent || '');
-            return;
-        }
-        if (offset >= map.length) {
-            const last = nodes[nodes.length - 1];
-            last.textContent = (last.textContent || '') + text;
-            return;
-        }
-        const m = map[offset];
-        const node = nodes[m.nodeIdx];
-        const c = node.textContent || '';
-        node.textContent = c.substring(0, m.offsetInNode) + text + c.substring(m.offsetInNode);
-    };
-    for (const e of edits) {
-        if (e.type === 'delete') applyDelete(e.offset, e.length);
-        else applyInsert(e.offset, e.text);
-    }
-    const serialized = doc.documentElement ? doc.documentElement.outerHTML : '';
-    const html = (doc.doctype ? '<!DOCTYPE ' + doc.doctype.name + '>\n' : '') + serialized;
-    const _stripTags = (h) => String(h || '')
-        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-        .replace(/<[^>]+>/g, ' ')
-        .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
-        .replace(/\s+/g, ' ').trim();
-    const resultText = _stripTags(html);
-    const approvedTokens = effectiveText.split(/\s+/).filter(t => t.length > 2);
-    let found = 0;
-    const resultLower = resultText.toLowerCase();
-    for (const tok of approvedTokens) { if (resultLower.includes(tok.toLowerCase())) found++; }
-    const coverage = approvedTokens.length > 0 ? found / approvedTokens.length : 1;
-    return { html, coverage, reason: null };
+    const _m = window.AlloModules && window.AlloModules.PureHelpers;
+    if (_m && typeof _m._applyTextSurgery === 'function') return _m._applyTextSurgery(prevHtml, effectiveText);
+    throw new Error('[_applyTextSurgery] PureHelpers module not loaded - reload the page');
 };
 const safeDownloadBlob = (blob, filename) => {
     const url = URL.createObjectURL(blob);
@@ -5307,40 +5210,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const mathFluencyInputRef = React.useRef(null);
   const mathFluencyTimerRef = React.useRef(null);
   const generateMathFluencySet = (operation, difficulty, count = 120) => {
-      const problems = [];
-      const used = new Set();
-      const maxOp = difficulty === 'single' ? 12 : (difficulty === 'double' ? 99 : 12);
-      const minOp = difficulty === 'double' ? 10 : 0;
-      for (let attempt = 0; attempt < 500 && problems.length < count; attempt++) {
-          let a, b, answer, op;
-          const ops = operation === 'mixed' ? ['add','sub','mul','div'] : [operation];
-          op = ops[Math.floor(Math.random() * ops.length)];
-          if (op === 'add') {
-              a = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
-              b = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
-              answer = a + b;
-          } else if (op === 'sub') {
-              a = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
-              b = Math.floor(Math.random() * (a + 1));
-              answer = a - b;
-          } else if (op === 'mul') {
-              const mulMax = difficulty === 'double' ? 15 : 12;
-              a = Math.floor(Math.random() * (mulMax + 1));
-              b = Math.floor(Math.random() * (12 + 1));
-              answer = a * b;
-          } else {
-              b = Math.floor(Math.random() * 12) + 1;
-              answer = Math.floor(Math.random() * (12 + 1));
-              a = b * answer;
-          }
-          const key = `${a}${op}${b}`;
-          if (!used.has(key)) {
-              used.add(key);
-              const symbol = op === 'add' ? '+' : op === 'sub' ? '−' : op === 'mul' ? '×' : '÷';
-              problems.push({ a, b, op, symbol, answer, studentAnswer: null, correct: null });
-          }
-      }
-      return problems;
+    const _m = window.AlloModules && window.AlloModules.MathHelpers;
+    if (_m && typeof _m.generateMathFluencySet === 'function') return _m.generateMathFluencySet(operation, difficulty, count);
+    throw new Error('[generateMathFluencySet] MathHelpers module not loaded - reload the page');
   };
   const countDigits = (n) => Math.max(1, String(Math.abs(n)).length);
   const finishMathFluencyProbe = () => {
@@ -11806,51 +11678,14 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     return { source: sourcePars, target: targetPars, sourceFull: sourceText, targetFull: targetText };
   };
   const pcmToWav = (pcmData, sampleRate = 24000) => {
-    const headerLength = 44;
-    const dataLength = pcmData.length;
-    const buffer = new ArrayBuffer(headerLength + dataLength);
-    const view = new DataView(buffer);
-    const writeString = (offset, string) => {
-      for (let i = 0; i < string.length; i++) {
-        view.setUint8(offset + i, string.charCodeAt(i));
-      }
-    };
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + dataLength, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, 'data');
-    view.setUint32(40, dataLength, true);
-    const pcmBytes = new Uint8Array(pcmData);
-    const wavBytes = new Uint8Array(buffer, 44);
-    wavBytes.set(pcmBytes);
-    return buffer;
+    const _m = window.AlloModules && window.AlloModules.AudioHelpers;
+    if (_m && typeof _m.pcmToWav === 'function') return _m.pcmToWav(pcmData, sampleRate);
+    throw new Error('[pcmToWav] AudioHelpers module not loaded - reload the page');
   };
   const pcmToMp3 = (pcmData, sampleRate = 24000) => {
-      if (!window.lamejs) throw new Error("lamejs not loaded");
-      const int16Samples = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
-      const mp3Encoder = new window.lamejs.Mp3Encoder(1, sampleRate, 128);
-      const mp3Data = [];
-      const sampleBlockSize = 1152;
-      for (let i = 0; i < int16Samples.length; i += sampleBlockSize) {
-          const sampleChunk = int16Samples.subarray(i, i + sampleBlockSize);
-          const mp3buf = mp3Encoder.encodeBuffer(sampleChunk);
-          if (mp3buf.length > 0) {
-              mp3Data.push(mp3buf);
-          }
-      }
-      const mp3buf = mp3Encoder.flush();
-      if (mp3buf.length > 0) {
-          mp3Data.push(mp3buf);
-      }
-      return new Blob(mp3Data, { type: 'audio/mp3' });
+    const _m = window.AlloModules && window.AlloModules.AudioHelpers;
+    if (_m && typeof _m.pcmToMp3 === 'function') return _m.pcmToMp3(pcmData, sampleRate);
+    throw new Error('[pcmToMp3] AudioHelpers module not loaded - reload the page');
   };
 const ImmersiveWord = React.memo((props) => {
     const Ext = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.ImmersiveWord;

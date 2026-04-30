@@ -261,8 +261,59 @@ const handleCardAudioSequence = async (e, deps) => {
       }
 };
 
+const pcmToWav = (pcmData, sampleRate = 24000) => {
+  const headerLength = 44;
+  const dataLength = pcmData.length;
+  const buffer = new ArrayBuffer(headerLength + dataLength);
+  const view = new DataView(buffer);
+  const writeString = (offset, string) => {
+    for (let i = 0; i < string.length; i++) {
+      view.setUint8(offset + i, string.charCodeAt(i));
+    }
+  };
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataLength, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataLength, true);
+  const pcmBytes = new Uint8Array(pcmData);
+  const wavBytes = new Uint8Array(buffer, 44);
+  wavBytes.set(pcmBytes);
+  return buffer;
+};
+
+const pcmToMp3 = (pcmData, sampleRate = 24000) => {
+  if (!window.lamejs) throw new Error("lamejs not loaded");
+  const int16Samples = new Int16Array(pcmData.buffer, pcmData.byteOffset, pcmData.byteLength / 2);
+  const mp3Encoder = new window.lamejs.Mp3Encoder(1, sampleRate, 128);
+  const mp3Data = [];
+  const sampleBlockSize = 1152;
+  for (let i = 0; i < int16Samples.length; i += sampleBlockSize) {
+    const sampleChunk = int16Samples.subarray(i, i + sampleBlockSize);
+    const mp3buf = mp3Encoder.encodeBuffer(sampleChunk);
+    if (mp3buf.length > 0) {
+      mp3Data.push(mp3buf);
+    }
+  }
+  const mp3buf = mp3Encoder.flush();
+  if (mp3buf.length > 0) {
+    mp3Data.push(mp3buf);
+  }
+  return new Blob(mp3Data, { type: 'audio/mp3' });
+};
+
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AudioHelpers = {
   handleDownloadAudio,
   handleCardAudioSequence,
+  pcmToWav,
+  pcmToMp3,
 };

@@ -297,6 +297,43 @@ const handleGenerateOutcome = async (deps) => {
       }
 };
 
+const generateMathFluencySet = (operation, difficulty, count = 120) => {
+    const problems = [];
+    const used = new Set();
+    const maxOp = difficulty === 'single' ? 12 : (difficulty === 'double' ? 99 : 12);
+    const minOp = difficulty === 'double' ? 10 : 0;
+    for (let attempt = 0; attempt < 500 && problems.length < count; attempt++) {
+        let a, b, answer, op;
+        const ops = operation === 'mixed' ? ['add','sub','mul','div'] : [operation];
+        op = ops[Math.floor(Math.random() * ops.length)];
+        if (op === 'add') {
+            a = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
+            b = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
+            answer = a + b;
+        } else if (op === 'sub') {
+            a = Math.floor(Math.random() * (maxOp - minOp + 1)) + minOp;
+            b = Math.floor(Math.random() * (a + 1));
+            answer = a - b;
+        } else if (op === 'mul') {
+            const mulMax = difficulty === 'double' ? 15 : 12;
+            a = Math.floor(Math.random() * (mulMax + 1));
+            b = Math.floor(Math.random() * (12 + 1));
+            answer = a * b;
+        } else {
+            b = Math.floor(Math.random() * 12) + 1;
+            answer = Math.floor(Math.random() * (12 + 1));
+            a = b * answer;
+        }
+        const key = `${a}${op}${b}`;
+        if (!used.has(key)) {
+            used.add(key);
+            const symbol = op === 'add' ? '+' : op === 'sub' ? '−' : op === 'mul' ? '×' : '÷';
+            problems.push({ a, b, op, symbol, answer, studentAnswer: null, correct: null });
+        }
+    }
+    return problems;
+};
+
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.MathHelpers = {
   handleCheckMathWork,
@@ -304,6 +341,7 @@ window.AlloModules.MathHelpers = {
   handleMathEdit,
   handleGenerateSimilar,
   handleGenerateOutcome,
+  generateMathFluencySet,
 };
 
 window.AlloModules.MathHelpersModule = true;
