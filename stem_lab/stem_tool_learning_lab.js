@@ -953,6 +953,292 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   ];
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 12.6: TEST ANXIETY + PERFORMANCE STRATEGIES
+  // Anxiety isn't always bad (Yerkes-Dodson optimal arousal). But high
+  // anxiety crowds working memory + crashes performance. This module:
+  // recognize the 4 components, pre-test routine, during-test strategies,
+  // physiological calming, cognitive reframes, when to seek formal help.
+  // ─────────────────────────────────────────────────────────
+  var TEST_ANXIETY_OVERVIEW = {
+    yerkesDodson: 'Yerkes + Dodson (1908). Performance follows an inverted U with arousal — too LOW = bored + unfocused; OPTIMAL = alert + engaged; too HIGH = panic + working memory crashes. Goal: stay in the optimal middle.',
+    fourComponents: [
+      { id: 'cognitive', icon: '💭', name: 'Cognitive (the thoughts)',
+        what: 'Catastrophic thinking ("I\'m going to fail"), mind-blanking, intrusive worries about consequences.',
+        cost: 'Working memory (Cowan\'s 4±1) gets eaten by worry. Less capacity left for the actual task.' },
+      { id: 'affective', icon: '😟', name: 'Affective (the feelings)',
+        what: 'Dread, helplessness, shame, fear. Often disproportionate to actual stakes.',
+        cost: 'Emotional load adds to cognitive load. Both eat working memory. Compounds with the cognitive component.' },
+      { id: 'physiological', icon: '💓', name: 'Physiological (the body)',
+        what: 'Racing heart, shallow breathing, sweating, stomach upset, trembling, dry mouth.',
+        cost: 'Body interprets test = threat. Activates fight-or-flight. Brain can\'t allocate full resources to thinking.' },
+      { id: 'behavioral', icon: '🏃', name: 'Behavioral (the actions)',
+        what: 'Procrastination, avoidance, "studying" without retaining, leaving the test early, freezing on questions.',
+        cost: 'Avoidance temporarily relieves anxiety but increases it long-term (anxiety grows when you don\'t prove to yourself you can handle it).' }
+    ]
+  };
+
+  var PRE_TEST_ROUTINE = [
+    { n: 1, what: 'Sleep 7-9 hours night before',
+      why: 'Sleep consolidates memory. Cramming during sleep hours wastes the benefit. One night of bad sleep impairs working memory ~10-15%.',
+      tip: 'No new material after 9pm. Light review only. Lights out at usual time.' },
+    { n: 2, what: 'Eat protein + complex carbs 60-90 min before',
+      why: 'Brain needs glucose. Sugar crash from a candy bar at minute 30 of a 2-hour test is real.',
+      tip: 'Eggs, oatmeal, yogurt + fruit. Avoid heavy/greasy foods that pull blood to digestion.' },
+    { n: 3, what: 'Hydrate (but not too much)',
+      why: 'Mild dehydration impairs cognition. Bathroom emergency mid-test impairs more.',
+      tip: 'Water 1-2 hours before. Empty bladder right before walking in.' },
+    { n: 4, what: 'Caffeine: usual amount only',
+      why: 'Test day is NOT the day to try a new dose. Doubling caffeine = jitters + faster heart rate = mistaken for anxiety.',
+      tip: 'If you usually have one cup, have one cup. If you don\'t do caffeine, today is not the day to start.' },
+    { n: 5, what: 'Arrive early but not too early',
+      why: '15-20 minutes is the sweet spot. Earlier = sitting around getting more anxious. Later = rushed + flustered.',
+      tip: 'Know the route + parking + bathroom location BEFORE the day so the morning has no surprises.' },
+    { n: 6, what: 'Skip the panicked review at the door',
+      why: 'Last-minute "I forgot everything!" cramming creates more anxiety + competes with already-encoded memory.',
+      tip: 'Bring a calm activity (favorite book, music, breathing) for the 15 min before. Don\'t talk to anxious classmates.' },
+    { n: 7, what: 'One deep-breath ritual at the desk',
+      why: 'Deliberate slowing of breath signals safety to nervous system. Breaks the panic loop before it escalates.',
+      tip: '4-7-8 breathing: inhale 4 sec, hold 7 sec, exhale 8 sec. Once or twice. Then begin.' }
+  ];
+
+  var DURING_TEST_STRATEGIES = [
+    { n: 1, what: 'Read directions TWICE',
+      why: 'Anxiety makes you skim. Skimming = missed instructions = wrong answers on questions you knew.',
+      tip: 'Even if you "know" the format. Five seconds saves fifteen-point questions.' },
+    { n: 2, what: 'Survey the test before answering',
+      why: 'Knowing the time budget per question (total time / questions) prevents the "ran out of time on essays" disaster.',
+      tip: '90 min / 60 questions = 1.5 min average. Note the high-point questions; allocate more time there.' },
+    { n: 3, what: 'Easy questions first',
+      why: 'Builds momentum + confidence. Wins on easy questions calm the cognitive component of anxiety.',
+      tip: 'On a multiple-choice section, do all the easy ones first. Mark hard ones; come back. Don\'t get stuck.' },
+    { n: 4, what: 'Time budget + hard limits',
+      why: 'A tough question can eat 15 min. Then you panic over time + perform worse on remaining.',
+      tip: 'Set personal limits: "max 3 min on a 1-min question." If over, mark + move on. Come back at the end.' },
+    { n: 5, what: 'Pause-and-breathe at midpoint',
+      why: 'Mid-test mini-resets prevent compounding fatigue + anxiety.',
+      tip: 'At halfway: close eyes 10 seconds. 1 deep breath. Stretch shoulders. Resume.' },
+    { n: 6, what: 'When stuck: physically refocus',
+      why: 'Mental loops self-amplify. Breaking the loop physically resets attention.',
+      tip: 'Look up + away for 5 seconds. Roll shoulders. Drink water. Then re-read the question.' },
+    { n: 7, what: 'For mind-blanks: write what you DO know',
+      why: 'Often the "blank" is just the FIRST thing not coming. Adjacent knowledge unlocks the target.',
+      tip: 'Write related vocabulary, formulas, partial answers. Almost always triggers the locked memory.' },
+    { n: 8, what: 'Use ALL the time',
+      why: 'Leaving early ≠ being a star. Reviewing answers catches careless mistakes (wrong-bubble, sign errors, etc.).',
+      tip: 'Final 5-10 minutes: revisit marked questions, check arithmetic, verify you bubbled correctly.' }
+  ];
+
+  var CALMING_TECHNIQUES = [
+    { id: 'breathing-478', icon: '🌬️', name: '4-7-8 breathing',
+      how: 'Inhale through nose 4 seconds. Hold breath 7 seconds. Exhale through mouth 8 seconds. Repeat 3-4 cycles.',
+      whyWorks: 'Long exhales activate parasympathetic nervous system (the "rest" branch). Heart rate slows. Body downshifts from fight-or-flight.',
+      whenToUse: 'Right before walking into the test room. At a desk if anxiety spikes mid-test (silently — no one will notice).',
+      research: 'Slow breathing reduces stress markers + improves heart-rate variability (Zaccaro et al. 2018).' },
+    { id: 'grounding-54321', icon: '🌍', name: '5-4-3-2-1 grounding',
+      how: 'Name (silently): 5 things you see, 4 things you can touch, 3 things you hear, 2 things you smell, 1 thing you taste.',
+      whyWorks: 'Forces attention OUT of internal threat-loop and INTO the immediate environment. Grounds you in safe present-moment reality.',
+      whenToUse: 'When intrusive thoughts spike. When you feel disconnected or floaty.',
+      research: 'Mindfulness-based grounding reduces anxiety in test-anxious students (Beauchemin et al. 2008).' },
+    { id: 'pmr', icon: '💪', name: 'Progressive muscle relaxation (PMR)',
+      how: 'Starting at toes, tense each muscle group 5 sec, then release 10 sec. Work up: feet → calves → thighs → glutes → abs → fists → arms → shoulders → face. Notice the contrast.',
+      whyWorks: 'Anxiety lives in muscles (clenched jaw, shoulders, stomach). Deliberately releasing them signals safety to the brain.',
+      whenToUse: 'Night before, in bed (helps with sleep too). Or 10 min before the test in a quiet space.',
+      research: 'Jacobson 1938 + 80+ years of clinical use. Strong evidence for anxiety + sleep.' },
+    { id: 'box-breathing', icon: '⬜', name: 'Box breathing (Navy SEAL technique)',
+      how: 'Inhale 4 sec → hold 4 sec → exhale 4 sec → hold 4 sec. Repeat. (Equal-side "box".) Easier to remember than 4-7-8 in stress.',
+      whyWorks: 'Equal phases regulate breathing rhythm + reduce sympathetic activation. Rhythmic + simple = works under stress.',
+      whenToUse: 'Anywhere, anytime. Especially when you can\'t remember 4-7-8.',
+      research: 'Used in Special Forces tactical breathing protocols + clinical anxiety care.' },
+    { id: 'cold-water', icon: '💧', name: 'Cold water on face / wrists',
+      how: 'Splash cold water on face. Or hold cold-water-soaked paper towel against wrists or back of neck for 30 seconds.',
+      whyWorks: 'Activates the diving reflex — slows heart rate, reduces blood pressure. Fast physiological reset.',
+      whenToUse: 'Bathroom break before or during test. Especially helpful when you feel a panic spike coming on.',
+      research: 'Diving reflex is well-documented (Kinoshita et al. 2006). Used in DBT crisis-survival skills.' },
+    { id: 'reframe', icon: '🔄', name: 'Cognitive reframe: challenge ≠ threat',
+      how: 'Notice the anxious thought: "I\'m going to fail." Reframe: "I\'m feeling activated because I CARE. My body is preparing me to perform." Same physiology; different story.',
+      whyWorks: 'Jamieson et al. (2010) — students taught to reframe arousal as helpful did better on the GRE than control. SAME bodily state; meaning makes the difference.',
+      whenToUse: 'Whenever you notice anxiety appraisal forming. Before, during, after.',
+      research: 'Jamieson, J. P., et al. (2010). Turning the knots in your stomach into bows: Reappraising arousal improves performance on the GRE. JESP, 46(1).' }
+  ];
+
+  var WHEN_TO_SEEK_HELP = {
+    selfHelp: [
+      'Strategies above + pre/during/after-test routines worked: continue self-managing.',
+      'Anxiety is uncomfortable but doesn\'t prevent you from preparing or performing.',
+      'You can sometimes name + reframe the cognitive component yourself.'
+    ],
+    seekHelp: [
+      'Anxiety prevents you from preparing (you avoid studying or freeze).',
+      'Anxiety crashes performance to a level FAR below your knowledge.',
+      'Physical symptoms include panic attacks (sudden intense surges with chest pain, hyperventilation, sense of doom).',
+      'Avoidance is escalating: skipping tests, dropping classes, avoiding school.',
+      'Sleep, eating, or daily life is impacted.'
+    ],
+    who: [
+      { who: 'School counselor', what: 'First stop. Often available walk-in. Strategies + advocacy + referral if needed.' },
+      { who: 'School psychologist', what: 'Assessment for accommodations (extended time, quiet room, frequent breaks under 504 or IEP). Specialized strategies.' },
+      { who: 'Pediatrician / family doctor', what: 'Rules out physical contributors (thyroid, anemia, sleep disorder). Can refer to mental-health care.' },
+      { who: 'Therapist (CBT-trained)', what: 'Cognitive Behavioral Therapy is the most-evidence-backed treatment for anxiety. 8-16 sessions for many people.' },
+      { who: 'In a crisis', what: '988 Suicide and Crisis Lifeline. Maine Crisis Line. Or 911 if immediate danger.' }
+    ],
+    accommodations: 'Documented test anxiety often qualifies for accommodations: extended time (1.5x or 2x), quiet testing room, breaks. These are accessed via 504 Plan or IEP through the school. Process: request evaluation through counselor or school psych. Bring documentation of impact + clinician\'s recommendation.'
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.7: SELF-DETERMINATION THEORY (Deci + Ryan)
+  // The most-rigorously-supported motivation theory in education research.
+  // 3 basic psychological needs. When met, intrinsic motivation thrives.
+  // When thwarted, motivation decays through controlled → amotivated.
+  // ─────────────────────────────────────────────────────────
+  var SDT_OVERVIEW = {
+    bigIdea: 'Edward Deci + Richard Ryan (1985, expanded ongoing). Humans have 3 basic psychological needs that, when met, support intrinsic motivation, well-being, and durable engagement. When thwarted, motivation degrades through controlled motivation (doing it for grades/punishment) into amotivation (not doing it at all).',
+    why: 'SDT predicts academic outcomes, sport performance, work engagement, mental health, even physical health. Across 50+ countries. One of the most rigorously-tested motivation frameworks in psychology.',
+    research: 'Deci, E. L., & Ryan, R. M. (1985). Intrinsic motivation and self-determination in human behavior. Plenum. Subsequent literature: 1000+ studies; meta-analyses confirm cross-cultural validity (Ryan + Deci 2017).'
+  };
+
+  var SDT_NEEDS = [
+    { id: 'autonomy', icon: '🎯', name: 'Autonomy',
+      def: 'Sense that one\'s actions are self-chosen + endorsed. NOT the same as "independence" — you can have autonomy while collaborating.',
+      met: 'Student feels choice, agency, voice. Understands the reason behind tasks. Can express preferences. The activity feels personally meaningful.',
+      thwarted: 'Pressure, control, surveillance, micromanagement, "because I said so." Student feels coerced or manipulated.',
+      teacherSupport: [
+        'Offer meaningful choices (topic, format, pacing) even within constraints.',
+        'Explain the rationale for required tasks ("here\'s WHY this matters").',
+        'Acknowledge student perspective + feelings.',
+        'Use language that supports rather than controls ("you can" instead of "you must").',
+        'Minimize unnecessary surveillance + reward/punishment frameworks.'
+      ],
+      studentApply: 'Recognize when an activity feels coerced — and look for the small autonomy-supports inside the constraint (Which problems do I tackle first? What perspective do I bring? What\'s my "why" for doing this even though it\'s assigned?).' },
+    { id: 'competence', icon: '💪', name: 'Competence',
+      def: 'Sense of being effective + producing valued outcomes. Feeling that your effort connects to growth + capability.',
+      met: 'Tasks are appropriately challenging (in ZPD), feedback is informative, progress is visible, mistakes are framed as learning.',
+      thwarted: 'Tasks too easy (boredom + skill atrophy) or too hard (frustration + helplessness). Feedback is evaluative without informative ("B-, work harder"). Progress is invisible.',
+      teacherSupport: [
+        'Calibrate task difficulty to ZPD — challenging but achievable with effort.',
+        'Provide informational feedback ("you\'re tracking the argument well; the evidence section needs more sources" beats "B+").',
+        'Make progress visible (rubrics, growth tracking, portfolios).',
+        'Frame mistakes as data, not failure.',
+        'Avoid grade-only feedback that strips learning info.'
+      ],
+      studentApply: 'Seek out tasks that are HARD but doable. Track your own progress (Service Log style — across this tool there\'s a pattern of self-recording). Ask for specific feedback, not just grades.' },
+    { id: 'relatedness', icon: '🤝', name: 'Relatedness',
+      def: 'Sense of belonging + connection to others. Feeling cared for + caring about a group.',
+      met: 'Trusted relationships with teachers + peers. Sense that you matter to the community. Genuine community + collaboration in learning.',
+      thwarted: 'Anonymous classrooms, hostile peer dynamics, distant teachers, exclusion or marginalization. The "I\'m a number, not a person" feeling.',
+      teacherSupport: [
+        'Learn + use student names quickly. Notice individuals.',
+        'Make time for non-academic connection (Crew, advisory, lunch chats).',
+        'Build collaborative learning structures (think-pair-share, group inquiry).',
+        'Address peer harm (bullying, exclusion) explicitly + reliably.',
+        'Show genuine care for student lives outside school.'
+      ],
+      studentApply: 'Connect with at least one teacher + a few classmates beyond surface level. Seek out one collaborative study partner. Recognize that learning is fundamentally social.' }
+  ];
+
+  var SDT_CONTINUUM = [
+    { id: 'amotivation', n: 0, name: 'Amotivation', desc: 'No engagement. "I don\'t do this; this is pointless." Disengaged from the activity entirely.' },
+    { id: 'external', n: 1, name: 'External regulation', desc: 'Doing it for external reward/punishment only. "I do this because I\'ll get a bad grade if I don\'t."' },
+    { id: 'introjected', n: 2, name: 'Introjected regulation', desc: 'Internalized pressure. "I do this because I\'ll feel guilty/anxious if I don\'t."' },
+    { id: 'identified', n: 3, name: 'Identified regulation', desc: 'You see the personal value. "I do this because it matters for what I want to become."' },
+    { id: 'integrated', n: 4, name: 'Integrated regulation', desc: 'The activity aligns with your sense of self. "I do this because it\'s who I am."' },
+    { id: 'intrinsic', n: 5, name: 'Intrinsic motivation', desc: 'You do it because it\'s inherently interesting + enjoyable. "I do this because I love it."' }
+  ];
+
+  var SDT_MAINE_NOTE = 'EL Education\'s Crew structure is essentially a Relatedness intervention — small, stable advisory groups create the belonging that makes the rest of school work. The HOWLs (Habits of Work and Learning) explicitly value process + growth, supporting Competence. Expedition-based learning gives student-driven inquiry, supporting Autonomy. EL was SDT-aligned before SDT was named.';
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.8: EDUCATIONAL RESEARCH LITERACY
+  // Most education debates are evidence-light. Future teachers + curious
+  // students benefit hugely from being able to read a peer-reviewed study,
+  // distinguish strong from weak evidence, and recognize edu-fadgets.
+  // ─────────────────────────────────────────────────────────
+  var RESEARCH_HIERARCHY = [
+    { n: 1, name: 'Anecdote / "I tried it"', strength: 'weakest', icon: '🤷',
+      desc: 'A single person\'s story. Useful for hypothesis generation; useless as evidence of effectiveness.',
+      example: '"I had a great class do this activity, so it must work" — N of 1 with no comparison group.' },
+    { n: 2, name: 'Case study', strength: 'weak', icon: '📓',
+      desc: 'Detailed observation of one or a few cases. Documents what happened; can\'t establish cause.',
+      example: 'A school adopts a new program + grades go up. Could be the program. Could be many other things (new principal, demographic change, regression to mean).' },
+    { n: 3, name: 'Correlational study', strength: 'medium', icon: '📊',
+      desc: 'Measures association between variables. Can\'t establish causation.',
+      example: 'Students who use Anki score higher. But maybe motivated students choose Anki AND study harder in general. Correlation ≠ causation.' },
+    { n: 4, name: 'Quasi-experimental study', strength: 'medium-strong', icon: '⚗️',
+      desc: 'Compares groups but participants weren\'t randomly assigned. Stronger than correlation but vulnerable to selection effects.',
+      example: 'Two existing 4th-grade classes — one gets new method, one doesn\'t. Differences in classes (teacher, student mix) confound results.' },
+    { n: 5, name: 'Randomized Controlled Trial (RCT)', strength: 'strong', icon: '🎲',
+      desc: 'Random assignment to treatment vs control. Gold standard for establishing causation. Hard to do in education (consent, ethics, school logistics).',
+      example: 'Within a school, 20 sections randomly assigned to "use spaced repetition app" vs "study as usual." Compare standardized post-test.' },
+    { n: 6, name: 'Systematic review / meta-analysis', strength: 'strongest', icon: '🏆',
+      desc: 'Synthesizes ALL high-quality studies on a question. Tells you the consistent finding across the field, accounting for variation.',
+      example: 'Dunlosky et al. 2013 reviewed 100+ studies on study techniques. Pashler et al. 2008 reviewed all rigorous learning-styles studies. Results compound across studies.' }
+  ];
+
+  var STATS_TERMS = [
+    { term: 'p-value',
+      def: 'The probability of seeing this result (or more extreme) IF there were no real effect. Smaller p = less likely to be due to chance.',
+      conventionalCutoff: 'p < .05 = "statistically significant" (but this is just convention; not magic).',
+      caution: 'A small p-value tells you the effect is unlikely to be PURE NOISE — it does NOT tell you the effect is large or important. With huge sample sizes, tiny effects become "significant."' },
+    { term: 'Effect size',
+      def: 'How LARGE the difference is, independent of sample size. Cohen\'s d is the most common: (mean₁ - mean₂) / pooled standard deviation.',
+      conventionalCutoff: 'Cohen\'s d: 0.2 = small, 0.5 = medium, 0.8 = large. In education, d=0.4 is roughly "one extra year of typical learning."',
+      caution: 'Always read the EFFECT SIZE, not just whether something was statistically significant. A d=0.05 effect over a million students gets p<.001 but is practically meaningless.' },
+    { term: 'Confidence interval',
+      def: 'Range within which the true effect probably lies. "Effect size = 0.4, 95% CI [0.2, 0.6]" means we\'re 95% confident the real effect is between 0.2 and 0.6.',
+      conventionalCutoff: 'Wider CI = less precise. CIs that include 0 = could plausibly be NO effect.',
+      caution: 'Always look at the CI, not just the point estimate. A study reporting "d = 0.4" that actually has CI [-0.1, 0.9] hasn\'t established much.' },
+    { term: 'Sample size (N)',
+      def: 'Number of participants in the study. Larger N = more statistical power.',
+      conventionalCutoff: 'In education research, N < 50 per group is small; N = 100-500/group is decent; N > 1000/group with random assignment is strong.',
+      caution: 'Tiny studies (N<30) can show big effects through noise alone. Always check N before getting excited about results.' },
+    { term: 'Replication',
+      def: 'Doing the same study again to see if you get the same result. The cornerstone of science.',
+      conventionalCutoff: 'A finding that has replicated in 5+ independent labs is much more trustworthy than a single study.',
+      caution: 'Many famous psychology + education findings have failed to replicate (the "replication crisis"). Always ask: has this been replicated?' },
+    { term: 'Pre-registration',
+      def: 'Researchers publicly state their hypothesis + analysis plan BEFORE collecting data, so they can\'t cherry-pick favorable analyses afterward.',
+      conventionalCutoff: 'A pre-registered study is much more credible than an exploratory one. Look for "Registered Report" or pre-registration on Open Science Framework.',
+      caution: 'Pre-registration is becoming standard but isn\'t universal. Studies without pre-reg + with surprisingly clean results may have been "p-hacked."' }
+  ];
+
+  var RESEARCH_RED_FLAGS = [
+    { flag: 'Single-study claim with no replication',
+      example: '"New study shows 30% improvement in reading!" Until replicated, treat as preliminary.',
+      whatToDo: 'Search for replications: Google Scholar, "did X replicate?", look for meta-analyses.' },
+    { flag: 'Funded by company selling the product',
+      example: 'Lumosity-funded research showing Lumosity works. Coca-Cola-funded research showing soda doesn\'t cause weight gain.',
+      whatToDo: 'Look at the "Conflicts of interest" or "Funding" section. Studies funded by independent sources (NSF, NIH, foundations) are more credible.' },
+    { flag: 'Tiny sample size (N < 30 per group)',
+      example: 'Pilot study with 12 kids in 1 school. Even genuine effects can\'t be detected reliably.',
+      whatToDo: 'Read the Methods section. Look for the N. Be skeptical of small studies until replicated with larger ones.' },
+    { flag: 'No control group',
+      example: '"After our program, students improved 15%." Compared to what? Maybe they would have improved 15% anyway.',
+      whatToDo: 'Look for "control group" or "comparison group" in Methods. If it\'s missing or just historical comparison, weight evidence accordingly.' },
+    { flag: 'Cherry-picked outcomes',
+      example: 'Study measured 20 outcomes; only the 2 significant ones are highlighted. By chance, 1 in 20 will be significant at p<.05.',
+      whatToDo: 'Look for pre-registration. Look at ALL the outcome measures, not just the headlines.' },
+    { flag: '"Researcher says" without source',
+      example: '"Studies show that people only use 10% of their brain." (No actual study cited.)',
+      whatToDo: 'Demand citations. If you can\'t find the original study, the claim is hearsay.' },
+    { flag: 'Selling something',
+      example: 'Brain-training games, miracle apps, "this one weird trick" study skills.',
+      whatToDo: 'Independent meta-analyses are your friend. Cochrane Collaboration. What Works Clearinghouse (WWC) for education.' },
+    { flag: 'Claims of dramatic effects',
+      example: '"Students improved 200%!" Education effects of d > 1.0 are extraordinary; expect them to fail to replicate.',
+      whatToDo: 'Be MORE skeptical of bigger effects, not less. The most-replicated education findings have d ~ 0.3-0.5.' }
+  ];
+
+  var WHERE_TO_FIND_RESEARCH = [
+    { name: 'ERIC (Education Resources Information Center)', desc: 'Free US Department of Education database. Best for education research.', url: 'https://eric.ed.gov/' },
+    { name: 'Google Scholar', desc: 'Free. Searches across most academic literature. Most papers have free PDFs (look for the right-side links). Can save searches + alert on new results.', url: 'https://scholar.google.com/' },
+    { name: 'What Works Clearinghouse (WWC)', desc: 'US Dept of Ed. Reviews education research using strict standards. Tells you which interventions have strong evidence + which don\'t.', url: 'https://ies.ed.gov/ncee/wwc/' },
+    { name: 'Cochrane Collaboration', desc: 'Health-focused but includes school-based interventions. Gold-standard systematic reviews.', url: 'https://www.cochrane.org/' },
+    { name: 'JSTOR', desc: 'Major journal archive. Often free via your school + public library.', url: 'https://www.jstor.org/' },
+    { name: 'Open Science Framework', desc: 'Pre-registered studies + replication projects. Look for "Registered Report" or pre-registration.', url: 'https://osf.io/' },
+    { name: 'PubMed', desc: 'Health + medical research. Includes many cognitive-science + neuroscience papers relevant to education.', url: 'https://pubmed.ncbi.nlm.nih.gov/' },
+    { name: 'Maine Public Library Consortium', desc: 'Many Maine libraries offer free patron access to academic databases. Ask your local library.', url: null }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 13: KNOWLEDGE QUIZ — 40 questions across all modules
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -1135,7 +1421,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     { id: 'q45', icon: '🛤️',
       stem: 'You\'re NEW to thinking about pedagogy. What\'s the smart way to work through Learning Lab\'s modules?',
       choices: ['Take the quiz first', 'Use the Recommended Learning Path — 4-week curated walkthrough: Foundation vocabulary (Bloom\'s + cog load + metacog + ZPD) → UDL + strategies → critical thinking + myths → applying it (lesson plan, strategy picker, careers)', 'Random order', 'Skip everything'],
-      correct: 1, why: 'The Learning Path orders modules pedagogically: vocabulary first (week 1), UDL + practical strategies (week 2), critical-thinking + myth-busting (week 3), applied practice + career exploration (week 4). Each week has goals + outcomes you can verify.' }
+      correct: 1, why: 'The Learning Path orders modules pedagogically: vocabulary first (week 1), UDL + practical strategies (week 2), critical-thinking + myth-busting (week 3), applied practice + career exploration (week 4). Each week has goals + outcomes you can verify.' },
+    { id: 'q46', icon: '😰',
+      stem: 'Yerkes-Dodson law (1908) describes the relationship between arousal/anxiety and performance as:',
+      choices: ['Linear (more anxiety = worse performance)', 'An inverted U — too LOW = bored/unfocused, OPTIMAL middle = alert/engaged, too HIGH = panic + working memory crashes', 'No relationship', 'More anxiety always helps'],
+      correct: 1, why: 'Inverted-U: optimal arousal sits in the middle. Mild anxiety can sharpen focus (helpful). Severe anxiety eats working memory + crashes performance. Goal isn\'t zero anxiety — it\'s staying in the optimal middle.' },
+    { id: 'q47', icon: '🌬️',
+      stem: '4-7-8 breathing (inhale 4 sec, hold 7 sec, exhale 8 sec) reduces test anxiety because:',
+      choices: ['Magic', 'Long exhales activate the parasympathetic nervous system (the "rest" branch), slowing heart rate + downshifting from fight-or-flight', 'It distracts you', 'It uses oxygen'],
+      correct: 1, why: 'Slow breathing (especially long exhales) activates parasympathetic response. Heart rate slows, blood pressure drops, brain interprets the body as "safe" and downshifts from fight-or-flight. Works in seconds.' },
+    { id: 'q48', icon: '🎯',
+      stem: 'Self-Determination Theory (Deci + Ryan) proposes that 3 basic psychological needs support intrinsic motivation. They are:',
+      choices: ['Money, fame, power', 'Autonomy, competence, relatedness', 'Speed, accuracy, memorization', 'Reading, writing, math'],
+      correct: 1, why: 'Deci + Ryan 1985. AUTONOMY (self-chosen actions) + COMPETENCE (effective + growing) + RELATEDNESS (connected + belonging). When all 3 are met, intrinsic motivation thrives across cultures, ages, domains.' },
+    { id: 'q49', icon: '📊',
+      stem: 'You read: "New study shows program improved scores; p < .001!" What\'s the smart next question?',
+      choices: ['Buy the program', 'What was the EFFECT SIZE (Cohen\'s d) and the SAMPLE SIZE? p<.001 just says it\'s unlikely to be pure noise — it doesn\'t tell you the effect is large or important. With huge N, tiny effects become "significant."', 'What\'s p?', 'Believe it'],
+      correct: 1, why: 'p-value = "is this likely just noise?" Effect size = "is this big enough to matter?" Always read the effect size. Cohen\'s d=0.4 ≈ "one extra year of typical learning"; d=0.05 with N=100,000 gets p<.001 but is practically meaningless.' },
+    { id: 'q50', icon: '🏆',
+      stem: 'In the hierarchy of educational research evidence, which is STRONGEST?',
+      choices: ['Anecdote ("I tried it and it worked")', 'Single case study', 'Single randomized controlled trial', 'Systematic review / meta-analysis of multiple high-quality studies'],
+      correct: 3, why: 'A systematic review (e.g., Dunlosky 2013, Pashler 2008) synthesizes ALL high-quality studies on a question. Far stronger than any single study because it accounts for variation + replication. Always trust meta-analyses over single eye-catching studies.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1249,7 +1555,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'bloom', icon: '📊', label: 'Bloom\'s Taxonomy', desc: '6 cognitive levels with verb lists + examples.' },
               { id: 'cogload', icon: '⚖️', label: 'Cognitive Load Theory', desc: 'Working memory limits + 3 types of load (Sweller).' },
               { id: 'metacog', icon: '🗺️', label: 'Metacognition', desc: 'Plan / Monitor / Evaluate. Self-rating prompts.' },
-              { id: 'zpd', icon: '🤝', label: 'ZPD + scaffolding', desc: 'Vygotsky. Gradual release. 6 scaffolding strategies.' }
+              { id: 'zpd', icon: '🤝', label: 'ZPD + scaffolding', desc: 'Vygotsky. Gradual release. 6 scaffolding strategies.' },
+              { id: 'sdt', icon: '🎯', label: 'Self-Determination Theory', desc: 'Deci + Ryan: autonomy, competence, relatedness. The most-supported motivation theory.' }
             ]
           },
           { id: 'udl', icon: '🎯', name: 'UDL framework',
@@ -1264,8 +1571,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'spaced', icon: '⏰', label: 'Spaced repetition + retrieval', desc: 'Ebbinghaus, testing effect, illusion of fluency.' },
               { id: 'study', icon: '📝', label: 'Study strategies', desc: 'Dunlosky 2013 ratings: high vs low utility.' },
               { id: 'memory', icon: '🧠', label: 'Memory + active learning techniques', desc: 'Feynman, loci, mnemonic, dual coding, interleaving deep dive. 8 concrete techniques.' },
+              { id: 'testAnxiety', icon: '😰', label: 'Test anxiety + performance', desc: 'Yerkes-Dodson, pre/during/after-test routines, 6 calming techniques, when to seek help.' },
               { id: 'mindset', icon: '🌱', label: 'Growth mindset (brief)', desc: 'Dweck. Honest about replication. Links to Growth Mindset SEL tool.' },
-              { id: 'myths', icon: '🚫', label: 'Neuromyth debunker', desc: '8 popular beliefs that research rejects.' }
+              { id: 'myths', icon: '🚫', label: 'Neuromyth debunker', desc: '8 popular beliefs that research rejects.' },
+              { id: 'researchLit', icon: '🔬', label: 'Research literacy', desc: 'Hierarchy of evidence, p-values, effect sizes, replication, red flags, where to find good research.' }
             ]
           },
           { id: 'careers', icon: '🏅', name: 'Pedagogy careers + Maine',
@@ -2049,7 +2358,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             { id: 'bloom-explorer', icon: '📊', name: 'Bloom\'s Explorer', how: 'Tap any Bloom\'s level.' },
             { id: 'cogload-aware', icon: '⚖️', name: 'Cognitive Load Aware', how: 'Tap any cognitive-load type.' },
             { id: 'meta-self-rated', icon: '🗺️', name: 'Metacognition Self-Rated', how: 'Rate all 8 metacognition self-statements.' },
-            { id: 'zpd-scaffolder', icon: '🤝', name: 'ZPD Scaffolder', how: 'Tap any scaffolding strategy.' }
+            { id: 'zpd-scaffolder', icon: '🤝', name: 'ZPD Scaffolder', how: 'Tap any scaffolding strategy.' },
+            { id: 'sdt-explorer', icon: '🎯', name: 'SDT Explorer', how: 'Tap any of the 3 basic psychological needs.' }
           ] },
           { group: '🎯 UDL', items: [
             { id: 'udl-explorer', icon: '🎯', name: 'UDL Explorer', how: 'Tap any UDL principle.' }
@@ -2058,7 +2368,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             { id: 'spaced-rep-aware', icon: '⏰', name: 'Spaced Rep Aware', how: 'Mark the spaced-repetition module complete.' },
             { id: 'study-strategist', icon: '📝', name: 'Study Strategist', how: 'Tap any study strategy in the Dunlosky table.' },
             { id: 'memory-explorer', icon: '🧠', name: 'Memory Explorer', how: 'Tap any technique in the Memory + Active Learning module.' },
-            { id: 'myth-buster', icon: '🚫', name: 'Myth Buster', how: 'Tap any neuromyth in the debunker.' }
+            { id: 'anxiety-toolkit', icon: '😰', name: 'Anxiety Toolkit', how: 'Tap any calming technique in the Test Anxiety module.' },
+            { id: 'myth-buster', icon: '🚫', name: 'Myth Buster', how: 'Tap any neuromyth in the debunker.' },
+            { id: 'research-literate', icon: '🔬', name: 'Research Literate', how: 'Tap any stats term in Research Literacy.' }
           ] },
           { group: '🏅 Career', items: [
             { id: 'career-explorer', icon: '🍎', name: 'Career Explorer', how: 'Tap any education career path.' }
@@ -2549,6 +2861,370 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
 
       // ─────────────────────────────────────────
+      // TEST ANXIETY view
+      // ─────────────────────────────────────────
+      function renderTestAnxiety() {
+        var taView = d.taView || 'overview';
+        function tabBtn(id, label) {
+          var active = taView === id;
+          return h('button', { 'data-ll-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('taView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#fff' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function overview() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '😰 Yerkes-Dodson — anxiety isn\'t always bad'),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55, fontWeight: 700 } }, TEST_ANXIETY_OVERVIEW.yerkesDodson),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
+                'Goal: not "zero anxiety" but the optimal middle. Mild activation sharpens focus. The strategies in this module help bring HIGH anxiety down toward optimal, not eliminate all activation.')
+            ),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🔍 The 4 components — recognize each'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              TEST_ANXIETY_OVERVIEW.fourComponents.map(function(c) {
+                return h('div', { key: c.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                    h('span', { style: { fontSize: 22 } }, c.icon),
+                    h('strong', { style: { fontSize: 13, color: T.accentHi } }, c.name)
+                  ),
+                  h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } },
+                    h('strong', null, 'What it looks like: '), c.what),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                    h('strong', { style: { color: T.warn } }, 'Cost: '), c.cost));
+              })
+            )
+          );
+        }
+
+        function preTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌅 Pre-test routine'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'The 24 hours before the test do more than the 30 minutes during. Set yourself up.')
+            ),
+            h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              PRE_TEST_ROUTINE.map(function(s) {
+                return h('div', { key: s.n, role: 'listitem', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 4 } },
+                    h('span', { 'aria-hidden': 'true', style: { background: T.accent, color: '#fff', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, s.n),
+                    h('strong', { style: { fontSize: 13, color: T.text, flex: 1 } }, s.what)
+                  ),
+                  h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.55, marginLeft: 36 } },
+                    h('strong', { style: { color: T.dim } }, 'Why: '), s.why),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 36 } },
+                    h('strong', { style: { color: T.accentHi } }, '💡 Tip: '), s.tip));
+              })
+            )
+          );
+        }
+
+        function duringTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📝 During-test strategies'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Every minute you spend on these structural moves frees working memory for the actual test content.')
+            ),
+            h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              DURING_TEST_STRATEGIES.map(function(s) {
+                return h('div', { key: s.n, role: 'listitem', style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 4 } },
+                    h('span', { 'aria-hidden': 'true', style: { background: T.accent, color: '#fff', borderRadius: 999, width: 26, height: 26, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 } }, s.n),
+                    h('strong', { style: { fontSize: 13, color: T.text, flex: 1 } }, s.what)
+                  ),
+                  h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.55, marginLeft: 36 } },
+                    h('strong', { style: { color: T.dim } }, 'Why: '), s.why),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5, marginLeft: 36 } },
+                    h('strong', { style: { color: T.accentHi } }, '💡 Tip: '), s.tip));
+              })
+            )
+          );
+        }
+
+        function calmTab() {
+          var picked = d.calmPicked || null;
+          var pickedC = picked ? CALMING_TECHNIQUES.find(function(c) { return c.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🌬️ 6 calming techniques'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Pick 1-2 to actually practice when you\'re NOT in a test, so they\'re available when you ARE in a test. Practice = autopilot when you need it.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+              CALMING_TECHNIQUES.map(function(c) {
+                var sel = picked === c.id;
+                return h('button', { key: c.id, 'data-ll-focusable': true,
+                  'aria-label': c.name, 'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('calmPicked', sel ? null : c.id); awardBadge('anxiety-toolkit', 'Anxiety Toolkit'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#fff' : T.text,
+                    textAlign: 'left', fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, c.icon),
+                  h('span', null, c.name));
+              })
+            ),
+            pickedC && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedC.icon + ' ' + pickedC.name),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '📋 How: '), pickedC.how),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, '🧠 Why it works: '), pickedC.whyWorks),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.good } }, '🕐 When to use: '), pickedC.whenToUse),
+              h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+                h('strong', null, '📚 Research: '), pickedC.research))
+          );
+        }
+
+        function helpTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.good, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.good } }, '✅ When self-help is enough'),
+              h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+                WHEN_TO_SEEK_HELP.selfHelp.map(function(s, i) { return h('li', { key: i }, s); }))
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.warn } }, '⚠️ When to reach out for support'),
+              h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+                WHEN_TO_SEEK_HELP.seekHelp.map(function(s, i) { return h('li', { key: i }, s); }))
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🤝 Who can help'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                WHEN_TO_SEEK_HELP.who.map(function(w, i) {
+                  return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
+                    h('strong', { style: { fontSize: 12, color: T.text, display: 'block', marginBottom: 2 } }, w.who),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, w.what));
+                })
+              )
+            ),
+            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '📋 Accommodations: '), WHEN_TO_SEEK_HELP.accommodations)
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('😰 Test anxiety + performance'),
+          h('div', { role: 'tablist', 'aria-label': 'Test anxiety sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('overview', 'Overview'),
+            tabBtn('pre', '🌅 Before'),
+            tabBtn('during', '📝 During'),
+            tabBtn('calm', '🌬️ Calming'),
+            tabBtn('help', '🤝 Get help')),
+          taView === 'overview' && overview(),
+          taView === 'pre' && preTab(),
+          taView === 'during' && duringTab(),
+          taView === 'calm' && calmTab(),
+          taView === 'help' && helpTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // SELF-DETERMINATION THEORY view
+      // ─────────────────────────────────────────
+      function renderSDT() {
+        var picked = d.sdtPicked || null;
+        var pickedNeed = picked ? SDT_NEEDS.find(function(n) { return n.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🎯 Self-Determination Theory'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 Deci + Ryan\'s SDT'),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, SDT_OVERVIEW.bigIdea),
+            h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔬 Why it matters: '), SDT_OVERVIEW.why),
+            h('p', { style: { margin: 0, color: T.dim, fontSize: 11, fontStyle: 'italic' } },
+              h('strong', null, '📚 Source: '), SDT_OVERVIEW.research)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧩 The 3 basic psychological needs'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+            SDT_NEEDS.map(function(n) {
+              var sel = picked === n.id;
+              return h('button', { key: n.id, 'data-ll-focusable': true,
+                'aria-label': n.name, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('sdtPicked', sel ? null : n.id); awardBadge('sdt-explorer', 'SDT Explorer'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', flexDirection: 'column', gap: 4
+                }) },
+                h('div', { style: { fontSize: 26, marginBottom: 2 } }, n.icon),
+                h('strong', null, n.name),
+                h('div', { style: { fontSize: 11, opacity: 0.85, fontStyle: 'italic' } }, n.def.split('.')[0])
+              );
+            })
+          ),
+          pickedNeed && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, pickedNeed.icon + ' ' + pickedNeed.name),
+            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, pickedNeed.def),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 } },
+              h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good } },
+                h('strong', { style: { color: T.good, fontSize: 12 } }, '✅ When met:'),
+                h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.text, lineHeight: 1.5 } }, pickedNeed.met)),
+              h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad } },
+                h('strong', { style: { color: T.bad, fontSize: 12 } }, '❌ When thwarted:'),
+                h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.text, lineHeight: 1.5 } }, pickedNeed.thwarted))
+            ),
+            h('h5', { style: { margin: '8px 0 4px', fontSize: 12, color: T.accentHi } }, '👩‍🏫 Teacher applications'),
+            h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+              pickedNeed.teacherSupport.map(function(s, i) { return h('li', { key: i }, s); })),
+            h('div', { style: { marginTop: 10, padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn } },
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, '👨‍🎓 Student application: '),
+              h('span', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } }, pickedNeed.studentApply))
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📈 The motivation continuum'),
+          h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+            'Motivation isn\'t binary. It runs on a continuum from amotivation → controlled → autonomous → intrinsic. The 3 needs being met pushes motivation up the continuum.'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+            SDT_CONTINUUM.map(function(s) {
+              var hue = s.n === 0 ? T.bad : s.n <= 2 ? T.warn : s.n <= 3 ? T.accentHi : T.good;
+              return h('div', { key: s.id, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + hue, display: 'flex', gap: 10, alignItems: 'flex-start' } },
+                h('span', { 'aria-hidden': 'true', style: { background: hue, color: s.n === 0 ? '#fff' : '#000', borderRadius: 999, width: 22, height: 22, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, flexShrink: 0 } }, s.n),
+                h('div', null,
+                  h('strong', { style: { fontSize: 12, color: hue } }, s.name),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } }, s.desc)));
+            })
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, '🌲 EL Education + Maine note: '), SDT_MAINE_NOTE),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // RESEARCH LITERACY view
+      // ─────────────────────────────────────────
+      function renderResearchLit() {
+        var rView = d.rView || 'hierarchy';
+        function tabBtn(id, label) {
+          var active = rView === id;
+          return h('button', { 'data-ll-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('rView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#fff' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function hierarchy() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏆 Hierarchy of evidence'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Not all evidence is equal. Lowest = anecdote ("I tried it"). Highest = systematic review of multiple high-quality studies. Always weight findings by strength of evidence.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              RESEARCH_HIERARCHY.map(function(r) {
+                var hue = r.n <= 2 ? T.bad : r.n <= 4 ? T.warn : T.good;
+                return h('div', { key: r.n, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + hue } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 } },
+                    h('span', { style: { fontSize: 22 } }, r.icon),
+                    h('span', { 'aria-hidden': 'true', style: { background: hue, color: '#000', borderRadius: 999, width: 24, height: 24, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800 } }, r.n),
+                    h('strong', { style: { fontSize: 13, color: T.accentHi, flex: 1 } }, r.name),
+                    h('span', { style: { fontSize: 10, color: hue, padding: '2px 6px', borderRadius: 4, background: T.bg, border: '1px solid ' + hue, textTransform: 'uppercase', fontWeight: 700 } }, r.strength)),
+                  h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, r.desc),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } },
+                    h('strong', null, 'Example: '), r.example));
+              })
+            )
+          );
+        }
+
+        function statsTerms() {
+          var picked = d.statsPicked || null;
+          var pickedT = picked != null ? STATS_TERMS[picked] : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '📊 Stats terms you need'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'You don\'t need to do statistics — but you do need to read them. Tap each term for definition + cutoff + caution.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
+              STATS_TERMS.map(function(t, i) {
+                var sel = picked === i;
+                return h('button', { key: i, 'data-ll-focusable': true,
+                  'aria-label': t.term, 'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('statsPicked', sel ? null : i); awardBadge('research-literate', 'Research Literate'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#fff' : T.text,
+                    textAlign: 'left', fontWeight: sel ? 800 : 600
+                  }) }, t.term);
+              })
+            ),
+            pickedT && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedT.term),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔍 Definition: '), pickedT.def),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, '📏 Conventional cutoff: '), pickedT.conventionalCutoff),
+              h('p', { style: { margin: 0, padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.warn, color: T.text, fontSize: 12, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '⚠️ Caution: '), pickedT.caution))
+          );
+        }
+
+        function redFlags() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🚩 8 red flags in education research'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Critical reading skills. Most "studies show" claims circulating online have one or more of these issues.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              RESEARCH_RED_FLAGS.map(function(f, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad } },
+                  h('strong', { style: { fontSize: 13, color: T.bad, display: 'block', marginBottom: 4 } }, '🚩 ' + f.flag),
+                  h('p', { style: { margin: '0 0 4px', fontSize: 12, color: T.text, lineHeight: 1.55 } },
+                    h('strong', { style: { color: T.dim } }, 'Example: '), f.example),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                    h('strong', { style: { color: T.good } }, '🎯 What to do: '), f.whatToDo));
+              })
+            )
+          );
+        }
+
+        function findResearch() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔍 Where to find good research'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'Free + paid databases. Most have free patron access via your school + public library.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              WHERE_TO_FIND_RESEARCH.map(function(r, i) {
+                return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 2 } }, r.name),
+                  h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } }, r.desc),
+                  r.url && h('a', { href: r.url, target: '_blank', rel: 'noopener',
+                    style: { fontSize: 11, color: T.link, textDecoration: 'underline' } }, '🔗 ' + r.url.replace(/^https?:\/\//, '')));
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🔬 Research literacy'),
+          h('div', { role: 'tablist', 'aria-label': 'Research literacy sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('hierarchy', '🏆 Hierarchy of evidence'),
+            tabBtn('stats', '📊 Stats terms'),
+            tabBtn('flags', '🚩 Red flags'),
+            tabBtn('find', '🔍 Find research')),
+          rView === 'hierarchy' && hierarchy(),
+          rView === 'stats' && statsTerms(),
+          rView === 'flags' && redFlags(),
+          rView === 'find' && findResearch(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -2568,6 +3244,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'path':          return renderPath();
         case 'glossary':      return renderGlossary();
         case 'memory':        return renderMemory();
+        case 'testAnxiety':   return renderTestAnxiety();
+        case 'sdt':           return renderSDT();
+        case 'researchLit':   return renderResearchLit();
         case 'quiz':          return renderQuiz();
         case 'badges':        return renderBadges();
         case 'resources':     return renderResources();
