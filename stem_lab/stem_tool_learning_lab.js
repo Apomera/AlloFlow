@@ -1860,7 +1860,274 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   ];
 
   // ─────────────────────────────────────────────────────────
-  // SECTION 13: KNOWLEDGE QUIZ — 40 questions across all modules
+  // SECTION 12.16: MTSS / RTI + UNIVERSAL SCREENING
+  // The framework that organizes most of school-psych work in 2026.
+  // Tier 1 / 2 / 3 model + universal screening + decision-making.
+  // ─────────────────────────────────────────────────────────
+  var MTSS_FOUNDATIONS = {
+    what: 'MTSS = Multi-Tiered System of Supports. An umbrella framework that combines academic (RTI = Response to Intervention) and behavioral (PBIS = Positive Behavioral Interventions and Supports) tiered supports into one system. Replaced the old "wait to fail" model where students had to fail before getting help.',
+    purpose: 'Catch struggling students EARLY using universal screening, deliver increasingly intensive evidence-based interventions, monitor response to those interventions, and use that data to make decisions — including special-education eligibility decisions.',
+    tier1: 'TIER 1 — UNIVERSAL (~80% of students). High-quality core instruction + universal screening 3x/year (fall/winter/spring). All students get this. If MORE than ~20% of students are below benchmark in Tier 1, the issue is core instruction, NOT the students.',
+    tier2: 'TIER 2 — TARGETED (~15-20% of students). Small-group evidence-based intervention IN ADDITION TO Tier 1. Typically 20-30 min, 3-5x/week, 6-12 weeks. Progress monitoring 1-2x/month using brief curriculum-based measures.',
+    tier3: 'TIER 3 — INTENSIVE (~3-5% of students). Individualized or very small-group intervention with significantly more time + intensity. Weekly progress monitoring. Often a step toward special-education evaluation if response is inadequate.',
+    schoolPsychRole: 'School psych in MTSS: leads/co-leads data team meetings, runs/interprets universal screening + diagnostic assessment, consults on Tier 2 + 3 interventions, conducts comprehensive evaluations for SpEd eligibility when warranted, helps the team make data-based decisions for tier movement.'
+  };
+
+  var MTSS_SCREENING_TOOLS = [
+    { id: 'dibels', domain: 'Early literacy K-6', name: 'DIBELS 8th Edition (mclasshome.com)',
+      what: 'Dynamic Indicators of Basic Early Literacy Skills. 1-min fluency probes for letter naming, phonemic awareness, decoding, oral reading fluency, retell.',
+      use: 'Universal screening 3x/year + progress monitoring weekly/biweekly for Tier 2 + 3.', cost: 'Free benchmark version; mClass paid version' },
+    { id: 'aimsweb', domain: 'Reading + math K-12', name: 'aimswebPlus (Pearson)',
+      what: 'Brief (1-3 min) curriculum-based measures across reading + math domains.',
+      use: 'Universal screening + frequent progress monitoring.', cost: 'Paid subscription' },
+    { id: 'mclass', domain: 'Early literacy K-3', name: 'mClass with DIBELS 8',
+      what: 'iPad-based assessment platform combining DIBELS with structured-literacy diagnostics.',
+      use: 'Districts moving to structured-literacy approach (post-Reading Wars).', cost: 'Paid' },
+    { id: 'star', domain: 'Reading + math K-12', name: 'STAR (Renaissance)',
+      what: 'Computer-adaptive screening + progress monitoring across reading + math.',
+      use: 'Universal screening 2-3x/year. Generates growth + percentile data.', cost: 'Paid' },
+    { id: 'nwea', domain: 'Reading + math + science K-12', name: 'NWEA MAP Growth',
+      what: 'Computer-adaptive achievement assessment. RIT scale enables growth tracking across years.',
+      use: 'Universal screening 2-3x/year. Strong national norms.', cost: 'Paid' },
+    { id: 'saebrs', domain: 'Behavioral + SEL K-12', name: 'SAEBRS (FastBridge / Illuminate)',
+      what: 'Social, Academic, Emotional Behavior Risk Screener. Brief (1-3 min per student) teacher-rating screener.',
+      use: 'Behavioral universal screening — the SAME way you screen academics. Most schools STILL skip this even though it\'s the missing piece.', cost: 'Paid bundle' },
+    { id: 'bimas', domain: 'Behavioral + SEL K-12', name: 'BIMAS-2 (Pearson / Edumetrisis)',
+      what: 'Behavior Intervention Monitoring Assessment System. Multi-rater behavioral screening.',
+      use: 'Behavioral universal screening + progress monitoring.', cost: 'Paid' },
+    { id: 'pls', domain: 'Phonics screening 6+', name: 'Phonics Screening Inventory',
+      what: 'Diagnostic screen for older students with decoding gaps. Identifies specific phonics holes.',
+      use: 'When MS/HS students fail reading-comprehension screening — confirms whether decoding is the underlying gap.', cost: 'Free options exist' }
+  ];
+
+  var MTSS_DECISION_FRAMEWORK = [
+    { id: 'tier1-class', icon: '👥', when: '>20% of class is below benchmark on universal screener',
+      what: 'The issue is CORE INSTRUCTION, not individual students. Tier-2 interventions won\'t fix this.',
+      action: 'Coach the teacher / strengthen Tier 1 first. Audit the curriculum. Add scaffolds. Then re-screen.' },
+    { id: 'tier1-school', icon: '🏫', when: '>20% of GRADE LEVEL or SCHOOL is below benchmark',
+      what: 'It\'s a Tier-1 systems problem — curriculum, training, or implementation. Pulling kids into Tier 2 in this case overwhelms intervention capacity.',
+      action: 'School-wide instructional intervention. Curriculum review. PD. Then re-screen. THIS is where psych + admin lead, not just classroom teachers.' },
+    { id: 'move-to-2', icon: '⬆️', when: 'Student below benchmark on screener AND classroom data confirms struggle',
+      what: 'Move to Tier 2 with a specific evidence-based intervention matched to the diagnostic profile.',
+      action: 'Set a goal (e.g., 50 WCPM growth in 8 weeks). Progress monitor 1-2x/month. Plan to review at 6-8 weeks.' },
+    { id: 'tier2-stay', icon: '🔁', when: 'Tier-2 progress monitoring shows growth toward goal',
+      what: 'Intervention is working. Continue.',
+      action: 'Stay in Tier 2 until benchmark is reached, then fade with continued monitoring.' },
+    { id: 'tier2-fail', icon: '⚠️', when: 'Tier-2 progress monitoring shows inadequate response after 6-8 weeks of FIDELITY-CHECKED intervention',
+      what: 'First check: is the intervention being delivered as designed (fidelity)? If yes — escalate.',
+      action: 'Move to Tier 3 OR refer for comprehensive evaluation, depending on profile + state rules.' },
+    { id: 'eval', icon: '📋', when: 'Tier 3 inadequate response, OR clear severity warranting bypass of staged tiers',
+      what: 'Comprehensive evaluation for special-education eligibility. School psych leads.',
+      action: 'Multi-source assessment (cognitive + achievement + behavioral + adaptive as appropriate). IEP team determines eligibility.' }
+  ];
+
+  var MTSS_PITFALLS = [
+    'Skipping behavioral screening. Most schools screen reading + math but not behavior, even though behavioral risk predicts academic risk.',
+    'Treating MTSS as a "pre-referral hurdle" rather than ongoing prevention. MTSS is NOT just a delay tactic before SpEd evaluation.',
+    'Failing to check intervention fidelity. If the intervention wasn\'t actually delivered as designed, the "no response" data is meaningless.',
+    'Tiering up before tackling Tier 1. If 40% of a class is below benchmark, no Tier-2 plan can serve them all.',
+    'Equity blind spots. Disproportionate Tier 2 + 3 placement for students of color or EL students often signals biased screening or underserving Tier 1, not actual need.',
+    'No progress monitoring. "We did the intervention" is not data. WEEKLY data points across an intervention period are.'
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.17: WRITING PROCESS PEDAGOGY
+  // Bereiter + Scardamalia knowledge-telling vs knowledge-transforming.
+  // The 5 pillars + writing-as-thinking-tool. Where most teaching breaks.
+  // ─────────────────────────────────────────────────────────
+  var WRITING_FOUNDATIONS = {
+    bigIdea: 'Writing is a thinking tool, not just a product. Emig 1977 + Klein 1999. The act of generating + revising text forces conceptual reorganization that talking + reading don\'t. This is why "write to think" works.',
+    knowledgeTelling: 'Knowledge-telling (novice mode, Bereiter + Scardamalia 1987): write down what you already know on the topic. Brain-dump pattern. The text doesn\'t change your thinking — it just records it.',
+    knowledgeTransforming: 'Knowledge-transforming (expert mode): writing IS thinking. The writer alternates between content problems ("what do I think about X?") and rhetorical problems ("how do I say this clearly?"), and EACH revision changes the underlying thinking. This is what we want students to do.',
+    productVsProcess: 'Common failure: teachers grade only the final product. Students get a B+ with comments like "good ideas." But the teacher never saw the process — never knew if the student knowledge-told or knowledge-transformed. Teaching the process is teaching the thinking.',
+    cognitiveLoad: 'Writing is one of the most cognitively demanding tasks humans do. It requires simultaneously: generating ideas, organizing them, choosing words, building sentences, monitoring conventions, and self-evaluating. Novices crash. Scaffolded process explicitly distributes this load across stages.',
+    research: 'Hillocks 1986 meta-analysis: traditional grammar instruction has near-zero or NEGATIVE effect on writing quality. The most effective approach: explicit teaching of process + structure + sentence-combining + inquiry. Graham + Perin 2007 (Writing Next): same conclusion + adds peer assistance + writing for diverse purposes.'
+  };
+
+  var WRITING_PILLARS = [
+    { id: 'planning', icon: '🧠', name: 'Planning (pre-writing)',
+      what: 'Generating + organizing ideas BEFORE drafting. Brainstorming, outlining, concept mapping, talking it through.',
+      classroom: '5-15 min minimum. Multiple strategies — list, web, freewrite, talk-with-partner. Honor different planners (some need lots of pre-writing; some need to draft to discover). Make planning visible so students can SEE what good planners do.',
+      avoid: 'Skipping planning. Forcing one planning style. Grading the plan as if it were a draft.' },
+    { id: 'drafting', icon: '✍️', name: 'Drafting',
+      what: 'Getting ideas onto the page in rough form. Speed + flow over correctness. Discovery happens here.',
+      classroom: 'Reduce surface-level concerns: "spelling doesn\'t count YET." Allow imperfect first drafts. Conferences during drafting catch derailment before it solidifies.',
+      avoid: 'Demanding polished prose on the first attempt. Grading drafts on conventions.' },
+    { id: 'revising', icon: '🔄', name: 'Revising (re-seeing)',
+      what: 'Changing the IDEAS + STRUCTURE + ARGUMENT. NOT spelling/grammar (that\'s editing). The hardest + most powerful stage.',
+      classroom: 'Teach revision moves explicitly: cut, expand, reorder, add evidence, sharpen claim, develop counterargument. Model with your own draft. Use peer feedback structured around content, not "looks good."',
+      avoid: 'Conflating revising with editing. Treating revision as optional. Skipping straight to proofreading.' },
+    { id: 'editing', icon: '✏️', name: 'Editing',
+      what: 'Surface-level corrections — grammar, spelling, punctuation, sentence boundaries.',
+      classroom: 'Teach editing AS A SKILL using mentor texts. Editing checklists keyed to that grade\'s targets. Sentence-combining instruction (proven effective).',
+      avoid: 'Treating editing as the only kind of teacher feedback. Bleeding red ink across drafts that haven\'t been revised yet.' },
+    { id: 'publishing', icon: '🌟', name: 'Publishing (sharing)',
+      what: 'Audience exists. Real readers — classmates, families, school community, online. The writing GOES somewhere.',
+      classroom: 'Class anthology, blog, podcast, presentation, gallery walk, school newspaper. Real audience drives effort + revision. The motivation + identity work is huge.',
+      avoid: 'Writing only for the teacher\'s gradebook. Never sharing student writing publicly.' }
+  ];
+
+  var WRITING_FRAMEWORKS = [
+    { id: '6plus1', icon: '📊', name: '6+1 Traits of Writing',
+      what: 'Education Northwest framework. The 6 traits: ideas, organization, voice, word choice, sentence fluency, conventions. The "+1" is presentation.',
+      use: 'Common rubric language across grade bands. Helps move feedback BEYOND "good job" toward specific, actionable trait-level guidance.' },
+    { id: 'srsd', icon: '🎯', name: 'Self-Regulated Strategy Development (SRSD)',
+      what: 'Graham + Harris. Strongest-evidence writing intervention for struggling writers + students with LD. Explicit instruction in genre-specific strategies + self-regulation skills (goal-setting, self-monitoring).',
+      use: 'Tier 2/3 writing intervention. POW + TREE for opinion writing; STOP + DARE for persuasive; etc.' },
+    { id: 'mentortexts', icon: '📚', name: 'Mentor texts',
+      what: 'Lucy Calkins / Katie Wood Ray tradition. Read like writers — analyze how published authors do specific moves, then try them.',
+      use: 'Survives the Reading Wars critique because the move-by-move analysis is not whole-language guessing — it\'s explicit study of craft.' },
+    { id: 'peerreview', icon: '🤝', name: 'Structured peer review',
+      what: 'Peer feedback works when the structure is explicit. Templates that ask specific questions ("Where did the writer\'s argument confuse me?") not vague reactions ("nice job!").',
+      use: 'Frees teacher to confer with priority students while peers do trait-level feedback for everyone else.' }
+  ];
+
+  var WRITING_FAILURES = [
+    'Grading only the final product → never see the process. Add brief process portfolios or writing journals.',
+    'Treating grammar drills as writing instruction (Hillocks: near-zero effect). Replace with sentence-combining + revision in real drafts.',
+    'No real audience beyond the teacher. Add publishing — class blog, school newspaper, gallery walk, family night.',
+    'Same prompt for every student → kills voice + agency. Include genuine choice in topic, format, or audience.',
+    'Praise without specificity ("good job"). Replace with trait-level feedback ("your second paragraph turned the argument — what made you decide to put it there?").',
+    'Bleeding red ink across drafts that haven\'t been revised yet. Editing belongs LATE, not early.'
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.18: GROUP WORK + COLLABORATIVE LEARNING
+  // Slavin + Aronson + Kagan. Why most "group work" fails + how to design it well.
+  // ─────────────────────────────────────────────────────────
+  var GROUP_FOUNDATIONS = {
+    bigIdea: 'Collaborative learning works only when two non-negotiables are present: positive interdependence (group success requires every member) AND individual accountability (each person\'s contribution is assessed). Slavin\'s decades of meta-analyses confirm this.',
+    posInterdep: 'Positive interdependence: the group can\'t succeed without every member. Built through shared goals, divided resources, complementary roles, joint products. Without it, groups split into "doers and watchers."',
+    indivAccount: 'Individual accountability: every member is assessed on their individual contribution + understanding. Built through individual quizzes after group work, randomized "report-out" picks, jigsaw structures. Without it, free-riding takes over.',
+    cooperation: 'Why cooperation works (when designed well): pre-teaches social skills + offloads cognitive load by distributing thinking across members + creates motivation through belonging + develops perspective-taking. Vygotskian: the more capable peer scaffolds the learner.',
+    failures: 'Why most "group work" fails: teacher assigns 4 kids + a poster + walks away. No interdependence (one kid does it all). No accountability (one grade for all). No structure (chaos). Result: stronger students resent it, weaker students disengage, teacher learns to avoid it.'
+  };
+
+  var GROUP_STRUCTURES = [
+    { id: 'jigsaw', icon: '🧩', name: 'Jigsaw method (Aronson 1971)',
+      what: 'Each student becomes "expert" in one piece of the content (e.g., one of 4 sources on the Civil War). They meet in expert groups to deepen understanding, then return to home groups + teach their piece.',
+      strengths: 'Strongest interdependence: home group LITERALLY cannot complete the assignment without each member. Forces individual accountability (you must understand your piece well enough to teach it). Reduces inter-group conflict (Aronson designed it during desegregation in Texas schools).',
+      weaknesses: 'Requires content that breaks cleanly into roughly equal pieces. Extra setup time. Doesn\'t work well for procedural skills.' },
+    { id: 'numheads', icon: '🔢', name: 'Numbered Heads Together (Kagan)',
+      what: 'Students count off 1-4 in their group. Teacher poses a question. Group discusses + makes sure ALL members can answer. Teacher calls a number → that person answers for the group.',
+      strengths: 'Built-in individual accountability. Forces stronger students to teach the weaker ones (they don\'t know who will be called). Quick — fits any lesson.',
+      weaknesses: 'Stronger students sometimes still dominate the discussion; weaker students may memorize without understanding.' },
+    { id: 'thinkpair', icon: '🤝', name: 'Think-Pair-Share',
+      what: 'Individual think (1-2 min) → pair discuss (2-3 min) → share with class. The simplest cooperative structure.',
+      strengths: 'Almost zero setup. Activates every student (vs. "raise your hand"). Pair discussion lowers fear-of-wrong-answer.',
+      weaknesses: 'Light interdependence. Best as a tool, not the main course.' },
+    { id: 'reciprocal', icon: '📖', name: 'Reciprocal teaching (Palincsar + Brown)',
+      what: 'Small group reads a text together. Members rotate through 4 roles: predict, question, clarify, summarize. Teacher models heavily at first, then fades.',
+      strengths: 'Strong evidence base for reading comprehension. Explicit metacognitive scaffold. Roles distribute cognitive load.',
+      weaknesses: 'Requires modeling time. Roles can become rote without ongoing teacher coaching.' },
+    { id: 'productive', icon: '⚖️', name: 'Productive struggle in groups (Hiebert + Grouws)',
+      what: 'Group works on a task at the edge of difficulty. Teacher hovers but doesn\'t rescue. Group must wrestle with the math/science problem.',
+      strengths: 'Builds genuine reasoning + persistence. Mirrors how scientists + mathematicians actually work.',
+      weaknesses: 'Hard to implement well — teachers default to rescuing too quickly. Requires norm-setting that "stuck is OK + expected."' },
+    { id: 'roles', icon: '🎭', name: 'Structured roles',
+      what: 'Each member has an explicit role: facilitator, recorder, materials manager, time-keeper, presenter. Roles rotate across tasks.',
+      strengths: 'Reduces dominance + free-riding. Builds specific social/academic skills.',
+      weaknesses: 'Needs explicit teaching of each role. Can feel rigid for shorter tasks.' }
+  ];
+
+  var GROUP_FAILURES = [
+    { mode: 'Free riders', why: 'No individual accountability. One student does all work, others coast.',
+      fix: 'Individual quiz after group work. Randomized report-out (any member can be called). Individual artifact required IN ADDITION TO group product.' },
+    { mode: 'Dominators', why: 'No structured turn-taking. Strong/loud student takes over.',
+      fix: 'Numbered Heads Together. Talk-tokens. Roles. Explicit norm: "everyone explains the answer before we move on."' },
+    { mode: 'Fake collaboration', why: 'Group submits one product but each kid worked alone. No interdependence built into the task.',
+      fix: 'Tasks that genuinely REQUIRE interdependence (Jigsaw, divided resources, complementary roles).' },
+    { mode: 'Off-task chaos', why: 'No clear roles, no time pressure, no accountability moment.',
+      fix: 'Tight time limits. Visible product expected. Teacher circulates with check-ins. Norms taught + reinforced.' },
+    { mode: 'Inequitable participation', why: 'Status differences (gender, race, perceived ability) silence some voices.',
+      fix: 'Status interventions (Cohen + Lotan): assign each member a real intellectual contribution. Praise specific intellectual moves publicly. Multi-ability tasks where everyone has something to offer.' }
+  ];
+
+  var GROUP_WHEN_NOT = [
+    'When the task is genuinely individual (silent reading, individual writing draft, individual practice for fluency).',
+    'When the cost of setup exceeds the benefit (5-min review questions don\'t need 4-person groups).',
+    'When norms haven\'t been built. Throwing students into groups before teaching cooperative norms guarantees failure.',
+    'When stakes are very high (some testing contexts, some portfolio assessments) and individual accountability matters more than collaborative learning.',
+    'When the goal is automaticity / drill (math facts, spelling) — there are better structures (e.g., paired flashcard practice) than open-ended groups.'
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.19: MATH ANXIETY + MATH PEDAGOGY
+  // Ramirez + Boaler + Hiebert + Grouws. Distinct from test anxiety.
+  // Cultural transmission problem: teachers pass their own math anxiety on.
+  // ─────────────────────────────────────────────────────────
+  var MATH_FOUNDATIONS = {
+    distinct: 'Math anxiety is DISTINCT from general test anxiety (Ramirez et al. 2018). Specific physiological + cognitive response to math content. Working-memory hijack: anxiety occupies the same WM resources needed for math, so the student literally has fewer resources to compute with. This is why "calm down + try harder" doesn\'t work.',
+    transmission: 'Cultural transmission problem (Beilock et al. 2010): teachers + parents with math anxiety transmit it to students — especially same-gender adults to children. "I was never a math person either" is one of the most damaging things an adult can say to a struggling child.',
+    identity: 'The "I\'m not a math person" identity is uniquely sticky in US culture. Mathematics is the only subject where intelligent adults publicly declare their incompetence + treat it as identity, not gap. Compare: no one says "I\'m not a reading person" with pride.',
+    mindset: 'Boaler\'s mathematical mindset work: math ability is built, not born. Mistakes literally grow neural connections. Speed is NOT a marker of mathematical talent — depth of reasoning is.',
+    research: 'Productive struggle (Hiebert + Grouws 2007): the right amount of difficulty produces the strongest math learning. Too easy = no learning. Too hard = collapse. The sweet spot requires teacher judgment + relationship.'
+  };
+
+  var MATH_CONCEPT_VS_PROC = {
+    procedural: 'Procedural fluency: knowing HOW to execute steps (the algorithm). Long division. The quadratic formula. Both essential AND necessary.',
+    conceptual: 'Conceptual understanding: knowing WHY the procedure works. Why does the long-division algorithm produce the right answer? Why does the quadratic formula come from completing the square?',
+    bothMatter: 'Hiebert + Lefevre 1986: BOTH matter. Strong students have both, integrated. Weak students often have procedural fluency without conceptual grounding (works until they encounter a non-routine problem) OR conceptual ideas without procedural fluency (can\'t reliably get to an answer).',
+    danger: 'The danger is treating these as either-or. "Concept-only" instruction leaves students unable to compute. "Procedure-only" instruction leaves students unable to reason. The integration is the goal — and that takes intentional design.',
+    nctm: 'NCTM Principles to Actions (2014): defines 5 mathematical practices teachers should aim for: make sense of problems + reason quantitatively + construct viable arguments + use appropriate tools + attend to precision.'
+  };
+
+  var MATH_PEDAGOGY_MOVES = [
+    { id: 'numbertalks', icon: '🗣️', name: 'Number talks (Parrish; Boaler)',
+      what: '5-15 min daily routine. Teacher poses a problem. Students compute MENTALLY (no paper). Teacher collects + records 2-4 different strategies. Class discusses how they\'re related.',
+      why: 'Builds flexible number sense + multiple strategies + verbal reasoning + mathematical identity. Slows speed-as-marker-of-talent norm. Validates multiple ways to think.',
+      example: '"What\'s 18 × 5?" Strategies surface: (10×5)+(8×5); 18×10/2; 20×5−2×5. All correct. Math becomes about reasoning, not racing.' },
+    { id: 'lowfloorhighceiling', icon: '🚪', name: 'Low-floor / high-ceiling tasks',
+      what: 'Tasks that everyone can enter (low floor) AND that have meaningful complexity for advanced students (high ceiling). Example: "Find as many ways as you can to make 12."',
+      why: 'Differentiates without segregating. Honors mixed readiness. Boaler\'s research: low-floor/high-ceiling tasks produce stronger learning + more equitable achievement than tracked instruction.',
+      example: '"How many rectangles can you find on a 5×5 grid?" Beginner: count 1×1 squares. Advanced: derive the formula.' },
+    { id: 'productiveStruggle', icon: '⚖️', name: 'Productive struggle',
+      what: 'Set tasks just BEYOND current automatic competence. Watch carefully. Coach without rescuing. Norm-build that struggle = learning, not failure.',
+      why: 'The right amount of difficulty produces the strongest learning (Hiebert + Grouws). Rescuing too quickly costs the learning + signals "I don\'t think you can do this."',
+      example: 'Pose a problem. Wait 3 min before any teacher input. Then ask "what have you tried? What\'s confusing?" before giving hints — and even hints should be questions, not answers.' },
+    { id: 'mistakes', icon: '🌱', name: 'Mistakes-grow-the-brain norm',
+      what: 'Explicitly teach Boaler\'s research finding: mistakes literally grow neural connections. Display mistakes publicly + analyze them. Praise the THINKING in a wrong answer when the reasoning was reasonable.',
+      why: 'Disrupts the "fast + correct = smart" cultural script. Builds risk-tolerance which is a prerequisite for productive struggle.',
+      example: '"My favorite mistake" board. "Why is this wrong AND interesting?" debriefs.' },
+    { id: 'multipleRep', icon: '🔄', name: 'Multiple representations',
+      what: 'Same concept shown 3+ ways: visual, numeric, algebraic, verbal, manipulative. Students translate between representations.',
+      why: 'Conceptual understanding lives in the connections between representations. UDL principle. Reduces "I get it one way, can\'t do the other."',
+      example: 'Linear equation: graph + table + equation + verbal description. Students start in their stronger representation, then build bridges.' },
+    { id: 'discourse', icon: '💬', name: 'Mathematical discourse',
+      what: 'Students explain their reasoning out loud + critique each other\'s reasoning. Teacher facilitates without resolving. "Why?" questions over "what?" questions.',
+      why: 'Verbalization forces conceptual reorganization (writing-as-thinking, applied to math). Builds argument + reasoning. Aligns with NCTM Standards for Mathematical Practice.',
+      example: '"Convince me." "Convince a friend." "Convince a skeptic." Three increasing levels of mathematical argumentation.' }
+  ];
+
+  var MATH_ANXIETY_INTERVENTIONS = [
+    { id: 'expressive', name: 'Expressive writing pre-test',
+      what: '7-10 min writing about test-related fears IMMEDIATELY before a math test (Ramirez + Beilock 2011).',
+      why: 'Frees up working memory occupied by anxiety. Studies showed equity-closing effects.', evidence: 'Ramirez + Beilock 2011 (Science).' },
+    { id: 'untimed', name: 'Reduce timed-pressure norms',
+      what: 'Replace timed math drills with conceptual problems where reasoning matters more than speed.',
+      why: 'Speed-as-talent culture is one of the strongest drivers of math anxiety (Boaler).', evidence: 'Boaler 2014; multiple meta-analyses on testing speed + anxiety.' },
+    { id: 'errorAnalysis', name: 'Error analysis routines',
+      what: 'Make mistakes routine + analyzed publicly. Mistake-of-the-day. "What was the thinking that led to this answer?"',
+      why: 'Disarms shame. Reframes mistakes as data, not character.', evidence: 'Convergent — Boaler, growth mindset literature, RTI literature.' },
+    { id: 'identity', name: 'Disrupt "I\'m not a math person"',
+      what: 'Catch the phrase + replace it. "You\'re a math-person-in-progress." Show real mathematicians from diverse backgrounds. Talk about your OWN math struggles.',
+      why: 'Identity is malleable in adolescence. Targeted intervention shifts identity + achievement together.', evidence: 'Boaler 2016; Stanford youcubed materials; identity-belief intervention research.' },
+    { id: 'adultSelfCheck', name: 'Adult self-check (parents + teachers)',
+      what: 'Adults: stop saying "I was never a math person" to kids. Replace with "this is hard for me too — let\'s work it out."',
+      why: 'Beilock et al. 2010 — math-anxious adults transmit anxiety to children, especially same-gender. The cultural script is changeable.', evidence: 'Beilock 2010 (PNAS); Maloney et al. 2015.' }
+  ];
+
+  var MATH_PITFALLS = [
+    'Treating speed as a marker of mathematical talent. Real mathematicians work slowly + carefully — speed is mostly about practiced procedural fluency, not depth.',
+    'Procedure-only instruction. Students master "the steps" without understanding why — and crash on novel problems.',
+    'Concept-only instruction. Students "understand" but can\'t reliably compute — and crash on standardized assessments.',
+    '"Answer-getting" culture (Phil Daro). Students + teachers agree the goal is to get the answer fast. Reasoning becomes irrelevant.',
+    'Adults transmitting their own math anxiety to children. The "I was never a math person" comment is one of the most damaging things to say.',
+    'Tracking too early. Locking 4th-graders into "math levels" creates self-fulfilling prophecies (Boaler\'s research).'
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 13: KNOWLEDGE QUIZ — 65 questions across all modules
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
     { id: 'q1', icon: '🧠',
@@ -2102,7 +2369,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     { id: 'q60', icon: '💚',
       stem: 'A trauma-informed teacher\'s key reframe is "behavior is communication." What does this mean in practice?',
       choices: ['Behavior is meaningless', 'Disruptive behavior often signals an unmet need or dysregulated state. "What happened to you?" replaces "What\'s wrong with you?" Co-regulate before correcting.', 'Behavior should be ignored', 'Punishment works'],
-      correct: 1, why: 'Trauma-informed reframe (Perry, van der Kolk, others). When a student is dysregulated, no learning or behavior change is possible until the nervous system is regulated. Calm presence + connection BEFORE correction. NOT therapy — just classroom realism.' }
+      correct: 1, why: 'Trauma-informed reframe (Perry, van der Kolk, others). When a student is dysregulated, no learning or behavior change is possible until the nervous system is regulated. Calm presence + connection BEFORE correction. NOT therapy — just classroom realism.' },
+    { id: 'q61', icon: '🏗️',
+      stem: 'In an MTSS framework, a teacher reports that 45% of her 4th-grade class is below benchmark on the fall reading screener. What\'s the right next move?',
+      choices: ['Move all 45% to Tier 2', 'Audit + strengthen Tier 1 instruction first — when MORE than ~20% are below benchmark, the issue is core instruction, not individual students. Tier-2 capacity can\'t absorb 45% of a class.', 'Refer all 45% for SpEd evaluation', 'Wait until winter screening'],
+      correct: 1, why: 'A foundational MTSS rule: if more than ~20% of students are below benchmark in Tier 1, the issue is the core instruction, NOT the kids. Tier 2 should serve ~15-20%, not half the class. The fix is curriculum/coaching/scaffolding at Tier 1.' },
+    { id: 'q62', icon: '✍️',
+      stem: 'Bereiter + Scardamalia distinguish "knowledge-telling" from "knowledge-transforming" writing. Why does this matter?',
+      choices: ['They\'re the same thing', 'Knowledge-telling is the novice "brain dump" pattern; knowledge-transforming uses the writing process to reorganize thinking. The pedagogical goal is to teach students to transform, not just tell — by teaching the writing PROCESS, not just grading the product.', 'Only fiction matters', 'Grammar is the issue'],
+      correct: 1, why: 'Bereiter + Scardamalia 1987. Knowledge-telling: write what you already know — text records but doesn\'t change thinking. Knowledge-transforming: writing IS thinking — revision changes the underlying conceptual structure. Teachers who grade only the final product never see which mode the student is in.' },
+    { id: 'q63', icon: '🤝',
+      stem: 'Slavin\'s research on collaborative learning identifies which TWO non-negotiables for group work to actually work?',
+      choices: ['Same-ability grouping + competition', 'Positive interdependence (group can\'t succeed without every member) AND individual accountability (each person is assessed individually)', 'Long meetings + lectures', 'Quiet + uniformity'],
+      correct: 1, why: 'Slavin\'s decades of meta-analyses converge: without BOTH positive interdependence + individual accountability, groups devolve into free-riding (no accountability) or fake collaboration (no interdependence). Structures like Jigsaw build both in by design.' },
+    { id: 'q64', icon: '🔢',
+      stem: 'A 4th-grade teacher tells her class "I was never a math person either." What does the research say about this comment?',
+      choices: ['It\'s harmless honesty', 'Beilock et al. 2010 — math-anxious adults transmit math anxiety to children, especially same-gender. The "I was never a math person" comment is one of the most damaging cultural scripts adults can model. Replace with "this is hard for me too — let\'s figure it out together."', 'It builds rapport', 'It improves math scores'],
+      correct: 1, why: 'Math anxiety is culturally transmitted (Beilock 2010 PNAS; Maloney 2015). The "I\'m not a math person" identity is uniquely sticky in US culture — and adults with that identity pass it on. Adults: stop saying it. Replace with "let\'s work it out" — modeling productive struggle.' },
+    { id: 'q65', icon: '⚖️',
+      stem: 'Hiebert + Lefevre 1986 distinguish conceptual understanding from procedural fluency in mathematics. What\'s the right relationship between them?',
+      choices: ['Procedural only — concepts are fluff', 'Conceptual only — procedures are rote', 'BOTH matter, integrated. Procedure-only students crash on novel problems; concept-only students can\'t reliably compute. Strong students have integrated both.', 'Neither matters'],
+      correct: 2, why: 'Hiebert + Lefevre 1986. The integration is the goal. Procedure-only instruction (the old "drill + kill" model) leaves students unable to reason. Concept-only instruction leaves students unable to compute. The goal is BOTH, integrated — and that takes intentional design.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -2239,7 +2526,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'testAnxiety', icon: '😰', label: 'Test anxiety + performance', desc: 'Yerkes-Dodson, pre/during/after-test routines, 6 calming techniques, when to seek help.' },
               { id: 'mindset', icon: '🌱', label: 'Growth mindset (brief)', desc: 'Dweck. Honest about replication. Links to Growth Mindset SEL tool.' },
               { id: 'myths', icon: '🚫', label: 'Neuromyth debunker', desc: '8 popular beliefs that research rejects.' },
-              { id: 'researchLit', icon: '🔬', label: 'Research literacy', desc: 'Hierarchy of evidence, p-values, effect sizes, replication, red flags, where to find good research.' }
+              { id: 'researchLit', icon: '🔬', label: 'Research literacy', desc: 'Hierarchy of evidence, p-values, effect sizes, replication, red flags, where to find good research.' },
+              { id: 'writing', icon: '✍️', label: 'Writing process pedagogy', desc: 'Bereiter+Scardamalia knowledge-telling vs knowledge-transforming, the 5 pillars, mentor texts, SRSD, 6+1 Traits.' },
+              { id: 'groupWork', icon: '🤝', label: 'Group work that works', desc: 'Slavin\'s 2 non-negotiables, Jigsaw (Aronson), Numbered Heads, productive struggle in groups, when NOT to.' }
             ]
           },
           { id: 'careers', icon: '🏅', name: 'Pedagogy careers + Maine',
@@ -2261,7 +2550,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             desc: 'Topics most teachers + school psychs need but rarely get formal training in.',
             modules: [
               { id: 'reading', icon: '📖', label: 'Reading + literacy science', desc: 'Simple View of Reading, 5 pillars, structured vs balanced literacy, Orton-Gillingham, the reading wars.' },
-              { id: 'trauma', icon: '💚', label: 'Trauma-informed teaching', desc: 'ACEs, behavior as communication, co-regulation, window of tolerance, 6 practices, when to refer.' }
+              { id: 'trauma', icon: '💚', label: 'Trauma-informed teaching', desc: 'ACEs, behavior as communication, co-regulation, window of tolerance, 6 practices, when to refer.' },
+              { id: 'mtss', icon: '🏗️', label: 'MTSS / RTI + universal screening', desc: 'Tier 1/2/3 framework, 8 screening tools (DIBELS, AIMSweb, NWEA, SAEBRS), decision rules, school-psych role.' },
+              { id: 'mathPed', icon: '🔢', label: 'Math anxiety + math pedagogy', desc: 'Distinct from test anxiety, conceptual vs procedural, productive struggle, number talks, Boaler mindset, identity disruption.' }
             ]
           },
           { id: 'progress', icon: '📊', name: 'Progress + reference',
@@ -2269,7 +2560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             modules: [
               { id: 'path', icon: '🛤️', label: 'Recommended learning path', desc: 'New here? 4-week curated walkthrough through the modules.' },
               { id: 'glossary', icon: '📖', label: 'Glossary', desc: '50+ pedagogy + cog-sci terms with category filter.' },
-              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '45 questions across the full curriculum.' },
+              { id: 'quiz', icon: '🧪', label: 'Knowledge quiz', desc: '65 questions across the full curriculum.' },
               { id: 'badges', icon: '🏆', label: 'Badge gallery', desc: 'All earned + unlockable badges.' },
               { id: 'resources', icon: '📚', label: 'Resources', desc: 'Cited papers + free + paid tools.' }
             ]
@@ -3047,11 +3338,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             { id: 'mt-aware', icon: '📵', name: 'Multitasking Aware', how: 'Tap any multitasking cost source.' },
             { id: 'anxiety-toolkit', icon: '😰', name: 'Anxiety Toolkit', how: 'Tap any calming technique in the Test Anxiety module.' },
             { id: 'myth-buster', icon: '🚫', name: 'Myth Buster', how: 'Tap any neuromyth in the debunker.' },
-            { id: 'research-literate', icon: '🔬', name: 'Research Literate', how: 'Tap any stats term in Research Literacy.' }
+            { id: 'research-literate', icon: '🔬', name: 'Research Literate', how: 'Tap any stats term in Research Literacy.' },
+            { id: 'writing-explorer', icon: '✍️', name: 'Writing Process Explorer', how: 'Tap any of the 5 writing-process pillars.' },
+            { id: 'group-strategist', icon: '🤝', name: 'Group Work Strategist', how: 'Tap any of the 6 cooperative-learning structures.' }
           ] },
           { group: '👩‍🏫 Specialized teaching', items: [
             { id: 'reading-explorer', icon: '📖', name: 'Reading Science Explorer', how: 'Tap any of the 5 Pillars of Reading.' },
-            { id: 'trauma-informed', icon: '💚', name: 'Trauma-Informed Aware', how: 'Tap any of the 6 trauma-informed practices.' }
+            { id: 'trauma-informed', icon: '💚', name: 'Trauma-Informed Aware', how: 'Tap any of the 6 trauma-informed practices.' },
+            { id: 'mtss-explorer', icon: '🏗️', name: 'MTSS Explorer', how: 'Tap any of the 8 universal-screening tools in the MTSS module.' },
+            { id: 'math-pedagogy', icon: '🔢', name: 'Math Pedagogy Explorer', how: 'Tap any of the 6 math pedagogy moves (number talks, productive struggle, etc.).' }
           ] },
           { group: '🏅 Career', items: [
             { id: 'career-explorer', icon: '🍎', name: 'Career Explorer', how: 'Tap any education career path.' }
@@ -3062,7 +3357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             { id: 'lab-master', icon: '🏆', name: 'Lab Master', how: 'Complete all 6 lab simulator cases with 70%+ scores.' }
           ] },
           { group: '🧪 Self-test + path', items: [
-            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 45-question knowledge quiz.' },
+            { id: 'quiz-passed', icon: '🧪', name: 'Quiz Passed', how: 'Score 80%+ on the 65-question knowledge quiz.' },
             { id: 'path-graduate', icon: '🛤️', name: 'Learning Path Graduate', how: 'Mark all 14 Recommended Learning Path modules as visited.' },
             { id: 'glossary-user', icon: '📖', name: 'Glossary User', how: 'Search the glossary at least once.' }
           ] }
@@ -4536,6 +4831,310 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
 
       // ─────────────────────────────────────────
+      // MTSS / RTI view
+      // ─────────────────────────────────────────
+      function renderMTSS() {
+        var picked = d.mtssPicked || null;
+        var pickedTool = picked ? MTSS_SCREENING_TOOLS.find(function(t) { return t.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto', color: T.text } },
+          backBar('🏗️ MTSS / RTI + universal screening'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🏗️ The framework'),
+            [
+              { label: '🔍 What it is', val: MTSS_FOUNDATIONS.what },
+              { label: '🎯 Purpose', val: MTSS_FOUNDATIONS.purpose },
+              { label: '🟢 Tier 1', val: MTSS_FOUNDATIONS.tier1 },
+              { label: '🟡 Tier 2', val: MTSS_FOUNDATIONS.tier2 },
+              { label: '🔴 Tier 3', val: MTSS_FOUNDATIONS.tier3 },
+              { label: '🧠 School-psych role', val: MTSS_FOUNDATIONS.schoolPsychRole }
+            ].map(function(r, i) {
+              return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+            })
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🛠️ Universal screening tools (8)'),
+          h('p', { style: { margin: '0 0 8px', fontSize: 11, color: T.dim, lineHeight: 1.5 } }, 'Tap any tool for details. Most schools screen reading + math but skip behavioral screening — that\'s a gap to close.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+            MTSS_SCREENING_TOOLS.map(function(t) {
+              var sel = picked === t.id;
+              return h('button', { key: t.id, 'data-ll-focusable': true,
+                'aria-label': t.name + ' — ' + t.domain, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('mtssPicked', sel ? null : t.id); awardBadge('mtss-explorer', 'MTSS Explorer'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', flexDirection: 'column', gap: 2
+                }) },
+                h('span', { style: { fontSize: 12, fontWeight: 800 } }, t.domain),
+                h('span', { style: { fontSize: 11, fontWeight: 600 } }, t.name));
+            })
+          ),
+          pickedTool && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedTool.name),
+            h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedTool.what),
+            h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🎯 Use: '), pickedTool.use),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.warn } }, '💰 Cost: '), pickedTool.cost)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '⚖️ Decision-making framework'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+            MTSS_DECISION_FRAMEWORK.map(function(g) {
+              return h('div', { key: g.id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, g.icon),
+                  h('strong', { style: { fontSize: 12, color: T.text } }, g.when)),
+                h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.accentHi } }, '🔍 What it means: '), g.what),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.good } }, '→ Action: '), g.action));
+            })
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⚠️ Common pitfalls'),
+            MTSS_PITFALLS.map(function(p, i) {
+              return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '• '), p);
+            })
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, '🔗 Cross-link: '),
+            'For deeper coverage of assessment validity + reliability + bias-in-testing, see the Assessment Literacy Lab tool. MTSS uses screening tools whose validity drives every tier-movement decision — bad screening = bad decisions.'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // WRITING PROCESS view
+      // ─────────────────────────────────────────
+      function renderWriting() {
+        var picked = d.writingPicked || null;
+        var pickedP = picked ? WRITING_PILLARS.find(function(p) { return p.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('✍️ Writing process pedagogy'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '✍️ Writing-as-thinking foundations'),
+            [
+              { label: '💡 Big idea', val: WRITING_FOUNDATIONS.bigIdea },
+              { label: '📝 Knowledge-telling (novice)', val: WRITING_FOUNDATIONS.knowledgeTelling },
+              { label: '🔄 Knowledge-transforming (expert)', val: WRITING_FOUNDATIONS.knowledgeTransforming },
+              { label: '⚠️ Product-vs-process trap', val: WRITING_FOUNDATIONS.productVsProcess },
+              { label: '🧠 Cognitive load', val: WRITING_FOUNDATIONS.cognitiveLoad },
+              { label: '🔬 Research', val: WRITING_FOUNDATIONS.research }
+            ].map(function(r, i) {
+              return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+            })
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏗️ The 5 pillars of the writing process'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
+            WRITING_PILLARS.map(function(p) {
+              var sel = picked === p.id;
+              return h('button', { key: p.id, 'data-ll-focusable': true,
+                'aria-label': p.name, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('writingPicked', sel ? null : p.id); awardBadge('writing-explorer', 'Writing Process Explorer'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, p.icon),
+                h('span', null, p.name));
+            })
+          ),
+          pickedP && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedP.icon + ' ' + pickedP.name),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedP.what),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🏫 In the classroom: '), pickedP.classroom),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.bad } }, '🚫 Avoid: '), pickedP.avoid)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧰 Frameworks worth knowing'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+            WRITING_FRAMEWORKS.map(function(f) {
+              return h('div', { key: f.id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, f.icon),
+                  h('strong', { style: { fontSize: 13, color: T.text } }, f.name)),
+                h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.accentHi } }, '🔍 What: '), f.what),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.good } }, '🎯 Use: '), f.use));
+            })
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⚠️ Common failure modes (with fixes)'),
+            WRITING_FAILURES.map(function(f, i) {
+              return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '• '), f);
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // GROUP WORK view
+      // ─────────────────────────────────────────
+      function renderGroupWork() {
+        var picked = d.groupPicked || null;
+        var pickedS = picked ? GROUP_STRUCTURES.find(function(s) { return s.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🤝 Group work + collaborative learning'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🤝 The 2 non-negotiables'),
+            [
+              { label: '💡 Big idea', val: GROUP_FOUNDATIONS.bigIdea },
+              { label: '🔗 Positive interdependence', val: GROUP_FOUNDATIONS.posInterdep },
+              { label: '👤 Individual accountability', val: GROUP_FOUNDATIONS.indivAccount },
+              { label: '🧠 Why cooperation works', val: GROUP_FOUNDATIONS.cooperation },
+              { label: '⚠️ Why most "group work" fails', val: GROUP_FOUNDATIONS.failures }
+            ].map(function(r, i) {
+              return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+            })
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🏗️ 6 cooperative structures that work'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+            GROUP_STRUCTURES.map(function(s) {
+              var sel = picked === s.id;
+              return h('button', { key: s.id, 'data-ll-focusable': true,
+                'aria-label': s.name, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('groupPicked', sel ? null : s.id); awardBadge('group-strategist', 'Group Work Strategist'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, s.icon),
+                h('span', null, s.name));
+            })
+          ),
+          pickedS && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedS.icon + ' ' + pickedS.name),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedS.what),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '✅ Strengths: '), pickedS.strengths),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.warn } }, '⚠️ Weaknesses: '), pickedS.weaknesses)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🛠️ 5 failure modes + fixes'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+            GROUP_FAILURES.map(function(f, i) {
+              return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
+                h('strong', { style: { fontSize: 12, color: T.text, display: 'block', marginBottom: 4 } }, '🚫 ' + f.mode),
+                h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.warn } }, 'Why: '), f.why),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.good } }, 'Fix: '), f.fix));
+            })
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⛔ When NOT to use group work'),
+            GROUP_WHEN_NOT.map(function(p, i) {
+              return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '• '), p);
+            })
+          ),
+          h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.muted, lineHeight: 1.55 } },
+            h('strong', { style: { color: T.accentHi } }, '🌲 EL Education context: '),
+            'EL\'s Crew structure naturally implements collaborative-learning principles — daily 20-min Crew with consistent membership builds the relational trust + norms that turn "groups" into "communities of practice." That\'s why Crew + Expedition design at King Middle is more than scheduling — it\'s the load-bearing architecture for collaborative learning.'),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // MATH PEDAGOGY view
+      // ─────────────────────────────────────────
+      function renderMathPedagogy() {
+        var picked = d.mathPicked || null;
+        var pickedM = picked ? MATH_PEDAGOGY_MOVES.find(function(m) { return m.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto', color: T.text } },
+          backBar('🔢 Math anxiety + math pedagogy'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '😰 Math anxiety foundations'),
+            [
+              { label: '🧪 Distinct from test anxiety', val: MATH_FOUNDATIONS.distinct },
+              { label: '👨‍👩‍👧 Cultural transmission', val: MATH_FOUNDATIONS.transmission },
+              { label: '🪪 Identity problem', val: MATH_FOUNDATIONS.identity },
+              { label: '🌱 Mathematical mindset', val: MATH_FOUNDATIONS.mindset },
+              { label: '⚖️ Productive struggle', val: MATH_FOUNDATIONS.research }
+            ].map(function(r, i) {
+              return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+            })
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '⚙️ Conceptual vs procedural understanding'),
+            [
+              { label: '📐 Procedural fluency', val: MATH_CONCEPT_VS_PROC.procedural },
+              { label: '💡 Conceptual understanding', val: MATH_CONCEPT_VS_PROC.conceptual },
+              { label: '🤝 Both matter', val: MATH_CONCEPT_VS_PROC.bothMatter },
+              { label: '⚠️ The danger', val: MATH_CONCEPT_VS_PROC.danger },
+              { label: '📚 NCTM 5 practices', val: MATH_CONCEPT_VS_PROC.nctm }
+            ].map(function(r, i) {
+              return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+            })
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 6 high-leverage math pedagogy moves'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+            MATH_PEDAGOGY_MOVES.map(function(m) {
+              var sel = picked === m.id;
+              return h('button', { key: m.id, 'data-ll-focusable': true,
+                'aria-label': m.name, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('mathPicked', sel ? null : m.id); awardBadge('math-pedagogy', 'Math Pedagogy Explorer'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, m.icon),
+                h('span', null, m.name));
+            })
+          ),
+          pickedM && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedM.icon + ' ' + pickedM.name),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedM.what),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🎯 Why: '), pickedM.why),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '📋 Example: '), pickedM.example)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '💚 Math anxiety interventions'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 } },
+            MATH_ANXIETY_INTERVENTIONS.map(function(intv) {
+              return h('div', { key: intv.id, style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border } },
+                h('strong', { style: { fontSize: 12, color: T.text, display: 'block', marginBottom: 4 } }, intv.name),
+                h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.accentHi } }, '🔍 What: '), intv.what),
+                h('p', { style: { margin: '0 0 4px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.good } }, '🎯 Why: '), intv.why),
+                h('p', { style: { margin: 0, fontSize: 11, color: T.dim, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.dim } }, '📚 Evidence: '), intv.evidence));
+            })
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 13, color: T.warn } }, '⚠️ Common math-pedagogy pitfalls'),
+            MATH_PITFALLS.map(function(p, i) {
+              return h('p', { key: i, style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '• '), p);
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -4565,6 +5164,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'multitask':     return renderMultitasking();
         case 'reading':       return renderReading();
         case 'trauma':        return renderTrauma();
+        case 'mtss':          return renderMTSS();
+        case 'mathPed':       return renderMathPedagogy();
+        case 'writing':       return renderWriting();
+        case 'groupWork':     return renderGroupWork();
         case 'quiz':          return renderQuiz();
         case 'badges':        return renderBadges();
         case 'resources':     return renderResources();
