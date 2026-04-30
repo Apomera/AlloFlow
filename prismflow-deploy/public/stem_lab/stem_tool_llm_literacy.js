@@ -1,3 +1,13 @@
+// ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('allo-stem-motion-reduce-css')) return;
+  var st = document.createElement('style');
+  st.id = 'allo-stem-motion-reduce-css';
+  st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════════════════════════
 // stem_tool_llm_literacy.js — AI Literacy Lab (v1.0)
 // Teaches LLM mechanics (tokenization, next-token prediction,
@@ -19,6 +29,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
 (function() {
   'use strict';
+  // ── Accessibility live region (WCAG 4.1.3) ──
+  (function() {
+    if (document.getElementById('allo-live-llm_literacy')) return;
+    var lr = document.createElement('div');
+    lr.id = 'allo-live-llm_literacy';
+    lr.setAttribute('aria-live', 'polite');
+    lr.setAttribute('aria-atomic', 'true');
+    lr.setAttribute('role', 'status');
+    lr.className = 'sr-only';
+    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
+    document.body.appendChild(lr);
+  })();
+
 
   // ── Inject CSS keyframes once (idempotent) ──
   // Used for gentle reveals and the thermometer needle — inline React styles
@@ -38,7 +61,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       '.llm-lit-span-pick { transition: background-color .15s ease, border-color .15s ease; }',
       '.llm-lit-span-pick:not([aria-disabled=true]):hover { background-color: #f1f5f9; }',
       '.llm-lit-term { border-bottom: 1px dotted currentColor; cursor: help; }',
-      '.llm-lit-term:hover, .llm-lit-term:focus { background-color: rgba(124, 58, 237, .08); outline: none; }',
+      '.llm-lit-term:hover { background-color: rgba(124, 58, 237, .08); }',
+      '.llm-lit-term:focus { background-color: rgba(124, 58, 237, .12); outline: 2px solid #7c3aed; outline-offset: 2px; }',
       // Skip-link: visually hidden until focused, then jumps to main content.
       '.llm-lit-skip { position: absolute; top: -40px; left: 8px; background: #7c3aed; color: #fff; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; z-index: 10000; transition: top .2s ease; }',
       '.llm-lit-skip:focus { top: 8px; outline: 2px solid #fff; outline-offset: 2px; }',
@@ -1210,7 +1234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         good:     '#059669',
         bad:      '#dc2626',
         warn:     '#d97706',
-        muted:    '#64748b',
+        muted:    '#94a3b8',
         text:     '#0f172a',
         subtext:  '#475569'
       };
@@ -1218,7 +1242,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
         word:    { bg: '#dbeafe', fg: '#1e40af' },
         subword: { bg: '#fce7f3', fg: '#9d174d' },
         punct:   { bg: '#fef3c7', fg: '#92400e' },
-        space:   { bg: '#f1f5f9', fg: '#64748b' }
+        space:   { bg: '#f1f5f9', fg: '#94a3b8' }
       };
       function btn(bg, fg, disabled) {
         return {
