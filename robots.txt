@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://apomera.github.io/AlloFlow/sitemap.xml

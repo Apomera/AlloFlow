@@ -12,6 +12,8 @@
     <meta property="og:title" content="AlloFlow for Districts — The $26,000 Question">
     <meta property="og:description"
         content="115+ integrated tools, zero cost, FERPA-compatible by architecture. A one-pager for superintendents, directors of special education, and district IT.">
+    <link rel="icon" type="image/svg+xml" href="allobot.svg">
+    <link rel="apple-touch-icon" href="allobot.png">
     <link rel="stylesheet" href="shared.css">
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
@@ -571,7 +573,7 @@
         // Reveal-on-scroll
         const revealObserver = new IntersectionObserver(entries => {
             entries.forEach(e => {
-                if (e.isIntersecting) { e.target.classList.add('active'); revealObserver.unobserve(e.target); }
+                if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
             });
         }, { threshold: 0.1 });
         document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
