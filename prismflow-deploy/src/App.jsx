@@ -5014,78 +5014,81 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/view_persona_chat_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/view_launch_pad_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5096,7 +5099,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@e18b144/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@55de201/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -9366,8 +9369,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [conceptSortImageScale, setConceptSortImageScale] = useState(() => {
     try {
       const v = parseFloat(localStorage.getItem('alloflow_concept_sort_image_scale'));
-      return (isFinite(v) && v >= 0.5 && v <= 2.5) ? v : 1.0;
-    } catch (e) { return 1.0; }
+      return (isFinite(v) && v >= 0.5 && v <= 3.0) ? v : 1.5;
+    } catch (e) { return 1.5; }
   });
   React.useEffect(() => { try { localStorage.setItem('alloflow_concept_sort_image_scale', String(conceptSortImageScale)); } catch (e) {} }, [conceptSortImageScale]);
   const [csEdit, setCsEdit] = useState(null);
@@ -30161,119 +30164,9 @@ Return ONLY valid JSON:
           />
       )}
       </main>
-      {isSpotlightMode && tourRect && spotlightMessage && (
-        <>
-            <div
-                data-help-ignore="true" className="fixed inset-0 z-[10998] pointer-events-none bg-black/5"
-                onPointerDown={(e) => e.stopPropagation()} onMouseDown={(e) => e.stopPropagation()}
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (spotlightOpenTimeRef.current && (Date.now() - spotlightOpenTimeRef.current < 500)) return;
-                    debugLog("Backdrop Dismiss");
-                    setIsSpotlightMode(false);
-                }}
-            />
-            <div
-                 className="fixed z-[11000] animate-in fade-in zoom-in-95 duration-200"
-                 style={{
-                     top: Math.max(20, Math.min(window.innerHeight - 400, tourRect.top)),
-                     left: tourRect.left > window.innerWidth / 2 ? 'auto' : (tourRect.right + 24) + 'px',
-                     right: tourRect.left > window.innerWidth / 2 ? (window.innerWidth - tourRect.left + 24) + 'px' : 'auto',
-                     width: '380px',
-                 }}
-            >
-                <div id="spotlight-message-panel" className="bg-slate-900/95 backdrop-blur-2xl p-6 rounded-2xl shadow-[0_0_40px_rgba(139,92,246,0.3)] border border-white/10 ring-1 ring-white/20 relative overflow-hidden group transition-all duration-300 hover:shadow-[0_0_60px_rgba(139,92,246,0.5)]">
-                     <div className="absolute -top-20 -right-20 w-40 h-40 bg-violet-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse"></div>
-                     <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-indigo-600/30 rounded-full blur-[80px] pointer-events-none animate-pulse" style={{animationDelay: '1s'}}></div>
-                     <div className="flex items-start justify-between mb-4 relative z-10">
-                         <h3 className="font-bold text-white flex items-center gap-3 text-lg tracking-tight">
-                            <div className="p-2 bg-gradient-to-br from-violet-500 to-indigo-600 rounded-lg shadow-lg shadow-violet-500/20">
-                                 <Sparkles size={18} className="text-white fill-white/20"/>
-                            </div>
-                            {spotlightMessage.title || 'Help'}
-                         </h3>
-                         <button
-                             aria-label={t('common.close')}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setIsSpotlightMode(false);
-                            }}
-                            data-help-ignore="true" className="text-white/40 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
-                         >
-                            <X size={20} />
-                         </button>
-                     </div>
-                     <div className="text-slate-300 text-sm leading-relaxed space-y-3 relative z-10 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar-dark">
-                          {(spotlightMessage.text || '').split(/\r?\n/).map((line, i) => {
-                                    const cleanLine = line.trim();
-                                    if (!cleanLine) return <div key={i} className="h-2" />;
-                                    const formatText = (text) => {
-                                        if (!text) return null;
-                                        return text.split('**').map((part, bIdx) => {
-                                            if (bIdx % 2 === 1) {
-                                                return <strong key={`b-${bIdx}`} className="font-bold text-white bg-violet-700/20 px-1.5 py-0.5 rounded border border-violet-500/30 box-decoration-clone shadow-[0_0_10px_rgba(139,92,246,0.2)]">{part}</strong>;
-                                            }
-                                            return part.split('*').map((sub, iIdx) => {
-                                                if (iIdx % 2 === 1) {
-                                                     return <em key={`i-${bIdx}-${iIdx}`} className="italic text-indigo-200 font-serif">{sub}</em>;
-                                                }
-                                                return sub;
-                                            });
-                                        });
-                                    };
-                                    if (cleanLine.startsWith('###')) {
-                                        const headerText = cleanLine.replace(/^###\s*/, '').trim();
-                                        return (
-                                            <h5 key={i} className="text-violet-300 font-bold uppercase text-xs mt-4 mb-2 tracking-widest flex items-center gap-2 border-b border-white/10 pb-1">
-                                                {formatText(headerText)}
-                                            </h5>
-                                        );
-                                    }
-                                    const isBullet = cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('* ');
-                                    if (isBullet) {
-                                        const bulletMarker = cleanLine.startsWith('* ') ? '* ' : cleanLine.charAt(0);
-                                        const bulletText = cleanLine.substring(bulletMarker.length).trim();
-                                        return (
-                                            <div key={i} className="grid grid-cols-[16px_1fr] gap-2 mb-1.5 items-start">
-                                                <div className="mt-2 h-1.5 w-1.5 rounded-full bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.6)] mx-auto shrink-0" />
-                                                <span className="text-slate-300 text-sm font-medium">{formatText(bulletText)}</span>
-                                            </div>
-                                        );
-                                    }
-                                    return (
-                                        <p key={i} className="text-slate-300 text-sm leading-relaxed">
-                                            {formatText(cleanLine)}
-                                        </p>
-                                    );
-                                })}
-                     </div>
-                     <svg className="absolute w-8 h-8 pointer-events-none text-slate-900/95 filter drop-shadow opacity-95" aria-hidden="true"
-                          style={{
-                              top: '24px',
-                              [tourRect.left > window.innerWidth / 2 ? 'right' : 'left']: '-24px',
-                              transform: tourRect.left > window.innerWidth / 2 ? 'rotate(-90deg)' : 'rotate(90deg)',
-                          }}
-                          viewBox="0 0 24 24"
-                          fill="currentColor"
-                     >
-                          <path d="M12 21l-12-18h24z" />
-                     </svg>
-                </div>
-                 <div className="fixed pointer-events-none z-[10999]"
-                      style={{
-                          top: tourRect.top - 6,
-                          left: tourRect.left - 6,
-                          width: tourRect.width + 12,
-                          height: tourRect.height + 12,
-                          borderRadius: '12px',
-                          animation: 'spotlightGlowRing 2s ease-in-out infinite',
-                          boxShadow: '0 0 0 2px rgba(139, 92, 246, 0.6), 0 0 30px rgba(139, 92, 246, 0.4), inset 0 0 20px rgba(139, 92, 246, 0.1)',
-                      }}
-                 ></div>
-            </div>
-        </>
-      )}
+      {isSpotlightMode && tourRect && spotlightMessage && window.AlloModules && window.AlloModules.SpotlightTourView && React.createElement(window.AlloModules.SpotlightTourView, {
+          t, debugLog, tourRect, spotlightMessage, spotlightOpenTimeRef, setIsSpotlightMode
+      })}
       {runTour && tourRect && (
         <div className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
             <div className="absolute inset-0 transition-all duration-500">
@@ -38932,231 +38825,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
         setIsHelpMode={setIsHelpMode}
       />
       </ErrorBoundary>
-      {isProjectSettingsOpen && (
-        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={handleSetIsProjectSettingsOpenToFalse}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full relative border-4 border-indigo-100" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button onClick={handleSetIsProjectSettingsOpenToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" aria-label={t('common.close')}><X size={20}/></button>
-            <div className="flex items-center gap-2 mb-6 text-indigo-900">
-                <div className="bg-indigo-100 p-2 rounded-full"><Settings2 size={20} className="text-indigo-600"/></div>
-                <h3 className="font-black text-lg">{t('project_settings.title')}</h3>
-            </div>
-            <div className="space-y-5">
-                <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 transition-colors hover:border-indigo-200">
-                    <input aria-label={t('common.toggle_allow_dictation')}
-                        type="checkbox"
-                        id="proj-dictation"
-                        checked={studentProjectSettings.allowDictation}
-                        onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, allowDictation: e.target.checked }))}
-                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 mt-0.5 cursor-pointer"
-                    />
-                    <label htmlFor="proj-dictation" className="text-sm font-bold text-indigo-900 cursor-pointer select-none">
-                        {t('project_settings.enable_dictation')}
-                        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.dictation_desc')}</span>
-                    </label>
-                </div>
-                <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 transition-colors hover:border-indigo-200">
-                    <input aria-label={t('common.toggle_allow_socratic_tutor')}
-                        type="checkbox"
-                        id="proj-socratic"
-                        checked={studentProjectSettings.allowSocraticTutor}
-                        onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, allowSocraticTutor: e.target.checked }))}
-                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 mt-0.5 cursor-pointer"
-                    />
-                    <label htmlFor="proj-socratic" className="text-sm font-bold text-indigo-900 cursor-pointer select-none">
-                        {t('project_settings.enable_socratic')}
-                        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.socratic_desc')}</span>
-                    </label>
-                </div>
-                <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 transition-colors hover:border-indigo-200">
-                    <input aria-label={t('common.toggle_allow_free_response')}
-                        data-help-key="settings_free_response"
-                        type="checkbox"
-                        id="proj-free-response"
-                        checked={studentProjectSettings.allowFreeResponse}
-                        onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, allowFreeResponse: e.target.checked }))}
-                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 mt-0.5 cursor-pointer"
-                    />
-                    <label htmlFor="proj-free-response" className="text-sm font-bold text-indigo-900 cursor-pointer select-none">
-                        {t('project_settings.enable_free_response')}
-                        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.free_response_desc')}</span>
-                    </label>
-                </div>
-                <div className="flex items-start gap-3 p-3 bg-indigo-50 rounded-xl border border-indigo-100 transition-colors hover:border-indigo-200">
-                    <input aria-label={t('common.toggle_allow_persona_free_response')}
-                        data-help-key="settings_persona_free"
-                        type="checkbox"
-                        id="proj-persona-free"
-                        checked={studentProjectSettings.allowPersonaFreeResponse}
-                        onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, allowPersonaFreeResponse: e.target.checked }))}
-                        className="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-gray-300 mt-0.5 cursor-pointer"
-                    />
-                    <label htmlFor="proj-persona-free" className="text-sm font-bold text-indigo-900 cursor-pointer select-none">
-                        {t('project_settings.enable_persona_free')}
-                        <span className="block text-xs font-normal text-indigo-500 mt-0.5">{t('project_settings.persona_free_desc')}</span>
-                    </label>
-                </div>
-                <div>
-                    <label className="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2">{t('project_settings.unlock_xp')}</label>
-                    <div className="flex items-center gap-2">
-                        <div className="bg-green-100 p-2 rounded-lg text-green-600 border border-green-200"><MapIcon size={18}/></div>
-                        <input aria-label={t('common.text_field')}
-                            data-help-key="settings_unlock_xp"
-                            type="number"
-                            min="0"
-                            step="100"
-                            value={studentProjectSettings.adventureUnlockXP}
-                            onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, adventureUnlockXP: parseInt(e.target.value) || 0 }))}
-                            className="flex-grow p-2 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-sm font-bold text-slate-700"
-                        />
-                    </div>
-                    <p className="text-[11px] text-slate-600 mt-1.5 font-medium ml-1">{t('project_settings.unlock_xp_desc')}</p>
-                </div>
-                <div>
-                    <label className="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2">{t('project_settings.base_xp')}</label>
-                    <div className="flex items-center gap-2">
-                        <div className="bg-blue-100 p-2 rounded-lg text-blue-600 border border-blue-200"><Trophy size={18}/></div>
-                        <input aria-label={t('common.text_field')}
-                            data-help-key="settings_base_xp"
-                            type="number"
-                            min="10"
-                            step="10"
-                            value={studentProjectSettings.baseXP}
-                            onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, baseXP: parseInt(e.target.value) || 100 }))}
-                            className="flex-grow p-2 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-sm font-bold text-slate-700"
-                        />
-                    </div>
-                    <p className="text-[11px] text-slate-600 mt-1.5 font-medium ml-1">{t('project_settings.base_xp_desc')}</p>
-                </div>
-                <div>
-                    <label className="block text-xs font-black text-slate-600 uppercase tracking-wider mb-2">{t('project_settings.storybook_xp')}</label>
-                    <div className="flex items-center gap-2">
-                        <div className="bg-yellow-100 p-2 rounded-lg text-yellow-600 border border-yellow-200"><Trophy size={18}/></div>
-                        <input aria-label={t('common.text_field')}
-                            data-help-key="settings_adventure_xp"
-                            type="number"
-                            min="0"
-                            step="100"
-                            value={studentProjectSettings.adventureMinXP}
-                            onChange={(e) => setStudentProjectSettings(prev => ({ ...prev, adventureMinXP: parseInt(e.target.value) || 0 }))}
-                            className="flex-grow p-2 border-2 border-slate-200 rounded-lg focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 outline-none text-sm font-bold text-slate-700"
-                        />
-                    </div>
-                    <p className="text-[11px] text-slate-600 mt-1.5 font-medium ml-1">{t('project_settings.storybook_xp_desc')}</p>
-                </div>
-                <div className="pt-4 border-t border-slate-100 mt-4">
-                    <h4 className="text-xs font-black text-slate-600 uppercase tracking-wider mb-3">{t('project_settings.permissions_header')}</h4>
-                    <div className="space-y-2">
-                        <label className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 hover:border-indigo-200 transition-colors cursor-pointer">
-                            <span className="font-bold text-slate-600">{t('project_settings.perm_difficulty')}</span>
-                            <input aria-label={t('common.toggle_allow_difficulty_switch')}
-                                data-help-key="settings_perm_difficulty"
-                                type="checkbox"
-                                checked={studentProjectSettings.adventurePermissions?.allowDifficultySwitch ?? true}
-                                onChange={(e) => setStudentProjectSettings(prev => ({
-                                    ...prev,
-                                    adventurePermissions: { ...prev.adventurePermissions, allowDifficultySwitch: e.target.checked }
-                                }))}
-                                className="w-4 h-4 text-indigo-600 rounded cursor-pointer focus:ring-indigo-500 border-gray-300"
-                            />
-                        </label>
-                        <label className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 hover:border-indigo-200 transition-colors cursor-pointer">
-                            <span className="font-bold text-slate-600">{t('project_settings.perm_mode')}</span>
-                            <input aria-label={t('common.toggle_allow_mode_switch')}
-                                data-help-key="settings_perm_mode"
-                                type="checkbox"
-                                checked={studentProjectSettings.adventurePermissions?.allowModeSwitch ?? false}
-                                onChange={(e) => setStudentProjectSettings(prev => ({
-                                    ...prev,
-                                    adventurePermissions: { ...prev.adventurePermissions, allowModeSwitch: e.target.checked }
-                                }))}
-                                className="w-4 h-4 text-indigo-600 rounded cursor-pointer focus:ring-indigo-500 border-gray-300"
-                            />
-                        </label>
-                        <label className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 hover:border-indigo-200 transition-colors cursor-pointer">
-                            <span className="font-bold text-slate-600">{t('project_settings.perm_custom')}</span>
-                            <input aria-label={t('common.toggle_allow_custom_instructions')}
-                                data-help-key="settings_perm_custom"
-                                type="checkbox"
-                                checked={studentProjectSettings.adventurePermissions?.allowCustomInstructions ?? false}
-                                onChange={(e) => setStudentProjectSettings(prev => ({
-                                    ...prev,
-                                    adventurePermissions: { ...prev.adventurePermissions, allowCustomInstructions: e.target.checked }
-                                }))}
-                                className="w-4 h-4 text-indigo-600 rounded cursor-pointer focus:ring-indigo-500 border-gray-300"
-                            />
-                        </label>
-                         <label className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 hover:border-indigo-200 transition-colors cursor-pointer">
-                            <span className="font-bold text-slate-600">{t('project_settings.perm_visuals')}</span>
-                            <input aria-label={t('common.toggle_allow_visuals_toggle')}
-                                data-help-key="settings_perm_visuals"
-                                type="checkbox"
-                                checked={studentProjectSettings.adventurePermissions?.allowVisualsToggle ?? true}
-                                onChange={(e) => setStudentProjectSettings(prev => ({
-                                    ...prev,
-                                    adventurePermissions: { ...prev.adventurePermissions, allowVisualsToggle: e.target.checked }
-                                }))}
-                                className="w-4 h-4 text-indigo-600 rounded cursor-pointer focus:ring-indigo-500 border-gray-300"
-                            />
-                        </label>
-                        <label className="flex items-center justify-between text-sm text-slate-700 bg-slate-50 p-2 rounded-lg border border-slate-100 hover:border-indigo-200 transition-colors cursor-pointer ring-2 ring-red-100">
-                            <span className="font-bold text-red-600 flex items-center gap-2"><Lock size={14}/> {t('project_settings.perm_lock_all')}</span>
-                            <input aria-label={t('common.toggle_lock_all_settings')}
-                                data-help-key="settings_lock_all"
-                                type="checkbox"
-                                checked={studentProjectSettings.adventurePermissions?.lockAllSettings ?? false}
-                                onChange={(e) => setStudentProjectSettings(prev => ({
-                                    ...prev,
-                                    adventurePermissions: { ...prev.adventurePermissions, lockAllSettings: e.target.checked }
-                                }))}
-                                className="w-4 h-4 text-red-600 rounded cursor-pointer focus:ring-red-500 border-gray-300"
-                            />
-                        </label>
-                    </div>
-                </div>
-                {/* ── Report a Problem (always-available entry point) ──
-                    Opens the Error Reporter panel so users can review captured
-                    errors and one-click submit a pre-filled bug report — or
-                    file feedback even when nothing has crashed. Calls openPanel()
-                    directly (NOT openManualReport, which would inject a synthetic
-                    error entry into the buffer). The reporter loads at the top of
-                    the boot sequence so window.AlloModules.ErrorReporter is
-                    available by the time this dialog can render. */}
-                <div className="pt-4 mt-2 border-t border-slate-100">
-                    <button
-                        type="button"
-                        onClick={() => {
-                            try {
-                                if (window.AlloModules && window.AlloModules.ErrorReporter && window.AlloModules.ErrorReporter.openPanel) {
-                                    window.AlloModules.ErrorReporter.openPanel();
-                                    handleSetIsProjectSettingsOpenToFalse();
-                                } else {
-                                    // Fallback: open the bare form. ErrorReporter not loaded yet.
-                                    window.open('https://docs.google.com/forms/d/e/1FAIpQLSd9dJexeOjd6fvFio9V0Jd45FDpuL7cSQNnm-BLmqyTwrPrhg/viewform', '_blank', 'noopener,noreferrer');
-                                }
-                            } catch (e) {
-                                console.warn('[Settings] Report-a-problem button failed:', e);
-                            }
-                        }}
-                        className="w-full flex items-center justify-center gap-2 text-xs text-slate-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors font-medium"
-                        aria-label="Report a problem or send feedback to Aaron"
-                    >
-                        <CircleHelp size={14} aria-hidden="true" />
-                        Report a problem or send feedback
-                    </button>
-                </div>
-                <div className="pt-2 flex justify-end">
-                    <button
-                        data-help-key="settings_close_btn"
-                        onClick={handleSetIsProjectSettingsOpenToFalse}
-                        className="bg-indigo-600 text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 hover:shadow-indigo-300 active:scale-95"
-                    >
-                        {t('common.close')}
-                    </button>
-                </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {isProjectSettingsOpen && window.AlloModules && window.AlloModules.ProjectSettingsView && React.createElement(window.AlloModules.ProjectSettingsView, {
+          t, studentProjectSettings, setStudentProjectSettings,
+          handleSetIsProjectSettingsOpenToFalse
+      })}
       {/* --- AI Backend: Canvas-Only Minimal Config --- */}
       {showAIBackendModal && _isCanvasEnv && (
         <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
@@ -39806,138 +39478,14 @@ Return ONLY the plain language summary in ${lang}.`, false);
           </p>
         </div>
       )}
-      {isAppReady && !hasSelectedMode && (
-        <div role="region" aria-label="Choose how to use AlloFlow" style={{
-          position: 'fixed', inset: 0, zIndex: 99998,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 30%, #312e81 60%, #1e3a5f 100%)',
-          animation: 'fadeIn 0.6s ease-out',
-        }}>
-          <style>{`
-            @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-            @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-            @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-            @keyframes cardPop { from { opacity: 0; transform: scale(0.85) translateY(30px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-            .lp-card { backdrop-filter: blur(20px); background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); border-radius: 24px; padding: 32px 28px; cursor: pointer; transition: all 0.35s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; animation: cardPop 0.5s ease-out both; }
-            .lp-card:hover { transform: translateY(-6px) scale(1.03); background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); box-shadow: 0 20px 60px rgba(99,102,241,0.3); }
-            @media (max-width: 600px) { .lp-grid { grid-template-columns: 1fr !important; } }
-            .lp-card::before { content: ''; position: absolute; inset: 0; border-radius: 24px; padding: 1px; background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent, rgba(99,102,241,0.3)); -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
-            .lp-badge { display: inline-flex; align-items: center; gap: 4px; background: linear-gradient(135deg, #818cf8, #6366f1); color: white; font-size: 9px; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1.5px; animation: shimmer 3s infinite linear; background-size: 200% auto; }
-          `}</style>
-          <div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeIn 0.6s ease-out' }}>
-            <img src="https://raw.githubusercontent.com/Apomera/AlloFlow/main/rainbow-book.jpg" alt="AlloFlow" style={{ width: '80px', height: '80px', margin: '0 auto 16px', display: 'block', filter: 'drop-shadow(0 0 24px rgba(99,102,241,0.5))', borderRadius: '16px', objectFit: 'cover', animation: 'float 3s ease-in-out infinite' }} />
-            <h1 style={{ fontSize: '32px', fontWeight: 900, color: 'white', margin: '0 0 8px', letterSpacing: '-0.5px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>AlloFlow</h1>
-            <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', fontWeight: 600, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>{t('launch_pad.subtitle')}</p>
-          </div>
-          {/* ── Mic Permission Banner ── */}
-          {!micBannerDismissed && (
-            <div style={{
-              maxWidth: '620px', width: '100%', padding: '0 24px', marginBottom: '24px',
-              animation: 'fadeIn 0.5s ease-out',
-            }}>
-              <div style={{
-                backdropFilter: 'blur(20px)',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(129,140,248,0.3)',
-                borderRadius: '20px',
-                padding: '20px 24px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ fontSize: '24px' }}>🎤</span>
-                  <div>
-                    <p style={{ fontSize: '14px', fontWeight: 700, color: 'white', margin: '0 0 2px' }}>
-                      {t('launch_pad.mic_title') || 'Microphone Setup'}
-                    </p>
-                    <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.7)', margin: 0, lineHeight: '1.5' }}>
-                      {t('launch_pad.mic_desc') || 'Some tools use your microphone for dictation, recording, and voice input.'}
-                    </p>
-                  </div>
-                </div>
-                {_isCanvasEnv && (
-                  <p style={{ fontSize: '10px', color: '#fbbf24', margin: 0, textAlign: 'center', lineHeight: '1.5', fontWeight: 600 }}>
-                    ⚠️ {t('launch_pad.mic_canvas_warning') || 'In this environment, enabling the microphone will briefly reload the app. It\'s best to do it now before you start working.'}
-                  </p>
-                )}
-                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                  <button
-                    onClick={requestMicPermission}
-                    disabled={micPermissionStatus === 'requesting'}
-                    aria-label="Enable microphone access"
-                    style={{
-                      padding: '10px 24px', borderRadius: '14px', border: 'none', cursor: 'pointer',
-                      background: 'linear-gradient(135deg, #818cf8, #6366f1)',
-                      color: 'white', fontSize: '13px', fontWeight: 700,
-                      opacity: micPermissionStatus === 'requesting' ? 0.6 : 1,
-                      transition: 'all 0.2s',
-                      boxShadow: '0 4px 20px rgba(99,102,241,0.4)',
-                    }}
-                  >
-                    {micPermissionStatus === 'requesting' ? '⏳ Requesting...' : '🎤 Enable Microphone'}
-                  </button>
-                  <button
-                    onClick={() => setMicBannerDismissed(true)}
-                    aria-label="Skip microphone setup"
-                    style={{
-                      padding: '10px 24px', borderRadius: '14px', border: '1px solid rgba(255,255,255,0.2)',
-                      cursor: 'pointer', background: 'rgba(255,255,255,0.06)',
-                      color: 'rgba(165,180,252,0.8)', fontSize: '13px', fontWeight: 600,
-                      transition: 'all 0.2s',
-                    }}
-                  >
-                    Skip for Now
-                  </button>
-                </div>
-                {micPermissionStatus === 'granted' && (
-                  <p style={{ fontSize: '11px', color: '#34d399', margin: 0, fontWeight: 700 }}>✅ Microphone enabled!</p>
-                )}
-                {micPermissionStatus === 'denied' && (
-                  <p style={{ fontSize: '11px', color: '#f87171', margin: 0, fontWeight: 600 }}>Microphone was denied. You can enable it later in browser settings.</p>
-                )}
-              </div>
-            </div>
-          )}
-          <div className="lp-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', maxWidth: '620px', width: '100%', padding: '0 24px' }}>
-            <div className="lp-card" style={{ animationDelay: '0.1s' }} role="button" tabIndex={0} aria-label={t('launch_pad.full_title') + '. ' + t('launch_pad.full_desc')} onClick={() => { setHasSelectedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite' }} aria-hidden="true">🚀</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.full_title')}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.full_desc')}</p>
-            </div>
-            <div className="lp-card" style={{ animationDelay: '0.2s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.guided_title') || 'Guided Mode') + ' (recommended). ' + t('launch_pad.guided_desc')} onClick={() => { setHasSelectedMode(true); setGuidedMode(true); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge">{t('launch_pad.badge_recommended')}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '0.5s' }} aria-hidden="true">🧭</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.guided_title') || 'Guided Mode'}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.guided_desc')}</p>
-            </div>
-            <div className="lp-card" style={{ animationDelay: '0.3s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.learning_tools_title') || 'Learning Tools') + '. ' + (t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub')} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); setIsTeacherMode(false); setTimeout(() => setShowLearningHub(true), 0); }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #34d399, #059669)' }}>{t('launch_pad.badge_3_tools') || '3 Tools'}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1s' }} aria-hidden="true">{'\uD83E\uDDE9'}</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.learning_tools_title') || 'Learning Tools'}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.learning_tools_desc') || 'STEM Lab, StoryForge & SEL Hub \u2014 explore, create, and grow'}</p>
-            </div>
-            <div className="lp-card" style={{ animationDelay: '0.4s' }} role="button" tabIndex={0} aria-label={(t('launch_pad.educator_tools_title') || 'Educator Tools') + '. ' + (t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer') + (APP_CONFIG._cfg_validation_key ? ' (password protected)' : '')} onClick={() => { setHasSelectedMode(true); setHasSelectedRole(true); setShowWizard(false); if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); } else { setIsTeacherMode(true); setShowEducatorHub(true); } }} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}>
-              <div style={{ position: 'absolute', top: '12px', right: '12px' }}><span className="lp-badge" style={{ background: 'linear-gradient(135deg, #a78bfa, #7c3aed)' }}>{APP_CONFIG._cfg_validation_key ? (t('launch_pad.badge_educator') || '🔒 Educator') : (t('launch_pad.badge_educator_open') || '🛠️ Educator')}</span></div>
-              <div style={{ fontSize: '40px', marginBottom: '16px', animation: 'float 3s ease-in-out infinite', animationDelay: '1.5s' }} aria-hidden="true">🛠️</div>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'white', margin: '0 0 8px' }}>{t('launch_pad.educator_tools_title') || 'Educator Tools'}</h2>
-              <p style={{ fontSize: '12px', color: 'rgba(165,180,252,0.7)', lineHeight: '1.6', margin: 0 }}>{t('launch_pad.educator_tools_desc') || 'BehaviorLens, Report Writer, and professional clinical tools — password protected'}</p>
-            </div>
-          </div>
-          <p style={{ marginTop: '48px', fontSize: '11px', color: 'rgba(165,180,252,0.4)', fontWeight: 500 }}>{t('launch_pad.switch_hint')}</p>
-          {!_isCanvasEnv && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setShowAIBackendModal(true); }}
-              style={{ marginTop: '16px', display: 'inline-flex', alignItems: 'center', gap: '8px', background: '#312e81', border: '1px solid rgba(165,180,252,0.4)', borderRadius: '16px', padding: '10px 20px', color: '#e0e7ff', fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s', backdropFilter: 'blur(10px)' }}
-              onMouseOver={(e) => { e.currentTarget.style.background = '#4338ca'; e.currentTarget.style.color = '#ffffff'; e.currentTarget.style.borderColor = 'rgba(165,180,252,0.7)'; }}
-              onMouseOut={(e) => { e.currentTarget.style.background = '#312e81'; e.currentTarget.style.color = '#e0e7ff'; e.currentTarget.style.borderColor = 'rgba(165,180,252,0.4)'; }}
-              aria-label="AI Backend Settings"
-              title="AI Backend Settings"
-            >
-              <Unplug size={16} aria-hidden="true" />
-              <span>AI Backend Settings</span>
-            </button>
-          )}
-        </div>
-      )}
+      {isAppReady && !hasSelectedMode && window.AlloModules && window.AlloModules.LaunchPadView && React.createElement(window.AlloModules.LaunchPadView, {
+          t, micBannerDismissed, _isCanvasEnv, micPermissionStatus, APP_CONFIG,
+          requestMicPermission,
+          setHasSelectedMode, setMicBannerDismissed, setGuidedMode,
+          setHasSelectedRole, setShowWizard, setIsTeacherMode,
+          setShowLearningHub, setShowEducatorHub,
+          setPendingRole, setIsGateOpen, setShowAIBackendModal
+      })}
       {isBotVisible && (
           <AlloBot
             ref={alloBotRef}
