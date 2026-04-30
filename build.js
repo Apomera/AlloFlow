@@ -209,6 +209,21 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'ViewWordSoundsPreviewModule',
+        filename: 'view_word_sounds_preview_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewGeminiBridgeModule',
+        filename: 'view_gemini_bridge_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'ViewConceptSortModule',
+        filename: 'view_concept_sort_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ExportHandlersModule',
         filename: 'export_handlers_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -424,6 +439,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_music.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'stem_lab/stem_tool_renewables.js',
+    'stem_lab/stem_tool_pets.js',
     'stem_lab/stem_tool_fireecology.js',
     'stem_lab/stem_tool_moonmission.js',
     'stem_lab/stem_tool_beehive.js',
