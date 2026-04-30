@@ -5014,74 +5014,77 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/allo_data_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/symbol_studio_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/view_alignment_report_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/view_concept_sort_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5092,7 +5095,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@733444a/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@1a26f5d/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -5130,6 +5133,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_circuit.js',
         'stem_lab/stem_tool_climateExplorer.js',
         'stem_lab/stem_tool_renewables.js',
+        'stem_lab/stem_tool_pets.js',
         'stem_lab/stem_tool_fireecology.js',
         'stem_lab/stem_tool_lifeskills.js',
         'stem_lab/stem_tool_spacecolony.js',
@@ -28964,35 +28968,10 @@ Return ONLY valid JSON:
                     BilingualFieldRenderer, SourceReferencesPanel
                 })}
                 {activeView === 'word-sounds' && !isWordSoundsMode && console.error("[WS-DBG] Preview card branch ENTERED! activeView:", activeView, "isWordSoundsMode:", isWordSoundsMode, "generatedContent type:", generatedContent?.type) && false}
-                {activeView === 'word-sounds' && !isWordSoundsMode && (
-                  <div className="space-y-6">
-                    <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
-                      <div className="text-4xl mb-3">🎵</div>
-                      <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || 'Word Sounds Studio'}</h3>
-                      <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || 'Ready to practice'}</p>
-                      {generatedContent?.data && <p className="text-xs text-violet-500 font-medium">{generatedContent.data.length} words loaded</p>}
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center mt-5">
-                        <button
-                          onClick={() => {
-                            const initialActivity = (wsActivitySequence && wsActivitySequence.length > 0) ? wsActivitySequence[0] : 'counting';
-                            setWordSoundsActivity(initialActivity);
-                            setIsWordSoundsMode(true);
-                            setWordSoundsAutoReview(true);
-                          }}
-                          className="flex items-center justify-center gap-2 px-6 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                        >
-                          <BookOpen size={18} /> Pre-Activity Review
-                        </button>
-                        <button
-                          onClick={() => { setIsWordSoundsMode(true); setWordSoundsActivity('counting'); }}
-                          className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 shadow-lg hover:shadow-xl transition-all hover:scale-105"
-                        >
-                          <Play size={18} /> Launch Word Sounds Studio
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
+                {activeView === 'word-sounds' && !isWordSoundsMode && window.AlloModules && window.AlloModules.WordSoundsPreviewView && React.createElement(window.AlloModules.WordSoundsPreviewView, {
+                    generatedContent, wsActivitySequence,
+                    setWordSoundsActivity, setIsWordSoundsMode, setWordSoundsAutoReview
+                })}
                 {isWordSoundsMode && (activeView === 'word-sounds' || generatedContent?.type === 'glossary' || generatedContent?.type === 'word-sounds' || (wsPreloadedWords && wsPreloadedWords.length > 0)) && (() => {
                     const WS = window.AlloModules && window.AlloModules.WordSoundsModal;
                     if (WS) {
@@ -30690,310 +30669,19 @@ Return ONLY valid JSON:
                     closeTimeline,
                     ErrorBoundary, TimelineGame
                 })}
-                {activeView === 'concept-sort' && (
-                    <div className="space-y-6 h-full flex flex-col" data-help-key="concept_sort_panel">
-                        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-6 flex justify-between items-center flex-wrap gap-4">
-                            <div className="text-sm text-indigo-800">
-                                <strong>{t('simplified.udl_goal').split(':')[0]}:</strong> {t('concept_sort.udl_goal_desc')}
-                            </div>
-                            <button
-                                aria-label={t('common.filter')}
-                                onClick={handleSetIsConceptSortGameToTrue}
-                                data-help-key="concept_sort_start_button"
-                                className="flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
-                            >
-                                <Filter size={14}/> {isTeacherMode && !isIndependentMode ? t('concept_sort.preview') : t('concept_sort.start')}
-                            </button>
-                        </div>
-                        {(!isTeacherMode || isIndependentMode) ? (
-                             <div className="flex flex-col items-center justify-center p-12 bg-slate-50 rounded-xl border-2 border-dashed border-slate-200 text-center animate-in fade-in zoom-in duration-300 my-auto">
-                                 <div className="bg-indigo-100 p-4 rounded-full mb-4">
-                                     <Filter size={48} className="text-indigo-500" />
-                                 </div>
-                                 <h3 className="text-xl font-black text-slate-700 mb-2">{t('concept_sort.ready_title')}</h3>
-                                 <p className="text-slate-600 mb-8 max-w-md">{t('concept_sort.ready_desc')}</p>
-                                 <button
-                                     aria-label={t('common.start_game')}
-                                    onClick={handleSetIsConceptSortGameToTrue}
-                                    data-help-key="concept_sort_start_button"
-                                    className="px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
-                                 >
-                                     <Gamepad2 size={24} className="fill-current text-yellow-400" /> {t('concept_sort.start_action')}
-                                 </button>
-                             </div>
-                        ) : (
-                            generatedContent?.data && generatedContent?.data.categories && (
-                            <div className="space-y-4 overflow-y-auto pr-2">
-                                {/* Pre-Activity Review header */}
-                                <div className="flex items-center justify-between flex-wrap gap-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
-                                    <div className="min-w-0">
-                                        <div className="text-sm font-black text-amber-800">📝 Pre-Activity Review</div>
-                                        <div className="text-[11px] text-amber-700/90">Edit categories and items before students play. AI outputs sometimes need tweaks.</div>
-                                    </div>
-                                    <div className="flex items-center gap-3 flex-wrap">
-                                        {/* Image-size slider — visible only when at least one card has
-                                            an image (otherwise it'd just be noise). Same scale state
-                                            also drives the in-game slider in ConceptSortGame, so a
-                                            change here persists into play view and back. */}
-                                        {(generatedContent?.data.items || []).some(it => it && it.image) && (
-                                            <div className="flex items-center gap-2 bg-white/80 border border-amber-200 rounded-full px-2 py-1" data-help-key="concept_sort_image_scale">
-                                                <label htmlFor="concept-sort-image-scale-rv" className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">
-                                                    {t('concept_sort.image_size_word') || 'Size'}
-                                                </label>
-                                                <input
-                                                    id="concept-sort-image-scale-rv"
-                                                    type="range"
-                                                    min="0.5"
-                                                    max="2.5"
-                                                    step="0.05"
-                                                    value={conceptSortImageScale}
-                                                    onChange={(e) => setConceptSortImageScale(parseFloat(e.target.value) || 1.0)}
-                                                    aria-label={(t('concept_sort.image_scale_label') || 'Card image size') + ', ' + conceptSortImageScale.toFixed(2) + ' times'}
-                                                    title={t('concept_sort.image_scale_hint') || 'Scales card visuals in the review panel and during play.'}
-                                                    className="w-24 sm:w-32 accent-amber-600"
-                                                />
-                                                <span className="text-[10px] font-mono text-amber-800 min-w-[2.5em] text-right">{conceptSortImageScale.toFixed(2)}×</span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setConceptSortImageScale(1.0)}
-                                                    className="text-[10px] text-amber-700 hover:text-amber-900 hover:underline"
-                                                    title={t('common.reset') || 'Reset to 1×'}
-                                                    aria-label="Reset image size to default"
-                                                >reset</button>
-                                            </div>
-                                        )}
-                                        <span className="text-[11px] font-bold text-amber-800 bg-white/80 border border-amber-200 rounded-full px-2 py-0.5">
-                                            {(generatedContent?.data.categories || []).length} categories · {(generatedContent?.data.items || []).length} items
-                                        </span>
-                                    </div>
-                                </div>
-                                {/* Category cards with editable items */}
-                                {(generatedContent?.data.categories || []).map((cat) => {
-                                    const catItems = (generatedContent?.data.items || []).filter(item => item.categoryId === cat.id);
-                                    const isEditingLabel = csEdit && csEdit.kind === 'category' && csEdit.id === cat.id;
-                                    const isAddingHere = csAddingCatId === cat.id;
-                                    const colorClass = cat.color ? cat.color.replace('bg-', 'text-').replace('-500', '-700') + ' bg-' + cat.color.replace('bg-', '').replace('-500', '-50') : 'text-slate-700 bg-slate-50';
-                                    return (
-                                        <div key={cat.id} data-help-key="concept_sort_category" className="bg-white rounded-xl border-2 border-slate-200 shadow-sm overflow-hidden">
-                                            {/* Category header */}
-                                            <div className={`flex items-center gap-2 px-3 py-2 border-b border-slate-100 ${colorClass}`}>
-                                                {isEditingLabel ? (
-                                                    <input
-                                                        type="text"
-                                                        autoFocus
-                                                        value={csEdit.text}
-                                                        onChange={(e) => setCsEdit({ kind: 'category', id: cat.id, text: e.target.value })}
-                                                        onBlur={() => { csUpdateCategoryLabel(cat.id, csEdit.text); setCsEdit(null); }}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') { csUpdateCategoryLabel(cat.id, csEdit.text); setCsEdit(null); }
-                                                            else if (e.key === 'Escape') { setCsEdit(null); }
-                                                        }}
-                                                        className="flex-1 font-bold text-sm bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400"
-                                                        aria-label="Edit category name"
-                                                    />
-                                                ) : (
-                                                    <button
-                                                        onClick={() => setCsEdit({ kind: 'category', id: cat.id, text: cat.label })}
-                                                        className="flex-1 text-left font-bold text-sm hover:underline truncate"
-                                                        title="Click to rename"
-                                                        aria-label={`Rename category ${cat.label}`}
-                                                    >
-                                                        {cat.label}
-                                                    </button>
-                                                )}
-                                                <span className="text-[10px] font-bold opacity-75 whitespace-nowrap">{catItems.length} item{catItems.length === 1 ? '' : 's'}</span>
-                                                <button
-                                                    onClick={() => { setCsAddingCatId(cat.id); setCsAddingText(''); }}
-                                                    className="px-2 py-0.5 rounded-full bg-white/70 text-[11px] font-bold hover:bg-white border border-current/20"
-                                                    title="Add item to this category"
-                                                    aria-label={`Add item to ${cat.label}`}
-                                                    disabled={csBusyId === '__adding__'}
-                                                >
-                                                    ＋ Add
-                                                </button>
-                                            </div>
-                                            {/* Items list */}
-                                            <div className="p-2 space-y-1.5 bg-slate-50/50">
-                                                {catItems.length === 0 && !isAddingHere && (
-                                                    <div className="text-[11px] text-rose-600 bg-rose-50 border border-rose-200 rounded p-2 text-center">
-                                                        ⚠ No items in this category. Students will see an empty column.
-                                                    </div>
-                                                )}
-                                                {catItems.map((item) => {
-                                                    const isEditingItem = csEdit && csEdit.kind === 'item' && csEdit.id === item.id;
-                                                    const isBusy = csBusyId === item.id;
-                                                    return (
-                                                        <div key={item.id} data-help-key="concept_sort_item" className="flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors">
-                                                            {/* Edit-mode thumbnail. Base 32px (w-8 h-8) scaled by user's
-                                                                conceptSortImageScale slider. Inline width/height override
-                                                                the Tailwind size classes so the slider feels live. */}
-                                                            {item.image ? (
-                                                                <img src={item.image} alt="" className="object-contain rounded shrink-0 bg-white border border-slate-100" loading="lazy"
-                                                                    style={{ width: Math.round(32 * conceptSortImageScale) + 'px', height: Math.round(32 * conceptSortImageScale) + 'px' }} />
-                                                            ) : (
-                                                                <div className="rounded bg-slate-100 border border-slate-400 shrink-0 flex items-center justify-center text-slate-400 text-[10px]" title="No image"
-                                                                    style={{ width: Math.round(32 * conceptSortImageScale) + 'px', height: Math.round(32 * conceptSortImageScale) + 'px' }}>—</div>
-                                                            )}
-                                                            {isEditingItem ? (
-                                                                <input
-                                                                    type="text"
-                                                                    autoFocus
-                                                                    value={csEdit.text}
-                                                                    onChange={(e) => setCsEdit({ kind: 'item', id: item.id, text: e.target.value })}
-                                                                    onBlur={() => { csUpdateItemText(item.id, csEdit.text); setCsEdit(null); }}
-                                                                    onKeyDown={(e) => {
-                                                                        if (e.key === 'Enter') { csUpdateItemText(item.id, csEdit.text); setCsEdit(null); }
-                                                                        else if (e.key === 'Escape') { setCsEdit(null); }
-                                                                    }}
-                                                                    className="flex-1 text-xs bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400"
-                                                                    aria-label="Edit item text"
-                                                                />
-                                                            ) : (
-                                                                <button
-                                                                    onClick={() => setCsEdit({ kind: 'item', id: item.id, text: item.content })}
-                                                                    className="flex-1 text-left text-xs text-slate-700 hover:text-slate-900 truncate"
-                                                                    title="Click to edit"
-                                                                    aria-label={`Edit item ${item.content}`}
-                                                                >
-                                                                    {item.content}
-                                                                </button>
-                                                            )}
-                                                            {/* Category move dropdown */}
-                                                            <select
-                                                                value={item.categoryId}
-                                                                onChange={(e) => csMoveItem(item.id, e.target.value)}
-                                                                className="text-[11px] bg-white border border-slate-400 rounded px-1.5 py-1 text-slate-600 hover:border-slate-300 max-w-[120px]"
-                                                                title="Move to category"
-                                                                aria-label="Move item to a different category"
-                                                                disabled={isBusy}
-                                                            >
-                                                                {(generatedContent?.data.categories || []).map(c => (
-                                                                    <option key={c.id} value={c.id}>{c.label}</option>
-                                                                ))}
-                                                            </select>
-                                                            {/* Regenerate button (full: text + image) */}
-                                                            <button
-                                                                onClick={() => csRegenerateItem(item, generatedContent?.data.categories || [])}
-                                                                disabled={isBusy || csBusyId === '__adding__'}
-                                                                className="w-7 h-7 rounded text-sm hover:bg-indigo-50 text-indigo-600 disabled:opacity-30 flex items-center justify-center"
-                                                                title="Regenerate this item (text + image)"
-                                                                aria-label="Regenerate this item — text and image"
-                                                            >
-                                                                {isBusy ? '⏳' : '🔄'}
-                                                            </button>
-                                                            {/* Image-only regenerate button */}
-                                                            <button
-                                                                onClick={() => csRegenerateItemImage(item)}
-                                                                disabled={isBusy || csBusyId === '__adding__'}
-                                                                className="w-7 h-7 rounded text-sm hover:bg-purple-50 text-purple-600 disabled:opacity-30 flex items-center justify-center"
-                                                                title="Regenerate just the image (keep the text)"
-                                                                aria-label="Regenerate image only"
-                                                            >
-                                                                {isBusy ? '⏳' : '🖼️'}
-                                                            </button>
-                                                            {/* Upload custom image button (hidden file input + label trigger) */}
-                                                            <label
-                                                                className={`w-7 h-7 rounded text-sm hover:bg-emerald-50 text-emerald-600 flex items-center justify-center cursor-pointer ${isBusy || csBusyId === '__adding__' ? 'opacity-30 pointer-events-none' : ''}`}
-                                                                title="Upload your own image (max 5 MB)"
-                                                                aria-label="Upload custom image"
-                                                            >
-                                                                <input
-                                                                    type="file"
-                                                                    accept="image/*"
-                                                                    className="hidden"
-                                                                    onChange={(e) => {
-                                                                        const f = e.target.files && e.target.files[0];
-                                                                        if (f) csUploadItemImage(item.id, f);
-                                                                        e.target.value = '';
-                                                                    }}
-                                                                    aria-label={`Upload image for ${item.content}`}
-                                                                />
-                                                                📤
-                                                            </label>
-                                                            {/* Clear image button (only when an image exists) */}
-                                                            {item.image && (
-                                                                <button
-                                                                    onClick={() => csClearItemImage(item.id)}
-                                                                    disabled={isBusy}
-                                                                    className="w-7 h-7 rounded text-sm hover:bg-amber-50 text-amber-600 disabled:opacity-30 flex items-center justify-center"
-                                                                    title="Remove the image (keep the text)"
-                                                                    aria-label="Clear image"
-                                                                >
-                                                                    🚫
-                                                                </button>
-                                                            )}
-                                                            {/* Delete button */}
-                                                            <button
-                                                                onClick={() => csDeleteItem(item.id)}
-                                                                disabled={isBusy}
-                                                                className="w-7 h-7 rounded text-sm hover:bg-rose-50 text-rose-500 disabled:opacity-30 flex items-center justify-center"
-                                                                title="Delete this item"
-                                                                aria-label="Delete this item"
-                                                            >
-                                                                🗑
-                                                            </button>
-                                                        </div>
-                                                    );
-                                                })}
-                                                {/* Inline add-item form */}
-                                                {isAddingHere && (
-                                                    <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2">
-                                                        <input
-                                                            type="text"
-                                                            autoFocus
-                                                            placeholder="New item (e.g. photosynthesis)"
-                                                            value={csAddingText}
-                                                            onChange={(e) => setCsAddingText(e.target.value)}
-                                                            onKeyDown={(e) => {
-                                                                if (e.key === 'Enter' && csAddingText.trim()) {
-                                                                    csAddItem(cat.id, csAddingText, generatedContent?.data.categories || []);
-                                                                } else if (e.key === 'Escape') {
-                                                                    setCsAddingCatId(null); setCsAddingText('');
-                                                                }
-                                                            }}
-                                                            className="flex-1 text-xs bg-white border border-emerald-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-emerald-400"
-                                                            aria-label="New item text"
-                                                            disabled={csBusyId === '__adding__'}
-                                                        />
-                                                        <button
-                                                            onClick={() => csAddItem(cat.id, csAddingText, generatedContent?.data.categories || [])}
-                                                            disabled={!csAddingText.trim() || csBusyId === '__adding__'}
-                                                            className="px-2 py-1 bg-emerald-600 text-white rounded text-[11px] font-bold disabled:opacity-40 hover:bg-emerald-700"
-                                                        >
-                                                            {csBusyId === '__adding__' ? '⏳' : 'Add'}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => { setCsAddingCatId(null); setCsAddingText(''); }}
-                                                            className="px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50"
-                                                        >
-                                                            Cancel
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                            )
-                        )}
-                        {isConceptSortGame && (
-                            <ErrorBoundary fallbackMessage="Concept Sort Game encountered an error.">
-                                <ConceptSortGame
-                                    data={generatedContent?.data}
-                                    onClose={closeConceptSort}
-                                    playSound={playSound}
-                                    onGenerateItem={handleGenerateConceptItem}
-                                    onScoreUpdate={handleGameScoreUpdate}
-                                    onGameComplete={handleGameCompletion}
-                                    onExplainIncorrect={handleExplainConceptSortItem}
-                                    imageScale={conceptSortImageScale}
-                                    onImageScaleChange={setConceptSortImageScale}
-                                />
-                            </ErrorBoundary>
-                        )}
-                    </div>
-                )}
+                {activeView === 'concept-sort' && window.AlloModules && window.AlloModules.ConceptSortView && React.createElement(window.AlloModules.ConceptSortView, {
+                    t, isTeacherMode, isIndependentMode, generatedContent,
+                    conceptSortImageScale, csEdit, csAddingCatId, csAddingText, csBusyId,
+                    isConceptSortGame,
+                    setConceptSortImageScale, setCsEdit, setCsAddingCatId, setCsAddingText,
+                    handleSetIsConceptSortGameToTrue,
+                    csUpdateCategoryLabel, csUpdateItemText, csMoveItem,
+                    csRegenerateItem, csRegenerateItemImage, csUploadItemImage,
+                    csClearItemImage, csDeleteItem, csAddItem,
+                    closeConceptSort, handleGenerateConceptItem,
+                    handleGameScoreUpdate, handleGameCompletion, handleExplainConceptSortItem,
+                    playSound, ErrorBoundary, ConceptSortGame
+                })}
                 {/* Math Fluency probe overlay — handled by math_fluency_module.js */}
                 {/* Math Fluency results — handled by math_fluency_module.js */}
                 {/* Standalone Fluency Maze view — first-class resource. Renders the
@@ -31063,51 +30751,9 @@ Return ONLY valid JSON:
                     getRows, normalizeMaterialItem, renderFormattedText, addToast,
                     BilingualFieldRenderer
                 })}
-                {activeView === 'gemini-bridge' && generatedContent && (
-                    <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
-                        <div className="bg-slate-900 text-slate-600 p-6 rounded-xl border border-slate-700 shadow-lg font-mono relative">
-                             <div className="flex justify-between items-center mb-6 border-b border-slate-700 pb-4">
-                                 <div className="flex items-center gap-2 text-green-400 font-bold">
-                                     <Terminal size={18} />
-                                     <span>{t('bridge.prompt_header')}</span>
-                                 </div>
-                                 <div className="text-xs text-slate-600 font-sans">
-                                     {Array.isArray(generatedContent?.data)
-                                        ? t('bridge.steps_count_label', { count: generatedContent?.data.length })
-                                        : t('bridge.single_prompt_label')
-                                     }
-                                 </div>
-                             </div>
-                             <div className="space-y-6">
-                                 {(Array.isArray(generatedContent?.data) ? generatedContent?.data : [generatedContent?.data]).map((promptStep, idx) => (
-                                    <div key={idx} className="relative group">
-                                        <div className="absolute -left-3 -top-3 w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold border-2 border-slate-900 shadow-sm z-10">
-                                            {idx + 1}
-                                        </div>
-                                        <div className="bg-slate-800 rounded-lg p-4 border border-slate-600 hover:border-slate-500 transition-colors">
-                                            <pre className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200 overflow-x-auto font-mono mb-2">
-                                                {promptStep}
-                                            </pre>
-                                            <div className="flex justify-end pt-2 border-t border-slate-700/50">
-                                                <button
-                                                    aria-label={t('common.copy')}
-                                                     onClick={() => copyToClipboard(promptStep)}
-                                                     className="flex items-center gap-2 text-[11px] font-bold bg-slate-700 hover:bg-green-700 text-white px-3 py-1.5 rounded transition-colors uppercase tracking-wider"
-                                                >
-                                                     <Copy size={12} /> {t('bridge.copy_step', { step: idx + 1 })}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                 ))}
-                             </div>
-                             <div className="mt-8 pt-4 border-t border-slate-700 text-xs text-slate-600 flex items-center gap-2 justify-center">
-                                 <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                                 {t('bridge.next_step')}
-                             </div>
-                        </div>
-                    </div>
-                )}
+                {activeView === 'gemini-bridge' && generatedContent && window.AlloModules && window.AlloModules.GeminiBridgeView && React.createElement(window.AlloModules.GeminiBridgeView, {
+                    t, generatedContent, copyToClipboard
+                })}
                 {/* ── DBQ Interactive View ── */}
                 {activeView === 'dbq' && generatedContent?.data && window.AlloModules && window.AlloModules.DbqView && React.createElement(window.AlloModules.DbqView, {
                     generatedContent, studentResponses, handleStudentInput, callGemini, cleanJson,
