@@ -1300,7 +1300,7 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   ))));
 });
 const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect, imageScale, onImageScaleChange }) => {
-  const _imgScale = (typeof imageScale === "number" && imageScale >= 0.5 && imageScale <= 2.5) ? imageScale : 1.0;
+  const _imgScale = (typeof imageScale === "number" && imageScale >= 0.5 && imageScale <= 3.0) ? imageScale : 1.5;
   const _imgPx = Math.round(64 * _imgScale);
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);

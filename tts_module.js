@@ -83,7 +83,6 @@ const createTTS = deps => {
         return bytes;
       };
       let promptText = text.length <= 2 ? `Say the sound: ${text}` : text;
-      promptText = promptText.replace(/[⁽][⁰¹²³⁴⁵⁶⁷⁸⁹]+[⁾]/g, '');
       promptText = promptText.replace(/^\s*\d+\.\s+/gm, '');
       promptText = promptText.replace(/^\s*[-*•]\s+/gm, '');
       promptText = promptText.replace(/\n{2,}/g, '. ');

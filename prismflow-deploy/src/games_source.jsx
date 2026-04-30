@@ -1507,9 +1507,9 @@ const TimelineGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGa
   );
 });
 const ConceptSortGame = React.memo(({ data, onClose, playSound, onGenerateItem, onScoreUpdate, onGameComplete, onExplainIncorrect, imageScale, onImageScaleChange }) => {
-  // Image scale: defaults to 1.0 if host doesn't pass one. Bounded 0.5–2.5 to
+  // Image scale: defaults to 1.5 if host doesn't pass one. Bounded 0.5–3.0 to
   // match the host's slider range. Used to scale card visuals during play.
-  const _imgScale = (typeof imageScale === 'number' && imageScale >= 0.5 && imageScale <= 2.5) ? imageScale : 1.0;
+  const _imgScale = (typeof imageScale === 'number' && imageScale >= 0.5 && imageScale <= 3.0) ? imageScale : 1.5;
   const _imgPx = Math.round(64 * _imgScale); // base 64px (w-16 h-16)
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);

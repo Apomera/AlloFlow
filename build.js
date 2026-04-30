@@ -460,7 +460,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_a11yauditor.js',
     'stem_lab/stem_tool_worldbuilder.js',
     'stem_lab/stem_tool_flightsim.js',
-    'stem_lab/stem_tool_atctower.js',
+    // atcTower entry moved to the catch-up batch below with the correct camelCase
+    // filename (matches the actual stem_tool_atcTower.js on disk + GitHub).
     'stem_lab/stem_tool_music.js',
     'stem_lab/stem_tool_climateExplorer.js',
     'stem_lab/stem_tool_renewables.js',
@@ -500,6 +501,24 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_allobotsage.js',
     'stem_lab/stem_tool_skatelab.js',
     'stem_lab/stem_tool_statslab.js',
+    'stem_lab/stem_tool_optics.js',
+    // Catch-up batch (Apr 30 2026): tools that were live in AlloFlowANTI/App.jsx
+    // toolModules array but missing here, so build.js couldn't bump their CDN
+    // hash. Fixed alongside the atcTower casing + playlab/throwlab full wiring.
+    'stem_lab/stem_tool_atcTower.js',
+    'stem_lab/stem_tool_throwlab.js',
+    'stem_lab/stem_tool_playlab.js',
+    'stem_lab/stem_tool_assessmentliteracy.js',
+    'stem_lab/stem_tool_autorepair.js',
+    'stem_lab/stem_tool_bikelab.js',
+    'stem_lab/stem_tool_evolab.js',
+    'stem_lab/stem_tool_firstresponse.js',
+    'stem_lab/stem_tool_learning_lab.js',
+    'stem_lab/stem_tool_llm_literacy.js',
+    'stem_lab/stem_tool_nutritionlab.js',
+    'stem_lab/stem_tool_roadready.js',
+    'stem_lab/stem_tool_typingpractice.js',
+    'stem_lab/stem_tool_weldlab.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',

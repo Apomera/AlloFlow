@@ -2923,6 +2923,11 @@
                 color: 'cyan', ready: true
               },
               {
+                id: 'petsLab', icon: '🐾', label: 'Science of Pets Lab',
+                desc: 'Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses. Service & support animals. Cross-species training that assumes BehaviorLab\'s operant theory.',
+                color: 'amber', ready: true
+              },
+              {
                 id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'),
                 color: 'lime', ready: true
               },
@@ -3098,6 +3103,66 @@
                 id: 'atcTower', icon: '🗼', label: 'ATC Tower',
                 desc: 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
                 color: 'emerald', ready: true
+              },
+              {
+                id: 'throwlab', icon: '⚾', label: 'ThrowLab: Sports Physics',
+                desc: 'Pitcher\'s Mound: dial spin, speed, and release point and watch the Magnus + drag integrator shape the ball\'s path. 6 pitch types. Hot-Hand streaks + Rookie/Pro tiers.',
+                color: 'amber', ready: true
+              },
+              {
+                id: 'playlab', icon: '🏈', label: 'PlayLab: Strategy on the Field',
+                desc: 'Football + soccer play design: drag-to-place routes, animated simulation, Coach Mode coverage analysis, drills + saved plays. Built for athletic kids.',
+                color: 'lime', ready: true
+              },
+              {
+                id: 'skatelab', icon: '🛹', label: 'SkateLab: Skate + BMX Physics',
+                desc: 'The physics that lands a 720: kickflips, halfpipe pumps, gap jumps. Energy conservation + angular momentum, made for kids who learn through tricks.',
+                color: 'amber', ready: true
+              },
+              {
+                id: 'firstResponse', icon: '🚑', label: 'First Response Lab',
+                desc: 'Recognize + respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only.',
+                color: 'rose', ready: true
+              },
+              {
+                id: 'autoRepair', icon: '🔧', label: 'Auto Repair Shop',
+                desc: 'Diagnose + fix a vehicle: OBD-II codes, fluid / sound / visual diagnosis, 7 step-by-step repairs (oil, brakes, alternator, tires, A/C, timing belt). Maine vocational pathways + ASE certification info. Pairs with RoadReady.',
+                color: 'slate', ready: true
+              },
+              {
+                id: 'weldLab', icon: '🔥', label: 'WeldLab: Welding & Metal Joining',
+                desc: 'MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld-bead geometry, defect ID, AWS welding symbols, OSHA-aligned PPE. Maine career pathways (Bath Iron Works, EMCC, AWS cert ladder).',
+                color: 'orange', ready: true
+              },
+              {
+                id: 'nutritionLab', icon: '🥗', label: 'NutritionLab: Nutrition Science',
+                desc: 'Adolescent-safe nutrition science: macros, micros, food labels, metabolism, digestion, food + mental health, eating-disorder awareness. Physiology-first framing — NOT weight-loss. Sources: USDA / NIH / Harvard / AAP / NEDA.',
+                color: 'green', ready: true
+              },
+              {
+                id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
+                desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'statsLab', icon: '📊', label: 'Statistics Lab',
+                desc: 'Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.',
+                color: 'sky', ready: true
+              },
+              {
+                id: 'learningLab', icon: '🧠', label: 'Learning Lab: How Learning Works',
+                desc: 'Bloom\'s Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0).',
+                color: 'indigo', ready: true
+              },
+              {
+                id: 'llmLiteracy', icon: '🧠', label: 'AI Literacy Lab',
+                desc: 'How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.',
+                color: 'violet', ready: true
+              },
+              {
+                id: 'assessmentLiteracy', icon: '📊', label: 'Assessment Literacy Lab',
+                desc: 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
+                color: 'fuchsia', ready: true
               },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
@@ -4140,7 +4205,7 @@
             probability: true, protractor: true, volume: true,
             // Science
             anatomy: true, aquarium: true, brainAtlas: true, cell: true,
-            chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true,
+            chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, molecule: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
@@ -4164,6 +4229,21 @@
             roadReady: true,
             bikeLab: true,
             atcTower: true,
+            throwlab: true,
+            playlab: true,
+            // Apr 30 catch-up: 10 production-ready tools that had built JS files
+            // and were loading via toolModules but were NEVER given menu tiles or
+            // plugin-only flags — so they were completely invisible. Adding both.
+            skatelab: true,
+            firstResponse: true,
+            autoRepair: true,
+            weldLab: true,
+            nutritionLab: true,
+            evoLab: true,
+            statsLab: true,
+            learningLab: true,
+            llmLiteracy: true,
+            assessmentLiteracy: true,
             musicSynth: true,
             beehive: true,
             echolocation: true,

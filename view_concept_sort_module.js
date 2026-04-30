@@ -50,6 +50,12 @@
   var csClearItemImage = props.csClearItemImage;
   var csDeleteItem = props.csDeleteItem;
   var csAddItem = props.csAddItem;
+  // Image refinement (image-to-image edit) — mirrors glossary refine pattern.
+  var csRefineItemImage = props.csRefineItemImage;
+  var csRefinementInputs = props.csRefinementInputs || {};
+  var setCsRefinementInputs = props.setCsRefinementInputs || (function() {});
+  var conceptSortAutoRemoveWords = props.conceptSortAutoRemoveWords;
+  var setConceptSortAutoRemoveWords = props.setConceptSortAutoRemoveWords || (function() {});
   var closeConceptSort = props.closeConceptSort;
   var handleGenerateConceptItem = props.handleGenerateConceptItem;
   var handleGameScoreUpdate = props.handleGameScoreUpdate;
@@ -113,7 +119,7 @@
     id: "concept-sort-image-scale-rv",
     type: "range",
     min: "0.5",
-    max: "2.5",
+    max: "3.0",
     step: "0.05",
     value: conceptSortImageScale,
     onChange: e => setConceptSortImageScale(parseFloat(e.target.value) || 1.0),
@@ -124,11 +130,20 @@
     className: "text-[10px] font-mono text-amber-800 min-w-[2.5em] text-right"
   }, conceptSortImageScale.toFixed(2), "\xD7"), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => setConceptSortImageScale(1.0),
+    onClick: () => setConceptSortImageScale(1.5),
     className: "text-[10px] text-amber-700 hover:text-amber-900 hover:underline",
-    title: t('common.reset') || 'Reset to 1×',
+    title: t('common.reset') || 'Reset to 1.5×',
     "aria-label": "Reset image size to default"
-  }, "reset")), /*#__PURE__*/React.createElement("span", {
+  }, "reset")), typeof setConceptSortAutoRemoveWords === 'function' && /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-1.5 bg-white/80 border border-amber-200 rounded-full px-2.5 py-1 cursor-pointer text-[10px] font-bold text-amber-800 uppercase tracking-wider",
+    title: "Run an image-to-image edit after each generation to remove leftover text/labels"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: !!conceptSortAutoRemoveWords,
+    onChange: e => setConceptSortAutoRemoveWords(!!e.target.checked),
+    className: "accent-amber-600",
+    "aria-label": "Auto-remove text from generated images"
+  }), "Auto-remove text"), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold text-amber-800 bg-white/80 border border-amber-200 rounded-full px-2 py-0.5"
   }, (generatedContent?.data.categories || []).length, " categories \xB7 ", (generatedContent?.data.items || []).length, " items"))), (generatedContent?.data.categories || []).map(cat => {
     const catItems = (generatedContent?.data.items || []).filter(item => item.categoryId === cat.id);
@@ -191,10 +206,13 @@
     }, "\u26A0 No items in this category. Students will see an empty column."), catItems.map(item => {
       const isEditingItem = csEdit && csEdit.kind === 'item' && csEdit.id === item.id;
       const isBusy = csBusyId === item.id;
+      const refineInput = csRefinementInputs[item.id] || '';
       return /*#__PURE__*/React.createElement("div", {
         key: item.id,
         "data-help-key": "concept_sort_item",
-        className: "flex items-center gap-2 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors"
+        className: "flex flex-col gap-1 bg-white p-2 rounded-lg border border-slate-400 hover:border-slate-300 transition-colors"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center gap-2"
       }, item.image ? /*#__PURE__*/React.createElement("img", {
         src: item.image,
         alt: "",
@@ -285,13 +303,36 @@
         className: "w-7 h-7 rounded text-sm hover:bg-amber-50 text-amber-600 disabled:opacity-30 flex items-center justify-center",
         title: "Remove the image (keep the text)",
         "aria-label": "Clear image"
-      }, "\uD83D\uDEAB"), /*#__PURE__*/React.createElement("button", {
+      }, "\uD83D\uDEAB"), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("button", {
+        onClick: () => csRefineItemImage(item.id, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
+        disabled: isBusy,
+        className: "w-7 h-7 rounded text-sm hover:bg-red-50 text-red-600 disabled:opacity-30 flex items-center justify-center",
+        title: "Auto-remove text from this image",
+        "aria-label": "Auto-remove text from image"
+      }, "\uD83D\uDD24\u20E0"), /*#__PURE__*/React.createElement("button", {
         onClick: () => csDeleteItem(item.id),
         disabled: isBusy,
         className: "w-7 h-7 rounded text-sm hover:bg-rose-50 text-rose-500 disabled:opacity-30 flex items-center justify-center",
         title: "Delete this item",
         "aria-label": "Delete this item"
-      }, "\uD83D\uDDD1"));
+      }, "\uD83D\uDDD1")), item.image && csRefineItemImage && /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center gap-1 pl-1 pr-1"
+      }, /*#__PURE__*/React.createElement("input", {
+        type: "text",
+        value: refineInput,
+        onChange: e => setCsRefinementInputs(prev => Object.assign({}, prev, { [item.id]: e.target.value })),
+        onKeyDown: e => { if (e.key === 'Enter' && refineInput.trim()) { csRefineItemImage(item.id); } },
+        placeholder: "Edit image: e.g. brighter colors, add a border\u2026",
+        disabled: isBusy,
+        className: "flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-400",
+        "aria-label": `Refinement prompt for ${item.content}`
+      }), /*#__PURE__*/React.createElement("button", {
+        onClick: () => csRefineItemImage(item.id),
+        disabled: isBusy || !refineInput.trim(),
+        className: "px-2 py-1 rounded text-[11px] font-bold bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30",
+        title: "Apply edit prompt to this image",
+        "aria-label": "Apply edit prompt"
+      }, "\u270F\uFE0F Send")));
     }), isAddingHere && /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-lg p-2"
     }, /*#__PURE__*/React.createElement("input", {
