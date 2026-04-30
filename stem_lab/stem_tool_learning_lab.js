@@ -1604,6 +1604,262 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
   ];
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 12.12: GOAL SETTING + PROCRASTINATION MASTERY
+  // SMART, OKRs, implementation intentions, Pomodoro deep dive, the 2-min
+  // rule. Plus the modern reframe: procrastination is emotion-regulation,
+  // not time-management (Pychyl).
+  // ─────────────────────────────────────────────────────────
+  var GOAL_FRAMEWORKS = [
+    { id: 'smart', icon: '🎯', name: 'SMART goals',
+      what: 'Specific, Measurable, Achievable, Relevant, Time-bound. Created by Doran 1981 for management; widely adopted in education.',
+      goodFor: 'Discrete, well-defined targets. Test-prep goals. Skill-building benchmarks. Habit installation.',
+      badFor: 'Open-ended exploration. Creative work. Things where the goal evolves as you learn.',
+      example: 'Bad: "Get better at math." SMART: "Score at least 85% on the next 3 algebra unit tests by end of semester, by completing 30 min of spaced practice 4x/week."',
+      pitfall: 'SMART can promote conservative goals (you set what you\'re sure to hit, missing the stretch growth).' },
+    { id: 'okrs', icon: '🚀', name: 'OKRs (Objectives + Key Results)',
+      what: 'Andy Grove at Intel; popularized by Google. Set 1 ambitious Objective + 3-5 measurable Key Results. Score 0.0-1.0 at end. 0.7 is "good" — 1.0 means you set the goal too low.',
+      goodFor: 'Stretch goals. Quarter or semester planning. Personal projects + work-style goals. When you want growth + measurement.',
+      badFor: 'Day-to-day execution (use a to-do list for that). Goals where measurement is fuzzy.',
+      example: 'Objective: "Become a strong public speaker by end of semester." KR1: Give 3 voluntary presentations. KR2: Reduce filler words from 20/min to <5/min. KR3: Get peer-rated 4+ out of 5 on confidence on final speech.',
+      pitfall: 'Get the Os + KRs ambitious but the KRs MEASURABLE. Vague KRs = vague accountability.' },
+    { id: 'implementation-intentions', icon: '📍', name: 'Implementation intentions',
+      what: 'Gollwitzer 1999. "If [situation X], then I will do [behavior Y]." Pre-decides the response so the moment doesn\'t require willpower.',
+      goodFor: 'Habits. Resisting temptations. Following through on goals you keep dropping.',
+      badFor: 'One-off complex projects (use OKRs or project plans). Truly novel situations.',
+      example: '"If it\'s 4pm on Tuesday, then I will start my Spanish flashcards." "If I\'m tempted to scroll instead of starting homework, then I will set a 25-min Pomodoro timer + start the easiest task." "If I see my phone during study time, then I will put it face-down in another room."',
+      pitfall: 'Vague intentions ("I\'ll study more") don\'t work. Specific situational triggers do.' },
+    { id: 'two-minute', icon: '⏱️', name: 'The 2-minute rule',
+      what: 'David Allen (GTD). If something takes <2 minutes, do it now instead of adding it to your list. Variant from James Clear: when starting a habit, scale it down to "2 minutes" so it\'s impossible to skip.',
+      goodFor: 'Reducing overwhelm. Building habits. Clearing inbox-style backlogs.',
+      badFor: 'Deep work. Anything requiring sustained focus.',
+      example: 'Atomic Habits version: "I\'ll study for 30 minutes" becomes "I\'ll open my notebook + read one paragraph." Once started, momentum often carries you further.',
+      pitfall: 'Don\'t use it as procrastination disguised as productivity (clearing tiny tasks while avoiding the big one).' }
+  ];
+
+  var POMODORO_DEEP = {
+    name: 'Pomodoro Technique',
+    creator: 'Francesco Cirillo, late 1980s. Named after his tomato-shaped kitchen timer.',
+    structure: '25 min focused work → 5 min break → 25 min work → 5 min → 25 min work → 5 min → 25 min work → 15-30 min long break. Repeat.',
+    why: 'Forces single-tasking with a clear endpoint (just 25 min — manageable). Breaks prevent decision fatigue + working-memory exhaustion. The structure itself is a commitment device.',
+    rules: [
+      'During the 25 min: ONE task. Phone in another room.',
+      'If you finish early: review or extend the work, don\'t skip ahead.',
+      'If interrupted: the Pomodoro is "broken" — restart it.',
+      'Track completed Pomodoros — visual progress is motivating.',
+      'Don\'t skip breaks even if you "feel like" continuing. Rest is when consolidation happens.'
+    ],
+    modifications: [
+      'For ADHD: try shorter (15 min) Pomodoros to lower initiation barrier.',
+      'For deep work: longer (50 min / 10 min) — Newport-style.',
+      'For low-motivation: start with 1 single Pomodoro. Done. The win matters more than completing 4.'
+    ],
+    research: 'Less rigorous than retrieval-practice, but the underlying principles (single-tasking, time-boxing, scheduled breaks) are well-supported. Popular for ADHD + executive-function support.'
+  };
+
+  var PROCRASTINATION_REFRAMES = [
+    { reframe: 'Procrastination is emotion-regulation, not time-management',
+      detail: 'Pychyl (2013, "Solving the Procrastination Puzzle"). Procrastination is avoiding the NEGATIVE EMOTION the task evokes (boredom, anxiety, frustration, doubt). The brain says "I\'ll do it later when it feels less bad" — but it never does feel less bad.',
+      action: 'Name the emotion the task evokes. ("This essay makes me anxious because I\'m worried it won\'t be good enough.") Tolerate the emotion + start anyway. Tip: just start for 5 minutes — the dread usually fades within minutes of beginning.' },
+    { reframe: 'Get IN to the task, not READY for it',
+      detail: 'Many people procrastinate by getting "ready" — clearing desk, finding the right music, making coffee. These rituals can be infinite. Start the task in the messiest possible state.',
+      action: 'Lower the bar to "open the document" or "read the first sentence of the assignment." Stop preparing; start producing.' },
+    { reframe: 'You don\'t need motivation, you need a system',
+      detail: 'Waiting to "feel motivated" before doing the thing is backwards — motivation usually comes AFTER you start, not before. Action precedes motivation.',
+      action: 'Use implementation intentions ("If 4pm, then start homework"). Use Pomodoros. Use body doubling. Build the system; let motivation be a bonus when it shows up.' },
+    { reframe: 'Most procrastination is fear of doing it badly',
+      detail: 'Perfectionism + procrastination are related. Both are about avoiding evidence that you\'re not as good as you want to be. The remedy is permission to do it badly first.',
+      action: '"Shitty first draft" rule (Anne Lamott). Just produce SOMETHING. You can revise; you can\'t revise nothing.' },
+    { reframe: 'Self-compassion beats self-criticism',
+      detail: 'Sirois + Pychyl 2013. People who beat themselves up for procrastinating procrastinate MORE on subsequent tasks. Self-compassion reduces the rumination + frees executive function.',
+      action: 'When you notice you\'ve been procrastinating: "OK. That happened. Many people struggle with this — it\'s not a character flaw. What\'s the smallest next step?" Then take it.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.13: MULTITASKING MYTH + ATTENTION RESIDUE
+  // The myth that we can do two things at once is one of the most
+  // expensive cognitive illusions for students. Brain doesn't multitask —
+  // it task-switches. Each switch carries a cost.
+  // ─────────────────────────────────────────────────────────
+  var MULTITASKING_FACTS = {
+    coreReality: 'The brain does NOT process two attention-demanding tasks in parallel. What we call "multitasking" is actually rapid task-switching — each switch leaks attention residue + costs cognitive resources.',
+    attentionResidue: 'Sophie Leroy 2009. When you switch from Task A to Task B, part of your attention REMAINS on Task A for many minutes. You think you\'re working on B but you\'re working on B with a fraction of your capacity.',
+    reorientationCost: 'Gloria Mark research (UC Irvine): after a single email interruption, knowledge workers take ~23 minutes on average to fully refocus. A "quick check" of email is rarely quick.',
+    accuracyCost: 'Ophir, Nass + Wagner 2009. Heavy media multitaskers performed WORSE on tests of attention-switching, working memory, and filtering distractions — opposite of what they thought their multitasking practice was doing for them.',
+    ironicAwareness: 'The people most confident in their multitasking ability score WORST on objective tests of multitasking performance. Multitasking confidence is anti-correlated with multitasking competence.'
+  };
+
+  var MULTITASKING_COSTS = [
+    { source: '📧 Email / message check during study',
+      cost: 'Each check = ~23 min reorientation cost (Gloria Mark). Even a 30-second check creates a 23-minute productivity tax.',
+      fix: 'Phone in another room or in a drawer. Email closed. Notifications off. Check at deliberate breaks (Pomodoro pattern).' },
+    { source: '💬 Texting while reading or watching lectures',
+      cost: 'Comprehension drops 20-50% (Bowman et al. 2010). You THINK you got it; you didn\'t.',
+      fix: 'Single-task during learning. Texts can wait the 25-50 min of the study session.' },
+    { source: '📺 TV/podcast while studying',
+      cost: 'Background TV (especially with dialogue) impairs reading comprehension. Music WITHOUT lyrics is the borderline case — instrumental is OK; lyrics compete with verbal processing.',
+      fix: 'Silence > instrumental music > music with lyrics > podcast > TV, in order of preferred. Pick what works for the specific task.' },
+    { source: '🌐 Multiple browser tabs',
+      cost: 'Each open tab is a "future task" your working memory tracks. 30 open tabs = 30 background drains on cognitive resources.',
+      fix: 'Bookmark + close. Tab-management extensions (OneTab, Workona). Aim for <10 open at a time during focus work.' },
+    { source: '📱 Phone visible (even silenced)',
+      cost: 'Ward et al. 2017. Even a face-down silent phone visible on the desk reduces working-memory + fluid intelligence test scores. Mere presence drains attention.',
+      fix: 'Phone in another room. Or in a drawer. Out of sight, not just face-down.' },
+    { source: '🎵 Music with lyrics during reading',
+      cost: 'Verbal lyrics compete with verbal processing required to read. Reading speed + comprehension drop.',
+      fix: 'Silence or instrumental during reading. Lyrics are fine for repetitive math problems or chores — different cognitive demands.' }
+  ];
+
+  var SINGLE_TASKING_TIPS = [
+    { tip: 'Time-box your tasks',
+      detail: 'Single-task for a defined window (Pomodoro 25 min, deep-work 50-90 min). Knowing the end is near makes single-tasking feel possible.' },
+    { tip: 'Batch similar tasks',
+      detail: 'Group emails + check at 11am, 3pm, 6pm. Group small admin tasks into one block. Switching costs aggregate; batching reduces total switches.' },
+    { tip: 'Set up your environment FOR single-tasking',
+      detail: 'Phone away. Notifications off. One tab. One document. One task. Visible distractions compete for attention even when you\'re "ignoring" them.' },
+    { tip: 'Schedule transitions',
+      detail: 'Between tasks, take a deliberate 2-3 minute reset (water, stretch, deep breath). Lets attention residue dissipate before starting the next task.' },
+    { tip: 'Single-task IS the skill',
+      detail: 'Like meditation. You\'ll fail. You\'ll notice you\'re distracted. You bring attention back. The bringing-back is the practice. Don\'t expect perfection.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.14: READING + LITERACY SCIENCE
+  // The "reading wars" + structured literacy + Orton-Gillingham. Critical
+  // for elementary teachers + parents + anyone working with struggling
+  // readers. Aaron's school-psych work touches this directly.
+  // ─────────────────────────────────────────────────────────
+  var SIMPLE_VIEW_OF_READING = {
+    formula: 'Reading Comprehension = Decoding × Language Comprehension (Gough + Tunmer 1986)',
+    explanation: 'Reading is the product (NOT sum) of two skills. Either at zero = comprehension at zero. A reader needs BOTH to read well.',
+    decoding: 'The ability to translate written letters/words into spoken sounds. Phonics + phonemic awareness + fluency live here.',
+    languageComp: 'Understanding spoken language. Vocabulary + syntax + background knowledge + inference live here.',
+    implications: [
+      'A child with strong oral language but weak decoding (a "dyslexic profile") = good comprehension when text is read aloud, poor when reading independently. Treatment: structured literacy / phonics-based intervention.',
+      'A child with strong decoding but weak language comprehension (a "hyperlexic profile" or English Learner) = can read aloud fluently but doesn\'t understand. Treatment: vocabulary + background-knowledge building.',
+      'A child weak in BOTH = the most common pattern in struggling readers. Both interventions needed.'
+    ]
+  };
+
+  var READING_FIVE_PILLARS = [
+    { id: 'phonemic-awareness', icon: '🔊', name: 'Phonemic awareness',
+      what: 'The ability to HEAR + manipulate the individual sounds (phonemes) in spoken words. NOT about letters yet — purely auditory.',
+      example: 'Hearing that "cat" has 3 sounds: /k/ /a/ /t/. Knowing that "cat" without /k/ becomes "at." Identifying that "cat" + "bat" rhyme.',
+      whenTaught: 'PreK-K, before phonics. Kids who lack phonemic awareness struggle with phonics + reading.',
+      research: 'NRP (National Reading Panel) 2000: phonemic awareness is one of the strongest predictors of later reading success.' },
+    { id: 'phonics', icon: '🔤', name: 'Phonics',
+      what: 'The connection between letters/spellings + sounds. The systematic, sequential teaching of those connections.',
+      example: '"The letter B says /b/." "When two vowels go walking, the first does the talking" (e.g., "boat" — /oh/ not /o-uh/). Decoding "phlegm" requires knowing "ph" = /f/, "gm" silent g.',
+      whenTaught: 'K-2 primarily. Continues through elementary as patterns get more complex. Should be EXPLICIT + SYSTEMATIC.',
+      research: 'NRP 2000 + Castles, Rastle + Nation 2018: explicit systematic phonics produces better outcomes than incidental phonics or whole-language approaches.' },
+    { id: 'fluency', icon: '🏃', name: 'Fluency',
+      what: 'Reading with appropriate speed + accuracy + expression. Frees cognitive resources for comprehension.',
+      example: 'A fluent reader reads aloud at conversational pace with proper phrasing + intonation. A non-fluent reader sounds like a robot, breaking words letter-by-letter.',
+      whenTaught: 'Grade 1-3 builds fluency. Repeated reading + Reader\'s Theater + audiobooks paired with text are evidence-based interventions.',
+      research: 'NRP 2000. Fluency is the bridge between decoding + comprehension. Slow decoding eats working memory needed for comprehension.' },
+    { id: 'vocabulary', icon: '📖', name: 'Vocabulary',
+      what: 'Knowledge of word meanings. Both width (number of words known) + depth (how richly each word is known).',
+      example: 'Knowing "happy" is one level. Knowing "happy / glad / joyful / elated / euphoric" with their connotations + appropriate contexts is depth.',
+      whenTaught: 'Continuously through all grades. Read-alouds + explicit vocabulary instruction + wide reading + word study.',
+      research: 'Hart + Risley 1995 (with debate over methodology) + Nagy + Townsend 2012. Vocabulary explains a huge proportion of reading-comprehension variance, especially after grade 3.' },
+    { id: 'comprehension', icon: '🧩', name: 'Comprehension',
+      what: 'Constructing meaning from text. Active process: predicting, inferring, monitoring, summarizing, questioning.',
+      example: 'Reading a paragraph + summarizing the main idea. Inferring why a character did what they did. Connecting new info to background knowledge.',
+      whenTaught: 'Continuously. Explicit teaching of comprehension strategies (visualizing, summarizing, questioning, inferring).',
+      research: 'NRP 2000. Comprehension strategies, taught explicitly, transfer to better reading. But: strategies only work if decoding + vocabulary + background knowledge are sufficient.' }
+  ];
+
+  var STRUCTURED_VS_BALANCED = [
+    { approach: 'Structured Literacy', stance: 'evidence-aligned',
+      what: 'Explicit, systematic, sequential teaching of phonemic awareness + phonics + fluency. Decodable texts (texts where the words match the phonics taught). Cumulative review.',
+      origin: 'Rooted in Orton-Gillingham (1930s) + reading-science research. Adopted in many states\' early-literacy mandates (post-2018 reading-science movement).',
+      good: 'Strong evidence base. Especially effective for struggling readers + students with dyslexia. Equity benefit: doesn\'t assume kids will pick it up by osmosis.',
+      caveat: 'Can feel mechanical to teachers used to "joyful reading." Best results when paired with rich read-alouds + vocabulary + comprehension strategies.' },
+    { approach: 'Balanced Literacy', stance: 'mixed evidence',
+      what: 'Mix of phonics + whole-language approaches. Often emphasizes "leveled readers" (texts at the child\'s level), guided reading groups, "three-cueing" (using meaning + structure + visual cues including pictures + first letter to guess words).',
+      origin: 'Calkins, Fountas + Pinnell, Lucy Calkins + Reading Recovery. Dominant in US elementary schools 2000-2020.',
+      good: 'Joyful, choice-rich classrooms. Wide reading habits.',
+      caveat: 'Three-cueing is the controversial part — research shows skilled readers use letter-by-letter decoding, NOT context-guessing. Asking struggling readers to "guess from the picture or first letter" trains BAD habits + leaves dyslexic students behind. The "Sold a Story" podcast (Emily Hanford 2022) brought this critique to wide audiences.' },
+    { approach: 'Whole Language (mostly historical)', stance: 'evidence-rejected',
+      what: 'Reading is "natural" like spoken language; minimize phonics; immerse in real books.',
+      origin: 'Goodman + Smith 1970s-80s.',
+      good: 'Genuine love of reading. Authentic texts.',
+      caveat: 'Empirically rejected — children DON\'T pick up reading naturally; explicit instruction matters. Whole-language stripped of phonics produces predictable reading failures, especially for kids with dyslexia.' }
+  ];
+
+  var ORTON_GILLINGHAM = {
+    what: 'A multisensory, structured-literacy approach originally developed for students with dyslexia. Letters/sounds taught explicitly + cumulatively + with multiple modalities (see + hear + write + tap).',
+    history: 'Samuel Orton (neuropsychiatrist) + Anna Gillingham (educator), 1930s-40s. Pre-empts modern reading science by decades.',
+    coreFeatures: [
+      'Multisensory (visual + auditory + kinesthetic-tactile)',
+      'Direct + explicit instruction (no guessing)',
+      'Systematic + cumulative (each lesson builds on prior; review baked in)',
+      'Sequential (simple → complex; easy → hard)',
+      'Diagnostic (teacher continuously assesses + adjusts)',
+      'Synthetic phonics (letter-sound → blend into words)'
+    ],
+    evidence: 'Strong evidence base for dyslexia intervention. Adapted programs (Wilson Reading System, Barton, LiPS, SPIRE) all draw from O-G principles + share evidence base.',
+    accessibility: 'Has historically been expensive (private tutoring at $80-150/hr). Increasingly available in schools as structured literacy mandates spread.'
+  };
+
+  var READING_WARS_SUMMARY = 'The "reading wars" is the multi-decade fight between phonics-first + whole-language camps. Reading science (cognitive psychology, neuroscience) has converged on phonics+structured literacy as evidence-aligned, especially for struggling readers + dyslexia. Many US states have passed early-literacy laws (post-2018) requiring structured literacy. Teachers trained in balanced-literacy approaches need professional development to update practice. Resources: Emily Hanford\'s "Sold a Story" podcast (2022). Reading Reform Foundation. International Dyslexia Association.';
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 12.15: TRAUMA-INFORMED TEACHING
+  // ACEs framework + window of tolerance + co-regulation. Aaron\'s clinical
+  // territory. Critical for ALL teachers — many students carry trauma that
+  // shapes their classroom presentation; all teachers will encounter it.
+  // ─────────────────────────────────────────────────────────
+  var TRAUMA_FOUNDATIONS = {
+    aces: 'Adverse Childhood Experiences (ACEs) study, Felitti + Anda 1998. Higher ACEs scores correlate with worse adult mental + physical health outcomes. ~67% of US adults have at least 1 ACE; ~13% have 4+ ACEs.',
+    behaviorAsCommunication: 'Trauma-informed reframe: behavior is not "willful misbehavior" — it\'s communication of an unmet need or dysregulated state. "What happened to you?" replaces "What\'s wrong with you?"',
+    coRegBeforeSelfReg: 'Bruce Perry. Children develop self-regulation only AFTER experiencing reliable co-regulation with a calm, predictable adult. You can\'t demand a dysregulated child "calm down" — you have to provide the regulated nervous system that helps theirs come back online.',
+    windowOfTolerance: 'Daniel Siegel. The optimal zone of arousal where a person can think + learn + connect. Outside the window: hyperaroused (fight/flight) or hypoaroused (freeze/dissociate). Trauma narrows this window; trauma-informed practice widens it.',
+    notATherapist: 'Teachers are NOT therapists. The goal isn\'t to treat trauma — it\'s to create classrooms that don\'t exacerbate it + that make learning possible for trauma-affected students. Refer clinical concerns to school psych + counselor + outside therapy.'
+  };
+
+  var TRAUMA_INFORMED_PRACTICES = [
+    { id: 'safety', icon: '🛡️', name: 'Build safety + predictability',
+      what: 'Trauma teaches the body that the world is unpredictable + unsafe. Healing starts with predictability.',
+      classroom: 'Consistent routines + visible schedules + predictable transitions + reliable adult responses (never sarcasm or shame). When you HAVE to change something, give advance warning + acknowledge the disruption.',
+      avoid: 'Sudden surprises ("pop quiz!"), public shaming, unpredictable consequences, raised voices.' },
+    { id: 'connection', icon: '🤝', name: 'Connection before correction',
+      what: 'When a student is dysregulated, NO learning or behavior change is possible. Co-regulate first. Address content/behavior after.',
+      classroom: 'Notice the dysregulation. Use a calm voice + body language. Move closer (if welcome) or give space. Validate ("this is hard right now"). Wait for the nervous system to come back online before any teaching.',
+      avoid: 'Trying to "reason with" a dysregulated student. Public correction. Power struggles. Demanding immediate verbal response.' },
+    { id: 'choice', icon: '🎯', name: 'Build in choice + autonomy',
+      what: 'Trauma is fundamentally about loss of agency. Every choice you build into instruction restores some.',
+      classroom: 'Choice of seat. Choice of project topic. Choice of reading from a curated list. Two ways to demonstrate learning. Even small choices reduce the survival-system activation that big-no-choice tasks trigger.',
+      avoid: 'Forcing students into corner-seats, mandatory partner assignments, rigid prescribed pathways.' },
+    { id: 'regulation', icon: '🌬️', name: 'Teach regulation skills explicitly',
+      what: 'Self-regulation isn\'t innate; it\'s learned through co-regulation + practice. Teach the skills explicitly + non-shaming.',
+      classroom: 'Brief breathing exercises at start of class. Calm corner / sensory tools available without permission. Pre-taught language for emotions + needs ("I need a break", "I\'m feeling overwhelmed"). Modeling: name your own emotions.',
+      avoid: 'Shaming kids for needing the calm corner. Treating self-regulation skills as "for kids with problems."' },
+    { id: 'culture', icon: '🌍', name: 'Cultural humility + systemic awareness',
+      what: 'Many students carry historical + systemic trauma (racism, poverty, displacement, intergenerational trauma) — often in addition to individual experiences. Trauma-informed teaching includes this lens.',
+      classroom: 'Diverse texts + perspectives. Validate experiences without prying. Don\'t assume all trauma looks the same. Recognize that some "traumas" are ongoing (systemic racism doesn\'t end at the schoolhouse door).',
+      avoid: 'Color-blind framing ("I don\'t see race"). Cultural insensitivity. Treating trauma as exclusively individual.' },
+    { id: 'self-care', icon: '💚', name: 'Adult self-regulation',
+      what: 'You cannot co-regulate from a dysregulated state. Teachers working with trauma-affected students need their own regulation tools + support — secondary trauma is real.',
+      classroom: 'Brief regulation breaks for yourself. Peer consultation. Therapy if needed. Recognizing your own activation BEFORE you respond.',
+      avoid: 'Stoic suffering. Burnout cycle. "I\'m fine" denial.' }
+  ];
+
+  var TRAUMA_REFERRAL_GUIDE = [
+    { sign: 'Sudden behavior change (withdrawal, aggression, dissociation)',
+      action: 'Document. Talk privately + non-pressuring. Refer to school counselor.' },
+    { sign: 'Disclosure of abuse / neglect / harm',
+      action: 'You are a MANDATED REPORTER. Report to your designated child-protection authority within the timeline your state requires. Don\'t investigate — report.' },
+    { sign: 'Disclosure of suicidal thoughts or self-harm',
+      action: 'Stay with the student. Don\'t leave them alone. Contact school counselor / school psych immediately. Don\'t promise confidentiality.' },
+    { sign: 'Pattern of dysregulation that doesn\'t respond to classroom strategies',
+      action: 'Refer to school psych for assessment. May be PTSD, anxiety disorder, ADHD, or other clinical concern needing specialized intervention.' },
+    { sign: 'Suspected substance use, eating disorder, or other clinical concern',
+      action: 'Refer. Don\'t try to handle it as a teacher. School counselor + outside referral.' },
+    { sign: 'Acute crisis (in danger now)',
+      action: '911 or 988 Suicide and Crisis Lifeline. Don\'t hesitate. School protocols exist for exactly this.' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 13: KNOWLEDGE QUIZ — 40 questions across all modules
   // ─────────────────────────────────────────────────────────
   var QUIZ = [
@@ -1826,7 +2082,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
     { id: 'q55', icon: '🧪',
       stem: 'You\'re running a Lab Simulator scenario. The student\'s teacher reports failing tests + says "she just doesn\'t care." Highest-scoring response?',
       choices: ['Tell the teacher she\'s right', 'Reframe: "Doesn\'t care" usually masks a different issue (anxiety, strategy gap, executive dysfunction, life stressor, identity threat). Diagnose carefully before accepting the label.', 'Punish the student', 'Drop her from the class'],
-      correct: 1, why: 'Pathologizing student behavior as character flaw ("doesn\'t care," "lazy," "defiant") closes the door on real diagnosis. Almost every "doesn\'t care" pattern reveals an underlying barrier when investigated with care.' }
+      correct: 1, why: 'Pathologizing student behavior as character flaw ("doesn\'t care," "lazy," "defiant") closes the door on real diagnosis. Almost every "doesn\'t care" pattern reveals an underlying barrier when investigated with care.' },
+    { id: 'q56', icon: '⏱️',
+      stem: 'Pychyl + others reframe procrastination as primarily an issue of:',
+      choices: ['Time management', 'Emotion regulation — avoiding the negative emotion the task evokes (anxiety, boredom, doubt). The brain says "I\'ll do it when it feels less bad" but it doesn\'t.', 'Laziness', 'Bad genetics'],
+      correct: 1, why: 'Procrastination is the avoidance of UNPLEASANT FEELINGS, not the management of TIME. Recognizing this changes the intervention: tolerate the emotion + start anyway (often dread fades within minutes of beginning).' },
+    { id: 'q57', icon: '🎯',
+      stem: 'Implementation intentions (Gollwitzer 1999) take the form:',
+      choices: ['"I will try harder"', '"If [situation X], then I will do [behavior Y]" — pre-deciding the response so the moment doesn\'t require willpower', '"Maybe later"', '"I should..."'],
+      correct: 1, why: '"If 4pm, then start Spanish flashcards." "If I\'m tempted to scroll, then I\'ll set a 25-min timer + start the easiest task." Specific situational triggers + pre-decided responses dramatically increase follow-through.' },
+    { id: 'q58', icon: '📵',
+      stem: 'You\'re studying with your phone face-down on the desk (silent). What does Ward et al. 2017 research show?',
+      choices: ['Phone presence has no effect when silenced', 'Even a silent face-down phone visible on the desk reduces working-memory + fluid-intelligence test scores. Mere presence drains attention.', 'Phone helps focus', 'Only matters if it buzzes'],
+      correct: 1, why: 'Ward et al. 2017 in JACR. The phone\'s mere PRESENCE — even silent + face-down + ignored — costs cognitive resources. Solution: phone in another room, not just face-down.' },
+    { id: 'q59', icon: '📖',
+      stem: 'The "Simple View of Reading" (Gough + Tunmer 1986) says reading comprehension equals:',
+      choices: ['Decoding alone', 'Decoding × Language Comprehension. Either at zero = comprehension at zero. Both must be developed.', 'Vocabulary alone', 'Memorization'],
+      correct: 1, why: 'Reading is the PRODUCT (not sum) of decoding + language comprehension. A "dyslexic profile" = strong oral language but weak decoding. A "hyperlexic" or EL profile = strong decoding but weak comprehension. Both must be addressed for the matching profile.' },
+    { id: 'q60', icon: '💚',
+      stem: 'A trauma-informed teacher\'s key reframe is "behavior is communication." What does this mean in practice?',
+      choices: ['Behavior is meaningless', 'Disruptive behavior often signals an unmet need or dysregulated state. "What happened to you?" replaces "What\'s wrong with you?" Co-regulate before correcting.', 'Behavior should be ignored', 'Punishment works'],
+      correct: 1, why: 'Trauma-informed reframe (Perry, van der Kolk, others). When a student is dysregulated, no learning or behavior change is possible until the nervous system is regulated. Calm presence + connection BEFORE correction. NOT therapy — just classroom realism.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -1958,6 +2234,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'memory', icon: '🧠', label: 'Memory + active learning techniques', desc: 'Feynman, loci, mnemonic, dual coding, interleaving deep dive. 8 concrete techniques.' },
               { id: 'noteTaking', icon: '📓', label: 'Note-taking systems', desc: 'Cornell, mind-mapping, outline, sketchnoting, two-column. When to use each + universal principles.' },
               { id: 'sleep', icon: '😴', label: 'Sleep + learning', desc: 'Memory consolidation, all-nighter myth, naps, caffeine, screens. The single most under-discussed factor.' },
+              { id: 'goals', icon: '🎯', label: 'Goals + procrastination', desc: 'SMART, OKRs, implementation intentions, Pomodoro deep dive, 5 procrastination reframes (emotion-regulation, not time-management).' },
+              { id: 'multitask', icon: '📵', label: 'Multitasking myth + attention', desc: 'Sophie Leroy attention residue, 23-min reorientation cost, 6 hidden costs, 5 single-tasking tips.' },
               { id: 'testAnxiety', icon: '😰', label: 'Test anxiety + performance', desc: 'Yerkes-Dodson, pre/during/after-test routines, 6 calming techniques, when to seek help.' },
               { id: 'mindset', icon: '🌱', label: 'Growth mindset (brief)', desc: 'Dweck. Honest about replication. Links to Growth Mindset SEL tool.' },
               { id: 'myths', icon: '🚫', label: 'Neuromyth debunker', desc: '8 popular beliefs that research rejects.' },
@@ -1977,6 +2255,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               { id: 'lessonPlan', icon: '🎯', label: 'Lesson plan builder', desc: 'Topic + Bloom\'s level + grade band → matched verbs, activities, assessments.' },
               { id: 'strategyPicker', icon: '💡', label: 'Strategy picker', desc: 'Subject + time + assessment + prior knowledge → evidence-backed strategy recommendations.' },
               { id: 'lab', icon: '🧪', label: 'Hands-on lab simulator', desc: '6 graded "advise a struggling student" cases. Letter grade + per-step feedback.' }
+            ]
+          },
+          { id: 'specialized', icon: '👩‍🏫', name: 'Specialized teaching',
+            desc: 'Topics most teachers + school psychs need but rarely get formal training in.',
+            modules: [
+              { id: 'reading', icon: '📖', label: 'Reading + literacy science', desc: 'Simple View of Reading, 5 pillars, structured vs balanced literacy, Orton-Gillingham, the reading wars.' },
+              { id: 'trauma', icon: '💚', label: 'Trauma-informed teaching', desc: 'ACEs, behavior as communication, co-regulation, window of tolerance, 6 practices, when to refer.' }
             ]
           },
           { id: 'progress', icon: '📊', name: 'Progress + reference',
@@ -2758,9 +3043,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             { id: 'memory-explorer', icon: '🧠', name: 'Memory Explorer', how: 'Tap any technique in the Memory + Active Learning module.' },
             { id: 'note-explorer', icon: '📓', name: 'Note-Taking Explorer', how: 'Tap any note-taking system.' },
             { id: 'sleep-aware', icon: '😴', name: 'Sleep Aware', how: 'Tap any sleep-for-learning principle.' },
+            { id: 'goal-frameworks', icon: '🎯', name: 'Goal Framework Explorer', how: 'Tap any of the 4 goal-setting frameworks.' },
+            { id: 'mt-aware', icon: '📵', name: 'Multitasking Aware', how: 'Tap any multitasking cost source.' },
             { id: 'anxiety-toolkit', icon: '😰', name: 'Anxiety Toolkit', how: 'Tap any calming technique in the Test Anxiety module.' },
             { id: 'myth-buster', icon: '🚫', name: 'Myth Buster', how: 'Tap any neuromyth in the debunker.' },
             { id: 'research-literate', icon: '🔬', name: 'Research Literate', how: 'Tap any stats term in Research Literacy.' }
+          ] },
+          { group: '👩‍🏫 Specialized teaching', items: [
+            { id: 'reading-explorer', icon: '📖', name: 'Reading Science Explorer', how: 'Tap any of the 5 Pillars of Reading.' },
+            { id: 'trauma-informed', icon: '💚', name: 'Trauma-Informed Aware', how: 'Tap any of the 6 trauma-informed practices.' }
           ] },
           { group: '🏅 Career', items: [
             { id: 'career-explorer', icon: '🍎', name: 'Career Explorer', how: 'Tap any education career path.' }
@@ -3883,6 +4174,368 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
 
       // ─────────────────────────────────────────
+      // GOAL SETTING + PROCRASTINATION view
+      // ─────────────────────────────────────────
+      function renderGoals() {
+        var gView = d.gView || 'frameworks';
+        function tabBtn(id, label) {
+          var active = gView === id;
+          return h('button', { 'data-ll-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('gView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#fff' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function frameworksTab() {
+          var picked = d.gFwPicked || null;
+          var pickedFw = picked ? GOAL_FRAMEWORKS.find(function(f) { return f.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🎯 4 goal-setting frameworks'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'No single framework is best. Match to the situation: SMART for discrete targets, OKRs for stretch quarters, implementation intentions for habits, 2-min rule for momentum.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8, marginBottom: 14 } },
+              GOAL_FRAMEWORKS.map(function(f) {
+                var sel = picked === f.id;
+                return h('button', { key: f.id, 'data-ll-focusable': true,
+                  'aria-label': f.name, 'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('gFwPicked', sel ? null : f.id); awardBadge('goal-frameworks', 'Goal Framework Explorer'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#fff' : T.text,
+                    textAlign: 'left', fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, f.icon),
+                  h('span', null, f.name));
+              })
+            ),
+            pickedFw && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedFw.icon + ' ' + pickedFw.name),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔍 What it is: '), pickedFw.what),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.good } }, '✅ Good for: '), pickedFw.goodFor),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.bad } }, '❌ Bad for: '), pickedFw.badFor),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 12, lineHeight: 1.55, padding: 8, borderRadius: 6, background: T.cardAlt } },
+                h('strong', { style: { color: T.accentHi } }, '📋 Example: '), pickedFw.example),
+              h('p', { style: { margin: 0, fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                h('strong', { style: { color: T.warn } }, '⚠️ Pitfall: '), pickedFw.pitfall))
+          );
+        }
+
+        function pomodoroTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🍅 Pomodoro deep dive'),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
+                h('strong', { style: { color: T.text } }, 'Origin: '), POMODORO_DEEP.creator),
+              h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '⏱️ Structure: '), POMODORO_DEEP.structure)
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 6px', fontSize: 14, color: T.accentHi } }, '🧠 Why it works'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } }, POMODORO_DEEP.why)
+            ),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '📋 Rules'),
+            h('ul', { style: { margin: '0 0 14px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+              POMODORO_DEEP.rules.map(function(r, i) { return h('li', { key: i }, r); })),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🔧 Modifications'),
+            h('ul', { style: { margin: '0 0 14px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+              POMODORO_DEEP.modifications.map(function(m, i) { return h('li', { key: i }, m); })),
+            h('p', { style: { margin: 0, padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+              h('strong', null, '📚 Research: '), POMODORO_DEEP.research)
+          );
+        }
+
+        function reframesTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🔄 5 procrastination reframes'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'The modern reframe: procrastination is emotion-regulation, not time-management. Each reframe + an action.')
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              PROCRASTINATION_REFRAMES.map(function(r, i) {
+                return h('div', { key: i, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 4 } }, '→ ' + r.reframe),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.text, lineHeight: 1.55 } }, r.detail),
+                  h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.5, padding: 8, borderRadius: 6, background: T.bg } },
+                    h('strong', { style: { color: T.good } }, '🎯 Action: '), r.action));
+              })
+            )
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🎯 Goals + procrastination'),
+          h('div', { role: 'tablist', 'aria-label': 'Goals + procrastination sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('frameworks', '🎯 4 frameworks'),
+            tabBtn('pomodoro', '🍅 Pomodoro'),
+            tabBtn('reframes', '🔄 Reframes')),
+          gView === 'frameworks' && frameworksTab(),
+          gView === 'pomodoro' && pomodoroTab(),
+          gView === 'reframes' && reframesTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // MULTITASKING MYTH view
+      // ─────────────────────────────────────────
+      function renderMultitasking() {
+        var picked = d.mtPicked || null;
+        var pickedM = picked != null ? MULTITASKING_COSTS[picked] : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📵 Multitasking myth + attention'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📵 The brain doesn\'t multitask — it task-switches'),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, MULTITASKING_FACTS.coreReality),
+            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, marginBottom: 8 } },
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, '⏳ Attention residue (Sophie Leroy 2009): '),
+              h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, MULTITASKING_FACTS.attentionResidue)),
+            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn, marginBottom: 8 } },
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, '🕐 Reorientation cost (Gloria Mark UCI): '),
+              h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, MULTITASKING_FACTS.reorientationCost)),
+            h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.bad } },
+              h('strong', { style: { color: T.bad, fontSize: 12 } }, '🪞 The Dunning-Kruger of multitasking: '),
+              h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, MULTITASKING_FACTS.ironicAwareness))
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '💸 6 hidden costs'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
+            MULTITASKING_COSTS.map(function(c, i) {
+              var sel = picked === i;
+              return h('button', { key: i, 'data-ll-focusable': true,
+                'aria-label': c.source, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('mtPicked', sel ? null : i); awardBadge('mt-aware', 'Multitasking Aware'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600
+                }) }, c.source);
+            })
+          ),
+          pickedM && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedM.source),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.bad } }, '💸 Cost: '), pickedM.cost),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🔧 Fix: '), pickedM.fix)
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 5 single-tasking tips'),
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+            SINGLE_TASKING_TIPS.map(function(t, i) {
+              return h('div', { key: i, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('strong', { style: { fontSize: 13, color: T.accentHi, display: 'block', marginBottom: 4 } }, '→ ' + t.tip),
+                h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.55 } }, t.detail));
+            })
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // READING + LITERACY SCIENCE view
+      // ─────────────────────────────────────────
+      function renderReading() {
+        var rView = d.readView || 'simple';
+        function tabBtn(id, label) {
+          var active = rView === id;
+          return h('button', { 'data-ll-focusable': true, role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() { upd('readView', id); },
+            style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#fff' : T.text, fontWeight: active ? 800 : 600 }) }, label);
+        }
+
+        function simpleTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '📐 The Simple View of Reading'),
+              h('div', { style: { padding: 12, borderRadius: 6, background: T.bg, border: '1px solid ' + T.accent, marginBottom: 8, textAlign: 'center', fontFamily: 'monospace', fontSize: 16, fontWeight: 800, color: T.accentHi } },
+                SIMPLE_VIEW_OF_READING.formula),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, SIMPLE_VIEW_OF_READING.explanation),
+              h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 } },
+                h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.accentHi, fontSize: 12 } }, '🔤 Decoding'),
+                  h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.muted, lineHeight: 1.5 } }, SIMPLE_VIEW_OF_READING.decoding)),
+                h('div', { style: { padding: 10, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { color: T.accentHi, fontSize: 12 } }, '💬 Language Comp'),
+                  h('p', { style: { margin: '4px 0 0', fontSize: 11, color: T.muted, lineHeight: 1.5 } }, SIMPLE_VIEW_OF_READING.languageComp)))
+            ),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 Implications for diagnosis + intervention'),
+              h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+                SIMPLE_VIEW_OF_READING.implications.map(function(imp, i) { return h('li', { key: i }, imp); }))
+            )
+          );
+        }
+
+        function pillarsTab() {
+          var picked = d.pillarPicked || null;
+          var pickedP = picked ? READING_FIVE_PILLARS.find(function(p) { return p.id === picked; }) : null;
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏛️ The 5 Pillars (NRP 2000)'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'The National Reading Panel\'s 2000 meta-review identified these 5 areas as essential. Tap any for what + when + research.')
+            ),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8, marginBottom: 14 } },
+              READING_FIVE_PILLARS.map(function(p) {
+                var sel = picked === p.id;
+                return h('button', { key: p.id, 'data-ll-focusable': true,
+                  'aria-label': p.name, 'aria-pressed': sel ? 'true' : 'false',
+                  onClick: function() { upd('pillarPicked', sel ? null : p.id); awardBadge('reading-explorer', 'Reading Science Explorer'); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: sel ? T.accent : T.cardAlt,
+                    color: sel ? '#fff' : T.text,
+                    textAlign: 'left', fontWeight: sel ? 800 : 600,
+                    display: 'flex', alignItems: 'flex-start', gap: 8
+                  }) },
+                  h('span', { style: { fontSize: 22 } }, p.icon),
+                  h('span', null, p.name));
+              })
+            ),
+            pickedP && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedP.icon + ' ' + pickedP.name),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedP.what),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, '📋 Example: '), pickedP.example),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.good } }, '🕐 When taught: '), pickedP.whenTaught),
+              h('p', { style: { margin: 0, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
+                h('strong', null, '📚 Research: '), pickedP.research))
+          );
+        }
+
+        function approachesTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '⚔️ The reading wars'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } }, READING_WARS_SUMMARY)
+            ),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 14 } },
+              STRUCTURED_VS_BALANCED.map(function(a, i) {
+                var stanceColor = a.stance === 'evidence-aligned' ? T.good : a.stance === 'mixed evidence' ? T.warn : T.bad;
+                return h('div', { key: i, style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + stanceColor } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 } },
+                    h('strong', { style: { fontSize: 14, color: T.accentHi, flex: 1 } }, a.approach),
+                    h('span', { style: { fontSize: 10, color: stanceColor, padding: '2px 8px', borderRadius: 12, background: T.bg, border: '1px solid ' + stanceColor, textTransform: 'uppercase', fontWeight: 700 } }, a.stance)),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 12, color: T.text, lineHeight: 1.55 } },
+                    h('strong', null, 'What: '), a.what),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 11, color: T.muted, lineHeight: 1.5, fontStyle: 'italic' } },
+                    h('strong', null, 'Origin: '), a.origin),
+                  h('p', { style: { margin: '0 0 6px', fontSize: 11, color: T.good, lineHeight: 1.5 } },
+                    h('strong', null, '✅ Good: '), a.good),
+                  h('p', { style: { margin: 0, fontSize: 11, color: T.warn, lineHeight: 1.5 } },
+                    h('strong', null, '⚠️ Caveat: '), a.caveat));
+              })
+            )
+          );
+        }
+
+        function ogTab() {
+          return h('div', null,
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: T.text } }, '🏛️ Orton-Gillingham approach'),
+              h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, ORTON_GILLINGHAM.what),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
+                h('strong', { style: { color: T.text } }, 'History: '), ORTON_GILLINGHAM.history)
+            ),
+            h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🧩 Core features'),
+            h('ul', { style: { margin: '0 0 14px', paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+              ORTON_GILLINGHAM.coreFeatures.map(function(f, i) { return h('li', { key: i }, f); })),
+            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.good, marginBottom: 8 } },
+              h('strong', { style: { color: T.good, fontSize: 12 } }, '📚 Evidence: '),
+              h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, ORTON_GILLINGHAM.evidence)),
+            h('div', { style: { padding: 12, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.warn } },
+              h('strong', { style: { color: T.warn, fontSize: 12 } }, '⚠️ Accessibility: '),
+              h('span', { style: { color: T.text, fontSize: 12, lineHeight: 1.55 } }, ORTON_GILLINGHAM.accessibility))
+          );
+        }
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('📖 Reading + literacy science'),
+          h('div', { role: 'tablist', 'aria-label': 'Reading sections',
+            style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
+            tabBtn('simple', '📐 Simple View'),
+            tabBtn('pillars', '🏛️ 5 Pillars'),
+            tabBtn('approaches', '⚔️ Reading wars'),
+            tabBtn('og', '🎓 Orton-Gillingham')),
+          rView === 'simple' && simpleTab(),
+          rView === 'pillars' && pillarsTab(),
+          rView === 'approaches' && approachesTab(),
+          rView === 'og' && ogTab(),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // TRAUMA-INFORMED TEACHING view
+      // ─────────────────────────────────────────
+      function renderTrauma() {
+        var picked = d.tiPicked || null;
+        var pickedP = picked ? TRAUMA_INFORMED_PRACTICES.find(function(p) { return p.id === picked; }) : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('💚 Trauma-informed teaching'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '💚 Trauma-informed foundations'),
+            [
+              { label: '📊 ACEs', val: TRAUMA_FOUNDATIONS.aces },
+              { label: '🗣️ Behavior is communication', val: TRAUMA_FOUNDATIONS.behaviorAsCommunication },
+              { label: '🤝 Co-regulation before self-regulation', val: TRAUMA_FOUNDATIONS.coRegBeforeSelfReg },
+              { label: '🪟 Window of tolerance', val: TRAUMA_FOUNDATIONS.windowOfTolerance },
+              { label: '⚠️ You\'re NOT a therapist', val: TRAUMA_FOUNDATIONS.notATherapist }
+            ].map(function(r, i) {
+              return h('p', { key: i, style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, r.label + ': '), r.val);
+            })
+          ),
+          h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: T.accentHi } }, '🎯 6 trauma-informed practices'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
+            TRAUMA_INFORMED_PRACTICES.map(function(p) {
+              var sel = picked === p.id;
+              return h('button', { key: p.id, 'data-ll-focusable': true,
+                'aria-label': p.name, 'aria-pressed': sel ? 'true' : 'false',
+                onClick: function() { upd('tiPicked', sel ? null : p.id); awardBadge('trauma-informed', 'Trauma-Informed Aware'); },
+                style: Object.assign({}, btnSecondary(), {
+                  background: sel ? T.accent : T.cardAlt,
+                  color: sel ? '#fff' : T.text,
+                  textAlign: 'left', fontWeight: sel ? 800 : 600,
+                  display: 'flex', alignItems: 'flex-start', gap: 8
+                }) },
+                h('span', { style: { fontSize: 22 } }, p.icon),
+                h('span', null, p.name));
+            })
+          ),
+          pickedP && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent, marginBottom: 14 } },
+            h('h4', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, pickedP.icon + ' ' + pickedP.name),
+            h('p', { style: { margin: '0 0 8px', color: T.text, fontSize: 13, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.accentHi } }, '🔍 What: '), pickedP.what),
+            h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.good } }, '🏫 In the classroom: '), pickedP.classroom),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+              h('strong', { style: { color: T.bad } }, '🚫 Avoid: '), pickedP.avoid)
+          ),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.warn } },
+            h('h4', { style: { margin: '0 0 10px', fontSize: 14, color: T.warn } }, '⚠️ When to refer (you\'re NOT a therapist)'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+              TRAUMA_REFERRAL_GUIDE.map(function(g, i) {
+                return h('div', { key: i, style: { padding: 8, borderRadius: 6, background: T.cardAlt, border: '1px solid ' + T.border } },
+                  h('strong', { style: { fontSize: 12, color: T.text, display: 'block', marginBottom: 2 } }, '🚩 ' + g.sign),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5 } },
+                    h('strong', { style: { color: T.accentHi } }, '→ '), g.action));
+              })
+            )
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       switch (view) {
@@ -3908,6 +4561,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'lab':           return renderLab();
         case 'noteTaking':    return renderNoteTaking();
         case 'sleep':         return renderSleep();
+        case 'goals':         return renderGoals();
+        case 'multitask':     return renderMultitasking();
+        case 'reading':       return renderReading();
+        case 'trauma':        return renderTrauma();
         case 'quiz':          return renderQuiz();
         case 'badges':        return renderBadges();
         case 'resources':     return renderResources();
