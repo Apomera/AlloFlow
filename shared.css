@@ -806,3 +806,42 @@ kbd {
         transform: scaleY(0.1);
     }
 }
+
+/* WCAG 2.4.7 — Focus indicators for keyboard navigation. */
+/* High-contrast 2px ring + offset, applied only when keyboard-focused (not on click). */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.cta-btn:focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 3px;
+}
+
+.back-to-top:focus-visible {
+    outline: 3px solid #fbbf24;
+    outline-offset: 3px;
+}
+
+/* WCAG 2.3.3 — Reduced motion: honor user preference. */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

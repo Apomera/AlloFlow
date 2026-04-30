@@ -170,7 +170,9 @@
                         </div>
                     </div>
                     <div style="aspect-ratio:16/9;position:relative;background:#000" id="video-container">
-                        <div id="video-poster" onclick="loadVideo()"
+                        <div id="video-poster" onclick="loadVideo()" role="button" tabindex="0"
+                            aria-label="Play demo video — see how it works in under 10 minutes"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadVideo();}"
                             style="cursor:pointer;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1e1b4b,#312e81)">
                             <div style="text-align:center;color:#fff">
                                 <div
@@ -210,7 +212,9 @@
                         </div>
                     </div>
                     <div style="aspect-ratio:16/9;position:relative;background:#000" id="admin-video-container">
-                        <div id="admin-video-poster" onclick="loadAdminVideo()"
+                        <div id="admin-video-poster" onclick="loadAdminVideo()" role="button" tabindex="0"
+                            aria-label="Play administrator overview video"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();loadAdminVideo();}"
                             style="cursor:pointer;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#064e3b,#065f46)">
                             <div style="text-align:center;color:#fff">
                                 <div
@@ -593,7 +597,7 @@
                             font-weight: 800;
                             margin-bottom: 12px;
                             line-height: 1.1;
-                            background: linear-gradient(135deg, #e2e8f0, #94a3b8);
+                            background: linear-gradient(135deg, #e2e8f0, #64748b);
                             -webkit-background-clip: text;
                             background-clip: text;
                             background-clip: text;
@@ -603,7 +607,7 @@
                         .slide p {
                             font-size: 1rem;
                             line-height: 1.6;
-                            color: #94a3b8;
+                            color: #64748b;
                             margin-bottom: 18px;
                             max-width: 560px;
                         }
@@ -637,7 +641,7 @@
 
                         .info-desc {
                             font-size: 0.85rem;
-                            color: #94a3b8;
+                            color: #64748b;
                             line-height: 1.5;
                         }
 
@@ -673,7 +677,7 @@
 
                         .stat-callout .stat-label {
                             font-size: 0.8rem;
-                            color: #94a3b8;
+                            color: #64748b;
                             font-weight: 600;
                         }
 
@@ -837,7 +841,7 @@
                         }
 
                         .node-subtext {
-                            fill: #94a3b8;
+                            fill: #64748b;
                             font-family: 'Inter', sans-serif;
                             font-size: 12px;
                             text-anchor: middle;
@@ -970,7 +974,7 @@
                             font-family: 'Outfit';
                             font-size: 0.8rem;
                             font-weight: 700;
-                            color: #94a3b8;
+                            color: #64748b;
                             letter-spacing: 0.1em;
                             background: rgba(99, 102, 241, 0.08);
                             border: 1px solid rgba(99, 102, 241, 0.15);
@@ -1093,7 +1097,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
                                                 <stop offset="0%" stop-color="#10b981" stop-opacity="0.2" />
@@ -1191,7 +1195,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <linearGradient id="lexG" x1="0%" y1="0%" x2="100%" y2="100%">
                                                 <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.2" />
@@ -1282,7 +1286,7 @@
                                         <rect x="130" y="200" width="140" height="40" rx="8" fill="#0f172a"
                                             stroke="#0284c7" stroke-width="1.5" />
                                         <text x="170" y="218" font-size="14" text-anchor="middle">📖</text>
-                                        <text x="230" y="215" font-size="9" fill="#94a3b8" text-anchor="middle"
+                                        <text x="230" y="215" font-size="9" fill="#64748b" text-anchor="middle"
                                             font-family="Inter">Dolch Word DB</text>
                                         <text x="230" y="230" font-size="7" fill="#64748b" text-anchor="middle"
                                             font-family="Inter">220 high-freq. words</text>
@@ -1335,7 +1339,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <!-- Source JSON -->
                                         <rect x="140" y="10" width="120" height="40" rx="8" fill="#1e293b"
                                             stroke="#a855f7" stroke-width="2" />
@@ -1456,7 +1460,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <!-- Word visualization -->
                                         <text x="200" y="40" font-size="10" fill="#64748b" text-anchor="middle"
                                             font-family="Inter">ORTHOGRAPHY</text>
@@ -1498,11 +1502,11 @@
                                             fill="none" stroke="#fb7185" stroke-width="1.5" opacity="0.4" />
 
                                         <!-- Sync lines -->
-                                        <line x1="135" y1="145" x2="135" y2="180" stroke="#94a3b8"
+                                        <line x1="135" y1="145" x2="135" y2="180" stroke="#64748b"
                                             stroke-dasharray="2 2" />
-                                        <line x1="200" y1="145" x2="200" y2="180" stroke="#94a3b8"
+                                        <line x1="200" y1="145" x2="200" y2="180" stroke="#64748b"
                                             stroke-dasharray="2 2" />
-                                        <line x1="265" y1="145" x2="265" y2="180" stroke="#94a3b8"
+                                        <line x1="265" y1="145" x2="265" y2="180" stroke="#64748b"
                                             stroke-dasharray="2 2" />
                                     </svg>
                                 </div>
@@ -1562,7 +1566,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <!-- App Canvas Mockup -->
                                         <rect x="50" y="50" width="300" height="200" rx="8" fill="#0f172a"
                                             stroke="#334155" stroke-width="2" />
@@ -1703,7 +1707,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <linearGradient id="shield" x1="0" y1="0" x2="0" y2="1">
                                                 <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.3" />
@@ -1770,18 +1774,18 @@
                                         <text x="200" y="100" font-size="11" fill="#f8fafc" text-anchor="middle"
                                             font-weight="bold">Local
                                             Storage</text>
-                                        <text x="200" y="128" font-size="9" fill="#94a3b8" text-anchor="middle">📊 Quiz
+                                        <text x="200" y="128" font-size="9" fill="#64748b" text-anchor="middle">📊 Quiz
                                             Scores</text>
-                                        <text x="200" y="158" font-size="9" fill="#94a3b8" text-anchor="middle">📈 XPS &
+                                        <text x="200" y="158" font-size="9" fill="#64748b" text-anchor="middle">📈 XPS &
                                             RTI Data</text>
-                                        <text x="200" y="188" font-size="9" fill="#94a3b8" text-anchor="middle">👤
+                                        <text x="200" y="188" font-size="9" fill="#64748b" text-anchor="middle">👤
                                             Student Profiles</text>
 
                                         <!-- Rejected Cloud -->
                                         <path
                                             d="M 325 55 Q 345 35 365 50 Q 390 65 375 90 Q 365 108 340 105 Q 320 102 325 80 Z"
                                             fill="#1e293b" opacity="0.6" stroke="#475569" stroke-width="1" />
-                                        <text x="355" y="80" font-size="10" fill="#94a3b8" text-anchor="middle"
+                                        <text x="355" y="80" font-size="10" fill="#64748b" text-anchor="middle"
                                             font-family="Inter">Cloud</text>
                                         <text x="355" y="100" font-size="20" fill="#ef4444"
                                             text-anchor="middle">✕</text>
@@ -1847,7 +1851,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="familyGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#ef4444" stop-opacity="0.1" />
@@ -1867,7 +1871,7 @@
                                         <text x="95" y="125" font-size="34" text-anchor="middle">🏫</text>
                                         <text x="95" y="155" font-size="12" fill="#f8fafc" text-anchor="middle"
                                             font-weight="bold">Classroom</text>
-                                        <text x="95" y="172" font-size="9" fill="#94a3b8" text-anchor="middle">Teacher
+                                        <text x="95" y="172" font-size="9" fill="#64748b" text-anchor="middle">Teacher
                                             creates lesson</text>
 
                                         <!-- Animated heart-pulse connection line -->
@@ -1901,7 +1905,7 @@
                                         <text x="305" y="125" font-size="34" text-anchor="middle">🏠</text>
                                         <text x="305" y="155" font-size="12" fill="#f8fafc" text-anchor="middle"
                                             font-weight="bold">Home</text>
-                                        <text x="305" y="172" font-size="9" fill="#94a3b8" text-anchor="middle">Family
+                                        <text x="305" y="172" font-size="9" fill="#64748b" text-anchor="middle">Family
                                             practices together</text>
 
                                         <!-- JSON Transfer File -->
@@ -1909,7 +1913,7 @@
                                             stroke="#f87171" stroke-width="2" />
                                         <text x="200" y="148" font-size="11" fill="#f87171" font-weight="bold"
                                             text-anchor="middle">JSON</text>
-                                        <text x="200" y="165" font-size="7" fill="#94a3b8"
+                                        <text x="200" y="165" font-size="7" fill="#64748b"
                                             text-anchor="middle">lesson.json</text>
 
                                         <!-- Student icon at bottom center -->
@@ -1994,7 +1998,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="stemGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#10b981" stop-opacity="0.12" />
@@ -2122,7 +2126,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="behaviorGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#be185d" stop-opacity="0.12" />
@@ -2209,7 +2213,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="reportGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#7e22ce" stop-opacity="0.12" />
@@ -2304,7 +2308,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="researchGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.12" />
@@ -2403,7 +2407,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="modularGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.12" />
@@ -2571,7 +2575,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="adventureGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#7c3aed" stop-opacity="0.12" />
@@ -2654,7 +2658,7 @@
                                             <animate attributeName="width" values="0;140;0" dur="6s"
                                                 repeatCount="indefinite" />
                                         </rect>
-                                        <text x="200" y="297" font-size="7" fill="#94a3b8" text-anchor="middle">XP
+                                        <text x="200" y="297" font-size="7" fill="#64748b" text-anchor="middle">XP
                                             Progress</text>
                                     </svg>
                                 </div>
@@ -2711,7 +2715,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="langGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#ec4899" stop-opacity="0.12" />
@@ -2779,7 +2783,7 @@
                                             <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s"
                                                 repeatCount="indefinite" />
                                         </path>
-                                        <text x="140" y="254" font-size="8" fill="#94a3b8"
+                                        <text x="140" y="254" font-size="8" fill="#64748b"
                                             text-anchor="middle">EN</text>
                                         <text x="260" y="254" font-size="8" fill="#f472b6"
                                             text-anchor="middle">ANY</text>
@@ -2843,7 +2847,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="gamesGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#ea580c" stop-opacity="0.12" />
@@ -2965,7 +2969,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="codeGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#6d28d9" stop-opacity="0.12" />
@@ -3085,7 +3089,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="fluencyGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#e11d48" stop-opacity="0.12" />
@@ -3176,11 +3180,11 @@
 
                                         <!-- Legend -->
                                         <circle cx="100" cy="275" r="4" fill="#22c55e" />
-                                        <text x="112" y="278" font-size="7" fill="#94a3b8">Correct</text>
+                                        <text x="112" y="278" font-size="7" fill="#64748b">Correct</text>
                                         <circle cx="160" cy="275" r="4" fill="#eab308" />
-                                        <text x="172" y="278" font-size="7" fill="#94a3b8">Hesitation</text>
+                                        <text x="172" y="278" font-size="7" fill="#64748b">Hesitation</text>
                                         <circle cx="230" cy="275" r="4" fill="#ef4444" />
-                                        <text x="242" y="278" font-size="7" fill="#94a3b8">Error</text>
+                                        <text x="242" y="278" font-size="7" fill="#64748b">Error</text>
 
                                         <text x="200" y="295" font-size="9" fill="#64748b" text-anchor="middle"
                                             font-family="Inter">Read Aloud → AI Analysis → Heat Map → RTI
@@ -3241,7 +3245,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="demoGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#0891b2" stop-opacity="0.12" />
@@ -3389,7 +3393,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="accessGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#2563eb" stop-opacity="0.12" />
@@ -3428,7 +3432,7 @@
                                                 repeatCount="indefinite" />
                                         </rect>
 
-                                        <text x="95" y="108" font-size="9" fill="#94a3b8">
+                                        <text x="95" y="108" font-size="9" fill="#64748b">
                                             <tspan>It </tspan>
                                             <tspan fill="#f87171">was </tspan>
                                             <tspan>a </tspan>
@@ -3437,7 +3441,7 @@
                                             <tspan fill="#93c5fd" font-weight="bold">morning.</tspan>
                                         </text>
 
-                                        <text x="95" y="128" font-size="9" fill="#94a3b8">
+                                        <text x="95" y="128" font-size="9" fill="#64748b">
                                             <tspan fill="#60a5fa">The </tspan>
                                             <tspan fill="#93c5fd" font-weight="bold">sun </tspan>
                                             <tspan fill="#f87171">shone </tspan>
@@ -3462,17 +3466,17 @@
                                         <text x="165" y="193" font-size="7" fill="#f87171">Vrb</text>
                                         <text x="195" y="193" font-size="7" fill="#fbbf24">Adv</text>
                                         <text x="240" y="193" font-size="7" fill="#93c5fd">Syllables</text>
-                                        <text x="290" y="193" font-size="7" fill="#94a3b8">Focus ▼</text>
+                                        <text x="290" y="193" font-size="7" fill="#64748b">Focus ▼</text>
 
                                         <!-- Legend -->
                                         <circle cx="90" cy="240" r="4" fill="#93c5fd" />
-                                        <text x="100" y="243" font-size="7" fill="#94a3b8">Nouns</text>
+                                        <text x="100" y="243" font-size="7" fill="#64748b">Nouns</text>
                                         <circle cx="145" cy="240" r="4" fill="#f87171" />
-                                        <text x="155" y="243" font-size="7" fill="#94a3b8">Verbs</text>
+                                        <text x="155" y="243" font-size="7" fill="#64748b">Verbs</text>
                                         <circle cx="200" cy="240" r="4" fill="#4ade80" />
-                                        <text x="210" y="243" font-size="7" fill="#94a3b8">Adj.</text>
+                                        <text x="210" y="243" font-size="7" fill="#64748b">Adj.</text>
                                         <circle cx="250" cy="240" r="4" fill="#fbbf24" />
-                                        <text x="260" y="243" font-size="7" fill="#94a3b8">Adverbs</text>
+                                        <text x="260" y="243" font-size="7" fill="#64748b">Adverbs</text>
 
                                         <!-- Accessibility icon -->
                                         <circle cx="200" cy="275" r="15" fill="#1e3a5f" stroke="#2563eb"
@@ -3537,7 +3541,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="quizGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#0d9488" stop-opacity="0.12" />
@@ -3683,7 +3687,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="dashGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#d97706" stop-opacity="0.12" />
@@ -3772,7 +3776,7 @@
                                             <animate attributeName="r" values="3;5;3" dur="2s" begin="0.5s"
                                                 repeatCount="indefinite" />
                                         </circle>
-                                        <text x="200" y="278" font-size="8" fill="#94a3b8" text-anchor="middle">
+                                        <text x="200" y="278" font-size="8" fill="#64748b" text-anchor="middle">
                                             Growth Trend ▲</text>
 
                                         <text x="200" y="298" font-size="9" fill="#64748b" text-anchor="middle"
@@ -3835,7 +3839,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="missionGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#6366f1" stop-opacity="0.1" />
@@ -3891,7 +3895,7 @@
                                         <circle cx="115" cy="72" r="22" fill="#0f172a" stroke="#818cf8"
                                             stroke-width="2" />
                                         <text x="115" y="70" font-size="16" text-anchor="middle">🎒</text>
-                                        <text x="115" y="85" font-size="7" fill="#94a3b8"
+                                        <text x="115" y="85" font-size="7" fill="#64748b"
                                             text-anchor="middle">Schools</text>
                                         <path d="M 132 88 L 172 125" class="path-solid" stroke="#475569" />
 
@@ -3899,7 +3903,7 @@
                                         <circle cx="285" cy="72" r="22" fill="#0f172a" stroke="#818cf8"
                                             stroke-width="2" />
                                         <text x="285" y="70" font-size="16" text-anchor="middle">🏛️</text>
-                                        <text x="285" y="85" font-size="7" fill="#94a3b8"
+                                        <text x="285" y="85" font-size="7" fill="#64748b"
                                             text-anchor="middle">Districts</text>
                                         <path d="M 268 88 L 228 125" class="path-solid" stroke="#475569" />
 
@@ -3907,7 +3911,7 @@
                                         <circle cx="200" cy="268" r="22" fill="#0f172a" stroke="#818cf8"
                                             stroke-width="2" />
                                         <text x="200" y="266" font-size="16" text-anchor="middle">🌍</text>
-                                        <text x="200" y="281" font-size="7" fill="#94a3b8"
+                                        <text x="200" y="281" font-size="7" fill="#64748b"
                                             text-anchor="middle">Global</text>
                                         <path d="M 200 246 L 200 192" class="path-solid" stroke="#475569" />
 
@@ -3915,7 +3919,7 @@
                                         <circle cx="310" cy="210" r="22" fill="#0f172a" stroke="#818cf8"
                                             stroke-width="2" />
                                         <text x="310" y="208" font-size="16" text-anchor="middle">👨‍👩‍👧</text>
-                                        <text x="310" y="223" font-size="7" fill="#94a3b8"
+                                        <text x="310" y="223" font-size="7" fill="#64748b"
                                             text-anchor="middle">Families</text>
                                         <path d="M 293 198 L 235 170" class="path-solid" stroke="#475569" />
 
@@ -3923,7 +3927,7 @@
                                         <circle cx="90" cy="210" r="22" fill="#0f172a" stroke="#818cf8"
                                             stroke-width="2" />
                                         <text x="90" y="208" font-size="16" text-anchor="middle">💻</text>
-                                        <text x="90" y="223" font-size="7" fill="#94a3b8"
+                                        <text x="90" y="223" font-size="7" fill="#64748b"
                                             text-anchor="middle">Devs</text>
                                         <path d="M 107 198 L 165 170" class="path-solid" stroke="#475569" />
 
@@ -3998,7 +4002,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="researchGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#84cc16" stop-opacity="0.12" />
@@ -4180,7 +4184,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="spellingGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#ca8a04" stop-opacity="0.12" />
@@ -4332,7 +4336,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="organizerGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#d946ef" stop-opacity="0.12" />
@@ -4482,7 +4486,7 @@
                                     </div>
                                 </div>
                                 <div class="slide-visual">
-                                    <svg class="svg-container" viewBox="0 0 400 300">
+                                    <svg class="svg-container" viewBox="0 0 400 300" aria-hidden="true">
                                         <defs>
                                             <radialGradient id="schoolBoxGlow" cx="50%" cy="50%" r="50%">
                                                 <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.12" />
@@ -4530,17 +4534,17 @@
                                         <!-- Devices -->
                                         <rect x="100" y="210" width="55" height="30" rx="4" fill="#1e293b"
                                             stroke="#475569" />
-                                        <text x="127" y="229" font-size="8" fill="#94a3b8" text-anchor="middle">💻
+                                        <text x="127" y="229" font-size="8" fill="#64748b" text-anchor="middle">💻
                                             Laptop</text>
 
                                         <rect x="170" y="210" width="55" height="30" rx="4" fill="#1e293b"
                                             stroke="#475569" />
-                                        <text x="197" y="229" font-size="8" fill="#94a3b8" text-anchor="middle">📱
+                                        <text x="197" y="229" font-size="8" fill="#64748b" text-anchor="middle">📱
                                             Tablet</text>
 
                                         <rect x="240" y="210" width="55" height="30" rx="4" fill="#1e293b"
                                             stroke="#475569" />
-                                        <text x="267" y="229" font-size="8" fill="#94a3b8" text-anchor="middle">📱
+                                        <text x="267" y="229" font-size="8" fill="#64748b" text-anchor="middle">📱
                                             Phone</text>
 
                                         <!-- Cloud crossed out -->
