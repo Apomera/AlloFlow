@@ -480,7 +480,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 });
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
   const { t } = useContext(LanguageContext);
-  const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
+  const [speedPxPerSec, setSpeedPxPerSec] = useState(70);
   const [isPlaying, setIsPlaying] = useState(true);
   const [translateY, setTranslateY] = useState(0);
   const [palette, setPalette] = useState("gold");
@@ -689,7 +689,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
           padding: "0 10%",
           fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
           fontWeight: 700,
-          fontSize: "clamp(1.4rem, 2.6vw, 2.4rem)",
+          fontSize: "clamp(2rem, 3.6vw, 3.4rem)",
           lineHeight: 1.5,
           textAlign: "justify",
           transform: `translateY(${translateY}px) rotateX(15deg)`,
@@ -701,7 +701,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
       paragraphs.map((para, i) => /* @__PURE__ */ React.createElement("p", { key: i, style: { marginBottom: "1.5em" } }, para))
     ),
     /* @__PURE__ */ React.createElement("div", { className: "absolute inset-x-0 top-0 pointer-events-none", style: { height: "40%", background: `linear-gradient(to bottom, ${p.bg} 0%, ${p.bg}cc 40%, transparent 100%)` } }),
-    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-x-0 bottom-0 pointer-events-none", style: { height: "18%", background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` } }),
+    /* @__PURE__ */ React.createElement("div", { className: "absolute inset-x-0 bottom-0 pointer-events-none", style: { height: "8%", background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` } }),
     /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 pointer-events-none", style: { boxShadow: "inset 0 0 180px rgba(0,0,0,0.6)" } }),
     finished && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 flex items-center justify-center pointer-events-none" }, /* @__PURE__ */ React.createElement(
       "div",

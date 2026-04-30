@@ -626,7 +626,7 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // ============================================================================
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
-    const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
+    const [speedPxPerSec, setSpeedPxPerSec] = useState(70);
     const [isPlaying, setIsPlaying] = useState(true);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
     const [palette, setPalette] = useState('gold'); // 'gold' | 'teal' | 'paper'
@@ -862,7 +862,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                         padding: '0 10%',
                         fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif',
                         fontWeight: 700,
-                        fontSize: 'clamp(1.4rem, 2.6vw, 2.4rem)',
+                        fontSize: 'clamp(2rem, 3.6vw, 3.4rem)',
                         lineHeight: 1.5,
                         textAlign: 'justify',
                         transform: `translateY(${translateY}px) rotateX(15deg)`,
@@ -878,7 +878,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 {/* Fade at top so text gracefully vanishes as it recedes */}
                 <div className="absolute inset-x-0 top-0 pointer-events-none" style={{ height: '40%', background: `linear-gradient(to bottom, ${p.bg} 0%, ${p.bg}cc 40%, transparent 100%)` }} />
                 {/* Matching fade-in at bottom so paragraphs ease into view as they enter */}
-                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '18%', background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` }} />
+                <div className="absolute inset-x-0 bottom-0 pointer-events-none" style={{ height: '8%', background: `linear-gradient(to top, ${p.bg} 0%, transparent 100%)` }} />
                 {/* subtle vignette */}
                 <div className="absolute inset-0 pointer-events-none" style={{ boxShadow: 'inset 0 0 180px rgba(0,0,0,0.6)' }} />
                 {/* Outro card when the crawl completes */}
