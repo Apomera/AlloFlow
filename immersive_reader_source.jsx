@@ -296,7 +296,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     );
 });
 
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing , isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
   // Back-compat: if the parent hasn't upgraded to the unified Focus Mode prop
   // yet, synthesize it from the two legacy props (Speed Read and Chunk Stream).
   const focusReaderActive = (typeof isFocusReaderActive === 'boolean')
@@ -491,6 +491,24 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
                 >
                   <Volume2 size={12} className="inline"/> {safeT(t, 'immersive.read_along', 'Read Along')}
                 </button>
+              </>
+            )}
+            {setChunkReaderMood && (
+              <>
+                <div className="h-4 w-px bg-slate-200"></div>
+                <select
+                  aria-label={safeT(t, 'immersive.chunk_mood', 'Chunk Read animation mood')}
+                  value={chunkReaderMood || 'highlight'}
+                  onChange={e => setChunkReaderMood(e.target.value)}
+                  title="Animation mood for active chunk"
+                  className="text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200"
+                  data-help-key="immersive_chunk_mood"
+                >
+                  <option value="highlight">✨ Sweep</option>
+                  <option value="typewriter">⌨️ Typewriter</option>
+                  <option value="popin">🎈 Pop-In</option>
+                  <option value="pulse">💗 Pulse</option>
+                </select>
               </>
             )}
           </div>

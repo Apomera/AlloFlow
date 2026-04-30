@@ -215,7 +215,7 @@ const FocusReaderOverlay = React.memo(({ text, onClose, isOpen }) => {
     countdown
   )), rsvp ? /* @__PURE__ */ React.createElement("div", { className: "relative text-7xl md:text-9xl font-mono font-bold tracking-wide", style: { color: c.strong } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-baseline" }, /* @__PURE__ */ React.createElement("span", null, rsvpWord.slice(0, centerIdx)), /* @__PURE__ */ React.createElement("span", { style: { color: focusColor } }, rsvpWord.charAt(centerIdx)), /* @__PURE__ */ React.createElement("span", null, rsvpWord.slice(centerIdx + 1))), /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 bottom-0 left-1/2 w-0.5 -translate-x-1/2 -z-10 h-full", style: { backgroundColor: c.light + "33" } }), /* @__PURE__ */ React.createElement("div", { className: "absolute left-0 right-0 top-1/2 h-0.5 -translate-y-1/2 -z-10 w-full", style: { backgroundColor: c.light + "33" } })) : /* @__PURE__ */ React.createElement("div", { className: "max-w-5xl text-center", style: { fontSize: "clamp(2.5rem, 8vw, 6rem)", lineHeight: 1.15, fontFamily: 'Georgia, "Iowan Old Style", "Times New Roman", serif' } }, currentChunk.map((w, i) => renderBionicWord(w, i))), /* @__PURE__ */ React.createElement("div", { className: "mt-10 text-sm flex items-center gap-2 flex-wrap justify-center max-w-3xl", style: { color: c.light } }, isPlaying ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Pause, { size: 16 }), " Tap to pause \xB7 \u2190 \u2192 navigate \xB7 +/\u2212 speed \xB7 [ ] chunk size \xB7 P pause-style") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Play, { size: 16 }), " Tap or Space to play \xB7 \u2190 \u2192 navigate \xB7 +/\u2212 speed \xB7 [ ] chunk size \xB7 P pause-style \xB7 Esc closes"))), /* @__PURE__ */ React.createElement("div", { className: "h-2 w-full", style: { background: c.light + "33" } }, /* @__PURE__ */ React.createElement("div", { className: "h-full transition-all duration-200", style: { width: `${progressPct}%`, backgroundColor: c.accent } })));
 });
-const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
+const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackRate, setPlaybackRate, lineHeight, setLineHeight, letterSpacing, setLetterSpacing, isSpeedReaderActive, onToggleSpeedReader, isChunkReaderActive, onToggleChunkReader, chunkReaderIdx, setChunkReaderIdx, chunkReaderAutoPlay, setChunkReaderAutoPlay, chunkReaderSpeed, setChunkReaderSpeed, totalSentences, interactionMode, setInteractionMode, isBionicReaderActive, onToggleBionicReader, isCrawlReaderActive, onToggleCrawlReader, isKaraokeOverlayActive, onToggleKaraokeOverlay, chunkReaderReadAlong, onToggleChunkReaderReadAlong, chunkReaderMood, setChunkReaderMood, onGeneratePOS, isGeneratingPOS, posReady, onGenerateSyllables, isGeneratingSyllables, syllablesReady, isFocusReaderActive, onToggleFocusReader }) => {
   const focusReaderActive = typeof isFocusReaderActive === "boolean" ? isFocusReaderActive : !!isSpeedReaderActive || !!isBionicReaderActive;
   const toggleFocusReader = onToggleFocusReader || onToggleSpeedReader || onToggleBionicReader;
   const { t } = useContext(LanguageContext);
@@ -377,6 +377,20 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
     /* @__PURE__ */ React.createElement(Volume2, { size: 12, className: "inline" }),
     " ",
     safeT(t, "immersive.read_along", "Read Along")
+  )), setChunkReaderMood && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-200" }), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": safeT(t, "immersive.chunk_mood", "Chunk Read animation mood"),
+      value: chunkReaderMood || "highlight",
+      onChange: (e) => setChunkReaderMood(e.target.value),
+      title: "Animation mood for active chunk",
+      className: "text-[11px] font-bold rounded-full px-2 py-1 border border-slate-300 bg-slate-100 text-slate-700 cursor-pointer hover:bg-slate-200",
+      "data-help-key": "immersive_chunk_mood"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "highlight" }, "\u2728 Sweep"),
+    /* @__PURE__ */ React.createElement("option", { value: "typewriter" }, "\u2328\uFE0F Typewriter"),
+    /* @__PURE__ */ React.createElement("option", { value: "popin" }, "\u{1F388} Pop-In"),
+    /* @__PURE__ */ React.createElement("option", { value: "pulse" }, "\u{1F497} Pulse")
   )))), /* @__PURE__ */ React.createElement("div", { className: "h-4 w-px bg-slate-300 shrink-0" }), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 shrink-0" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600" }, t("immersive.grammar_label")), /* @__PURE__ */ React.createElement(
     ToggleButton,
     {

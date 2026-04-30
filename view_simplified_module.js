@@ -19,6 +19,22 @@
   if (!React) { console.error('[ViewSimplifiedModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
+  // Inject Chunk Read mood keyframes once. Reduced-motion media query disables
+  // the animations globally so users with that preference see static styling.
+  (function () {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('allo-chunk-mood-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-chunk-mood-css';
+    st.textContent =
+      '@keyframes allo-chunk-popin { 0% { transform: scale(0.95); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }' +
+      '@keyframes allo-chunk-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }' +
+      '@media (prefers-reduced-motion: reduce) {' +
+      '  [data-sentence-idx] { animation: none !important; }' +
+      '}';
+    if (document.head) document.head.appendChild(st);
+  })();
+
   var _lazyIcon = function (name) {
     return function (props) {
       var I = window.AlloIcons && window.AlloIcons[name];
@@ -84,6 +100,9 @@
   var chunkReaderSpeed = props.chunkReaderSpeed;
   var chunkReaderReadAlong = props.chunkReaderReadAlong;
   var chunkReaderSweepPct = props.chunkReaderSweepPct;
+  var chunkReaderMood = props.chunkReaderMood || 'highlight';
+  var setChunkReaderMood = props.setChunkReaderMood;
+  var chunkTypewriterCharIdx = props.chunkTypewriterCharIdx || 0;
   var isCrawlReaderActive = props.isCrawlReaderActive;
   var isKaraokeOverlayActive = props.isKaraokeOverlayActive;
   var isAnalyzingPos = props.isAnalyzingPos;
@@ -238,6 +257,8 @@
     setChunkReaderAutoPlay: setChunkReaderAutoPlay,
     chunkReaderSpeed: chunkReaderSpeed,
     setChunkReaderSpeed: setChunkReaderSpeed,
+    chunkReaderMood: chunkReaderMood,
+    setChunkReaderMood: setChunkReaderMood,
     interactionMode: interactionMode,
     setInteractionMode: setInteractionMode,
     isCrawlReaderActive: isCrawlReaderActive,
@@ -327,6 +348,12 @@
     let currentSentenceText = sentences[0] || "";
     let normalizedSentence = currentSentenceText.replace(/\s+/g, '').toLowerCase();
     let currentTokenBuffer = "";
+    // Typewriter char-offset bookkeeping for the active sentence (mood='typewriter').
+    // Resets when we encounter the first token of the active sentence; each token in
+    // the active sentence contributes wordData.text.length to the rolling offset.
+    let activeChunkCharOffset = 0;
+    let lastWasActiveSentence = false;
+    const reduceMotion = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
     return generatedContent.immersiveData.map((wordData, i) => {
       if (wordData.pos === 'newline') {
         return /*#__PURE__*/React.createElement("div", {
@@ -347,15 +374,39 @@
       }
       const isChunkHighlight = isChunkReaderActive && assignedIdx === chunkReaderIdx;
       const isChunkDimmed = isChunkReaderActive && assignedIdx !== chunkReaderIdx;
+      // Track word's char-offset within the active sentence for typewriter mood
+      let wordStartChar = -1;
+      if (isChunkHighlight) {
+        if (!lastWasActiveSentence) activeChunkCharOffset = 0;
+        wordStartChar = activeChunkCharOffset;
+        activeChunkCharOffset += (wordData.text || '').length;
+        lastWasActiveSentence = true;
+      } else {
+        lastWasActiveSentence = false;
+      }
+      // Mood-aware styling: highlight (default), typewriter, popin, pulse
+      let moodOpacity = isChunkDimmed ? 0.45 : 1;
+      let moodAnimation = '';
+      let showHighlight = isChunkHighlight;
+      if (isChunkReaderActive && chunkReaderMood === 'typewriter') {
+        if (isChunkDimmed) moodOpacity = 0.2;
+        if (isChunkHighlight) {
+          moodOpacity = wordStartChar < chunkTypewriterCharIdx ? 1 : 0;
+          if (wordStartChar >= chunkTypewriterCharIdx) showHighlight = false;
+        }
+      } else if (isChunkReaderActive && chunkReaderMood === 'popin' && isChunkHighlight && !reduceMotion) {
+        moodAnimation = 'allo-chunk-popin 0.25s ease-out';
+      } else if (isChunkReaderActive && chunkReaderMood === 'pulse' && isChunkHighlight && !reduceMotion) {
+        moodAnimation = 'allo-chunk-pulse 2s ease-in-out infinite';
+      }
       return /*#__PURE__*/React.createElement("span", {
         key: wordData.id || i,
         "data-sentence-idx": assignedIdx,
         style: {
-          ...(isChunkDimmed ? {
-            opacity: 0.45
-          } : {}),
-          transition: 'all 0.3s ease',
-          ...(isChunkHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {
+          opacity: moodOpacity,
+          transition: chunkReaderMood === 'typewriter' ? 'opacity 0.05s linear' : 'all 0.3s ease',
+          ...(moodAnimation ? { animation: moodAnimation } : {}),
+          ...(showHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {
             backgroundColor: 'rgba(250, 204, 21, 0.35)',
             borderRadius: '4px',
             boxDecorationBreak: 'clone',

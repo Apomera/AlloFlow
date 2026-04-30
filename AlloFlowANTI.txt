@@ -5683,6 +5683,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const chunkReaderTimerRef = useRef(null);
   const [chunkReaderReadAlong, setChunkReaderReadAlong] = useState(false);
   const [chunkReaderSweepPct, setChunkReaderSweepPct] = useState(0);
+  const [chunkReaderMood, _setChunkReaderMood] = useState(() => {
+      try {
+          const v = safeGetItem('allo_chunk_mood');
+          const valid = ['highlight', 'typewriter', 'popin', 'pulse'];
+          return valid.includes(v) ? v : 'highlight';
+      } catch { return 'highlight'; }
+  });
+  const setChunkReaderMood = (v) => {
+      _setChunkReaderMood(v);
+      try { safeSetItem('allo_chunk_mood', v); } catch {}
+  };
+  const [chunkTypewriterCharIdx, setChunkTypewriterCharIdx] = useState(0);
   const chunkReaderSweepAudioRef = useRef(null);
   const chunkReaderSweepRafRef = useRef(null);
   const handleCloseSpeedReader = useCallback(() => setIsSpeedReaderActive(false), []);
@@ -5735,6 +5747,34 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       window.addEventListener('keydown', handler);
       return () => window.removeEventListener('keydown', handler);
   }, [isChunkReaderActive]);
+  useEffect(() => {
+      // Reset typewriter on chunk change. Tick advance happens in the renderer's
+      // own RAF loop (see view_simplified_module.js typewriter logic) so the char
+      // count doesn't depend on prop drilling another timer through the chain.
+      setChunkTypewriterCharIdx(0);
+  }, [chunkReaderIdx, chunkReaderMood, isChunkReaderActive]);
+  useEffect(() => {
+      if (!isChunkReaderActive || chunkReaderMood !== 'typewriter') return;
+      const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const activeEl = document.querySelector('[data-sentence-idx="' + chunkReaderIdx + '"]');
+      if (!activeEl) return;
+      const sentenceLen = (activeEl.parentElement
+          ? Array.from(activeEl.parentElement.querySelectorAll('[data-sentence-idx="' + chunkReaderIdx + '"]'))
+              .map(n => (n.textContent || '').length).reduce((a, b) => a + b, 0)
+          : (activeEl.textContent || '').length) || 1;
+      if (reduceMotion) { setChunkTypewriterCharIdx(sentenceLen); return; }
+      // chunkReaderSpeed is total ms per chunk in autoplay. Convert to chars per sec.
+      // Default chunkReaderSpeed=3000 over a 60-char sentence → 20 cps. Bound to [10, 60].
+      const cps = Math.max(10, Math.min(60, sentenceLen / Math.max(1, chunkReaderSpeed / 1000)));
+      const tickMs = 1000 / cps;
+      const id = setInterval(() => {
+          setChunkTypewriterCharIdx(prev => {
+              if (prev >= sentenceLen) { clearInterval(id); return sentenceLen; }
+              return prev + 1;
+          });
+      }, tickMs);
+      return () => clearInterval(id);
+  }, [isChunkReaderActive, chunkReaderMood, chunkReaderIdx, chunkReaderSpeed]);
   const handleCloseImmersiveReader = useCallback(() => setIsImmersiveReaderActive(false), []);
   const handleCloseStudentWelcome = useCallback(() => setShowStudentWelcome(false), []);
   const handleCloseStudentEntry = useCallback(() => { setShowStudentEntry(false); setHasSelectedRole(false); }, []);
@@ -28202,7 +28242,7 @@ Return ONLY valid JSON:
                     isImmersiveReaderActive, immersiveSettings, immersiveRulerY,
                     isFocusReaderActive, isChunkReaderActive, chunkReaderIdx,
                     chunkReaderAutoPlay, chunkReaderSpeed, chunkReaderReadAlong,
-                    chunkReaderSweepPct, isCrawlReaderActive, isKaraokeOverlayActive,
+                    chunkReaderSweepPct, chunkReaderMood, chunkTypewriterCharIdx, isCrawlReaderActive, isKaraokeOverlayActive,
                     isAnalyzingPos, isCheckingLevel, isCheckingAlignment,
                     isLineFocusMode, focusedParagraphIndex, isZenMode,
                     definitionData, phonicsData, revisionData, selectionMenu,
@@ -28216,7 +28256,7 @@ Return ONLY valid JSON:
                     setSelectionMenu, setRevisionData, setPhonicsData,
                     setIsImmersiveReaderActive, setImmersiveSettings, setImmersiveRulerY,
                     setIsFocusReaderActive, setIsChunkReaderActive, setChunkReaderIdx,
-                    setChunkReaderAutoPlay, setChunkReaderSpeed, setChunkReaderReadAlong,
+                    setChunkReaderAutoPlay, setChunkReaderSpeed, setChunkReaderReadAlong, setChunkReaderMood,
                     setChunkReaderSweepPct, setIsCrawlReaderActive, setIsKaraokeOverlayActive,
                     setPlaybackRate, setLineHeight, setLetterSpacing,
                     setFocusedParagraphIndex,
