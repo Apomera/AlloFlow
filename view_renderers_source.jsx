@@ -1043,6 +1043,51 @@ const renderInteractiveMap = (deps) => {
                   onMouseDown={(e) => { if(e.target === e.currentTarget && !isMapLocked) setConnectingSourceId(null); }}
               >
                   {!isMapLocked && <div className="absolute inset-0 bg-dot-pattern pointer-events-none z-0"></div>}
+                  {/* Cause & Effect zone backgrounds */}
+                  {generatedContent?.data?.structureType === 'Cause and Effect' && (
+                      <div className="absolute inset-0 pointer-events-none z-0 flex">
+                          <div className="w-1/2 h-full bg-gradient-to-br from-orange-50/80 to-orange-100/40 border-r-2 border-dashed border-orange-200">
+                              <div className="absolute top-3 left-4 text-orange-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-orange-300"></div>
+                                  CAUSES
+                              </div>
+                          </div>
+                          <div className="w-1/2 h-full bg-gradient-to-bl from-teal-50/80 to-teal-100/40">
+                              <div className="absolute top-3 right-4 text-teal-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                                  EFFECTS
+                                  <div className="w-2.5 h-2.5 rounded-full bg-teal-300"></div>
+                              </div>
+                          </div>
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-300">
+                              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
+                                  <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+                              </svg>
+                          </div>
+                      </div>
+                  )}
+                  {/* Problem Solution zone backgrounds */}
+                  {generatedContent?.data?.structureType === 'Problem Solution' && (
+                      <div className="absolute inset-0 pointer-events-none z-0 flex flex-col">
+                          <div className="h-[20%] w-full bg-gradient-to-b from-red-50/70 to-transparent border-b-2 border-dashed border-red-200">
+                              <div className="absolute top-3 left-4 text-red-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                  PROBLEM
+                              </div>
+                          </div>
+                          <div className="flex-grow w-full bg-gradient-to-b from-transparent via-green-50/30 to-transparent">
+                              <div className="absolute top-[22%] left-4 text-green-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                                  <div className="w-2.5 h-2.5 rounded-sm bg-green-300 rotate-45"></div>
+                                  SOLUTIONS
+                              </div>
+                          </div>
+                          <div className="h-[25%] w-full bg-gradient-to-t from-blue-50/60 to-transparent border-t-2 border-dashed border-blue-200">
+                              <div className="absolute bottom-3 left-4 text-blue-400 text-[11px] font-black uppercase tracking-widest flex items-center gap-1.5">
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                  OUTCOME
+                              </div>
+                          </div>
+                      </div>
+                  )}
                   <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" aria-hidden="true">
                       {isVenn ? (
                           <g>
@@ -1141,10 +1186,11 @@ const renderInteractiveMap = (deps) => {
                                             <line
                                                 x1={fromNode.x} y1={fromNode.y}
                                                 x2={toNode.x} y2={toNode.y}
-                                                stroke={strokeColor}
+                                                stroke={edge.style === 'dashed' ? '#94a3b8' : strokeColor}
                                                 strokeWidth={strokeWidth}
                                                 strokeOpacity={edge.status ? "1" : "0.6"}
-                                                strokeDasharray={edge.status === 'incorrect' ? "5,5" : "none"}
+                                                strokeDasharray={edge.status === 'incorrect' || edge.style === 'dashed' ? "5,5" : "none"}
+                                                markerEnd={(fromNode.type?.startsWith('cause-') || fromNode.type?.startsWith('ce-') || fromNode.type?.startsWith('ps-') || fromNode.type?.startsWith('chain-')) ? 'url(#arrowhead)' : undefined}
                                             />
                                           </>
                                       )}
@@ -1195,6 +1241,15 @@ const renderInteractiveMap = (deps) => {
                                 node.type === 'outline-main' ? 'bg-slate-900 text-white w-60 py-4 px-6 rounded-xl border-2 border-slate-700 shadow-xl text-sm z-20' :
                                 node.type === 'outline-branch' ? 'bg-white text-indigo-900 w-48 py-3 px-4 rounded-lg border-l-8 border-l-indigo-600 border-y border-r border-slate-200 text-xs shadow-md z-10' :
                                 node.type === 'outline-item' ? 'bg-slate-50 text-slate-700 w-40 py-2 px-3 rounded border border-slate-400 text-[11px] shadow-sm hover:bg-white z-0' :
+                                node.type === 'ce-main' ? 'bg-slate-800 text-white w-56 py-4 px-6 rounded-xl border-2 border-slate-600 shadow-xl text-sm z-20' :
+                                node.type === 'cause-node' ? 'bg-orange-50 text-orange-900 w-48 py-3 px-4 rounded-xl border-l-[6px] border-l-orange-400 border-y border-r border-orange-200 text-xs shadow-md hover:shadow-lg hover:border-orange-300 transition-all' :
+                                node.type === 'effect-node' ? 'bg-teal-50 text-teal-900 w-48 py-3 px-4 rounded-xl border-r-[6px] border-r-teal-400 border-y border-l border-teal-200 text-xs shadow-md hover:shadow-lg hover:border-teal-300 transition-all' :
+                                node.type === 'chain-node' ? 'bg-purple-50 text-purple-900 w-44 py-3 px-4 rounded-lg border-2 border-purple-300 text-xs shadow-md hover:shadow-lg transition-all' :
+                                node.type === 'ps-problem' ? 'bg-red-600 text-white w-64 py-5 px-6 rounded-2xl border-4 border-red-300 text-sm shadow-xl shadow-red-200 z-20' :
+                                node.type === 'ps-solution' ? 'bg-white text-green-900 w-48 py-3 px-4 rounded-xl border-t-[6px] border-t-green-500 border-x border-b border-green-200 text-xs shadow-lg hover:shadow-xl hover:scale-105 transition-all' :
+                                node.type === 'ps-solution-item' ? 'bg-green-50 text-green-800 w-40 py-2 px-3 rounded-lg border border-green-300 text-[11px] shadow-sm hover:bg-green-100 transition-colors' :
+                                node.type === 'ps-outcome' ? 'bg-blue-600 text-white w-56 py-4 px-5 rounded-2xl border-4 border-blue-300 text-sm shadow-xl shadow-blue-200 z-20' :
+                                node.type === 'ps-outcome-item' ? 'bg-blue-50 text-blue-800 w-40 py-2 px-3 rounded-lg border border-blue-300 text-[11px] shadow-sm hover:bg-blue-100 transition-colors' :
                                 'bg-slate-50 text-slate-700 w-28 h-28 rounded-full border border-slate-400 text-[11px] hover:bg-white'}
                               ${connectingSourceId === node.id ? 'ring-4 ring-yellow-400 ring-offset-2 scale-105' : ''}
                           `}

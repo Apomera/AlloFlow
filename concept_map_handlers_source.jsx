@@ -41,6 +41,187 @@ const handleInitializeMap = async (deps) => {
               hasAutoLayoutRunRef.current = true;
               return;
           }
+          if (structureType === 'Cause and Effect') {
+              const newNodes = [];
+              const newEdges = [];
+              const canvasWidth = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+              const canvasHeight = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+              const leftZoneX = canvasWidth * 0.25;
+              const rightZoneX = canvasWidth * 0.75;
+              const centerX = canvasWidth / 2;
+              // Place main topic as a central banner
+              const rootId = 'root';
+              newNodes.push({
+                  id: rootId,
+                  x: centerX,
+                  y: 50,
+                  text: main,
+                  type: 'ce-main',
+              });
+              if (Array.isArray(branches)) {
+                  let causeCount = 0;
+                  let effectCount = 0;
+                  branches.forEach((branch, bIdx) => {
+                      const titleLower = branch.title.toLowerCase();
+                      const isCause = titleLower.includes('cause');
+                      const isEffect = titleLower.includes('effect') || titleLower.includes('consequence');
+                      const isChain = titleLower.includes('chain') || titleLower.includes('sequence');
+                      if (isCause || (!isEffect && !isChain && bIdx === 0)) {
+                          // Place cause items in left zone
+                          if (Array.isArray(branch.items)) {
+                              branch.items.forEach((item, iIdx) => {
+                                  const itemId = `cause-${bIdx}-${iIdx}`;
+                                  newNodes.push({
+                                      id: itemId,
+                                      x: leftZoneX + (Math.random() * 60 - 30),
+                                      y: 150 + (causeCount * 80),
+                                      text: item,
+                                      type: 'cause-node'
+                                  });
+                                  newEdges.push({ id: `e-${rootId}-${itemId}`, fromId: rootId, toId: itemId });
+                                  causeCount++;
+                              });
+                          }
+                      } else if (isEffect || (!isCause && !isChain)) {
+                          // Place effect items in right zone
+                          if (Array.isArray(branch.items)) {
+                              branch.items.forEach((item, iIdx) => {
+                                  const itemId = `effect-${bIdx}-${iIdx}`;
+                                  newNodes.push({
+                                      id: itemId,
+                                      x: rightZoneX + (Math.random() * 60 - 30),
+                                      y: 150 + (effectCount * 80),
+                                      text: item,
+                                      type: 'effect-node'
+                                  });
+                                  effectCount++;
+                              });
+                          }
+                      } else if (isChain) {
+                          // Place chain items along the center
+                          if (Array.isArray(branch.items)) {
+                              branch.items.forEach((item, iIdx) => {
+                                  const itemId = `chain-${bIdx}-${iIdx}`;
+                                  newNodes.push({
+                                      id: itemId,
+                                      x: centerX,
+                                      y: 200 + (iIdx * 100),
+                                      text: item,
+                                      type: 'chain-node'
+                                  });
+                                  if (iIdx > 0) {
+                                      newEdges.push({ id: `e-chain-${bIdx}-${iIdx-1}-${iIdx}`, fromId: `chain-${bIdx}-${iIdx-1}`, toId: itemId });
+                                  }
+                              });
+                          }
+                      }
+                  });
+                  // Auto-link causes to effects
+                  const causeNodes = newNodes.filter(n => n.type === 'cause-node');
+                  const effectNodes = newNodes.filter(n => n.type === 'effect-node');
+                  if (causeNodes.length > 0 && effectNodes.length > 0) {
+                      causeNodes.forEach(cn => {
+                          effectNodes.forEach(en => {
+                              newEdges.push({ id: `e-${cn.id}-${en.id}`, fromId: cn.id, toId: en.id, style: 'dashed' });
+                          });
+                      });
+                  }
+              }
+              setConceptMapNodes(newNodes);
+              setConceptMapEdges(newEdges);
+              setIsConceptMapReady(true);
+              hasAutoLayoutRunRef.current = true;
+              return;
+          }
+          if (structureType === 'Problem Solution') {
+              const newNodes = [];
+              const newEdges = [];
+              const canvasWidth = mapContainerRef.current ? mapContainerRef.current.offsetWidth : 800;
+              const canvasHeight = mapContainerRef.current ? mapContainerRef.current.offsetHeight : 600;
+              const centerX = canvasWidth / 2;
+              // Problem node at top
+              const rootId = 'root';
+              newNodes.push({
+                  id: rootId,
+                  x: centerX,
+                  y: 70,
+                  text: main,
+                  type: 'ps-problem',
+              });
+              if (Array.isArray(branches)) {
+                  const outcomeIdx = branches.findIndex(b =>
+                      b.title.toLowerCase().includes('outcome') ||
+                      b.title.toLowerCase().includes('result') ||
+                      b.title.toLowerCase().includes('evaluation')
+                  );
+                  const outcomeBranch = outcomeIdx !== -1 ? branches[outcomeIdx] : null;
+                  const solutionBranches = branches.filter((_, i) => i !== outcomeIdx);
+                  const solCount = solutionBranches.length;
+                  const solSlice = canvasWidth / Math.max(1, solCount + 1);
+                  solutionBranches.forEach((branch, bIdx) => {
+                      const branchId = `sol-${bIdx}`;
+                      const bx = solSlice * (bIdx + 1);
+                      const by = 220;
+                      newNodes.push({
+                          id: branchId,
+                          x: bx,
+                          y: by,
+                          text: branch.title,
+                          type: 'ps-solution'
+                      });
+                      newEdges.push({ id: `e-${rootId}-${branchId}`, fromId: rootId, toId: branchId });
+                      // Solution sub-items
+                      if (Array.isArray(branch.items)) {
+                          branch.items.forEach((item, iIdx) => {
+                              const itemId = `sol-item-${bIdx}-${iIdx}`;
+                              newNodes.push({
+                                  id: itemId,
+                                  x: bx + (Math.random() * 40 - 20),
+                                  y: by + 100 + (iIdx * 70),
+                                  text: item,
+                                  type: 'ps-solution-item'
+                              });
+                              newEdges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId });
+                          });
+                      }
+                  });
+                  // Outcome node at bottom
+                  const outcomeId = 'outcome';
+                  const outcomeText = outcomeBranch ? outcomeBranch.title : 'Outcome';
+                  const maxY = Math.max(...newNodes.map(n => n.y), 400);
+                  newNodes.push({
+                      id: outcomeId,
+                      x: centerX,
+                      y: maxY + 120,
+                      text: outcomeText,
+                      type: 'ps-outcome'
+                  });
+                  // Connect solutions to outcome
+                  solutionBranches.forEach((_, bIdx) => {
+                      const branchId = `sol-${bIdx}`;
+                      newEdges.push({ id: `e-${branchId}-${outcomeId}`, fromId: branchId, toId: outcomeId });
+                  });
+                  // Outcome sub-items
+                  if (outcomeBranch && Array.isArray(outcomeBranch.items)) {
+                      outcomeBranch.items.forEach((item, iIdx) => {
+                          const itemId = `outcome-item-${iIdx}`;
+                          newNodes.push({
+                              id: itemId,
+                              x: centerX + (iIdx * 160) - ((outcomeBranch.items.length - 1) * 80),
+                              y: maxY + 220,
+                              text: item,
+                              type: 'ps-outcome-item'
+                          });
+                          newEdges.push({ id: `e-${outcomeId}-${itemId}`, fromId: outcomeId, toId: itemId });
+                      });
+                  }
+              }
+              setConceptMapNodes(newNodes);
+              setConceptMapEdges(newEdges);
+              setIsConceptMapReady(true);
+              hasAutoLayoutRunRef.current = true;
+              return;
+          }
           if (structureType === 'Structured Outline') {
               const newNodes = [];
               const newEdges = [];
