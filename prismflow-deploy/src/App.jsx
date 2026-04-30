@@ -4917,82 +4917,82 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', './allo_data_module.js');
-    loadModule('LargeFileModule', './large_file_module.js');
-    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
-    loadModule('UtilsPure', './utils_pure_module.js');
-    loadModule('GeminiAPI', './gemini_api_module.js');
-    loadModule('TTS', './tts_module.js');
-    loadModule('Personas', './personas_module.js');
-    loadModule('Export', './export_module.js');
-    loadModule('MiscComponents', './misc_components_module.js');
-    loadModule('RemediationAudio', './remediation_audio_module.js');
-    loadModule('StemLab', './stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', './word_sounds_module.js');
-    loadModule('StudentAnalytics', './student_analytics_module.js');
-    loadModule('BehaviorLens', './behavior_lens_module.js');
-    loadModule('SymbolStudio', './symbol_studio_module.js');
-    loadModule('SelHub', './sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', './games_module.js');
-    loadModule('QuickStartWizard', './quickstart_module.js');
-    loadModule('AlloBot', './allobot_module.js');
-    loadModule('TeacherModule', './teacher_module.js');
-    loadModule('StoryForge', './story_forge_module.js');
-    loadModule('LitLab', './story_stage_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/allo_data_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/symbol_studio_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', './visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
-    loadModule('AdventureModule', './adventure_module.js');
-    loadModule('StudentInteractionModule', './student_interaction_module.js');
-    loadModule('MathFluency', './math_fluency_module.js');
-    loadModule('UIModalsModule', './ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
-    loadModule('PersonaUIModule', './persona_ui_module.js');
-    loadModule('DocPipelineModule', './doc_pipeline_module.js');
-    loadModule('ContentEngineModule', './content_engine_module.js');
-    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', './prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
-    loadModule('UdlChatModule', './udl_chat_module.js');
-    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', './view_renderers_module.js');
-    loadModule('AudioHelpersModule', './audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
-    loadModule('MiscHandlersModule', './misc_handlers_module.js');
-    loadModule('PureHelpersModule', './pure_helpers_module.js');
-    loadModule('MathHelpersModule', './math_helpers_module.js');
-    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', './view_dbq_module.js');
-    loadModule('ViewTimelineModule', './view_timeline_module.js');
-    loadModule('ViewGlossaryModule', './view_glossary_module.js');
-    loadModule('ViewOutlineModule', './view_outline_module.js');
-    loadModule('ViewFaqModule', './view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
-    loadModule('ViewImageModule', './view_image_module.js');
-    loadModule('ViewAnalysisModule', './view_analysis_module.js');
-    loadModule('ViewQuizModule', './view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
-    loadModule('ViewMathModule', './view_math_module.js');
-    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -5003,7 +5003,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = './';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@a3d6765/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -13495,9 +13495,10 @@ STUDENT LANGUAGE: ${studentLanguage || 'English'}
 RULES:
 - For PROCESSES or CHANGES (photosynthesis, erosion, cooking, life cycles): use "before-after" or "sequence" layout
 - For COMPARISONS (democracy vs monarchy, mitosis vs meiosis): use "comparison" layout
+- For SORT-INTO-TWO-CATEGORIES (renewable vs non-renewable, prokaryotes vs eukaryotes, igneous vs sedimentary, mammals vs reptiles, vertebrates vs invertebrates, abiotic vs biotic, prime vs composite, igneous vs metamorphic, primary vs secondary, valid vs invalid argument): use "t-chart" layout — students DRAG items into the correct column
 - For ANATOMY or STRUCTURE (cell, volcano, water cycle diagram): use "labeled-diagram" layout
 - For SIMPLE VOCABULARY (chair, triangle, rain): use "single" layout
-- Generate 2-4 panels maximum
+- Generate 2-4 panels maximum (PANEL layouts only — t-chart does not use panels)
 - Each panel needs a clear Imagen prompt for educational vector art
 - Labels MUST be written in ${studentLanguage || "English"} to match the student's language
 - Labels should point to specific parts of the image
@@ -13505,7 +13506,9 @@ RULES:
 - Captions go below each image
 ${artStyle ? `ART STYLE: Use "${artStyle}" style for ALL panel imagenPrompts. This means each prompt must specify "${artStyle}" style rendering.` : "ART STYLE: Clean educational vector art."}
 ${customInstructions ? `ADDITIONAL INSTRUCTIONS: ${customInstructions}` : ""}
-Return ONLY valid JSON:
+Return ONLY valid JSON.
+
+For PANEL layouts (before-after / sequence / comparison / labeled-diagram / single):
 {
   "layout": "before-after" | "sequence" | "comparison" | "labeled-diagram" | "single",
   "title": "Concept Title",
@@ -13521,12 +13524,39 @@ Return ONLY valid JSON:
       ]
     }
   ]
-}`;
+}
+
+For T-CHART layout (sorting exercise — NO panels, NO images):
+{
+  "layout": "t-chart",
+  "title": "Concept Title (e.g. Renewable vs Non-Renewable Energy)",
+  "tchart": {
+    "leftTitle": "Left column header (2-3 words, e.g. Renewable)",
+    "rightTitle": "Right column header (2-3 words, e.g. Non-Renewable)",
+    "leftHint": "One-sentence definition of what belongs in left column",
+    "rightHint": "One-sentence definition of what belongs in right column",
+    "items": [
+      { "id": "i1", "text": "Item label (1-3 words)", "correct": "left" | "right", "explain": "One-sentence WHY this belongs there" }
+    ]
+  }
+}
+For t-chart: generate 6-12 items total, balanced between left and right (roughly 50/50). Items should be canonical and unambiguous — avoid edge cases. Each item's "explain" field is shown after the student checks their answer to teach the WHY.`;
       const result = await callGemini(planPrompt, true);
       try {
           const plan = JSON.parse(cleanJson(result));
-          if (!plan.layout || !plan.panels || !Array.isArray(plan.panels)) {
-              throw new Error('Invalid visual plan structure');
+          // T-Chart layout uses .tchart.items instead of .panels — validate that shape separately.
+          if (!plan.layout) {
+              throw new Error('Invalid visual plan structure: missing layout');
+          }
+          if (plan.layout === 't-chart') {
+              if (!plan.tchart || !Array.isArray(plan.tchart.items) || plan.tchart.items.length === 0) {
+                  throw new Error('Invalid t-chart plan: missing tchart.items');
+              }
+              console.log('[ArtDirector] Visual plan: t-chart,', plan.tchart.items.length, 'items');
+              return plan;
+          }
+          if (!plan.panels || !Array.isArray(plan.panels)) {
+              throw new Error('Invalid visual plan structure: missing panels');
           }
           console.log('[ArtDirector] Visual plan:', plan.layout, plan.panels.length, 'panels');
           return plan;
