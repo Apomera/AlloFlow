@@ -620,6 +620,9 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // ============================================================================
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
+    // t() returns the literal key when no translation exists (AlloFlowANTI useTranslation),
+    // so `t(key) || fallback` never fires its fallback. tt() detects that case.
+    const tt = (key, fb) => { const r = t(key); return (r && r !== key) ? r : fb; };
     const [speedPxPerSec, setSpeedPxPerSec] = useState(50);
     const [isPlaying, setIsPlaying] = useState(true);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
@@ -790,7 +793,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                     <button onClick={onClose} aria-label={t('common.close') || 'Close'} className="p-2 rounded-full" style={{ color: p.text }}>
                         <ArrowLeft size={22} />
                     </button>
-                    <span className="font-bold text-base">{t('immersive.cinematic_crawl') || 'Cinematic Crawl'}</span>
+                    <span className="font-bold text-base">{tt('immersive.cinematic_crawl', 'Cinematic Crawl')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-xs font-bold flex-wrap">
                     <label className="flex items-center gap-2">
@@ -828,7 +831,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                 ref={viewportRef}
                 onClick={togglePlay}
                 className="flex-1 relative overflow-hidden cursor-pointer select-none"
-                style={{ perspective: '500px', perspectiveOrigin: '50% 100%' }}
+                style={{ perspective: '900px', perspectiveOrigin: '50% 100%' }}
                 role="button"
                 aria-label={isPlaying ? 'Pause crawl' : 'Play crawl'}
             >
@@ -859,7 +862,7 @@ const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
                         fontSize: 'clamp(1.4rem, 2.6vw, 2.4rem)',
                         lineHeight: 1.5,
                         textAlign: 'justify',
-                        transform: `translateY(${translateY}px) rotateX(22deg)`,
+                        transform: `translateY(${translateY}px) rotateX(15deg)`,
                         transformOrigin: '50% 100%',
                         willChange: 'transform',
                         textShadow: '0 0 12px ' + p.accent + '44'
