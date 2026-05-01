@@ -2344,8 +2344,14 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const [announcement, setAnnouncement] = useState("");
   const [keyboardSelectedId, setKeyboardSelectedId] = useState(null);
   const moveMenuRef = useRef(null);
+  const [nodePositions, setNodePositions] = useState({});
+  const dragRef = useRef({ active: false, id: null, startX: 0, startY: 0, origX: 0, origY: 0 });
+  const dataFingerprint = useMemo(() => {
+    if (!data?.steps?.length) return "";
+    return JSON.stringify(data.steps.map((s) => typeof s === "string" ? s : s.title));
+  }, [data]);
   useEffect(() => {
-    if (!data?.steps?.length) return;
+    if (!dataFingerprint || !data?.steps?.length) return;
     const steps = data.steps.map((s, i) => ({
       id: `pb-${i}-${Math.random().toString(36).substr(2, 6)}`,
       title: typeof s === "string" ? s : s.title || s,
@@ -2365,7 +2371,8 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setIsComplete(false);
     setConnectingFrom(null);
     setChecked(false);
-  }, [data]);
+    setNodePositions({});
+  }, [dataFingerprint]);
   const correctConnectionSet = useMemo(() => {
     const set = /* @__PURE__ */ new Set();
     if (!data?.steps?.length) return set;
@@ -2408,11 +2415,11 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       };
     }).filter(Boolean);
     setArrowCoords(coords);
-  }, [connections]);
+  }, [connections, nodePositions]);
   useEffect(() => {
     const timer = setTimeout(recalcArrows, 50);
     return () => clearTimeout(timer);
-  }, [connections, shuffledSteps, checked, recalcArrows]);
+  }, [connections, shuffledSteps, checked, recalcArrows, nodePositions]);
   useEffect(() => {
     const handleResize = () => recalcArrows();
     window.addEventListener("resize", handleResize);
@@ -2544,6 +2551,40 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setScore(0);
     setIsComplete(false);
     setKeyboardSelectedId(null);
+    setNodePositions({});
+  };
+  const handleGripDown = (e, stepId) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const el = nodeRefs.current[stepId];
+    if (!el) return;
+    const pos = nodePositions[stepId] || { x: 0, y: 0 };
+    dragRef.current = { active: true, id: stepId, startX: clientX, startY: clientY, origX: pos.x, origY: pos.y };
+    const handleMove = (ev) => {
+      if (!dragRef.current.active) return;
+      const cx = ev.touches ? ev.touches[0].clientX : ev.clientX;
+      const cy = ev.touches ? ev.touches[0].clientY : ev.clientY;
+      const dx = cx - dragRef.current.startX;
+      const dy = cy - dragRef.current.startY;
+      setNodePositions((prev) => ({
+        ...prev,
+        [stepId]: { x: dragRef.current.origX + dx, y: dragRef.current.origY + dy }
+      }));
+    };
+    const handleUp = () => {
+      dragRef.current.active = false;
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+      window.removeEventListener("touchmove", handleMove);
+      window.removeEventListener("touchend", handleUp);
+      recalcArrows();
+    };
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    window.addEventListener("touchmove", handleMove, { passive: false });
+    window.addEventListener("touchend", handleUp);
   };
   const getConnResult = (nodeId) => {
     if (!results) return null;
@@ -2591,6 +2632,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     const outCount = getRequiredOutCount(step.originalIndex);
     const isBranching = outCount > 1;
     const currentOutCount = connections.filter((c) => c.fromId === step.id).length;
+    const pos = nodePositions[step.id] || { x: 0, y: 0 };
     return /* @__PURE__ */ React.createElement(
       "div",
       {
@@ -2603,14 +2645,26 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         role: "button",
         tabIndex: 0,
         "aria-label": `Step: ${step.title}. ${isSource ? "Selected. Click another step to connect." : "Click to connect."}`,
+        style: { transform: `translate(${pos.x}px, ${pos.y}px)`, zIndex: dragRef.current.id === step.id ? 50 : 5 },
         className: `
-                    relative p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 select-none min-h-[100px]
+                    relative p-5 rounded-2xl border-2 cursor-pointer transition-shadow duration-200 select-none min-h-[100px]
                     ${isSource || isKbSelected ? "border-indigo-500 bg-indigo-50 ring-4 ring-indigo-200 shadow-xl scale-[1.03]" : "border-slate-200 bg-white hover:border-indigo-300 hover:shadow-lg"}
                     ${checked && isCorrect ? "border-green-400 bg-green-50 ring-2 ring-green-200" : ""}
                     ${checked && isIncorrect ? "border-red-400 bg-red-50 animate-pulse" : ""}
                     ${isComplete ? "border-green-300 bg-green-50/50" : ""}
                   `
       },
+      /* @__PURE__ */ React.createElement(
+        "div",
+        {
+          onMouseDown: (e) => handleGripDown(e, step.id),
+          onTouchStart: (e) => handleGripDown(e, step.id),
+          className: "absolute top-1 right-1 z-30 p-1 rounded-lg cursor-grab active:cursor-grabbing text-slate-300 hover:text-indigo-400 hover:bg-indigo-50 transition-colors",
+          "aria-label": "Drag to reposition",
+          title: "Drag to reposition"
+        },
+        /* @__PURE__ */ React.createElement(GripVertical, { size: 14 })
+      ),
       /* @__PURE__ */ React.createElement("div", { className: `absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-3 z-20 transition-all flex items-center justify-center
                     ${isSource ? "bg-indigo-500 border-indigo-600 scale-125 shadow-lg shadow-indigo-300" : connFrom ? "bg-indigo-500 border-indigo-600" : "bg-white border-slate-300 hover:border-indigo-400 hover:bg-indigo-50"}
                   ` }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 12, className: `${isSource || connFrom ? "text-white" : "text-slate-400"}` })),
@@ -2620,7 +2674,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       /* @__PURE__ */ React.createElement("div", { className: `absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-3 z-20 transition-all flex items-center justify-center
                     ${connectingFrom && connectingFrom !== step.id ? "bg-purple-100 border-purple-500 scale-125 animate-pulse shadow-lg shadow-purple-200" : connTo ? "bg-purple-500 border-purple-600" : "bg-white border-slate-300"}
                   ` }, connTo && /* @__PURE__ */ React.createElement("div", { className: "w-2.5 h-2.5 bg-white rounded-full" })),
-      /* @__PURE__ */ React.createElement("h4", { className: "font-black text-slate-800 text-sm mb-2 pr-4 pl-2" }, step.title),
+      /* @__PURE__ */ React.createElement("h4", { className: "font-black text-slate-800 text-sm mb-2 pr-6 pl-2" }, step.title),
       step.items?.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "text-xs text-slate-500 space-y-1 pl-2" }, step.items.slice(0, 3).map((item, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "flex items-start gap-1.5" }, /* @__PURE__ */ React.createElement("span", { className: "text-indigo-300 mt-0.5 shrink-0" }, "\u2022"), /* @__PURE__ */ React.createElement("span", null, typeof item === "string" ? item : item.text || item))), step.items.length > 3 && /* @__PURE__ */ React.createElement("li", { className: "text-slate-400 italic ml-3" }, "+", step.items.length - 3, " more")),
       isComplete && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-3 -left-1 bg-green-600 text-white text-[11px] font-black w-6 h-6 rounded-full flex items-center justify-center shadow-md border-2 border-white" }, step.originalIndex + 1)
     );
