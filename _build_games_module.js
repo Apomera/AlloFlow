@@ -83,7 +83,7 @@ console.log(`[icon-scan] auto-detected ${ICONS.length} Lucide icons: ${ICONS.joi
 // Game components to register
 const GAMES = [
   'MemoryGame', 'MatchingGame', 'TimelineGame', 'ConceptSortGame',
-  'VennGame', 'CauseEffectSortGame', 'CrosswordGame', 'SyntaxScramble',
+  'VennGame', 'CauseEffectSortGame', 'PipelineBuilderGame', 'CrosswordGame', 'SyntaxScramble',
   'BingoGame', 'StudentBingoGame', 'WordScrambleGame'
 ];
 

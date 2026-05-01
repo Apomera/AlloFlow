@@ -77,7 +77,7 @@ function detectIconsAndComponents() {
   const KNOWN_COMPONENTS = new Set([
     'React', 'Fragment', 'BranchItem', 'ConfettiExplosion', 'ErrorBoundary',
     'KeyConceptMapView', 'MainTitle', 'SimpleBarChart', 'SimpleDonutChart',
-    'Tag', 'VennGame', 'CauseEffectSortGame',
+    'Tag', 'VennGame', 'CauseEffectSortGame', 'PipelineBuilderGame',
   ]);
 
   for (const ref of [...jsxRefs].sort()) {

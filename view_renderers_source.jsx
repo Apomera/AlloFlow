@@ -189,8 +189,9 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline } = deps;
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired"); } catch(_) {}
         if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return null;
         const { main, main_en, branches: rawBranches, structureType } = generatedContent?.data;
@@ -282,8 +283,33 @@ const renderOutlineContent = (deps) => {
             </div>
         ));
         if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
+            // ── Pipeline Builder game rendering ──
+            if (isPipelinePlaying) {
+                const stepData = branches.map(b => ({ title: b.title, items: b.items || [] }));
+                return (
+                    <ErrorBoundary fallbackMessage="Pipeline Builder encountered an error.">
+                        <PipelineBuilderGame
+                            data={{ steps: stepData }}
+                            onClose={closePipeline}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
             return (
                 <div className="max-w-3xl mx-auto">
+                    <div className="flex justify-center mb-4">
+                        <button
+                            onClick={() => setIsPipelinePlaying(true)}
+                            className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                            aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
+                        >
+                            <Gamepad2 size={16}/> {t('games.pipeline.play_btn') || 'Pipeline Builder'}
+                        </button>
+                    </div>
                     <MainTitle />
                     <div className="flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100">
                         <div className="absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full"></div>

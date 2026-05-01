@@ -184,9 +184,13 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
   return elements;
 };
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline } = deps;
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() {
     const _C = window.AlloModules.CauseEffectSortGame;
+    return React.memo((props) => React.createElement(_C, props));
+  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
+  const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() {
+    const _C = window.AlloModules.PipelineBuilderGame;
     return React.memo((props) => React.createElement(_C, props));
   })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
   try {
@@ -251,7 +255,31 @@ const renderOutlineContent = (deps) => {
     }
   )) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, item), branch.items_en?.[iIdx] && /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600 italic" }, "(", branch.items_en[iIdx], ")"))))))));
   if (type === "Flow Chart" || type === "Process Flow / Sequence") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full" }), branches.map((b, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative w-full flex flex-col items-center group" }, i > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 20, strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${i % 2 === 0 ? "border-l-indigo-500" : "border-l-purple-500"} hover:shadow-xl hover:ring-2 hover:ring-indigo-100` }, /* @__PURE__ */ React.createElement("div", { className: `absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${i % 2 === 0 ? "bg-indigo-500" : "bg-purple-500"}` }, i + 1), /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: i, colorClass: "bg-white border-none shadow-none" })))), /* @__PURE__ */ React.createElement("div", { className: "px-8 py-3 bg-slate-800 text-white rounded-full font-black text-sm mt-4 z-10 shadow-lg border-4 border-white tracking-widest uppercase" }, t("outline.labels.end"))));
+    if (isPipelinePlaying) {
+      const stepData = branches.map((b) => ({ title: b.title, items: b.items || [] }));
+      return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Pipeline Builder encountered an error." }, /* @__PURE__ */ React.createElement(
+        PipelineBuilderGame,
+        {
+          data: { steps: stepData },
+          onClose: closePipeline,
+          playSound,
+          topicTitle: main || "",
+          onScoreUpdate: handleGameScoreUpdate,
+          onGameComplete: handleGameCompletion
+        }
+      ));
+    }
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setIsPipelinePlaying(true),
+        className: "flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        "aria-label": t("games.pipeline.title") || "Pipeline Builder"
+      },
+      /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
+      " ",
+      t("games.pipeline.play_btn") || "Pipeline Builder"
+    )), /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full" }), branches.map((b, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative w-full flex flex-col items-center group" }, i > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowDown, { size: 20, strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${i % 2 === 0 ? "border-l-indigo-500" : "border-l-purple-500"} hover:shadow-xl hover:ring-2 hover:ring-indigo-100` }, /* @__PURE__ */ React.createElement("div", { className: `absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${i % 2 === 0 ? "bg-indigo-500" : "bg-purple-500"}` }, i + 1), /* @__PURE__ */ React.createElement(BranchItem, { branch: b, bIdx: i, colorClass: "bg-white border-none shadow-none" })))), /* @__PURE__ */ React.createElement("div", { className: "px-8 py-3 bg-slate-800 text-white rounded-full font-black text-sm mt-4 z-10 shadow-lg border-4 border-white tracking-widest uppercase" }, t("outline.labels.end"))));
   }
   if (type === "Venn Diagram") {
     const setA = branches[0] || { title: "Set A", items: [] };

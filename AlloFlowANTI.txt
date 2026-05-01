@@ -3169,6 +3169,10 @@ const CauseEffectSortGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CauseEffectSortGame;
   return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
+const PipelineBuilderGame = React.memo((props) => {
+  const Impl = window.AlloModules && window.AlloModules.PipelineBuilderGame;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+});
 const CrosswordGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CrosswordGame;
   return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
@@ -5801,6 +5805,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!isTeacherMode) setIsInteractiveVenn(false);
   }, [isTeacherMode]);
   const closeCESort = useCallback(() => setIsCESortPlaying(false), []);
+  const closePipeline = useCallback(() => setIsPipelinePlaying(false), []);
     React.useEffect(() => {
         if (!user || !db || !appId) return;
         const cleanExpiredImages = async () => {
@@ -7698,6 +7703,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isVennPlaying, setIsVennPlaying] = useState(false);
   const [isCESortPlaying, setIsCESortPlaying] = useState(false);
   const [ceGameData, setCeGameData] = useState({ causes: [], effects: [] });
+  const [isPipelinePlaying, setIsPipelinePlaying] = useState(false);
   useEffect(() => {
       if (generatedContent?.type === 'outline' && generatedContent?.data) {
           const { main, branches, challenge, nodes: savedNodes, edges: savedEdges } = generatedContent?.data;
@@ -19343,6 +19349,9 @@ For t-chart: generate 6-12 items total, balanced between left and right (roughly
         closeCESort,
         setIsCESortPlaying,
         setCeGameData,
+        isPipelinePlaying,
+        setIsPipelinePlaying,
+        closePipeline,
       });
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
   };
