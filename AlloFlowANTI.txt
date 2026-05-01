@@ -3165,6 +3165,10 @@ const VennGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.VennGame;
   return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
 });
+const CauseEffectSortGame = React.memo((props) => {
+  const Impl = window.AlloModules && window.AlloModules.CauseEffectSortGame;
+  return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
+});
 const CrosswordGame = React.memo((props) => {
   const Impl = window.AlloModules && window.AlloModules.CrosswordGame;
   return Impl ? <Impl {...props} /> : <div className="p-8 text-center text-slate-600">Loading game...</div>;
@@ -5432,7 +5436,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           conceptSortGame: [],
           syntaxScramble: [],
           vennDiagram: [],
-          wordScramble: []
+          wordScramble: [],
+          causeEffectSort: []
       };
   });
   const [labelChallengeResults, setLabelChallengeResults] = useState(() => {
@@ -5795,6 +5800,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setIsVennPlaying(false);
       if (!isTeacherMode) setIsInteractiveVenn(false);
   }, [isTeacherMode]);
+  const closeCESort = useCallback(() => setIsCESortPlaying(false), []);
     React.useEffect(() => {
         if (!user || !db || !appId) return;
         const cleanExpiredImages = async () => {
@@ -7690,6 +7696,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [isInteractiveVenn, setIsInteractiveVenn] = useState(false);
   const [vennInputs, setVennInputs] = useState({ setA: '', setB: '', shared: '' });
   const [isVennPlaying, setIsVennPlaying] = useState(false);
+  const [isCESortPlaying, setIsCESortPlaying] = useState(false);
+  const [ceGameData, setCeGameData] = useState({ causes: [], effects: [] });
   useEffect(() => {
       if (generatedContent?.type === 'outline' && generatedContent?.data) {
           const { main, branches, challenge, nodes: savedNodes, edges: savedEdges } = generatedContent?.data;
@@ -19330,6 +19338,11 @@ For t-chart: generate 6-12 items total, balanced between left and right (roughly
         handleSetIsVennPlayingToTrue,
         playSound,
         t,
+        isCESortPlaying,
+        ceGameData,
+        closeCESort,
+        setIsCESortPlaying,
+        setCeGameData,
       });
     throw new Error("[renderOutlineContent] ViewRenderers module not loaded - reload the page");
   };

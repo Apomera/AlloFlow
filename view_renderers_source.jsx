@@ -189,7 +189,8 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData } = deps;
+  const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired"); } catch(_) {}
         if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return null;
         const { main, main_en, branches: rawBranches, structureType } = generatedContent?.data;
@@ -546,9 +547,48 @@ const renderOutlineContent = (deps) => {
             const effects = branches.filter(b => b.title.toLowerCase().includes('effect') || b.title.toLowerCase().includes('consequence'));
             const chains = branches.filter(b => b.title.toLowerCase().includes('chain') || b.title.toLowerCase().includes('sequence'));
             const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
+            // ── Sort Game rendering ──
+            if (isCESortPlaying) {
+                const causeItems = [];
+                const effectItems = [];
+                if (isLegacy) {
+                    branches.forEach(b => {
+                        causeItems.push(b.title);
+                        (b.items || []).forEach(it => effectItems.push(it));
+                    });
+                } else {
+                    causes.forEach(b => {
+                        (b.items || []).forEach(it => causeItems.push(it));
+                    });
+                    effects.forEach(b => {
+                        (b.items || []).forEach(it => effectItems.push(it));
+                    });
+                }
+                return (
+                    <ErrorBoundary fallbackMessage="Cause & Effect Sort encountered an error.">
+                        <CauseEffectSortGame
+                            data={{ causes: causeItems, effects: effectItems }}
+                            onClose={closeCESort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
             if (isLegacy) {
                 return (
                     <div className="max-w-4xl mx-auto px-2">
+                        <div className="flex justify-center mb-4">
+                            <button
+                                onClick={() => setIsCESortPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-label={t('games.ce_sort.title') || 'Cause & Effect Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Game'}
+                            </button>
+                        </div>
                         <MainTitle />
                         <div className="space-y-6">
                             {branches.map((b, i) => (
@@ -592,6 +632,15 @@ const renderOutlineContent = (deps) => {
             }
             return (
                 <div className="max-w-6xl mx-auto px-4 py-8">
+                    <div className="flex justify-center mb-6">
+                        <button
+                            onClick={() => setIsCESortPlaying(true)}
+                            className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                            aria-label={t('games.ce_sort.title') || 'Cause & Effect Sort Game'}
+                        >
+                            <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Game'}
+                        </button>
+                    </div>
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16">
                         <div className="flex-1 flex flex-col gap-6 w-full lg:items-end">
                             {causes.map((branch, i) => (

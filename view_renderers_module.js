@@ -184,7 +184,11 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
   return elements;
 };
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData } = deps;
+  const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() {
+    const _C = window.AlloModules.CauseEffectSortGame;
+    return React.memo((props) => React.createElement(_C, props));
+  })() : (props) => React.createElement("div", { className: "p-8 text-center text-slate-600" }, "Loading game...");
   try {
     if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired");
   } catch (_) {
@@ -392,8 +396,46 @@ const renderOutlineContent = (deps) => {
     const effects = branches.filter((b) => b.title.toLowerCase().includes("effect") || b.title.toLowerCase().includes("consequence"));
     const chains = branches.filter((b) => b.title.toLowerCase().includes("chain") || b.title.toLowerCase().includes("sequence"));
     const isLegacy = causes.length === 0 && effects.length === 0 && chains.length === 0;
+    if (isCESortPlaying) {
+      const causeItems = [];
+      const effectItems = [];
+      if (isLegacy) {
+        branches.forEach((b) => {
+          causeItems.push(b.title);
+          (b.items || []).forEach((it) => effectItems.push(it));
+        });
+      } else {
+        causes.forEach((b) => {
+          (b.items || []).forEach((it) => causeItems.push(it));
+        });
+        effects.forEach((b) => {
+          (b.items || []).forEach((it) => effectItems.push(it));
+        });
+      }
+      return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Cause & Effect Sort encountered an error." }, /* @__PURE__ */ React.createElement(
+        CauseEffectSortGame,
+        {
+          data: { causes: causeItems, effects: effectItems },
+          onClose: closeCESort,
+          playSound,
+          topicTitle: main || "",
+          onScoreUpdate: handleGameScoreUpdate,
+          onGameComplete: handleGameCompletion
+        }
+      ));
+    }
     if (isLegacy) {
-      return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-2" }, /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, branches.map((b, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative pl-4 md:pl-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row items-stretch gap-0 bg-white rounded-2xl border border-slate-400 shadow-md overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 p-6 bg-orange-50 border-r border-orange-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 bg-orange-200 text-orange-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg" }, t("outline.labels.cause")), /* @__PURE__ */ React.createElement("div", { className: "pt-2 h-full flex items-center" }, isEditingOutline ? /* @__PURE__ */ React.createElement(
+      return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-4" }, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          onClick: () => setIsCESortPlaying(true),
+          className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+          "aria-label": t("games.ce_sort.title") || "Cause & Effect Sort Game"
+        },
+        /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
+        " ",
+        t("games.ce_sort.play_btn") || "Sort Game"
+      )), /* @__PURE__ */ React.createElement(MainTitle, null), /* @__PURE__ */ React.createElement("div", { className: "space-y-6" }, branches.map((b, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "relative pl-4 md:pl-0 group" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row items-stretch gap-0 bg-white rounded-2xl border border-slate-400 shadow-md overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 p-6 bg-orange-50 border-r border-orange-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 bg-orange-200 text-orange-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg" }, t("outline.labels.cause")), /* @__PURE__ */ React.createElement("div", { className: "pt-2 h-full flex items-center" }, isEditingOutline ? /* @__PURE__ */ React.createElement(
         "textarea",
         {
           "aria-label": t("outline.edit_cause") || "Edit cause",
@@ -403,7 +445,17 @@ const renderOutlineContent = (deps) => {
         }
       ) : /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-orange-900 text-lg" }, b.title))), /* @__PURE__ */ React.createElement("div", { className: "bg-white flex items-center justify-center w-full md:w-12 py-2 md:py-0 border-y md:border-y-0 md:border-r border-slate-100 relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-slate-50 opacity-50" }), /* @__PURE__ */ React.createElement(ArrowRight, { size: 24, className: "text-slate-600 rotate-90 md:rotate-0 relative z-10", strokeWidth: 3 })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 p-6 bg-teal-50 relative" }, /* @__PURE__ */ React.createElement("div", { className: "absolute top-0 left-0 bg-teal-200 text-teal-800 text-[11px] font-black uppercase tracking-wider px-3 py-1 rounded-br-lg" }, t("outline.labels.effect")), /* @__PURE__ */ React.createElement("div", { className: "pt-4 h-full" }, /* @__PURE__ */ React.createElement("ul", { className: "list-disc list-inside text-teal-900 space-y-2 marker:text-teal-400" }, b.items.map((item, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-sm font-medium leading-relaxed" }, item))))))))));
     }
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-8" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-end" }, causes.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `c-${i}`, className: "bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-orange-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-orange-400" }), " ", t("outline.labels.causes")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-orange-300 mt-1.5 shrink-0" }), it)))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center gap-4 z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-full border-2 border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 32, className: "text-slate-600 rotate-90 lg:rotate-0", strokeWidth: 3 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-start" }, effects.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `e-${i}`, className: "bg-teal-50 border-r-4 border-teal-400 p-5 rounded-l-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow text-right lg:text-left" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-teal-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2 justify-end lg:justify-start" }, t("outline.labels.effects"), " ", /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-teal-400" })), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2 justify-end lg:justify-start" }, it, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-teal-300 mt-1.5 shrink-0 order-first lg:order-last" })))))))));
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto px-4 py-8" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-center mb-6" }, /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        onClick: () => setIsCESortPlaying(true),
+        className: "flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]",
+        "aria-label": t("games.ce_sort.title") || "Cause & Effect Sort Game"
+      },
+      /* @__PURE__ */ React.createElement(Gamepad2, { size: 16 }),
+      " ",
+      t("games.ce_sort.play_btn") || "Sort Game"
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-end" }, causes.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `c-${i}`, className: "bg-orange-50 border-l-4 border-orange-400 p-5 rounded-r-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-orange-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-orange-400" }), " ", t("outline.labels.causes")), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-orange-300 mt-1.5 shrink-0" }), it)))))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center justify-center gap-4 z-10" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-full border-2 border-slate-200 shadow-sm" }, /* @__PURE__ */ React.createElement(ArrowRight, { size: 32, className: "text-slate-600 rotate-90 lg:rotate-0", strokeWidth: 3 }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 flex flex-col gap-6 w-full lg:items-start" }, effects.map((branch, i) => /* @__PURE__ */ React.createElement("div", { key: `e-${i}`, className: "bg-teal-50 border-r-4 border-teal-400 p-5 rounded-l-xl shadow-sm w-full max-w-md relative group hover:shadow-md transition-shadow text-right lg:text-left" }, /* @__PURE__ */ React.createElement("h4", { className: "font-black text-teal-800 text-xs uppercase tracking-wider mb-3 flex items-center gap-2 justify-end lg:justify-start" }, t("outline.labels.effects"), " ", /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 rounded-full bg-teal-400" })), /* @__PURE__ */ React.createElement("ul", { className: "space-y-2" }, branch.items.map((it, k) => /* @__PURE__ */ React.createElement("li", { key: k, className: "text-slate-700 font-medium text-sm flex items-start gap-2 justify-end lg:justify-start" }, it, /* @__PURE__ */ React.createElement("div", { className: "w-1.5 h-1.5 rounded-full bg-teal-300 mt-1.5 shrink-0 order-first lg:order-last" })))))))));
   }
   if (type === "Problem Solution") {
     const outcomeIndex = branches.findIndex(

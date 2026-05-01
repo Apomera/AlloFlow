@@ -2386,6 +2386,354 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
       </div>
   );
 });
+const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [score, setScore] = useState(0);
+  const [isWon, setIsWon] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [activeDropZone, setActiveDropZone] = useState(null);
+  const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
+  const [lastHint, setLastHint] = useState(null);
+  const moveMenuRef = useRef(null);
+  const hintTimerRef = useRef(null);
+  const showZoneHint = (correctZone) => {
+      if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+      setLastHint(correctZone);
+      hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
+  };
+  useEffect(() => {
+      if (keyboardSelectedItemId && moveMenuRef.current) {
+          const firstBtn = moveMenuRef.current.querySelector('button');
+          if (firstBtn) firstBtn.focus();
+      }
+  }, [keyboardSelectedItemId]);
+  useEffect(() => {
+    if (!data || !data.causes || !data.effects) return;
+    const allItems = [
+        ...(data.causes || []).map((text, i) => ({
+            id: `ce-c-${i}-${Math.random().toString(36).substr(2,6)}`,
+            text: typeof text === 'object' ? text.text || text : text,
+            correctZone: 'causes',
+            currentZone: 'bank',
+        })),
+        ...(data.effects || []).map((text, i) => ({
+            id: `ce-e-${i}-${Math.random().toString(36).substr(2,6)}`,
+            text: typeof text === 'object' ? text.text || text : text,
+            correctZone: 'effects',
+            currentZone: 'bank',
+        }))
+    ];
+    for (let i = allItems.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [allItems[i], allItems[j]] = [allItems[j], allItems[i]];
+    }
+    setItems(allItems);
+    setScore(0);
+    setIsWon(false);
+    setAttempts(0);
+  }, [data]);
+  const handleItemKeyDown = (e, item) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          if (keyboardSelectedItemId === item.id) {
+              setKeyboardSelectedItemId(null);
+              setAnnouncement('Selection cancelled.');
+          } else {
+              setKeyboardSelectedItemId(item.id);
+              setAnnouncement(`Selected: ${item.text}. Choose Causes or Effects to sort.`);
+              if (playSound) playSound('click');
+          }
+      }
+  };
+  const handleKeyboardMove = (targetZone) => {
+      if (!keyboardSelectedItemId) return;
+      const item = items.find(i => i.id === keyboardSelectedItemId);
+      if (!item) return;
+      if (targetZone === 'bank') {
+           setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
+           setAnnouncement(`Moved "${item.text}" back to the bank.`);
+           if (playSound) playSound('click');
+      } else {
+           if (item.correctZone === targetZone) {
+               setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
+               setScore(s => s + 20);
+               if(playSound) playSound('correct');
+               setAnnouncement(`Correct! "${item.text}" is a ${targetZone === 'causes' ? 'Cause' : 'Effect'}.`);
+           } else {
+               setAttempts(a => a + 1);
+               setScore(s => Math.max(0, s - 5));
+               if(playSound) playSound('incorrect');
+               showZoneHint(item.correctZone);
+               setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'causes' ? 'Causes' : 'Effects'}.`);
+           }
+      }
+      setKeyboardSelectedItemId(null);
+  };
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const handleDragOver = (e, zone) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (activeDropZone !== zone) setActiveDropZone(zone);
+  };
+  const handleDragLeave = () => {
+    setActiveDropZone(null);
+  };
+  const handleDrop = (e, targetZone) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setActiveDropZone(null);
+      if (!draggedItem) return;
+      if (draggedItem.correctZone === targetZone) {
+          if (playSound) playSound('correct');
+          setItems(prev => prev.map(i => i.id === draggedItem.id ? { ...i, currentZone: targetZone } : i));
+          setScore(s => s + 20);
+      } else {
+          if (playSound) playSound('incorrect');
+          setAttempts(a => a + 1);
+          setScore(s => Math.max(0, s - 5));
+          showZoneHint(draggedItem.correctZone);
+      }
+      setDraggedItem(null);
+  };
+  useEffect(() => {
+      if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
+          setIsWon(true);
+          if(onScoreUpdate) onScoreUpdate(score, "Cause & Effect Sort");
+          if (playSound) playSound('correct');
+          if (onGameComplete) {
+            onGameComplete('causeEffectSort', {
+              score: score,
+              itemsSorted: items.length,
+              totalItems: items.length,
+              incorrectAttempts: attempts
+            });
+          }
+      }
+  }, [items, score, onScoreUpdate, playSound, isWon]);
+  const reset = () => {
+      const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
+      for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      setItems(shuffled);
+      setScore(0);
+      setIsWon(false);
+      setAttempts(0);
+      setLastHint(null);
+  };
+  const causesItems = useMemo(() => items.filter(i => i.currentZone === 'causes'), [items]);
+  const effectsItems = useMemo(() => items.filter(i => i.currentZone === 'effects'), [items]);
+  const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  return (
+      <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95">
+          <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+          <div className="bg-gradient-to-r from-orange-600 to-teal-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+              <div>
+                  <h3 className="font-bold text-xl flex items-center gap-2">
+                      <ArrowRight size={24}/> {t('games.ce_sort.title') || 'Cause & Effect Sort'}
+                  </h3>
+                  {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
+              </div>
+              <div className="flex items-center gap-4">
+                  <div className="bg-white/20 px-4 py-1 rounded-full font-bold text-yellow-300 border border-white/30">
+                      {t('common.score') || 'Score'}: {score}
+                  </div>
+                  <GameThemeToggle />
+                  <button
+                      aria-label={t('common.close') || 'Close'}
+                      onClick={onClose}
+                      className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30"
+                  >
+                      <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+                  </button>
+              </div>
+          </div>
+          <div className="flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch">
+              <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+              {isWon && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
+                        <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || '🎉 Perfect!'}</h2>
+                        <p className="text-slate-600">{t('games.ce_sort.victory_desc') || 'You sorted all causes and effects correctly!'}</p>
+                        <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
+                        <div className="flex gap-3 mt-4 justify-center">
+                            <button onClick={reset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                                <RefreshCw size={14}/> Play Again
+                            </button>
+                            <button onClick={onClose} className="px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors">
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                    <ConfettiExplosion />
+                </div>
+              )}
+              {lastHint && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
+                    <HelpCircle size={16} /> {t('games.ce_sort.hint_try') || 'Try'}: {lastHint === 'causes' ? (t('games.ce_sort.causes_label') || '🔶 Causes') : (t('games.ce_sort.effects_label') || '🟦 Effects')}
+                </div>
+              )}
+              {keyboardSelectedItemId && (
+                <div
+                    className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"
+                    onClick={() => setKeyboardSelectedItemId(null)}
+                >
+                    <div
+                        ref={moveMenuRef}
+                        className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200"
+                        role="dialog"
+                        aria-label="Choose a zone"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h4 className="text-sm font-bold text-slate-700 text-center mb-2">{t('games.ce_sort.move_title') || 'Sort this item into:'}</h4>
+                        <div className="grid grid-cols-2 gap-3">
+                            <button onClick={() => handleKeyboardMove('causes')} className="px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl font-bold text-xs transition-colors border border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                🔶 {t('games.ce_sort.causes_label') || 'Causes'}
+                            </button>
+                            <button onClick={() => handleKeyboardMove('effects')} className="px-4 py-3 bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-xl font-bold text-xs transition-colors border border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
+                                🟦 {t('games.ce_sort.effects_label') || 'Effects'}
+                            </button>
+                            <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                                {t('concept_map.venn.return_bank') || 'Return to bank'}
+                            </button>
+                        </div>
+                        <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
+                    </div>
+                </div>
+              )}
+              {/* Causes drop zone */}
+              <div
+                  onDrop={(e) => handleDrop(e, 'causes')}
+                  onDragOver={(e) => handleDragOver(e, 'causes')}
+                  onDragLeave={handleDragLeave}
+                  className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
+                    ${activeDropZone === 'causes' ? 'bg-orange-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]' : 'bg-gradient-to-b from-orange-50/80 to-orange-100/40'}
+                  `}
+              >
+                  <div className="bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1">
+                      🔶 {t('games.ce_sort.causes_label') || 'Causes'}
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
+                      {causesItems.map(item => (
+                          <div
+                            key={item.id}
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`${item.text}, sorted into Causes`}
+                            aria-pressed={keyboardSelectedItemId === item.id}
+                            onKeyDown={(e) => handleItemKeyDown(e, item)}
+                            onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                            className={`bg-white text-orange-800 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-l-4 border-orange-400 animate-in zoom-in cursor-pointer hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-orange-500 flex items-center gap-1.5 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                          >
+                            {item.text}
+                            <SpeakButton text={item.text} size={11} />
+                          </div>
+                      ))}
+                      {causesItems.length === 0 && (
+                          <div className="text-orange-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop causes here'}</div>
+                      )}
+                  </div>
+              </div>
+              {/* Center divider with arrow */}
+              <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
+                  <div className="w-0.5 h-full bg-slate-200"></div>
+                  <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
+                      <ArrowRight size={20} className="text-slate-400" />
+                  </div>
+              </div>
+              {/* Effects drop zone */}
+              <div
+                  onDrop={(e) => handleDrop(e, 'effects')}
+                  onDragOver={(e) => handleDragOver(e, 'effects')}
+                  onDragLeave={handleDragLeave}
+                  className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
+                    ${activeDropZone === 'effects' ? 'bg-teal-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]' : 'bg-gradient-to-b from-teal-50/80 to-teal-100/40'}
+                  `}
+              >
+                  <div className="bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1">
+                      🟦 {t('games.ce_sort.effects_label') || 'Effects'}
+                  </div>
+                  <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
+                      {effectsItems.map(item => (
+                          <div
+                            key={item.id}
+                            tabIndex={0}
+                            role="button"
+                            aria-label={`${item.text}, sorted into Effects`}
+                            aria-pressed={keyboardSelectedItemId === item.id}
+                            onKeyDown={(e) => handleItemKeyDown(e, item)}
+                            onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                            className={`bg-white text-teal-800 px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold border-r-4 border-teal-400 animate-in zoom-in cursor-pointer hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-teal-500 flex items-center gap-1.5 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                          >
+                            {item.text}
+                            <SpeakButton text={item.text} size={11} />
+                          </div>
+                      ))}
+                      {effectsItems.length === 0 && (
+                          <div className="text-teal-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop effects here'}</div>
+                      )}
+                  </div>
+              </div>
+          </div>
+          {/* Item bank */}
+          <div className="h-44 bg-white border-t border-slate-200 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-40">
+              <div className="max-w-6xl mx-auto">
+                  <div className="flex justify-between items-center mb-2">
+                      <div className="flex items-center gap-3 flex-wrap">
+                          <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{t('concept_sort.unsorted_cards') || 'Unsorted Items'} ({bankItems.length})</h4>
+                          {attempts > 0 && (
+                              <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                                  {attempts} incorrect attempt{attempts !== 1 ? 's' : ''}
+                              </span>
+                          )}
+                      </div>
+                      <div className="flex gap-2 items-center">
+                          <button
+                               onClick={reset}
+                               className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors"
+                               aria-label="Reset board"
+                          >
+                              {t('concept_sort.reset_board') || 'Reset'}
+                          </button>
+                      </div>
+                  </div>
+                  <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-8 pt-2">
+                      {bankItems.map(item => (
+                          <div
+                              key={item.id}
+                              draggable
+                              onDragStart={(e) => handleDragStart(e, item)}
+                              tabIndex={0}
+                              role="button"
+                              aria-label={`${item.text}, unsorted. Press Enter to select.`}
+                              aria-pressed={keyboardSelectedItemId === item.id}
+                              onKeyDown={(e) => handleItemKeyDown(e, item)}
+                              onClick={() => { if (keyboardSelectedItemId === item.id) { setKeyboardSelectedItemId(null); } else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                              className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
+                          >
+                              {item.text}
+                              <SpeakButton text={item.text} size={11} />
+                          </div>
+                      ))}
+                      {bankItems.length === 0 && !isWon && (
+                          <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">
+                              {t('concept_map.venn.bank_empty') || 'All items sorted!'}
+                          </div>
+                      )}
+                  </div>
+              </div>
+          </div>
+      </div>
+  );
+});
 const CrosswordGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
   const [grid, setGrid] = useState([]);
