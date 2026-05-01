@@ -2075,8 +2075,12 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       if (firstBtn) firstBtn.focus();
     }
   }, [keyboardSelectedItemId]);
+  const dataFingerprint = useMemo(() => {
+    if (!data || !data.causes || !data.effects) return "";
+    return JSON.stringify([data.causes, data.effects]);
+  }, [data]);
   useEffect(() => {
-    if (!data || !data.causes || !data.effects) return;
+    if (!dataFingerprint || !data) return;
     const allItems = [
       ...(data.causes || []).map((text, i) => ({
         id: `ce-c-${i}-${Math.random().toString(36).substr(2, 6)}`,
@@ -2099,7 +2103,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setScore(0);
     setIsWon(false);
     setAttempts(0);
-  }, [data]);
+  }, [dataFingerprint]);
   const handleItemKeyDown = (e, item) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -2181,7 +2185,7 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         });
       }
     }
-  }, [items, score, onScoreUpdate, playSound, isWon]);
+  }, [items, isWon]);
   const reset = () => {
     const shuffled = [...items].map((i) => ({ ...i, currentZone: "bank" }));
     for (let i = shuffled.length - 1; i > 0; i--) {

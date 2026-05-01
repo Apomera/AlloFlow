@@ -1453,7 +1453,22 @@
     "crossword_challenge": "Crossword Challenge",
       "crossword_title": "Crossword Challenge",
         "tap_to_pause": "Tap to Pause",
-          "tap_or_space_to_play": "Tap or Space to Play"
+          "tap_or_space_to_play": "Tap or Space to Play",
+    "ce_sort": {
+      "title": "Cause & Effect Sort",
+        "play_btn": "Sort Game",
+          "causes_label": "Causes",
+            "effects_label": "Effects",
+              "hint_try": "Try",
+                "move_title": "Sort this item into:",
+                  "victory_desc": "You sorted all causes and effects correctly!"
+    },
+    "pipeline": {
+      "title": "Pipeline Builder",
+        "play_btn": "Pipeline Builder",
+          "instruction": "Click a step's output port, then click another step's input port to draw a connection.",
+            "then": "then"
+    }
   },
   "glossary": {
     "title": "Glossary & Language Selection",
