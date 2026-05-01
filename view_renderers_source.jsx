@@ -313,21 +313,35 @@ const renderOutlineContent = (deps) => {
                     <MainTitle />
                     <div className="flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100">
                         <div className="absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full"></div>
-                        {branches.map((b, i) => (
+                        {branches.map((b, i) => {
+                            const hasConnectsTo = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
+                            const isBranching = hasConnectsTo && b.connectsTo.length > 1;
+                            return (
                             <div key={i} className="relative w-full flex flex-col items-center group">
                                 {i > 0 && (
                                     <div className="absolute -top-9 z-10 text-indigo-300 bg-white rounded-full p-1 border border-indigo-100 shadow-sm">
                                         <ArrowDown size={20} strokeWidth={3} />
                                     </div>
                                 )}
-                                <div className={`w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${i % 2 === 0 ? 'border-l-indigo-500' : 'border-l-purple-500'} hover:shadow-xl hover:ring-2 hover:ring-indigo-100`}>
-                                    <div className={`absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${i % 2 === 0 ? 'bg-indigo-500' : 'bg-purple-500'}`}>
-                                        {i + 1}
+                                <div className={`w-full max-w-lg p-1 rounded-2xl bg-white shadow-lg transition-all duration-200 border-l-[6px] ${isBranching ? 'border-l-amber-500 ring-2 ring-amber-100' : i % 2 === 0 ? 'border-l-indigo-500' : 'border-l-purple-500'} hover:shadow-xl hover:ring-2 hover:ring-indigo-100`}>
+                                    <div className={`absolute -left-5 top-1/2 -translate-y-1/2 text-white text-sm font-black w-10 h-10 flex items-center justify-center rounded-full border-4 border-slate-50 shadow-md ${isBranching ? 'bg-amber-500' : i % 2 === 0 ? 'bg-indigo-500' : 'bg-purple-500'}`}>
+                                        {isBranching ? '⑂' : i + 1}
                                     </div>
                                     <BranchItem branch={b} bIdx={i} colorClass="bg-white border-none shadow-none" />
+                                    {isBranching && (
+                                        <div className="flex items-center gap-2 px-4 pb-2 flex-wrap">
+                                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-wider">Branches to:</span>
+                                            {b.connectsTo.map((target) => (
+                                                <span key={target} className="text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full">
+                                                    Step {target + 1}: {branches[target]?.title || '?'}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                         <div className="px-8 py-3 bg-slate-800 text-white rounded-full font-black text-sm mt-4 z-10 shadow-lg border-4 border-white tracking-widest uppercase">
                             {t('outline.labels.end')}
                         </div>

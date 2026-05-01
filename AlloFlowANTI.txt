@@ -7944,11 +7944,13 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       nodes.push({ id: mainId, type: 'flow-process', text: main, x: 400, y: yOffset });
       edges.push({ id: `e-start-main`, fromId: startId, toId: mainId });
       yOffset += 120;
-      let previousId = mainId;
+      // Check if any branch has connectsTo (branching mode)
+      const hasBranching = Array.isArray(branches) && branches.some(b => Array.isArray(b.connectsTo) && b.connectsTo.length > 0);
       if (Array.isArray(branches)) {
+          // Create all branch nodes first
           branches.forEach((branch, idx) => {
               const branchId = `node-b-${idx}`;
-              const isDecision = branch.title.includes('?');
+              const isDecision = branch.title.includes('?') || (Array.isArray(branch.connectsTo) && branch.connectsTo.length > 1);
               const type = isDecision ? 'flow-decision' : 'flow-process';
               nodes.push({
                   id: branchId,
@@ -7957,8 +7959,6 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   x: 400,
                   y: yOffset
               });
-              edges.push({ id: `e-${previousId}-${branchId}`, fromId: previousId, toId: branchId });
-              previousId = branchId;
               yOffset += 120;
               if (branch.items && branch.items.length > 0) {
                    branch.items.forEach((item, iIdx) => {
@@ -7968,16 +7968,54 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                             type: 'flow-note',
                             text: item,
                             x: 650,
-                            y: yOffset - 120 + (iIdx * 60)
+                            y: nodes.find(n => n.id === branchId).y + (iIdx * 60)
                         });
                         edges.push({ id: `e-${branchId}-${itemId}`, fromId: branchId, toId: itemId, style: 'dashed' });
                    });
               }
           });
+          // Create edges using connectsTo or fallback to linear
+          if (hasBranching) {
+              // Connect main to first branch
+              edges.push({ id: `e-main-b0`, fromId: mainId, toId: 'node-b-0' });
+              branches.forEach((branch, idx) => {
+                  const branchId = `node-b-${idx}`;
+                  if (Array.isArray(branch.connectsTo) && branch.connectsTo.length > 0) {
+                      branch.connectsTo.forEach(target => {
+                          const targetId = `node-b-${target}`;
+                          edges.push({ id: `e-${branchId}-${targetId}`, fromId: branchId, toId: targetId });
+                      });
+                  }
+                  // If this is a terminal node (no connectsTo and no next linear step), connect to end
+              });
+          } else {
+              // Linear fallback
+              let previousId = mainId;
+              branches.forEach((branch, idx) => {
+                  const branchId = `node-b-${idx}`;
+                  edges.push({ id: `e-${previousId}-${branchId}`, fromId: previousId, toId: branchId });
+                  previousId = branchId;
+              });
+          }
       }
       const endId = 'node-end';
       nodes.push({ id: endId, type: 'flow-end', text: t('common.end'), x: 400, y: yOffset });
-      edges.push({ id: `e-${previousId}-end`, fromId: previousId, toId: endId });
+      // Connect terminal nodes to end
+      if (hasBranching && Array.isArray(branches)) {
+          const targetedBy = new Set();
+          branches.forEach(b => {
+              if (Array.isArray(b.connectsTo)) b.connectsTo.forEach(t => targetedBy.add(t));
+          });
+          branches.forEach((branch, idx) => {
+              const hasOutgoing = Array.isArray(branch.connectsTo) && branch.connectsTo.length > 0;
+              if (!hasOutgoing) {
+                  edges.push({ id: `e-b${idx}-end`, fromId: `node-b-${idx}`, toId: endId });
+              }
+          });
+      } else {
+          const lastBranchId = Array.isArray(branches) && branches.length > 0 ? `node-b-${branches.length - 1}` : mainId;
+          edges.push({ id: `e-${lastBranchId}-end`, fromId: lastBranchId, toId: endId });
+      }
       return { nodes, edges };
   };
   const renderFlowShape = (node, isSelected) => {

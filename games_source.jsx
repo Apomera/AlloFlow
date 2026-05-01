@@ -2756,6 +2756,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       id: `pb-${i}-${Math.random().toString(36).substr(2,6)}`,
       title: typeof s === 'string' ? s : (s.title || s),
       items: s.items || [],
+      connectsTo: s.connectsTo || null,
       originalIndex: i,
     }));
     const shuffled = [...steps];
@@ -2772,7 +2773,30 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     setChecked(false);
   }, [data]);
 
-  const totalRequired = Math.max(0, shuffledSteps.length - 1);
+  // Build the set of correct connections from data
+  const correctConnectionSet = useMemo(() => {
+    const set = new Set();
+    if (!data?.steps?.length) return set;
+    data.steps.forEach((step, i) => {
+      if (step.connectsTo && Array.isArray(step.connectsTo) && step.connectsTo.length > 0) {
+        step.connectsTo.forEach(target => set.add(`${i}->${target}`));
+      } else if (i < data.steps.length - 1) {
+        set.add(`${i}->${i + 1}`);
+      }
+    });
+    return set;
+  }, [data]);
+
+  const totalRequired = correctConnectionSet.size;
+
+  // How many outgoing connections does a node need?
+  const getRequiredOutCount = (origIdx) => {
+    const step = data?.steps?.[origIdx];
+    if (step?.connectsTo && Array.isArray(step.connectsTo) && step.connectsTo.length > 0) {
+      return step.connectsTo.length;
+    }
+    return origIdx < (data?.steps?.length || 0) - 1 ? 1 : 0;
+  };
 
   // Recalculate arrow positions
   const recalcArrows = useCallback(() => {
@@ -2827,12 +2851,24 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setConnectingFrom(null);
       setAnnouncement('Connection cancelled.');
     } else {
+      // For branching nodes, allow multiple outgoing connections
+      const fromStep = shuffledSteps.find(s => s.id === connectingFrom);
+      const requiredOut = getRequiredOutCount(fromStep?.originalIndex);
+      const existingFromCount = connections.filter(c => c.fromId === connectingFrom).length;
       setConnections(prev => {
-        let filtered = prev.filter(c => c.fromId !== connectingFrom);
+        let filtered = prev;
+        // If this source already has max outgoing connections, remove oldest
+        if (requiredOut <= 1) {
+          filtered = prev.filter(c => c.fromId !== connectingFrom);
+        } else if (existingFromCount >= requiredOut) {
+          // Remove the first outgoing connection to make room
+          const firstOut = prev.find(c => c.fromId === connectingFrom);
+          if (firstOut) filtered = prev.filter(c => c !== firstOut);
+        }
+        // Remove any existing connection TO this target
         filtered = filtered.filter(c => c.toId !== nodeId);
         return [...filtered, { fromId: connectingFrom, toId: nodeId }];
       });
-      const fromStep = shuffledSteps.find(s => s.id === connectingFrom);
       const toStep = shuffledSteps.find(s => s.id === nodeId);
       setAnnouncement(`Connected "${fromStep?.title}" → "${toStep?.title}".`);
       setConnectingFrom(null);
@@ -2849,9 +2885,18 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         setKeyboardSelectedId(null);
         setAnnouncement('Selection cancelled.');
       } else if (keyboardSelectedId) {
-        // Connect keyboardSelectedId → nodeId
+        // For branching, allow multiple outgoing
+        const kbStep = shuffledSteps.find(s => s.id === keyboardSelectedId);
+        const requiredOut = getRequiredOutCount(kbStep?.originalIndex);
+        const existingFromCount = connections.filter(c => c.fromId === keyboardSelectedId).length;
         setConnections(prev => {
-          let filtered = prev.filter(c => c.fromId !== keyboardSelectedId);
+          let filtered = prev;
+          if (requiredOut <= 1) {
+            filtered = prev.filter(c => c.fromId !== keyboardSelectedId);
+          } else if (existingFromCount >= requiredOut) {
+            const firstOut = prev.find(c => c.fromId === keyboardSelectedId);
+            if (firstOut) filtered = prev.filter(c => c !== firstOut);
+          }
           filtered = filtered.filter(c => c.toId !== nodeId);
           return [...filtered, { fromId: keyboardSelectedId, toId: nodeId }];
         });
@@ -2875,7 +2920,8 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
     const resultList = connections.map(conn => {
       const fromOrig = nodeMap[conn.fromId].originalIndex;
       const toOrig = nodeMap[conn.toId].originalIndex;
-      const isCorrect = fromOrig + 1 === toOrig;
+      const connKey = `${fromOrig}->${toOrig}`;
+      const isCorrect = correctConnectionSet.has(connKey);
       if (isCorrect) correctCount++;
       else incorrectCount++;
       return { ...conn, correct: isCorrect };
@@ -2898,7 +2944,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         const correctConns = connections.filter(c => {
           const fromOrig = nodeMap[c.fromId].originalIndex;
           const toOrig = nodeMap[c.toId].originalIndex;
-          return fromOrig + 1 === toOrig;
+          return correctConnectionSet.has(`${fromOrig}->${toOrig}`);
         });
         setConnections(correctConns);
         setResults(null);
@@ -3039,6 +3085,9 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
               const connResult = getConnResult(step.id);
               const isCorrect = connResult?.correct === true;
               const isIncorrect = connResult?.correct === false;
+              const outCount = getRequiredOutCount(step.originalIndex);
+              const isBranching = outCount > 1;
+              const currentOutCount = connections.filter(c => c.fromId === step.id).length;
 
               return (
                 <div
@@ -3066,6 +3115,15 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   `}>
                     <ArrowRight size={12} className={`${isSource || connFrom ? 'text-white' : 'text-slate-400'}`}/>
                   </div>
+
+                  {/* Branching badge */}
+                  {isBranching && (
+                    <div className={`absolute -right-2 -top-2 z-30 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black shadow-md border-2 border-white
+                      ${currentOutCount >= outCount ? 'bg-green-500 text-white' : 'bg-amber-400 text-amber-900 animate-pulse'}
+                    `}>
+                      <GitMerge size={10}/> {currentOutCount}/{outCount}
+                    </div>
+                  )}
 
                   {/* Input port (left) */}
                   <div className={`absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full border-3 z-20 transition-all flex items-center justify-center

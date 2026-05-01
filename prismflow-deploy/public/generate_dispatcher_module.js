@@ -711,7 +711,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 promptInstructions = "Create a hierarchical outline with main topics and sub-points.";
                 break;
             case 'Flow Chart':
-                promptInstructions = "Create a step-by-step sequence or process flow. Ensure steps are in logical order.";
+                promptInstructions = "Create a step-by-step process flow. If the process naturally has decision points, conditional paths, or branching logic (e.g., 'If X happens, go to step A; otherwise, go to step B'), include a 'connectsTo' array on each branch containing the 0-based indices of the steps it connects to. For simple linear flows where each step leads to the next, you may omit connectsTo. Example with branching: [{'title':'Check condition','items':['Evaluate X'],'connectsTo':[2,3]}, {'title':'Path A','items':['Do A'],'connectsTo':[4]}, {'title':'Path B','items':['Do B'],'connectsTo':[4]}, {'title':'Final step','items':['Done']}]. Aim for 5-8 steps total.";
                 break;
             case 'Key Concept Map':
                 promptInstructions = "Identify the central concept and branch out into key related attributes or sub-concepts. CRITICAL: Keep all labels extremely concise (max 4-5 words) to fit inside visual nodes.";
@@ -741,7 +741,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${useEmojis ? 'Include a relevant emoji at the start of every "main", "title", and "item" field to serve as a visual anchor.' : 'Do not use emojis.'}
           ${dialectInstruction}
           Return ONLY JSON matching this structure exactly (conceptually map the requested type to this hierarchy):
-          { "main": "Central Topic/Goal/Problem", ${effectiveLanguage !== 'English' ? '"main_en": "...", ' : ''}"branches": [{ "title": "Category/Step/Solution/Cause", ${effectiveLanguage !== 'English' ? '"title_en": "...", ' : ''}"items": ["Detail/Substep/Effect"], ${effectiveLanguage !== 'English' ? '"items_en": ["..."]' : ''} }] }
+          { "main": "Central Topic/Goal/Problem", ${effectiveLanguage !== 'English' ? '"main_en": "...", ' : ''}"branches": [{ "title": "Category/Step/Solution/Cause", ${effectiveLanguage !== 'English' ? '"title_en": "...", ' : ''}"items": ["Detail/Substep/Effect"], ${effectiveLanguage !== 'English' ? '"items_en": ["..."], ' : ''}"connectsTo": [1] }] }
+          Note: "connectsTo" is an optional array of 0-based branch indices. Include it only for Flow Chart type when branching exists.
           ${differentiationContext}
           Text: "${textToProcess}"
         `;
