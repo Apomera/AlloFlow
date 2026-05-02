@@ -12195,57 +12195,57 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                const setA = branches[0] || { title: 'Set A', items: [] };
                const setB = branches[1] || { title: 'Set B', items: [] };
                const shared = branches[2] || { title: 'Shared', items: [] };
-               const renderList = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) =>
-                   `<li style="margin-bottom: 6px; font-size: 10pt; line-height: 1.3;">
-                       &bull; ${it} ${items_en?.[i] ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;">(${items_en[i]})</span>` : ''}
+               const renderList = (items, items_en, limit = 8, bg = 'rgba(255,255,255,0.6)') => items.slice(0, limit).map((it, i) =>
+                   `<li style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.35; background: ${bg}; padding: 6px 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center;">
+                       <span style="font-weight: 600;">${it}</span> ${items_en?.[i] ? `<br><span style="font-size:0.85em;opacity:0.85;font-style:italic;font-weight:normal;">(${items_en[i]})</span>` : ''}
                     </li>`
                ).join('');
                innerContent = `
                   <div style="text-align:center; margin-bottom: 40px;">
-                      <h3 style="margin:0; font-size: 1.8em; color: #2c3e50;">${main}</h3>
-                      ${main_en ? `<div style="font-size:1em; color:#666; font-style:italic; margin-top:5px;">(${main_en})</div>` : ''}
+                      <h3 style="margin:0; font-size: 1.8em; color: #2c3e50; font-weight: 800;">${main}</h3>
+                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:5px;">(${main_en})</div>` : ''}
                   </div>
-                  <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 750px; height: 480px; margin: 0 auto; font-family: sans-serif;">
+                  <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif;">
                       <!-- Set A (Left Circle) -->
-                      <div style="position: absolute; top: 0; left: 0; width: 400px;">
+                      <div style="position: absolute; top: 0; left: 0; width: 440px;">
                           <!-- Header Outside Circle -->
-                          <div style="text-align: center; margin-bottom: 10px;">
-                              <h4 style="margin: 0; color: #9f1239; font-size: 1.2em; font-weight: bold; background: #fff1f2; display: inline-block; padding: 6px 16px; border-radius: 20px; border: 2px solid #fecaca;">
+                          <div style="text-align: center; margin-bottom: 12px; padding-right: 120px;">
+                              <h4 style="margin: 0; color: #9f1239; font-size: 1.15em; font-weight: 800; background: white; display: inline-block; padding: 6px 20px; border-radius: 24px; border: 2px solid #fecaca; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative; z-index: 20;">
                                   ${setA.title}
                               </h4>
-                              ${setA.title_en ? `<div style="font-size:0.9em; color:#991b1b; margin-top:2px;">(${setA.title_en})</div>` : ''}
+                              ${setA.title_en ? `<div style="font-size:0.85em; color:#991b1b; margin-top:4px;">(${setA.title_en})</div>` : ''}
                           </div>
-                          <!-- Circle Body with Increased Right Padding (110px) -->
-                          <div style="width: 400px; height: 400px; border-radius: 50%; background-color: rgba(254, 226, 226, 0.4); border: 3px solid #fecaca; box-sizing: border-box; padding: 60px 110px 40px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word;">
+                          <!-- Circle Body -->
+                          <div style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(254, 226, 226, 0.7); border: 4px solid #fca5a5; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(254, 226, 226, 0.4); z-index: 1;">
                               <ul style="list-style: none; padding: 0; margin: 0; color: #881337; width: 100%;">
-                                  ${renderList(setA.items, setA.items_en)}
+                                  ${renderList(setA.items, setA.items_en, 8, 'rgba(255,255,255,0.8)')}
                               </ul>
                           </div>
                       </div>
                       <!-- Set B (Right Circle) -->
-                      <div style="position: absolute; top: 0; right: 0; width: 400px;">
+                      <div style="position: absolute; top: 0; right: 0; width: 440px;">
                           <!-- Header Outside Circle -->
-                          <div style="text-align: center; margin-bottom: 10px;">
-                              <h4 style="margin: 0; color: #1e40af; font-size: 1.2em; font-weight: bold; background: #eff6ff; display: inline-block; padding: 6px 16px; border-radius: 20px; border: 2px solid #bfdbfe;">
+                          <div style="text-align: center; margin-bottom: 12px; padding-left: 120px;">
+                              <h4 style="margin: 0; color: #1e40af; font-size: 1.15em; font-weight: 800; background: white; display: inline-block; padding: 6px 20px; border-radius: 24px; border: 2px solid #bfdbfe; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative; z-index: 20;">
                                   ${setB.title}
                               </h4>
-                              ${setB.title_en ? `<div style="font-size:0.9em; color:#1e40af; margin-top:2px;">(${setB.title_en})</div>` : ''}
+                              ${setB.title_en ? `<div style="font-size:0.85em; color:#1e40af; margin-top:4px;">(${setB.title_en})</div>` : ''}
                           </div>
-                          <!-- Circle Body with Increased Left Padding (110px) -->
-                          <div style="width: 400px; height: 400px; border-radius: 50%; background-color: rgba(219, 234, 254, 0.4); border: 3px solid #bfdbfe; box-sizing: border-box; padding: 60px 40px 40px 110px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word;">
+                          <!-- Circle Body -->
+                          <div style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(219, 234, 254, 0.7); border: 4px solid #93c5fd; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(219, 234, 254, 0.4); z-index: 2;">
                               <ul style="list-style: none; padding: 0; margin: 0; color: #1e3a8a; width: 100%;">
-                                  ${renderList(setB.items, setB.items_en)}
+                                  ${renderList(setB.items, setB.items_en, 8, 'rgba(255,255,255,0.8)')}
                               </ul>
                           </div>
                       </div>
                       <!-- Shared Region (Absolute Center) -->
-                      <div style="position: absolute; top: 140px; left: 50%; transform: translateX(-50%); width: 180px; text-align: center; z-index: 10;">
-                          <h4 style="font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #6b21a8; margin: 0 0 10px 0; background: rgba(255,255,255,0.9); display: inline-block; padding: 2px 8px; border-radius: 4px; border: 1px solid #e9d5ff;">
+                      <div style="position: absolute; top: 120px; left: 50%; transform: translateX(-50%); width: 160px; text-align: center; z-index: 10;">
+                          <h4 style="font-size: 0.85em; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #6b21a8; margin: 0 0 12px 0; background: white; display: inline-block; padding: 4px 14px; border-radius: 12px; border: 2px solid #e9d5ff; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
                               ${shared.title || 'Shared'}
-                              ${shared.title_en ? `<span style="font-weight:normal; opacity:0.8;"> (${shared.title_en})</span>` : ''}
+                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.8; font-size: 0.9em; text-transform: none; letter-spacing: normal;"> (${shared.title_en})</span>` : ''}
                           </h4>
-                          <ul style="list-style: none; padding: 0; margin: 0; color: #581c87; font-weight: bold; font-size: 0.9em;">
-                               ${renderList(shared.items, shared.items_en, 5)}
+                          <ul style="list-style: none; padding: 0; margin: 0; color: #581c87; font-weight: bold; font-size: 0.95em;">
+                               ${renderList(shared.items, shared.items_en, 5, 'rgba(255,255,255,0.9)')}
                           </ul>
                       </div>
                   </div>
