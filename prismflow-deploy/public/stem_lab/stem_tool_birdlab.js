@@ -3765,18 +3765,219 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 })
               ),
               // Detail card for picked species
-              picked && h('div', { className: 'bg-white rounded-2xl border-2 border-stone-500 shadow-lg p-5 space-y-3', 'aria-live': 'polite' },
-                h('div', { className: 'flex items-center gap-3 pb-2 border-b border-slate-200 flex-wrap' },
-                  picked.speciesKey && BIRDS[picked.speciesKey] && h('svg', { viewBox: '0 0 30 30', style: { width: '60px', height: '60px' }, role: 'img', 'aria-label': picked.name },
-                    h('g', { transform: 'translate(2, 2)' }, BIRDS[picked.speciesKey].svg(h))
+              picked && (function() {
+                // ── Habitat-themed hero band ──
+                var hb = (picked.habitat || '').toLowerCase();
+                var scene;
+                if (/marsh|wetland|swamp|estuar/i.test(hb)) {
+                  scene = {
+                    label: 'Wetland', icon: '🪿',
+                    skyA: '#bae6fd', skyB: '#fef9c3',
+                    waterTop: '#34d399', waterBot: '#0d9488',
+                    silhouettes: function() { return [
+                      // Reeds
+                      h('g', { key: 'rds', stroke: '#065f46', strokeWidth: 2, strokeLinecap: 'round', opacity: 0.85 },
+                        [40, 55, 78, 96, 112, 138, 160, 188, 208, 240, 270, 296, 322, 350, 380, 412, 444, 478, 502, 524].map(function(x, i) {
+                          var hgt = 22 + (i % 5) * 4;
+                          return h('line', { key: 'r' + i, x1: x, y1: 130, x2: x + (i % 2 ? 1 : -1), y2: 130 - hgt });
+                        })
+                      ),
+                      // Cattail tops
+                      [60, 100, 145, 200, 260, 310, 380, 440, 500].map(function(x, i) {
+                        var hgt = 18 + (i % 3) * 3;
+                        return h('rect', { key: 'ct' + i, x: x - 1.5, y: 130 - hgt - 6, width: 3, height: 6, fill: '#78350f', opacity: 0.85 });
+                      })
+                    ]; },
+                    accent: 'emerald'
+                  };
+                } else if (/coast|ocean|sea|island|shore|beach|tidal|marine/i.test(hb)) {
+                  scene = {
+                    label: 'Coastal', icon: '🌊',
+                    skyA: '#bfdbfe', skyB: '#fef3c7',
+                    waterTop: '#60a5fa', waterBot: '#1e40af',
+                    silhouettes: function() { return [
+                      // Wave crests
+                      h('path', { key: 'w1', d: 'M0,118 Q30,112 60,118 T120,118 T180,118 T240,118 T300,118 T360,118 T420,118 T480,118 T540,118',
+                        fill: 'none', stroke: '#f8fafc', strokeWidth: 1.5, opacity: 0.6 }),
+                      h('path', { key: 'w2', d: 'M0,128 Q35,123 70,128 T140,128 T210,128 T280,128 T350,128 T420,128 T490,128 T540,128',
+                        fill: 'none', stroke: '#f8fafc', strokeWidth: 1.2, opacity: 0.5 }),
+                      // Distant rocks/islands
+                      h('path', { key: 'rk1', d: 'M40,108 Q60,100 80,108 L80,118 L40,118 Z', fill: '#475569', opacity: 0.7 }),
+                      h('path', { key: 'rk2', d: 'M380,112 Q420,102 460,112 L460,118 L380,118 Z', fill: '#334155', opacity: 0.7 }),
+                      // Lighthouse silhouette far right
+                      h('g', { key: 'lh', opacity: 0.7 },
+                        h('path', { d: 'M488,90 L490,108 L502,108 L504,90 L498,84 Z', fill: '#1e293b' }),
+                        h('rect', { x: 494, y: 86, width: 4, height: 4, fill: '#fbbf24', opacity: 0.8 })
+                      )
+                    ]; },
+                    accent: 'sky'
+                  };
+                } else if (/forest|wood|conifer|spruce|pine|hemlock|maple|oak|deciduous/i.test(hb)) {
+                  scene = {
+                    label: 'Forest', icon: '🌲',
+                    skyA: '#dcfce7', skyB: '#fef9c3',
+                    waterTop: '#166534', waterBot: '#14532d',
+                    silhouettes: function() { return [
+                      // Pines (algorithmic)
+                      Array.from({length: 18}, function(_, i) {
+                        var x = 18 + i * 30 + ((i * 7) % 11);
+                        var hgt = 60 + ((i * 13) % 35);
+                        return h('path', { key: 'pn' + i,
+                          d: 'M' + x + ',' + (130 - hgt) + ' L' + (x - 14) + ',130 L' + (x + 14) + ',130 Z',
+                          fill: i % 3 === 0 ? '#14532d' : '#166534',
+                          opacity: 0.85 + (i % 4) * 0.04 });
+                      })
+                    ]; },
+                    accent: 'emerald'
+                  };
+                } else if (/sky|aerial|cliff|mountain|alpine|tundra|raptor|soar/i.test(hb)) {
+                  scene = {
+                    label: 'Sky / Cliffs', icon: '⛰',
+                    skyA: '#dbeafe', skyB: '#fce7f3',
+                    waterTop: '#94a3b8', waterBot: '#475569',
+                    silhouettes: function() { return [
+                      // Mountain layers
+                      h('path', { key: 'm1', d: 'M0,124 L60,90 L130,108 L210,82 L290,104 L360,76 L430,98 L510,86 L540,94 L540,140 L0,140 Z',
+                        fill: '#94a3b8', opacity: 0.6 }),
+                      h('path', { key: 'm2', d: 'M0,138 L80,108 L170,124 L260,100 L340,118 L420,98 L510,114 L540,110 L540,140 L0,140 Z',
+                        fill: '#64748b', opacity: 0.85 }),
+                      // Soaring birds (V silhouettes)
+                      [{x:120,y:50},{x:200,y:42},{x:340,y:48},{x:430,y:38}].map(function(b, i) {
+                        return h('path', { key: 'sb' + i,
+                          d: 'M' + b.x + ',' + b.y + ' Q' + (b.x + 5) + ',' + (b.y - 4) + ' ' + (b.x + 10) + ',' + b.y + ' Q' + (b.x + 15) + ',' + (b.y - 4) + ' ' + (b.x + 20) + ',' + b.y,
+                          fill: 'none', stroke: '#1e293b', strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.8 });
+                      })
+                    ]; },
+                    accent: 'slate'
+                  };
+                } else if (/grass|meadow|field|prairie|farmland|open/i.test(hb)) {
+                  scene = {
+                    label: 'Grassland', icon: '🌾',
+                    skyA: '#fef3c7', skyB: '#fef9c3',
+                    waterTop: '#a3e635', waterBot: '#65a30d',
+                    silhouettes: function() { return [
+                      // Grass tufts
+                      Array.from({length: 30}, function(_, i) {
+                        var x = i * 18 + ((i * 5) % 11);
+                        var hgt = 8 + ((i * 7) % 12);
+                        return h('g', { key: 'g' + i, stroke: '#3f6212', strokeWidth: 1.5, strokeLinecap: 'round' },
+                          h('line', { x1: x, y1: 130, x2: x - 2, y2: 130 - hgt }),
+                          h('line', { x1: x, y1: 130, x2: x, y2: 130 - hgt - 2 }),
+                          h('line', { x1: x, y1: 130, x2: x + 2, y2: 130 - hgt })
+                        );
+                      })
+                    ]; },
+                    accent: 'lime'
+                  };
+                } else if (/urban|backyard|feeder|park|garden|town/i.test(hb)) {
+                  scene = {
+                    label: 'Urban / Backyard', icon: '🏠',
+                    skyA: '#e0f2fe', skyB: '#fef3c7',
+                    waterTop: '#86efac', waterBot: '#16a34a',
+                    silhouettes: function() { return [
+                      // Roofline silhouettes
+                      h('path', { key: 'rf1', d: 'M0,128 L0,108 L40,108 L60,90 L80,108 L120,108 L120,128 Z', fill: '#475569', opacity: 0.7 }),
+                      h('path', { key: 'rf2', d: 'M180,128 L180,114 L220,114 L240,98 L260,114 L300,114 L300,128 Z', fill: '#334155', opacity: 0.75 }),
+                      h('path', { key: 'rf3', d: 'M380,128 L380,104 L420,104 L440,86 L460,104 L500,104 L500,128 Z', fill: '#475569', opacity: 0.7 }),
+                      // Trees between houses
+                      h('circle', { key: 't1', cx: 150, cy: 110, r: 14, fill: '#15803d', opacity: 0.85 }),
+                      h('circle', { key: 't2', cx: 340, cy: 116, r: 12, fill: '#15803d', opacity: 0.85 }),
+                      // Bird feeder hanging
+                      h('g', { key: 'fdr', opacity: 0.9 },
+                        h('line', { x1: 250, y1: 80, x2: 250, y2: 96, stroke: '#1e293b', strokeWidth: 1 }),
+                        h('rect', { x: 244, y: 96, width: 12, height: 8, fill: '#78350f' }),
+                        h('path', { d: 'M242,96 L250,90 L258,96 Z', fill: '#b45309' })
+                      )
+                    ]; },
+                    accent: 'emerald'
+                  };
+                } else {
+                  scene = {
+                    label: 'Habitat', icon: '🌿',
+                    skyA: '#e0f2fe', skyB: '#fef3c7',
+                    waterTop: '#a7f3d0', waterBot: '#10b981',
+                    silhouettes: function() { return []; },
+                    accent: 'emerald'
+                  };
+                }
+                return h('div', { className: 'bg-white rounded-2xl border-2 border-stone-500 shadow-lg overflow-hidden', 'aria-live': 'polite' },
+                  // Hero band
+                  h('div', { className: 'relative', style: { lineHeight: 0 } },
+                    h('svg', { viewBox: '0 0 540 140', width: '100%', preserveAspectRatio: 'none',
+                      style: { display: 'block', height: 140 },
+                      'aria-hidden': 'true'
+                    },
+                      h('defs', null,
+                        h('linearGradient', { id: 'mbsky-' + picked.name.replace(/[^a-z0-9]/gi, ''), x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: scene.skyA }),
+                          h('stop', { offset: '100%', stopColor: scene.skyB })
+                        ),
+                        h('linearGradient', { id: 'mbgnd-' + picked.name.replace(/[^a-z0-9]/gi, ''), x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                          h('stop', { offset: '0%', stopColor: scene.waterTop }),
+                          h('stop', { offset: '100%', stopColor: scene.waterBot })
+                        )
+                      ),
+                      h('rect', { x: 0, y: 0, width: 540, height: 140, fill: 'url(#mbsky-' + picked.name.replace(/[^a-z0-9]/gi, '') + ')' }),
+                      h('rect', { x: 0, y: 130, width: 540, height: 10, fill: 'url(#mbgnd-' + picked.name.replace(/[^a-z0-9]/gi, '') + ')' }),
+                      scene.silhouettes()
+                    ),
+                    // Habitat label pill (top-right of band)
+                    h('div', {
+                      style: {
+                        position: 'absolute', top: 10, right: 12,
+                        background: 'rgba(255,255,255,0.85)',
+                        border: '1.5px solid #94a3b8',
+                        borderRadius: 999, padding: '3px 10px',
+                        fontSize: 11, fontWeight: 800, letterSpacing: '0.06em',
+                        textTransform: 'uppercase', color: '#334155',
+                        boxShadow: '0 1px 2px rgba(0,0,0,0.06)'
+                      }
+                    }, scene.icon + ' ' + scene.label),
+                    // Bird name + status overlay (bottom-left, above silhouettes)
+                    h('div', {
+                      style: {
+                        position: 'absolute', bottom: 12, left: 16, right: 16,
+                        display: 'flex', alignItems: 'flex-end', gap: 14, flexWrap: 'wrap'
+                      }
+                    },
+                      // Bird SVG enlarged with white circle backdrop
+                      picked.speciesKey && BIRDS[picked.speciesKey] && h('div', {
+                        style: {
+                          width: 76, height: 76, flexShrink: 0,
+                          borderRadius: '50%', background: 'rgba(255,255,255,0.92)',
+                          border: '3px solid #ffffff',
+                          boxShadow: '0 4px 10px rgba(0,0,0,0.18)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }
+                      },
+                        h('svg', { viewBox: '0 0 30 30', style: { width: '60px', height: '60px' }, role: 'img', 'aria-label': picked.name },
+                          h('g', { transform: 'translate(2, 2)' }, BIRDS[picked.speciesKey].svg(h))
+                        )
+                      ),
+                      h('div', { style: { flex: 1, minWidth: 200 } },
+                        h('h3', {
+                          style: {
+                            fontSize: '1.5rem', fontWeight: 900, color: '#1e293b',
+                            textShadow: '0 1px 0 #ffffff, 0 2px 6px rgba(255,255,255,0.85)',
+                            lineHeight: 1.1, marginBottom: 2
+                          }
+                        }, picked.name),
+                        h('div', {
+                          style: {
+                            fontSize: 13, fontStyle: 'italic', color: '#1e293b',
+                            textShadow: '0 1px 0 rgba(255,255,255,0.85)'
+                          }
+                        }, picked.sciName)
+                      )
+                    )
                   ),
-                  h('div', null,
-                    h('h3', { className: 'text-2xl font-black text-slate-800' }, picked.name),
-                    h('div', { className: 'text-sm italic text-slate-700' }, picked.sciName),
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-700 mt-1' }, picked.mainStatus),
-                    picked.iconicStatus && h('div', { className: 'text-xs text-amber-700 italic mt-0.5' }, '⭐ ' + picked.iconicStatus)
-                  )
-                ),
+                  // Status row (just below hero)
+                  h('div', { className: 'px-5 py-3 bg-slate-50 border-b border-slate-200 flex flex-wrap gap-3 items-center' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-700' }, picked.mainStatus),
+                    picked.iconicStatus && h('div', { className: 'text-xs text-amber-700 italic' }, '⭐ ' + picked.iconicStatus)
+                  ),
+                  // Body content
+                  h('div', { className: 'p-5 space-y-3' },
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                   h('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded-lg' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '🌲 Habitat'),
@@ -3806,7 +4007,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     'Verify, hear songs, see photos, log a sighting — links open in a new tab.'),
                   birdLinkButtons(picked.name, picked.sciName)
                 )
-              )
+                  )  // close p-5 space-y-3 body-content div
+                );   // close return h('div') overflow-hidden card
+              })()
             ),
             view === 'hotspots' && h('div', { className: 'space-y-3' },
               h('p', { className: 'text-sm text-slate-700 italic' },
@@ -5116,16 +5319,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             setLogForm(Object.assign({}, logForm, { behaviors: next }));
           }
           var canSubmit = (logForm.location || '').trim().length > 0;
+          var __lockSec = (onTargetMs / 1000).toFixed(1);
           return h('div', { className: 'min-h-screen bg-slate-50' },
             h(BackBar, { icon: '📋', title: 'Field Log Entry' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
-              h('div', { className: 'bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4', 'aria-live': 'polite' },
-                h('div', { className: 'flex items-center gap-3 mb-2' },
-                  h('span', { 'aria-hidden': true, className: 'text-3xl' }, '✓'),
-                  h('div', null,
-                    h('h2', { className: 'text-base font-black text-emerald-900' }, 'Locked in for ' + (onTargetMs / 1000).toFixed(1) + ' seconds.'),
-                    h('p', { className: 'text-sm text-slate-800' }, 'Now log what you saw before the details fade.')
+              // ── Lock-in celebration scene (parity with tracking-fail) ──
+              h('div', { className: 'rounded-2xl overflow-hidden shadow border-2 border-emerald-400 relative', 'aria-live': 'polite' },
+                h('svg', {
+                  viewBox: '0 0 540 160', width: '100%',
+                  style: { display: 'block' },
+                  role: 'img', 'aria-label': 'Bird locked in the binocular reticle'
+                },
+                  h('defs', null,
+                    h('linearGradient', { id: 'lockSky', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#a7f3d0' }),
+                      h('stop', { offset: '100%', stopColor: '#fef3c7' })
+                    ),
+                    h('radialGradient', { id: 'lockSun', cx: '85%', cy: '20%', r: '30%' },
+                      h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: '0.95' }),
+                      h('stop', { offset: '100%', stopColor: '#fef3c7', stopOpacity: '0' })
+                    ),
+                    h('radialGradient', { id: 'lockBirdBody', cx: '40%', cy: '35%', r: '60%' },
+                      h('stop', { offset: '0%', stopColor: '#fde68a' }),
+                      h('stop', { offset: '70%', stopColor: '#b45309' }),
+                      h('stop', { offset: '100%', stopColor: '#78350f' })
+                    )
+                  ),
+                  // Sky + sun
+                  h('rect', { x: 0, y: 0, width: 540, height: 160, fill: 'url(#lockSky)' }),
+                  h('circle', { cx: 460, cy: 32, r: 80, fill: 'url(#lockSun)' }),
+                  // Distant ridges
+                  h('path', { d: 'M0,110 L80,90 L160,100 L240,82 L320,94 L400,78 L480,92 L540,86 L540,160 L0,160 Z', fill: '#86efac', opacity: '0.6' }),
+                  h('path', { d: 'M0,128 L60,118 L140,124 L220,114 L300,122 L380,112 L460,120 L540,116 L540,160 L0,160 Z', fill: '#34d399', opacity: '0.85' }),
+                  // Perched bird (sharp, in focus, centered)
+                  h('g', { transform: 'translate(245, 70)' },
+                    // Branch
+                    h('path', { d: 'M-40,40 L80,46 M0,42 L-10,52 M28,44 L36,54', stroke: '#78350f', strokeWidth: 3, strokeLinecap: 'round', fill: 'none' }),
+                    // Body
+                    h('ellipse', { cx: 25, cy: 22, rx: 26, ry: 18, fill: 'url(#lockBirdBody)', stroke: '#451a03', strokeWidth: 1 }),
+                    // Head
+                    h('circle', { cx: 5, cy: 16, r: 12, fill: 'url(#lockBirdBody)', stroke: '#451a03', strokeWidth: 1 }),
+                    // Eye
+                    h('circle', { cx: 1, cy: 14, r: 2.5, fill: '#1c1917' }),
+                    h('circle', { cx: 0.2, cy: 13, r: 0.8, fill: '#fef3c7' }),
+                    // Beak
+                    h('path', { d: 'M-7,16 L-13,18 L-7,19 Z', fill: '#f59e0b', stroke: '#78350f', strokeWidth: 0.5 }),
+                    // Wing detail
+                    h('path', { d: 'M18,18 Q34,16 46,26 Q34,30 18,28 Z', fill: '#78350f', opacity: '0.55' }),
+                    // Tail
+                    h('path', { d: 'M48,22 L60,18 L60,28 Z', fill: '#78350f' }),
+                    // Foot
+                    h('path', { d: 'M14,40 L14,46 M18,40 L20,46', stroke: '#451a03', strokeWidth: 1.5, strokeLinecap: 'round' })
+                  ),
+                  // Locked-on reticle (solid green, success state)
+                  h('g', { transform: 'translate(270, 86)' },
+                    h('circle', { cx: 0, cy: 0, r: 64, fill: 'none', stroke: '#10b981', strokeWidth: 3, opacity: '0.85' }),
+                    h('circle', { cx: 0, cy: 0, r: 50, fill: 'none', stroke: '#10b981', strokeWidth: 1.5, opacity: '0.5' }),
+                    // Crosshairs
+                    h('line', { x1: -64, y1: 0, x2: -20, y2: 0, stroke: '#10b981', strokeWidth: 2, opacity: '0.8' }),
+                    h('line', { x1: 20, y1: 0, x2: 64, y2: 0, stroke: '#10b981', strokeWidth: 2, opacity: '0.8' }),
+                    h('line', { x1: 0, y1: -64, x2: 0, y2: -20, stroke: '#10b981', strokeWidth: 2, opacity: '0.8' }),
+                    h('line', { x1: 0, y1: 20, x2: 0, y2: 64, stroke: '#10b981', strokeWidth: 2, opacity: '0.8' }),
+                    // Corner brackets (success indicator)
+                    h('path', { d: 'M-58,-58 L-46,-58 L-46,-46 M-58,-58 L-58,-46', stroke: '#059669', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' }),
+                    h('path', { d: 'M58,-58 L46,-58 L46,-46 M58,-58 L58,-46', stroke: '#059669', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' }),
+                    h('path', { d: 'M-58,58 L-46,58 L-46,46 M-58,58 L-58,46', stroke: '#059669', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' }),
+                    h('path', { d: 'M58,58 L46,58 L46,46 M58,58 L58,46', stroke: '#059669', strokeWidth: 3, fill: 'none', strokeLinecap: 'round' })
+                  ),
+                  // Sparkles / celebration dots
+                  [{x:120,y:35},{x:90,y:60},{x:430,y:60},{x:160,y:18},{x:380,y:25},{x:60,y:90},{x:480,y:50}].map(function(s, idx) {
+                    return h('g', { key: 'sp' + idx, transform: 'translate(' + s.x + ',' + s.y + ')' },
+                      h('path', { d: 'M0,-5 L1.2,-1.2 L5,0 L1.2,1.2 L0,5 L-1.2,1.2 L-5,0 L-1.2,-1.2 Z',
+                        fill: '#fbbf24', opacity: '0.85' })
+                    );
+                  }),
+                  // Big "LOCKED IN" badge top-left
+                  h('g', { transform: 'translate(20, 20)' },
+                    h('rect', { x: 0, y: 0, width: 110, height: 28, rx: 14,
+                      fill: '#065f46', opacity: '0.95',
+                      stroke: '#10b981', strokeWidth: 2 }),
+                    h('text', { x: 55, y: 19, textAnchor: 'middle',
+                      fill: '#a7f3d0', fontWeight: 900, fontSize: 13, letterSpacing: '0.08em',
+                      style: { textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }
+                    }, '✓ Locked in')
                   )
+                ),
+                // Time stat banner below scene
+                h('div', { className: 'bg-gradient-to-r from-emerald-50 to-amber-50 px-4 py-3 flex items-center justify-between gap-3 flex-wrap border-t-2 border-emerald-300' },
+                  h('div', null,
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-800' }, 'Time on target'),
+                    h('div', { className: 'flex items-baseline gap-1' },
+                      h('span', { className: 'text-3xl font-black text-emerald-700 font-mono' }, __lockSec),
+                      h('span', { className: 'text-sm text-emerald-700 font-bold' }, ' / ' + (GOAL_MS / 1000) + ' s ✓')
+                    )
+                  ),
+                  h('p', { className: 'text-sm text-slate-800 max-w-[280px] leading-snug' },
+                    h('strong', { className: 'text-emerald-900' }, 'Now log what you saw '),
+                    'before the details fade. Field marks vanish from memory faster than you think.')
                 )
               ),
               h('div', { className: 'bg-white rounded-2xl border-2 border-emerald-400 shadow p-4 flex items-start gap-3' },
