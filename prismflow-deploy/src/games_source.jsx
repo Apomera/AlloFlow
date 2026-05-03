@@ -2620,30 +2620,26 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                 </div>
               )}
               {keyboardSelectedItemId && (
-                <div
-                    className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center"
-                    onClick={() => setKeyboardSelectedItemId(null)}
-                >
+                <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
                     <div
                         ref={moveMenuRef}
-                        className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200"
+                        className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto"
                         role="dialog"
                         aria-label="Choose a zone"
-                        onClick={e => e.stopPropagation()}
                     >
-                        <h4 className="text-sm font-bold text-slate-700 text-center mb-2">{t('games.ce_sort.move_title') || 'Sort this item into:'}</h4>
-                        <div className="grid grid-cols-2 gap-3">
+                        <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a zone above, or pick one here:'}</h4>
+                        <div className="grid grid-cols-2 gap-2">
                             <button onClick={() => handleKeyboardMove('causes')} className="px-4 py-3 bg-orange-100 hover:bg-orange-200 text-orange-800 rounded-xl font-bold text-xs transition-colors border border-orange-300 focus:outline-none focus:ring-2 focus:ring-orange-500">
                                 🔶 {t('games.ce_sort.causes_label') || 'Causes'}
                             </button>
                             <button onClick={() => handleKeyboardMove('effects')} className="px-4 py-3 bg-teal-100 hover:bg-teal-200 text-teal-800 rounded-xl font-bold text-xs transition-colors border border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-500">
                                 🟦 {t('games.ce_sort.effects_label') || 'Effects'}
                             </button>
-                            <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">
+                            <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500">
                                 {t('concept_map.venn.return_bank') || 'Return to bank'}
                             </button>
                         </div>
-                        <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
+                        <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
                     </div>
                 </div>
               )}
@@ -2652,11 +2648,17 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   onDrop={(e) => handleDrop(e, 'causes')}
                   onDragOver={(e) => handleDragOver(e, 'causes')}
                   onDragLeave={handleDragLeave}
+                  onClick={keyboardSelectedItemId ? () => handleKeyboardMove('causes') : undefined}
+                  role={keyboardSelectedItemId ? 'button' : undefined}
+                  tabIndex={keyboardSelectedItemId ? 0 : undefined}
+                  aria-label={keyboardSelectedItemId ? 'Place selected item into Causes' : undefined}
+                  onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('causes'); } } : undefined}
                   className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
                     ${activeDropZone === 'causes' ? 'bg-orange-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(251,146,60,0.3)]' : 'bg-gradient-to-b from-orange-50/80 to-orange-100/40'}
+                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}
                   `}
               >
-                  <div className="bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1">
+                  <div className={`bg-orange-200/80 backdrop-blur-sm border-2 border-orange-300 text-orange-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform -rotate-1 ${keyboardSelectedItemId ? 'ring-4 ring-yellow-300' : ''}`}>
                       🔶 {t('games.ce_sort.causes_label') || 'Causes'}
                   </div>
                   <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
@@ -2692,8 +2694,14 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   onDrop={(e) => handleDrop(e, 'effects')}
                   onDragOver={(e) => handleDragOver(e, 'effects')}
                   onDragLeave={handleDragLeave}
+                  onClick={keyboardSelectedItemId ? () => handleKeyboardMove('effects') : undefined}
+                  role={keyboardSelectedItemId ? 'button' : undefined}
+                  tabIndex={keyboardSelectedItemId ? 0 : undefined}
+                  aria-label={keyboardSelectedItemId ? 'Place selected item into Effects' : undefined}
+                  onKeyDown={keyboardSelectedItemId ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove('effects'); } } : undefined}
                   className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10
                     ${activeDropZone === 'effects' ? 'bg-teal-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(45,212,191,0.3)]' : 'bg-gradient-to-b from-teal-50/80 to-teal-100/40'}
+                    ${keyboardSelectedItemId ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}
                   `}
               >
                   <div className="bg-teal-200/80 backdrop-blur-sm border-2 border-teal-300 text-teal-800 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 transform rotate-1">
@@ -2937,14 +2945,21 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
   const leftItems = useMemo(() => items.filter(i => i.currentZone === 'left'), [items]);
   const rightItems = useMemo(() => items.filter(i => i.currentZone === 'right'), [items]);
   const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
-  const renderColumn = (zone, title, items, colorClasses) => (
+  const renderColumn = (zone, title, items, colorClasses) => {
+    const hasSelection = !!keyboardSelectedItemId;
+    return (
     <div
       onDrop={(e) => handleDrop(e, zone)}
       onDragOver={(e) => handleDragOver(e, zone)}
       onDragLeave={handleDragLeave}
-      className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10 ${activeDropZone === zone ? colorClasses.active : colorClasses.idle}`}
+      onClick={hasSelection ? () => handleKeyboardMove(zone) : undefined}
+      role={hasSelection ? 'button' : undefined}
+      tabIndex={hasSelection ? 0 : undefined}
+      aria-label={hasSelection ? `Place selected item into ${title}` : undefined}
+      onKeyDown={hasSelection ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove(zone); } } : undefined}
+      className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10 ${activeDropZone === zone ? colorClasses.active : colorClasses.idle} ${hasSelection ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}`}
     >
-      <div className={`backdrop-blur-sm border-2 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 ${colorClasses.header}`}>
+      <div className={`backdrop-blur-sm border-2 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 ${colorClasses.header} ${hasSelection ? 'ring-4 ring-yellow-300 ring-offset-2' : ''}`}>
         {title}
       </div>
       <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
@@ -2964,11 +2979,12 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
           </div>
         ))}
         {items.length === 0 && (
-          <div className="text-slate-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>
+          <div className="text-slate-400 italic text-xs mt-8 text-center w-full">{hasSelection ? (t('concept_sort.tap_to_place') || `Tap here to place in ${title}`) : (t('concept_sort.drop_placeholder') || 'Drop here')}</div>
         )}
       </div>
     </div>
   );
+  };
   const leftColors = {
     active: 'bg-cyan-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(6,182,212,0.3)]',
     idle: 'bg-gradient-to-b from-cyan-50/80 to-cyan-100/40',
@@ -3031,15 +3047,15 @@ const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, on
           </div>
         )}
         {keyboardSelectedItemId && (
-          <div className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center" onClick={() => setKeyboardSelectedItemId(null)}>
-            <div ref={moveMenuRef} className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200" role="dialog" aria-label="Choose a column" onClick={e => e.stopPropagation()}>
-              <h4 className="text-sm font-bold text-slate-700 text-center mb-2">Sort this item into:</h4>
-              <div className="grid grid-cols-2 gap-3">
+          <div className="absolute inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 pointer-events-auto max-w-md w-full" role="dialog" aria-label="Choose a column">
+              <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a column above, or pick one here:'}</h4>
+              <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => handleKeyboardMove('left')} className="px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">{leftTitle}</button>
                 <button onClick={() => handleKeyboardMove('right')} className="px-4 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl font-bold text-xs transition-colors border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{rightTitle}</button>
-                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">Return to bank</button>
+                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-500">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
               </div>
-              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">Cancel</button>
+              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
             </div>
           </div>
         )}
@@ -3295,16 +3311,16 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
           </div>
         )}
         {keyboardSelectedItemId && (
-          <div className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center" onClick={() => setKeyboardSelectedItemId(null)}>
-            <div ref={moveMenuRef} className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200 max-w-md" role="dialog" aria-label="Choose a destination" onClick={e => e.stopPropagation()}>
-              <h4 className="text-sm font-bold text-slate-700 text-center mb-2">Sort this item into:</h4>
-              <div className="grid grid-cols-2 gap-3">
+          <div className="fixed inset-x-0 bottom-4 z-50 flex justify-center pointer-events-none px-4">
+            <div ref={moveMenuRef} className="bg-white p-4 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-2 animate-in zoom-in duration-200 max-w-md w-full pointer-events-auto" role="dialog" aria-label="Choose a destination">
+              <h4 className="text-xs font-bold text-slate-700 text-center mb-1">{t('concept_sort.tap_target') || 'Tap a bucket above, or pick one here:'}</h4>
+              <div className="grid grid-cols-2 gap-2">
                 {buckets.map(b => (
                   <button key={b.id} onClick={() => handleKeyboardMove(b.id)} className={`px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:outline-none focus:ring-2 focus:ring-${accent}-500`}>{b.title}</button>
                 ))}
-                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2">Return to bank</button>
+                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400">{t('concept_map.venn.return_bank') || 'Return to bank'}</button>
               </div>
-              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center">Cancel</button>
+              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-1 text-xs text-slate-600 hover:text-slate-800 underline text-center">{t('concept_map.venn.cancel_selection') || 'Cancel'}</button>
             </div>
           </div>
         )}
@@ -3312,15 +3328,21 @@ const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onSc
           {buckets.map(b => {
             const placed = itemsByBucket[b.id] || [];
             const isActive = activeDropZone === b.id;
+            const hasSelection = !!keyboardSelectedItemId;
             return (
               <div
                 key={b.id}
                 onDrop={(e) => handleDrop(e, b.id)}
                 onDragOver={(e) => handleDragOver(e, b.id)}
                 onDragLeave={handleDragLeave}
-                className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] transition-all relative z-10 bg-white shadow-sm ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200` : `border-${accent}-200`}`}
+                onClick={hasSelection ? () => handleKeyboardMove(b.id) : undefined}
+                role={hasSelection ? 'button' : undefined}
+                tabIndex={hasSelection ? 0 : undefined}
+                aria-label={hasSelection ? `Place selected item into ${b.title}` : undefined}
+                onKeyDown={hasSelection ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleKeyboardMove(b.id); } } : undefined}
+                className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] transition-all relative z-10 bg-white shadow-sm ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200` : `border-${accent}-200`} ${hasSelection ? 'cursor-pointer ring-2 ring-yellow-300/60' : ''}`}
               >
-                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200`}>{b.title}</div>
+                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200 ${hasSelection ? 'ring-2 ring-yellow-300' : ''}`}>{b.title}</div>
                 <div className="flex flex-wrap gap-1.5 justify-center content-start flex-grow p-1">
                   {placed.map(item => (
                     <div
