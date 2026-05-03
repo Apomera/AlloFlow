@@ -3617,6 +3617,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('div', { className: 'p-3 bg-slate-100 border border-slate-300 rounded-lg' },
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, '📡 Citizen science'),
                   h('p', { className: 'text-sm text-slate-800' }, picked.citizen)
+                ),
+                // ── Open in... external resource cluster ──
+                h('div', { className: 'p-3 bg-white border-2 border-emerald-300 rounded-lg' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800 mb-2' }, '🔗 Open in real-world resources'),
+                  h('p', { className: 'text-xs text-slate-700 italic mb-2' },
+                    'Verify, hear songs, see photos, log a sighting — links open in a new tab.'),
+                  birdLinkButtons(picked.name, picked.sciName)
                 )
               )
             ),
@@ -4527,6 +4534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             speciesId: sessionBird ? sessionBird.id : null,
             speciesName: sessionBird ? sessionBird.name : 'Unidentified',
             speciesIcon: sessionBird ? sessionBird.icon : '🐦',
+            speciesSciName: sessionBird ? (sessionBird.sciName || sessionBird.sci || '') : '',
             createdAt: new Date().toISOString()
           });
           var nextNotebook = [entry].concat(notebook);
@@ -4922,9 +4930,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                         ),
                         entry.notes && h('p', { className: 'text-xs text-slate-700 mb-2' },
                           h('strong', null, '📝 Notes: '), entry.notes),
-                        entry.reflection && h('div', { className: 'p-3 bg-violet-50 border border-violet-200 rounded-lg' },
+                        entry.reflection && h('div', { className: 'p-3 bg-violet-50 border border-violet-200 rounded-lg mb-2' },
                           h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-violet-700 mb-1' }, '🪶 Reflection'),
                           h('p', { className: 'text-xs text-slate-800 leading-relaxed italic' }, entry.reflection)
+                        ),
+                        // Deep-link cluster — verify or read more about this species
+                        entry.speciesName && entry.speciesName !== 'Unidentified' && h('div', { className: 'pt-2 border-t border-slate-200' },
+                          h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, '🔗 Verify or learn more'),
+                          birdLinkButtons(entry.speciesName, entry.speciesSciName, { size: 'xs' })
                         )
                       );
                     })
@@ -4952,7 +4965,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var result = result_state[0], setResult = result_state[1];
         var error_state = useState(null);
         var error = error_state[0], setError = error_state[1];
+        var saveState_state = useState(null);  // null | 'prompt' | 'saved'
+        var saveState = saveState_state[0], setSaveState = saveState_state[1];
+        var saveLocation_state = useState('');
+        var saveLocation = saveLocation_state[0], setSaveLocation = saveLocation_state[1];
         var fileInputRef = useRef(null);
+        // Save-to-notebook bridge: when user has an AI ID, one click saves
+        // a notebook entry (with a brief location prompt) tagged as photo-IDed.
+        function saveAsNotebookEntry() {
+          if (!result || !result.hasBird || !result.candidates || !result.candidates.length) return;
+          var top = result.candidates[0];
+          var now = new Date();
+          var pad = function(n) { return n < 10 ? '0' + n : '' + n; };
+          var entry = {
+            id: 'fn_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+            speciesId: null,
+            speciesName: top.name || 'Unidentified',
+            speciesIcon: '📸',
+            speciesSciName: top.sciName || '',
+            date: now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate()),
+            time: pad(now.getHours()) + ':' + pad(now.getMinutes()),
+            location: (saveLocation || '').trim() || 'Unspecified',
+            count: 1,
+            behaviors: [],
+            weather: 'clear',
+            notes: 'Identified via AI photo analysis. Confidence: ' + Math.round((top.confidence || 0) * 100) + '%. ' +
+                   (top.rationale || '') +
+                   (result.candidates.length > 1 ? ' Other candidates considered: ' + result.candidates.slice(1).map(function(c) { return c.name + ' (' + Math.round((c.confidence || 0) * 100) + '%)'; }).join(', ') + '.' : ''),
+            reflection: '',
+            createdAt: now.toISOString(),
+            source: 'photoId'
+          };
+          var nextNotebook = [entry].concat(lsGet('birdLab.fieldNotebook.v1', []) || []);
+          lsSet('birdLab.fieldNotebook.v1', nextNotebook);
+          // Also award the badge (mirrors FieldObservation badge logic)
+          var prev = d.blBadges || {};
+          if (!prev.fieldObs) {
+            var nbb = Object.assign({}, prev); nbb.fieldObs = true;
+            upd('blBadges', nbb);
+            lsSet('birdLab.badges.v1', nbb);
+          }
+          setSaveState('saved');
+        }
         function onFile(e) {
           var f = e && e.target && e.target.files && e.target.files[0];
           if (!f) return;
@@ -4971,6 +5025,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         }
         function clearPhoto() {
           setPhoto(null); setResult(null); setError(null);
+          setSaveState(null); setSaveLocation('');
           if (fileInputRef.current) fileInputRef.current.value = '';
         }
         function identify() {
@@ -5145,13 +5200,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   'AI-based bird ID is good but imperfect. Confusing pairs (warblers, sparrows, female ducks, juvenile gulls, immature raptors) trip up both humans and AI. Use the verify links above. For research-grade observations, check with an expert birder via your local Audubon chapter or post on iNaturalist for community ID.'
                 )
               ),
-              h('div', { className: 'flex gap-2 flex-wrap' },
+              // ── Save-to-notebook flow: prompt → save → confirmed ──
+              saveState === null && h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', { onClick: clearPhoto,
                   className: 'px-4 py-2 rounded-xl bg-violet-700 text-white text-sm font-bold hover:bg-violet-800'
                 }, '📷 Identify another photo'),
-                h('button', { onClick: function() { setView('fieldObs'); upd('view', 'fieldObs'); },
+                result && result.hasBird && result.candidates && result.candidates.length > 0 && h('button', {
+                  onClick: function() { setSaveState('prompt'); },
                   className: 'px-4 py-2 rounded-xl bg-white text-violet-800 border-2 border-violet-400 text-sm font-bold hover:border-violet-600'
-                }, '📓 Log this in my field notebook')
+                }, '📓 Save to my field notebook'),
+                h('button', { onClick: function() { setView('fieldObs'); upd('view', 'fieldObs'); },
+                  className: 'px-4 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500'
+                }, '🔭 Open field notebook')
+              ),
+              saveState === 'prompt' && h('div', { className: 'bg-white rounded-2xl border-2 border-violet-500 shadow p-4 space-y-3' },
+                h('h4', { className: 'text-base font-black text-slate-800' }, '📓 Save this AI ID to your field notebook'),
+                h('p', { className: 'text-xs text-slate-700 leading-relaxed' },
+                  'Quick save. The AI\'s top guess (', h('strong', { className: 'text-violet-800' }, result.candidates[0].name), ') will be the species, with the AI rationale + confidence saved as notes. You can edit any details later by opening the entry from the field notebook.'),
+                h('label', { htmlFor: 'photoId-loc', className: 'block text-xs font-bold uppercase tracking-wider text-slate-700' }, '📍 Where was this photo taken?'),
+                h('input', { id: 'photoId-loc', type: 'text',
+                  value: saveLocation,
+                  placeholder: 'e.g., Scarborough Marsh, my backyard, "found photo online"',
+                  onChange: function(e) { setSaveLocation(e.target.value); },
+                  className: 'w-full p-2 rounded-lg border-2 border-slate-300 text-sm focus:outline-none focus:border-violet-500'
+                }),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', { onClick: saveAsNotebookEntry,
+                    className: 'px-5 py-2 rounded-xl bg-violet-700 text-white text-sm font-bold hover:bg-violet-800 focus:outline-none focus:ring-4 ring-violet-500/40'
+                  }, '💾 Save entry'),
+                  h('button', { onClick: function() { setSaveState(null); },
+                    className: 'px-5 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500'
+                  }, 'Cancel')
+                )
+              ),
+              saveState === 'saved' && h('div', { className: 'bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-5 text-center', 'aria-live': 'polite' },
+                h('div', { className: 'text-4xl mb-2' }, '✓'),
+                h('h3', { className: 'text-base font-black text-emerald-900 mb-1' }, 'Saved to your field notebook'),
+                h('p', { className: 'text-sm text-slate-800 mb-3' },
+                  result.candidates[0].name + ' was added with the AI rationale + confidence as notes. Open the notebook to add more detail (behavior, weather, reflection).'
+                ),
+                h('div', { className: 'flex gap-2 flex-wrap justify-center' },
+                  h('button', {
+                    onClick: function() { setView('fieldObs'); upd('view', 'fieldObs'); },
+                    className: 'px-4 py-2 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800'
+                  }, '📓 Open field notebook'),
+                  h('button', {
+                    onClick: function() { clearPhoto(); setSaveState(null); setSaveLocation(''); },
+                    className: 'px-4 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500'
+                  }, '📷 Identify another photo')
+                )
               )
             )
           )

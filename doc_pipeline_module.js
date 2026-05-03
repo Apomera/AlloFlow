@@ -7933,7 +7933,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                 + `else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}`
                 + `c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';`
                 + `Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});`
-                + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');}`;
+                + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');`
+                // Notify the parent app that the iframe DOM was mutated so it can
+                // sync the new outerHTML into pdfFixResult.accessibleHtml. Without
+                // this, image swaps live only in the iframe and get wiped by any
+                // updatePdfPreview() call (theme/font/a11y/auto-fix/etc.).
+                + `try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}}`;
               const _dragOver = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
               const _dragLeave = `this.style.borderColor='#64748b';this.style.background='#f1f5f9';`;
               const _dropHandler = `(function(c,ev){ev.preventDefault();c.style.borderColor='#64748b';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn})(c,d.src,d.alt||'${_imgAltSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn})(c,e.target.result,'${_imgAltSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
@@ -8636,7 +8641,11 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               + `else{target=document.createElement('img');target.src=dataUrl;target.alt=altText||'Image';target.style.cssText='max-width:100%;border-radius:8px;border:1px solid #e2e8f0';c.appendChild(target);}`
               + `c.style.background='none';c.style.border='none';c.style.padding='0';c.style.minHeight='0';`
               + `Array.from(c.children).forEach(function(ch){if(ch!==target)ch.remove();});`
-              + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');}`;
+              + `c.removeAttribute('ondragover');c.removeAttribute('ondragleave');c.removeAttribute('ondrop');`
+              // Notify parent app of the swap so it can persist iframe state to
+              // pdfFixResult.accessibleHtml — see _insertFn note above for the
+              // full rationale.
+              + `try{if(window.parent&&window.parent.__alloflowOnPdfPreviewMutated)window.parent.__alloflowOnPdfPreviewMutated();}catch(_){}}`;
             const _dragOver2 = `event.preventDefault();this.style.borderColor='#4f46e5';this.style.background='#eef2ff';`;
             const _dragLeave2 = `this.style.borderColor='#cbd5e1';this.style.background='#f1f5f9';`;
             const _dropHandler2 = `(function(c,ev){ev.preventDefault();c.style.borderColor='#cbd5e1';c.style.background='#f1f5f9';try{var raw=ev.dataTransfer.getData('text/x-alloflow-image');if(raw){var d=JSON.parse(raw);if(d&&d.src){(${_insertFn2})(c,d.src,d.alt||'${_altSafe}');return;}}var f=ev.dataTransfer.files&&ev.dataTransfer.files[0];if(f){var r=new FileReader();r.onload=function(e){(${_insertFn2})(c,e.target.result,'${_altSafe}');};r.readAsDataURL(f);}}catch(_){}})(this,event)`;
@@ -10935,7 +10944,25 @@ tr { page-break-inside: avoid; }
     const useTheme = overrideTheme !== undefined ? overrideTheme : pdfPreviewTheme;
     const useFontSize = overrideFontSize !== undefined ? overrideFontSize : pdfPreviewFontSize;
     const useA11y = overrideA11y !== undefined ? overrideA11y : pdfPreviewA11yInspect;
-    const themed = applyThemeToPdfHtml(pdfFixResult.accessibleHtml, useTheme, useFontSize);
+    // Belt-and-suspenders: before applying a new theme/font/a11y view, snapshot
+    // the iframe's current outerHTML and prefer that over the (possibly stale)
+    // accessibleHtml in React state. This catches user image swaps and any
+    // other iframe DOM edits made via designMode='on' that the React state
+    // hasn't synced yet — without this, theme/font toggles wipe those edits.
+    let sourceHtml = pdfFixResult.accessibleHtml;
+    try {
+      const liveDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (liveDoc && liveDoc.body) {
+        const liveText = liveDoc.body.textContent || '';
+        if (liveText.trim().length >= 50) {
+          // Strip transient overlay CSS so it doesn't get baked into the export source.
+          const inspect = liveDoc.getElementById('a11y-inspect-css');
+          if (inspect) inspect.remove();
+          sourceHtml = '<!DOCTYPE html>\n' + liveDoc.documentElement.outerHTML;
+        }
+      }
+    } catch (_) { /* fall through to accessibleHtml */ }
+    const themed = applyThemeToPdfHtml(sourceHtml, useTheme, useFontSize);
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
     doc.open();
@@ -12195,17 +12222,45 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                const setA = branches[0] || { title: 'Set A', items: [] };
                const setB = branches[1] || { title: 'Set B', items: [] };
                const shared = branches[2] || { title: 'Shared', items: [] };
-               const renderList = (items, items_en, limit = 8, bg = 'rgba(255,255,255,0.6)') => items.slice(0, limit).map((it, i) =>
-                   `<li style="margin-bottom: 8px; font-size: 0.9em; line-height: 1.35; background: ${bg}; padding: 6px 12px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center;">
+               const sharedCount = (shared.items || []).length;
+               const sharedFontSize = sharedCount > 6 ? '0.78em' : sharedCount > 4 ? '0.85em' : '0.95em';
+               const sharedItemPad = sharedCount > 6 ? '3px 8px' : '5px 10px';
+               const sharedItemMargin = sharedCount > 6 ? '4px' : '6px';
+               const renderList = (items, items_en, limit = 8, bg = 'rgba(255,255,255,0.6)', overrides = {}) => items.slice(0, limit).map((it, i) => {
+                   const fs = overrides.fontSize || '0.9em';
+                   const pad = overrides.padding || '6px 12px';
+                   const mb = overrides.marginBottom || '8px';
+                   return `<li style="margin-bottom: ${mb}; font-size: ${fs}; line-height: 1.35; background: ${bg}; padding: ${pad}; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                        <span style="font-weight: 600;">${it}</span> ${items_en?.[i] ? `<br><span style="font-size:0.85em;opacity:0.85;font-style:italic;font-weight:normal;">(${items_en[i]})</span>` : ''}
-                    </li>`
-               ).join('');
+                    </li>`;
+               }).join('');
+               // Overflow list: extra shared items beyond the diagram fit
+               const sharedOverflow = (shared.items || []).slice(5);
+               const sharedOverflowHtml = sharedOverflow.length > 0
+                 ? `<div class="venn-overflow" style="max-width: 720px; margin: 16px auto 0; padding: 12px 16px; background: #faf5ff; border: 2px solid #e9d5ff; border-radius: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid;">
+                      <div style="font-size: 0.78em; font-weight: 800; color: #6b21a8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; text-align: center;">Shared (continued)</div>
+                      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+                        ${sharedOverflow.map(it => `<li style="font-size: 0.85em; font-weight: 600; color: #581c87; background: white; padding: 4px 10px; border-radius: 999px; border: 1px solid #d8b4fe;">${it}</li>`).join('')}
+                      </ul>
+                    </div>`
+                 : '';
                innerContent = `
+                  <style>
+                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    @media print {
+                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
+                      .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
+                      .venn-print-wrapper li { box-shadow: none !important; }
+                      .venn-print-wrapper h3, .venn-print-wrapper h4 { color: #000 !important; }
+                    }
+                  </style>
+                  <div class="venn-print-wrapper">
                   <div style="text-align:center; margin-bottom: 40px;">
                       <h3 style="margin:0; font-size: 1.8em; color: #2c3e50; font-weight: 800;">${main}</h3>
                       ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:5px;">(${main_en})</div>` : ''}
                   </div>
-                  <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif;">
+                  <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
                       <!-- Set A (Left Circle) -->
                       <div style="position: absolute; top: 0; left: 0; width: 440px;">
                           <!-- Header Outside Circle -->
@@ -12216,7 +12271,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${setA.title_en ? `<div style="font-size:0.85em; color:#991b1b; margin-top:4px;">(${setA.title_en})</div>` : ''}
                           </div>
                           <!-- Circle Body -->
-                          <div style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(254, 226, 226, 0.7); border: 4px solid #fca5a5; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(254, 226, 226, 0.4); z-index: 1;">
+                          <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(254, 226, 226, 0.7); border: 4px solid #fca5a5; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(254, 226, 226, 0.4); z-index: 1;">
                               <ul style="list-style: none; padding: 0; margin: 0; color: #881337; width: 100%;">
                                   ${renderList(setA.items, setA.items_en, 8, 'rgba(255,255,255,0.8)')}
                               </ul>
@@ -12232,7 +12287,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${setB.title_en ? `<div style="font-size:0.85em; color:#1e40af; margin-top:4px;">(${setB.title_en})</div>` : ''}
                           </div>
                           <!-- Circle Body -->
-                          <div style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(219, 234, 254, 0.7); border: 4px solid #93c5fd; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(219, 234, 254, 0.4); z-index: 2;">
+                          <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(219, 234, 254, 0.7); border: 4px solid #93c5fd; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(219, 234, 254, 0.4); z-index: 2;">
                               <ul style="list-style: none; padding: 0; margin: 0; color: #1e3a8a; width: 100%;">
                                   ${renderList(setB.items, setB.items_en, 8, 'rgba(255,255,255,0.8)')}
                               </ul>
@@ -12244,10 +12299,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${shared.title || 'Shared'}
                               ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.8; font-size: 0.9em; text-transform: none; letter-spacing: normal;"> (${shared.title_en})</span>` : ''}
                           </h4>
-                          <ul style="list-style: none; padding: 0; margin: 0; color: #581c87; font-weight: bold; font-size: 0.95em;">
-                               ${renderList(shared.items, shared.items_en, 5, 'rgba(255,255,255,0.9)')}
+                          <ul style="list-style: none; padding: 0; margin: 0; color: #581c87; font-weight: bold; font-size: ${sharedFontSize};">
+                               ${renderList(shared.items, shared.items_en, 5, 'rgba(255,255,255,0.9)', { fontSize: sharedFontSize, padding: sharedItemPad, marginBottom: sharedItemMargin })}
                           </ul>
                       </div>
+                  </div>
+                  ${sharedOverflowHtml}
                   </div>
                `;
           } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {

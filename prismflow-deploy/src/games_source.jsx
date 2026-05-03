@@ -2397,8 +2397,10 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
   const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
   const [announcement, setAnnouncement] = useState('');
   const [lastHint, setLastHint] = useState(null);
+  const [confirmingReset, setConfirmingReset] = useState(false);
   const moveMenuRef = useRef(null);
   const hintTimerRef = useRef(null);
+  const confirmResetTimerRef = useRef(null);
   const showZoneHint = (correctZone) => {
       if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
       setLastHint(correctZone);
@@ -2535,6 +2537,18 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       setIsWon(false);
       setAttempts(0);
       setLastHint(null);
+  };
+  const handleResetClick = () => {
+      if (confirmingReset) {
+          if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+          setConfirmingReset(false);
+          reset();
+          return;
+      }
+      setConfirmingReset(true);
+      setAnnouncement(t('games.ce_sort.reset_confirm_aria') || 'Press Reset again to confirm clearing the board, or wait to cancel.');
+      if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+      confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
   };
   const causesItems = useMemo(() => items.filter(i => i.currentZone === 'causes'), [items]);
   const effectsItems = useMemo(() => items.filter(i => i.currentZone === 'effects'), [items]);
@@ -2704,11 +2718,11 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                       </div>
                       <div className="flex gap-2 items-center">
                           <button
-                               onClick={reset}
-                               className="px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-100 border border-slate-400 transition-colors"
-                               aria-label="Reset board"
+                               onClick={handleResetClick}
+                               className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? 'bg-rose-600 text-white border-rose-700 hover:bg-rose-700 animate-pulse' : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+                               aria-label={confirmingReset ? (t('games.ce_sort.reset_confirm') || 'Confirm reset — clears the whole board') : 'Reset board'}
                           >
-                              {t('concept_sort.reset_board') || 'Reset'}
+                              {confirmingReset ? (t('games.ce_sort.reset_confirm_label') || 'Click again to confirm') : (t('concept_sort.reset_board') || 'Reset')}
                           </button>
                       </div>
                   </div>
@@ -2741,6 +2755,654 @@ const CauseEffectSortGame = React.memo(({ data, onClose, playSound, onScoreUpdat
       </div>
   );
 });
+
+// ── TChartSortGame — drag items into Left or Right column ──
+// Shape: data = { leftTitle, rightTitle, leftItems: [string], rightItems: [string] }
+const TChartSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [score, setScore] = useState(0);
+  const [isWon, setIsWon] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [activeDropZone, setActiveDropZone] = useState(null);
+  const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
+  const [lastHint, setLastHint] = useState(null);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const moveMenuRef = useRef(null);
+  const hintTimerRef = useRef(null);
+  const confirmResetTimerRef = useRef(null);
+  const leftTitle = data?.leftTitle || 'Left';
+  const rightTitle = data?.rightTitle || 'Right';
+  const showZoneHint = (zone) => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    setLastHint(zone);
+    hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
+  };
+  // Stable fingerprint to avoid re-init on parent re-renders.
+  const dataFingerprint = useMemo(() => {
+    if (!data) return '';
+    return JSON.stringify([data.leftTitle, data.rightTitle, data.leftItems || [], data.rightItems || []]);
+  }, [data]);
+  useEffect(() => {
+    if (!dataFingerprint || !data) return;
+    const all = [
+      ...(data.leftItems || []).map((text, i) => ({
+        id: `tc-l-${i}-${Math.random().toString(36).substr(2,6)}`,
+        text: typeof text === 'object' ? (text.text || '') : String(text),
+        correctZone: 'left',
+        currentZone: 'bank'
+      })),
+      ...(data.rightItems || []).map((text, i) => ({
+        id: `tc-r-${i}-${Math.random().toString(36).substr(2,6)}`,
+        text: typeof text === 'object' ? (text.text || '') : String(text),
+        correctZone: 'right',
+        currentZone: 'bank'
+      }))
+    ];
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    setItems(all);
+    setScore(0);
+    setIsWon(false);
+    setAttempts(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataFingerprint]);
+  useEffect(() => {
+    if (keyboardSelectedItemId && moveMenuRef.current) {
+      const firstBtn = moveMenuRef.current.querySelector('button');
+      if (firstBtn) firstBtn.focus();
+    }
+  }, [keyboardSelectedItemId]);
+  const placeItem = (item, targetZone) => {
+    if (targetZone === 'bank') {
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: 'bank' } : i));
+      if (playSound) playSound('click');
+      setAnnouncement(`Moved "${item.text}" back to the bank.`);
+      return;
+    }
+    if (item.correctZone === targetZone) {
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentZone: targetZone } : i));
+      setScore(s => s + 20);
+      if (playSound) playSound('correct');
+      setAnnouncement(`Correct! "${item.text}" belongs in ${targetZone === 'left' ? leftTitle : rightTitle}.`);
+    } else {
+      setAttempts(a => a + 1);
+      setScore(s => Math.max(0, s - 5));
+      if (playSound) playSound('incorrect');
+      showZoneHint(item.correctZone);
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${targetZone === 'left' ? leftTitle : rightTitle}.`);
+    }
+  };
+  const handleItemKeyDown = (e, item) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); e.stopPropagation();
+      if (keyboardSelectedItemId === item.id) {
+        setKeyboardSelectedItemId(null);
+        setAnnouncement('Selection cancelled.');
+      } else {
+        setKeyboardSelectedItemId(item.id);
+        setAnnouncement(`Selected: ${item.text}. Choose ${leftTitle} or ${rightTitle}.`);
+        if (playSound) playSound('click');
+      }
+    }
+  };
+  const handleKeyboardMove = (zone) => {
+    if (!keyboardSelectedItemId) return;
+    const item = items.find(i => i.id === keyboardSelectedItemId);
+    if (!item) return;
+    placeItem(item, zone);
+    setKeyboardSelectedItemId(null);
+  };
+  const handleDragStart = (e, item) => {
+    setDraggedItem(item);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+  const handleDragOver = (e, zone) => { e.preventDefault(); setActiveDropZone(zone); };
+  const handleDragLeave = () => setActiveDropZone(null);
+  const handleDrop = (e, zone) => {
+    e.preventDefault();
+    setActiveDropZone(null);
+    if (!draggedItem) return;
+    placeItem(draggedItem, zone);
+    setDraggedItem(null);
+  };
+  useEffect(() => {
+    if (!isWon && items.length > 0 && items.every(i => i.currentZone !== 'bank')) {
+      const allCorrect = items.every(i => i.currentZone === i.correctZone);
+      if (allCorrect) {
+        setIsWon(true);
+        if (onScoreUpdate) onScoreUpdate(score, 'T-Chart Sort');
+        if (playSound) playSound('correct');
+        if (onGameComplete) {
+          onGameComplete('tchartSort', { score, itemsSorted: items.length, totalItems: items.length, incorrectAttempts: attempts });
+        }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, isWon]);
+  const reset = () => {
+    const shuffled = [...items].map(i => ({ ...i, currentZone: 'bank' }));
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+  };
+  const handleResetClick = () => {
+    if (confirmingReset) {
+      if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+      setConfirmingReset(false);
+      reset();
+      return;
+    }
+    setConfirmingReset(true);
+    setAnnouncement('Press Reset again to confirm clearing the board, or wait to cancel.');
+    if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+    confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
+  };
+  const leftItems = useMemo(() => items.filter(i => i.currentZone === 'left'), [items]);
+  const rightItems = useMemo(() => items.filter(i => i.currentZone === 'right'), [items]);
+  const bankItems = useMemo(() => items.filter(i => i.currentZone === 'bank'), [items]);
+  const renderColumn = (zone, title, items, colorClasses) => (
+    <div
+      onDrop={(e) => handleDrop(e, zone)}
+      onDragOver={(e) => handleDragOver(e, zone)}
+      onDragLeave={handleDragLeave}
+      className={`flex-1 flex flex-col items-center justify-start p-6 transition-all duration-300 relative z-10 ${activeDropZone === zone ? colorClasses.active : colorClasses.idle}`}
+    >
+      <div className={`backdrop-blur-sm border-2 font-black uppercase tracking-widest px-6 py-2 rounded-2xl shadow-sm text-center mb-4 ${colorClasses.header}`}>
+        {title}
+      </div>
+      <div className="flex flex-wrap gap-2 justify-center content-start flex-grow w-full max-w-sm overflow-y-auto custom-scrollbar p-2">
+        {items.map(item => (
+          <div
+            key={item.id}
+            tabIndex={0}
+            role="button"
+            aria-label={`${item.text}, sorted into ${title}`}
+            aria-pressed={keyboardSelectedItemId === item.id}
+            onKeyDown={(e) => handleItemKeyDown(e, item)}
+            onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+            className={`bg-white px-3 py-1.5 rounded-lg shadow-sm text-xs font-bold animate-in zoom-in cursor-pointer focus:outline-none focus:ring-2 flex items-center gap-1.5 ${colorClasses.chip} ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+          >
+            {item.text}
+            <SpeakButton text={item.text} size={11} />
+          </div>
+        ))}
+        {items.length === 0 && (
+          <div className="text-slate-400 italic text-xs mt-8 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>
+        )}
+      </div>
+    </div>
+  );
+  const leftColors = {
+    active: 'bg-cyan-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(6,182,212,0.3)]',
+    idle: 'bg-gradient-to-b from-cyan-50/80 to-cyan-100/40',
+    header: 'bg-cyan-200/80 border-cyan-300 text-cyan-800 transform -rotate-1',
+    chip: 'text-cyan-800 border-l-4 border-cyan-400 hover:bg-cyan-50 focus:ring-cyan-500'
+  };
+  const rightColors = {
+    active: 'bg-indigo-200/60 scale-[1.01] shadow-[inset_0_0_40px_rgba(99,102,241,0.3)]',
+    idle: 'bg-gradient-to-b from-indigo-50/80 to-indigo-100/40',
+    header: 'bg-indigo-200/80 border-indigo-300 text-indigo-800 transform rotate-1',
+    chip: 'text-indigo-800 border-l-4 border-indigo-400 hover:bg-indigo-50 focus:ring-indigo-500'
+  };
+  return (
+    <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95">
+      <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+      <div className="bg-gradient-to-r from-cyan-600 to-indigo-600 p-4 text-white flex justify-between items-center shadow-md z-30">
+        <div>
+          <h3 className="font-bold text-xl flex items-center gap-2">
+            <ArrowRight size={24}/> {t('games.tchart_sort.title') || 'T-Chart Sort'}
+          </h3>
+          {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="bg-white/20 px-4 py-1 rounded-full font-bold text-yellow-300 border border-white/30">
+            {t('common.score') || 'Score'}: {score}
+          </div>
+          <GameThemeToggle />
+          <button
+            aria-label={t('common.close') || 'Close'}
+            onClick={onClose}
+            className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30"
+          >
+            <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+          </button>
+        </div>
+      </div>
+      <div className="flex-grow relative overflow-hidden flex flex-col lg:flex-row items-stretch">
+        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+        {isWon && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
+              <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || '🎉 Perfect!'}</h2>
+              <p className="text-slate-600">{t('games.tchart_sort.victory_desc') || 'You sorted every item into the correct column!'}</p>
+              <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
+              <div className="flex gap-3 mt-4 justify-center">
+                <button onClick={reset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2">
+                  <RefreshCw size={14}/> Play Again
+                </button>
+                <button onClick={onClose} className="px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors">
+                  Close
+                </button>
+              </div>
+            </div>
+            <ConfettiExplosion />
+          </div>
+        )}
+        {lastHint && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
+            <HelpCircle size={16} /> Try: {lastHint === 'left' ? leftTitle : rightTitle}
+          </div>
+        )}
+        {keyboardSelectedItemId && (
+          <div className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center" onClick={() => setKeyboardSelectedItemId(null)}>
+            <div ref={moveMenuRef} className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200" role="dialog" aria-label="Choose a column" onClick={e => e.stopPropagation()}>
+              <h4 className="text-sm font-bold text-slate-700 text-center mb-2">Sort this item into:</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <button onClick={() => handleKeyboardMove('left')} className="px-4 py-3 bg-cyan-100 hover:bg-cyan-200 text-cyan-800 rounded-xl font-bold text-xs transition-colors border border-cyan-300 focus:outline-none focus:ring-2 focus:ring-cyan-500">{leftTitle}</button>
+                <button onClick={() => handleKeyboardMove('right')} className="px-4 py-3 bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-xl font-bold text-xs transition-colors border border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500">{rightTitle}</button>
+                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2 focus:outline-none focus:ring-2 focus:ring-slate-500">Return to bank</button>
+              </div>
+              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center focus:outline-none focus:ring-2 focus:ring-slate-400 rounded">Cancel</button>
+            </div>
+          </div>
+        )}
+        {renderColumn('left', leftTitle, leftItems, leftColors)}
+        <div className="hidden lg:flex flex-col items-center justify-center w-16 z-20 relative">
+          <div className="w-0.5 h-full bg-slate-200"></div>
+          <div className="absolute top-1/2 -translate-y-1/2 bg-white p-2 rounded-full border-2 border-slate-200 shadow-sm">
+            <ArrowRight size={20} className="text-slate-400" />
+          </div>
+        </div>
+        {renderColumn('right', rightTitle, rightItems, rightColors)}
+      </div>
+      <div className="bg-white border-t border-slate-200 shadow-inner p-4 flex-shrink-0 max-h-[40vh] flex flex-col">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{t('concept_sort.unsorted_cards') || 'Unsorted Items'} ({bankItems.length})</h4>
+              {attempts > 0 && (
+                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">{attempts} incorrect attempt{attempts !== 1 ? 's' : ''}</span>
+              )}
+            </div>
+            <button
+              onClick={handleResetClick}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? 'bg-rose-600 text-white border-rose-700 hover:bg-rose-700 animate-pulse' : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+              aria-label={confirmingReset ? 'Confirm reset — clears the whole board' : 'Reset board'}
+            >
+              {confirmingReset ? 'Click again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-4 pt-2">
+            {bankItems.map(item => (
+              <div
+                key={item.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item)}
+                tabIndex={0}
+                role="button"
+                aria-label={`${item.text}, unsorted. Press Enter to select.`}
+                aria-pressed={keyboardSelectedItemId === item.id}
+                onKeyDown={(e) => handleItemKeyDown(e, item)}
+                onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
+              >
+                {item.text}
+                <SpeakButton text={item.text} size={11} />
+              </div>
+            ))}
+            {bankItems.length === 0 && !isWon && (
+              <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">{t('concept_map.venn.bank_empty') || 'All items sorted!'}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ── Shared N-bucket sort engine (powers ConceptMap + Outline sort games) ──
+// Shape: data = { topic, buckets: [{id, title}], items: [{id, text, correctBucketId}] }
+// theme: { headerGradient, accentColor (tailwind suffix like 'cyan'), title }
+const _MultiBucketSortGame = React.memo(({ data, theme, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "", gameKey = "multiBucket" }) => {
+  const { t } = useContext(LanguageContext);
+  const [items, setItems] = useState([]);
+  const [score, setScore] = useState(0);
+  const [isWon, setIsWon] = useState(false);
+  const [draggedItem, setDraggedItem] = useState(null);
+  const [attempts, setAttempts] = useState(0);
+  const [activeDropZone, setActiveDropZone] = useState(null);
+  const [keyboardSelectedItemId, setKeyboardSelectedItemId] = useState(null);
+  const [announcement, setAnnouncement] = useState('');
+  const [lastHint, setLastHint] = useState(null);
+  const [confirmingReset, setConfirmingReset] = useState(false);
+  const moveMenuRef = useRef(null);
+  const hintTimerRef = useRef(null);
+  const confirmResetTimerRef = useRef(null);
+  const buckets = useMemo(() => Array.isArray(data?.buckets) ? data.buckets : [], [data]);
+  const showZoneHint = (bucketId) => {
+    if (hintTimerRef.current) clearTimeout(hintTimerRef.current);
+    setLastHint(bucketId);
+    hintTimerRef.current = setTimeout(() => setLastHint(null), 3000);
+  };
+  const dataFingerprint = useMemo(() => {
+    if (!data) return '';
+    return JSON.stringify([data.buckets || [], data.items || []]);
+  }, [data]);
+  useEffect(() => {
+    if (!dataFingerprint || !data) return;
+    const all = (data.items || []).map((it, i) => ({
+      id: it.id || `mb-${i}-${Math.random().toString(36).substr(2,6)}`,
+      text: typeof it === 'object' ? (it.text || '') : String(it),
+      correctBucketId: typeof it === 'object' ? it.correctBucketId : null,
+      currentBucketId: 'bank'
+    }));
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    setItems(all);
+    setScore(0); setIsWon(false); setAttempts(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataFingerprint]);
+  useEffect(() => {
+    if (keyboardSelectedItemId && moveMenuRef.current) {
+      const firstBtn = moveMenuRef.current.querySelector('button');
+      if (firstBtn) firstBtn.focus();
+    }
+  }, [keyboardSelectedItemId]);
+  const placeItem = (item, targetBucketId) => {
+    if (targetBucketId === 'bank') {
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentBucketId: 'bank' } : i));
+      if (playSound) playSound('click');
+      setAnnouncement(`Moved "${item.text}" back to the bank.`);
+      return;
+    }
+    const bucket = buckets.find(b => b.id === targetBucketId);
+    const bucketLabel = bucket ? bucket.title : targetBucketId;
+    if (item.correctBucketId === targetBucketId) {
+      setItems(prev => prev.map(i => i.id === item.id ? { ...i, currentBucketId: targetBucketId } : i));
+      setScore(s => s + 20);
+      if (playSound) playSound('correct');
+      setAnnouncement(`Correct! "${item.text}" belongs in ${bucketLabel}.`);
+    } else {
+      setAttempts(a => a + 1);
+      setScore(s => Math.max(0, s - 5));
+      if (playSound) playSound('incorrect');
+      showZoneHint(item.correctBucketId);
+      setAnnouncement(`Incorrect. "${item.text}" does not belong in ${bucketLabel}.`);
+    }
+  };
+  const handleItemKeyDown = (e, item) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); e.stopPropagation();
+      if (keyboardSelectedItemId === item.id) {
+        setKeyboardSelectedItemId(null);
+        setAnnouncement('Selection cancelled.');
+      } else {
+        setKeyboardSelectedItemId(item.id);
+        setAnnouncement(`Selected: ${item.text}. Choose a destination.`);
+        if (playSound) playSound('click');
+      }
+    }
+  };
+  const handleKeyboardMove = (bucketId) => {
+    if (!keyboardSelectedItemId) return;
+    const item = items.find(i => i.id === keyboardSelectedItemId);
+    if (!item) return;
+    placeItem(item, bucketId);
+    setKeyboardSelectedItemId(null);
+  };
+  const handleDragStart = (e, item) => { setDraggedItem(item); e.dataTransfer.effectAllowed = 'move'; };
+  const handleDragOver = (e, bucketId) => { e.preventDefault(); setActiveDropZone(bucketId); };
+  const handleDragLeave = () => setActiveDropZone(null);
+  const handleDrop = (e, bucketId) => {
+    e.preventDefault();
+    setActiveDropZone(null);
+    if (!draggedItem) return;
+    placeItem(draggedItem, bucketId);
+    setDraggedItem(null);
+  };
+  useEffect(() => {
+    if (!isWon && items.length > 0 && items.every(i => i.currentBucketId !== 'bank')) {
+      const allCorrect = items.every(i => i.currentBucketId === i.correctBucketId);
+      if (allCorrect) {
+        setIsWon(true);
+        if (onScoreUpdate) onScoreUpdate(score, theme?.title || 'Sort');
+        if (playSound) playSound('correct');
+        if (onGameComplete) {
+          onGameComplete(gameKey, { score, itemsSorted: items.length, totalItems: items.length, incorrectAttempts: attempts });
+        }
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [items, isWon]);
+  const reset = () => {
+    const shuffled = [...items].map(i => ({ ...i, currentBucketId: 'bank' }));
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    setItems(shuffled); setScore(0); setIsWon(false); setAttempts(0); setLastHint(null);
+  };
+  const handleResetClick = () => {
+    if (confirmingReset) {
+      if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+      setConfirmingReset(false);
+      reset();
+      return;
+    }
+    setConfirmingReset(true);
+    setAnnouncement('Press Reset again to confirm clearing the board, or wait to cancel.');
+    if (confirmResetTimerRef.current) clearTimeout(confirmResetTimerRef.current);
+    confirmResetTimerRef.current = setTimeout(() => setConfirmingReset(false), 3000);
+  };
+  const bankItems = useMemo(() => items.filter(i => i.currentBucketId === 'bank'), [items]);
+  const itemsByBucket = useMemo(() => {
+    const map = {};
+    buckets.forEach(b => { map[b.id] = []; });
+    items.forEach(i => { if (i.currentBucketId !== 'bank' && map[i.currentBucketId]) map[i.currentBucketId].push(i); });
+    return map;
+  }, [items, buckets]);
+  const accent = theme?.accentColor || 'indigo';
+  const headerGradient = theme?.headerGradient || `from-${accent}-600 to-purple-600`;
+  const titleText = theme?.title || (t('games.bucket_sort.title') || 'Sort');
+  const lastHintLabel = lastHint ? (buckets.find(b => b.id === lastHint)?.title || '') : '';
+  return (
+    <div className="fixed inset-0 z-[200] bg-slate-50 flex flex-col animate-in zoom-in-95">
+      <div className="sr-only" role="status" aria-live="polite">{announcement}</div>
+      <div className={`bg-gradient-to-r ${headerGradient} p-4 text-white flex justify-between items-center shadow-md z-30`}>
+        <div>
+          <h3 className="font-bold text-xl flex items-center gap-2"><ArrowRight size={24}/> {titleText}</h3>
+          {topicTitle && <p className="text-xs text-white/70 mt-0.5">{topicTitle}</p>}
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="bg-white/20 px-4 py-1 rounded-full font-bold text-yellow-300 border border-white/30">{t('common.score') || 'Score'}: {score}</div>
+          <GameThemeToggle />
+          <button aria-label={t('common.close') || 'Close'} onClick={onClose} className="flex items-center gap-1 text-xs font-bold bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-full transition-colors border border-white/30">
+            <ArrowDown className="rotate-90" size={14}/> {t('concept_map.venn.back_to_editor') || 'Back'}
+          </button>
+        </div>
+      </div>
+      <div className="flex-grow relative overflow-y-auto">
+        <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
+        {isWon && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
+              <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title') || '🎉 Perfect!'}</h2>
+              <p className="text-slate-600">{t('games.bucket_sort.victory_desc') || 'You sorted every item correctly!'}</p>
+              <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
+              <div className="flex gap-3 mt-4 justify-center">
+                <button onClick={reset} className="px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2"><RefreshCw size={14}/> Play Again</button>
+                <button onClick={onClose} className="px-6 py-2 bg-slate-200 text-slate-700 rounded-full font-bold hover:bg-slate-300 transition-colors">Close</button>
+              </div>
+            </div>
+            <ConfettiExplosion />
+          </div>
+        )}
+        {lastHint && lastHintLabel && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-400 text-amber-800 px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
+            <HelpCircle size={16} /> Try: {lastHintLabel}
+          </div>
+        )}
+        {keyboardSelectedItemId && (
+          <div className="absolute inset-0 z-50 bg-black/10 backdrop-blur-[2px] flex items-center justify-center" onClick={() => setKeyboardSelectedItemId(null)}>
+            <div ref={moveMenuRef} className="bg-white p-6 rounded-2xl shadow-2xl border-2 border-indigo-500 flex flex-col gap-3 animate-in zoom-in duration-200 max-w-md" role="dialog" aria-label="Choose a destination" onClick={e => e.stopPropagation()}>
+              <h4 className="text-sm font-bold text-slate-700 text-center mb-2">Sort this item into:</h4>
+              <div className="grid grid-cols-2 gap-3">
+                {buckets.map(b => (
+                  <button key={b.id} onClick={() => handleKeyboardMove(b.id)} className={`px-4 py-3 bg-${accent}-100 hover:bg-${accent}-200 text-${accent}-800 rounded-xl font-bold text-xs transition-colors border border-${accent}-300 focus:outline-none focus:ring-2 focus:ring-${accent}-500`}>{b.title}</button>
+                ))}
+                <button onClick={() => handleKeyboardMove('bank')} className="col-span-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg font-bold text-xs transition-colors border border-slate-400 mt-2">Return to bank</button>
+              </div>
+              <button onClick={() => setKeyboardSelectedItemId(null)} className="mt-2 text-xs text-slate-600 hover:text-slate-800 underline text-center">Cancel</button>
+            </div>
+          </div>
+        )}
+        <div className={`p-4 grid gap-4 ${buckets.length <= 2 ? 'grid-cols-1 md:grid-cols-2' : buckets.length <= 3 ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
+          {buckets.map(b => {
+            const placed = itemsByBucket[b.id] || [];
+            const isActive = activeDropZone === b.id;
+            return (
+              <div
+                key={b.id}
+                onDrop={(e) => handleDrop(e, b.id)}
+                onDragOver={(e) => handleDragOver(e, b.id)}
+                onDragLeave={handleDragLeave}
+                className={`flex flex-col items-stretch p-4 rounded-2xl border-2 min-h-[140px] transition-all relative z-10 bg-white shadow-sm ${isActive ? `border-${accent}-500 ring-4 ring-${accent}-200` : `border-${accent}-200`}`}
+              >
+                <div className={`text-center font-black uppercase tracking-wider text-sm py-1 mb-2 rounded-md bg-${accent}-100 text-${accent}-800 border border-${accent}-200`}>{b.title}</div>
+                <div className="flex flex-wrap gap-1.5 justify-center content-start flex-grow p-1">
+                  {placed.map(item => (
+                    <div
+                      key={item.id}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${item.text}, sorted into ${b.title}`}
+                      aria-pressed={keyboardSelectedItemId === item.id}
+                      onKeyDown={(e) => handleItemKeyDown(e, item)}
+                      onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                      className={`bg-white px-2.5 py-1 rounded-md shadow-sm text-xs font-bold animate-in zoom-in cursor-pointer focus:outline-none focus:ring-2 flex items-center gap-1 text-${accent}-800 border-l-4 border-${accent}-400 hover:bg-${accent}-50 focus:ring-${accent}-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 z-50 scale-110' : ''}`}
+                    >
+                      {item.text}
+                      <SpeakButton text={item.text} size={11} />
+                    </div>
+                  ))}
+                  {placed.length === 0 && <div className="text-slate-400 italic text-[11px] mt-3 text-center w-full">{t('concept_sort.drop_placeholder') || 'Drop here'}</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="bg-white border-t border-slate-200 shadow-inner p-4 flex-shrink-0 max-h-[35vh] flex flex-col">
+        <div className="max-w-6xl mx-auto w-full">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h4 className="text-sm font-bold text-slate-600 uppercase tracking-wider">{t('concept_sort.unsorted_cards') || 'Unsorted Items'} ({bankItems.length})</h4>
+              {attempts > 0 && (
+                <span className="text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">{attempts} incorrect attempt{attempts !== 1 ? 's' : ''}</span>
+              )}
+            </div>
+            <button
+              onClick={handleResetClick}
+              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-colors ${confirmingReset ? 'bg-rose-600 text-white border-rose-700 hover:bg-rose-700 animate-pulse' : 'text-slate-600 hover:bg-slate-100 border-slate-400'}`}
+              aria-label={confirmingReset ? 'Confirm reset — clears the whole board' : 'Reset board'}
+            >
+              {confirmingReset ? 'Click again to confirm' : (t('concept_sort.reset_board') || 'Reset')}
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-3 justify-center overflow-y-auto h-full pb-4 pt-2">
+            {bankItems.map(item => (
+              <div
+                key={item.id}
+                draggable
+                onDragStart={(e) => handleDragStart(e, item)}
+                tabIndex={0}
+                role="button"
+                aria-label={`${item.text}, unsorted. Press Enter to select.`}
+                aria-pressed={keyboardSelectedItemId === item.id}
+                onKeyDown={(e) => handleItemKeyDown(e, item)}
+                onClick={() => { if (keyboardSelectedItemId === item.id) setKeyboardSelectedItemId(null); else { setKeyboardSelectedItemId(item.id); if (playSound) playSound('click'); } }}
+                className={`bg-white px-4 py-2 rounded-xl shadow-sm border-b-4 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 hover:text-indigo-900 cursor-grab active:cursor-grabbing active:border-b-0 active:translate-y-1 transition-all text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 text-center animate-in zoom-in duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 ${keyboardSelectedItemId === item.id ? 'ring-4 ring-yellow-400 border-yellow-500 z-50 scale-110' : ''}`}
+              >
+                {item.text}
+                <SpeakButton text={item.text} size={11} />
+              </div>
+            ))}
+            {bankItems.length === 0 && !isWon && (
+              <div className="text-slate-600 italic font-bold text-sm mt-4 text-center w-full">{t('concept_map.venn.bank_empty') || 'All items sorted!'}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ── ConceptMapSortGame — drag attributes onto the correct branch nodes ──
+// Maps outline branches → buckets; each branch.items[] → items with that branch as correct.
+const ConceptMapSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const adapted = useMemo(() => {
+    const branches = Array.isArray(data?.branches) ? data.branches : [];
+    const buckets = branches.map((b, bi) => ({ id: `cm-b-${bi}`, title: b.title || `Branch ${bi+1}` }));
+    const items = [];
+    branches.forEach((b, bi) => {
+      (b.items || []).forEach((it, ii) => {
+        const text = typeof it === 'object' ? (it.text || '') : String(it);
+        if (text) items.push({ id: `cm-i-${bi}-${ii}`, text, correctBucketId: `cm-b-${bi}` });
+      });
+    });
+    return { buckets, items };
+  }, [data]);
+  return (
+    <_MultiBucketSortGame
+      data={adapted}
+      theme={{ accentColor: 'emerald', headerGradient: 'from-emerald-600 to-teal-600', title: 'Concept Map Sort' }}
+      onClose={onClose}
+      playSound={playSound}
+      topicTitle={topicTitle}
+      onScoreUpdate={onScoreUpdate}
+      onGameComplete={onGameComplete}
+      gameKey="conceptMapSort"
+    />
+  );
+});
+
+// ── OutlineSortGame — drag sub-items under their correct heading ──
+const OutlineSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const adapted = useMemo(() => {
+    const branches = Array.isArray(data?.branches) ? data.branches : [];
+    const buckets = branches.map((b, bi) => ({ id: `ol-b-${bi}`, title: b.title || `Heading ${bi+1}` }));
+    const items = [];
+    branches.forEach((b, bi) => {
+      (b.items || []).forEach((it, ii) => {
+        const text = typeof it === 'object' ? (it.text || '') : String(it);
+        if (text) items.push({ id: `ol-i-${bi}-${ii}`, text, correctBucketId: `ol-b-${bi}` });
+      });
+    });
+    return { buckets, items };
+  }, [data]);
+  return (
+    <_MultiBucketSortGame
+      data={adapted}
+      theme={{ accentColor: 'amber', headerGradient: 'from-amber-600 to-orange-600', title: 'Outline Sort' }}
+      onClose={onClose}
+      playSound={playSound}
+      topicTitle={topicTitle}
+      onScoreUpdate={onScoreUpdate}
+      onGameComplete={onGameComplete}
+      gameKey="outlineSort"
+    />
+  );
+});
+
 const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const { t } = useContext(LanguageContext);
   const containerRef = useRef(null);
