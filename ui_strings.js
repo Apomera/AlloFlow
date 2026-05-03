@@ -1456,19 +1456,52 @@
           "tap_or_space_to_play": "Tap or Space to Play",
     "ce_sort": {
       "title": "Cause & Effect Sort",
-        "play_btn": "Sort Game",
+        "play_btn": "Sort Causes & Effects",
           "causes_label": "Causes",
             "effects_label": "Effects",
               "hint_try": "Try",
                 "move_title": "Sort this item into:",
-                  "victory_desc": "You sorted all causes and effects correctly!"
+                  "victory_desc": "You sorted all causes and effects correctly!",
+                  "reset_confirm": "Confirm reset — clears the whole board",
+                  "reset_confirm_label": "Click again to confirm",
+                  "reset_confirm_aria": "Press Reset again to confirm clearing the board, or wait to cancel."
     },
     "pipeline": {
       "title": "Pipeline Builder",
-        "play_btn": "Pipeline Builder",
+        "play_btn": "Build the Flow",
           "instruction": "Click a step's output port, then click another step's input port to draw a connection.",
             "then": "then"
-    }
+    },
+    "tchart_sort": {
+      "title": "T-Chart Sort",
+      "play_btn": "Sort Into Columns",
+      "victory_desc": "You sorted every item into the correct column!"
+    },
+    "fishbone_sort": {
+      "title": "Fishbone Sort",
+      "play_btn": "Sort Causes Onto Bones",
+      "victory_desc": "You placed every cause into the correct category!"
+    },
+    "concept_map_sort": {
+      "title": "Concept Map Sort",
+      "play_btn": "Sort Onto Branches",
+      "victory_desc": "You sorted every item to the correct branch!"
+    },
+    "outline_sort": {
+      "title": "Outline Sort",
+      "play_btn": "Sort Under Headings",
+      "victory_desc": "You sorted every detail under the right heading!"
+    },
+    "problem_solution_sort": {
+      "title": "Prioritize the Solutions",
+      "play_btn": "Prioritize the Solutions",
+      "victory_desc": "You ranked every solution in the recommended order!"
+    },
+    "bucket_sort": {
+      "title": "Sort",
+      "victory_desc": "You sorted every item correctly!"
+    },
+    "button_hint": "Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination."
   },
   "glossary": {
     "title": "Glossary & Language Selection",
@@ -2969,6 +3002,8 @@
                           "auto_detect": "Auto-detect categories",
                             "no_items": "No items",
                               "drop_placeholder": "Drop items here",
+                              "tap_to_place": "Tap here to place selected item",
+                              "tap_target": "Tap a bucket above, or pick one here:",
                                 "reset_board": "Reset Board",
                                   "check_answers": "Check Answers",
                                     "move_here": "Move Here",

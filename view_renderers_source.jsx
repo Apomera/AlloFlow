@@ -206,7 +206,7 @@ const renderOutlineContent = (deps) => {
         // Below this, a sort game is trivial — hide the Play button.
         const MIN_GAME_ITEMS = 4;
         const totalBranchItems = branches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
-        const showGameButton = totalBranchItems >= MIN_GAME_ITEMS && branches.length >= 2 && !isTeacherMode;
+        const showGameButton = totalBranchItems >= MIN_GAME_ITEMS && branches.length >= 2;
         // Hidden description used by every Play-Sort-Game button via aria-describedby.
         // Read after the button label so screen-reader users know what the button does pedagogically.
         const GameButtonHint = () => (
@@ -1107,7 +1107,7 @@ const renderOutlineContent = (deps) => {
             // ── Problem Solution Prioritize Game ──
             const totalSolutionItems = solutionBranches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
             // Game needs at least 6 solutions so the thirds are meaningful (2 per bucket).
-            const showPSGame = totalSolutionItems >= 6 && !isTeacherMode;
+            const showPSGame = totalSolutionItems >= 6;
             if (isProblemSolutionSortPlaying) {
                 return (
                     <ErrorBoundary fallbackMessage="Solution Prioritize encountered an error.">

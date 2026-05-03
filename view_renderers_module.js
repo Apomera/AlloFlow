@@ -223,7 +223,7 @@ const renderOutlineContent = (deps) => {
   const type = structureType || "Structured Outline";
   const MIN_GAME_ITEMS = 4;
   const totalBranchItems = branches.reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0);
-  const showGameButton = totalBranchItems >= MIN_GAME_ITEMS && branches.length >= 2 && !isTeacherMode;
+  const showGameButton = totalBranchItems >= MIN_GAME_ITEMS && branches.length >= 2;
   const GameButtonHint = () => /* @__PURE__ */ React.createElement("p", { id: "game-btn-hint", className: "sr-only" }, t("games.button_hint") || "Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination.");
   const MainTitle = () => /* @__PURE__ */ React.createElement("div", { className: "text-center mb-8" }, isEditingOutline ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 max-w-md mx-auto" }, /* @__PURE__ */ React.createElement(
     "input",
@@ -732,7 +732,7 @@ const renderOutlineContent = (deps) => {
     const outcomeBranch = outcomeIndex !== -1 ? branches[outcomeIndex] : null;
     const solutionBranches = branches.filter((_, i) => i !== outcomeIndex);
     const totalSolutionItems = solutionBranches.reduce((s, b) => s + (b.items || []).filter((it) => typeof it === "object" ? it.text : it).length, 0);
-    const showPSGame = totalSolutionItems >= 6 && !isTeacherMode;
+    const showPSGame = totalSolutionItems >= 6;
     if (isProblemSolutionSortPlaying) {
       return /* @__PURE__ */ React.createElement(ErrorBoundary, { fallbackMessage: "Solution Prioritize encountered an error." }, /* @__PURE__ */ React.createElement(
         ProblemSolutionSortGame,

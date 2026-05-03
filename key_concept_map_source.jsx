@@ -22,7 +22,7 @@ const _CONCEPT_ACCENTS = [
 ];
 const _conceptAccentFor = (i) => _CONCEPT_ACCENTS[i % _CONCEPT_ACCENTS.length];
 
-const KeyConceptMapView = ({ branches, main, main_en, BranchItem }) => {
+const KeyConceptMapView = React.memo(({ branches, main, main_en, BranchItem }) => {
     const containerRef = useRef(null);
     const centerRef = useRef(null);
     const leftRefs = useRef([]);
@@ -105,6 +105,15 @@ const KeyConceptMapView = ({ branches, main, main_en, BranchItem }) => {
                 @media (prefers-reduced-motion: reduce) {
                     .alloflow-concept-line-primary, .alloflow-concept-endpoint, .alloflow-concept-bubble {
                         animation: none !important;
+                    }
+                }
+                @media print {
+                    .alloflow-concept-line-primary, .alloflow-concept-endpoint, .alloflow-concept-bubble {
+                        animation: none !important;
+                        stroke-dasharray: none !important;
+                    }
+                    .alloflow-concept-bubble {
+                        box-shadow: none !important;
                     }
                 }
             `}</style>
@@ -199,14 +208,20 @@ const KeyConceptMapView = ({ branches, main, main_en, BranchItem }) => {
                             className="flex items-center justify-end group w-full"
                         >
                             <div
-                                className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02]"
-                                style={{ boxShadow: `0 0 0 0 ${a.ring}` }}
+                                tabIndex={0}
+                                role="group"
+                                aria-label={`Branch ${i + 1}: ${b.title || ''}`}
+                                className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4"
+                                style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.ring }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
+                                onFocus={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
+                                onBlur={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
                             >
                                 <div
                                     className="absolute -top-3 -right-3 w-9 h-9 rounded-full text-white text-sm font-black flex items-center justify-center shadow-lg border-[3px] border-white z-20"
                                     style={{ backgroundColor: a.badge }}
+                                    aria-hidden="true"
                                 >
                                     {i + 1}
                                 </div>
@@ -247,14 +262,20 @@ const KeyConceptMapView = ({ branches, main, main_en, BranchItem }) => {
                             className="flex items-center justify-start group w-full"
                         >
                             <div
-                                className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02]"
-                                style={{ boxShadow: `0 0 0 0 ${a.ring}` }}
+                                tabIndex={0}
+                                role="group"
+                                aria-label={`Branch ${idx + 1}: ${b.title || ''}`}
+                                className="w-full max-w-xs relative rounded-2xl transition-all duration-200 hover:scale-[1.02] focus:outline-none focus:ring-4"
+                                style={{ boxShadow: `0 0 0 0 ${a.ring}`, '--tw-ring-color': a.ring }}
                                 onMouseEnter={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
                                 onMouseLeave={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
+                                onFocus={(e) => { e.currentTarget.style.boxShadow = `0 0 0 4px ${a.ring}`; }}
+                                onBlur={(e) => { e.currentTarget.style.boxShadow = `0 0 0 0 ${a.ring}`; }}
                             >
                                 <div
                                     className="absolute -top-3 -left-3 w-9 h-9 rounded-full text-white text-sm font-black flex items-center justify-center shadow-lg border-[3px] border-white z-20"
                                     style={{ backgroundColor: a.badge }}
+                                    aria-hidden="true"
                                 >
                                     {idx + 1}
                                 </div>
@@ -266,7 +287,7 @@ const KeyConceptMapView = ({ branches, main, main_en, BranchItem }) => {
             </div>
         </div>
     );
-};
+});
 
 
 // ─── Registration ───────────────────────────────────────────────────────────

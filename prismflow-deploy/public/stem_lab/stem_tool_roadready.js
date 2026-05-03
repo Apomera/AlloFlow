@@ -679,9 +679,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
   }
 
+  // Shuffle a question's answer choices and remap `correct` to the new index.
+  // The bank stores B (index 1) as the correct answer in ~75% of questions;
+  // without per-question answer-permutation, a student can pass at 75% just
+  // by picking B every time. Fisher–Yates ensures uniform permutation.
+  function shuffleAnswers(question) {
+    var n = question.a.length;
+    var indices = new Array(n);
+    for (var ii = 0; ii < n; ii++) indices[ii] = ii;
+    for (var k = n - 1; k > 0; k--) {
+      var j = Math.floor(Math.random() * (k + 1));
+      var tmp = indices[k]; indices[k] = indices[j]; indices[j] = tmp;
+    }
+    var newA = indices.map(function(idx) { return question.a[idx]; });
+    var newCorrect = indices.indexOf(question.correct);
+    var out = {};
+    for (var key in question) {
+      if (Object.prototype.hasOwnProperty.call(question, key)) out[key] = question[key];
+    }
+    out.a = newA;
+    out.correct = newCorrect;
+    return out;
+  }
+
   function buildRandomTest() {
     var shuffled = PERMIT_BANK.slice().sort(function() { return Math.random() - 0.5; });
-    return shuffled.slice(0, 20);
+    return shuffled.slice(0, 20).map(shuffleAnswers);
   }
   function buildCategoryTest(cat) {
     var pool = PERMIT_BANK.filter(function(q) { return q.category === cat; });
@@ -691,7 +714,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var fillers = PERMIT_BANK.filter(function(q) { return q.category !== cat; }).sort(function() { return Math.random() - 0.5; });
       picked = picked.concat(fillers.slice(0, 20 - picked.length));
     }
-    return picked;
+    return picked.map(shuffleAnswers);
   }
   function buildWeakTest(stats) {
     var weakCats = Object.keys(stats || {}).filter(function(c) {
@@ -706,7 +729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var fillers = PERMIT_BANK.filter(function(q) { return weakCats.indexOf(q.category) === -1; }).sort(function() { return Math.random() - 0.5; });
       picked = picked.concat(fillers.slice(0, 20 - picked.length));
     }
-    return picked;
+    return picked.map(shuffleAnswers);
   }
 
   // ─────────────────────────────────────────────────────────
@@ -3868,6 +3891,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         // a scenario drive that follows a Free Explore drive would still see the old
         // procedural world (every `if (infiniteWorldRef.current)` check throughout the
         // codebase would trigger, mixing scenario-mode rendering with stale spline lookups).
+        // Dispose the cached canvas textures hanging off the old world before dropping
+        // the reference. Three.js requires explicit .dispose() to free GPU memory; just
+        // nulling the JS reference leaks VRAM. Each Free Explore → scenario transition
+        // would otherwise leak ped-signal, RR-paint, speed-bump, and per-limit number
+        // textures, eventually exhausting the texture pool on extended sessions.
+        (function() {
+          var prevIw = infiniteWorldRef.current;
+          if (!prevIw) return;
+          ['_pedSigWalkTex', '_pedSigStopTex', '_rrPaintTex', '_bumpWordTex'].forEach(function(k) {
+            var tex = prevIw[k];
+            if (tex && typeof tex.dispose === 'function') tex.dispose();
+            prevIw[k] = null;
+          });
+          if (prevIw._roadNumCache) {
+            Object.keys(prevIw._roadNumCache).forEach(function(numKey) {
+              var t = prevIw._roadNumCache[numKey];
+              if (t && typeof t.dispose === 'function') t.dispose();
+            });
+            prevIw._roadNumCache = null;
+          }
+        })();
         infiniteWorldRef.current = null;
         // Free explore gets its own welcome
         if (d.freeExplore && d.freeExploreScenario) {

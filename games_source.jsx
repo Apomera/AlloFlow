@@ -2205,7 +2205,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                           <option value="english">{t('languages.english')}</option>
                       </select>
                   )}
-                  <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-400 border border-indigo-500">
+                  <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-200 border border-indigo-500">
                       {t('common.score')}: {score}
                   </div>
                   <GameThemeToggle />
@@ -2222,12 +2222,12 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
           <div className="flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
-                        <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="venn-victory-title">
+                    <div className={`bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+                        <h2 id="venn-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
                         <p className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
                     </div>
-                    <ConfettiExplosion />
+                    {!useReducedMotion() && <ConfettiExplosion />}
                 </div>
               )}
               {lastHint && (
@@ -3864,9 +3864,9 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
         <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
 
         {isComplete && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
-              <h2 className="text-4xl font-black text-indigo-600 mb-2">🏗️ Pipeline Complete!</h2>
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="pipeline-victory-title">
+            <div className={`bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+              <h2 id="pipeline-victory-title" className="text-4xl font-black text-indigo-600 mb-2">🏗️ Pipeline Complete!</h2>
               <p className="text-slate-600">You built the entire process flow correctly!</p>
               <p className="text-2xl font-black text-yellow-500 mt-2">{score} pts</p>
               <div className="flex gap-3 mt-4 justify-center">
@@ -3878,13 +3878,13 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                 </button>
               </div>
             </div>
-            <ConfettiExplosion />
+            {!useReducedMotion() && <ConfettiExplosion />}
           </div>
         )}
 
         {connectingFrom && (
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 bg-indigo-600 text-white px-5 py-2 rounded-full shadow-lg font-bold text-sm animate-in fade-in slide-in-from-top-2 duration-300 flex items-center gap-2">
-            <ArrowRight size={16} className="animate-pulse"/> Click the NEXT step to connect
+            <ArrowRight size={16} className={!useReducedMotion() ? 'animate-pulse' : ''}/> Click the NEXT step to connect
           </div>
         )}
 
@@ -3986,7 +3986,7 @@ const PipelineBuilderGame = React.memo(({ data, onClose, playSound, onScoreUpdat
                   {/* Branching badge */}
                   {isBranching && (
                     <div className={`absolute -right-2 -top-2 z-30 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[10px] font-black shadow-md border-2 border-white
-                      ${currentOutCount >= outCount ? 'bg-green-500 text-white' : 'bg-amber-400 text-amber-900 animate-pulse'}
+                      ${currentOutCount >= outCount ? 'bg-green-500 text-white' : `bg-amber-400 text-amber-900 ${!useReducedMotion() ? 'animate-pulse' : ''}`}
                     `}>
                       <GitMerge size={10}/> {currentOutCount}/{outCount}
                     </div>
