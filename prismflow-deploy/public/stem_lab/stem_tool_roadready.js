@@ -6545,6 +6545,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
             // React to PLAYER car — slow down, honk, or AEB (emergency brake).
             // Use spline-perpendicular lateral distance so we don't false-positive on bends.
+            // Cross-street cars are skipped entirely: they're on a perpendicular street
+            // and shouldn't AEB-brake for a main-road player who happens to share a
+            // raw-X coordinate while transiting the intersection.
             var playerCar = carRef.current;
             var playerSameLane = false;
             if (!t.crossStreet) {
@@ -6560,10 +6563,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               } else {
                 playerSameLane = Math.abs(playerCar.x - t.x) < 2;
               }
-            } else {
-              playerSameLane = Math.abs(playerCar.x - t.x) < 2;
             }
-            if (playerSameLane) {
+            if (playerSameLane && !t.crossStreet) {
               var playerAhead = (t.heading > 0 ? playerCar.y - t.y : t.y - playerCar.y);
               if (playerAhead > 0 && playerAhead < 3) {
                 // Very close behind player — EMERGENCY AUTOMATIC BRAKING (AEB-style).
@@ -6576,6 +6577,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (t.speed > 2 && playerAhead < 1.2) {
                   if (!t._rearEndCooldown || timeRef.current - t._rearEndCooldown > 8) {
                     t._rearEndCooldown = timeRef.current;
+                    // Set the generic collision cooldown too — without this, the
+                    // AI-vs-player collision check at ~line 8307 would fire on the
+                    // same frame and double-charge the crash + safety penalty.
+                    t._hitCooldown = timeRef.current;
                     statsRef.current.crashes++;
                     // ── FAULT DETERMINATION ──
                     // Normally a rear-end = rear car's fault (following too close). BUT if the
@@ -6815,6 +6820,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // ── Turn intent: probabilistically decide to turn at upcoming intersection ──
             // Only main-road cars; once committed, holds until the turn completes or the
             // signal is left behind. Sets a blinker so the player can read intent.
+            // The roll is gated by `_turnSignalSeen` so each car decides ONCE per signal
+            // encounter (was rolling every frame the signal was in the planning window,
+            // which made effectively every car turn at every intersection).
             if (!t.crossStreet && !t._turning && !t._turnIntent && infiniteWorldRef.current) {
               var dirSignAi = Math.sin(t.heading) > 0 ? 1 : -1;
               var nearestTurnSig = null, nearestTurnDist = Infinity;
@@ -6826,17 +6834,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   nearestTurnSig = s; nearestTurnDist = dyT;
                 }
               });
-              // ~25% of cars turn at any given intersection. Rolled once when the
-              // signal first enters the planning window so the decision is stable.
-              if (nearestTurnSig && Math.random() < 0.25) {
-                t._turnIntent = Math.random() < 0.5 ? 'left' : 'right';
-                t._turnSignal = nearestTurnSig;
-                t.blinker = t._turnIntent === 'left' ? -1 : 1;
-                t._blinkerCancelTimer = 0;
-              } else if (nearestTurnSig) {
-                // Lock out re-rolling for this signal pass even if no turn was chosen.
+              // First time seeing this signal: roll once. Mark seen regardless of
+              // outcome so we don't keep rolling on subsequent frames. Bias toward
+              // right turns (~70/30) since the sim doesn't model left-turn gap
+              // acceptance — heavy left-turn rates would visibly conflict with
+              // oncoming traffic.
+              if (nearestTurnSig && t._turnSignalSeen !== nearestTurnSig) {
                 t._turnSignalSeen = nearestTurnSig;
+                if (Math.random() < 0.25) {
+                  t._turnIntent = Math.random() < 0.30 ? 'left' : 'right';
+                  t._turnSignal = nearestTurnSig;
+                  t.blinker = t._turnIntent === 'left' ? -1 : 1;
+                  t._blinkerCancelTimer = 0;
+                }
               }
+            }
+            // Defensive: if a chunk unload removed our turn-target signal from the
+            // active list, drop the dangling reference and any in-flight intent.
+            // The signal object itself stays in memory because we're holding it,
+            // but it's no longer a real intersection in the world.
+            if (t._turnSignal && signals.indexOf(t._turnSignal) < 0) {
+              t._turnIntent = null;
+              t._turnSignal = null;
+              t._turnSignalSeen = null;
+              if (t._turning) {
+                // Mid-turn rescue: complete the turn in place rather than abort.
+                t._turning = false;
+                t.crossStreet = true;
+                var rescueGoingPosX = Math.cos(t._turnTarget || 0) > 0;
+                t.laneOffset = rescueGoingPosX ? 1.5 : -1.5;
+                t._turnedFromMain = true;
+              }
+              t.blinker = 0;
             }
             // Reset turn intent if we somehow drifted past the intersection without turning
             // (e.g., a turn was deferred and the car cleared the intersection going straight).
@@ -6873,6 +6902,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   t._turning = false;
                   t.crossStreet = true;
                   t._turnIntent = null;
+                  t._turnedFromMain = true;  // skip the cross-street wrap so we don't loop forever
                   t.blinker = 0;
                   // Snap to the right-side lane of the cross street.
                   var goingPosX = Math.cos(t._turnTarget) > 0;
@@ -6983,12 +7013,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               t.y += Math.sin(t.heading) * t.speed * dt / 5;
               t.x += Math.cos(t.heading) * t.speed * dt / 5;
             }
-            // Wrap / respawn traffic relative to player position
+            // Wrap / respawn traffic relative to player position. Native cross-street
+            // cars (spawned by the intersection) wrap around the X axis to keep cross-
+            // traffic flowing. Cars that turned off the main road instead drive off
+            // the edge and get cleaned up by chunk unload — wrapping them would make
+            // the same car visibly loop back through the intersection.
             var playerY = carRef.current.y;
             if (t.crossStreet) {
-              if (t.x < -2) t.x = MAP_SIZE + 2;
-              if (t.x > MAP_SIZE + 2) t.x = -2;
-            } else if (infiniteWorldRef.current) {
+              if (!t._turnedFromMain) {
+                if (t.x < -2) t.x = MAP_SIZE + 2;
+                if (t.x > MAP_SIZE + 2) t.x = -2;
+              }
+            } else if (infiniteWorldRef.current && !t._turning) {
               // Infinite world: respawn traffic that gets too far from player
               if (Math.abs(t.y - playerY) > MAP_SIZE * 0.6) {
                 var newDir = Math.random() < 0.5 ? 1 : -1;
@@ -8275,6 +8311,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (dist < 1.2 && relativeSpeed > 0.5 && absSpeed > 0.5) {
               if (!t._hitCooldown || timeRef.current - t._hitCooldown > 5) {
                 t._hitCooldown = timeRef.current;
+                // Mirror to the rear-end cooldown so the upstream rear-end-of-player
+                // detector at ~line 6577 doesn't double-charge this same impact.
+                t._rearEndCooldown = timeRef.current;
                 var impactSpeed = relativeSpeed * MS_TO_MPH;
                 statsRef.current.crashes++;
                 if (impactSpeed > 30) {
