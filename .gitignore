@@ -88,6 +88,11 @@ stem_lab/_build_p*.py
 # Marketing / non-code docs
 youtube_multilingual_description.md
 
+# Graphify knowledge-graph outputs (developer index for AI coding sessions;
+# regenerable via `/graphify` slash command — see https://graphify.net)
+graphify-out/
+.graphify/
+
 # Local infrastructure scripts
 setup-local-ai.bat
 
