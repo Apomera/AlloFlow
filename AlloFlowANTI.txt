@@ -32564,10 +32564,15 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   if (summary.paragraphs) parts.push(summary.paragraphs + (summary.paragraphs === 1 ? ' paragraph' : ' paragraphs'));
                                   if (summary.tables) parts.push(summary.tables + (summary.tables === 1 ? ' table' : ' tables'));
                                   if (summary.images) parts.push(summary.images + (summary.images === 1 ? ' image' : ' images'));
+                                  if (summary.links) parts.push(summary.links + (summary.links === 1 ? ' link' : ' links'));
                                   if (summary.fields) parts.push(summary.fields + (summary.fields === 1 ? ' form field' : ' form fields'));
                                   if (summary.pages) parts.push(summary.pages + (summary.pages === 1 ? ' page' : ' pages'));
                                   const detail = parts.length ? parts.join(' · ') + ' tagged.' : 'Per-page tagging applied.';
-                                  addToast('Baseline Tagged PDF downloaded — ' + detail + ' Run Fix & Verify for richer tagging.', 'success');
+                                  const extras = [];
+                                  if (summary.bookmarks) extras.push('Bookmarks: ' + summary.bookmarks + ' headings.');
+                                  if (summary.pdfUaDeclared) extras.push('PDF/UA-1 declared.');
+                                  const extrasStr = extras.length ? ' ' + extras.join(' ') : '';
+                                  addToast('Baseline Tagged PDF downloaded — ' + detail + extrasStr + ' Run Fix & Verify for richer tagging.', 'success');
                               } else {
                                   addToast('Baseline Tagged PDF downloaded — original PDF with per-page structure tags. Run Fix & Verify for richer tagging.', 'success');
                               }

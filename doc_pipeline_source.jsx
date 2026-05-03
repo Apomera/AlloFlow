@@ -10147,6 +10147,58 @@ tr { page-break-inside: avoid; }
     // that we don't have any "suspect" (incomplete) marked content.
     const markInfo = context.obj({ Marked: true, Suspects: false });
     catalog.set(PDFName.of('MarkInfo'), markInfo);
+    // ── PDF/UA-1 conformance declaration via XMP metadata ──
+    // PDF/UA-1 (ISO 14289-1) requires the doc to identify itself as
+    // PDF/UA-1 conformant. Without the pdfuaid:part="1" entry, validators
+    // (Adobe Acrobat Pro Accessibility Checker, PAC 3, axe DevTools PDF)
+    // see a tagged PDF but won't say "this declares PDF/UA-1 conformance"
+    // — they'll show "tagged PDF" but flag missing conformance metadata.
+    // We embed an XMP packet covering the standard Dublin Core, PDF, and
+    // pdfuaid namespaces so the doc reads as a properly declared
+    // PDF/UA-1 file in any spec-compliant validator.
+    try {
+      const pdfTitle = (meta.title || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const pdfSubject = (meta.subject || '').replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const pdfLang = lang.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+      const _now = new Date().toISOString().replace(/\.\d{3}Z$/, 'Z');
+      const xmp = `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="AlloFlow PDF/UA-1 Pipeline">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about=""
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:pdf="http://ns.adobe.com/pdf/1.3/"
+        xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+        xmlns:pdfuaid="http://www.aiim.org/pdfua/ns/id/">
+      <dc:format>application/pdf</dc:format>
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${pdfTitle}</rdf:li></rdf:Alt></dc:title>
+      <dc:description><rdf:Alt><rdf:li xml:lang="x-default">${pdfSubject}</rdf:li></rdf:Alt></dc:description>
+      <dc:language><rdf:Bag><rdf:li>${pdfLang}</rdf:li></rdf:Bag></dc:language>
+      <pdf:Producer>AlloFlow Accessibility Pipeline</pdf:Producer>
+      <xmp:CreatorTool>AlloFlow Accessibility Pipeline</xmp:CreatorTool>
+      <xmp:ModifyDate>${_now}</xmp:ModifyDate>
+      <pdfuaid:part>1</pdfuaid:part>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+      // Build a metadata stream and attach to Catalog. pdf-lib doesn't
+      // expose a high-level API for raw metadata streams, so we construct
+      // it via the low-level context: a stream with /Type Metadata,
+      // /Subtype XML, raw bytes are the XMP packet.
+      const PDFRawStream = window.PDFLib.PDFRawStream;
+      const PDFDict = window.PDFLib.PDFDict;
+      if (PDFRawStream && PDFDict) {
+        const metaDict = PDFDict.fromMapWithContext(new Map([
+          [PDFName.of('Type'), PDFName.of('Metadata')],
+          [PDFName.of('Subtype'), PDFName.of('XML')],
+        ]), context);
+        const metaStream = PDFRawStream.of(metaDict, new TextEncoder().encode(xmp));
+        const metaRef = context.register(metaStream);
+        catalog.set(PDFName.of('Metadata'), metaRef);
+      }
+    } catch (xmpErr) {
+      try { warnLog('[createTaggedPdf] XMP metadata failed (non-fatal): ' + (xmpErr && xmpErr.message)); } catch(_) {}
+    }
     // ── Build the StructTreeRoot from fixResult.accessibleHtml ──
     // Parse the remediated HTML to get the semantic outline (headings,
     // images with alt, tables, lists), then map those to PDF StructElems.
@@ -10167,7 +10219,15 @@ tr { page-break-inside: avoid; }
       p: 'P', ul: 'L', ol: 'L', li: 'LI', img: 'Figure', figure: 'Figure',
       table: 'Table', tr: 'TR', th: 'TH', td: 'TD', caption: 'Caption',
       thead: 'THead', tbody: 'TBody', tfoot: 'TFoot',
-      blockquote: 'BlockQuote', a: 'Link', header: 'Sect', footer: 'Sect',
+      blockquote: 'BlockQuote', a: 'Link',
+      // Artifact-style tagging: header/footer carry page numbers, branding,
+      // and other "boilerplate" content that screen readers should skip.
+      // PDF spec requires content-stream-level Artifact BMC/EMC to fully
+      // exclude — we don't rewrite content streams here, but emitting these
+      // as `/NonStruct` (PDF 1.7 standard structure type for non-content)
+      // gets most screen readers to de-emphasize them. Closest practical
+      // approximation without rasterizing.
+      header: 'NonStruct', footer: 'NonStruct',
       section: 'Sect', nav: 'Sect', aside: 'Sect', main: 'Sect',
     };
     // ── Stage 5: table semantic pre-pass ──
@@ -10412,11 +10472,50 @@ tr { page-break-inside: avoid; }
           // switching on multilingual content (bilingual worksheets,
           // loanwords, quoted foreign passages).
           lang: (el.getAttribute('lang') || '').trim(),
+          // Capture <a href> so we can put the destination URL in the Link
+          // StructElem's /Alt attribute. Without this, screen readers
+          // announce only the link text ("click here") with no destination.
+          href: tag === 'a' ? (el.getAttribute('href') || '').trim() : '',
+          // Capture LI label data so we can emit a proper /Lbl + /LBody
+          // child structure (PDF/UA-1 prefers this 3-level pattern over a
+          // bare /LI with the bullet baked into the text). Use the LI's
+          // position among its siblings for ordered lists.
+          isOrdered: tag === 'li' ? !!el.closest('ol') : false,
+          liIndex: tag === 'li' ? (function() {
+              try {
+                  const parent = el.parentNode;
+                  if (!parent) return 1;
+                  let n = 0;
+                  for (const sib of parent.children) {
+                      if (sib.tagName && sib.tagName.toLowerCase() === 'li') {
+                          n++;
+                          if (sib === el) return n;
+                      }
+                  }
+                  return n || 1;
+              } catch (_) { return 1; }
+          })() : 0,
         });
       }
       // Build a leaf StructElem (not a Sect) and register it. The parentRef
       // is the immediate parent — Sect or the StructTreeRoot.
       const buildLeaf = (item, parentRef) => {
+        // Special-case LI: PDF/UA-1 prefers a 3-level <LI><Lbl/><LBody/></LI>
+        // structure where the bullet/number is its own /Lbl child rather
+        // than baked into the LI's ActualText. Many SR readers parse this
+        // pattern as "list item, label '1.', body 'first item'", which
+        // gives blind users explicit confirmation of the list position.
+        if (item.role === 'LI') {
+          const liRef = context.nextRef();
+          const lblText = item.isOrdered ? (item.liIndex + '.') : '•';
+          const lblD = { Type: PDFName.of('StructElem'), S: PDFName.of('Lbl'), P: liRef, ActualText: PDFString.of(lblText) };
+          const lBodyD = { Type: PDFName.of('StructElem'), S: PDFName.of('LBody'), P: liRef, ActualText: PDFString.of(item.text || '') };
+          if (item.lang) { lBodyD.Lang = PDFString.of(item.lang); }
+          const lblRef = context.register(context.obj(lblD));
+          const lBodyRef = context.register(context.obj(lBodyD));
+          context.assign(liRef, context.obj({ Type: PDFName.of('StructElem'), S: PDFName.of('LI'), P: parentRef, K: context.obj([lblRef, lBodyRef]) }));
+          return liRef;
+        }
         const d = { Type: PDFName.of('StructElem'), S: PDFName.of(item.role), P: parentRef };
         if (item.role === 'Figure') {
           if (item.isDecorative) {
@@ -10430,7 +10529,20 @@ tr { page-break-inside: avoid; }
             d.Alt = PDFString.of(item.alt || '(image)');
           }
         }
-        if (['H1','H2','H3','H4','H5','H6','P','LI','Caption','BlockQuote'].includes(item.role) && item.text) {
+        // Link: emit /Alt with the destination URL so screen readers
+        // announce "Link: https://example.com" rather than just the link
+        // text. Real Link annotations (with OBJR + URI action) would
+        // require coordinates we don't have post-hoc; the /Alt approach
+        // gets the destination signal across without that machinery.
+        if (item.role === 'Link') {
+          if (item.href) {
+            const isExternal = /^https?:\/\//i.test(item.href);
+            d.Alt = PDFString.of(isExternal ? ('Link to ' + item.href) : ('Link: ' + item.href));
+          } else if (item.text) {
+            d.Alt = PDFString.of('Link: ' + item.text);
+          }
+        }
+        if (['H1','H2','H3','H4','H5','H6','P','Caption','BlockQuote'].includes(item.role) && item.text) {
           d.ActualText = PDFString.of(item.text);
         }
         // Stage 6a: /Lang overrides the document-level language for this
@@ -10829,6 +10941,95 @@ tr { page-break-inside: avoid; }
     const structRootDict = context.obj(structRootDictBody);
     context.assign(structRootRef, structRootDict);
     catalog.set(PDFName.of('StructTreeRoot'), structRootRef);
+    // ── Document Outline (Bookmarks panel) ──
+    // Walks the heading items and emits a /Outlines dict on the Catalog so
+    // the PDF's Bookmarks panel (every major reader supports it) shows the
+    // heading hierarchy. Big UX win for documents over a few pages —
+    // students can jump directly to the section they need rather than
+    // scrolling. Each outline entry's Dest points to page 1 with /XYZ
+    // null null null (open at top of page) — ideally each heading would
+    // point to its own page, but mapping headings → page numbers post-hoc
+    // requires content-stream coordinate analysis we don't have. Page-1
+    // fallback is honest: the visible hierarchy is the value, the precise
+    // page jump is a stretch goal for a future pass.
+    let outlineRootRef = null;
+    try {
+      // Filter outline items down to headings only and build a tree by
+      // level. Stack-based — pop lower-or-equal levels off the stack
+      // when a new heading comes in, then push.
+      const headingItems = [];
+      if (Array.isArray(_outlineItems)) {
+        for (const it of _outlineItems) {
+          if (it.level >= 1 && it.level <= 6 && it.text) headingItems.push(it);
+        }
+      }
+      if (headingItems.length > 0 && pages.length > 0) {
+        outlineRootRef = context.nextRef();
+        const firstPageRef = pages[0].ref;
+        // Each node tracked as { ref, parentRef, level, kids: [] }
+        const rootKids = [];
+        const stack = [];
+        for (const h of headingItems) {
+          // Pop until we find a strictly lower-level node (or root).
+          while (stack.length > 0 && stack[stack.length - 1].level >= h.level) stack.pop();
+          const parent = stack.length > 0 ? stack[stack.length - 1] : null;
+          const node = { ref: context.nextRef(), parentRef: parent ? parent.ref : outlineRootRef, level: h.level, title: h.text.substring(0, 200), kids: [] };
+          (parent ? parent.kids : rootKids).push(node);
+          stack.push(node);
+        }
+        // Recursive emit. Each outline-item dict needs /Title, /Parent,
+        // /First, /Last, /Next, /Prev (sibling chain), /Count (descendants),
+        // and /Dest (the action target).
+        const emit = (siblings) => {
+          for (let i = 0; i < siblings.length; i++) {
+            const node = siblings[i];
+            const dictBody = {
+              Title: PDFString.of(node.title),
+              Parent: node.parentRef,
+              Dest: context.obj([firstPageRef, PDFName.of('XYZ'), null, null, null]),
+            };
+            if (i > 0) dictBody.Prev = siblings[i - 1].ref;
+            if (i < siblings.length - 1) dictBody.Next = siblings[i + 1].ref;
+            if (node.kids.length > 0) {
+              dictBody.First = node.kids[0].ref;
+              dictBody.Last = node.kids[node.kids.length - 1].ref;
+              // Negative count = closed by default. Positive = open.
+              // Default closed for cleaner first impression on long docs.
+              const descendants = (function countDesc(n) {
+                let c = n.kids.length;
+                for (const k of n.kids) c += countDesc(k);
+                return c;
+              })(node);
+              dictBody.Count = PDFNumber.of(-descendants);
+            }
+            context.assign(node.ref, context.obj(dictBody));
+            if (node.kids.length > 0) emit(node.kids);
+          }
+        };
+        emit(rootKids);
+        const outlineRootBody = { Type: PDFName.of('Outlines') };
+        if (rootKids.length > 0) {
+          outlineRootBody.First = rootKids[0].ref;
+          outlineRootBody.Last = rootKids[rootKids.length - 1].ref;
+          // Top-level Count is positive (open) so the panel is expanded
+          // to show top-level headings on first open. Children stay
+          // closed per their negative Count above.
+          const totalDescendants = (function totalDesc(arr) {
+            let c = arr.length;
+            for (const n of arr) c += (function rec(n2) { let r = n2.kids.length; for (const k of n2.kids) r += rec(k); return r; })(n);
+            return c;
+          })(rootKids);
+          outlineRootBody.Count = PDFNumber.of(totalDescendants);
+        }
+        context.assign(outlineRootRef, context.obj(outlineRootBody));
+        catalog.set(PDFName.of('Outlines'), outlineRootRef);
+        // PageMode=UseOutlines makes the Bookmarks panel open by default
+        // when the PDF is first viewed. Most readers honor this.
+        catalog.set(PDFName.of('PageMode'), PDFName.of('UseOutlines'));
+      }
+    } catch (outlineErr) {
+      try { warnLog('[createTaggedPdf] outline build failed (non-fatal): ' + (outlineErr && outlineErr.message)); } catch(_) {}
+    }
     // ── ViewerPreferences: DisplayDocTitle ──
     // PDF/UA-1 §7.1 requires this so the window title bar shows the doc
     // title rather than the filename.
@@ -10850,25 +11051,53 @@ tr { page-break-inside: avoid; }
     // Counts are computed from the same `items` list `_buildOutlineStructElems`
     // already walks (no second DOM pass) plus the page count from the doc.
     const _summary = (() => {
-        let headings = 0, paragraphs = 0, tables = 0, lists = 0, images = 0, tableCells = 0, langTagged = 0;
+        let headings = 0, paragraphs = 0, tables = 0, lists = 0, images = 0, tableCells = 0, langTagged = 0, links = 0;
+        // Heading hierarchy linter: detect skipped levels (e.g. h1 -> h3
+        // without an h2 in between). Doesn't fail the export — just
+        // reports a count so the toast can warn the user. Skipped levels
+        // are valid HTML but hurt screen-reader navigation predictability.
+        let headingHierarchyIssues = 0;
+        let lastHeadingLevel = 0;
+        const headingPath = [];
         try {
             if (Array.isArray(_outlineItems)) {
                 for (const it of _outlineItems) {
                     if (it.lang) langTagged++;
-                    if (/^H[1-6]$/.test(it.role)) headings++;
+                    if (/^H[1-6]$/.test(it.role)) {
+                        headings++;
+                        const level = parseInt(it.role.slice(1), 10);
+                        // Only flag jumps DOWN the hierarchy (toward more
+                        // specific) where you skip a level. Going back up
+                        // (h3 -> h2) is fine.
+                        if (lastHeadingLevel > 0 && level > lastHeadingLevel + 1) {
+                            headingHierarchyIssues++;
+                            headingPath.push('H' + lastHeadingLevel + ' -> H' + level);
+                        }
+                        lastHeadingLevel = level;
+                    }
                     else if (it.role === 'P') paragraphs++;
                     else if (it.role === 'Table') tables++;
                     else if (it.role === 'L') lists++;
                     else if (it.role === 'Figure') images++;
+                    else if (it.role === 'Link') links++;
                     else if (it.role === 'TH' || it.role === 'TD') tableCells++;
                 }
             }
         } catch(_) {}
         return {
-            headings, paragraphs, tables, lists, images, tableCells, langTagged,
+            headings, paragraphs, tables, lists, images, tableCells, links, langTagged,
             pages: pages.length,
             structElems: (typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0,
             fields: (typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0,
+            // True when /Outlines was successfully built — UI can announce
+            // "bookmarks generated from N headings" in the toast.
+            bookmarks: outlineRootRef ? headings : 0,
+            // PDF/UA-1 declared via XMP packet (see XMP block above). True
+            // unless XMP write threw, in which case the doc still carries
+            // MarkInfo + struct tree but doesn't formally declare PDF/UA.
+            pdfUaDeclared: !!catalog.get(PDFName.of('Metadata')),
+            headingHierarchyIssues,
+            headingHierarchyPath: headingPath.slice(0, 5),
         };
     })();
     // ── Return tagged bytes + summary ──
