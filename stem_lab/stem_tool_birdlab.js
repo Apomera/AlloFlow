@@ -4634,27 +4634,184 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               })()
             ),
             // CALENDAR VIEW
-            view === 'calendar' && h('div', { className: 'space-y-3' },
-              h('p', { className: 'text-sm text-slate-700 italic' },
-                'Spring + fall arrivals/departures are the rhythm of Maine birding. Specific dates shift week-by-week with weather but the broad pattern holds year to year.'),
-              MAINE_MIGRATION_CALENDAR.map(function(m, i) {
-                var seasonColor = m.season === 'Spring' ? 'border-emerald-400' : m.season === 'Summer' ? 'border-amber-400' : m.season === 'Fall' ? 'border-orange-400' : 'border-blue-400';
-                var seasonBg = m.season === 'Spring' ? 'bg-emerald-50' : m.season === 'Summer' ? 'bg-amber-50' : m.season === 'Fall' ? 'bg-orange-50' : 'bg-blue-50';
-                return h('div', { key: i, className: 'bg-white border-2 ' + seasonColor + ' rounded-xl shadow p-4' },
-                  h('div', { className: 'flex items-baseline gap-3 mb-2 flex-wrap' },
-                    h('span', { className: 'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + seasonBg + ' text-slate-800' }, m.season),
-                    h('h3', { className: 'text-lg font-black text-slate-800' }, m.month)
+            view === 'calendar' && (function() {
+              // Compute current month index (0=Jan) for "you are here" marker
+              var __nowMonth = (new Date()).getMonth();
+              // Migration intensity per month (0-10 scale, peak = 10)
+              // Hand-curated based on known Maine migration phenology
+              var monthIntensity = {
+                'March':     6,
+                'April':     7,
+                'May':       10, // PEAK — most warblers
+                'June–July': 2,  // breeding season, quiet
+                'August':    7,
+                'September': 8,
+                'October':   10, // PEAK raptors, last warblers
+                'November':  6,
+                'Dec–Feb':   1   // stable, just winter visitors
+              };
+              // Map calendar items to which months (0-11) they cover
+              function monthsCovered(label) {
+                var map = {
+                  'March': [2], 'April': [3], 'May': [4],
+                  'June–July': [5, 6],
+                  'August': [7], 'September': [8], 'October': [9],
+                  'November': [10],
+                  'Dec–Feb': [11, 0, 1]
+                };
+                return map[label] || [];
+              }
+              var seasonAccent = function(season) {
+                if (season === 'Spring') return { bg: 'bg-emerald-50', border: 'border-emerald-400', strong: '#059669', soft: '#d1fae5' };
+                if (season === 'Summer') return { bg: 'bg-amber-50',   border: 'border-amber-400',   strong: '#d97706', soft: '#fef3c7' };
+                if (season === 'Fall')   return { bg: 'bg-orange-50',  border: 'border-orange-400',  strong: '#ea580c', soft: '#ffedd5' };
+                return { bg: 'bg-blue-50', border: 'border-blue-400', strong: '#0284c7', soft: '#dbeafe' };
+              };
+              return h('div', { className: 'space-y-3' },
+                h('p', { className: 'text-sm text-slate-700 italic' },
+                  'Spring + fall arrivals/departures are the rhythm of Maine birding. Specific dates shift week-by-week with weather but the broad pattern holds year to year.'),
+                // ── Year-at-a-glance timeline ribbon ──
+                h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 flex items-center justify-between flex-wrap gap-2' },
+                    h('span', null, '📅 Migration intensity through the year'),
+                    h('span', { className: 'text-[10px] font-mono font-normal text-slate-700' }, 'You are here: ' + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][__nowMonth])
                   ),
-                  m.arrivals && h('p', { className: 'text-sm text-slate-800 mb-1' },
-                    h('strong', { className: 'text-emerald-700' }, '⬇️ Arrivals: '), m.arrivals),
-                  m.departures && h('p', { className: 'text-sm text-slate-800' },
-                    h('strong', { className: 'text-orange-700' }, '⬆️ Departures: '), m.departures)
-                );
-              }),
-              h('div', { className: 'p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-sm text-slate-800' },
-                h('strong', { className: 'text-blue-900' }, '🔗 Real-time tracking: '),
-                'Cornell\'s ', h('span', { className: 'font-mono' }, 'BirdCast'), ' (birdcast.info) uses weather radar to forecast nightly migration intensity. Check it on a clear May night to see if migrants are pouring in.')
-            ),
+                  // SVG-rendered timeline
+                  h('svg', { viewBox: '0 0 720 90', width: '100%', preserveAspectRatio: 'none',
+                    style: { display: 'block', height: 'auto' },
+                    role: 'img', 'aria-label': 'Year-long Maine migration intensity. Peaks in May (warbler arrivals) and October (raptor migration). Quiet in summer and winter.'
+                  },
+                    h('defs', null,
+                      h('linearGradient', { id: 'calRibbon', x1: '0%', y1: '0%', x2: '100%', y2: '0%' },
+                        // Winter (Dec/Jan/Feb) → Spring (Mar/Apr/May) → Summer → Fall → Winter
+                        h('stop', { offset: '0%', stopColor: '#bfdbfe' }),         // Jan winter
+                        h('stop', { offset: '15%', stopColor: '#bfdbfe' }),
+                        h('stop', { offset: '17%', stopColor: '#a7f3d0' }),         // Mar spring
+                        h('stop', { offset: '40%', stopColor: '#a7f3d0' }),
+                        h('stop', { offset: '43%', stopColor: '#fef3c7' }),         // Jun summer
+                        h('stop', { offset: '63%', stopColor: '#fef3c7' }),
+                        h('stop', { offset: '66%', stopColor: '#fed7aa' }),         // Sep fall
+                        h('stop', { offset: '90%', stopColor: '#fed7aa' }),
+                        h('stop', { offset: '92%', stopColor: '#bfdbfe' }),         // Dec winter
+                        h('stop', { offset: '100%', stopColor: '#bfdbfe' })
+                      )
+                    ),
+                    // Season ribbon background
+                    h('rect', { x: 0, y: 30, width: 720, height: 30, fill: 'url(#calRibbon)' }),
+                    // Season labels
+                    h('text', { x: 8 + 60, y: 20, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#1e3a8a', opacity: 0.8 }, 'WINTER'),
+                    h('text', { x: 60 + 180, y: 20, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#065f46', opacity: 0.8 }, 'SPRING'),
+                    h('text', { x: 240 + 90, y: 20, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#78350f', opacity: 0.8 }, 'SUMMER'),
+                    h('text', { x: 420 + 120, y: 20, textAnchor: 'middle', fontSize: 10, fontWeight: 700, fill: '#7c2d12', opacity: 0.8 }, 'FALL'),
+                    // Intensity-curve overlay (peak in May + October)
+                    (function() {
+                      // Pre-baked monthly intensity normalized 0-1 (Jan...Dec)
+                      var monthly = [0.1, 0.1, 0.6, 0.7, 1.0, 0.2, 0.2, 0.7, 0.8, 1.0, 0.6, 0.1];
+                      var pts = monthly.map(function(v, i) {
+                        var x = (i + 0.5) * 60;
+                        var y = 60 - v * 28; // top of curve at y=32, bottom at y=60
+                        return [x, y];
+                      });
+                      // Path through points
+                      var d = 'M ' + pts[0][0] + ' 60 ';
+                      pts.forEach(function(p, i) {
+                        d += 'L ' + p[0] + ' ' + p[1] + ' ';
+                      });
+                      d += 'L ' + pts[pts.length - 1][0] + ' 60 Z';
+                      return h('g', null,
+                        h('path', { d: d, fill: '#1e293b', opacity: 0.13 }),
+                        h('path', { d: d.replace(/Z$/, ''), fill: 'none', stroke: '#1e293b', strokeWidth: 1.5, opacity: 0.6 }),
+                        // Peak markers (May=4, October=9)
+                        h('circle', { cx: 4.5 * 60, cy: 32, r: 4, fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 1.5 }),
+                        h('circle', { cx: 9.5 * 60, cy: 32, r: 4, fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 1.5 }),
+                        h('text', { x: 4.5 * 60, y: 28, textAnchor: 'middle', fontSize: 8, fontWeight: 800, fill: '#7f1d1d' }, 'PEAK'),
+                        h('text', { x: 9.5 * 60, y: 28, textAnchor: 'middle', fontSize: 8, fontWeight: 800, fill: '#7f1d1d' }, 'PEAK')
+                      );
+                    })(),
+                    // Month tick labels
+                    ['J','F','M','A','M','J','J','A','S','O','N','D'].map(function(m, i) {
+                      var x = (i + 0.5) * 60;
+                      var isCurrent = i === __nowMonth;
+                      return h('g', { key: 'm' + i },
+                        h('line', { x1: x, y1: 60, x2: x, y2: 70, stroke: isCurrent ? '#dc2626' : '#475569', strokeWidth: isCurrent ? 1.8 : 0.8 }),
+                        h('text', { x: x, y: 82, textAnchor: 'middle',
+                          fontSize: isCurrent ? 12 : 11,
+                          fontWeight: isCurrent ? 800 : 600,
+                          fill: isCurrent ? '#dc2626' : '#334155'
+                        }, m)
+                      );
+                    }),
+                    // "You are here" caret marker
+                    (function() {
+                      var x = (__nowMonth + 0.5) * 60;
+                      return h('g', null,
+                        h('path', { d: 'M ' + (x - 6) + ' 30 L ' + (x + 6) + ' 30 L ' + x + ' 36 Z', fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 1 })
+                      );
+                    })()
+                  ),
+                  // Legend chips
+                  h('div', { className: 'flex flex-wrap gap-2 mt-2 text-[11px]' },
+                    h('span', { className: 'inline-flex items-center gap-1', style: { color: '#475569' } },
+                      h('span', { 'aria-hidden': true, style: { width: 8, height: 8, background: '#dc2626', borderRadius: '50%', display: 'inline-block' } }),
+                      h('span', null, 'Peak migration')),
+                    h('span', { className: 'inline-flex items-center gap-1', style: { color: '#475569' } },
+                      h('span', { 'aria-hidden': true, style: { width: 8, height: 8, background: '#1e293b', borderRadius: '50%', display: 'inline-block' } }),
+                      h('span', null, 'Migration intensity curve')),
+                    h('span', { className: 'inline-flex items-center gap-1', style: { color: '#475569' } },
+                      h('span', { 'aria-hidden': true, style: { width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderTop: '8px solid #dc2626', display: 'inline-block' } }),
+                      h('span', null, 'Today'))
+                  )
+                ),
+                // ── Per-month cards with intensity bar ──
+                MAINE_MIGRATION_CALENDAR.map(function(m, i) {
+                  var sa = seasonAccent(m.season);
+                  var months = monthsCovered(m.month);
+                  var isCurrent = months.indexOf(__nowMonth) !== -1;
+                  var intensity = monthIntensity[m.month] || 0;
+                  return h('div', { key: i,
+                    className: 'bg-white border-2 ' + sa.border + ' rounded-xl shadow p-4 relative',
+                    style: isCurrent ? { boxShadow: '0 0 0 3px #fecaca, 0 4px 12px rgba(220,38,38,0.18)' } : {}
+                  },
+                    isCurrent && h('div', {
+                      style: {
+                        position: 'absolute', top: -10, right: 12,
+                        background: '#dc2626', color: '#ffffff',
+                        padding: '3px 10px', borderRadius: 999,
+                        fontSize: 10, fontWeight: 800, letterSpacing: '0.06em',
+                        textTransform: 'uppercase',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.18)'
+                      }
+                    }, '📍 You are here'),
+                    h('div', { className: 'flex items-baseline gap-3 mb-2 flex-wrap' },
+                      h('span', { className: 'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ' + sa.bg + ' text-slate-800' }, m.season),
+                      h('h3', { className: 'text-lg font-black text-slate-800' }, m.month),
+                      // Intensity meter — small
+                      h('div', { className: 'flex-1 flex items-center gap-2 min-w-0', style: { minWidth: 120 } },
+                        h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 flex-shrink-0' }, 'Activity'),
+                        h('div', { className: 'flex-1 h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-300 relative', style: { maxWidth: 160 } },
+                          h('div', {
+                            style: {
+                              width: (intensity * 10) + '%',
+                              height: '100%',
+                              background: 'linear-gradient(90deg, ' + sa.soft + ', ' + sa.strong + ')',
+                              borderRadius: '999px'
+                            }
+                          })
+                        ),
+                        h('span', { className: 'text-[10px] font-mono text-slate-700 flex-shrink-0' }, intensity + '/10')
+                      )
+                    ),
+                    m.arrivals && h('p', { className: 'text-sm text-slate-800 mb-1' },
+                      h('strong', { className: 'text-emerald-700' }, '⬇️ Arrivals: '), m.arrivals),
+                    m.departures && h('p', { className: 'text-sm text-slate-800' },
+                      h('strong', { className: 'text-orange-700' }, '⬆️ Departures: '), m.departures)
+                  );
+                }),
+                h('div', { className: 'p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-sm text-slate-800' },
+                  h('strong', { className: 'text-blue-900' }, '🔗 Real-time tracking: '),
+                  'Cornell\'s ', h('span', { className: 'font-mono' }, 'BirdCast'), ' (birdcast.info) uses weather radar to forecast nightly migration intensity. Check it on a clear May night to see if migrants are pouring in.')
+              );
+            })(),
             // FEATURED MIGRATORS VIEW
             view === 'featured' && (function() {
               // Parse "~200 mi" / "2,000–4,000 mi" / "Most are SEDENTARY..." / "2,000+ mi"
