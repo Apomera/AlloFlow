@@ -3951,21 +3951,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             ),
             // BIRD → HABITAT MODE
             mode === 'birdToHabitat' && h('div', { className: 'space-y-4' },
-              h('div', { className: 'flex items-center justify-between text-sm text-slate-700 flex-wrap gap-2' },
-                h('div', null, h('strong', null, 'Question ' + (b2hIdx + 1) + ' of ' + BIRD_TO_HABITAT.length), ' · Score: ', h('strong', null, b2hScore + ' / ' + b2hAnswered)),
-                h('div', { className: 'flex gap-2' },
-                  h('button', {
-                    onClick: function() { setB2hIdx(Math.max(0, b2hIdx - 1)); },
-                    'aria-disabled': b2hIdx === 0 ? 'true' : 'false',
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition focus:outline-none focus:ring-2 ring-lime-400 ' +
-                      (b2hIdx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700')
-                  }, '← Prev'),
-                  h('button', {
-                    onClick: function() { setB2hIdx(Math.min(BIRD_TO_HABITAT.length - 1, b2hIdx + 1)); },
-                    'aria-disabled': b2hIdx === BIRD_TO_HABITAT.length - 1 ? 'true' : 'false',
-                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition focus:outline-none focus:ring-2 ring-lime-400 ' +
-                      (b2hIdx === BIRD_TO_HABITAT.length - 1 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700')
-                  }, 'Next →')
+              // ── Score + per-question result strip ──
+              h('div', { className: 'bg-white rounded-2xl border-2 border-lime-300 shadow p-3' },
+                h('div', { className: 'flex items-center justify-between gap-3 flex-wrap mb-2' },
+                  h('div', { className: 'flex items-baseline gap-3 flex-wrap' },
+                    h('div', null,
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Question'),
+                      h('span', { className: 'ml-1.5 font-mono font-bold text-slate-800' }, (b2hIdx + 1) + ' / ' + BIRD_TO_HABITAT.length)
+                    ),
+                    h('div', null,
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Score'),
+                      h('span', { className: 'ml-1.5 font-mono font-bold', style: { color: b2hScore === b2hAnswered ? '#059669' : '#0c4a6e' } }, b2hScore + ' / ' + b2hAnswered)
+                    ),
+                    b2hAnswered > 0 && h('div', null,
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Accuracy'),
+                      h('span', {
+                        className: 'ml-1.5 font-mono font-bold',
+                        style: { color: b2hScore === b2hAnswered ? '#059669' : (b2hScore / Math.max(1, b2hAnswered)) >= 0.7 ? '#16a34a' : '#dc2626' }
+                      }, Math.round((b2hScore / Math.max(1, b2hAnswered)) * 100) + '%')
+                    )
+                  ),
+                  h('div', { className: 'flex gap-2' },
+                    h('button', {
+                      onClick: function() { setB2hIdx(Math.max(0, b2hIdx - 1)); },
+                      'aria-disabled': b2hIdx === 0 ? 'true' : 'false',
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition focus:outline-none focus:ring-2 ring-lime-400 ' +
+                        (b2hIdx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700')
+                    }, '← Prev'),
+                    h('button', {
+                      onClick: function() { setB2hIdx(Math.min(BIRD_TO_HABITAT.length - 1, b2hIdx + 1)); },
+                      'aria-disabled': b2hIdx === BIRD_TO_HABITAT.length - 1 ? 'true' : 'false',
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition focus:outline-none focus:ring-2 ring-lime-400 ' +
+                        (b2hIdx === BIRD_TO_HABITAT.length - 1 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-lime-600 text-white hover:bg-lime-700')
+                    }, 'Next →')
+                  )
+                ),
+                // Per-question result chip strip
+                h('div', { className: 'flex flex-wrap gap-1', 'aria-label': 'Question status. Click any chip to jump to that question.' },
+                  BIRD_TO_HABITAT.map(function(q, i) {
+                    var ans = b2hPicks[i];
+                    var answered = ans != null;
+                    var correct = answered && ans === q.habitat;
+                    var current = i === b2hIdx;
+                    var bg = current ? '#0284c7' : answered ? (correct ? '#10b981' : '#f43f5e') : '#e2e8f0';
+                    var border = current ? '#0c4a6e' : answered ? (correct ? '#047857' : '#be123c') : '#94a3b8';
+                    return h('button', { key: i,
+                      onClick: function() { setB2hIdx(i); },
+                      'aria-label': 'Question ' + (i + 1) + (current ? ' (current)' : answered ? (correct ? ' correct' : ' incorrect') : ' unanswered'),
+                      title: q.bird + (answered ? (correct ? ' — correct ✓' : ' — wrong ✗') : ' — unanswered'),
+                      style: {
+                        width: 22, height: 22, borderRadius: 4,
+                        background: bg,
+                        border: '1.5px solid ' + border,
+                        color: answered || current ? '#ffffff' : '#475569',
+                        fontSize: 10, fontWeight: 800,
+                        boxShadow: current ? '0 0 0 2px #bae6fd' : '0 1px 1px rgba(0,0,0,0.06)',
+                        cursor: 'pointer', transition: 'transform 0.1s'
+                      }
+                    }, String(i + 1));
+                  })
                 )
               ),
               (function() {
@@ -3999,14 +4043,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       );
                     })
                   ),
-                  picked != null && h('div', {
-                    className: 'p-3 rounded-lg ' + (picked === current.habitat ? 'bg-emerald-50 border border-emerald-300 text-emerald-900' : 'bg-amber-50 border border-amber-300 text-amber-900'),
-                    'aria-live': 'polite'
-                  },
-                    h('strong', null, picked === current.habitat ? '✓ Correct: ' : '⚠ Best answer: '),
-                    HABITAT_BIRD_MAP[current.habitat].label, '. ',
-                    h('span', { className: 'text-slate-800' }, current.reason)
-                  )
+                  picked != null && (function() {
+                    var isCorrect = picked === current.habitat;
+                    var color = isCorrect ? { bg: '#d1fae5', border: '#10b981', text: '#064e3b', accent: '#059669' } : { bg: '#fef3c7', border: '#f59e0b', text: '#78350f', accent: '#d97706' };
+                    return h('div', {
+                      className: 'rounded-xl overflow-hidden border-2',
+                      style: { background: color.bg, borderColor: color.border, borderWidth: 2 },
+                      'aria-live': 'polite'
+                    },
+                      h('div', { className: 'flex items-start gap-3 p-4' },
+                        // Big icon badge
+                        h('div', {
+                          'aria-hidden': 'true',
+                          style: {
+                            flexShrink: 0,
+                            width: 44, height: 44, borderRadius: '50%',
+                            background: color.accent,
+                            color: '#ffffff',
+                            fontSize: 22, fontWeight: 900,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            boxShadow: '0 2px 6px ' + color.accent + '40'
+                          }
+                        }, isCorrect ? '✓' : '!'),
+                        h('div', { className: 'flex-1 min-w-0' },
+                          h('div', {
+                            className: 'text-xs font-bold uppercase tracking-wider mb-0.5',
+                            style: { color: color.accent }
+                          }, isCorrect ? 'Correct match' : 'Best answer'),
+                          h('div', { className: 'text-base font-black mb-1', style: { color: color.text } },
+                            HABITAT_BIRD_MAP[current.habitat].icon + ' ' + HABITAT_BIRD_MAP[current.habitat].label
+                          ),
+                          h('p', { className: 'text-sm leading-relaxed', style: { color: '#1e293b' } }, current.reason)
+                        )
+                      )
+                    );
+                  })()
                 );
               })()
             ),
