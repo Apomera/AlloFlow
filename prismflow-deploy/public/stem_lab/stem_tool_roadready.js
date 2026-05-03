@@ -3164,13 +3164,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var addToast = ctx.addToast || function(msg) { console.log('[RoadReady]', msg); };
       var callTTS = ctx.callTTS || null;
       var callGemini = ctx.callGemini || null;
-      // Voice instructor: speaks coaching tips and scenario intros aloud
-      var _lastSpokenRef = useRef(0);
+      // Voice instructor: speaks coaching tips and scenario intros aloud.
+      // Previously a flat 5-second global throttle silently killed every speak()
+      // call within 5s of any prior call — multiple narration sources (intro
+      // banner → seatbelt → mirrors → waypoint callout → challenge update) all
+      // collapsed to "first one only", breaking the Coach AI feature. New
+      // behavior: dedup only the SAME text within 2s; different lines pass
+      // through and the underlying TTS layer handles queuing/interrupt.
+      var _lastSpokenRef = useRef({ text: null, at: 0 });
       var speak = function(text) {
         if (!callTTS || !text) return;
         var now = Date.now();
-        if (now - _lastSpokenRef.current < 5000) return; // throttle: max once per 5 seconds
-        _lastSpokenRef.current = now;
+        var last = _lastSpokenRef.current;
+        if (last.text === text && (now - last.at) < 2000) return;
+        _lastSpokenRef.current = { text: text, at: now };
         callTTS(text, null, 1.0, { force: true }).catch(function() {});
       };
       // Photo Mode: composite the WebGL 3D canvas + 2D HUD onto an offscreen canvas,
@@ -3818,6 +3825,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         (d && typeof d.reducedMotion === 'boolean') ? d.reducedMotion :
         (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)
       );
+      // Listen for OS-level prefers-reduced-motion changes. Without this, the
+      // setting was sampled once at mount and never updated — a user who flipped
+      // their accessibility preference mid-session kept getting full animations.
+      // Only listen when the user hasn't explicitly set the in-tool toggle (their
+      // explicit choice wins over system pref).
+      useEffect(function() {
+        if (typeof window === 'undefined' || !window.matchMedia) return;
+        if (d && typeof d.reducedMotion === 'boolean') return; // user override wins
+        var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+        var handler = function() { reducedMotionRef.current = mq.matches; };
+        // Modern browsers use addEventListener; older Safari uses addListener.
+        if (typeof mq.addEventListener === 'function') {
+          mq.addEventListener('change', handler);
+        } else if (typeof mq.addListener === 'function') {
+          mq.addListener(handler);
+        }
+        return function() {
+          if (typeof mq.removeEventListener === 'function') mq.removeEventListener('change', handler);
+          else if (typeof mq.removeListener === 'function') mq.removeListener(handler);
+        };
+      }, [d && d.reducedMotion]);
       var earnedBadges = d.badges || {};
       var scenariosDriven = d.scenariosDriven || {};
       var weathersDriven = d.weathersDriven || {};

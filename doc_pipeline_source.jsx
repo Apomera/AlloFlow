@@ -12383,8 +12383,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // amber background overridden to the palette's `soft` tint
               // for visual continuity within the same step.
               const total = branches.length;
-              innerContent = `<div role="img" aria-label="Flow chart: ${main}" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin: 0 auto; font-family: sans-serif;">
-                      <div style="background: white; color: #1e293b; padding: 15px 40px; border-radius: 50px; text-align: center; border: 2px solid #475569; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.2em; font-weight: 800;">${main}</h3>${main_en ? `<div style="font-size:0.8em; color:#64748b; font-weight: normal; margin-top:4px;">(${main_en})</div>` : ''}</div>
+              innerContent = `
+                <style>
+                  .flowchart-print-wrapper { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 24px 16px; border-radius: 16px; }
+                  .flowchart-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                  .flowchart-step { page-break-inside: avoid; break-inside: avoid; }
+                  @media print {
+                    .flowchart-print-wrapper { padding: 12px; }
+                    .flowchart-print-wrapper .flowchart-step { box-shadow: none !important; }
+                  }
+                </style>
+                <div class="flowchart-print-wrapper">
+                <div role="img" aria-label="Flow chart: ${main}" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin: 0 auto; font-family: sans-serif;">
+                      <div style="background: linear-gradient(135deg, white 0%, #f8fafc 100%); color: #1e293b; padding: 16px 40px; border-radius: 50px; text-align: center; border: 2px solid #475569; margin-bottom: 20px; box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.12); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.4em; font-weight: 800; letter-spacing: -0.01em;">${main}</h3>${main_en ? `<div style="font-size:0.85em; color:#64748b; font-weight: normal; margin-top:4px; font-style:italic;">(${main_en})</div>` : ''}</div>
                       <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                       ${branches.map((b, idx) => {
                           const c = _pairColor(idx);
@@ -12392,7 +12403,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           const hasBranches = b.items && b.items.length > 1;
                           const stepLabel = `Step ${idx + 1} of ${total}: ${b.title}`;
                           return `<div aria-hidden="true" style="height: 32px; width: 3px; background: ${c.border};"></div><div aria-hidden="true" style="color: ${c.border}; font-size: 16px; line-height: 1; margin-top: -4px; margin-bottom: 4px;">&#9660;</div>
-                              <div role="group" aria-label="${stepLabel}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                              <div class="flowchart-step" role="group" aria-label="${stepLabel}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                   ${isDecision
                     ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">` +
                       `<div aria-hidden="true" style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: ${c.soft}; border: 2px solid ${c.border}; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` +
@@ -12409,7 +12420,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
                               </div>`;
                       }).join('')}
-                      <div aria-hidden="true" style="height: 32px; width: 3px; background: #475569;"></div><div style="background: #1e293b; color: white; font-size: 0.8em; font-weight: bold; padding: 8px 24px; border-radius: 9999px; border: 2px solid #475569;">${t('organizer.labels.end')}</div></div></div>`;
+                      <div aria-hidden="true" style="height: 32px; width: 3px; background: #475569;"></div><div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; font-size: 0.85em; font-weight: bold; padding: 10px 28px; border-radius: 9999px; border: 2px solid #475569; box-shadow: 0 4px 8px -2px rgba(0,0,0,0.2); letter-spacing: 0.04em; text-transform: uppercase;">${t('organizer.labels.end')}</div></div></div></div>`;
           } else {
               if (type === 'Cause and Effect') {
                   // Pair-coded color rotation: each cause+effect pair shares
@@ -12682,43 +12693,89 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   // and the connector line inherits that branch's border color
                   // so the visual relationship between center → branch is
                   // unambiguous even when there are 6+ branches.
+                  // Now also renders branch.items inside each card (was a long-
+                  // standing bug — printable mind maps lost all item detail).
                   const half = Math.ceil(branches.length / 2);
                   const leftBranches = branches.slice(0, half);
                   const rightBranches = branches.slice(half);
                   const total = branches.length;
-                  // Helper: render one branch card. `globalIdx` is the branch's
-                  // index across the full list (so left + right share one
-                  // palette rotation rather than each starting at teal).
                   const renderBranch = (b, side, globalIdx) => {
                       const c = _pairColor(globalIdx);
-                      const connectorPos = side === 'left'
-                          ? `right: -43px;`
-                          : `left: -43px;`;
-                      return `<div role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${b.title}" style="background: ${c.bg}; border: 3px solid ${c.border}; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` +
-                          `<div style="color: ${c.accent}; font-weight: bold;">${b.title}</div>` +
-                          `${b.title_en ? `<div style="font-size: 0.8em; color: ${c.accent}; opacity: 0.85;">(${b.title_en})</div>` : ''}` +
-                          `<div aria-hidden="true" style="position: absolute; top: 50%; ${connectorPos} width: 40px; height: 3px; background: ${c.border}; border-radius: 2px;"></div></div>`;
+                      const connectorPos = side === 'left' ? `right: -43px;` : `left: -43px;`;
+                      const itemAlign = side === 'left' ? 'right' : 'left';
+                      const itemsHtml = (b.items || []).map((it, k) => {
+                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          const trans = b.items_en?.[k];
+                          return `<li style="margin: 3px 0; font-size: 0.82em; color: ${c.accent}; line-height: 1.35;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
+                      }).join('');
+                      return `<div class="mindmap-branch" role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${b.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 3px solid ${c.border}; padding: 14px 18px; border-radius: 18px; text-align: ${itemAlign}; min-width: 180px; max-width: 240px; position: relative; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
+                          <div style="color: ${c.accent}; font-weight: 800; font-size: 0.95em; line-height: 1.25;">${b.title}</div>
+                          ${b.title_en ? `<div style="font-size: 0.78em; color: ${c.accent}; opacity: 0.8; font-style: italic; margin-top: 2px;">(${b.title_en})</div>` : ''}
+                          ${itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 8px 0 0 0; border-top: 1px solid ${c.soft}; padding-top: 8px;">${itemsHtml}</ul>` : ''}
+                          <div aria-hidden="true" style="position: absolute; top: 50%; ${connectorPos} width: 40px; height: 3px; background: ${c.border}; border-radius: 2px;"></div>
+                        </div>`;
                   };
-                  innerContent = `<div role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; margin: 0 auto; padding: 20px;">` +
-                    `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-end; flex: 1;">` +
-                    `${leftBranches.map((b, i) => renderBranch(b, 'left', i)).join('')}</div>` +
-                    `<div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #475569); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 5px solid #f1f5f9; z-index: 2;">` +
-                    `<h3 style="margin: 0; font-size: 1.2em;">${main}</h3>` +
-                    `${main_en ? `<div style="font-size: 0.8em; opacity: 0.85; margin-top: 5px;">(${main_en})</div>` : ''}</div>` +
-                    `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-start; flex: 1;">` +
-                    `${rightBranches.map((b, i) => renderBranch(b, 'right', half + i)).join('')}</div></div>`;
+                  innerContent = `
+                    <style>
+                      .mindmap-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 24px 16px; border-radius: 16px; }
+                      .mindmap-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .mindmap-branch { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .mindmap-print-wrapper { padding: 12px; }
+                        .mindmap-print-wrapper .mindmap-branch { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="mindmap-print-wrapper">
+                      <div role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto;">
+                        <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-end; flex: 1;">
+                          ${leftBranches.map((b, i) => renderBranch(b, 'left', i)).join('')}
+                        </div>
+                        <div style="width: 210px; height: 210px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #818cf8 0%, #6366f1 50%, #4f46e5 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; box-shadow: 0 12px 28px -6px rgba(99,102,241,0.45), inset 0 -8px 20px rgba(30,27,75,0.25); border: 5px solid #eef2ff; flex-shrink: 0; z-index: 2;">
+                          <h3 style="margin: 0; font-size: 1.25em; font-weight: 800; line-height: 1.2; text-shadow: 0 1px 2px rgba(30,27,75,0.3);">${main}</h3>
+                          ${main_en ? `<div style="font-size: 0.78em; opacity: 0.9; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-start; flex: 1;">
+                          ${rightBranches.map((b, i) => renderBranch(b, 'right', half + i)).join('')}
+                        </div>
+                      </div>
+                    </div>`;
               } else {
-                  innerContent = `<div style="max-width: 800px; margin: 0 auto; text-align: center;">` +
-                    `<div style="background: #4f46e5; color: white; padding: 20px 40px; border-radius: 15px; display: inline-block; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
-                    `<h3 style="margin: 0;">${main}</h3>` +
-                    `${main_en ? `<div style="opacity: 0.8; font-size: 0.9em;">(${main_en})</div>` : ''}</div>` +
-                    `<div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">` +
-                    `${branches.map(b => `<div style="flex: 1; min-width: 200px; max-width: 300px; background: white; border: 2px solid #e0e7ff; border-radius: 10px; overflow: hidden; text-align: left;">` +
-                      `<div style="background: #eef2ff; padding: 10px; font-weight: bold; color: #3730a3; text-align: center; border-bottom: 2px solid #e0e7ff;">` +
-                      `${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: 0.8em; color: #6366f1;">(${b.title_en})</div>` : ''}</div>` +
-                      `<ul style="padding: 15px 25px; margin: 0; color: #475569;">` +
-                      `${b.items.map((it, i) => `<li style="margin-bottom: 5px;">${it} ${b.items_en?.[i] ? `<span style="color: #94a3b8; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`).join('')}` +
-                      `</ul></div>`).join('')}</div></div>`;
+                  // Generic fallback: pair-coded branch cards rotating through
+                  // _PAIR_PALETTE so each section reads as a distinct chunk
+                  // even when there are 6+ branches.
+                  innerContent = `
+                    <style>
+                      .outline-print-wrapper { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .outline-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .outline-card { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .outline-print-wrapper { padding: 12px; }
+                        .outline-print-wrapper .outline-card { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="outline-print-wrapper" style="max-width: 900px; margin: 0 auto; text-align: center;">
+                      <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%); color: white; padding: 22px 44px; border-radius: 18px; display: inline-block; margin-bottom: 28px; box-shadow: 0 8px 20px -4px rgba(79,70,229,0.35); position: relative;">
+                        <h3 style="margin: 0; font-size: 1.5em; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 1px 2px rgba(30,27,75,0.25);">${main}</h3>
+                        ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
+                      </div>
+                      <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;">
+                        ${branches.map((b, i) => {
+                          const c = _pairColor(i);
+                          return `<div class="outline-card" style="flex: 1; min-width: 220px; max-width: 320px; background: white; border: 2px solid ${c.border}; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
+                            <div style="background: linear-gradient(135deg, ${c.bg} 0%, ${c.soft} 100%); padding: 12px 16px; font-weight: 800; color: ${c.accent}; text-align: center; border-bottom: 2px solid ${c.border}; font-size: 0.95em; letter-spacing: -0.01em;">
+                              ${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: 0.78em; color: ${c.accent}; opacity: 0.8; margin-top: 3px; font-style: italic;">(${b.title_en})</div>` : ''}
+                            </div>
+                            <ul style="padding: 14px 18px; margin: 0; list-style: none; color: ${c.accent};">
+                              ${(b.items || []).map((it, k) => {
+                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const trans = b.items_en?.[k];
+                                return `<li style="display:flex; gap:8px; align-items:flex-start; margin-bottom: 6px; font-size:0.9em; line-height:1.4;"><span style="color:${c.border}; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${text}${trans ? ` <em style="color: ${c.accent}; opacity: 0.7; font-size: 0.9em;">(${trans})</em>` : ''}</span></li>`;
+                              }).join('')}
+                            </ul>
+                          </div>`;
+                        }).join('')}
+                      </div>
+                    </div>`;
               }
           }
           // Text-only fallback for screen readers and printable PDFs.
