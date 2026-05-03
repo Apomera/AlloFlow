@@ -12217,6 +12217,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'outline') {
           const { main, main_en, branches, structureType } = item.data;
           const type = structureType || 'Structured Outline';
+          // WCAG-AA categorical palette for pair-coding multi-branch diagrams
+          // (Cause-Effect, Mind Map, Flow Chart). Each entry's `border` and
+          // `accent` colors clear 4.5:1 against white per WCAG 2.1 1.4.3.
+          // We keep the existing (cause)/(effect) text labels and add ordinal
+          // aria-labels so color-blind users still get the relationship
+          // signal — color is supplementary, not the only carrier (1.4.1).
+          const _PAIR_PALETTE = [
+              { border: '#0f766e', bg: '#f0fdfa', accent: '#134e4a', soft: '#ccfbf1' }, // teal
+              { border: '#b45309', bg: '#fffbeb', accent: '#78350f', soft: '#fde68a' }, // amber
+              { border: '#4338ca', bg: '#eef2ff', accent: '#312e81', soft: '#c7d2fe' }, // indigo
+              { border: '#be123c', bg: '#fff1f2', accent: '#881337', soft: '#fecdd3' }, // rose
+              { border: '#047857', bg: '#ecfdf5', accent: '#064e3b', soft: '#a7f3d0' }, // emerald
+              { border: '#6d28d9', bg: '#f5f3ff', accent: '#4c1d95', soft: '#ddd6fe' }, // violet
+              { border: '#0369a1', bg: '#f0f9ff', accent: '#0c4a6e', soft: '#bae6fd' }, // sky
+              { border: '#c2410c', bg: '#fff7ed', accent: '#7c2d12', soft: '#fed7aa' }, // orange
+          ];
+          const _pairColor = (i) => _PAIR_PALETTE[i % _PAIR_PALETTE.length];
           let innerContent = '';
           if (type === 'Venn Diagram') {
                const setA = branches[0] || { title: 'Set A', items: [] };
@@ -12308,46 +12325,65 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </div>
                `;
           } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
+              // Pair-coded flow chart: each step uses one palette entry. The
+              // connector line (vertical bar + downward triangle) above the
+              // step inherits the next step's border color, so the visual
+              // relationship "this connector leads into the green step"
+              // reads at a glance even on dense flows. Decision diamonds
+              // get the same palette color but with the diamond's classic
+              // amber background overridden to the palette's `soft` tint
+              // for visual continuity within the same step.
+              const total = branches.length;
               innerContent = `<div role="img" aria-label="Flow chart: ${main}" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin: 0 auto; font-family: sans-serif;">
-                      <div style="background: white; color: #1e293b; padding: 15px 40px; border-radius: 50px; text-align: center; border: 2px solid #cbd5e1; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.2em; font-weight: 800;">${main}</h3>${main_en ? `<div style="font-size:0.8em; color:#64748b; font-weight: normal; margin-top:4px;">(${main_en})</div>` : ''}</div>
+                      <div style="background: white; color: #1e293b; padding: 15px 40px; border-radius: 50px; text-align: center; border: 2px solid #475569; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.2em; font-weight: 800;">${main}</h3>${main_en ? `<div style="font-size:0.8em; color:#64748b; font-weight: normal; margin-top:4px;">(${main_en})</div>` : ''}</div>
                       <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                      ${branches.map(b => {
+                      ${branches.map((b, idx) => {
+                          const c = _pairColor(idx);
                           const isDecision = b.title.includes("?") || b.title.toLowerCase().includes("decision");
                           const hasBranches = b.items && b.items.length > 1;
-                          return `<div style="height: 32px; width: 2px; background: #94a3b8;"></div><div aria-hidden="true" style="color: #94a3b8; font-size: 16px; line-height: 1; margin-top: -4px; margin-bottom: 4px;">&#9660;</div>
-                              <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                          const stepLabel = `Step ${idx + 1} of ${total}: ${b.title}`;
+                          return `<div aria-hidden="true" style="height: 32px; width: 3px; background: ${c.border};"></div><div aria-hidden="true" style="color: ${c.border}; font-size: 16px; line-height: 1; margin-top: -4px; margin-bottom: 4px;">&#9660;</div>
+                              <div role="group" aria-label="${stepLabel}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                   ${isDecision
                     ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">` +
-                      `<div style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: #fefce8; border: 2px solid #facc15; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` +
+                      `<div aria-hidden="true" style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: ${c.soft}; border: 2px solid ${c.border}; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` +
                       `<div style="position: relative; z-index: 2; text-align: center; width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center;">` +
-                      `<span style="font-weight: bold; font-size: 0.75rem; color: #713f12; line-height: 1.25; word-wrap: break-word;">${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: 0.65rem; color: #a16207; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                      `<span style="font-weight: bold; font-size: 0.75rem; color: ${c.accent}; line-height: 1.25; word-wrap: break-word;">${idx + 1}. ${b.title}</span>` +
+                      `${b.title_en ? `<span style="font-size: 0.65rem; color: ${c.accent}; opacity: 0.85; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
                       `</div></div>`
-                    : `<div style="background: white; border: 2px solid #3b82f6; border-radius: 8px; padding: 16px; text-align: center; width: 256px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
-                      `<span style="font-weight: bold; font-size: 0.875rem; color: #1e3a8a;">${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: 0.75rem; color: #3b82f6; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                    : `<div style="background: ${c.bg}; border: 2px solid ${c.border}; border-radius: 8px; padding: 16px; text-align: center; width: 256px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
+                      `<span style="font-weight: bold; font-size: 0.875rem; color: ${c.accent};">${idx + 1}. ${b.title}</span>` +
+                      `${b.title_en ? `<span style="font-size: 0.75rem; color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
                       `</div>`}
-                                  ${hasBranches ? `<div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px; width: 100%; position: relative; align-items: stretch;"><div style="position: absolute; top: 0; left: 40px; right: 40px; height: 16px; border-top: 2px solid #cbd5e1; border-left: 2px solid #cbd5e1; border-right: 2px solid #cbd5e1; border-radius: 12px 12px 0 0;"></div>
-                                      ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; flex: 1; max-width: 150px;"><div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: #334155; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: 0.65rem; color: #64748b; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
-                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: #eff6ff; color: #1e40af; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid #dbeafe;">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.7;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
+                                  ${hasBranches ? `<div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px; width: 100%; position: relative; align-items: stretch;"><div aria-hidden="true" style="position: absolute; top: 0; left: 40px; right: 40px; height: 16px; border-top: 2px solid ${c.border}; border-left: 2px solid ${c.border}; border-right: 2px solid ${c.border}; border-radius: 12px 12px 0 0;"></div>
+                                      ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; flex: 1; max-width: 150px;"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: 0.65rem; color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
+                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
                               </div>`;
                       }).join('')}
-                      <div style="height: 32px; width: 2px; background: #94a3b8;"></div><div style="background: #1e293b; color: white; font-size: 0.8em; font-weight: bold; padding: 8px 24px; border-radius: 9999px; border: 2px solid #475569;">${t('organizer.labels.end')}</div></div></div>`;
+                      <div aria-hidden="true" style="height: 32px; width: 3px; background: #475569;"></div><div style="background: #1e293b; color: white; font-size: 0.8em; font-weight: bold; padding: 8px 24px; border-radius: 9999px; border: 2px solid #475569;">${t('organizer.labels.end')}</div></div></div>`;
           } else {
               if (type === 'Cause and Effect') {
+                  // Pair-coded color rotation: each cause+effect pair shares
+                  // one palette entry so the relationship reads at a glance.
+                  // The `(cause)`/`(effect)` text labels and ordinal aria-label
+                  // remain so color-blind users still get the pairing signal.
+                  const total = branches.length;
                   innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="margin:0;">${main}</h3></div>` +
                     `<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto;">` +
-                    `${branches.map(b => `<div style="display: flex; align-items: center; gap: 20px;">` +
-                      `<div style="flex: 1; background: #fef2f2; border: 1px solid #fee2e2; padding: 20px; border-radius: 8px; text-align: center;">` +
-                      `<div style="color: #991b1b; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.cause')}</div>` +
-                      `<div style="color: #7f1d1d; font-weight: bold;">${b.title}</div>` +
-                      `${b.title_en ? `<div style="font-size:0.8em; color:#ef4444;">(${b.title_en})</div>` : ''}</div>` +
-                      `<div aria-hidden="true" style="font-size: 30px; color: #cbd5e1;">&#8594;</div>` +
-                      `<div style="flex: 1; background: #eff6ff; border: 1px solid #dbeafe; padding: 20px; border-radius: 8px; text-align: center;">` +
-                      `<div style="color: #1e40af; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.effect')}</div>` +
-                      `<div style="color: #1e3a8a; font-weight: bold;">${b.items[0] || ''}</div>` +
-                      `${b.items_en?.[0] ? `<div style="font-size:0.8em; color:#3b82f6;">(${b.items_en[0]})</div>` : ''}</div>` +
-                      `</div>`).join('')}</div>`;
+                    `${branches.map((b, i) => {
+                        const c = _pairColor(i);
+                        return `<div role="group" aria-label="Cause and effect pair ${i + 1} of ${total}" style="display: flex; align-items: center; gap: 20px;">` +
+                          `<div style="flex: 1; background: ${c.bg}; border: 2px solid ${c.border}; padding: 20px; border-radius: 8px; text-align: center;">` +
+                          `<div style="color: ${c.accent}; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.cause')} ${i + 1}</div>` +
+                          `<div style="color: ${c.accent}; font-weight: bold;">${b.title}</div>` +
+                          `${b.title_en ? `<div style="font-size:0.8em; color:${c.accent}; opacity: 0.85;">(${b.title_en})</div>` : ''}</div>` +
+                          `<div aria-hidden="true" style="font-size: 30px; color: ${c.border}; font-weight: bold;">&#8594;</div>` +
+                          `<div style="flex: 1; background: ${c.bg}; border: 2px solid ${c.border}; padding: 20px; border-radius: 8px; text-align: center;">` +
+                          `<div style="color: ${c.accent}; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.effect')} ${i + 1}</div>` +
+                          `<div style="color: ${c.accent}; font-weight: bold;">${b.items[0] || ''}</div>` +
+                          `${b.items_en?.[0] ? `<div style="font-size:0.8em; color:${c.accent}; opacity: 0.85;">(${b.items_en[0]})</div>` : ''}</div>` +
+                          `</div>`;
+                    }).join('')}</div>`;
               } else if (type === 'Problem Solution') {
                   innerContent = `<div style="max-width: 800px; margin: 0 auto;">` +
                     `<div style="background: #fef2f2; border-left: 5px solid #ef4444; padding: 20px; margin-bottom: 40px; border-radius: 0 8px 8px 0;">` +
@@ -12363,24 +12399,117 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       `<ul style="margin: 0; padding-left: 20px; color: #15803d;">` +
                       `${b.items.map((it, i) => `<li style="margin-bottom: 5px;">${it} ${b.items_en?.[i] ? `<span style="opacity: 0.7; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`).join('')}` +
                       `</ul></div>`).join('')}</div></div>`;
-              } else if (type === 'Mind Map') {
+              } else if (type === 'T-Chart') {
+                  const left = branches[0] || { title: 'Column A', items: [] };
+                  const right = branches[1] || { title: 'Column B', items: [] };
+                  const renderTChartItems = (items, items_en, color) => (items || []).map((it, i) => {
+                      const text = typeof it === 'object' ? (it.text || '') : String(it);
+                      const trans = items_en?.[i];
+                      return `<li style="margin-bottom: 8px; padding: 8px 14px; background: white; border-left: 4px solid ${color}; border-radius: 8px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); -webkit-print-color-adjust: exact; print-color-adjust: exact;">${text}${trans ? `<div style="font-weight: normal; font-style: italic; opacity: 0.75; font-size: 0.85em; margin-top: 2px;">(${trans})</div>` : ''}</li>`;
+                  }).join('');
+                  innerContent = `
+                    <style>
+                      .tchart-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .tchart-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      @media print {
+                        .tchart-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
+                        .tchart-print-wrapper li { box-shadow: none !important; }
+                        .tchart-print-wrapper h3, .tchart-print-wrapper h4 { color: #000 !important; }
+                      }
+                    </style>
+                    <div class="tchart-print-wrapper">
+                    <div style="text-align:center; margin-bottom: 30px;">
+                      <h3 style="margin:0; font-size: 1.6em; color: #2c3e50; font-weight: 800;">${main}</h3>
+                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${main_en})</div>` : ''}
+                    </div>
+                    <div role="img" aria-label="T-Chart comparing ${left.title} and ${right.title}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; max-width: 800px; margin: 0 auto; border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: white;">
+                      <div style="padding: 20px; border-right: 2px solid #cbd5e1; background: linear-gradient(to bottom, rgba(207, 250, 254, 0.3), white);">
+                        <h4 style="margin: 0 0 12px 0; padding: 10px; background: #cffafe; color: #155e75; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #67e8f9; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                          ${left.title}${left.title_en ? `<div style="font-size: 0.75em; font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${left.title_en})</div>` : ''}
+                        </h4>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: #155e75;">
+                          ${renderTChartItems(left.items, left.items_en, '#22d3ee')}
+                        </ul>
+                      </div>
+                      <div style="padding: 20px; background: linear-gradient(to bottom, rgba(224, 231, 255, 0.3), white);">
+                        <h4 style="margin: 0 0 12px 0; padding: 10px; background: #e0e7ff; color: #3730a3; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #a5b4fc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                          ${right.title}${right.title_en ? `<div style="font-size: 0.75em; font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${right.title_en})</div>` : ''}
+                        </h4>
+                        <ul style="list-style: none; padding: 0; margin: 0; color: #3730a3;">
+                          ${renderTChartItems(right.items, right.items_en, '#818cf8')}
+                        </ul>
+                      </div>
+                    </div>
+                    </div>`;
+              } else if (type === 'Key Concept Map') {
+                  // Concept map: central hub + radiating branches with attribute lists.
                   const half = Math.ceil(branches.length / 2);
                   const leftBranches = branches.slice(0, half);
                   const rightBranches = branches.slice(half);
+                  const renderBranchCard = (b, side) => {
+                      const lineStyle = side === 'left'
+                        ? 'position: absolute; top: 50%; right: -43px; width: 40px; height: 2px; background: #99f6e4;'
+                        : 'position: absolute; top: 50%; left: -43px; width: 40px; height: 2px; background: #99f6e4;';
+                      const itemsHtml = (b.items || []).map((it, i) => {
+                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          return `<li style="margin: 2px 0; font-size: 0.85em; color: #134e4a;">${text}${b.items_en?.[i] ? ` <span style="color: #5eead4; font-style: italic;">(${b.items_en[i]})</span>` : ''}</li>`;
+                      }).join('');
+                      return `<div style="background: white; border: 3px solid #99f6e4; padding: 14px; border-radius: 16px; text-align: ${side === 'left' ? 'right' : 'left'}; min-width: 180px; max-width: 240px; position: relative; -webkit-print-color-adjust: exact; print-color-adjust: exact;">` +
+                          `<div style="color: #134e4a; font-weight: 800;">${b.title}</div>` +
+                          (b.title_en ? `<div style="font-size: 0.8em; color: #14b8a6; font-style: italic;">(${b.title_en})</div>` : '') +
+                          (itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 6px 0 0 0; ${side === 'left' ? 'text-align: right;' : 'text-align: left;'}">${itemsHtml}</ul>` : '') +
+                          `<div style="${lineStyle}"></div></div>`;
+                  };
+                  innerContent = `
+                    <style>
+                      .cmap-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .cmap-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      @media print {
+                        .cmap-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
+                      }
+                    </style>
+                    <div class="cmap-print-wrapper" role="img" aria-label="Concept map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; padding: 20px;">
+                      <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-end; flex: 1;">
+                        ${leftBranches.map(b => renderBranchCard(b, 'left')).join('')}
+                      </div>
+                      <div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #059669); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15); border: 5px solid #ccfbf1; flex-shrink: 0; z-index: 2;">
+                        <h3 style="margin: 0; font-size: 1.2em;">${main}</h3>
+                        ${main_en ? `<div style="font-size: 0.8em; opacity: 0.85; margin-top: 5px;">(${main_en})</div>` : ''}
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start; flex: 1;">
+                        ${rightBranches.map(b => renderBranchCard(b, 'right')).join('')}
+                      </div>
+                    </div>`;
+              } else if (type === 'Mind Map') {
+                  // Pair-coded mind map: each branch gets its own palette entry,
+                  // and the connector line inherits that branch's border color
+                  // so the visual relationship between center → branch is
+                  // unambiguous even when there are 6+ branches.
+                  const half = Math.ceil(branches.length / 2);
+                  const leftBranches = branches.slice(0, half);
+                  const rightBranches = branches.slice(half);
+                  const total = branches.length;
+                  // Helper: render one branch card. `globalIdx` is the branch's
+                  // index across the full list (so left + right share one
+                  // palette rotation rather than each starting at teal).
+                  const renderBranch = (b, side, globalIdx) => {
+                      const c = _pairColor(globalIdx);
+                      const connectorPos = side === 'left'
+                          ? `right: -43px;`
+                          : `left: -43px;`;
+                      return `<div role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${b.title}" style="background: ${c.bg}; border: 3px solid ${c.border}; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` +
+                          `<div style="color: ${c.accent}; font-weight: bold;">${b.title}</div>` +
+                          `${b.title_en ? `<div style="font-size: 0.8em; color: ${c.accent}; opacity: 0.85;">(${b.title_en})</div>` : ''}` +
+                          `<div aria-hidden="true" style="position: absolute; top: 50%; ${connectorPos} width: 40px; height: 3px; background: ${c.border}; border-radius: 2px;"></div></div>`;
+                  };
                   innerContent = `<div role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 900px; margin: 0 auto; padding: 20px;">` +
                     `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-end; flex: 1;">` +
-                    `${leftBranches.map(b => `<div style="background: white; border: 3px solid #e9d5ff; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` +
-                      `<div style="color: #581c87; font-weight: bold;">${b.title}</div>` +
-                      `${b.title_en ? `<div style="font-size: 0.8em; color: #a855f7;">(${b.title_en})</div>` : ''}` +
-                      `<div style="position: absolute; top: 50%; right: -43px; width: 40px; height: 2px; background: #e9d5ff;"></div></div>`).join('')}</div>` +
-                    `<div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 5px solid #f3e8ff; z-index: 2;">` +
+                    `${leftBranches.map((b, i) => renderBranch(b, 'left', i)).join('')}</div>` +
+                    `<div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #1e293b, #475569); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border: 5px solid #f1f5f9; z-index: 2;">` +
                     `<h3 style="margin: 0; font-size: 1.2em;">${main}</h3>` +
-                    `${main_en ? `<div style="font-size: 0.8em; opacity: 0.8; margin-top: 5px;">(${main_en})</div>` : ''}</div>` +
+                    `${main_en ? `<div style="font-size: 0.8em; opacity: 0.85; margin-top: 5px;">(${main_en})</div>` : ''}</div>` +
                     `<div style="display: flex; flex-direction: column; gap: 30px; align-items: flex-start; flex: 1;">` +
-                    `${rightBranches.map(b => `<div style="background: white; border: 3px solid #e9d5ff; padding: 15px; border-radius: 20px; text-align: center; min-width: 150px; position: relative;">` +
-                      `<div style="color: #581c87; font-weight: bold;">${b.title}</div>` +
-                      `${b.title_en ? `<div style="font-size: 0.8em; color: #a855f7;">(${b.title_en})</div>` : ''}` +
-                      `<div style="position: absolute; top: 50%; left: -43px; width: 40px; height: 2px; background: #e9d5ff;"></div></div>`).join('')}</div></div>`;
+                    `${rightBranches.map((b, i) => renderBranch(b, 'right', half + i)).join('')}</div></div>`;
               } else {
                   innerContent = `<div style="max-width: 800px; margin: 0 auto; text-align: center;">` +
                     `<div style="background: #4f46e5; color: white; padding: 20px 40px; border-radius: 15px; display: inline-block; margin-bottom: 30px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
@@ -12425,9 +12554,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <h4>${escape(setB.title)} only</h4>${renderItems(setB.items, setB.items_en)}
                       <h4>${escape(shared.title || 'Shared')}</h4>${renderItems(shared.items, shared.items_en)}
                   `;
-              } else if (type === 'Cause-Effect') {
-                  body = branches.map(b => `
-                      <h4>${escape(b.title)} (cause)</h4>${renderItems(b.items, b.items_en)}
+              } else if (type === 'Cause and Effect') {
+                  // Each branch's title is the cause; items[0] is the effect.
+                  // Format the fallback as "Cause N: <title> → Effect: <items[0]>"
+                  // so screen readers hear the relationship in reading order.
+                  body = branches.map((b, i) => `
+                      <p><strong>Cause ${i + 1}:</strong> ${escape(b.title)}${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</p>
+                      <p style="margin-left:1.5rem;"><strong>Effect:</strong> ${escape(b.items[0] || '')}${b.items_en && b.items_en[0] ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.items_en[0])})</em>` : ''}</p>
                   `).join('');
               } else if (type === 'Problem Solution') {
                   body = `
@@ -12438,6 +12571,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               } else if (type === 'Mind Map') {
                   body = `
                       <p><strong>Center:</strong> ${escape(main)}</p>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'T-Chart') {
+                  const left = branches[0] || { title: 'Column A', items: [] };
+                  const right = branches[1] || { title: 'Column B', items: [] };
+                  body = `
+                      <h4>${escape(left.title)}</h4>${renderItems(left.items, left.items_en)}
+                      <h4>${escape(right.title)}</h4>${renderItems(right.items, right.items_en)}
+                  `;
+              } else if (type === 'Key Concept Map') {
+                  body = `
+                      <p><strong>Central concept:</strong> ${escape(main)}</p>
                       ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
                   `;
               } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
