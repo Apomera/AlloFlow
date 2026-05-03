@@ -10379,10 +10379,13 @@ tr { page-break-inside: avoid; }
     // a TH with a data-struct-id. We read this after the tree is built to
     // construct the StructTreeRoot /IDTree name tree.
     const idTreeEntries = [];
+    // Hoisted to the outer closure so the post-build summary can count
+    // headings/paragraphs/tables/etc. without repeating the DOM walk.
+    let _outlineItems = [];
     const _buildOutlineStructElems = () => {
       const body = htmlDoc.body || htmlDoc.documentElement;
       // Walk once collecting ordered {role, text, alt, isDecorative, level}.
-      const items = [];
+      const items = _outlineItems;
       const walker = htmlDoc.createTreeWalker(body, NodeFilter.SHOW_ELEMENT, null);
       while (walker.nextNode()) {
         const el = walker.currentNode;
@@ -10837,10 +10840,44 @@ tr { page-break-inside: avoid; }
     } else {
       catalog.set(PDFName.of('ViewerPreferences'), context.obj({ DisplayDocTitle: true }));
     }
-    // ── Return tagged bytes ──
+    // ── Tag summary for visible proof of tagging ──
+    // Most PDF readers don't surface "is this tagged?" to the user, so a
+    // user clicking "Tagged PDF" downloads a file that visually looks
+    // identical to the original (visual layer is preserved byte-identical
+    // by design) and reasonably wonders if anything actually happened.
+    // Returning a struct-element summary alongside the bytes lets the
+    // caller surface "3 headings · 28 paragraphs · 1 table tagged" in a
+    // toast, so tagging is demonstrably real.
+    //
+    // Counts are computed from the same `items` list `_buildOutlineStructElems`
+    // already walks (no second DOM pass) plus the page count from the doc.
+    const _summary = (() => {
+        let headings = 0, paragraphs = 0, tables = 0, lists = 0, images = 0, tableCells = 0, langTagged = 0;
+        try {
+            if (Array.isArray(_outlineItems)) {
+                for (const it of _outlineItems) {
+                    if (it.lang) langTagged++;
+                    if (/^H[1-6]$/.test(it.role)) headings++;
+                    else if (it.role === 'P') paragraphs++;
+                    else if (it.role === 'Table') tables++;
+                    else if (it.role === 'L') lists++;
+                    else if (it.role === 'Figure') images++;
+                    else if (it.role === 'TH' || it.role === 'TD') tableCells++;
+                }
+            }
+        } catch(_) {}
+        return {
+            headings, paragraphs, tables, lists, images, tableCells, langTagged,
+            pages: pages.length,
+            structElems: (typeof structElemRefs !== 'undefined' && Array.isArray(structElemRefs)) ? structElemRefs.length : 0,
+            fields: (typeof fieldElemRefs !== 'undefined' && Array.isArray(fieldElemRefs)) ? fieldElemRefs.length : 0,
+        };
+    })();
+    // ── Return tagged bytes + summary ──
     // useObjectStreams=false produces slightly larger PDFs but more
     // compatible with older readers and validators.
-    return await doc.save({ useObjectStreams: false, addDefaultPage: false });
+    const _bytes = await doc.save({ useObjectStreams: false, addDefaultPage: false });
+    return { bytes: _bytes, summary: _summary };
   };
 
   // ── Download Accessible PDF from HTML ──
@@ -12382,37 +12419,133 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   // The `(cause)`/`(effect)` text labels and ordinal aria-label
                   // remain so color-blind users still get the pairing signal.
                   const total = branches.length;
-                  innerContent = `<div style="text-align:center; margin-bottom: 30px;"><h3 style="margin:0;">${main}</h3></div>` +
-                    `<div style="display: flex; flex-direction: column; gap: 20px; max-width: 800px; margin: 0 auto;">` +
-                    `${branches.map((b, i) => {
-                        const c = _pairColor(i);
-                        return `<div role="group" aria-label="Cause and effect pair ${i + 1} of ${total}" style="display: flex; align-items: center; gap: 20px;">` +
-                          `<div style="flex: 1; background: ${c.bg}; border: 2px solid ${c.border}; padding: 20px; border-radius: 8px; text-align: center;">` +
-                          `<div style="color: ${c.accent}; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.cause')} ${i + 1}</div>` +
-                          `<div style="color: ${c.accent}; font-weight: bold;">${b.title}</div>` +
-                          `${b.title_en ? `<div style="font-size:0.8em; color:${c.accent}; opacity: 0.85;">(${b.title_en})</div>` : ''}</div>` +
-                          `<div aria-hidden="true" style="font-size: 30px; color: ${c.border}; font-weight: bold;">&#8594;</div>` +
-                          `<div style="flex: 1; background: ${c.bg}; border: 2px solid ${c.border}; padding: 20px; border-radius: 8px; text-align: center;">` +
-                          `<div style="color: ${c.accent}; font-weight: bold; font-size: 0.8em; text-transform: uppercase; margin-bottom: 5px;">${t('organizer.labels.effect')} ${i + 1}</div>` +
-                          `<div style="color: ${c.accent}; font-weight: bold;">${b.items[0] || ''}</div>` +
-                          `${b.items_en?.[0] ? `<div style="font-size:0.8em; color:${c.accent}; opacity: 0.85;">(${b.items_en[0]})</div>` : ''}</div>` +
-                          `</div>`;
-                    }).join('')}</div>`;
+                  const causeLabel = t('organizer.labels.cause') || 'Cause';
+                  const effectLabel = t('organizer.labels.effect') || 'Effect';
+                  innerContent = `
+                    <style>
+                      .ce-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .ce-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .ce-pair { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .ce-print-wrapper { padding: 12px; }
+                        .ce-print-wrapper .ce-card { box-shadow: none !important; }
+                        .ce-print-wrapper h3 { color: #000 !important; }
+                      }
+                    </style>
+                    <div class="ce-print-wrapper">
+                      <div style="text-align:center; margin-bottom: 28px;">
+                        <h3 style="margin:0; font-size: 1.7em; color: #1e293b; font-weight: 800; letter-spacing: -0.01em;">${main}</h3>
+                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
+                        <div style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:0.7em; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.08em;">
+                          <span>${causeLabel}</span>
+                          <span aria-hidden="true" style="color:#94a3b8;">&rarr;</span>
+                          <span>${effectLabel}</span>
+                        </div>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 18px; max-width: 860px; margin: 0 auto;">
+                        ${branches.map((b, i) => {
+                          const c = _pairColor(i);
+                          // Render ALL items as effects, not just b.items[0] (was a long-standing bug).
+                          const effectItems = (b.items || []).filter(it => (typeof it === 'object' ? it.text : it));
+                          const effectsHtml = effectItems.length === 0
+                            ? `<div style="color:${c.accent}; opacity:0.6; font-style:italic; font-size:0.9em;">(no effects listed)</div>`
+                            : effectItems.map((it, k) => {
+                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const trans = b.items_en?.[k];
+                                return `<div style="background:white; border-left:3px solid ${c.border}; padding:8px 12px; border-radius:6px; margin-bottom:6px; color:${c.accent}; font-weight:600; font-size:0.92em; box-shadow:0 1px 2px rgba(0,0,0,0.04);">${text}${trans ? `<div style="font-weight:normal; font-style:italic; opacity:0.8; font-size:0.85em; margin-top:2px;">(${trans})</div>` : ''}</div>`;
+                              }).join('');
+                          return `<div class="ce-pair" role="group" aria-label="Cause and effect pair ${i + 1} of ${total}" style="display: flex; align-items: stretch; gap: 14px;">
+                            <div class="ce-card" style="flex: 1; background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
+                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.border}; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
+                                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:white; color:${c.accent}; font-weight:800; display:inline-flex; align-items:center; justify-content:center; font-size:0.75em;">${i + 1}</span>
+                                ${causeLabel}
+                              </div>
+                              <div style="color: ${c.accent}; font-weight: 700; font-size:0.98em; line-height:1.3;">${b.title}</div>
+                              ${b.title_en ? `<div style="font-size:0.82em; color:${c.accent}; opacity: 0.8; font-style:italic; margin-top:3px;">(${b.title_en})</div>` : ''}
+                            </div>
+                            <div aria-hidden="true" style="display:flex; align-items:center; flex-shrink:0; color: ${c.border};">
+                              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
+                                <path d="M5 12h14m0 0l-6-6m6 6l-6 6" stroke="${c.border}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                              </svg>
+                            </div>
+                            <div class="ce-card" style="flex: 1.3; background: linear-gradient(135deg, ${c.soft} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
+                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.accent}; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
+                                ${effectLabel}${effectItems.length > 1 ? `s (${effectItems.length})` : ''}
+                              </div>
+                              ${effectsHtml}
+                            </div>
+                          </div>`;
+                        }).join('')}
+                      </div>
+                    </div>`;
               } else if (type === 'Problem Solution') {
-                  innerContent = `<div style="max-width: 800px; margin: 0 auto;">` +
-                    `<div style="background: #fef2f2; border-left: 5px solid #ef4444; padding: 20px; margin-bottom: 40px; border-radius: 0 8px 8px 0;">` +
-                    `<div style="color: #ef4444; font-weight: bold; font-size: 0.8em; text-transform: uppercase;">${t('organizer.labels.problem_label')}</div>` +
-                    `<h3 style="margin: 10px 0; color: #7f1d1d;">${main}</h3>` +
-                    `${main_en ? `<div style="color: #991b1b; font-style: italic;">(${main_en})</div>` : ''}</div>` +
-                    `<div aria-hidden="true" style="text-align: center; font-size: 30px; color: #cbd5e1; margin-bottom: 20px;">&#8595;</div>` +
-                    `<h4 style="text-align: center; color: #166534; margin-bottom: 20px;">${t('organizer.labels.solutions')}</h4>` +
-                    `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">` +
-                    `${branches.map(b => `<div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 20px; border-radius: 8px;">` +
-                      `<h4 style="color: #166534; margin: 0 0 10px 0;">${b.title}</h4>` +
-                      `${b.title_en ? `<div style="color: #22c55e; font-size: 0.8em; margin-bottom: 10px;">(${b.title_en})</div>` : ''}` +
-                      `<ul style="margin: 0; padding-left: 20px; color: #15803d;">` +
-                      `${b.items.map((it, i) => `<li style="margin-bottom: 5px;">${it} ${b.items_en?.[i] ? `<span style="opacity: 0.7; font-size: 0.9em;">(${b.items_en[i]})</span>` : ''}</li>`).join('')}` +
-                      `</ul></div>`).join('')}</div></div>`;
+                  // Detect Outcome branch by title keyword (matches view_renderers logic)
+                  const psOutcomeIdx = branches.findIndex(b =>
+                      (b.title || '').toLowerCase().includes('outcome') ||
+                      (b.title || '').toLowerCase().includes('result') ||
+                      (b.title || '').toLowerCase().includes('evaluation')
+                  );
+                  const psOutcome = psOutcomeIdx !== -1 ? branches[psOutcomeIdx] : null;
+                  const psSolutions = branches.filter((_, i) => i !== psOutcomeIdx);
+                  const problemLabel = t('organizer.labels.problem_label') || 'Problem';
+                  const solutionsLabel = t('organizer.labels.solutions') || 'Solutions';
+                  // Solutions grid: 2 cols if <= 4, otherwise auto-fit
+                  const psGridCols = psSolutions.length <= 4 ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(220px, 1fr))';
+                  innerContent = `
+                    <style>
+                      .ps-print-wrapper { page-break-inside: auto; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
+                      .ps-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .ps-card { page-break-inside: avoid; break-inside: avoid; }
+                      @media print {
+                        .ps-print-wrapper { padding: 12px; }
+                        .ps-print-wrapper .ps-card { box-shadow: none !important; }
+                      }
+                    </style>
+                    <div class="ps-print-wrapper" style="max-width: 860px; margin: 0 auto;">
+                      <div class="ps-card" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #fca5a5; border-left: 6px solid #dc2626; padding: 22px 26px; margin-bottom: 24px; border-radius: 14px; box-shadow: 0 4px 10px -2px rgba(220,38,38,0.15); position: relative;">
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:#dc2626; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:12px;">
+                          <span aria-hidden="true">!</span> ${problemLabel}
+                        </div>
+                        <h3 style="margin: 0; color: #7f1d1d; font-size: 1.4em; font-weight: 800; line-height:1.3;">${main}</h3>
+                        ${main_en ? `<div style="color: #991b1b; font-style: italic; margin-top:6px; font-size:0.9em;">(${main_en})</div>` : ''}
+                      </div>
+                      <div aria-hidden="true" style="text-align: center; margin: -6px 0 18px;">
+                        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));">
+                          <path d="M12 5v14m0 0l-7-7m7 7l7-7" stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                      <div style="text-align:center; margin-bottom: 16px;">
+                        <h4 style="display:inline-block; margin:0; padding:6px 18px; color: #166534; font-size:0.9em; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; background:#f0fdf4; border:2px solid #86efac; border-radius:999px;">${solutionsLabel}</h4>
+                      </div>
+                      <div style="display: grid; grid-template-columns: ${psGridCols}; gap: 14px;">
+                        ${psSolutions.map((b, i) => `<div class="ps-card" style="background: linear-gradient(135deg, #f0fdf4 0%, white 100%); border: 2px solid #86efac; border-left: 5px solid #16a34a; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(22,163,74,0.12); position:relative;">
+                          <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
+                            <span style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:24px; height:24px; border-radius:50%; background:#16a34a; color:white; font-weight:800; font-size:0.85em;">${i + 1}</span>
+                            <h4 style="color: #166534; margin: 0; font-size:1em; font-weight:700; line-height:1.3;">${b.title}${b.title_en ? `<div style="color: #16a34a; font-size: 0.78em; margin-top:2px; font-style:italic; font-weight:normal;">(${b.title_en})</div>` : ''}</h4>
+                          </div>
+                          <ul style="margin: 0; padding: 0; list-style: none; color: #14532d;">
+                            ${(b.items || []).map((it, k) => {
+                              const text = typeof it === 'object' ? (it.text || '') : String(it);
+                              const trans = b.items_en?.[k];
+                              return `<li style="display:flex; align-items:flex-start; gap:6px; margin-bottom: 5px; font-size:0.88em; line-height:1.4;"><span style="color:#16a34a; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#10003;</span><span>${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#16a34a;">(${trans})</em>` : ''}</span></li>`;
+                            }).join('')}
+                          </ul>
+                        </div>`).join('')}
+                      </div>
+                      ${psOutcome ? `<div class="ps-card" style="margin-top: 22px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #93c5fd; border-left: 6px solid #2563eb; padding: 20px 24px; border-radius: 14px; box-shadow: 0 3px 8px -2px rgba(37,99,235,0.15);">
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:#2563eb; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:10px;">
+                          ${psOutcome.title || 'Outcome'}
+                        </div>
+                        ${psOutcome.title_en ? `<div style="color: #1e40af; font-style: italic; font-size:0.85em; margin-bottom:8px;">(${psOutcome.title_en})</div>` : ''}
+                        <ul style="margin: 0; padding: 0; list-style: none; color: #1e3a8a;">
+                          ${(psOutcome.items || []).map((it, k) => {
+                            const text = typeof it === 'object' ? (it.text || '') : String(it);
+                            const trans = psOutcome.items_en?.[k];
+                            return `<li style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 6px; font-size:0.92em;"><span style="color:#2563eb; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#2563eb;">(${trans})</em>` : ''}</span></li>`;
+                          }).join('')}
+                        </ul>
+                      </div>` : ''}
+                    </div>`;
               } else if (type === 'T-Chart') {
                   const left = branches[0] || { title: 'Column A', items: [] };
                   const right = branches[1] || { title: 'Column B', items: [] };
