@@ -334,6 +334,7 @@
     var h = React.createElement;
     var useState = React.useState;
     var useEffect = React.useEffect;
+    var useRef = React.useRef;
 
     var addToast = props.addToast || function(msg) { console.log('[AlloHaven]', msg); };
 
@@ -372,6 +373,19 @@
     var setStateMulti = function(obj) {
       setState(function(prev) { return Object.assign({}, prev, obj); });
     };
+
+    // ── Pomodoro tick state ──
+    // Forces a re-render every ~250ms while the timer is active, so the
+    // mm:ss display stays current. Date.now() arithmetic is the truth —
+    // the tick is purely a re-render trigger, browser-throttle resilient.
+    var nowTickTuple = useState(0);
+    var nowTick = nowTickTuple[0];
+    var setNowTick = nowTickTuple[1];
+
+    // Single-fire guard so completion logic doesn't re-trigger on every
+    // render once a Pomodoro has crossed its duration. Reset when a new
+    // Pomodoro starts (active flips false → true).
+    var completionFiredRef = useRef(false);
 
     // ── Theme inherited from active AlloFlow theme ──
     // Read at every render so theme changes elsewhere reflect immediately
@@ -428,6 +442,156 @@
       window.addEventListener('keydown', handler);
       return function() { window.removeEventListener('keydown', handler); };
     }, [props.isOpen, state.activeModal, state.onboardingSeen]);
+
+    // ── Pomodoro tick interval (250ms) ──
+    // Only runs while the timer is active. Re-renders the mm:ss display.
+    // Cheap; doesn't affect perceived smoothness at 4Hz.
+    useEffect(function() {
+      if (!state.pomodoroState.active) return;
+      var iv = setInterval(function() { setNowTick(Date.now()); }, 250);
+      return function() { clearInterval(iv); };
+      // eslint-disable-next-line
+    }, [state.pomodoroState.active]);
+
+    // ── Completion detection ──
+    // Fires once per Pomodoro when elapsed crosses duration. Date.now()-based
+    // so it's robust against browser tab throttling: even if the student
+    // backgrounds the tab and comes back 25min later, this useEffect runs on
+    // re-mount and immediately detects the completion (or fires on the next
+    // tick if still active). Single-fire guarded by completionFiredRef.
+    useEffect(function() {
+      // Reset guard when Pomodoro becomes inactive (between sessions)
+      if (!state.pomodoroState.active) {
+        completionFiredRef.current = false;
+        return;
+      }
+      if (completionFiredRef.current) return;
+      var startedAt = state.pomodoroState.startedAt;
+      if (!startedAt) return;
+      var totalMs = state.pomodoroState.durationMinutes * 60 * 1000;
+      var elapsed = Date.now() - startedAt;
+      if (elapsed < totalMs) return;
+      // Completion!
+      completionFiredRef.current = true;
+      handlePomodoroCompletion();
+      // eslint-disable-next-line
+    }, [state.pomodoroState.active, nowTick]);
+
+    // ── Pomodoro phase progression + token earn logic ──
+    // Called once per timer expiration. Awards tokens for focus phases
+    // (clean rule: full duration earns +2, +2 cycle bonus on every 4th
+    // focus session of the daily cycle), advances to the next phase
+    // (focus → short-break → focus → ... every 4th → long-break),
+    // increments dailyState.pomodorosCompleted, and applies the soft
+    // 4/day cap (5th+ Pomodoros run the timer but earn 0 tokens).
+    function handlePomodoroCompletion() {
+      var phase = state.pomodoroState.phase;
+      var prefs = state.pomodoroPreferences;
+      var cycleProgress = state.pomodoroState.cycleProgress || 0;
+      var todayCompleted = state.dailyState.pomodorosCompleted || 0;
+
+      if (phase === 'focus') {
+        // Token award (cap-respecting)
+        var newCount = todayCompleted + 1;
+        var underCap = newCount <= 4;
+        var isFourthInCycle = (cycleProgress + 1) >= 4;
+        var earned = 0;
+        if (underCap) {
+          earned = 2;
+          if (isFourthInCycle) earned += 2; // cycle bonus → 4 total this completion
+        }
+
+        // Phase advancement: focus → break (long if 4th, else short)
+        var nextPhase = isFourthInCycle ? 'long-break' : 'short-break';
+        var nextDuration = isFourthInCycle ? prefs.longBreakMinutes : prefs.shortBreakMinutes;
+        var nextCycleProgress = isFourthInCycle ? 0 : (cycleProgress + 1);
+
+        // Apply state changes
+        var earningsEntry = {
+          source: isFourthInCycle ? 'cycle-bonus' : 'pomodoro',
+          tokens: earned,
+          date: new Date().toISOString(),
+          metadata: { duration: state.pomodoroState.durationMinutes, capped: !underCap }
+        };
+        var newDailyState = Object.assign({}, state.dailyState, {
+          pomodorosCompleted: newCount
+        });
+        var newPomodoroState = {
+          active: true,
+          phase: nextPhase,
+          startedAt: Date.now(),
+          durationMinutes: nextDuration,
+          cycleProgress: nextCycleProgress
+        };
+        var updates = {
+          tokens: state.tokens + earned,
+          earnings: state.earnings.concat([earningsEntry]),
+          dailyState: newDailyState,
+          pomodoroState: newPomodoroState
+        };
+
+        // First-Pomodoro toast (one-time)
+        if (!state.toastsSeen.firstPomodoro) {
+          updates.toastsSeen = Object.assign({}, state.toastsSeen, { firstPomodoro: true });
+          setTimeout(function() {
+            addToast('🪙 +' + earned + ' tokens earned! Click any dotted cell to spend on a decoration.');
+          }, 50);
+        } else if (earned > 0) {
+          setTimeout(function() {
+            var msg = isFourthInCycle
+              ? '🎉 Cycle complete! +' + earned + ' tokens (focus + cycle bonus). Long break time.'
+              : '🪙 +' + earned + ' tokens. Time for a ' + (nextPhase === 'long-break' ? 'long' : 'short') + ' break.';
+            addToast(msg);
+          }, 50);
+        } else {
+          // Above daily cap: friendly soft-cap message
+          setTimeout(function() {
+            addToast("You've focused well today — take a break! (No tokens for additional sessions today.)");
+          }, 50);
+        }
+
+        setStateMulti(updates);
+        // Allow next completion to fire (we just reset the timer for the
+        // break phase; completionFiredRef will gate the next phase ending)
+        completionFiredRef.current = false;
+        return;
+      }
+
+      // Break phase complete — return to focus, no tokens involved
+      var nextFocusState = {
+        active: true,
+        phase: 'focus',
+        startedAt: Date.now(),
+        durationMinutes: prefs.focusMinutes,
+        cycleProgress: state.pomodoroState.cycleProgress  // already advanced when focus completed
+      };
+      setStateField('pomodoroState', nextFocusState);
+      completionFiredRef.current = false;
+      setTimeout(function() {
+        addToast('Break over. Ready for the next focus session?');
+      }, 50);
+    }
+
+    // Start a new Pomodoro from a stopped state. Used by the Start button.
+    function startPomodoro() {
+      var prefs = state.pomodoroPreferences;
+      setStateField('pomodoroState', {
+        active: true,
+        phase: 'focus',
+        startedAt: Date.now(),
+        durationMinutes: prefs.focusMinutes,
+        cycleProgress: state.pomodoroState.cycleProgress || 0
+      });
+      completionFiredRef.current = false;
+    }
+
+    // Cancel the active Pomodoro. Clean rule: 0 tokens, no penalty,
+    // brief mercy toast acknowledging the choice.
+    function cancelPomodoro() {
+      setStateField('pomodoroState', Object.assign({}, state.pomodoroState, { active: false, startedAt: null }));
+      completionFiredRef.current = false;
+      addToast("It's okay to stop. No tokens earned this time.");
+    }
 
     if (!props.isOpen) return null;
 
@@ -525,9 +689,11 @@
           }
         },
           h('button', {
-            onClick: function() { addToast('Pomodoro coming in Phase 1b'); },
-            style: primaryBtnStyle(palette)
-          }, '🍅 Start Pomodoro'),
+            onClick: startPomodoro,
+            disabled: state.pomodoroState.active,
+            style: Object.assign({}, primaryBtnStyle(palette),
+              state.pomodoroState.active ? { opacity: 0.5, cursor: 'not-allowed' } : {})
+          }, state.pomodoroState.active ? '🍅 Pomodoro running' : '🍅 Start Pomodoro'),
           h('button', {
             onClick: function() { addToast('Reflection coming in Phase 1c'); },
             style: secondaryBtnStyle(palette)
@@ -537,7 +703,7 @@
             style: secondaryBtnStyle(palette)
           }, '📓 Journal'),
           h('button', {
-            onClick: function() { addToast('Settings coming in Phase 1b'); },
+            onClick: function() { setStateField('activeModal', 'settings'); },
             style: secondaryBtnStyle(palette)
           }, '⚙️ Settings')
         ),
@@ -761,6 +927,276 @@
       });
     }
 
+    // ─────────────────────────────────────────────────
+    // POMODORO OVERLAY — full-screen-ish display while timer is active.
+    // Shows mm:ss countdown, phase label, cycle progress dots, cancel.
+    // Sits on top of the room so the student sees their decorations
+    // peripherally while focusing.
+    // ─────────────────────────────────────────────────
+    function renderPomodoroOverlay() {
+      if (!state.pomodoroState.active) return null;
+      var startedAt = state.pomodoroState.startedAt || Date.now();
+      var totalMs = state.pomodoroState.durationMinutes * 60 * 1000;
+      var elapsedMs = Math.max(0, Date.now() - startedAt);
+      var remainingMs = Math.max(0, totalMs - elapsedMs);
+      var remainingSec = Math.ceil(remainingMs / 1000);
+      var mm = Math.floor(remainingSec / 60);
+      var ss = remainingSec % 60;
+      var timeStr = (mm < 10 ? '0' : '') + mm + ':' + (ss < 10 ? '0' : '') + ss;
+
+      var phase = state.pomodoroState.phase;
+      var phaseLabel = phase === 'focus' ? 'Focus' :
+                       phase === 'short-break' ? 'Short break' :
+                       phase === 'long-break' ? 'Long break' : phase;
+      var phaseEmoji = phase === 'focus' ? '🍅' : phase === 'long-break' ? '🌙' : '☕';
+
+      // Progress percentage for the ring
+      var progressPct = totalMs > 0 ? Math.min(100, (elapsedMs / totalMs) * 100) : 0;
+
+      // Cycle dots: 4 small markers showing how many focus sessions
+      // toward long break. Dim once-completed; the current one is
+      // highlighted only during focus phase.
+      var cycleProgress = state.pomodoroState.cycleProgress || 0;
+      var dotsRow = h('div', {
+        style: { display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '14px' }
+      },
+        [0, 1, 2, 3].map(function(i) {
+          var done = i < cycleProgress;
+          var current = i === cycleProgress && phase === 'focus';
+          return h('span', {
+            key: 'cd-' + i,
+            'aria-label': 'Cycle position ' + (i + 1) + ' of 4 ' + (done ? '(complete)' : current ? '(current)' : ''),
+            style: {
+              width: current ? '12px' : '8px',
+              height: current ? '12px' : '8px',
+              borderRadius: '50%',
+              background: done ? palette.accent : (current ? palette.accent : palette.surface),
+              border: '1px solid ' + palette.accent,
+              opacity: done ? 0.5 : 1,
+              transition: 'width 200ms, height 200ms'
+            }
+          });
+        })
+      );
+
+      return h('div', {
+        role: 'dialog',
+        'aria-label': phaseLabel + ' timer · ' + timeStr + ' remaining',
+        'aria-live': 'off',
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.72)',
+          zIndex: 150,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '20px',
+            padding: '40px 32px',
+            maxWidth: '440px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.5)'
+          }
+        },
+          h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, phaseEmoji),
+          h('div', {
+            style: {
+              fontSize: '13px',
+              color: palette.textMute,
+              textTransform: 'uppercase',
+              letterSpacing: '0.12em',
+              fontWeight: 700,
+              marginBottom: '6px'
+            }
+          }, phaseLabel),
+          h('div', {
+            style: {
+              fontSize: '64px',
+              fontWeight: 800,
+              color: palette.accent,
+              fontVariantNumeric: 'tabular-nums',
+              lineHeight: '1.1',
+              letterSpacing: '0.02em'
+            }
+          }, timeStr),
+          // Progress bar
+          h('div', {
+            'aria-hidden': 'true',
+            style: {
+              marginTop: '18px',
+              marginBottom: '6px',
+              height: '6px',
+              background: palette.surface,
+              borderRadius: '999px',
+              overflow: 'hidden',
+              border: '1px solid ' + palette.border
+            }
+          },
+            h('div', {
+              style: {
+                width: progressPct + '%',
+                height: '100%',
+                background: palette.accent,
+                transition: 'width 250ms linear'
+              }
+            })
+          ),
+          dotsRow,
+          h('div', {
+            style: { marginTop: '24px', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }
+          },
+            h('button', {
+              onClick: cancelPomodoro,
+              style: Object.assign({}, secondaryBtnStyle(palette), {
+                borderColor: palette.textMute,
+                color: palette.textMute
+              }),
+              'aria-label': 'Cancel Pomodoro and return to room'
+            }, 'Cancel')
+          ),
+          h('div', {
+            style: { marginTop: '14px', fontSize: '11px', color: palette.textMute, fontStyle: 'italic' }
+          }, phase === 'focus'
+            ? 'Focus on whatever you want. Tokens will be waiting when the timer dings.'
+            : 'Take a real break. Stand up, stretch, drink water.')
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // SETTINGS MODAL — Pomodoro duration presets + custom.
+    // ─────────────────────────────────────────────────
+    function renderSettingsModal() {
+      if (state.activeModal !== 'settings') return null;
+      var prefs = state.pomodoroPreferences;
+
+      var presets = [
+        { id: 'short',   label: 'Short attention', focus: 15, short: 3,  long: 10, desc: 'Best for highly distractible focus or first-time Pomodoro users' },
+        { id: 'default', label: 'Classic',         focus: 25, short: 5,  long: 15, desc: 'The original Pomodoro timing — most common' },
+        { id: 'deep',    label: 'Deep focus',      focus: 45, short: 10, long: 20, desc: 'Longer sessions for sustained-focus work' }
+      ];
+
+      function applyPreset(p) {
+        setStateField('pomodoroPreferences', { focusMinutes: p.focus, shortBreakMinutes: p.short, longBreakMinutes: p.long });
+      }
+
+      function activePreset() {
+        for (var i = 0; i < presets.length; i++) {
+          var p = presets[i];
+          if (prefs.focusMinutes === p.focus && prefs.shortBreakMinutes === p.short && prefs.longBreakMinutes === p.long) {
+            return p.id;
+          }
+        }
+        return 'custom';
+      }
+      var current = activePreset();
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Settings',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          zIndex: 175,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', {
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }
+          },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '⚙️ Settings'),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close settings',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('div', {
+            style: { fontSize: '13px', color: palette.textDim, marginBottom: '6px', fontWeight: 600 }
+          }, 'Pomodoro durations'),
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, marginTop: 0, marginBottom: '14px', lineHeight: '1.5' }
+          }, 'All durations earn equal tokens by completion — pick what fits your attention. A 15-min Pomodoro earns the same as a 25-min one when finished.'),
+          // Preset list
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' } },
+            presets.map(function(p) {
+              var active = current === p.id;
+              return h('button', {
+                key: 'preset-' + p.id,
+                onClick: function() { applyPreset(p); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  background: active ? palette.surface : 'transparent',
+                  border: '2px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '10px',
+                  padding: '12px 14px',
+                  cursor: 'pointer',
+                  textAlign: 'left',
+                  fontFamily: 'inherit',
+                  color: palette.text,
+                  transition: 'border-color 140ms ease, background 140ms ease'
+                }
+              },
+                h('div', {
+                  style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }
+                },
+                  h('span', { style: { fontSize: '14px', fontWeight: 700 } }, p.label),
+                  h('span', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+                    p.focus + '/' + p.short + '/' + p.long + ' min')
+                ),
+                h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.4' } }, p.desc)
+              );
+            })
+          ),
+          // Custom indicator (read-only for v1; full custom sliders are
+          // possible v2 — for now if pref doesn't match a preset we show this)
+          current === 'custom' ? h('div', {
+            style: {
+              padding: '10px 12px',
+              border: '1px dashed ' + palette.accent,
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: palette.textDim,
+              fontStyle: 'italic',
+              marginBottom: '12px'
+            }
+          }, 'Custom durations · ' + prefs.focusMinutes + '/' + prefs.shortBreakMinutes + '/' + prefs.longBreakMinutes + ' min. Pick a preset above to switch.') : null,
+          h('div', {
+            style: { fontSize: '11px', color: palette.textMute, marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, lineHeight: '1.5' }
+          }, 'Today: ' + (state.dailyState.pomodorosCompleted || 0) + ' Pomodoros completed · soft cap at 4/day (above which sessions still run but earn 0 tokens).')
+        )
+      );
+    }
+
     // ── Render ──
     // Outer modal-style fixed overlay covering the viewport (matches Symbol
     // Studio pattern). Inner ah-root scopes all CSS animations.
@@ -779,6 +1215,8 @@
       }
     },
       renderRoom(),
+      renderPomodoroOverlay(),
+      renderSettingsModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard()
     );
