@@ -405,6 +405,9 @@
         style: {
           opacity: moodOpacity,
           transition: chunkReaderMood === 'typewriter' ? 'opacity 0.05s linear' : 'all 0.3s ease',
+          // In chunk-read mode every word is click-to-jump (onClick below);
+          // pointer cursor surfaces the affordance without needing instructions.
+          ...(isChunkReaderActive ? { cursor: 'pointer' } : {}),
           ...(moodAnimation ? { animation: moodAnimation } : {}),
           ...(showHighlight || isPlaying && playbackState.currentIdx === assignedIdx ? {
             backgroundColor: 'rgba(250, 204, 21, 0.35)',

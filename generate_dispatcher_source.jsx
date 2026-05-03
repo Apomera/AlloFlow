@@ -717,6 +717,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 promptInstructions = "Identify two distinct contrasting categories (Set A, Set B) from the text and their shared commonalities (Shared).";
                 structureHint = "CRITICAL FOR VENN DIAGRAM: You MUST return exactly 3 branches in this order: 1. The first distinct category (Set A). 2. The second distinct category (Set B). 3. The shared/overlapping traits (Title: 'Shared').";
                 break;
+            case 'T-Chart':
+                promptInstructions = "Identify two contrasting categories from the text that students must sort items into (e.g. Renewable vs Non-Renewable, Mammals vs Reptiles, Igneous vs Sedimentary, Prokaryotes vs Eukaryotes). Generate 6-12 canonical, unambiguous items balanced ~50/50 between the two columns. Items should be 1-3 words each.";
+                structureHint = "CRITICAL FOR T-CHART: You MUST return exactly 2 branches. Branch 1 title = left column header (2-3 words). Branch 2 title = right column header (2-3 words). Each branch's 'items' array contains the entries that belong in that column. Avoid edge cases — every item should clearly belong to exactly one column.";
+                break;
+            case 'Fishbone':
+                promptInstructions = "Identify a central problem or effect from the text, then organize its CAUSES into 4-6 named CATEGORIES (the 'bones' of the fishbone diagram). Use domain-appropriate categories: for engineering/quality use the classic '6Ms' (People, Methods, Machines, Materials, Measurements, Environment) or a subset; for biology/ecology use categories like Genetic, Environmental, Behavioral, Physiological; for history use Political, Economic, Social, Cultural; for science use Causes, Conditions, Reactions, Outcomes. Pick categories that fit the topic. Within each category, list 2-4 specific causes (1-4 words each). The 'main' field is the central effect/problem being analyzed.";
+                structureHint = "CRITICAL FOR FISHBONE: Return 4-6 branches. Each branch represents one CATEGORY of causes (a 'bone'). Branch.title = category name (1-3 words, e.g. 'Equipment', 'Methods'). Branch.items = specific causes within that category (2-4 items per branch). The main field describes the overall effect/problem being analyzed. Avoid generic categories — pick ones that fit the specific topic.";
+                break;
             case 'Cause and Effect':
                 promptInstructions = "Identify the central event/phenomenon. List its antecedent 'Causes' (factors leading to it) and subsequent 'Effects' (consequences resulting from it). If a sequential chain reaction exists, list it.";
                 structureHint = "CRITICAL: Return branches with specific titles: 'Causes', 'Effects', or 'Chain'. Example: [{ 'title': 'Causes', 'items': ['Cause 1', 'Cause 2'] }, { 'title': 'Effects', 'items': ['Effect 1'] }]";

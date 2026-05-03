@@ -3440,6 +3440,80 @@ const ConceptMapSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate
   );
 });
 
+// ── ProblemSolutionSortGame — prioritize solutions into Try First / Try Next / Last Resort ──
+// Uses the AI-returned ORDER of solutions as the answer key (top-third, middle, bottom-third).
+// Pedagogical framing: "Which solutions should you try first?" — not a single right answer in real life,
+// but the AI's order represents source-grounded prioritization that students can compare against.
+const ProblemSolutionSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const adapted = useMemo(() => {
+    const branches = Array.isArray(data?.branches) ? data.branches : [];
+    // Flatten all solutions across branches (Problem Solution typically has 1 branch w/ all solutions).
+    const allSolutions = [];
+    branches.forEach((b, bi) => {
+      (b.items || []).forEach((it, ii) => {
+        const text = typeof it === 'object' ? (it.text || '') : String(it);
+        if (text) allSolutions.push({ text, branchIdx: bi, itemIdx: ii });
+      });
+    });
+    const total = allSolutions.length;
+    const buckets = [
+      { id: 'ps-first', title: 'Try First' },
+      { id: 'ps-next',  title: 'Try Next' },
+      { id: 'ps-last',  title: 'Last Resort' }
+    ];
+    // Partition into thirds based on original AI-returned order.
+    const items = allSolutions.map((sol, idx) => {
+      let correctBucketId;
+      if (idx < total / 3) correctBucketId = 'ps-first';
+      else if (idx < (2 * total) / 3) correctBucketId = 'ps-next';
+      else correctBucketId = 'ps-last';
+      return { id: `ps-i-${idx}`, text: sol.text, correctBucketId };
+    });
+    return { buckets, items };
+  }, [data]);
+  return (
+    <_MultiBucketSortGame
+      data={adapted}
+      theme={{ accentColor: 'rose', headerGradient: 'from-rose-600 to-pink-600', title: 'Prioritize the Solutions' }}
+      onClose={onClose}
+      playSound={playSound}
+      topicTitle={topicTitle}
+      onScoreUpdate={onScoreUpdate}
+      onGameComplete={onGameComplete}
+      gameKey="problemSolutionSort"
+    />
+  );
+});
+
+// ── FishboneSortGame — drag specific causes onto their correct category bone ──
+// Maps fishbone branches → buckets; each branch.items[] → items with that branch as correct.
+const FishboneSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
+  const adapted = useMemo(() => {
+    const branches = Array.isArray(data?.branches) ? data.branches : [];
+    const buckets = branches.map((b, bi) => ({ id: `fb-b-${bi}`, title: b.title || `Category ${bi+1}` }));
+    const items = [];
+    branches.forEach((b, bi) => {
+      (b.items || []).forEach((it, ii) => {
+        const text = typeof it === 'object' ? (it.text || '') : String(it);
+        if (text) items.push({ id: `fb-i-${bi}-${ii}`, text, correctBucketId: `fb-b-${bi}` });
+      });
+    });
+    return { buckets, items };
+  }, [data]);
+  return (
+    <_MultiBucketSortGame
+      data={adapted}
+      theme={{ accentColor: 'violet', headerGradient: 'from-violet-600 to-fuchsia-600', title: 'Fishbone Sort' }}
+      onClose={onClose}
+      playSound={playSound}
+      topicTitle={topicTitle}
+      onScoreUpdate={onScoreUpdate}
+      onGameComplete={onGameComplete}
+      gameKey="fishboneSort"
+    />
+  );
+});
+
 // ── OutlineSortGame — drag sub-items under their correct heading ──
 const OutlineSortGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete, topicTitle = "" }) => {
   const adapted = useMemo(() => {

@@ -2609,6 +2609,8 @@
     "title": "Visual Organizer",
       "structure_label": "Organizer Structure",
         "venn": "Venn Diagram (Interactive)",
+          "t_chart": "T-Chart (Two Columns)",
+          "fishbone": "Fishbone (Cause Categories)",
           "structured": "Structured Outline",
             "concept_map": "Key Concept Map",
               "flow_chart": "Flow Chart / Sequence",

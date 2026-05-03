@@ -12439,6 +12439,58 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </div>
                     </div>
                     </div>`;
+              } else if (type === 'Fishbone') {
+                  // Fishbone (Ishikawa) — central effect + angled "bones" with cause categories.
+                  const VIEW_W = 900, VIEW_H = 360, SPINE_Y = VIEW_H / 2;
+                  const HEAD_X = VIEW_W - 130, TAIL_X = 50;
+                  const visibleBranches = branches.slice(0, 6);
+                  const slotCount = Math.ceil(visibleBranches.length / 2);
+                  const boneSvg = visibleBranches.map((b, i) => {
+                      const isTop = i % 2 === 0;
+                      const slotIdx = Math.floor(i / 2);
+                      const xFrac = (slotIdx + 1) / (slotCount + 1);
+                      const startX = TAIL_X + 60 + (HEAD_X - TAIL_X - 100) * xFrac;
+                      const endX = startX - 40;
+                      const endY = isTop ? 60 : VIEW_H - 60;
+                      const labelY = isTop ? endY - 8 : endY + 16;
+                      return `<g><line x1="${startX}" y1="${SPINE_Y}" x2="${endX}" y2="${endY}" stroke="#a78bfa" stroke-width="3" stroke-linecap="round" /><circle cx="${endX}" cy="${endY}" r="6" fill="#7c3aed" /><text x="${endX - 6}" y="${labelY}" text-anchor="end" fill="#5b21b6" font-weight="800" font-size="13" font-family="Inter, sans-serif">${b.title || `Category ${i + 1}`}</text></g>`;
+                  }).join('');
+                  const cardsHtml = branches.map((branch, bi) => {
+                      const items = (branch.items || []).map((it, k) => {
+                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          const trans = branch.items_en?.[k];
+                          return `<li style="margin-bottom: 6px; padding: 6px 10px; background: #faf5ff; border-left: 3px solid #c4b5fd; border-radius: 6px; color: #5b21b6; font-size: 0.9em; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${text}${trans ? `<div style="font-style: italic; opacity: 0.75; font-size: 0.85em;">(${trans})</div>` : ''}</li>`;
+                      }).join('');
+                      return `<div style="background: white; border: 2px solid #ddd6fe; border-radius: 12px; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid;">
+                        <div style="background: linear-gradient(to right, #ede9fe, #fae8ff); padding: 10px 14px; border-bottom: 2px solid #ddd6fe;">
+                          <div style="color: #581c87; font-weight: 800; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em;">${branch.title || `Category ${bi + 1}`}</div>
+                          ${branch.title_en ? `<div style="font-size: 0.75em; color: #7c3aed; font-style: italic;">(${branch.title_en})</div>` : ''}
+                        </div>
+                        <ul style="list-style: none; padding: 12px; margin: 0;">${items || '<li style="font-style: italic; color: #94a3b8; font-size: 0.85em; text-align: center;">No causes</li>'}</ul>
+                      </div>`;
+                  }).join('');
+                  innerContent = `
+                    <style>
+                      .fishbone-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .fishbone-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      @media print { .fishbone-print-wrapper { page-break-inside: avoid; break-inside: avoid; } .fishbone-cards { page-break-inside: auto; } }
+                    </style>
+                    <div class="fishbone-print-wrapper">
+                      <div style="text-align:center; margin-bottom: 20px;">
+                        <h3 style="margin:0; font-size: 1.5em; color: #2c3e50; font-weight: 800;">${main}</h3>
+                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${main_en})</div>` : ''}
+                      </div>
+                      <div style="background: white; border: 2px solid #e9d5ff; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                        <svg role="img" aria-label="Fishbone diagram for ${main}" viewBox="0 0 ${VIEW_W} ${VIEW_H}" style="width: 100%; height: auto; max-width: 900px;" xmlns="http://www.w3.org/2000/svg">
+                          <polygon points="${TAIL_X},${SPINE_Y - 20} ${TAIL_X + 30},${SPINE_Y} ${TAIL_X},${SPINE_Y + 20}" fill="#a78bfa" opacity="0.5" />
+                          <line x1="${TAIL_X + 30}" y1="${SPINE_Y}" x2="${HEAD_X}" y2="${SPINE_Y}" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
+                          <rect x="${HEAD_X}" y="${SPINE_Y - 40}" width="120" height="80" rx="12" fill="#7c3aed" />
+                          <text x="${HEAD_X + 60}" y="${SPINE_Y + 5}" text-anchor="middle" fill="white" font-weight="800" font-size="11" font-family="Inter, sans-serif">${(main || 'Effect').slice(0, 16)}</text>
+                          ${boneSvg}
+                        </svg>
+                      </div>
+                      <div class="fishbone-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">${cardsHtml}</div>
+                    </div>`;
               } else if (type === 'Key Concept Map') {
                   // Concept map: central hub + radiating branches with attribute lists.
                   const half = Math.ceil(branches.length / 2);
@@ -12582,6 +12634,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   body = `
                       <p><strong>Central concept:</strong> ${escape(main)}</p>
                       ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'Fishbone') {
+                  body = `
+                      <p><strong>Effect being analyzed:</strong> ${escape(main)}</p>
+                      <p>Cause categories:</p>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong> (cause category)</p>${renderItems(b.items, b.items_en)}`).join('')}
                   `;
               } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
                   body = '<ol>' + branches.map(b => {

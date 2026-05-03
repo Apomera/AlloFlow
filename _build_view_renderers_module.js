@@ -78,6 +78,9 @@ function detectIconsAndComponents() {
     'React', 'Fragment', 'BranchItem', 'ConfettiExplosion', 'ErrorBoundary',
     'KeyConceptMapView', 'MainTitle', 'SimpleBarChart', 'SimpleDonutChart',
     'Tag', 'VennGame', 'CauseEffectSortGame', 'PipelineBuilderGame',
+    'TChartSortGame', 'ConceptMapSortGame', 'OutlineSortGame',
+    'FishboneSortGame', 'ProblemSolutionSortGame',
+    'GameButtonHint',
   ]);
 
   for (const ref of [...jsxRefs].sort()) {

@@ -189,14 +189,31 @@ const renderFormattedText = (text, enableGlossary = true, isDarkBg = false, deps
 };
 
 const renderOutlineContent = (deps) => {
-  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline } = deps;
+  const { ErrorBoundary, KeyConceptMapView, VennGame, generatedContent, isInteractiveVenn, isProcessing, isTeacherMode, isVennPlaying, leveledTextLanguage, outlineTranslationMode, vennGameData, vennInputs, isEditingOutline, isMapLocked, setOutlineTranslationMode, setVennInputs, closeVenn, handleAddVennItem, handleGameCompletion, handleGameScoreUpdate, handleGenerateOutcome, handleInitializeVenn, handleOutlineChange, handleRemoveVennItem, handleSetIsVennPlayingToTrue, playSound, t, isCESortPlaying, ceGameData, closeCESort, setIsCESortPlaying, setCeGameData, isPipelinePlaying, setIsPipelinePlaying, closePipeline, isTChartPlaying, setIsTChartPlaying, closeTChart, isConceptMapSortPlaying, setIsConceptMapSortPlaying, closeConceptMapSort, isOutlineSortPlaying, setIsOutlineSortPlaying, closeOutlineSort, isFishboneSortPlaying, setIsFishboneSortPlaying, closeFishboneSort, isProblemSolutionSortPlaying, setIsProblemSolutionSortPlaying, closeProblemSolutionSort } = deps;
   const CauseEffectSortGame = window.AlloModules && window.AlloModules.CauseEffectSortGame ? (function() { const _C = window.AlloModules.CauseEffectSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   const PipelineBuilderGame = window.AlloModules && window.AlloModules.PipelineBuilderGame ? (function() { const _C = window.AlloModules.PipelineBuilderGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const TChartSortGame = window.AlloModules && window.AlloModules.TChartSortGame ? (function() { const _C = window.AlloModules.TChartSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const ConceptMapSortGame = window.AlloModules && window.AlloModules.ConceptMapSortGame ? (function() { const _C = window.AlloModules.ConceptMapSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const OutlineSortGame = window.AlloModules && window.AlloModules.OutlineSortGame ? (function() { const _C = window.AlloModules.OutlineSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const FishboneSortGame = window.AlloModules && window.AlloModules.FishboneSortGame ? (function() { const _C = window.AlloModules.FishboneSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
+  const ProblemSolutionSortGame = window.AlloModules && window.AlloModules.ProblemSolutionSortGame ? (function() { const _C = window.AlloModules.ProblemSolutionSortGame; return React.memo((props) => React.createElement(_C, props)); })() : (props) => React.createElement('div', { className: 'p-8 text-center text-slate-600' }, 'Loading game...');
   try { if (window._DEBUG_VIEW_RENDERERS) console.log("[ViewRenderers] renderOutlineContent fired"); } catch(_) {}
         if (!generatedContent || generatedContent.type !== 'outline' || !generatedContent?.data) return null;
         const { main, main_en, branches: rawBranches, structureType } = generatedContent?.data;
         const branches = Array.isArray(rawBranches) ? rawBranches : [];
         const type = structureType || 'Structured Outline';
+        // Minimum total items needed to make a sort game pedagogically meaningful.
+        // Below this, a sort game is trivial — hide the Play button.
+        const MIN_GAME_ITEMS = 4;
+        const totalBranchItems = branches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
+        const showGameButton = totalBranchItems >= MIN_GAME_ITEMS && branches.length >= 2 && !isTeacherMode;
+        // Hidden description used by every Play-Sort-Game button via aria-describedby.
+        // Read after the button label so screen-reader users know what the button does pedagogically.
+        const GameButtonHint = () => (
+            <p id="game-btn-hint" className="sr-only">
+                {t('games.button_hint') || 'Practice what you just learned with a quick drag-and-drop sorting game. Keyboard friendly: press Enter to select an item, then choose a destination.'}
+            </p>
+        );
         const MainTitle = () => (
              <div className="text-center mb-8">
                 {isEditingOutline ? (
@@ -301,18 +318,43 @@ const renderOutlineContent = (deps) => {
             }
             return (
                 <div className="max-w-3xl mx-auto">
+                    {showGameButton && (
                     <div className="flex justify-center mb-4">
+                        <GameButtonHint />
                         <button
                             onClick={() => setIsPipelinePlaying(true)}
                             className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                            aria-describedby="game-btn-hint"
                             aria-label={t('games.pipeline.title') || 'Pipeline Builder'}
                         >
-                            <Gamepad2 size={16}/> {t('games.pipeline.play_btn') || 'Pipeline Builder'}
+                            <Gamepad2 size={16}/> {t('games.pipeline.play_btn') || 'Build the Flow'}
                         </button>
                     </div>
+                    )}
                     <MainTitle />
+                    <style>{`
+                        @keyframes flow-march {
+                            from { background-position-y: 0; }
+                            to { background-position-y: 16px; }
+                        }
+                        @media (prefers-reduced-motion: no-preference) {
+                            .flow-spine-marching {
+                                animation: flow-march 1.2s linear infinite;
+                            }
+                        }
+                    `}</style>
                     <div className="flex flex-col items-center relative space-y-12 px-4 py-8 bg-slate-50/50 rounded-3xl border border-slate-100">
                         <div className="absolute left-1/2 top-4 bottom-4 w-1 bg-gradient-to-b from-indigo-200 via-purple-200 to-teal-200 -translate-x-1/2 -z-10 rounded-full"></div>
+                        <div
+                            aria-hidden="true"
+                            className="flow-spine-marching absolute left-1/2 top-4 bottom-4 w-1 -translate-x-1/2 z-0 rounded-full opacity-60"
+                            style={{
+                                backgroundImage: 'repeating-linear-gradient(to bottom, #6366f1 0, #6366f1 8px, transparent 8px, transparent 16px)',
+                                backgroundSize: '100% 16px',
+                                backgroundRepeat: 'repeat-y',
+                                pointerEvents: 'none'
+                            }}
+                        ></div>
                         {branches.map((b, i) => {
                             const hasConnectsTo = Array.isArray(b.connectsTo) && b.connectsTo.length > 0;
                             const isBranching = hasConnectsTo && b.connectsTo.length > 1;
@@ -350,6 +392,18 @@ const renderOutlineContent = (deps) => {
             );
         }
         if (type === 'Venn Diagram') {
+            // Defensive fallback: AI sometimes returns malformed output (fewer than 3 branches).
+            // Venn requires Set A + Set B + Shared — anything less makes the diagram nonsensical.
+            if (!Array.isArray(branches) || branches.length < 3) {
+                return (
+                    <div className="max-w-2xl mx-auto px-4 py-8">
+                        <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 text-center">
+                            <h3 className="text-lg font-black text-amber-800 mb-2">{t('outline.venn_fallback_title') || 'This concept did not produce a complete Venn diagram'}</h3>
+                            <p className="text-sm text-amber-700">{t('outline.venn_fallback_desc') || 'Venn diagrams need two distinct categories plus their shared traits. Try regenerating, or pick a different organizer type.'}</p>
+                        </div>
+                    </div>
+                );
+            }
             const setA = branches[0] || { title: 'Set A', items: [] };
             const setB = branches[1] || { title: 'Set B', items: [] };
             const shared = branches[2] || { title: 'Shared / Overlap', items: [] };
@@ -582,6 +636,315 @@ const renderOutlineContent = (deps) => {
                 </div>
             );
         }
+        if (type === 'T-Chart') {
+            // Defensive fallback: AI sometimes returns malformed output (1 branch or 0).
+            // Show the user a clear message rather than empty columns.
+            if (!Array.isArray(branches) || branches.length < 2) {
+                return (
+                    <div className="max-w-2xl mx-auto px-4 py-8">
+                        <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 text-center">
+                            <h3 className="text-lg font-black text-amber-800 mb-2">{t('outline.tchart_fallback_title') || 'This concept did not divide cleanly into two columns'}</h3>
+                            <p className="text-sm text-amber-700">{t('outline.tchart_fallback_desc') || 'Try regenerating, refining your input text to highlight a clear contrast, or pick a different organizer type.'}</p>
+                        </div>
+                    </div>
+                );
+            }
+            const left = branches[0] || { title: 'Column A', items: [] };
+            const right = branches[1] || { title: 'Column B', items: [] };
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const leftItems = (left.items || []).map(itemText).filter(Boolean);
+            const rightItems = (right.items || []).map(itemText).filter(Boolean);
+            const showBilingual = leveledTextLanguage !== 'English' || left.title_en || right.title_en;
+            // ── T-Chart Sort Game rendering ──
+            if (isTChartPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="T-Chart Sort encountered an error.">
+                        <TChartSortGame
+                            data={{ leftTitle: left.title, rightTitle: right.title, leftItems, rightItems }}
+                            onClose={closeTChart}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
+            // Render one column. branchIdx 0 = left, 1 = right. Color is 'cyan' or 'indigo'.
+            const renderTChartColumn = (branch, branchIdx, color, fallbackTitle) => {
+                const colorClasses = color === 'cyan'
+                    ? { panel: 'bg-gradient-to-b from-cyan-50/60 to-white', header: 'text-cyan-800 bg-cyan-100/80 border-cyan-200', chip: 'text-cyan-900 border-cyan-300', dot: 'text-cyan-500', input: 'focus:border-cyan-400 focus:ring-cyan-200 border-cyan-200' }
+                    : { panel: 'bg-gradient-to-b from-indigo-50/60 to-white', header: 'text-indigo-800 bg-indigo-100/80 border-indigo-200', chip: 'text-indigo-900 border-indigo-300', dot: 'text-indigo-500', input: 'focus:border-indigo-400 focus:ring-indigo-200 border-indigo-200' };
+                const items = branch.items || [];
+                return (
+                    <div className={`p-6 ${branchIdx === 0 ? 'border-b md:border-b-0 md:border-r border-slate-300' : ''} ${colorClasses.panel}`}>
+                        {isEditingOutline ? (
+                            <div className="mb-3 space-y-2">
+                                <input
+                                    aria-label={t('common.enter_branch') || 'Column heading'}
+                                    value={branch.title || ''}
+                                    onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value)}
+                                    className={`w-full font-black text-lg uppercase tracking-wider text-center px-3 py-2 rounded-lg border-2 focus:ring-2 outline-none ${colorClasses.input} ${colorClasses.header.split(' ').filter(c => c.startsWith('text-')).join(' ')} bg-white`}
+                                    placeholder={fallbackTitle}
+                                />
+                                {showBilingual && (
+                                    <input
+                                        aria-label={t('common.placeholder_translation') || 'Translation'}
+                                        value={branch.title_en || ''}
+                                        onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value, null, true)}
+                                        className="w-full text-xs italic text-center px-2 py-1 rounded border border-slate-300 focus:ring-2 focus:ring-slate-200 outline-none bg-white text-slate-600"
+                                        placeholder={t('common.placeholder_translation') || 'Translation (optional)'}
+                                    />
+                                )}
+                            </div>
+                        ) : (
+                            <h4 className={`font-black text-lg uppercase tracking-wider mb-3 text-center rounded-lg py-2 border ${colorClasses.header}`}>
+                                {branch.title || fallbackTitle}
+                                {branch.title_en && <div className="text-xs italic font-normal opacity-80 normal-case tracking-normal">({branch.title_en})</div>}
+                            </h4>
+                        )}
+                        <ul className="space-y-2">
+                            {items.map((it, k) => {
+                                const text = itemText(it);
+                                const trans = (typeof it === 'object' && it?.text_en) || (Array.isArray(branch.items_en) ? branch.items_en[k] : null);
+                                return (
+                                    <li key={`tc-${branchIdx}-${k}`} className={`flex items-start gap-2 text-sm bg-white px-3 py-2 rounded-lg border-l-4 shadow-sm ${colorClasses.chip}`}>
+                                        <span className={`mt-0.5 ${colorClasses.dot}`} aria-hidden="true">●</span>
+                                        <div className="flex-1">
+                                            {isEditingOutline ? (
+                                                <div className="space-y-1">
+                                                    <input
+                                                        aria-label={t('common.enter_item') || 'Item text'}
+                                                        value={text}
+                                                        onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k)}
+                                                        className="w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500 outline-none"
+                                                    />
+                                                    {showBilingual && (
+                                                        <input
+                                                            aria-label={t('common.placeholder_translation') || 'Translation'}
+                                                            value={trans || ''}
+                                                            onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k, true)}
+                                                            className="w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400 outline-none"
+                                                            placeholder={t('common.placeholder_translation') || 'Translation'}
+                                                        />
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <span>{text}</span>
+                                                    {trans && <div className="text-xs italic opacity-75 mt-0.5">({trans})</div>}
+                                                </>
+                                            )}
+                                        </div>
+                                    </li>
+                                );
+                            })}
+                            {items.length === 0 && (
+                                <li className="text-xs italic text-slate-400 text-center py-4">{t('outline.no_items') || 'No items'}</li>
+                            )}
+                        </ul>
+                    </div>
+                );
+            };
+            return (
+                <div className="max-w-5xl mx-auto px-2">
+                    <MainTitle />
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => setIsTChartPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-cyan-500 to-indigo-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.tchart_sort.play_btn') || 'Play T-Chart Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.tchart_sort.play_btn') || 'Sort Into Columns'}
+                            </button>
+                        </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-0 bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
+                        {renderTChartColumn(left, 0, 'cyan', t('outline.tchart_left_default') || 'Column A')}
+                        {renderTChartColumn(right, 1, 'indigo', t('outline.tchart_right_default') || 'Column B')}
+                    </div>
+                </div>
+            );
+        }
+        if (type === 'Fishbone') {
+            // Defensive fallback: AI sometimes returns malformed output (no branches).
+            if (!Array.isArray(branches) || branches.length < 2) {
+                return (
+                    <div className="max-w-2xl mx-auto px-4 py-8">
+                        <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 text-center">
+                            <h3 className="text-lg font-black text-amber-800 mb-2">{t('outline.fishbone_fallback_title') || 'This concept needs at least 2 cause categories'}</h3>
+                            <p className="text-sm text-amber-700">{t('outline.fishbone_fallback_desc') || 'Try regenerating with text that has multiple distinct causes, or pick a different organizer type.'}</p>
+                        </div>
+                    </div>
+                );
+            }
+            const itemText = (it) => typeof it === 'object' ? (it?.text || '') : String(it);
+            const showBilingual = leveledTextLanguage !== 'English' || branches.some(b => b.title_en);
+            // ── Fishbone Sort Game rendering ──
+            if (isFishboneSortPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="Fishbone Sort encountered an error.">
+                        <FishboneSortGame
+                            data={{ branches, mainTopic: main || '' }}
+                            onClose={closeFishboneSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
+            // Build the SVG fishbone skeleton.
+            // Bones alternate top/bottom; up to 6 bones supported gracefully.
+            const VIEW_W = 900, VIEW_H = 360;
+            const SPINE_Y = VIEW_H / 2;
+            const HEAD_X = VIEW_W - 130;
+            const TAIL_X = 50;
+            const boneSlots = branches.slice(0, 6).map((b, i) => {
+                const isTop = i % 2 === 0;
+                const slotIdx = Math.floor(i / 2);
+                // Distribute slots along the spine (avoid the head + tail).
+                const slotCount = Math.ceil(Math.min(branches.length, 6) / 2);
+                const xFrac = (slotIdx + 1) / (slotCount + 1);
+                const startX = TAIL_X + 60 + (HEAD_X - TAIL_X - 100) * xFrac;
+                const endX = startX - 40; // bones angle backward toward the tail
+                const endY = isTop ? 60 : VIEW_H - 60;
+                const labelX = endX - 6;
+                const labelY = isTop ? endY - 8 : endY + 16;
+                return { branch: b, idx: i, isTop, startX, endX, endY, labelX, labelY };
+            });
+            return (
+                <div className="max-w-6xl mx-auto px-2">
+                    <MainTitle />
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => setIsFishboneSortPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.fishbone_sort.play_btn') || 'Play Fishbone Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.fishbone_sort.play_btn') || 'Sort Causes Onto Bones'}
+                            </button>
+                        </div>
+                    )}
+                    {/* SVG fishbone skeleton — purely decorative, the real content is in the cards below */}
+                    <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-4 overflow-x-auto">
+                        <svg
+                            role="img"
+                            aria-label={`Fishbone diagram for ${main || 'cause analysis'}`}
+                            viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
+                            className="w-full h-auto min-w-[640px]"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            {/* Tail arrow */}
+                            <polygon points={`${TAIL_X},${SPINE_Y - 20} ${TAIL_X + 30},${SPINE_Y} ${TAIL_X},${SPINE_Y + 20}`} fill="#a78bfa" opacity="0.5" />
+                            {/* Spine */}
+                            <line x1={TAIL_X + 30} y1={SPINE_Y} x2={HEAD_X} y2={SPINE_Y} stroke="#7c3aed" strokeWidth="6" strokeLinecap="round" />
+                            {/* Head box */}
+                            <rect x={HEAD_X} y={SPINE_Y - 40} width="120" height="80" rx="12" fill="#7c3aed" />
+                            <foreignObject x={HEAD_X} y={SPINE_Y - 40} width="120" height="80">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '12px', textAlign: 'center', padding: '6px', boxSizing: 'border-box', overflow: 'hidden' }}>
+                                    {main || 'Effect'}
+                                </div>
+                            </foreignObject>
+                            {/* Bones + labels */}
+                            {boneSlots.map(slot => (
+                                <g key={slot.idx}>
+                                    <line x1={slot.startX} y1={SPINE_Y} x2={slot.endX} y2={slot.endY} stroke="#a78bfa" strokeWidth="3" strokeLinecap="round" />
+                                    <circle cx={slot.endX} cy={slot.endY} r="6" fill="#7c3aed" />
+                                    <text x={slot.labelX} y={slot.labelY} textAnchor="end" fill="#5b21b6" fontWeight="800" fontSize="13" fontFamily="Inter, sans-serif">
+                                        {slot.branch.title || `Category ${slot.idx + 1}`}
+                                    </text>
+                                </g>
+                            ))}
+                        </svg>
+                    </div>
+                    {/* Cards below: each category with its specific causes */}
+                    <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {branches.map((branch, branchIdx) => {
+                            const items = branch.items || [];
+                            return (
+                                <div key={branchIdx} className="bg-white rounded-xl border-2 border-violet-200 shadow-sm overflow-hidden">
+                                    <div className="bg-gradient-to-r from-violet-100 to-fuchsia-100 px-4 py-2 border-b-2 border-violet-200">
+                                        {isEditingOutline ? (
+                                            <div className="space-y-1">
+                                                <input
+                                                    aria-label={t('common.enter_branch') || 'Category name'}
+                                                    value={branch.title || ''}
+                                                    onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value)}
+                                                    className="w-full font-black text-violet-900 text-sm uppercase tracking-wider bg-white px-2 py-1 rounded border border-violet-300 focus:ring-2 focus:ring-violet-300 outline-none"
+                                                    placeholder={`Category ${branchIdx + 1}`}
+                                                />
+                                                {showBilingual && (
+                                                    <input
+                                                        aria-label={t('common.placeholder_translation') || 'Translation'}
+                                                        value={branch.title_en || ''}
+                                                        onChange={(e) => handleOutlineChange(branchIdx, 'title', e.target.value, null, true)}
+                                                        className="w-full text-xs italic text-violet-700 bg-white px-2 py-0.5 rounded border border-violet-200 focus:ring-2 focus:ring-violet-200 outline-none"
+                                                        placeholder={t('common.placeholder_translation') || 'Translation (optional)'}
+                                                    />
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <h4 className="font-black text-violet-900 text-sm uppercase tracking-wider">
+                                                {branch.title || `Category ${branchIdx + 1}`}
+                                                {branch.title_en && <div className="text-xs italic font-normal opacity-80 normal-case tracking-normal">({branch.title_en})</div>}
+                                            </h4>
+                                        )}
+                                    </div>
+                                    <ul className="p-3 space-y-2">
+                                        {items.map((it, k) => {
+                                            const text = itemText(it);
+                                            const trans = (typeof it === 'object' && it?.text_en) || (Array.isArray(branch.items_en) ? branch.items_en[k] : null);
+                                            return (
+                                                <li key={`fb-${branchIdx}-${k}`} className="flex items-start gap-2 text-sm text-violet-900 bg-violet-50/50 px-2 py-1.5 rounded border-l-3 border-violet-300">
+                                                    <span className="mt-0.5 text-violet-500" aria-hidden="true">▸</span>
+                                                    <div className="flex-1">
+                                                        {isEditingOutline ? (
+                                                            <div className="space-y-1">
+                                                                <input
+                                                                    aria-label={t('common.enter_item') || 'Cause text'}
+                                                                    value={text}
+                                                                    onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k)}
+                                                                    className="w-full text-sm bg-transparent border-b border-dashed border-slate-300 focus:border-slate-500 outline-none"
+                                                                />
+                                                                {showBilingual && (
+                                                                    <input
+                                                                        aria-label={t('common.placeholder_translation') || 'Translation'}
+                                                                        value={trans || ''}
+                                                                        onChange={(e) => handleOutlineChange(branchIdx, 'item', e.target.value, k, true)}
+                                                                        className="w-full text-xs italic text-slate-600 bg-transparent border-b border-dashed border-slate-200 focus:border-slate-400 outline-none"
+                                                                        placeholder={t('common.placeholder_translation') || 'Translation'}
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        ) : (
+                                                            <>
+                                                                <span>{text}</span>
+                                                                {trans && <div className="text-xs italic opacity-75 mt-0.5">({trans})</div>}
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </li>
+                                            );
+                                        })}
+                                        {items.length === 0 && (
+                                            <li className="text-xs italic text-slate-400 text-center py-2">{t('outline.no_items') || 'No causes in this category'}</li>
+                                        )}
+                                    </ul>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            );
+        }
         if (type === 'Cause and Effect') {
             const causes = branches.filter(b => b.title.toLowerCase().includes('cause'));
             const effects = branches.filter(b => b.title.toLowerCase().includes('effect') || b.title.toLowerCase().includes('consequence'));
@@ -620,15 +983,19 @@ const renderOutlineContent = (deps) => {
             if (isLegacy) {
                 return (
                     <div className="max-w-4xl mx-auto px-2">
+                        {showGameButton && (
                         <div className="flex justify-center mb-4">
+                            <GameButtonHint />
                             <button
                                 onClick={() => setIsCESortPlaying(true)}
                                 className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
-                                aria-label={t('games.ce_sort.title') || 'Cause & Effect Sort Game'}
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                             >
-                                <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Game'}
+                                <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                             </button>
                         </div>
+                        )}
                         <MainTitle />
                         <div className="space-y-6">
                             {branches.map((b, i) => (
@@ -672,15 +1039,19 @@ const renderOutlineContent = (deps) => {
             }
             return (
                 <div className="max-w-6xl mx-auto px-4 py-8">
+                    {showGameButton && (
                     <div className="flex justify-center mb-6">
+                        <GameButtonHint />
                         <button
                             onClick={() => setIsCESortPlaying(true)}
                             className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
-                            aria-label={t('games.ce_sort.title') || 'Cause & Effect Sort Game'}
+                            aria-describedby="game-btn-hint"
+                            aria-label={t('games.ce_sort.title') || 'Sort Causes and Effects'}
                         >
-                            <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Game'}
+                            <Gamepad2 size={16}/> {t('games.ce_sort.play_btn') || 'Sort Causes & Effects'}
                         </button>
                     </div>
+                    )}
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 mb-16">
                         <div className="flex-1 flex flex-col gap-6 w-full lg:items-end">
                             {causes.map((branch, i) => (
@@ -733,8 +1104,39 @@ const renderOutlineContent = (deps) => {
             );
             const outcomeBranch = outcomeIndex !== -1 ? branches[outcomeIndex] : null;
             const solutionBranches = branches.filter((_, i) => i !== outcomeIndex);
+            // ── Problem Solution Prioritize Game ──
+            const totalSolutionItems = solutionBranches.reduce((s, b) => s + ((b.items || []).filter(it => (typeof it === 'object' ? it.text : it)).length), 0);
+            // Game needs at least 6 solutions so the thirds are meaningful (2 per bucket).
+            const showPSGame = totalSolutionItems >= 6 && !isTeacherMode;
+            if (isProblemSolutionSortPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="Solution Prioritize encountered an error.">
+                        <ProblemSolutionSortGame
+                            data={{ branches: solutionBranches }}
+                            onClose={closeProblemSolutionSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
             return (
                 <div className="max-w-5xl mx-auto px-4 py-12">
+                     {showPSGame && (
+                         <div className="flex justify-center mb-6">
+                             <GameButtonHint />
+                             <button
+                                 onClick={() => setIsProblemSolutionSortPlaying(true)}
+                                 className="flex items-center gap-2 bg-gradient-to-r from-rose-500 to-pink-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                 aria-describedby="game-btn-hint"
+                                 aria-label={t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
+                             >
+                                 <Gamepad2 size={16}/> {t('games.problem_solution_sort.play_btn') || 'Prioritize the Solutions'}
+                             </button>
+                         </div>
+                     )}
                      <div className="relative z-10 mb-16">
                          <div className="bg-white border-l-8 border-red-500 rounded-r-3xl shadow-xl p-8 relative transform transition-transform hover:scale-[1.01] max-w-3xl mx-auto">
                              <div className="absolute -left-6 top-6 bg-red-700 text-white p-3 rounded-full shadow-md border-4 border-white">
@@ -811,16 +1213,85 @@ const renderOutlineContent = (deps) => {
             );
         }
         if (type === 'Key Concept Map' || type === 'Mind Map') {
-             return <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} />;
+            // Defensive fallback: AI returned no branches → silent empty render is confusing.
+            if (!Array.isArray(branches) || branches.length === 0) {
+                return (
+                    <div className="max-w-2xl mx-auto px-4 py-8">
+                        <div className="bg-amber-50 border-2 border-amber-200 rounded-2xl p-6 text-center">
+                            <h3 className="text-lg font-black text-amber-800 mb-2">{t('outline.cmap_fallback_title') || 'This concept map came back empty'}</h3>
+                            <p className="text-sm text-amber-700">{t('outline.cmap_fallback_desc') || 'Try regenerating with more text, or pick a different organizer type.'}</p>
+                        </div>
+                    </div>
+                );
+            }
+            if (isConceptMapSortPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="Concept Map Sort encountered an error.">
+                        <ConceptMapSortGame
+                            data={{ branches }}
+                            onClose={closeConceptMapSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
+            return (
+                <div>
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => setIsConceptMapSortPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.concept_map_sort.play_btn') || 'Play Concept Map Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.concept_map_sort.play_btn') || 'Sort Onto Branches'}
+                            </button>
+                        </div>
+                    )}
+                    <KeyConceptMapView branches={branches} main={main} main_en={main_en} BranchItem={BranchItem} />
+                </div>
+            );
         }
         if (type === 'Structured Outline') {
             const toRoman = (num) => {
                 const lookup = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
                 return lookup[num] || num;
             };
+            if (isOutlineSortPlaying) {
+                return (
+                    <ErrorBoundary fallbackMessage="Outline Sort encountered an error.">
+                        <OutlineSortGame
+                            data={{ branches }}
+                            onClose={closeOutlineSort}
+                            playSound={playSound}
+                            topicTitle={main || ''}
+                            onScoreUpdate={handleGameScoreUpdate}
+                            onGameComplete={handleGameCompletion}
+                        />
+                    </ErrorBoundary>
+                );
+            }
             return (
                 <div className="max-w-4xl mx-auto px-4 py-6">
                     <MainTitle />
+                    {showGameButton && (
+                        <div className="flex justify-center mb-4">
+                            <GameButtonHint />
+                            <button
+                                onClick={() => setIsOutlineSortPlaying(true)}
+                                className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white px-5 py-2 rounded-full font-bold text-sm shadow-md hover:shadow-lg hover:scale-105 transition-all animate-[pulse_3s_ease-in-out_infinite]"
+                                aria-describedby="game-btn-hint"
+                                aria-label={t('games.outline_sort.play_btn') || 'Play Outline Sort Game'}
+                            >
+                                <Gamepad2 size={16}/> {t('games.outline_sort.play_btn') || 'Sort Under Headings'}
+                            </button>
+                        </div>
+                    )}
                     <div className="relative mt-8 space-y-8 ml-4 md:ml-12">
                         <div className="absolute left-[-24px] top-4 bottom-8 w-0.5 bg-indigo-200/50 rounded-full"></div>
                         {branches.map((branch, i) => (
