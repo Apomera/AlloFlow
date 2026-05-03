@@ -5214,23 +5214,97 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   );
                 })
               ),
-              pickedSpecies && h('div', { className: 'bg-white rounded-2xl border-2 border-rose-500 shadow-lg p-5 space-y-3', 'aria-live': 'polite' },
-                h('h3', { className: 'text-2xl font-black text-slate-800' }, pickedSpecies.species),
-                h('div', { className: 'text-sm italic text-slate-700' }, pickedSpecies.sciName),
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-700 mt-1 mb-2' }, pickedSpecies.status),
-                h('div', { className: 'p-3 bg-rose-50 border border-rose-200 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, '📖 The story'),
-                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedSpecies.story)
-                ),
-                h('div', { className: 'p-3 bg-stone-100 border border-stone-300 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-stone-700 mb-1' }, '🌲 Maine connection'),
-                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedSpecies.maineConnection)
-                ),
-                h('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '✊ What you can do'),
-                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedSpecies.whatYouCanDo)
-                )
-              ),
+              pickedSpecies && (function() {
+                var isRecovery = /RECOVERED|delisted|recovered/i.test(pickedSpecies.status);
+                // Hardcoded key stats per species (sourced from the story prose)
+                var keyStats = {
+                  'Piping Plover':   { from: '<50', to: '80–100', unit: 'pairs (Maine)', context: 'recovery from 1980s low' },
+                  'Wood Thrush':     { from: '100%', to: '~50%', unit: 'of 1970 population', context: '50%+ decline since 1970 (Rosenberg)' },
+                  'Bald Eagle':      { from: '21', to: '~700', unit: 'nesting pairs (Maine)', context: 'post-DDT recovery, 1972 → today' },
+                  'Atlantic Puffin': { from: '0', to: '~1,300', unit: 'pairs (Maine)', context: 'Project Puffin, 1973 → today' }
+                };
+                var ks = keyStats[pickedSpecies.species];
+                var trend = isRecovery
+                  ? { color: '#059669', soft: '#d1fae5', text: '#064e3b', arrow: '↗', label: 'Recovered', arrowBg: '#10b981' }
+                  : { color: '#be123c', soft: '#fee2e2', text: '#7f1d1d', arrow: '↘', label: 'At risk', arrowBg: '#f43f5e' };
+                return h('div', { className: 'bg-white rounded-2xl shadow-lg overflow-hidden', 'aria-live': 'polite',
+                  style: { border: '3px solid ' + trend.color }
+                },
+                  // Hero band — trend palette
+                  h('div', {
+                    className: 'p-5 border-b-2 flex flex-col md:flex-row gap-4 items-start',
+                    style: {
+                      background: 'linear-gradient(135deg, ' + trend.soft + ' 0%, #ffffff 100%)',
+                      borderColor: trend.color
+                    }
+                  },
+                    // Trend medallion
+                    h('div', { className: 'flex-shrink-0 flex items-center gap-3' },
+                      h('div', {
+                        'aria-hidden': 'true',
+                        style: {
+                          width: 64, height: 64, borderRadius: '50%',
+                          background: trend.arrowBg,
+                          border: '3px solid ' + trend.color,
+                          boxShadow: '0 0 0 4px ' + trend.color + '24, 0 4px 10px rgba(0,0,0,0.15)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#ffffff', fontWeight: 900, fontSize: 38, lineHeight: 1
+                        }
+                      }, trend.arrow),
+                      h('div', null,
+                        h('div', {
+                          style: {
+                            fontSize: 9, fontWeight: 800, letterSpacing: '0.08em',
+                            textTransform: 'uppercase', color: trend.text
+                          }
+                        }, isRecovery ? '✓ Recovery story' : '⚠ At risk'),
+                        h('div', { style: { fontSize: 22, fontWeight: 900, color: trend.color, lineHeight: 1.05 } }, trend.label)
+                      )
+                    ),
+                    // Title block
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('h3', {
+                        className: 'text-xl md:text-2xl font-black text-slate-800',
+                        style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.15 }
+                      }, pickedSpecies.species),
+                      h('div', { className: 'text-sm italic text-slate-700' }, pickedSpecies.sciName),
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider mt-1', style: { color: trend.color } }, pickedSpecies.status)
+                    )
+                  ),
+                  // Key-stat banner (only if we have a stat for this species)
+                  ks && h('div', {
+                    className: 'px-5 py-3 border-b flex items-baseline gap-3 flex-wrap',
+                    style: {
+                      background: trend.soft + 'aa',
+                      borderColor: trend.color + '40'
+                    }
+                  },
+                    h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                      h('span', { className: 'text-xs font-bold uppercase tracking-wider', style: { color: trend.text } }, '📊 Key stat:'),
+                      h('span', { className: 'text-base font-mono font-bold text-slate-700' }, ks.from),
+                      h('span', { className: 'text-lg font-bold', style: { color: trend.color } }, trend.arrow),
+                      h('span', { className: 'text-base font-mono font-bold', style: { color: trend.color } }, ks.to),
+                      h('span', { className: 'text-sm text-slate-700' }, ks.unit)
+                    ),
+                    h('div', { className: 'text-xs italic text-slate-700', style: { flexBasis: '100%' } }, ks.context)
+                  ),
+                  // Body content
+                  h('div', { className: 'p-5 space-y-3' },
+                    h('div', { className: 'p-3 bg-rose-50 border border-rose-200 rounded-lg' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, '📖 The story'),
+                      h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedSpecies.story)
+                    ),
+                    h('div', { className: 'p-3 bg-stone-100 border border-stone-300 rounded-lg' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-stone-700 mb-1' }, '🌲 Maine connection'),
+                      h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedSpecies.maineConnection)
+                    ),
+                    h('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded-lg' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '✊ What you can do'),
+                      h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedSpecies.whatYouCanDo)
+                    )
+                  )
+                );
+              })(),
               h('div', { className: 'bg-amber-50 border-2 border-amber-400 rounded-2xl p-5' },
                 h('h3', { className: 'text-base font-black text-amber-900 mb-2' }, '🌡️ Climate change is the new pressure'),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
