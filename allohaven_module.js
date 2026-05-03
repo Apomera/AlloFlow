@@ -523,8 +523,43 @@
       '.ah-root .ah-decoration:hover, .ah-root .ah-decoration:focus-visible { transform: translateY(-2px); filter: brightness(1.06); }',
       '.ah-root .ah-empty-cell { transition: background 140ms ease, border-color 140ms ease; cursor: pointer; }',
       '.ah-root .ah-empty-cell:hover, .ah-root .ah-empty-cell:focus-visible { background: rgba(255,255,255,0.06); }',
+      // Decoration delete (✕) button — fades in on hover/focus only.
+      // Two-tap deletion via the confirm modal below ensures students
+      // can\'t accidentally remove items.
+      '.ah-root .ah-decoration:hover .ah-decoration-delete,',
+      '.ah-root .ah-decoration:focus-within .ah-decoration-delete,',
+      '.ah-root .ah-decoration-delete:focus-visible { opacity: 1 !important; }',
+      // Image-error fallback — when an <img> fails (truncated base64,
+      // storage corruption), the parent gets data-img-failed=1 and we
+      // overlay a friendly question-mark. Doesn\'t block; cell still
+      // clickable for delete.
+      '.ah-root .ah-decoration[data-img-failed="1"]::after { content: "?"; color: rgba(255,255,255,0.55); font-size: 32px; font-weight: 700; }',
       '@keyframes ah-fade-in { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }',
       '.ah-root .ah-welcome { animation: ah-fade-in 320ms ease-out 1; }',
+      // Warm-light overlay — soft yellow radial from the upper-right corner
+      // of the room frame. Suppressed when high-contrast mode is on (an
+      // accessibility accommodation overrides the cozy aesthetic).
+      // Opacity is low enough that it doesn\'t fight decoration colors.
+      '.ah-root .ah-room-frame { position: relative; }',
+      '.ah-root .ah-room-frame::before {',
+      '  content: "";',
+      '  position: absolute;',
+      '  inset: 0;',
+      '  pointer-events: none;',
+      '  background: radial-gradient(ellipse at 85% 0%, rgba(255,220,140,0.08), transparent 60%);',
+      '  border-radius: inherit;',
+      '  z-index: 1;',
+      '}',
+      // Decorations + cells need to render ABOVE the warm-light overlay.
+      '.ah-root .ah-room-frame > * { position: relative; z-index: 2; }',
+      // Mobile/responsive — narrow viewports collapse the grids to fewer
+      // columns so cells stay tap-target sized. Below 480px: wall = 2
+      // cols, floor = 3 cols. The grid auto-rows expand so the same
+      // total cell count still fits, just on more rows.
+      '@media (max-width: 480px) {',
+      '  .ah-root .ah-wall-grid { grid-template-columns: repeat(2, 1fr) !important; }',
+      '  .ah-root .ah-floor-grid { grid-template-columns: repeat(3, 1fr) !important; }',
+      '}',
       // Voice-recording pulse — visual signal that the mic is hot. Slow + soft
       // so it doesn’t become alarm-like for sensory-sensitive students.
       '@keyframes ah-record-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.6); } 50% { box-shadow: 0 0 0 8px rgba(230,57,70,0); } }',
@@ -1891,6 +1926,67 @@
       setIsRecording(false);
     }
 
+    // ── Decoration deletion handler ──
+    // Per concept doc: token NOT refunded on delete (prevents grinding
+    // by add-and-delete). Confirmation modal prevents accidents.
+    function deleteDecoration(decorationId) {
+      var newDecorations = state.decorations.filter(function(d) { return d.id !== decorationId; });
+      setStateMulti({
+        decorations: newDecorations,
+        activeModal: null,
+        generateContext: null
+      });
+      addToast('Decoration removed.');
+    }
+
+    // ── Room expansion ──
+    // When 90% of the current room slots are filled, advancing to the
+    // next milestone unlocks 1 wall row + 1 floor row + 5 token bonus.
+    // Triggered by useEffect watching decorations.length so it fires
+    // exactly when the threshold is crossed.
+    var roomExpandedRef = useRef(false);
+    useEffect(function() {
+      var room = state.rooms[0];
+      if (!room) return;
+      var totalSlots = room.wallSlots + room.floorSlots;
+      var placedCount = state.decorations.length;
+      var thresholdHit = placedCount >= Math.floor(totalSlots * 0.9);
+      // Cap expansion at 50 total slots (concept-doc decision; v2+ adds new rooms)
+      if (!thresholdHit) {
+        roomExpandedRef.current = false;
+        return;
+      }
+      if (totalSlots >= 50) return;
+      if (roomExpandedRef.current) return;
+      roomExpandedRef.current = true;
+
+      // Add 1 wall row (4 slots) + 1 floor row (6 slots) = 10 new slots
+      var expandedRoom = Object.assign({}, room, {
+        wallSlots: room.wallSlots + 4,
+        floorSlots: room.floorSlots + 6
+      });
+      var newRooms = state.rooms.slice();
+      newRooms[0] = expandedRoom;
+
+      var bonus = 5;
+      var earningsEntry = {
+        source: 'milestone',
+        tokens: bonus,
+        date: new Date().toISOString(),
+        metadata: { milestone: 'room-expansion', newSize: expandedRoom.wallSlots + expandedRoom.floorSlots }
+      };
+
+      setStateMulti({
+        rooms: newRooms,
+        tokens: state.tokens + bonus,
+        earnings: state.earnings.concat([earningsEntry])
+      });
+      setTimeout(function() {
+        addToast('🌱 Your room is growing! +' + bonus + ' bonus tokens. Two new rows unlocked.');
+      }, 50);
+      // eslint-disable-next-line
+    }, [state.decorations.length, state.rooms]);
+
     // ── Decoration generation handlers ──
     var DECORATION_COST = 3;
 
@@ -2064,10 +2160,15 @@
         }
       },
         renderHeader(palette, state.tokens, props.onClose),
-        // Wall surface
+        // Compute responsive row count based on slot count + columns
+        // Wall stays 4 cols (2 cols on narrow); floor stays 6 cols (3 cols on narrow)
+        // Grid auto-rows handles overflow; we don't pin a row count
+        // anymore so expansion past 8/12 slots renders correctly.
+        // Wall surface (with warm-light overlay)
         h('div', {
           role: 'region',
           'aria-label': 'Wall — ' + wallCount + ' of ' + room.wallSlots + ' slots filled',
+          className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             position: 'relative',
             padding: '14px',
@@ -2080,18 +2181,20 @@
           }
         },
           h('div', {
+            className: 'ah-wall-grid',
             style: {
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gridTemplateRows: 'repeat(2, 80px)',
+              gridAutoRows: '80px',
               gap: '12px'
             }
           }, wallCells)
         ),
-        // Floor surface
+        // Floor surface (with warm-light overlay)
         h('div', {
           role: 'region',
           'aria-label': 'Floor — ' + floorCount + ' of ' + room.floorSlots + ' slots filled',
+          className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             padding: '14px',
             background: palette.floor,
@@ -2102,10 +2205,11 @@
           }
         },
           h('div', {
+            className: 'ah-floor-grid',
             style: {
               display: 'grid',
               gridTemplateColumns: 'repeat(6, 1fr)',
-              gridTemplateRows: 'repeat(2, 90px)',
+              gridAutoRows: '90px',
               gap: '10px'
             }
           }, floorCells)
@@ -2161,13 +2265,16 @@
     function renderCell(index, surface, decoration, palette) {
       if (decoration) {
         var rot = decoration.rotation || 0;
+        var label = decoration.templateLabel || decoration.template || 'item';
+        var hoverTitle = decoration.studentReflection
+          ? '"' + decoration.studentReflection + '" · ' + label
+          : label;
         return h('div', {
           key: surface + '-cell-' + index,
-          role: 'button',
-          tabIndex: 0,
-          'aria-label': 'Decoration: ' + (decoration.template || 'item'),
+          role: 'group',
+          'aria-label': 'Decoration: ' + label + (decoration.studentReflection ? ' (with reflection)' : ''),
           className: 'ah-decoration',
-          title: decoration.studentReflection || decoration.template,
+          title: hoverTitle,
           style: {
             background: palette.surface,
             border: '1px solid ' + palette.border,
@@ -2183,7 +2290,16 @@
         },
           decoration.imageBase64 ? h('img', {
             src: decoration.imageBase64,
-            alt: decoration.template || 'decoration',
+            alt: label,
+            // Image-error fallback: if base64 fails to render (corrupted /
+            // truncated by storage limits), swap to a visible placeholder
+            // so the cell isn't broken-icon-empty.
+            onError: function(e) {
+              try {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement.setAttribute('data-img-failed', '1');
+              } catch (err) { /* ignore */ }
+            },
             style: { width: '100%', height: '100%', objectFit: 'contain' }
           }) : h('span', { style: { fontSize: '24px', color: palette.textMute } }, '?'),
           decoration.isStarter ? h('span', {
@@ -2199,7 +2315,41 @@
               borderRadius: '3px',
               letterSpacing: '0.04em'
             }
-          }, 'starter') : null
+          }, 'starter') : null,
+          // Hover-revealed ✕ delete button (top-right corner). Suppressed
+          // on the starter decoration — students shouldn't accidentally
+          // delete the welcome gift; v2+ could allow it via Settings.
+          !decoration.isStarter ? h('button', {
+            onClick: function(e) {
+              e.stopPropagation();
+              setStateMulti({ activeModal: 'delete-decoration', generateContext: { decorationId: decoration.id } });
+            },
+            'aria-label': 'Delete this ' + label,
+            className: 'ah-decoration-delete',
+            title: 'Remove this decoration',
+            style: {
+              position: 'absolute',
+              top: '4px',
+              right: '4px',
+              width: '22px',
+              height: '22px',
+              padding: 0,
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.65)',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.3)',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              opacity: 0,
+              transition: 'opacity 140ms ease',
+              fontFamily: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1
+            }
+          }, '✕') : null
         );
       }
       return h('div', {
@@ -2640,6 +2790,94 @@
     }
 
     // ─────────────────────────────────────────────────
+    // DELETE-DECORATION CONFIRMATION MODAL
+    // Two-tap deletion (per concept doc) — prevents accidental loss.
+    // Token NOT refunded; explicit messaging so students know.
+    // ─────────────────────────────────────────────────
+    function renderDeleteDecorationModal() {
+      if (state.activeModal !== 'delete-decoration') return null;
+      var decorationId = (state.generateContext || {}).decorationId;
+      var dec = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!dec) {
+        // Decoration vanished somehow — close the modal silently
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      var label = dec.templateLabel || dec.template || 'this decoration';
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Confirm delete',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateMulti({ activeModal: null, generateContext: null });
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 200,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '380px',
+            width: '100%',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            textAlign: 'center'
+          }
+        },
+          dec.imageBase64 ? h('img', {
+            src: dec.imageBase64,
+            alt: label,
+            style: {
+              maxWidth: '120px',
+              maxHeight: '120px',
+              borderRadius: '8px',
+              margin: '0 auto 14px',
+              display: 'block',
+              opacity: 0.9
+            }
+          }) : null,
+          h('h3', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '17px', fontWeight: 700 } },
+            'Remove ' + label.toLowerCase() + '?'),
+          h('p', {
+            style: { margin: '0 0 18px 0', fontSize: '13px', color: palette.textDim, lineHeight: '1.55' }
+          }, 'Tokens already spent on this decoration won\'t be refunded.'),
+          h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center' } },
+            h('button', {
+              onClick: function() { setStateMulti({ activeModal: null, generateContext: null }); },
+              autoFocus: true,
+              style: {
+                background: 'transparent', color: palette.textDim,
+                border: '1px solid ' + palette.border, borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Keep it'),
+            h('button', {
+              onClick: function() { deleteDecoration(decorationId); },
+              style: {
+                background: palette.warn || '#dc2626',
+                color: palette.onAccent || '#fff',
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Remove')
+          )
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
     // SETTINGS MODAL — Pomodoro duration presets + custom.
     // ─────────────────────────────────────────────────
     function renderSettingsModal() {
@@ -2765,6 +3003,26 @@
       );
     }
 
+    // ── aria-live announcement for token deltas ──
+    // Tracks token changes since last render and pushes them to a hidden
+    // live region. Screen reader users hear "+2 tokens earned" etc.
+    // without needing visual focus on the counter chip.
+    var prevTokensRef = useRef(state.tokens);
+    var lastAnnouncementTuple = useState('');
+    var lastAnnouncement = lastAnnouncementTuple[0];
+    var setLastAnnouncement = lastAnnouncementTuple[1];
+    useEffect(function() {
+      var prev = prevTokensRef.current;
+      if (prev !== state.tokens) {
+        var delta = state.tokens - prev;
+        var msg;
+        if (delta > 0) msg = 'Earned ' + delta + ' token' + (delta === 1 ? '' : 's') + '. Total ' + state.tokens + '.';
+        else if (delta < 0) msg = 'Spent ' + Math.abs(delta) + ' token' + (Math.abs(delta) === 1 ? '' : 's') + '. Total ' + state.tokens + '.';
+        if (msg) setLastAnnouncement(msg);
+        prevTokensRef.current = state.tokens;
+      }
+    }, [state.tokens]);
+
     // ── Render ──
     // Outer modal-style fixed overlay covering the viewport (matches Symbol
     // Studio pattern). Inner ah-root scopes all CSS animations.
@@ -2782,11 +3040,23 @@
         color: palette.text
       }
     },
+      // Visually-hidden aria-live region for token-delta announcements
+      h('div', {
+        role: 'status',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        style: {
+          position: 'absolute',
+          width: '1px', height: '1px', padding: 0, margin: '-1px',
+          overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0
+        }
+      }, lastAnnouncement),
       renderRoom(),
       renderPomodoroOverlay(),
       renderGenerateModal(),
       renderReflectionModal(),
       renderJournalModal(),
+      renderDeleteDecorationModal(),
       renderSettingsModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard()
