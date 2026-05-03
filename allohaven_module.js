@@ -232,6 +232,75 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 3.5: REFLECTION PROMPTS
+  // ─────────────────────────────────────────────────────────
+  // ~30 prompts across 7 thematic categories. The reflection modal
+  // shows 3 (stable for the day, picked at first visit). Categories
+  // are roughly balanced; mood / body and learning are slightly
+  // overweighted because they're the most common "what would help"
+  // prompts in clinical reflection-journaling research.
+  var PROMPT_BANK = [
+    // Learning
+    { id: 'l1', cat: 'learning', text: "What's something you learned recently?" },
+    { id: 'l2', cat: 'learning', text: "What's a question you've been thinking about?" },
+    { id: 'l3', cat: 'learning', text: "What's something that surprised you this week?" },
+    { id: 'l4', cat: 'learning', text: "Was there a moment today when something clicked for you?" },
+    { id: 'l5', cat: 'learning', text: "What's a topic you'd like to explore more?" },
+    // Gratitude
+    { id: 'g1', cat: 'gratitude', text: "Something small that went well today?" },
+    { id: 'g2', cat: 'gratitude', text: "Who or what helped you this week?" },
+    { id: 'g3', cat: 'gratitude', text: "What's one thing you appreciate right now?" },
+    // Mood / body
+    { id: 'm1', cat: 'mood', text: "How are you feeling right now?" },
+    { id: 'm2', cat: 'mood', text: "What's the weather like inside your head?" },
+    { id: 'm3', cat: 'mood', text: "How does your body feel?" },
+    { id: 'm4', cat: 'mood', text: "If today was a color, what color would it be?" },
+    { id: 'm5', cat: 'mood', text: "What's your energy level like today, on a scale that makes sense to you?" },
+    // Future
+    { id: 'f1', cat: 'future', text: "What's something you're looking forward to?" },
+    { id: 'f2', cat: 'future', text: "What's one tiny thing you want to do tomorrow?" },
+    { id: 'f3', cat: 'future', text: "If you had an extra hour today, how would you spend it?" },
+    // Achievement
+    { id: 'a1', cat: 'achievement', text: "What's something you're proud of?" },
+    { id: 'a2', cat: 'achievement', text: "What's something you did this week that took effort?" },
+    { id: 'a3', cat: 'achievement', text: "What's a small win from today?" },
+    { id: 'a4', cat: 'achievement', text: "What did you handle better than you expected?" },
+    // Curiosity
+    { id: 'c1', cat: 'curiosity', text: "What's a question you wish you could ask anyone?" },
+    { id: 'c2', cat: 'curiosity', text: "What's something you noticed today?" },
+    { id: 'c3', cat: 'curiosity', text: "What's something you'd like to be better at?" },
+    { id: 'c4', cat: 'curiosity', text: "What's something that doesn't make sense to you yet?" },
+    // Free
+    { id: 'fr1', cat: 'free', text: "What's on your mind?" },
+    { id: 'fr2', cat: 'free', text: "Write whatever you want." },
+    { id: 'fr3', cat: 'free', text: "Tell future-you something." },
+    // Sensory / body-aware (helps regulate; clinically supported)
+    { id: 's1', cat: 'mood', text: "Name 3 things you can see, hear, or feel right now." },
+    { id: 's2', cat: 'mood', text: "Where is your attention right now? On something inside or outside your head?" },
+    // Connection
+    { id: 'cn1', cat: 'gratitude', text: "Was there a moment you felt connected to someone today?" }
+  ];
+
+  function pickRandomPrompts(n) {
+    // Fisher-Yates partial shuffle — picks n unique prompts from PROMPT_BANK
+    var pool = PROMPT_BANK.slice();
+    var picked = [];
+    for (var i = 0; i < n && pool.length > 0; i++) {
+      var idx = Math.floor(Math.random() * pool.length);
+      picked.push(pool[idx].id);
+      pool.splice(idx, 1);
+    }
+    return picked;
+  }
+
+  function getPromptText(promptId) {
+    for (var i = 0; i < PROMPT_BANK.length; i++) {
+      if (PROMPT_BANK[i].id === promptId) return PROMPT_BANK[i].text;
+    }
+    return null;
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 4: STARTER FERN — hardcoded SVG so Day 1 has a friendly
   // placed item without requiring AI image generation.
   // ─────────────────────────────────────────────────────────
@@ -278,11 +347,15 @@
       '.ah-root .ah-empty-cell:hover, .ah-root .ah-empty-cell:focus-visible { background: rgba(255,255,255,0.06); }',
       '@keyframes ah-fade-in { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }',
       '.ah-root .ah-welcome { animation: ah-fade-in 320ms ease-out 1; }',
+      // Voice-recording pulse — visual signal that the mic is hot. Slow + soft
+      // so it doesn’t become alarm-like for sensory-sensitive students.
+      '@keyframes ah-record-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.6); } 50% { box-shadow: 0 0 0 8px rgba(230,57,70,0); } }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
       '  .ah-root .ah-welcome { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible { transform: none !important; }',
+      '  button { animation: none !important; }',
       '}'
     ].join('\n');
     document.head.appendChild(style);
@@ -307,6 +380,381 @@
       cursor: 'pointer', fontFamily: 'inherit',
       transition: 'background 120ms ease, color 120ms ease'
     };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6.5: SUB-COMPONENTS
+  // ─────────────────────────────────────────────────────────
+  // ReflectionModalInner — renders the prompt-pick + text area + voice
+  // button + character counter. Local React state for the draft so the
+  // outer component doesn't re-render on every keystroke.
+  function ReflectionModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+
+    var draftTuple = useState('');
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    var pickedTuple = useState(p.promptIds && p.promptIds.length ? p.promptIds[0] : null);
+    var pickedPromptId = pickedTuple[0];
+    var setPickedPromptId = pickedTuple[1];
+
+    var palette = p.palette;
+    var minChars = 20;
+    var charCount = draft.trim().length;
+    var canSubmit = charCount >= minChars;
+
+    // When voice transcribes, append to draft
+    function onTranscript(text) {
+      setDraft(function(prev) { return (prev ? prev + ' ' : '') + text; });
+    }
+
+    function handleVoiceClick() {
+      if (p.isRecording) {
+        p.stopVoice();
+      } else {
+        p.startVoice(onTranscript);
+      }
+    }
+
+    function handleSubmit() {
+      if (!canSubmit) return;
+      p.stopVoice();
+      p.onSubmit(draft, pickedPromptId);
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Write a reflection',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onClose();
+      },
+      style: {
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)',
+        zIndex: 175,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg,
+          border: '1px solid ' + palette.border,
+          borderRadius: '14px',
+          padding: '24px',
+          maxWidth: '520px',
+          width: '100%',
+          maxHeight: '85vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
+        },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '📝 Reflection'),
+          h('button', {
+            onClick: p.onClose,
+            'aria-label': 'Close reflection',
+            style: {
+              background: 'transparent',
+              border: '1px solid ' + palette.border,
+              color: palette.textDim,
+              borderRadius: '8px',
+              padding: '4px 10px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, '✕')
+        ),
+        // Prompt picker
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          "Today's prompts · pick one or write your own"),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' } },
+          (p.promptIds || []).map(function(pid) {
+            var text = getPromptText(pid);
+            if (!text) return null;
+            var active = pid === pickedPromptId;
+            return h('button', {
+              key: 'pp-' + pid,
+              onClick: function() { setPickedPromptId(pid); },
+              'aria-pressed': active ? 'true' : 'false',
+              style: {
+                background: active ? palette.surface : 'transparent',
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '8px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: '13px',
+                color: palette.text,
+                textAlign: 'left',
+                lineHeight: '1.4'
+              }
+            }, text);
+          })
+        ),
+        // Text area + voice button
+        h('div', { style: { position: 'relative', marginBottom: '8px' } },
+          h('textarea', {
+            value: draft,
+            onChange: function(e) { setDraft(e.target.value); },
+            placeholder: 'Take your time. Anything goes.',
+            'aria-label': 'Reflection text',
+            rows: 6,
+            style: {
+              width: '100%',
+              padding: '10px 12px',
+              paddingRight: p.speechSupported ? '48px' : '12px',
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              color: palette.text,
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              lineHeight: '1.5',
+              resize: 'vertical',
+              boxSizing: 'border-box'
+            }
+          }),
+          // Voice mic button
+          p.speechSupported ? h('button', {
+            onClick: handleVoiceClick,
+            'aria-label': p.isRecording ? 'Stop voice recording' : 'Start voice recording',
+            'aria-pressed': p.isRecording ? 'true' : 'false',
+            title: p.isRecording ? 'Recording — click to stop' : 'Click to dictate (voice-to-text)',
+            style: {
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: p.isRecording ? palette.danger || '#e63946' : palette.surface,
+              color: p.isRecording ? '#fff' : palette.text,
+              border: '1px solid ' + (p.isRecording ? (palette.danger || '#e63946') : palette.border),
+              fontSize: '16px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              animation: p.isRecording ? 'ah-record-pulse 1.6s ease-in-out infinite' : 'none'
+            }
+          }, p.isRecording ? '⏺' : '🎤') : null
+        ),
+        // Character counter
+        h('div', {
+          style: {
+            fontSize: '11px',
+            color: charCount >= minChars ? palette.success : palette.textMute,
+            marginBottom: '14px',
+            display: 'flex',
+            justifyContent: 'space-between'
+          }
+        },
+          h('span', null, charCount + ' character' + (charCount === 1 ? '' : 's')),
+          h('span', { style: { fontStyle: 'italic' } },
+            charCount >= minChars
+              ? (p.alreadyEarnedToday ? '✓ ready to save (no extra token today)' : '✓ ready to earn 🪙 +1')
+              : minChars + ' characters to save')
+        ),
+        // Submit + cancel
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
+          h('button', {
+            onClick: p.onClose,
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Cancel'),
+          h('button', {
+            onClick: handleSubmit,
+            disabled: !canSubmit,
+            style: {
+              background: canSubmit ? palette.accent : palette.surface,
+              color: canSubmit ? palette.onAccent : palette.textMute,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 18px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: canSubmit ? 'pointer' : 'not-allowed',
+              fontFamily: 'inherit',
+              opacity: canSubmit ? 1 : 0.6
+            }
+          }, p.alreadyEarnedToday ? 'Save' : 'Save & earn 🪙')
+        )
+      )
+    );
+  }
+
+  // JournalEntryRow — single entry display with edit + delete.
+  // Inline-edit mode toggles between read-only display and a textarea.
+  function JournalEntryRow(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+
+    var entry = p.entry;
+    var palette = p.palette;
+    var editingTuple = useState(false);
+    var editing = editingTuple[0];
+    var setEditing = editingTuple[1];
+    var draftTuple = useState(entry.text || '');
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    var date = new Date(entry.date);
+    var dateStr = date.toLocaleDateString() + ' · ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    function handleSave() {
+      var trimmed = (draft || '').trim();
+      if (!trimmed) return;
+      p.onEdit(trimmed);
+      setEditing(false);
+    }
+
+    return h('div', {
+      role: 'article',
+      'aria-label': 'Journal entry from ' + dateStr,
+      style: {
+        background: palette.surface,
+        border: '1px solid ' + palette.border,
+        borderRadius: '10px',
+        padding: '12px 14px'
+      }
+    },
+      h('div', {
+        style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '10px', marginBottom: '6px' }
+      },
+        h('span', {
+          style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, letterSpacing: '0.02em' }
+        }, dateStr + (entry.editedAt ? ' · edited' : '')),
+        h('span', {
+          style: { fontSize: '11px', color: entry.tokensEarned > 0 ? palette.accent : palette.textMute, fontWeight: 700 }
+        }, entry.tokensEarned > 0 ? '🪙 +' + entry.tokensEarned : '·')
+      ),
+      entry.prompt ? h('div', {
+        style: {
+          fontSize: '11px',
+          color: palette.textDim,
+          fontStyle: 'italic',
+          marginBottom: '6px',
+          lineHeight: '1.4'
+        }
+      }, '"' + entry.prompt + '"') : null,
+      editing ? h('textarea', {
+        value: draft,
+        onChange: function(e) { setDraft(e.target.value); },
+        rows: 4,
+        style: {
+          width: '100%',
+          padding: '8px 10px',
+          background: palette.bg,
+          border: '1px solid ' + palette.border,
+          borderRadius: '6px',
+          color: palette.text,
+          fontSize: '13px',
+          fontFamily: 'inherit',
+          lineHeight: '1.5',
+          boxSizing: 'border-box',
+          marginBottom: '8px',
+          resize: 'vertical'
+        }
+      }) : h('div', {
+        style: {
+          fontSize: '13px',
+          color: palette.text,
+          lineHeight: '1.55',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word',
+          marginBottom: '8px'
+        }
+      }, entry.text),
+      h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
+        editing ? [
+          h('button', {
+            key: 'cancel',
+            onClick: function() { setDraft(entry.text || ''); setEditing(false); },
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '6px',
+              padding: '4px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Cancel'),
+          h('button', {
+            key: 'save',
+            onClick: handleSave,
+            style: {
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '6px',
+              padding: '4px 14px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Save')
+        ] : [
+          h('button', {
+            key: 'edit',
+            onClick: function() { setEditing(true); setDraft(entry.text || ''); },
+            'aria-label': 'Edit this entry',
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '6px',
+              padding: '4px 12px',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Edit'),
+          h('button', {
+            key: 'delete',
+            onClick: p.onDelete,
+            'aria-label': 'Delete this entry',
+            style: {
+              background: 'transparent',
+              color: palette.textMute,
+              border: '1px solid ' + palette.border,
+              borderRadius: '6px',
+              padding: '4px 10px',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, '🗑')
+        ]
+      )
+    );
   }
 
   // ─────────────────────────────────────────────────────────
@@ -593,6 +1041,143 @@
       addToast("It's okay to stop. No tokens earned this time.");
     }
 
+    // ── Reflection / journal handlers ──
+    // Open the reflection modal — also lazily populates today's 3 prompts
+    // if they haven't been picked yet this calendar day.
+    function openReflectionModal() {
+      var today = state.dailyState.date;
+      var prompts = state.dailyState.promptsForToday;
+      if (!prompts || prompts.length !== 3) {
+        var picks = pickRandomPrompts(3);
+        var newDailyState = Object.assign({}, state.dailyState, { date: today, promptsForToday: picks });
+        setStateMulti({ dailyState: newDailyState, activeModal: 'reflection' });
+      } else {
+        setStateField('activeModal', 'reflection');
+      }
+    }
+
+    // Submit a reflection. Awards 1 token if dailyState.reflectionsSubmitted
+    // is currently 0; otherwise saves the entry but earns 0 (1/day cap).
+    // Length gate is enforced at the UI level (button disabled <20 chars);
+    // this handler trusts the input.
+    function submitReflection(text, promptId) {
+      var trimmed = (text || '').trim();
+      if (!trimmed) return;
+      var alreadyEarned = (state.dailyState.reflectionsSubmitted || 0) >= 1;
+      var tokensEarned = alreadyEarned ? 0 : 1;
+      var entry = {
+        id: 'j-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        date: new Date().toISOString(),
+        prompt: promptId ? getPromptText(promptId) : null,
+        promptId: promptId || null,
+        text: trimmed,
+        topics: [], // v1: empty; v2+ keyword extraction
+        tokensEarned: tokensEarned
+      };
+      var newJournal = state.journalEntries.concat([entry]);
+      var newDailyState = Object.assign({}, state.dailyState, {
+        reflectionsSubmitted: (state.dailyState.reflectionsSubmitted || 0) + 1
+      });
+      var updates = {
+        journalEntries: newJournal,
+        dailyState: newDailyState,
+        tokens: state.tokens + tokensEarned,
+        activeModal: null
+      };
+      if (tokensEarned > 0) {
+        updates.earnings = state.earnings.concat([{
+          source: 'reflection',
+          tokens: tokensEarned,
+          date: entry.date,
+          metadata: { length: trimmed.length, promptId: promptId || null }
+        }]);
+      }
+      // First-Reflection toast (one-time)
+      if (!state.toastsSeen.firstReflection) {
+        updates.toastsSeen = Object.assign({}, state.toastsSeen, { firstReflection: true });
+        setTimeout(function() {
+          addToast('🪙 +1 token. You can write one reflection per day.');
+        }, 50);
+      } else if (tokensEarned > 0) {
+        setTimeout(function() {
+          addToast('🪙 +1 token. Saved to your journal.');
+        }, 50);
+      } else {
+        setTimeout(function() {
+          addToast('Saved to your journal. (Daily reflection token already earned.)');
+        }, 50);
+      }
+      setStateMulti(updates);
+    }
+
+    // Edit a journal entry's text. Token state unchanged.
+    function editJournalEntry(id, newText) {
+      var trimmed = (newText || '').trim();
+      if (!trimmed) return;
+      var newJournal = state.journalEntries.map(function(e) {
+        if (e.id !== id) return e;
+        return Object.assign({}, e, { text: trimmed, editedAt: new Date().toISOString() });
+      });
+      setStateField('journalEntries', newJournal);
+    }
+
+    // Delete a journal entry. Token NOT refunded (matches decoration-delete
+    // logic from the concept doc — prevents grinding by add-and-delete).
+    function deleteJournalEntry(id) {
+      var newJournal = state.journalEntries.filter(function(e) { return e.id !== id; });
+      setStateField('journalEntries', newJournal);
+    }
+
+    // ── Web Speech API hook for voice-to-text ──
+    // Feature-detected once at component setup. Not a React hook; just a
+    // ref-based controller so each modal-instance can start/stop a
+    // recognition session without re-instantiating SpeechRecognition.
+    var speechRecRef = useRef(null);
+    var isRecordingTuple = useState(false);
+    var isRecording = isRecordingTuple[0];
+    var setIsRecording = isRecordingTuple[1];
+    var speechSupported = (typeof window !== 'undefined') &&
+      !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+
+    function startVoiceCapture(onTranscript) {
+      if (!speechSupported) return;
+      try {
+        var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+        var rec = new SR();
+        rec.continuous = true;
+        rec.interimResults = false;
+        rec.lang = 'en-US';
+        rec.onresult = function(event) {
+          var transcript = '';
+          for (var i = event.resultIndex; i < event.results.length; i++) {
+            transcript += event.results[i][0].transcript;
+          }
+          if (transcript && typeof onTranscript === 'function') onTranscript(transcript);
+        };
+        rec.onerror = function(e) {
+          console.warn('[AlloHaven] speech recognition error:', e);
+          setIsRecording(false);
+        };
+        rec.onend = function() {
+          setIsRecording(false);
+        };
+        speechRecRef.current = rec;
+        rec.start();
+        setIsRecording(true);
+      } catch (err) {
+        console.warn('[AlloHaven] could not start speech recognition:', err);
+        setIsRecording(false);
+      }
+    }
+
+    function stopVoiceCapture() {
+      if (speechRecRef.current) {
+        try { speechRecRef.current.stop(); } catch (e) { /* ignore */ }
+        speechRecRef.current = null;
+      }
+      setIsRecording(false);
+    }
+
     if (!props.isOpen) return null;
 
     // ─────────────────────────────────────────────────
@@ -695,13 +1280,13 @@
               state.pomodoroState.active ? { opacity: 0.5, cursor: 'not-allowed' } : {})
           }, state.pomodoroState.active ? '🍅 Pomodoro running' : '🍅 Start Pomodoro'),
           h('button', {
-            onClick: function() { addToast('Reflection coming in Phase 1c'); },
+            onClick: openReflectionModal,
             style: secondaryBtnStyle(palette)
           }, '📝 Write reflection'),
           h('button', {
-            onClick: function() { addToast('Journal log coming in Phase 1c'); },
+            onClick: function() { setStateField('activeModal', 'journal'); },
             style: secondaryBtnStyle(palette)
-          }, '📓 Journal'),
+          }, '📓 Journal' + (state.journalEntries.length > 0 ? ' · ' + state.journalEntries.length : '')),
           h('button', {
             onClick: function() { setStateField('activeModal', 'settings'); },
             style: secondaryBtnStyle(palette)
@@ -1072,6 +1657,120 @@
     }
 
     // ─────────────────────────────────────────────────
+    // REFLECTION MODAL — 3 daily prompts + text area + voice + counter.
+    // 20-character soft floor before token earns; positive counter
+    // never blocks. Voice-to-text via Web Speech API when supported.
+    // ─────────────────────────────────────────────────
+    function renderReflectionModal() {
+      if (state.activeModal !== 'reflection') return null;
+
+      var promptIds = state.dailyState.promptsForToday || [];
+      // Local component state for the modal — kept here as React state
+      // hooks via closures. Since modals open/close mounting differently,
+      // we manage drafts via a stable inner component.
+      return h(ReflectionModalInner, {
+        promptIds: promptIds,
+        palette: palette,
+        speechSupported: speechSupported,
+        startVoice: startVoiceCapture,
+        stopVoice: stopVoiceCapture,
+        isRecording: isRecording,
+        onSubmit: function(text, promptId) { submitReflection(text, promptId); },
+        onClose: function() {
+          stopVoiceCapture();
+          setStateField('activeModal', null);
+        },
+        alreadyEarnedToday: (state.dailyState.reflectionsSubmitted || 0) >= 1
+      });
+    }
+
+    // ─────────────────────────────────────────────────
+    // JOURNAL MODAL — chronological list of past entries (newest first).
+    // Each entry is editable and deletable. Token state never changes
+    // on edit or delete.
+    // ─────────────────────────────────────────────────
+    function renderJournalModal() {
+      if (state.activeModal !== 'journal') return null;
+      // Sort newest-first
+      var entries = state.journalEntries.slice().sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      });
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Your journal',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 175,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '560px',
+            width: '100%',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', {
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
+          },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '📓 Your journal · ' + entries.length),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close journal',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          entries.length === 0 ? h('p', {
+            style: { color: palette.textDim, textAlign: 'center', padding: '24px 12px', fontStyle: 'italic' }
+          }, "No journal entries yet. Write your first reflection — your past words will live here.") : null,
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            entries.map(function(entry) {
+              return h(JournalEntryRow, {
+                key: entry.id,
+                entry: entry,
+                palette: palette,
+                onEdit: function(newText) { editJournalEntry(entry.id, newText); },
+                onDelete: function() {
+                  if (window.confirm && !window.confirm('Delete this entry? Tokens already earned will not be refunded.')) return;
+                  deleteJournalEntry(entry.id);
+                }
+              });
+            })
+          ),
+          h('div', {
+            style: {
+              fontSize: '11px',
+              color: palette.textMute,
+              fontStyle: 'italic',
+              marginTop: '14px',
+              paddingTop: '12px',
+              borderTop: '1px solid ' + palette.border,
+              lineHeight: '1.5'
+            }
+          }, 'Your journal is private. Only you see this.')
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
     // SETTINGS MODAL — Pomodoro duration presets + custom.
     // ─────────────────────────────────────────────────
     function renderSettingsModal() {
@@ -1216,6 +1915,8 @@
     },
       renderRoom(),
       renderPomodoroOverlay(),
+      renderReflectionModal(),
+      renderJournalModal(),
       renderSettingsModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard()
