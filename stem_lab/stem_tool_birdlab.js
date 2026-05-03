@@ -7164,15 +7164,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '📸', title: 'Bird Photo ID' }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
-            h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-2xl p-5' },
-              h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, '📸 Identify a bird from a photo'),
-              h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                'Upload a photo you took (or one you\'re trying to identify) and AI vision analysis returns the top-3 likely species with confidence scores and the field marks it noticed. ',
-                h('strong', null, 'AI is a starting point, not a verdict'),
-                ' — verify against real species pages on eBird, All About Birds, and Audubon, especially for tricky lookalikes (warblers, sparrows, juvenile gulls).'
+            // ── Photo ID intro hero: AI-scan scene with camera + bird + scanning rays ──
+            h('div', { className: 'rounded-2xl overflow-hidden shadow border-2 border-violet-300' },
+              h('svg', {
+                viewBox: '0 0 540 150', width: '100%',
+                style: { display: 'block' },
+                role: 'img', 'aria-label': 'Camera scanning a bird with AI'
+              },
+                h('defs', null,
+                  h('linearGradient', { id: 'photoIdSky', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#ede9fe' }),
+                    h('stop', { offset: '100%', stopColor: '#fef3c7' })
+                  ),
+                  h('radialGradient', { id: 'photoIdScanGlow', cx: '50%', cy: '50%', r: '50%' },
+                    h('stop', { offset: '0%', stopColor: '#a78bfa', stopOpacity: '0.5' }),
+                    h('stop', { offset: '100%', stopColor: '#a78bfa', stopOpacity: '0' })
+                  ),
+                  h('linearGradient', { id: 'photoIdBirdBody', cx: '40%', cy: '35%', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                    h('stop', { offset: '0%', stopColor: '#fef3c7' }),
+                    h('stop', { offset: '70%', stopColor: '#a16207' }),
+                    h('stop', { offset: '100%', stopColor: '#451a03' })
+                  )
+                ),
+                // Sky background
+                h('rect', { x: 0, y: 0, width: 540, height: 150, fill: 'url(#photoIdSky)' }),
+                // Distant ridges
+                h('path', { d: 'M0,108 L80,90 L160,100 L240,82 L320,94 L400,78 L480,92 L540,86 L540,150 L0,150 Z',
+                  fill: '#86efac', opacity: 0.45 }),
+                h('path', { d: 'M0,124 L60,118 L140,124 L220,114 L300,122 L380,112 L460,120 L540,116 L540,150 L0,150 Z',
+                  fill: '#34d399', opacity: 0.7 }),
+                // Bird subject (right side, in focus)
+                h('g', { transform: 'translate(370, 64)' },
+                  // Branch
+                  h('path', { d: 'M-30,30 L60,32', stroke: '#78350f', strokeWidth: 3, strokeLinecap: 'round', fill: 'none' }),
+                  // Body
+                  h('ellipse', { cx: 18, cy: 16, rx: 20, ry: 14, fill: 'url(#photoIdBirdBody)', stroke: '#451a03', strokeWidth: 0.8 }),
+                  // Head
+                  h('circle', { cx: 4, cy: 12, r: 9, fill: 'url(#photoIdBirdBody)', stroke: '#451a03', strokeWidth: 0.8 }),
+                  // Eye + highlight
+                  h('circle', { cx: 1, cy: 10, r: 2, fill: '#1c1917' }),
+                  h('circle', { cx: 0.4, cy: 9, r: 0.6, fill: '#fef3c7' }),
+                  // Beak
+                  h('path', { d: 'M-5,12 L-10,14 L-5,15 Z', fill: '#f59e0b', stroke: '#78350f', strokeWidth: 0.5 }),
+                  // Wing detail
+                  h('path', { d: 'M14,14 Q26,12 36,20 Q26,24 14,22 Z', fill: '#78350f', opacity: 0.55 }),
+                  // Tail
+                  h('path', { d: 'M36,16 L48,14 L48,22 Z', fill: '#78350f' })
+                ),
+                // AI scan beam — translucent purple cone from "camera" toward bird
+                h('g', null,
+                  h('circle', { cx: 380, cy: 80, r: 70, fill: 'url(#photoIdScanGlow)', opacity: 0.6 }),
+                  // Scan reticle on bird
+                  h('rect', { x: 348, y: 55, width: 70, height: 50, fill: 'none', stroke: '#7c3aed', strokeWidth: 1.5, strokeDasharray: '4 3', opacity: 0.8 }),
+                  // Corner brackets on the reticle
+                  h('path', { d: 'M348,65 L348,55 L358,55 M418,55 L418,65 M348,95 L348,105 L358,105 M418,95 L418,105',
+                    fill: 'none', stroke: '#7c3aed', strokeWidth: 2.5, strokeLinecap: 'round' })
+                ),
+                // Smartphone outline (left-center)
+                h('g', { transform: 'translate(40, 30)' },
+                  // Phone body
+                  h('rect', { x: 0, y: 0, width: 80, height: 100, rx: 10,
+                    fill: '#1e293b', stroke: '#0f172a', strokeWidth: 1.5 }),
+                  // Camera bump
+                  h('circle', { cx: 40, cy: 14, r: 6, fill: '#0f172a' }),
+                  h('circle', { cx: 40, cy: 14, r: 4, fill: '#7c3aed' }),
+                  h('circle', { cx: 40, cy: 14, r: 1.5, fill: '#1e1b4b' }),
+                  // Screen
+                  h('rect', { x: 5, y: 24, width: 70, height: 70, rx: 4, fill: '#020617' }),
+                  // Tiny bird preview on screen
+                  h('g', { transform: 'translate(28, 50) scale(0.8)' },
+                    h('ellipse', { cx: 0, cy: 4, rx: 14, ry: 9, fill: 'url(#photoIdBirdBody)', stroke: '#451a03', strokeWidth: 0.5 }),
+                    h('circle', { cx: -8, cy: 0, r: 6, fill: 'url(#photoIdBirdBody)', stroke: '#451a03', strokeWidth: 0.5 }),
+                    h('circle', { cx: -10, cy: -1, r: 1.2, fill: '#1c1917' }),
+                    h('path', { d: 'M-13,-1 L-17,0 L-13,1 Z', fill: '#f59e0b' })
+                  ),
+                  // AI processing chip
+                  h('rect', { x: 22, y: 84, width: 36, height: 6, rx: 3, fill: '#7c3aed', opacity: 0.85 }),
+                  h('text', { x: 40, y: 89, fontSize: 4, fontWeight: 800, fill: '#ffffff', textAnchor: 'middle' }, 'AI'),
+                  // Camera flash burst (decorative)
+                  h('path', { d: 'M -10 14 L -4 12 L -4 16 Z', fill: '#fbbf24', opacity: 0.9 }),
+                  h('path', { d: 'M -8 5 L -2 6 M -8 23 L -2 22', stroke: '#fbbf24', strokeWidth: 1.4, opacity: 0.6 })
+                ),
+                // Sparkles around the AI scan
+                [{x:200,y:30},{x:240,y:75},{x:200,y:115},{x:280,y:50},{x:320,y:25},{x:280,y:100}].map(function(s, i) {
+                  return h('path', { key: 'aisp' + i,
+                    d: 'M ' + s.x + ' ' + (s.y - 5) + ' L ' + (s.x + 1.2) + ' ' + (s.y - 1.2) + ' L ' + (s.x + 5) + ' ' + s.y + ' L ' + (s.x + 1.2) + ' ' + (s.y + 1.2) + ' L ' + s.x + ' ' + (s.y + 5) + ' L ' + (s.x - 1.2) + ' ' + (s.y + 1.2) + ' L ' + (s.x - 5) + ' ' + s.y + ' L ' + (s.x - 1.2) + ' ' + (s.y - 1.2) + ' Z',
+                    fill: '#a78bfa', opacity: 0.7 });
+                }),
+                // Title pill (top-center)
+                h('g', { transform: 'translate(180, 12)' },
+                  h('rect', { x: 0, y: 0, width: 180, height: 26, rx: 13,
+                    fill: '#5b21b6', opacity: 0.95, stroke: '#a78bfa', strokeWidth: 1.5 }),
+                  h('text', { x: 90, y: 17, textAnchor: 'middle',
+                    fill: '#ede9fe', fontWeight: 900, fontSize: 12, letterSpacing: '0.04em',
+                    style: { fontFamily: 'system-ui, sans-serif' }
+                  }, '📸 Photo + AI Vision')
+                )
               ),
-              h('p', { className: 'text-xs text-slate-700 italic' },
-                'Your photo is sent to Google\'s Gemini Vision API for analysis. Photos are not stored long-term by AlloFlow. Don\'t upload photos containing other people without their consent.')
+              h('div', { className: 'bg-violet-50 px-5 py-3 border-t-2 border-violet-300' },
+                h('h2', { className: 'text-base font-black text-violet-900 mb-1' }, 'Identify a bird from a photo'),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-1' },
+                  'Upload a photo and Gemini Vision returns the top-3 likely species with confidence scores and the field marks it noticed. ',
+                  h('strong', null, 'AI is a starting point, not a verdict'),
+                  ' — verify against eBird, All About Birds, Audubon for tricky lookalikes.'
+                ),
+                h('p', { className: 'text-xs text-violet-800 italic' },
+                  'Photos go to Google\'s Gemini Vision API for analysis. AlloFlow doesn\'t store them long-term. Don\'t upload photos with other people without their consent.')
+              )
             ),
             !photo && h('div', {
               className: 'rounded-2xl border-2 border-dashed border-violet-400 shadow p-10 text-center relative overflow-hidden',
