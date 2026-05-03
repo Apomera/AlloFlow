@@ -1572,6 +1572,23 @@
 
     var label = decoration.templateLabel || decoration.template || 'this decoration';
 
+    // Auto-start quiz on mount when caller requested it (used by the
+    // Memory overview modal's "Review" buttons). Only fires once,
+    // and only if quiz is actually available (notes have no quiz).
+    var autoQuizFiredTuple = useState(false);
+    var autoQuizFired = autoQuizFiredTuple[0];
+    var setAutoQuizFired = autoQuizFiredTuple[1];
+    useEffect(function() {
+      if (!p.autoStartQuiz) return;
+      if (autoQuizFired) return;
+      if (!hasContent) return;
+      if (!existing || existing.type === 'notes') return;
+      setAutoQuizFired(true);
+      // Defer one tick so the modal has rendered before quiz state initializes
+      setTimeout(function() { startQuiz(); }, 30);
+      // eslint-disable-next-line
+    }, []);
+
     // ── Helpers ──
     function startEditEmpty(type) {
       var initialDraft;
@@ -2974,10 +2991,13 @@
     // generateContext field doubles as the carrier (already used for
     // empty-cell + delete confirmations); decorationId tells the modal
     // which decoration's linkedContent to read/write.
-    function openMemoryModal(decorationId) {
+    // Optional autoStartQuiz=true jumps directly to the quiz tab — used
+    // by the Memory overview modal's "Review" buttons for one-click
+    // study sessions.
+    function openMemoryModal(decorationId, autoStartQuiz) {
       setStateMulti({
         activeModal: 'memory',
-        generateContext: { decorationId: decorationId }
+        generateContext: { decorationId: decorationId, autoStartQuiz: !!autoStartQuiz }
       });
     }
 
@@ -3399,6 +3419,34 @@
             onClick: function() { setStateField('activeModal', 'journal'); },
             style: secondaryBtnStyle(palette)
           }, '📓 Journal' + (state.journalEntries.length > 0 ? ' · ' + state.journalEntries.length : '')),
+          (function() {
+            var deckCount = state.decorations.filter(function(d) { return !!d.linkedContent; }).length;
+            var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
+            var labelText = '📖 Memory' + (deckCount > 0 ? ' · ' + deckCount : '');
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'memory-overview'); },
+              'aria-label': 'Memory palace overview' + (deckCount > 0 ? ', ' + deckCount + ' decks' : '') + (dueCount > 0 ? ', ' + dueCount + ' due' : ''),
+              style: Object.assign({}, secondaryBtnStyle(palette),
+                dueCount > 0 ? {
+                  borderColor: palette.warn || palette.accent,
+                  color: palette.warn || palette.accent
+                } : {})
+            },
+              labelText,
+              dueCount > 0 ? h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  marginLeft: '6px',
+                  padding: '0 6px',
+                  borderRadius: '999px',
+                  background: palette.warn || palette.accent,
+                  color: palette.onAccent || '#000',
+                  fontSize: '10px',
+                  fontWeight: 800
+                }
+              }, dueCount + ' due') : null
+            );
+          })(),
           h('button', {
             onClick: function() { setStateField('activeModal', 'settings'); },
             style: secondaryBtnStyle(palette)
@@ -3682,7 +3730,7 @@
         }, 'Welcome to your AlloHaven'),
         h('p', { style: { margin: '0 0 12px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
           'This is your space. The plant is a starter gift.'),
-        h('p', { style: { margin: '0 0 20px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
+        h('p', { style: { margin: '0 0 12px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
           'Earn ',
           h('strong', { style: { color: palette.accent } }, '🪙 tokens'),
           ' by ',
@@ -3690,6 +3738,13 @@
           ' with the Pomodoro timer or ',
           h('strong', null, 'writing'),
           ' a reflection. Spend tokens on decorations to make the room yours.'
+        ),
+        h('p', {
+          style: { margin: '0 0 20px 0', fontSize: '13px', color: palette.textDim, lineHeight: '1.55', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
+        },
+          h('strong', null, '📖 New: '),
+          'Click any decoration to attach study aids — flashcards, acronyms, or notes. Where you place a decoration in your room becomes a spatial anchor for what you\'re learning. ',
+          h('em', null, 'method of loci, since 477 BC.')
         ),
         h('div', { style: { textAlign: 'center' } },
           h('button', {
@@ -3860,6 +3915,313 @@
     }
 
     // ─────────────────────────────────────────────────
+    // MEMORY OVERVIEW — list all decorations with linkedContent.
+    // Sorted due-first (lastReviewedAt > 5 days OR never reviewed),
+    // then by last-reviewed desc within each section. Click a row to
+    // open that decoration's memory modal at the view tab; click the
+    // Review button to jump straight into its quiz. Replaces the
+    // "click each decoration to remember what's where" UX gap.
+    // ─────────────────────────────────────────────────
+    function renderMemoryOverviewModal() {
+      if (state.activeModal !== 'memory-overview') return null;
+      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      // Partition into due / not-due, then sort within each
+      var due = [];
+      var fresh = [];
+      withContent.forEach(function(d) {
+        if (isMemoryDue(d)) due.push(d); else fresh.push(d);
+      });
+      var byLastReviewedDesc = function(a, b) {
+        var aIso = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
+        var bIso = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
+        return bIso.localeCompare(aIso);
+      };
+      due.sort(byLastReviewedDesc);
+      fresh.sort(byLastReviewedDesc);
+
+      // Stats
+      var totalDecks = withContent.length;
+      var totalCards = withContent.reduce(function(sum, d) {
+        var lc = d.linkedContent;
+        if (lc && lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+          return sum + lc.data.cards.length;
+        }
+        return sum;
+      }, 0);
+      var weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      var reviewedThisWeek = withContent.filter(function(d) {
+        var lc = d.linkedContent;
+        if (!lc || !lc.lastReviewedAt) return false;
+        return new Date(lc.lastReviewedAt).getTime() >= weekAgoMs;
+      }).length;
+      var pctWeek = totalDecks > 0 ? Math.round((reviewedThisWeek / totalDecks) * 100) : 0;
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Memory palace overview',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 175,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', {
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
+          },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close memory overview',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
+          }, 'Each decoration in your room can hold study aids — flashcards, acronyms, or notes. The room itself is a method-of-loci anchor: where you place a deck shapes how you remember it.'),
+
+          // Empty-state
+          totalDecks === 0 ? h('div', {
+            style: {
+              padding: '32px 20px',
+              background: palette.surface,
+              border: '1px dashed ' + palette.border,
+              borderRadius: '10px',
+              textAlign: 'center'
+            }
+          },
+            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '📖'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              'No memory content yet. Click any decoration in your room to attach flashcards, an acronym, or notes — your decorations become the anchors for what you\'re learning.')
+          ) : null,
+
+          // Stats row (only when there's content)
+          totalDecks > 0 ? h('div', {
+            style: {
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '14px',
+              flexWrap: 'wrap'
+            }
+          },
+            renderOverviewStat('Decks', totalDecks, palette),
+            totalCards > 0 ? renderOverviewStat('Flashcards', totalCards, palette) : null,
+            renderOverviewStat('Reviewed this week', pctWeek + '%', palette),
+            due.length > 0 ? renderOverviewStat('Due for review', due.length, palette, true) : null
+          ) : null,
+
+          // Due section
+          due.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.warn || palette.accent,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '⚡ Due for review · ' + due.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              due.map(function(d) { return renderOverviewRow(d, palette, true); })
+            )
+          ) : null,
+
+          // Fresh section
+          fresh.length > 0 ? h('div', null,
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, due.length > 0 ? 'Recently reviewed · ' + fresh.length : 'Your decks · ' + fresh.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              fresh.map(function(d) { return renderOverviewRow(d, palette, false); })
+            )
+          ) : null
+        )
+      );
+    }
+
+    // Single overview row — decoration thumbnail + content summary +
+    // Review button. Click anywhere on the row (except the button) opens
+    // the memory modal at view-tab; click Review jumps to quiz mode.
+    function renderOverviewRow(decoration, palette, isDue) {
+      var lc = decoration.linkedContent;
+      var label = decoration.templateLabel || decoration.template || 'item';
+      var typeIcon = lc.type === 'flashcards' ? '📚' : lc.type === 'acronym' ? '🔤' : '📝';
+      var summary = '';
+      if (lc.type === 'flashcards') {
+        var cardCount = (lc.data && lc.data.cards) ? lc.data.cards.length : 0;
+        summary = cardCount + ' card' + (cardCount === 1 ? '' : 's');
+      } else if (lc.type === 'acronym') {
+        summary = ((lc.data && lc.data.letters) || '').toUpperCase();
+      } else if (lc.type === 'notes') {
+        var text = (lc.data && lc.data.text) || '';
+        summary = text.length + ' character' + (text.length === 1 ? '' : 's');
+      }
+      var quizAvailable = lc.type !== 'notes';
+
+      var reviewedLabel;
+      if (!lc.lastReviewedAt) {
+        reviewedLabel = 'Never reviewed';
+      } else {
+        var daysAgo = Math.floor((Date.now() - new Date(lc.lastReviewedAt).getTime()) / (24 * 60 * 60 * 1000));
+        if (daysAgo === 0) reviewedLabel = 'Reviewed today';
+        else if (daysAgo === 1) reviewedLabel = 'Reviewed yesterday';
+        else reviewedLabel = 'Reviewed ' + daysAgo + ' days ago';
+      }
+
+      return h('div', {
+        key: 'mr-' + decoration.id,
+        role: 'group',
+        'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel,
+        style: {
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center',
+          padding: '10px 12px',
+          background: palette.surface,
+          border: '1px solid ' + (isDue ? (palette.warn || palette.accent) : palette.border),
+          borderLeft: isDue ? ('3px solid ' + (palette.warn || palette.accent)) : ('1px solid ' + palette.border),
+          borderRadius: '8px'
+        }
+      },
+        // Thumbnail
+        decoration.imageBase64 ? h('img', {
+          src: decoration.imageBase64,
+          alt: '',
+          'aria-hidden': 'true',
+          style: {
+            width: '48px',
+            height: '48px',
+            borderRadius: '6px',
+            objectFit: 'contain',
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            flexShrink: 0
+          }
+        }) : null,
+        // Center: content summary
+        h('button', {
+          onClick: function() { openMemoryModal(decoration.id, false); },
+          style: {
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            color: palette.text,
+            textAlign: 'left',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            minWidth: 0
+          }
+        },
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+            typeIcon + ' ' + label),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
+            summary),
+          h('div', {
+            style: {
+              fontSize: '10px',
+              color: isDue ? (palette.warn || palette.accent) : palette.textMute,
+              fontWeight: isDue ? 700 : 400
+            }
+          }, reviewedLabel)
+        ),
+        // Review action button (only for quizzable types)
+        quizAvailable ? h('button', {
+          onClick: function() { openMemoryModal(decoration.id, true); },
+          style: {
+            background: isDue ? (palette.warn || palette.accent) : palette.accent,
+            color: palette.onAccent,
+            border: 'none',
+            borderRadius: '8px',
+            padding: '7px 14px',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            flexShrink: 0
+          }
+        }, '↻ Review') : h('button', {
+          onClick: function() { openMemoryModal(decoration.id, false); },
+          style: {
+            background: 'transparent',
+            color: palette.textDim,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            padding: '7px 14px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            flexShrink: 0
+          }
+        }, 'View')
+      );
+    }
+
+    function renderOverviewStat(label, value, palette, highlight) {
+      return h('div', {
+        style: {
+          flex: '1 1 100px',
+          padding: '8px 12px',
+          background: highlight ? 'rgba(255,220,140,0.08)' : palette.surface,
+          border: '1px solid ' + (highlight ? (palette.warn || palette.accent) : palette.border),
+          borderRadius: '8px',
+          textAlign: 'center'
+        }
+      },
+        h('div', {
+          style: {
+            fontSize: '20px',
+            fontWeight: 800,
+            color: highlight ? (palette.warn || palette.accent) : palette.accent,
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1.1
+          }
+        }, value),
+        h('div', {
+          style: {
+            fontSize: '10px',
+            color: palette.textMute,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            fontWeight: 700,
+            marginTop: '4px'
+          }
+        }, label)
+      );
+    }
+
+    // ─────────────────────────────────────────────────
     // MEMORY MODAL — Phase 2a self-authored memory palace.
     // Each placed decoration can hold one of three content types
     // (flashcards / acronym / free notes). Spatial location in the
@@ -3867,7 +4229,8 @@
     // ─────────────────────────────────────────────────
     function renderMemoryModal() {
       if (state.activeModal !== 'memory') return null;
-      var decorationId = (state.generateContext || {}).decorationId;
+      var ctx = state.generateContext || {};
+      var decorationId = ctx.decorationId;
       var decoration = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
       if (!decoration) {
         // Decoration vanished — close silently
@@ -3877,6 +4240,7 @@
       return h(MemoryModalInner, {
         decoration: decoration,
         palette: palette,
+        autoStartQuiz: !!ctx.autoStartQuiz,
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
         },
@@ -4297,6 +4661,7 @@
       renderPomodoroOverlay(),
       renderGenerateModal(),
       renderMemoryModal(),
+      renderMemoryOverviewModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderDeleteDecorationModal(),
