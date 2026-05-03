@@ -4182,24 +4182,152 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('p', { className: 'text-sm text-slate-700' },
                 'North America has four major migration flyways — geographic corridors that funnel migrating birds. Maine sits squarely on the ',
                 h('strong', null, 'Atlantic Flyway'), '.'),
-              // Schematic flyways map (simple SVG)
-              h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4', role: 'img', 'aria-label': 'Schematic map of the four North American flyways. Atlantic Flyway runs along the eastern coast and includes Maine.' },
-                h('svg', { viewBox: '0 0 400 240', className: 'w-full h-auto', preserveAspectRatio: 'xMidYMid meet' },
-                  // North America outline (very simplified)
-                  h('path', { d: 'M 20 60 Q 60 40 130 50 L 200 30 L 280 40 L 350 60 L 380 100 Q 380 150 360 180 L 320 210 Q 280 220 240 215 L 180 220 L 120 215 Q 80 210 60 190 Q 30 160 20 120 Z', fill: '#e8d8a8', stroke: '#5a4a32', strokeWidth: 1 }),
-                  // Pacific Flyway
-                  h('path', { d: 'M 50 80 Q 50 130 70 200 Q 100 215 130 215', stroke: pickedFlyway === 'pacific' ? '#3a78c8' : '#9aaac0', strokeWidth: pickedFlyway === 'pacific' ? 5 : 3, fill: 'none', strokeDasharray: '6,4' }),
-                  // Central
-                  h('path', { d: 'M 170 60 Q 175 130 195 200 Q 220 215 240 215', stroke: pickedFlyway === 'central' ? '#3a78c8' : '#9aaac0', strokeWidth: pickedFlyway === 'central' ? 5 : 3, fill: 'none', strokeDasharray: '6,4' }),
-                  // Mississippi
-                  h('path', { d: 'M 230 60 Q 240 130 270 200 Q 290 215 310 215', stroke: pickedFlyway === 'mississippi' ? '#3a78c8' : '#9aaac0', strokeWidth: pickedFlyway === 'mississippi' ? 5 : 3, fill: 'none', strokeDasharray: '6,4' }),
-                  // Atlantic Flyway (Maine emphasis)
-                  h('path', { d: 'M 330 70 Q 335 130 350 180 Q 360 200 350 215', stroke: pickedFlyway === 'atlantic' ? '#3a78c8' : '#9aaac0', strokeWidth: pickedFlyway === 'atlantic' ? 6 : 3, fill: 'none', strokeDasharray: '6,4' }),
-                  // Maine star marker
-                  h('circle', { cx: 340, cy: 75, r: 4, fill: '#d62020' }),
-                  h('text', { x: 348, y: 78, fontSize: 10, fill: '#7a1010', fontWeight: 'bold' }, 'Maine')
-                )
-              ),
+              // ── Flyways map: distinct colors per route, bird silhouettes along active path, Maine star ──
+              (function() {
+                var flyways = [
+                  { id: 'pacific',     color: '#0ea5e9', label: 'Pacific',     d: 'M 60 60 Q 55 110 65 160 Q 78 210 95 240 Q 110 260 130 268' },
+                  { id: 'central',     color: '#f97316', label: 'Central',     d: 'M 175 50 Q 178 110 195 165 Q 212 220 230 250 Q 245 268 260 270' },
+                  { id: 'mississippi', color: '#a855f7', label: 'Mississippi', d: 'M 240 50 Q 248 110 270 165 Q 290 215 305 245 Q 318 265 335 270' },
+                  { id: 'atlantic',    color: '#dc2626', label: 'Atlantic',    d: 'M 340 60 Q 348 110 360 160 Q 372 210 380 245 Q 384 262 380 270' }
+                ];
+                var activePath = (flyways.filter(function(x) { return x.id === pickedFlyway; })[0] || flyways[3]).d;
+                return h('div', { className: 'bg-gradient-to-b from-sky-50 to-amber-50 rounded-2xl border-2 border-slate-300 shadow p-4', role: 'img', 'aria-label': 'Schematic map of the four North American flyways. ' + (flyways.filter(function(x) { return x.id === pickedFlyway; })[0] || flyways[3]).label + ' Flyway is highlighted. Maine sits on the Atlantic Flyway.' },
+                  h('svg', { viewBox: '0 0 440 300', className: 'w-full h-auto', preserveAspectRatio: 'xMidYMid meet' },
+                    h('defs', null,
+                      h('linearGradient', { id: 'fwLand', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#fef3c7' }),
+                        h('stop', { offset: '100%', stopColor: '#d97706' })
+                      ),
+                      h('linearGradient', { id: 'fwOcean', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#bae6fd' }),
+                        h('stop', { offset: '100%', stopColor: '#7dd3fc' })
+                      ),
+                      // Active flyway gradient
+                      h('linearGradient', { id: 'fwActive', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#fef3c7', stopOpacity: '0' }),
+                        h('stop', { offset: '50%', stopColor: '#fbbf24', stopOpacity: '0.4' }),
+                        h('stop', { offset: '100%', stopColor: '#dc2626', stopOpacity: '0' })
+                      ),
+                      // Arrowhead marker (for showing southward direction)
+                      h('marker', { id: 'fwArrow', viewBox: '0 0 10 10', refX: '8', refY: '5', markerWidth: '6', markerHeight: '6', orient: 'auto-start-reverse' },
+                        h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#1e293b' })
+                      )
+                    ),
+                    // Ocean
+                    h('rect', { x: 0, y: 0, width: 440, height: 300, fill: 'url(#fwOcean)' }),
+                    // North America landmass (more recognizable shape with peninsulas)
+                    h('path', {
+                      d: 'M 30 70 ' +
+                        'Q 50 50 100 55 ' +                  // Alaska panhandle area
+                        'L 130 48 Q 160 38 200 42 ' +        // Canadian arctic / NW territories
+                        'L 245 38 Q 280 36 310 42 ' +        // Hudson Bay region
+                        'L 340 48 Q 365 56 380 75 ' +        // Newfoundland approach
+                        'Q 392 95 400 130 ' +                // East coast
+                        'Q 405 165 395 200 ' +
+                        'Q 388 230 372 252 ' +
+                        'L 350 270 Q 320 282 290 280 ' +     // Florida tip
+                        'L 280 295 Q 260 290 250 275 ' +     // Florida indent
+                        'Q 220 280 195 278 ' +
+                        'L 165 282 Q 145 285 125 282 ' +     // Gulf Coast
+                        'Q 105 285 92 270 ' +                // Yucatan curve
+                        'Q 84 250 78 225 ' +
+                        'Q 65 200 52 175 ' +                 // Baja
+                        'Q 40 145 30 115 ' +
+                        'Q 24 92 30 70 Z',
+                      fill: 'url(#fwLand)', stroke: '#78350f', strokeWidth: 1
+                    }),
+                    // Great Lakes hint
+                    h('path', { d: 'M 270 110 Q 285 105 300 110 Q 305 116 295 120 Q 280 122 270 118 Z',
+                      fill: '#7dd3fc', stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.85 }),
+                    h('path', { d: 'M 305 115 Q 318 112 328 116 Q 332 122 322 124 Q 310 124 305 120 Z',
+                      fill: '#7dd3fc', stroke: '#0c4a6e', strokeWidth: 0.6, opacity: 0.85 }),
+                    // Compass rose (top-left of ocean)
+                    h('g', { transform: 'translate(35, 30)' },
+                      h('circle', { cx: 0, cy: 0, r: 14, fill: '#ffffff', stroke: '#1e293b', strokeWidth: 1, opacity: 0.85 }),
+                      h('path', { d: 'M 0 -10 L 2 0 L 0 10 L -2 0 Z', fill: '#dc2626' }),
+                      h('path', { d: 'M -10 0 L 0 -2 L 10 0 L 0 2 Z', fill: '#1e293b' }),
+                      h('text', { x: 0, y: -16, fontSize: 8, textAnchor: 'middle', fontWeight: 'bold', fill: '#1e293b' }, 'N')
+                    ),
+                    // Inactive flyway routes (background, soft)
+                    flyways.map(function(f) {
+                      if (f.id === pickedFlyway) return null;
+                      return h('path', { key: f.id + '-bg',
+                        d: f.d, stroke: f.color, strokeWidth: 2.5, fill: 'none',
+                        strokeDasharray: '5,5', opacity: 0.4 });
+                    }),
+                    // Direction-of-migration glow band on active route
+                    h('path', { d: activePath, stroke: 'url(#fwActive)', strokeWidth: 14, fill: 'none', opacity: 0.5 }),
+                    // Active flyway route (bold, solid, with arrowhead)
+                    flyways.map(function(f) {
+                      if (f.id !== pickedFlyway) return null;
+                      return h('g', { key: f.id + '-active' },
+                        h('path', { d: f.d, stroke: f.color, strokeWidth: 6, fill: 'none', strokeLinecap: 'round',
+                          markerEnd: 'url(#fwArrow)' }),
+                        // Bird silhouettes (3 birds along the path, V-formation pairs)
+                        [{ pos: 0.18 }, { pos: 0.45 }, { pos: 0.72 }].map(function(pt, idx) {
+                          // Sample point along path approximately (linear interpolation between control points for simplicity)
+                          // Easier: use absolute positions corresponding to flyway curves
+                          var byId = {
+                            pacific:     [{x:62,y:90},{x:75,y:175},{x:108,y:248}],
+                            central:     [{x:178,y:85},{x:200,y:175},{x:235,y:255}],
+                            mississippi: [{x:248,y:90},{x:280,y:180},{x:310,y:250}],
+                            atlantic:    [{x:344,y:90},{x:368,y:180},{x:382,y:255}]
+                          };
+                          var pts = byId[f.id] || byId.atlantic;
+                          var p = pts[idx];
+                          // V-formation of 3 birds
+                          return h('g', { key: 'b' + idx, transform: 'translate(' + p.x + ',' + p.y + ')' },
+                            h('path', { d: 'M -8,0 q 4,-4 8,0 q 4,-4 8,0',
+                              fill: 'none', stroke: '#1e293b', strokeWidth: 2.2, strokeLinecap: 'round' }),
+                            h('path', { d: 'M -16,8 q 3,-3 6,0 q 3,-3 6,0',
+                              fill: 'none', stroke: '#1e293b', strokeWidth: 1.8, strokeLinecap: 'round' }),
+                            h('path', { d: 'M 4,8 q 3,-3 6,0 q 3,-3 6,0',
+                              fill: 'none', stroke: '#1e293b', strokeWidth: 1.8, strokeLinecap: 'round' })
+                          );
+                        })
+                      );
+                    }),
+                    // Maine — emphasized star marker (always visible)
+                    h('g', { transform: 'translate(370, 75)' },
+                      h('circle', { cx: 0, cy: 0, r: 14, fill: '#dc2626', opacity: 0.18 }),
+                      h('path', {
+                        d: 'M 0,-7 L 1.8,-2.2 L 7,-2.2 L 2.6,1.2 L 4.4,6 L 0,3.2 L -4.4,6 L -2.6,1.2 L -7,-2.2 L -1.8,-2.2 Z',
+                        fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 1
+                      }),
+                      h('text', { x: 12, y: 4, fontSize: 11, fill: '#7f1d1d', fontWeight: 'bold',
+                        style: { fontFamily: 'system-ui, sans-serif' } }, 'Maine')
+                    ),
+                    // Title overlay top-right
+                    h('g', { transform: 'translate(440, 12)' },
+                      h('rect', { x: -110, y: 0, width: 102, height: 24, rx: 12,
+                        fill: '#1e293b', opacity: 0.92, stroke: '#94a3b8', strokeWidth: 1 }),
+                      h('text', { x: -59, y: 16, textAnchor: 'middle',
+                        fill: '#f1f5f9', fontWeight: 800, fontSize: 11, letterSpacing: '0.05em',
+                        style: { textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' }
+                      }, '🦅 4 Flyways')
+                    )
+                  ),
+                  // Legend below
+                  h('div', { className: 'flex flex-wrap gap-2 mt-3' },
+                    flyways.map(function(f) {
+                      var isActive = pickedFlyway === f.id;
+                      return h('div', { key: f.id + '-leg',
+                        className: 'flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-full',
+                        style: {
+                          background: isActive ? f.color : '#f1f5f9',
+                          color: isActive ? '#ffffff' : '#475569',
+                          border: '1.5px solid ' + (isActive ? f.color : '#cbd5e1'),
+                          boxShadow: isActive ? '0 1px 3px rgba(0,0,0,0.15)' : 'none'
+                        }
+                      },
+                        h('span', { 'aria-hidden': true,
+                          style: { width: 10, height: 10, borderRadius: '50%', background: f.color, border: '1.5px solid ' + (isActive ? '#ffffff' : f.color) } }),
+                        f.label
+                      );
+                    })
+                  )
+                );
+              })(),
               h('div', { 'role': 'radiogroup', 'aria-label': 'Pick a flyway', className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 FLYWAYS.map(function(f) {
                   var sel = (pickedFlyway === f.id);
@@ -4327,13 +4455,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               }, '🎓 Career Pathways')
             ),
             view === 'conservation' && h('div', { className: 'space-y-4' },
-              h('div', { className: 'bg-rose-50 border-2 border-rose-400 rounded-2xl p-5' },
-                h('div', { className: 'flex items-start gap-3' },
-                  h('span', { className: 'text-4xl flex-shrink-0', 'aria-hidden': true }, '⚠️'),
-                  h('div', null,
-                    h('h2', { className: 'text-lg font-black text-rose-900 mb-1' }, ROSENBERG_2019.headline),
-                    h('p', { className: 'text-xs text-slate-700 italic mb-2 font-mono' }, ROSENBERG_2019.citation)
+              // ── Big-stat headline: 3 BILLION + 100-bird pictogram showing 29% loss ──
+              h('div', { className: 'rounded-2xl overflow-hidden shadow-lg border-2 border-rose-400 bg-gradient-to-br from-rose-50 to-amber-50' },
+                h('div', { className: 'p-5 flex flex-col md:flex-row gap-5 items-stretch' },
+                  // Big stat — left column
+                  h('div', { className: 'flex-shrink-0 flex flex-col justify-center text-center md:text-left',
+                    style: { minWidth: 180 } },
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-rose-700' }, 'Since 1970'),
+                    h('div', {
+                      style: {
+                        fontSize: '3rem', fontWeight: 900, lineHeight: 1,
+                        background: 'linear-gradient(180deg, #be123c, #7f1d1d)',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text', color: '#7f1d1d',
+                        textShadow: '0 1px 0 rgba(255,255,255,0.4)',
+                        letterSpacing: '-0.02em'
+                      }
+                    }, '3 billion'),
+                    h('div', { className: 'text-sm font-bold text-rose-900' }, 'breeding birds lost'),
+                    h('div', { className: 'text-xs text-slate-700 mt-1' },
+                      h('strong', { className: 'text-rose-700' }, '29% '), 'net decline across North America')
+                  ),
+                  // Pictogram — 100 bird silhouettes, 29 faded (lost since 1970)
+                  h('div', { className: 'flex-1 flex flex-col justify-center', style: { minWidth: 0 } },
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1.5' },
+                      '🦅 1 in 4 birds gone — ', h('span', { className: 'text-rose-700' }, '29 of every 100 since 1970')),
+                    // 10x10 grid of bird silhouettes
+                    h('div', {
+                      role: 'img',
+                      'aria-label': '100-bird pictogram. 71 birds shown in dark color (still here), 29 birds shown faded and gray (lost since 1970).',
+                      style: {
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(20, 1fr)',
+                        gap: 2,
+                        background: '#ffffff',
+                        padding: 8,
+                        borderRadius: 8,
+                        border: '1px solid #cbd5e1',
+                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.04)'
+                      }
+                    },
+                      Array.from({length: 100}, function(_, i) {
+                        // Distribute the 29 "lost" birds pseudo-randomly but deterministically across the grid
+                        var lostIdxs = [3,7,11,15,18,22,27,31,34,38,41,46,50,53,57,61,64,68,71,75,79,82,85,88,91,94,96,98,99];
+                        var isLost = lostIdxs.indexOf(i) !== -1;
+                        return h('svg', {
+                          key: i,
+                          viewBox: '0 0 16 12',
+                          style: { width: '100%', height: 'auto', opacity: isLost ? 0.22 : 1 },
+                          'aria-hidden': 'true'
+                        },
+                          // Tiny bird silhouette in M shape (V-formation style)
+                          h('path', {
+                            d: 'M 1 6 q 3.5 -4 7 0 q 3.5 -4 7 0',
+                            fill: 'none',
+                            stroke: isLost ? '#94a3b8' : '#1e293b',
+                            strokeWidth: 1.6,
+                            strokeLinecap: 'round'
+                          })
+                        );
+                      })
+                    ),
+                    h('div', { className: 'flex flex-wrap items-center gap-3 mt-2 text-xs' },
+                      h('div', { className: 'flex items-center gap-1' },
+                        h('span', { 'aria-hidden': true, style: { width: 12, height: 8, background: '#1e293b', borderRadius: 1 } }),
+                        h('span', { className: 'text-slate-700 font-bold' }, '71 still here')
+                      ),
+                      h('div', { className: 'flex items-center gap-1' },
+                        h('span', { 'aria-hidden': true, style: { width: 12, height: 8, background: '#cbd5e1', borderRadius: 1 } }),
+                        h('span', { className: 'text-slate-700 font-bold' }, '29 lost')
+                      )
+                    )
                   )
+                ),
+                // Citation banner below
+                h('div', { className: 'px-5 py-2.5 bg-rose-100 border-t-2 border-rose-300 flex items-center gap-2 flex-wrap' },
+                  h('span', { 'aria-hidden': true, className: 'text-base' }, '📊'),
+                  h('p', { className: 'text-xs text-rose-900 italic font-mono' }, ROSENBERG_2019.citation)
                 )
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
