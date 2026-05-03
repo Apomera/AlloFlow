@@ -4818,6 +4818,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var pickedCareer_state = useState(null);
         var pickedCareer = pickedCareer_state[0], setPickedCareer = pickedCareer_state[1];
 
+        // Map a career role to a visual category (icon, label, color palette).
+        // Categories give scannable differentiation across the 9 paths.
+        function careerCategory(role) {
+          if (/Field Ornithologist|Wildlife Biologist/i.test(role)) return { icon: '🔬', label: 'Field research', accent: '#0369a1', soft: '#dbeafe', text: '#0c4a6e' };
+          if (/Research Ornithologist|PhD/i.test(role)) return { icon: '🎓', label: 'Academic', accent: '#6d28d9', soft: '#ede9fe', text: '#4c1d95' };
+          if (/Bird Bander|Bander/i.test(role)) return { icon: '🪶', label: 'Hands-on field', accent: '#047857', soft: '#d1fae5', text: '#064e3b' };
+          if (/Policy|Advocate|Law/i.test(role)) return { icon: '⚖️', label: 'Policy & advocacy', accent: '#b45309', soft: '#fef3c7', text: '#78350f' };
+          if (/Rehabilitator|Rehab/i.test(role)) return { icon: '🏥', label: 'Wildlife care', accent: '#be123c', soft: '#fee2e2', text: '#7f1d1d' };
+          if (/Educator|Education|Teach/i.test(role)) return { icon: '📚', label: 'Education', accent: '#0284c7', soft: '#e0f2fe', text: '#075985' };
+          if (/Guide/i.test(role)) return { icon: '🥾', label: 'Outdoor guide', accent: '#c2410c', soft: '#ffedd5', text: '#7c2d12' };
+          if (/Citizen Science|Coordinator/i.test(role)) return { icon: '📊', label: 'Coord & tech', accent: '#0d9488', soft: '#ccfbf1', text: '#134e4a' };
+          if (/Photograph|Illustration|Photo/i.test(role)) return { icon: '📸', label: 'Creative', accent: '#a21caf', soft: '#fae8ff', text: '#701a75' };
+          return { icon: '🐦', label: 'Bird career', accent: '#475569', soft: '#f1f5f9', text: '#1e293b' };
+        }
+
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🛡️', title: 'Conservation & Careers' }),
           h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
@@ -5014,43 +5029,153 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 CAREERS_BIRD.map(function(c) {
                   var sel = pickedCareer && pickedCareer.role === c.role;
+                  var cat = careerCategory(c.role);
                   return h('button', {
                     key: c.role,
                     onClick: function() { setPickedCareer(sel ? null : c); announce(sel ? 'Closed ' + c.role : 'Showing ' + c.role); },
                     'aria-pressed': sel ? 'true' : 'false',
-                    className: 'text-left p-4 rounded-xl border-2 transition focus:outline-none focus:ring-2 ring-blue-500/40 birdlab-card-lift ' +
-                      (sel ? 'bg-blue-100 border-blue-600 shadow-lg' : 'bg-white border-slate-300 hover:border-blue-500')
+                    className: 'text-left p-4 rounded-xl border-2 transition focus:outline-none focus:ring-2 ring-blue-500/40 birdlab-card-lift relative overflow-hidden',
+                    style: {
+                      background: sel ? cat.soft : '#ffffff',
+                      borderColor: sel ? cat.accent : '#cbd5e1',
+                      borderWidth: sel ? '3px' : '2px',
+                      paddingLeft: 18, // make room for color stripe
+                      boxShadow: sel ? '0 6px 14px ' + cat.accent + '30' : ''
+                    }
                   },
-                    h('h3', { className: 'text-base font-black text-slate-800 mb-1' }, c.role),
-                    h('div', { className: 'text-[11px] uppercase tracking-wider text-blue-700 font-bold mb-1' }, c.payRange),
+                    // Left-edge color stripe (category indicator)
+                    h('div', { 'aria-hidden': 'true',
+                      style: {
+                        position: 'absolute', left: 0, top: 0, bottom: 0, width: 6,
+                        background: cat.accent
+                      }
+                    }),
+                    h('div', { className: 'flex items-start gap-2 mb-1.5' },
+                      h('div', {
+                        'aria-hidden': 'true',
+                        style: {
+                          flexShrink: 0, width: 36, height: 36, borderRadius: '50%',
+                          background: cat.soft,
+                          border: '2px solid ' + cat.accent,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 18,
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.08)'
+                        }
+                      }, cat.icon),
+                      h('div', { className: 'flex-1 min-w-0' },
+                        h('div', {
+                          style: {
+                            fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
+                            textTransform: 'uppercase', color: cat.text, marginBottom: 2
+                          }
+                        }, cat.label),
+                        h('h3', { className: 'text-base font-black text-slate-800', style: { lineHeight: 1.2 } }, c.role)
+                      )
+                    ),
+                    h('div', { className: 'text-[11px] uppercase tracking-wider font-bold mb-1', style: { color: cat.accent } }, '💰 ' + c.payRange),
                     h('p', { className: 'text-xs text-slate-700 leading-relaxed line-clamp-2' }, c.degree)
                   );
                 })
               ),
-              pickedCareer && h('div', { className: 'bg-white rounded-2xl border-2 border-blue-500 shadow-lg p-5 space-y-3', 'aria-live': 'polite' },
-                h('h3', { className: 'text-2xl font-black text-slate-800' }, pickedCareer.role),
-                h('div', { className: 'text-sm font-bold text-emerald-700 mt-1' }, '💰 ' + pickedCareer.payRange),
-                h('div', { className: 'p-3 bg-blue-50 border border-blue-200 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, '🎓 Degree / credential'),
-                  h('p', { className: 'text-sm text-slate-800' }, pickedCareer.degree)
-                ),
-                h('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '🛤 Career pathway'),
-                  h('p', { className: 'text-sm text-slate-800' }, pickedCareer.pathway)
-                ),
-                h('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, '🏢 Who hires'),
-                  h('p', { className: 'text-sm text-slate-800' }, pickedCareer.who)
-                ),
-                h('div', { className: 'p-3 bg-stone-100 border border-stone-300 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-stone-700 mb-1' }, '🌲 Maine programs'),
-                  h('p', { className: 'text-sm text-slate-800' }, pickedCareer.maineProgram)
-                ),
-                h('div', { className: 'p-3 bg-rose-50 border border-rose-200 rounded-lg' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, '⚠️ Honest reality'),
-                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedCareer.reality)
-                )
-              ),
+              pickedCareer && (function() {
+                var cat = careerCategory(pickedCareer.role);
+                // Parse pathway "BS → field tech → MS → senior field biologist" into steps
+                var pathSteps = (pickedCareer.pathway || '')
+                  .split(/\s*[→]\s*|\s*->\s*|\s*=>\s*/)
+                  .map(function(s) { return s.trim(); })
+                  .filter(Boolean);
+                return h('div', { className: 'bg-white rounded-2xl border-2 shadow-lg overflow-hidden', 'aria-live': 'polite',
+                  style: { borderColor: cat.accent, borderWidth: '3px' }
+                },
+                  // Hero band
+                  h('div', {
+                    className: 'px-5 py-4 border-b-2 flex items-start gap-4 flex-wrap',
+                    style: {
+                      background: 'linear-gradient(135deg, ' + cat.soft + ' 0%, #ffffff 100%)',
+                      borderColor: cat.accent
+                    }
+                  },
+                    h('div', {
+                      'aria-hidden': 'true',
+                      style: {
+                        flexShrink: 0, width: 64, height: 64, borderRadius: '50%',
+                        background: '#ffffff',
+                        border: '3px solid ' + cat.accent,
+                        boxShadow: '0 0 0 4px ' + cat.accent + '24, 0 4px 10px rgba(0,0,0,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 30
+                      }
+                    }, cat.icon),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', {
+                        style: {
+                          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em',
+                          textTransform: 'uppercase', color: cat.text, marginBottom: 4
+                        }
+                      }, cat.label),
+                      h('h3', { className: 'text-xl md:text-2xl font-black text-slate-800', style: { lineHeight: 1.15 } }, pickedCareer.role),
+                      h('div', { className: 'text-sm font-bold mt-1', style: { color: cat.accent } }, '💰 ' + pickedCareer.payRange)
+                    )
+                  ),
+                  // Body
+                  h('div', { className: 'p-5 space-y-3' },
+                    // Pathway step flow (visual)
+                    pathSteps.length > 1 && h('div', { className: 'p-3 rounded-lg border', style: { background: cat.soft + '60', borderColor: cat.accent + '40' } },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider mb-2', style: { color: cat.text } }, '🛤 Career pathway'),
+                      h('div', { className: 'flex items-stretch gap-1.5 flex-wrap' },
+                        pathSteps.map(function(step, i) {
+                          var isLast = i === pathSteps.length - 1;
+                          return h('div', { key: i, className: 'flex items-center gap-1.5', style: { flex: '0 0 auto' } },
+                            h('div', {
+                              style: {
+                                background: '#ffffff',
+                                border: '2px solid ' + cat.accent,
+                                color: cat.text,
+                                padding: '6px 12px',
+                                borderRadius: 8,
+                                fontSize: 12, fontWeight: 700,
+                                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                                position: 'relative'
+                              }
+                            },
+                              h('span', {
+                                style: {
+                                  position: 'absolute', top: -8, left: -8,
+                                  width: 18, height: 18, borderRadius: '50%',
+                                  background: cat.accent, color: '#ffffff',
+                                  fontSize: 10, fontWeight: 900,
+                                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                }
+                              }, String(i + 1)),
+                              step
+                            ),
+                            !isLast && h('span', {
+                              'aria-hidden': 'true',
+                              style: { color: cat.accent, fontSize: 18, fontWeight: 'bold' }
+                            }, '→')
+                          );
+                        })
+                      )
+                    ),
+                    h('div', { className: 'p-3 bg-blue-50 border border-blue-200 rounded-lg' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, '🎓 Degree / credential'),
+                      h('p', { className: 'text-sm text-slate-800' }, pickedCareer.degree)
+                    ),
+                    h('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded-lg' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, '🏢 Who hires'),
+                      h('p', { className: 'text-sm text-slate-800' }, pickedCareer.who)
+                    ),
+                    h('div', { className: 'p-3 bg-stone-100 border border-stone-300 rounded-lg' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-stone-700 mb-1' }, '🌲 Maine programs'),
+                      h('p', { className: 'text-sm text-slate-800' }, pickedCareer.maineProgram)
+                    ),
+                    h('div', { className: 'p-3 bg-rose-50 border border-rose-200 rounded-lg' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-900 mb-1' }, '⚠️ Honest reality'),
+                      h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, pickedCareer.reality)
+                    )
+                  )
+                );
+              })(),
               h(TeacherNotes, {
                 standards: ['CTE Career Exploration', 'Maine Career & Workforce Readiness', 'NGSS Practice 7 (Engaging in argument from evidence)'],
                 questions: [

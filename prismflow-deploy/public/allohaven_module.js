@@ -301,6 +301,184 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 3.6: DECORATION TEMPLATES
+  // ─────────────────────────────────────────────────────────
+  // 6 categories, each with 3 curated slots and a base prompt that gets
+  // filled at generation time. Companions + Window views use a
+  // hierarchical category→specific picker (slot 0 = category, slot 1 =
+  // specific). All other templates are flat 3-slot pickers.
+  //
+  // Surface determines which grid cells the template can appear in:
+  // 'wall', 'floor', or 'both' (lamps + lighting variants).
+  //
+  // Prompt suffixes 'no text' and 'single object' are critical safety/
+  // quality constraints. AI image gen tends to hallucinate text on
+  // educational-looking content; explicit 'no text' reduces that.
+  var TEMPLATES = [
+    {
+      id: 'plants',
+      label: 'Plants',
+      icon: '🪴',
+      surface: 'floor',
+      basePrompt: 'A {potColor} {potStyle} pot holding a {plantType} plant, {artStyle}, friendly cozy children\'s aesthetic, single object on white background, no text',
+      slots: [
+        { id: 'plantType', label: 'Plant', options: ['fern', 'cactus', 'leafy houseplant', 'succulent', 'flower', 'trailing vine'] },
+        { id: 'potColor',  label: 'Pot color', options: ['terracotta', 'blue', 'cream', 'sage', 'pink', 'white'] },
+        { id: 'potStyle',  label: 'Pot style', options: ['ceramic', 'clay', 'wicker', 'glass', 'hanging planter'] }
+      ]
+    },
+    {
+      id: 'posters',
+      label: 'Posters & wall art',
+      icon: '🖼',
+      surface: 'wall',
+      basePrompt: 'A {posterType} poster about {subject}, {colorPalette} palette, {artStyle}, framed cleanly, no readable text, friendly age-appropriate aesthetic',
+      slots: [
+        { id: 'posterType',   label: 'Type', options: ['educational diagram', 'illustrated map', 'aspirational scene', 'abstract pattern', 'subject portrait', 'scientific cross-section'] },
+        { id: 'subject',      label: 'Subject', tileGrid: true, options: ['animals', 'space & planets', 'oceans', 'weather', 'plants & nature', 'machines & inventions', 'vehicles', 'history', 'cultures & celebrations', 'math concepts', 'science', 'music & instruments', 'sports', 'dinosaurs'] },
+        { id: 'colorPalette', label: 'Color palette', options: ['warm earth', 'cool blue', 'vibrant rainbow', 'pastel', 'monochrome', 'sunset'] }
+      ]
+    },
+    {
+      id: 'companions',
+      label: 'Companions',
+      icon: '🐾',
+      surface: 'floor',
+      basePrompt: 'A {color} {specific}, {pose}, {artStyle}, friendly cozy children\'s aesthetic, single subject, no text',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Category', options: ['Real animal', 'Imaginary creature', 'Stuffed companion'] },
+        { id: 'specific', label: 'Pick one', dependsOn: 'category', optionsByCategory: {
+          'Real animal':       ['cat', 'dog', 'rabbit', 'bird', 'fish', 'hamster', 'hedgehog'],
+          'Imaginary creature':['dragon', 'unicorn', 'robot', 'alien', 'phoenix', 'fairy', 'friendly monster'],
+          'Stuffed companion': ['teddy bear', 'plush bunny', 'plush elephant', 'plush cat', 'plush dragon', 'plush whale']
+        }},
+        { id: 'color', label: 'Color', options: ['warm brown', 'soft gray', 'cream', 'vibrant red', 'pastel pink', 'gold'] },
+        { id: 'pose',  label: 'Pose',  options: ['sitting', 'sleeping', 'curled up', 'looking up', 'playful', 'stretching'] }
+      ]
+    },
+    {
+      id: 'lamps',
+      label: 'Lamps & lighting',
+      icon: '💡',
+      surface: 'both',
+      basePrompt: 'A {style} {lampType} with a {shadeColor} shade, glowing softly, {artStyle}, single object, friendly cozy aesthetic, no text',
+      slots: [
+        { id: 'lampType',   label: 'Lamp type', options: ['floor lamp', 'desk lamp', 'string lights', 'paper lantern', 'wall sconce', 'candle in glass', 'pendant light'] },
+        { id: 'shadeColor', label: 'Shade color', options: ['warm white', 'soft yellow', 'sage green', 'cream', 'dusty pink', 'sky blue'] },
+        { id: 'style',      label: 'Style', options: ['vintage', 'modern', 'whimsical', 'classic', 'simple'] }
+      ]
+    },
+    {
+      id: 'books',
+      label: 'Books & collections',
+      icon: '📚',
+      surface: 'floor',
+      basePrompt: 'A {arrangement} {collectionType}, {colorTheme} palette, {artStyle}, single arrangement on white background, no text',
+      slots: [
+        { id: 'collectionType', label: 'Collection', options: ['book stack', 'open book on stand', 'sheet music', 'sports trophies', 'natural collection', 'stamps & cards', 'model collection', 'art & craft supplies'] },
+        { id: 'colorTheme',     label: 'Colors', options: ['warm browns', 'jewel tones', 'pastels', 'monochrome', 'earth tones', 'vibrant'] },
+        { id: 'arrangement',    label: 'Arrangement', options: ['tidy', 'slightly scattered', 'stacked tall', 'grouped by size'] }
+      ]
+    },
+    {
+      id: 'windows',
+      label: 'Window views',
+      icon: '🪟',
+      surface: 'wall',
+      basePrompt: 'A {specific} viewed through a wooden window frame at {timeOfDay}, {weather} weather, {artStyle}, friendly cozy aesthetic, no text',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Scene', options: ['Nature', 'Urban', 'Cultural', 'Fantasy'] },
+        { id: 'specific', label: 'Pick one', dependsOn: 'category', optionsByCategory: {
+          'Nature':   ['forest', 'ocean', 'mountains', 'garden', 'countryside', 'waterfall'],
+          'Urban':    ['city skyline', 'stadium', 'concert hall', 'street market', 'city park'],
+          'Cultural': ['cultural landmark', 'festival scene', 'bustling marketplace'],
+          'Fantasy':  ['starry sky', 'floating islands', 'enchanted forest', 'underwater realm']
+        }},
+        { id: 'timeOfDay', label: 'Time of day', options: ['dawn', 'midday', 'golden hour', 'sunset', 'twilight', 'night'] },
+        { id: 'weather',   label: 'Weather/mood', options: ['clear', 'gentle rain', 'snow', 'misty', 'cherry blossoms', 'autumn leaves'] }
+      ]
+    }
+  ];
+
+  // ART_STYLES — 6 styles, each has a sub-prompt fragment that gets
+  // appended to the {artStyle} slot in the template's basePrompt.
+  // Each theme has a default style; the picker pre-selects it but
+  // students can override per-decoration.
+  var ART_STYLES = [
+    { id: 'watercolor',     label: 'Soft watercolor',           prompt: 'soft watercolor illustration, gentle pastel washes, organic edges' },
+    { id: 'pastel',         label: 'Pastel illustration',        prompt: 'soft pastel illustration, kawaii cute children\'s book aesthetic, gentle outlines' },
+    { id: 'neon',           label: 'Neon line art',              prompt: 'neon-bright line art on dark background, vibrant cyberpunk register, glowing edges' },
+    { id: 'sepia',          label: 'Vintage etching',            prompt: 'sepia-toned vintage etching, fine line work, weathered paper texture, victorian register' },
+    { id: 'minimalist',     label: 'Minimalist line',            prompt: 'minimalist black-and-white line art, clean simple geometric shapes, no shading' },
+    { id: 'children-book',  label: 'Children\'s book',           prompt: 'warm children\'s book illustration, soft outlines, gentle color shading, picture-book style' }
+  ];
+
+  // Theme → default art style ID. Used when the modal first opens.
+  var THEME_DEFAULT_STYLE = {
+    'default':   'watercolor',
+    'kawaii':    'pastel',
+    'cyberpunk': 'neon',
+    'steampunk': 'sepia',
+    'neutral':   'minimalist'
+  };
+
+  function getTemplate(id) {
+    for (var i = 0; i < TEMPLATES.length; i++) {
+      if (TEMPLATES[i].id === id) return TEMPLATES[i];
+    }
+    return null;
+  }
+
+  function getArtStyle(id) {
+    for (var i = 0; i < ART_STYLES.length; i++) {
+      if (ART_STYLES[i].id === id) return ART_STYLES[i];
+    }
+    return ART_STYLES[0];
+  }
+
+  function getThemeDefaultStyleId(themeName) {
+    return THEME_DEFAULT_STYLE[themeName] || THEME_DEFAULT_STYLE['default'];
+  }
+
+  // Pick a random option from a list (Surprise me + helper utility)
+  function pickRandom(arr) {
+    if (!arr || !arr.length) return null;
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // Surprise me — returns a fully populated slots object for the given
+  // template, randomized. For hierarchical templates, also resolves the
+  // dependent slot consistently.
+  function surpriseSlotsFor(template) {
+    var result = {};
+    template.slots.forEach(function(slot) {
+      if (slot.dependsOn) {
+        // Hierarchical: pick parent first then dependent
+        var parentVal = result[slot.dependsOn];
+        var pool = (slot.optionsByCategory || {})[parentVal] || [];
+        result[slot.id] = pickRandom(pool);
+      } else {
+        result[slot.id] = pickRandom(slot.options);
+      }
+    });
+    return result;
+  }
+
+  // Build the final AI prompt by interpolating slots + art-style suffix
+  // into the template's basePrompt. Replaces {slotId} tokens.
+  function buildAIPrompt(template, slots, artStyleId) {
+    var artStyle = getArtStyle(artStyleId);
+    var prompt = template.basePrompt;
+    Object.keys(slots).forEach(function(key) {
+      prompt = prompt.replace(new RegExp('\\{' + key + '\\}', 'g'), slots[key] || '');
+    });
+    prompt = prompt.replace(/\{artStyle\}/g, artStyle.prompt);
+    return prompt;
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 4: STARTER FERN — hardcoded SVG so Day 1 has a friendly
   // placed item without requiring AI image generation.
   // ─────────────────────────────────────────────────────────
@@ -350,6 +528,9 @@
       // Voice-recording pulse — visual signal that the mic is hot. Slow + soft
       // so it doesn’t become alarm-like for sensory-sensitive students.
       '@keyframes ah-record-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.6); } 50% { box-shadow: 0 0 0 8px rgba(230,57,70,0); } }',
+      // Loading-slide bar — used during AI image generation (~5-15s).
+      // Indeterminate progress: a 40% bar slides left↔right.
+      '@keyframes ah-loading-slide { 0% { left: -40%; } 100% { left: 100%; } }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
       '  .ah-root .ah-welcome { animation: none !important; }',
@@ -753,6 +934,538 @@
             }
           }, '🗑')
         ]
+      )
+    );
+  }
+
+  // GenerateModalInner — multi-step decoration creation flow.
+  // Steps: 'pick-template' → 'configure' → 'generating' → 'review' → 'reflect'
+  // Surprise-me skips configure and goes straight to generating.
+  // 30s free-regenerate window after first generation; post-window
+  // regen costs 1 token. Token cost (3) charged at FIRST generate;
+  // refunded on AI failure (handled in generateDecoration).
+  function GenerateModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+
+    var palette = p.palette;
+    var ctx = p.generateContext || { surface: 'floor', cellIndex: 0 };
+    var inheritedStyleId = getThemeDefaultStyleId(p.themeName || 'default');
+
+    // Filter templates by surface (wall vs floor; 'both' shows in either)
+    var availableTemplates = TEMPLATES.filter(function(t) {
+      return t.surface === ctx.surface || t.surface === 'both';
+    });
+
+    var stepTuple = useState('pick-template');
+    var step = stepTuple[0];
+    var setStep = stepTuple[1];
+
+    var templateTuple = useState(null);
+    var template = templateTuple[0];
+    var setTemplate = templateTuple[1];
+
+    var slotsTuple = useState({});
+    var slots = slotsTuple[0];
+    var setSlots = slotsTuple[1];
+
+    var artStyleTuple = useState(inheritedStyleId);
+    var artStyleId = artStyleTuple[0];
+    var setArtStyleId = artStyleTuple[1];
+
+    var imageTuple = useState(null);
+    var imageBase64 = imageTuple[0];
+    var setImageBase64 = imageTuple[1];
+
+    var errorTuple = useState(null);
+    var error = errorTuple[0];
+    var setError = errorTuple[1];
+
+    var hasGeneratedTuple = useState(false);
+    var hasGenerated = hasGeneratedTuple[0];
+    var setHasGenerated = hasGeneratedTuple[1];
+
+    var freeUntilTuple = useState(0);  // timestamp ms
+    var freeUntil = freeUntilTuple[0];
+    var setFreeUntil = freeUntilTuple[1];
+
+    var nowTuple = useState(Date.now());
+    var now = nowTuple[0];
+    var setNow = nowTuple[1];
+
+    // Tick to keep the free-regenerate countdown visible
+    useEffect(function() {
+      if (step !== 'review') return;
+      if (now >= freeUntil) return;
+      var iv = setInterval(function() { setNow(Date.now()); }, 250);
+      return function() { clearInterval(iv); };
+      // eslint-disable-next-line
+    }, [step, freeUntil]);
+
+    var reflectionDraftTuple = useState('');
+    var reflectionDraft = reflectionDraftTuple[0];
+    var setReflectionDraft = reflectionDraftTuple[1];
+
+    function handlePickTemplate(t) {
+      setTemplate(t);
+      // Pre-fill first option for each slot for hierarchical templates
+      var initial = {};
+      t.slots.forEach(function(slot) {
+        if (!slot.dependsOn && slot.options && slot.options.length > 0) {
+          initial[slot.id] = slot.options[0];
+        }
+      });
+      setSlots(initial);
+      setStep('configure');
+    }
+
+    function handleSurpriseMe(t) {
+      var randomized = surpriseSlotsFor(t);
+      setTemplate(t);
+      setSlots(randomized);
+      setArtStyleId(inheritedStyleId);
+      doGenerate(t, randomized, inheritedStyleId, false, false);
+    }
+
+    function doGenerate(t, s, styleId, isRegenerate, isFreeRegenerate) {
+      setStep('generating');
+      setError(null);
+      p.onGenerate(t, s, styleId, isRegenerate, isFreeRegenerate, function(result) {
+        if (result.error) {
+          if (result.error === 'insufficient') {
+            setError('Need ' + (isRegenerate && !isFreeRegenerate ? 1 : 3) + ' tokens. Earn more by focusing or reflecting.');
+          } else {
+            setError(result.error);
+          }
+          // On error, return to configure step so user can adjust + retry
+          setStep(template ? 'configure' : 'pick-template');
+          return;
+        }
+        setImageBase64(result.imageBase64);
+        setHasGenerated(true);
+        setStep('review');
+        if (!isRegenerate) {
+          setFreeUntil(Date.now() + 30 * 1000);
+        } else {
+          // Reset 30s window? No — original window has elapsed. Just mark
+          // freeUntil to past so the button always shows the paid label.
+          setFreeUntil(0);
+        }
+      });
+    }
+
+    function handleAccept() {
+      // Move to optional reflection step
+      setStep('reflect');
+    }
+
+    function handleSkipReflection() {
+      p.onPlace(template, slots, artStyleId, imageBase64, '');
+    }
+
+    function handleSubmitReflection() {
+      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft);
+    }
+
+    function handleClose() {
+      p.onClose();
+    }
+
+    // Render a single slot configurator
+    function renderSlotControl(slot) {
+      var pool = slot.options;
+      if (slot.dependsOn) {
+        var parentVal = slots[slot.dependsOn];
+        pool = (slot.optionsByCategory || {})[parentVal] || [];
+      }
+      if (slot.tileGrid) {
+        return h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' } },
+          pool.map(function(opt) {
+            var active = slots[slot.id] === opt;
+            return h('button', {
+              key: slot.id + '-' + opt,
+              onClick: function() {
+                var next = Object.assign({}, slots); next[slot.id] = opt; setSlots(next);
+              },
+              'aria-pressed': active ? 'true' : 'false',
+              style: {
+                background: active ? palette.surface : 'transparent',
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '8px',
+                padding: '8px 10px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: '12px',
+                color: palette.text,
+                textAlign: 'left',
+                lineHeight: '1.3'
+              }
+            }, opt);
+          })
+        );
+      }
+      // Default: chip row
+      return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+        pool.map(function(opt) {
+          var active = slots[slot.id] === opt;
+          return h('button', {
+            key: slot.id + '-' + opt,
+            onClick: function() {
+              var next = Object.assign({}, slots); next[slot.id] = opt;
+              // If this is a parent in a hierarchical setup, reset dependent
+              if (template) {
+                template.slots.forEach(function(s) {
+                  if (s.dependsOn === slot.id) {
+                    var depPool = (s.optionsByCategory || {})[opt] || [];
+                    next[s.id] = depPool[0] || '';
+                  }
+                });
+              }
+              setSlots(next);
+            },
+            'aria-pressed': active ? 'true' : 'false',
+            style: {
+              background: active ? palette.accent : 'transparent',
+              color: active ? palette.onAccent : palette.text,
+              border: '1.5px solid ' + (active ? palette.accent : palette.border),
+              borderRadius: '999px',
+              padding: '5px 12px',
+              fontSize: '12px',
+              fontWeight: active ? 700 : 500,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, opt);
+        })
+      );
+    }
+
+    // ── Steps ──
+    var stepBody;
+
+    if (step === 'pick-template') {
+      stepBody = h('div', null,
+        h('p', { style: { fontSize: '13px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Pick a category. Each cell on the ' + ctx.surface + ' supports specific kinds of decorations.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' } },
+          availableTemplates.map(function(t) {
+            return h('div', {
+              key: 'tmpl-' + t.id,
+              style: { display: 'flex', flexDirection: 'column', gap: '4px' }
+            },
+              h('button', {
+                onClick: function() { handlePickTemplate(t); },
+                style: {
+                  background: palette.surface,
+                  border: '1.5px solid ' + palette.border,
+                  borderRadius: '10px',
+                  padding: '14px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  textAlign: 'center',
+                  color: palette.text,
+                  transition: 'border-color 140ms ease, transform 140ms ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                  alignItems: 'center'
+                }
+              },
+                h('span', { style: { fontSize: '32px' } }, t.icon),
+                h('span', { style: { fontSize: '13px', fontWeight: 700 } }, t.label)
+              ),
+              h('button', {
+                onClick: function() { handleSurpriseMe(t); },
+                disabled: p.tokens < DECORATION_COST,
+                style: {
+                  background: 'transparent',
+                  color: p.tokens < DECORATION_COST ? palette.textMute : palette.accent,
+                  border: '1px dashed ' + palette.border,
+                  borderRadius: '6px',
+                  padding: '4px',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  cursor: p.tokens < DECORATION_COST ? 'not-allowed' : 'pointer',
+                  fontFamily: 'inherit',
+                  letterSpacing: '0.02em'
+                }
+              }, '🎲 Surprise me')
+            );
+          })
+        )
+      );
+    } else if (step === 'configure' && template) {
+      var canGenerate = p.tokens >= DECORATION_COST;
+      stepBody = h('div', null,
+        h('button', {
+          onClick: function() { setStep('pick-template'); setTemplate(null); setError(null); },
+          style: {
+            background: 'transparent',
+            color: palette.textDim,
+            border: 'none',
+            padding: '4px 0',
+            fontSize: '12px',
+            cursor: 'pointer',
+            marginBottom: '10px',
+            fontFamily: 'inherit'
+          }
+        }, '← Back to categories'),
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' } },
+          h('span', { style: { fontSize: '32px' } }, template.icon),
+          h('h4', { style: { margin: 0, fontSize: '17px', fontWeight: 700, color: palette.text } }, template.label)
+        ),
+        // Slots
+        template.slots.map(function(slot) {
+          if (slot.dependsOn && !slots[slot.dependsOn]) return null;
+          return h('div', { key: 'slot-' + slot.id, style: { marginBottom: '12px' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, slot.label),
+            renderSlotControl(slot)
+          );
+        }),
+        // Art style
+        h('div', { style: { marginBottom: '12px', paddingTop: '8px', borderTop: '1px solid ' + palette.border } },
+          h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } }, 'Art style'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+            ART_STYLES.map(function(s) {
+              var active = artStyleId === s.id;
+              return h('button', {
+                key: 's-' + s.id,
+                onClick: function() { setArtStyleId(s.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  background: active ? palette.accent : 'transparent',
+                  color: active ? palette.onAccent : palette.text,
+                  border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  padding: '5px 12px',
+                  fontSize: '11px',
+                  fontWeight: active ? 700 : 500,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, s.label);
+            })
+          )
+        ),
+        error ? h('div', {
+          style: {
+            padding: '8px 12px',
+            background: 'rgba(220,38,38,0.1)',
+            border: '1px solid rgba(220,38,38,0.4)',
+            borderRadius: '8px',
+            fontSize: '12px',
+            color: '#fca5a5',
+            marginBottom: '10px'
+          }
+        }, error) : null,
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '16px' } },
+          h('button', {
+            onClick: handleClose,
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1px solid ' + palette.border, borderRadius: '8px',
+              padding: '8px 14px', fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Cancel'),
+          h('button', {
+            onClick: function() { doGenerate(template, slots, artStyleId, false, false); },
+            disabled: !canGenerate,
+            style: {
+              background: canGenerate ? palette.accent : palette.surface,
+              color: canGenerate ? palette.onAccent : palette.textMute,
+              border: 'none', borderRadius: '8px',
+              padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+              cursor: canGenerate ? 'pointer' : 'not-allowed',
+              fontFamily: 'inherit', opacity: canGenerate ? 1 : 0.6
+            }
+          }, canGenerate ? 'Generate (3 🪙)' : 'Need 3 🪙 tokens')
+        )
+      );
+    } else if (step === 'generating') {
+      stepBody = h('div', { style: { textAlign: 'center', padding: '40px 20px' } },
+        h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '✨'),
+        h('div', { style: { fontSize: '16px', fontWeight: 700, color: palette.text, marginBottom: '6px' } }, 'Generating your decoration...'),
+        h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5' } }, 'AI is crafting a one-of-a-kind item for your room. Usually 5-15 seconds.'),
+        h('div', {
+          'aria-hidden': 'true',
+          style: {
+            marginTop: '20px',
+            height: '4px',
+            width: '100%',
+            background: palette.surface,
+            borderRadius: '999px',
+            overflow: 'hidden',
+            position: 'relative'
+          }
+        },
+          h('div', {
+            style: {
+              position: 'absolute',
+              top: 0, left: 0, bottom: 0,
+              width: '40%',
+              background: palette.accent,
+              animation: 'ah-loading-slide 1.4s ease-in-out infinite'
+            }
+          })
+        )
+      );
+    } else if (step === 'review' && imageBase64) {
+      var freeMs = Math.max(0, freeUntil - now);
+      var freeSec = Math.ceil(freeMs / 1000);
+      var freeRegen = freeMs > 0;
+      var canPaidRegen = p.tokens >= 1;
+      stepBody = h('div', { style: { textAlign: 'center' } },
+        h('img', {
+          src: imageBase64,
+          alt: template.label + ' preview',
+          style: {
+            maxWidth: '100%',
+            maxHeight: '320px',
+            borderRadius: '12px',
+            border: '1px solid ' + palette.border,
+            background: palette.surface,
+            margin: '0 auto 14px'
+          }
+        }),
+        h('div', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          template.icon + ' ' + template.label + ' · ' + getArtStyle(artStyleId).label),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() { doGenerate(template, slots, artStyleId, true, freeRegen); },
+            disabled: !freeRegen && !canPaidRegen,
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1px solid ' + palette.border, borderRadius: '8px',
+              padding: '8px 14px', fontSize: '12px', fontWeight: 600,
+              cursor: (!freeRegen && !canPaidRegen) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit', opacity: (!freeRegen && !canPaidRegen) ? 0.5 : 1
+            }
+          }, freeRegen ? '↻ Regenerate (free · ' + freeSec + 's left)' : '↻ Regenerate (1 🪙)'),
+          h('button', {
+            onClick: handleAccept,
+            style: {
+              background: palette.accent, color: palette.onAccent,
+              border: 'none', borderRadius: '8px',
+              padding: '8px 20px', fontSize: '13px', fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Place this here ✨')
+        )
+      );
+    } else if (step === 'reflect') {
+      stepBody = h('div', null,
+        h('img', {
+          src: imageBase64,
+          alt: template.label,
+          style: {
+            maxWidth: '100%',
+            maxHeight: '180px',
+            borderRadius: '10px',
+            border: '1px solid ' + palette.border,
+            background: palette.surface,
+            display: 'block',
+            margin: '0 auto 14px'
+          }
+        }),
+        h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
+          'Want to write something about this? (optional, no token)'),
+        h('textarea', {
+          value: reflectionDraft,
+          onChange: function(e) { setReflectionDraft(e.target.value); },
+          placeholder: 'What does this mean to you? Why this one?',
+          'aria-label': 'Optional reflection on this decoration',
+          rows: 3,
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '13px',
+            fontFamily: 'inherit',
+            lineHeight: '1.5',
+            resize: 'vertical',
+            boxSizing: 'border-box',
+            marginBottom: '12px'
+          }
+        }),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
+          h('button', {
+            onClick: handleSkipReflection,
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1px solid ' + palette.border, borderRadius: '8px',
+              padding: '8px 14px', fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Skip & place'),
+          h('button', {
+            onClick: handleSubmitReflection,
+            style: {
+              background: palette.accent, color: palette.onAccent,
+              border: 'none', borderRadius: '8px',
+              padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Save reflection & place')
+        )
+      );
+    } else {
+      // Fallback
+      stepBody = h('div', { style: { padding: '20px', color: palette.textMute } }, 'Loading…');
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Add a decoration',
+      onClick: function(e) {
+        if (e.target === e.currentTarget && step !== 'generating') handleClose();
+      },
+      style: {
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)',
+        zIndex: 175,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg,
+          border: '1px solid ' + palette.border,
+          borderRadius: '14px',
+          padding: '24px',
+          maxWidth: '560px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
+        },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+            '🌿 Add a decoration · ' + (ctx.surface === 'wall' ? 'wall' : 'floor')),
+          step !== 'generating' ? h('button', {
+            onClick: handleClose,
+            'aria-label': 'Close',
+            style: {
+              background: 'transparent', border: '1px solid ' + palette.border,
+              color: palette.textDim, borderRadius: '8px', padding: '4px 10px',
+              fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '✕') : null
+        ),
+        stepBody
       )
     );
   }
@@ -1178,6 +1891,140 @@
       setIsRecording(false);
     }
 
+    // ── Decoration generation handlers ──
+    var DECORATION_COST = 3;
+
+    // Empty cell clicked — opens generate modal scoped to that cell.
+    // Insufficient-tokens path: shows the first-time toast (one-time)
+    // and opens the modal anyway so students can SEE the templates
+    // they could pick from once they have tokens.
+    function handleEmptyCellClick(surface, cellIndex) {
+      var hasEnough = state.tokens >= DECORATION_COST;
+      if (!hasEnough && !state.toastsSeen.firstZeroTokenClick) {
+        var newToasts = Object.assign({}, state.toastsSeen, { firstZeroTokenClick: true });
+        setStateField('toastsSeen', newToasts);
+        addToast("You'll need " + DECORATION_COST + " 🪙 tokens to add a decoration here. Earn some by focusing or writing!");
+      } else if (!hasEnough) {
+        addToast('Need ' + DECORATION_COST + ' 🪙 tokens. Currently you have ' + state.tokens + '.');
+      }
+      // Open modal regardless — students can browse + plan even with 0 tokens.
+      setStateMulti({
+        activeModal: 'generate',
+        generateContext: { surface: surface, cellIndex: cellIndex }
+      });
+    }
+
+    // Place a decoration. Called from the generate modal when user
+    // commits to the AI-generated image. Token already deducted at
+    // generate time; this just records the placement + closes modal.
+    // Optional reflection text attaches to the decoration's metadata.
+    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText) {
+      var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
+      // Slight ±3° rotation, randomized once per item — "lived-in wobble"
+      var rotation = (Math.random() * 6) - 3;
+      var entry = {
+        id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        template: template.id,
+        templateLabel: template.label,
+        slots: slots,
+        artStyle: artStyleId,
+        imageBase64: imageBase64,
+        isStarter: false,
+        placement: { roomId: 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
+        rotation: rotation,
+        earnedAt: new Date().toISOString(),
+        tokensSpent: DECORATION_COST,
+        studentReflection: (reflectionText || '').trim(),
+        linkedContent: null,    // v2+ memory palace
+        sourceTool: null,       // v2+ cross-tool integration
+        aiRationale: null       // v2+ AI summary of how earned
+      };
+      setStateMulti({
+        decorations: state.decorations.concat([entry]),
+        activeModal: null,
+        generateContext: null
+      });
+      addToast('🌿 ' + template.label.toLowerCase() + ' placed in your room.');
+    }
+
+    // AI generation — calls props.callImagen with the constructed prompt.
+    // Token deduction happens HERE (3 tokens), before the call. If the
+    // generation fails, the token IS refunded (separate path from
+    // delete-decoration which keeps the token cost).
+    function generateDecoration(template, slots, artStyleId, isRegenerate, isFreeRegenerate, onResult) {
+      // Charge tokens
+      var cost = 0;
+      if (!isRegenerate) cost = DECORATION_COST;
+      else if (!isFreeRegenerate) cost = 1;
+      if (cost > 0 && state.tokens < cost) {
+        if (typeof onResult === 'function') onResult({ error: 'insufficient' });
+        return;
+      }
+      if (cost > 0) {
+        var earningsEntry = {
+          source: isRegenerate ? 'regenerate' : 'decoration',
+          tokens: -cost,
+          date: new Date().toISOString(),
+          metadata: { template: template.id, isRegenerate: !!isRegenerate }
+        };
+        setStateMulti({
+          tokens: state.tokens - cost,
+          earnings: state.earnings.concat([earningsEntry])
+        });
+      }
+
+      var prompt = buildAIPrompt(template, slots, artStyleId);
+
+      if (!props.callImagen) {
+        // Refund (this path is only hit if the host didn't wire callImagen)
+        if (cost > 0) {
+          setStateMulti({ tokens: state.tokens, earnings: state.earnings });
+        }
+        if (typeof onResult === 'function') onResult({ error: 'callImagen unavailable. Image generation requires the host\'s AI plumbing.' });
+        return;
+      }
+
+      try {
+        var imagenPromise = props.callImagen(prompt);
+        if (!imagenPromise || typeof imagenPromise.then !== 'function') {
+          throw new Error('callImagen did not return a promise');
+        }
+        imagenPromise.then(function(result) {
+          // callImagen may return a base64 string OR a data URL OR a more
+          // complex shape. Normalize to a data URL.
+          var b64 = result;
+          if (result && typeof result === 'object') {
+            b64 = result.base64 || result.image || result.data || '';
+          }
+          if (!b64) {
+            // Refund on empty result
+            setStateMulti({
+              tokens: state.tokens + cost,
+              earnings: state.earnings.concat([{ source: 'refund', tokens: cost, date: new Date().toISOString(), metadata: { reason: 'empty result' } }])
+            });
+            if (typeof onResult === 'function') onResult({ error: 'AI returned an empty image. Tokens refunded.' });
+            return;
+          }
+          var dataUrl = (typeof b64 === 'string' && b64.indexOf('data:') === 0)
+            ? b64
+            : ('data:image/png;base64,' + b64);
+          if (typeof onResult === 'function') onResult({ imageBase64: dataUrl });
+        }).catch(function(err) {
+          // Refund on failure
+          setStateMulti({
+            tokens: state.tokens + cost,
+            earnings: state.earnings.concat([{ source: 'refund', tokens: cost, date: new Date().toISOString(), metadata: { reason: 'callImagen error' } }])
+          });
+          if (typeof onResult === 'function') onResult({ error: 'AI generation failed. Tokens refunded. (' + (err && err.message ? err.message : 'unknown error') + ')' });
+        });
+      } catch (err) {
+        if (cost > 0) {
+          setStateMulti({ tokens: state.tokens + cost });
+        }
+        if (typeof onResult === 'function') onResult({ error: 'Could not start AI generation: ' + (err.message || err) });
+      }
+    }
+
     if (!props.isOpen) return null;
 
     // ─────────────────────────────────────────────────
@@ -1361,13 +2208,11 @@
         tabIndex: 0,
         'aria-label': 'Empty ' + surface + ' slot ' + (index + 1) + ' — click to add a decoration',
         className: 'ah-empty-cell',
-        onClick: function() {
-          addToast('Decoration generation coming in Phase 1d (cell ' + index + ' on ' + surface + ')');
-        },
+        onClick: function() { handleEmptyCellClick(surface, index); },
         onKeyDown: function(e) {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            addToast('Decoration generation coming in Phase 1d (cell ' + index + ' on ' + surface + ')');
+            handleEmptyCellClick(surface, index);
           }
         },
         style: {
@@ -1657,6 +2502,30 @@
     }
 
     // ─────────────────────────────────────────────────
+    // GENERATE MODAL — multi-step decoration creation.
+    // Delegates to GenerateModalInner so its local state doesn't pollute
+    // the outer component on close.
+    // ─────────────────────────────────────────────────
+    function renderGenerateModal() {
+      if (state.activeModal !== 'generate') return null;
+      return h(GenerateModalInner, {
+        palette: palette,
+        themeName: inherited.theme,
+        tokens: state.tokens,
+        generateContext: state.generateContext,
+        onGenerate: function(template, slots, artStyleId, isRegenerate, isFreeRegenerate, callback) {
+          generateDecoration(template, slots, artStyleId, isRegenerate, isFreeRegenerate, callback);
+        },
+        onPlace: function(template, slots, artStyleId, imageBase64, reflectionText) {
+          placeDecoration(template, slots, artStyleId, imageBase64, reflectionText);
+        },
+        onClose: function() {
+          setStateMulti({ activeModal: null, generateContext: null });
+        }
+      });
+    }
+
+    // ─────────────────────────────────────────────────
     // REFLECTION MODAL — 3 daily prompts + text area + voice + counter.
     // 20-character soft floor before token earns; positive counter
     // never blocks. Voice-to-text via Web Speech API when supported.
@@ -1915,6 +2784,7 @@
     },
       renderRoom(),
       renderPomodoroOverlay(),
+      renderGenerateModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderSettingsModal(),
