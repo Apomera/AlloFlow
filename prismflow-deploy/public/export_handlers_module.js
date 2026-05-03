@@ -294,6 +294,47 @@
     }
   };
 
+  // ── applyA11yInspector ───────────────────────────────────────────
+  // Pure DOM operation: paint (or clear) the accessibility-inspector
+  // overlay on whatever iframe document is currently loaded in the export
+  // preview. Idempotent — calling repeatedly with the same `enabled` value
+  // produces the same final DOM.
+  //
+  // Lives outside `toggleA11yInspect` so the parent (`updateExportPreview`)
+  // can re-apply the overlay after every iframe rewrite. Without this,
+  // any state change that re-runs `doc.open(); doc.write(); doc.close()`
+  // wipes the inspector's badges/styles, even though the React boolean
+  // `a11yInspectMode` stays `true` — which is exactly the "flash and
+  // disappear" bug AlloFlow-generated docs hit.
+  const applyA11yInspector = (deps) => {
+    const { exportPreviewRef, enabled } = deps || {};
+    const iframe = exportPreviewRef && exportPreviewRef.current;
+    const doc = iframe && iframe.contentDocument;
+    if (!doc || !doc.body) return;
+    // Always tear down any existing overlay first so this is idempotent.
+    const existingStyle = doc.getElementById('a11y-inspect-styles');
+    if (existingStyle) existingStyle.remove();
+    const existingBadges = doc.querySelectorAll('.a11y-inspect-badge');
+    existingBadges.forEach(function(b) { b.remove(); });
+    // Outline classes get added to many element types; clean those up too
+    // so toggling off doesn't leave stale colored borders.
+    const outlinedEls = doc.querySelectorAll('.a11y-inspect-outline');
+    outlinedEls.forEach(function(el) {
+      el.classList.remove(
+        'a11y-inspect-outline',
+        'a11y-inspect-outline-heading',
+        'a11y-inspect-outline-img',
+        'a11y-inspect-outline-aria',
+        'a11y-inspect-outline-role',
+        'a11y-inspect-outline-table',
+        'a11y-inspect-outline-input',
+        'a11y-inspect-outline-landmark'
+      );
+    });
+    if (!enabled) return;
+    paintA11yInspector(doc);
+  };
+
   // ── toggleA11yInspect ────────────────────────────────────────────
   // Toggles the in-iframe accessibility inspector overlay. Adds outlined
   // badges to headings, images, ARIA labels, roles, tables, inputs, and
@@ -305,14 +346,18 @@
     if (typeof setA11yInspectMode !== 'function') return;
     setA11yInspectMode(function(prev) {
       const next = !prev;
-      const iframe = exportPreviewRef && exportPreviewRef.current;
-      const doc = iframe && iframe.contentDocument;
-      if (!doc) return next;
-      const existing = doc.getElementById('a11y-inspect-styles');
-      if (existing) existing.remove();
-      const existingBadges = doc.querySelectorAll('.a11y-inspect-badge');
-      existingBadges.forEach(function(b) { b.remove(); });
-      if (!next) return next;
+      applyA11yInspector({ exportPreviewRef: exportPreviewRef, enabled: next });
+      return next;
+    });
+  };
+
+  // ── paintA11yInspector ───────────────────────────────────────────
+  // Internal helper: assumes the iframe doc is in a clean state (no
+  // pre-existing badges/styles) and paints the full inspector overlay.
+  // Extracted from the original toggleA11yInspect body verbatim so the
+  // visual output is unchanged.
+  const paintA11yInspector = (doc) => {
+      if (!doc || !doc.head || !doc.body) return;
       const style = doc.createElement('style');
       style.id = 'a11y-inspect-styles';
       style.textContent = '\n        .a11y-inspect-badge { position:absolute; z-index:9999; font-size:10px; font-weight:800; font-family:monospace; padding:2px 6px; border-radius:4px; pointer-events:auto; line-height:1.3; max-width:280px; word-wrap:break-word; box-shadow:0 2px 6px rgba(0,0,0,0.2); cursor:pointer; }\n        .a11y-inspect-badge:hover { opacity:1 !important; z-index:10000; transform:scale(1.05); }\n        .a11y-badge-heading { background:#7c3aed; color:#fff; }\n        .a11y-badge-img { background:#dc2626; color:#fff; }\n        .a11y-badge-aria { background:#0891b2; color:#fff; }\n        .a11y-badge-role { background:#059669; color:#fff; }\n        .a11y-badge-table { background:#d97706; color:#fff; }\n        .a11y-badge-input { background:#e11d48; color:#fff; }\n        .a11y-badge-link { background:#2563eb; color:#fff; }\n        .a11y-badge-lang { background:#4f46e5; color:#fff; }\n        .a11y-badge-landmark { background:#166534; color:#fff; }\n        .a11y-inspect-outline { outline:3px solid; outline-offset:2px; position:relative; }\n        .a11y-inspect-outline-heading { outline-color:#7c3aed; }\n        .a11y-inspect-outline-img { outline-color:#dc2626; }\n        .a11y-inspect-outline-aria { outline-color:#0891b2; }\n        .a11y-inspect-outline-role { outline-color:#059669; }\n        .a11y-inspect-outline-table { outline-color:#d97706; }\n        .a11y-inspect-outline-input { outline-color:#e11d48; }\n        .a11y-inspect-outline-landmark { outline-color:#166534; }\n      ';
@@ -415,8 +460,6 @@
         '<span style="color:#818cf8;">■</span> Landmarks' +
         '<br><em style="font-size:10px;opacity:0.7;">Click any badge to edit the attribute</em>';
       doc.body.appendChild(legend);
-      return next;
-    });
   };
 
   // ── getReadableContent ───────────────────────────────────────────
@@ -922,6 +965,7 @@
     handleExport,
     downloadHtmlBlob,
     toggleA11yInspect,
+    applyA11yInspector,
     getReadableContent,
     handleFormatText,
     getAdventureImageDB,
@@ -932,5 +976,5 @@
     handleCopyToClipboard
   };
   window.AlloModules.ExportHandlersModule = true;
-  console.log('[ExportHandlersModule] 13 handlers registered (Phase P bundle)');
+  console.log('[ExportHandlersModule] 14 handlers registered (Phase P bundle)');
 })();

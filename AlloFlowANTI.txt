@@ -13547,10 +13547,9 @@ STUDENT LANGUAGE: ${studentLanguage || 'English'}
 RULES:
 - For PROCESSES or CHANGES (photosynthesis, erosion, cooking, life cycles): use "before-after" or "sequence" layout
 - For COMPARISONS (democracy vs monarchy, mitosis vs meiosis): use "comparison" layout
-- For SORT-INTO-TWO-CATEGORIES (renewable vs non-renewable, prokaryotes vs eukaryotes, igneous vs sedimentary, mammals vs reptiles, vertebrates vs invertebrates, abiotic vs biotic, prime vs composite, igneous vs metamorphic, primary vs secondary, valid vs invalid argument): use "t-chart" layout — students DRAG items into the correct column
 - For ANATOMY or STRUCTURE (cell, volcano, water cycle diagram): use "labeled-diagram" layout
 - For SIMPLE VOCABULARY (chair, triangle, rain): use "single" layout
-- Generate 2-4 panels maximum (PANEL layouts only — t-chart does not use panels)
+- Generate 2-4 panels maximum
 - Each panel needs a clear Imagen prompt for educational vector art
 - Labels MUST be written in ${studentLanguage || "English"} to match the student's language
 - Labels should point to specific parts of the image
@@ -13558,9 +13557,7 @@ RULES:
 - Captions go below each image
 ${artStyle ? `ART STYLE: Use "${artStyle}" style for ALL panel imagenPrompts. This means each prompt must specify "${artStyle}" style rendering.` : "ART STYLE: Clean educational vector art."}
 ${customInstructions ? `ADDITIONAL INSTRUCTIONS: ${customInstructions}` : ""}
-Return ONLY valid JSON.
-
-For PANEL layouts (before-after / sequence / comparison / labeled-diagram / single):
+Return ONLY valid JSON in this format:
 {
   "layout": "before-after" | "sequence" | "comparison" | "labeled-diagram" | "single",
   "title": "Concept Title",
@@ -13576,39 +13573,12 @@ For PANEL layouts (before-after / sequence / comparison / labeled-diagram / sing
       ]
     }
   ]
-}
-
-For T-CHART layout (sorting exercise — NO panels, NO images):
-{
-  "layout": "t-chart",
-  "title": "Concept Title (e.g. Renewable vs Non-Renewable Energy)",
-  "tchart": {
-    "leftTitle": "Left column header (2-3 words, e.g. Renewable)",
-    "rightTitle": "Right column header (2-3 words, e.g. Non-Renewable)",
-    "leftHint": "One-sentence definition of what belongs in left column",
-    "rightHint": "One-sentence definition of what belongs in right column",
-    "items": [
-      { "id": "i1", "text": "Item label (1-3 words)", "correct": "left" | "right", "explain": "One-sentence WHY this belongs there" }
-    ]
-  }
-}
-For t-chart: generate 6-12 items total, balanced between left and right (roughly 50/50). Items should be canonical and unambiguous — avoid edge cases. Each item's "explain" field is shown after the student checks their answer to teach the WHY.`;
+}`;
       const result = await callGemini(planPrompt, true);
       try {
           const plan = JSON.parse(cleanJson(result));
-          // T-Chart layout uses .tchart.items instead of .panels — validate that shape separately.
-          if (!plan.layout) {
-              throw new Error('Invalid visual plan structure: missing layout');
-          }
-          if (plan.layout === 't-chart') {
-              if (!plan.tchart || !Array.isArray(plan.tchart.items) || plan.tchart.items.length === 0) {
-                  throw new Error('Invalid t-chart plan: missing tchart.items');
-              }
-              console.log('[ArtDirector] Visual plan: t-chart,', plan.tchart.items.length, 'items');
-              return plan;
-          }
-          if (!plan.panels || !Array.isArray(plan.panels)) {
-              throw new Error('Invalid visual plan structure: missing panels');
+          if (!plan.layout || !plan.panels || !Array.isArray(plan.panels)) {
+              throw new Error('Invalid visual plan structure');
           }
           console.log('[ArtDirector] Visual plan:', plan.layout, plan.panels.length, 'panels');
           return plan;
@@ -15130,7 +15100,24 @@ For t-chart: generate 6-12 items total, balanced between left and right (roughly
     doc.open();
     doc.write(html);
     doc.close();
-  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, history, studentResponses, selectedFont]);
+    // If the user has the A11y inspector toggled on, re-paint it now —
+    // doc.write() just wiped every badge/style/legend from the iframe.
+    // Without this, the inspector flashes briefly and disappears whenever
+    // any state change (history bumps, theme tweaks, audio caching, etc.)
+    // re-runs updateExportPreview — which is constant traffic for AlloFlow-
+    // generated docs. PDF remediation didn't hit this because its preview
+    // payload is static after the initial render.
+    if (a11yInspectMode) {
+      try {
+        const _eh = window.AlloModules && window.AlloModules.ExportHandlers;
+        if (_eh && typeof _eh.applyA11yInspector === 'function') {
+          _eh.applyA11yInspector({ exportPreviewRef: exportPreviewRef, enabled: true });
+        }
+      } catch (_inspErr) {
+        warnLog('[Export preview] applyA11yInspector failed:', _inspErr);
+      }
+    }
+  }, [exportConfig, exportTheme, customExportCSS, exportPreviewMode, history, studentResponses, selectedFont, a11yInspectMode]);
 
   React.useEffect(() => {
     if (!showExportPreview) {
