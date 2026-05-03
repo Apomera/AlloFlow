@@ -3078,6 +3078,11 @@
                 desc: 'Disability-first keyboarding — dyslexia font, high-contrast, audio cues, error-tolerant mode, pace reference, on-screen keyboard. 8+ drill tiers, AI-personalized passages, IEP-ready progress reports.',
                 color: 'violet', ready: true
               },
+              {
+                id: 'alloHaven', icon: '\uD83C\uDF3F', label: 'AlloHaven',
+                desc: 'A cozy room you build by focusing and reflecting. Earn tokens through Pomodoro sessions or journal entries, then spend them on AI-generated decorations to make a space that’s yours. No leaderboards, no streak guilt.',
+                color: 'emerald', ready: true
+              },
 
               {
                 id: 'flightSim', icon: '✈️', label: 'SkySchool',
