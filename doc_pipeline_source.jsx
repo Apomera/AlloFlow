@@ -12427,13 +12427,45 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <textarea class="interactive-textarea" aria-label="${item.data.reflection}" placeholder="${t('common.type_answer_here')}"></textarea>
                   </div>
               `;
+          // Resolve each question's correct option to an INDEX (the radio value)
+          // so the in-iframe Check button can compare user input directly.
+          // q.correctAnswer can be a number, a string matching an option, or an
+          // A/B/C/D letter — handle all three. -1 means we couldn't resolve it,
+          // and that question gets skipped by the checker rather than scored wrong.
+          const _resolveCorrectIdx = (q) => {
+              if (q == null || !Array.isArray(q.options)) return -1;
+              const ca = q.correctAnswer;
+              if (typeof ca === 'number' && ca >= 0 && ca < q.options.length) return ca;
+              if (typeof ca === 'string') {
+                  const trimmed = ca.trim();
+                  // Letter form (A, B, C, D, …)
+                  if (/^[A-Za-z]$/.test(trimmed)) {
+                      const letterIdx = trimmed.toUpperCase().charCodeAt(0) - 65;
+                      if (letterIdx >= 0 && letterIdx < q.options.length) return letterIdx;
+                  }
+                  // Numeric string ("0", "1", …)
+                  if (/^\d+$/.test(trimmed)) {
+                      const numIdx = parseInt(trimmed, 10);
+                      if (numIdx >= 0 && numIdx < q.options.length) return numIdx;
+                  }
+                  // Match by literal option text (loose: lowercase + trim)
+                  const norm = (s) => String(s == null ? '' : s).trim().toLowerCase();
+                  const target = norm(trimmed);
+                  const found = q.options.findIndex(opt => norm(opt) === target);
+                  if (found !== -1) return found;
+              }
+              return -1;
+          };
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  <div class="quiz-box">
+                  <div class="quiz-box" data-quiz-id="${item.id}">
                       <h3>${t('output.quiz_mcq')}</h3>
-                      ${item.data.questions.map((q, i) => `
-                          <div class="question">
+                      ${item.data.questions.map((q, i) => {
+                          const correctIdx = _resolveCorrectIdx(q);
+                          const correctAttr = correctIdx >= 0 ? ` data-correct="${correctIdx}"` : '';
+                          return `
+                          <div class="question"${correctAttr}>
                               <p>
                                 <strong>${i+1}. ${q.question}</strong>
                                 ${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.question_en})</span>` : ''}
@@ -12449,7 +12481,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${isTeacher ? `<p class="answer-key" style="color: #16a34a; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${q.correctAnswer}</p>` : ''}
                               ${isTeacher && q.factCheck ? `<div style="background:#fffbeb; padding:10px; border:1px solid #fcd34d; border-radius:4px; font-size:0.9em; margin-top:10px; white-space: pre-line; color:#92400e;"><strong>AI Verification:</strong><br/>${parseMarkdownToHTML(q.factCheck)}</div>` : ''}
                           </div>
-                      `).join('')}
+                      `;
+                      }).join('')}
+                      ${isTeacher ? '' : `
+                          <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
+                              <button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem">🎯 Check my answers</button>
+                              <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem">↻ Reset</button>
+                              <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
+                          </div>
+                      `}
                       <h3>${t('output.quiz_reflection')}</h3>
                       ${reflectionHtml}
                   </div>
@@ -13097,7 +13137,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           tbody th[scope="row"] { background: ${theme.cardBg}; font-weight: 600; text-transform: none; letter-spacing: normal; font-size: 0.95rem; color: ${theme.headingColor}; border-left: 3px solid ${theme.accentColor}; text-align: ${textAlign}; }
           tbody tr:nth-child(even) { background-color: rgba(248,250,252,0.5); }
           tbody tr:hover { background-color: rgba(241,245,249,0.8); }
-          img { max-width: 100%; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+          /* Cap image height in the interactive view so a tall extracted
+             PDF image (e.g. a full-page scan) doesn't push everything else
+             off-screen on small displays. Print rules below remove the cap
+             so PDFs render images at full intended size. */
+          img { max-width: 100%; max-height: 90vh; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
           .math-symbol { font-family: "Times New Roman", serif; display: inline-block; }
           .math-fraction {
               display: inline-flex;
@@ -13181,12 +13225,38 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           a { text-decoration: underline; }
           @media (forced-colors: active) { .section { border: 2px solid CanvasText; } th { border: 1px solid CanvasText; } }
           @media print {
-            body { padding: 0.5in; margin: 0; font-size: 11pt; }
+            body { padding: 0.5in; margin: 0; font-size: 11.5pt; line-height: 1.5; }
+            /* Orphans/widows control — keeps a single word from being orphaned
+               on a new line at the top of a printed page, or stranded at the
+               bottom. Particularly important for dyslexic readers, who lose
+               the line they were on when widows/orphans break the visual
+               flow. CSS spec defaults are 2; bumping to 3 is a common
+               readability practice. */
+            p, li, blockquote { orphans: 3; widows: 3; }
+            /* Hyphenation lets long words wrap at hyphenation points instead
+               of overflowing or creating awkward gaps in justified text.
+               Latin-language docs only — non-Latin scripts ignore this. */
+            p, li, td, dd { hyphens: auto; -webkit-hyphens: auto; }
+            /* Keep headings with their following content so a heading at
+               the bottom of a page doesn't become an orphan above its body. */
+            h1, h2, h3, h4, h5, h6 { page-break-after: avoid; break-after: avoid; }
+            /* Avoid splitting figures and definition pairs across pages. */
+            figure, dl > div, dt + dd { page-break-inside: avoid; break-inside: avoid; }
+            /* Captions stay with their figure so the explanation never
+               orphans above its image on the next page. */
+            figcaption { page-break-before: avoid; break-before: avoid; }
+            /* Definition lists: keep dt + first dd together. CSS doesn't
+               have a direct selector for "term + first definition", so we
+               disallow page breaks immediately after dt and immediately
+               before dd to approximate the desired pairing. */
+            dt { page-break-after: avoid; break-after: avoid; }
+            dd { page-break-before: avoid; break-before: avoid; }
             .page-break { display: block; page-break-before: always; border: none; color: transparent; margin: 0; padding: 0; }
             .page-break:after { content: ""; }
             .section { page-break-inside: avoid; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
             .resource-header { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
+            .allo-ta-counter { display: none; } /* counter is interactive-only */
             .interactive-blank { border-bottom: 1px solid #333; }
             .worksheet-header { border: none; padding: 0; margin-bottom: 30px; }
             .line { border-bottom: 1px solid #000; }
@@ -13201,7 +13271,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             tfoot { display: table-footer-group; }
             thead th { position: static; }
             tr { page-break-inside: avoid; }
-            img { max-width: 100%; page-break-inside: avoid; }
+            /* Print: drop the interactive max-height cap so PDFs print full-size. */
+            img { max-width: 100%; max-height: none; page-break-inside: avoid; }
             h1, h2, h3 { page-break-after: avoid; }
             audio { display: none; }
             a { color: inherit; text-decoration: none; }
@@ -13296,6 +13367,61 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 else localStorage.removeItem(storageKey);
                             } catch (e) { /* swallow */ }
                         }, 400);
+                    });
+                });
+                // ── Quiz check-my-work + reset ──
+                // Walks every .question[data-correct] in each .quiz-box, compares
+                // the chosen radio's value to the data-correct index, and surfaces
+                // a per-question color cue + an aria-live result summary so screen
+                // readers also announce the score. Teachers see the answer key
+                // inline so this UI is only emitted for student-facing exports.
+                document.querySelectorAll('.quiz-box').forEach((quiz) => {
+                    const checkBtn = quiz.querySelector('.quiz-check-btn');
+                    const resetBtn = quiz.querySelector('.quiz-reset-btn');
+                    const resultsEl = quiz.querySelector('.quiz-results');
+                    if (!checkBtn || !resetBtn || !resultsEl) return;
+                    const questions = quiz.querySelectorAll('.question[data-correct]');
+                    const reset = () => {
+                        questions.forEach((q) => {
+                            q.style.borderLeft = '';
+                            q.style.paddingLeft = '';
+                            q.removeAttribute('aria-invalid');
+                        });
+                        resultsEl.textContent = '';
+                    };
+                    checkBtn.addEventListener('click', () => {
+                        let correct = 0;
+                        let wrong = 0;
+                        let skipped = 0;
+                        questions.forEach((q) => {
+                            const target = parseInt(q.getAttribute('data-correct'), 10);
+                            const checked = q.querySelector('input[type="radio"]:checked');
+                            // Reset prior state first so re-clicking Check redraws cleanly.
+                            q.style.paddingLeft = '0.6rem';
+                            if (!checked) {
+                                q.style.borderLeft = '4px solid #94a3b8';
+                                q.removeAttribute('aria-invalid');
+                                skipped++;
+                            } else if (parseInt(checked.value, 10) === target) {
+                                q.style.borderLeft = '4px solid #16a34a';
+                                q.removeAttribute('aria-invalid');
+                                correct++;
+                            } else {
+                                q.style.borderLeft = '4px solid #dc2626';
+                                q.setAttribute('aria-invalid', 'true');
+                                wrong++;
+                            }
+                        });
+                        const total = questions.length;
+                        const parts = [correct + ' of ' + total + ' correct'];
+                        if (wrong > 0) parts.push(wrong + ' to review');
+                        if (skipped > 0) parts.push(skipped + ' unanswered');
+                        resultsEl.textContent = parts.join(' · ');
+                    });
+                    resetBtn.addEventListener('click', () => {
+                        // Also clear the chosen radios so the student can retry honestly.
+                        quiz.querySelectorAll('input[type="radio"]:checked').forEach((r) => { r.checked = false; });
+                        reset();
                     });
                 });
                 // ── Same behavior for fill-in-the-blank inputs ──
