@@ -11111,6 +11111,17 @@ tr { page-break-inside: avoid; }
         let headingHierarchyIssues = 0;
         let lastHeadingLevel = 0;
         const headingPath = [];
+        // Quality lints — surface the most common a11y misses so the user
+        // can fix the source HTML and re-tag rather than ship a tagged PDF
+        // that's structurally complete but content-poor. All are computed
+        // from the same items walk so cost is ~zero.
+        let imagesMissingAlt = 0;       // <img> with no alt or alt="" but not marked decorative
+        let imagesTrivialAlt = 0;       // alt looks like a filename or generic stub
+        let thWithoutScope = 0;         // <th> missing scope (TH cells need /Scope for SR header announcement)
+        let linksGenericText = 0;       // "click here", "read more", "here", etc. — WCAG 2.4.4
+        const _trivialAltRe = /^(image|img|icon|picture|photo|untitled|graphic|figure)\s*\d*$/i;
+        const _filenameAltRe = /\.(png|jpe?g|gif|svg|webp|bmp|tiff?)\s*$/i;
+        const _genericLinkRe = /^\s*(click here|read more|more|here|link|this|continue|learn more|details)\s*\.?\s*$/i;
         try {
             if (Array.isArray(_outlineItems)) {
                 for (const it of _outlineItems) {
@@ -11130,9 +11141,29 @@ tr { page-break-inside: avoid; }
                     else if (it.role === 'P') paragraphs++;
                     else if (it.role === 'Table') tables++;
                     else if (it.role === 'L') lists++;
-                    else if (it.role === 'Figure') images++;
-                    else if (it.role === 'Link') links++;
-                    else if (it.role === 'TH' || it.role === 'TD') tableCells++;
+                    else if (it.role === 'Figure') {
+                        images++;
+                        // Decorative images intentionally have no alt and are
+                        // marked role="presentation" / aria-hidden — those are
+                        // correctly handled and shouldn't be flagged.
+                        if (!it.isDecorative) {
+                            const altRaw = (it.alt || '').trim();
+                            if (!altRaw) imagesMissingAlt++;
+                            else if (_trivialAltRe.test(altRaw) || _filenameAltRe.test(altRaw)) imagesTrivialAlt++;
+                        }
+                    }
+                    else if (it.role === 'Link') {
+                        links++;
+                        const linkText = (it.text || '').trim();
+                        if (linkText && _genericLinkRe.test(linkText)) linksGenericText++;
+                    }
+                    else if (it.role === 'TH') {
+                        tableCells++;
+                        if (!it.scope || (it.scope.toLowerCase() !== 'col' && it.scope.toLowerCase() !== 'row' && it.scope.toLowerCase() !== 'colgroup' && it.scope.toLowerCase() !== 'rowgroup')) {
+                            thWithoutScope++;
+                        }
+                    }
+                    else if (it.role === 'TD') tableCells++;
                 }
             }
         } catch(_) {}
@@ -11155,6 +11186,14 @@ tr { page-break-inside: avoid; }
             pdfUaDeclared: !!catalog.get(PDFName.of('Metadata')),
             headingHierarchyIssues,
             headingHierarchyPath: headingPath.slice(0, 5),
+            // Quality lints — surface in toasts so the user knows what to
+            // fix in the SOURCE HTML to make the next tag pass richer.
+            // These aren't errors (the PDF is still tagged); they're
+            // accessibility-quality issues the structural pass can't fix.
+            imagesMissingAlt,
+            imagesTrivialAlt,
+            thWithoutScope,
+            linksGenericText,
         };
     })();
     // ── Return tagged bytes + summary ──
