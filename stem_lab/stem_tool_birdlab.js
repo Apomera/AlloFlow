@@ -4656,24 +4656,125 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 'Cornell\'s ', h('span', { className: 'font-mono' }, 'BirdCast'), ' (birdcast.info) uses weather radar to forecast nightly migration intensity. Check it on a clear May night to see if migrants are pouring in.')
             ),
             // FEATURED MIGRATORS VIEW
-            view === 'featured' && h('div', { className: 'space-y-3' },
-              h('p', { className: 'text-sm text-slate-700 italic' },
-                '8 species + the migration strategy each one uses. Distances are typical one-way; round-trip is double.'),
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-                FEATURED_MIGRATORS.map(function(m) {
-                  return h('div', { key: m.species, className: 'bg-white border-2 border-orange-300 rounded-xl shadow p-4' },
-                    h('div', { className: 'flex items-baseline justify-between gap-2 mb-2 flex-wrap' },
-                      h('h3', { className: 'text-base font-black text-slate-800' }, m.species),
-                      h('span', { className: 'text-xs font-mono text-orange-700 font-bold' }, m.distance)
-                    ),
-                    h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-2' },
-                      h('strong', null, 'Strategy: '), m.strategy),
-                    h('div', { className: 'p-2 bg-amber-50 border border-amber-200 rounded text-xs text-slate-800' },
-                      h('strong', { className: 'text-amber-900' }, '🌲 Maine note: '), m.maineNote)
-                  );
-                })
-              )
-            ),
+            view === 'featured' && (function() {
+              // Parse "~200 mi" / "2,000–4,000 mi" / "Most are SEDENTARY..." / "2,000+ mi"
+              function parseRange(str) {
+                if (!str) return null;
+                if (/SEDENTARY/i.test(str)) return { kind: 'sedentary', min: 0, max: 0 };
+                // Strip commas for parsing
+                var clean = str.replace(/,/g, '');
+                // Range "1500-4000"
+                var rangeMatch = clean.match(/(\d+)\s*[–\-—]\s*(\d+)/);
+                if (rangeMatch) return { kind: 'range', min: parseInt(rangeMatch[1], 10), max: parseInt(rangeMatch[2], 10) };
+                // Plus "2000+"
+                var plusMatch = clean.match(/(\d+)\s*\+/);
+                if (plusMatch) return { kind: 'plus', min: parseInt(plusMatch[1], 10), max: parseInt(plusMatch[1], 10) * 1.5 };
+                // Approx "~200" or "200 mi"
+                var singleMatch = clean.match(/(\d+)/);
+                if (singleMatch) return { kind: 'single', min: parseInt(singleMatch[1], 10), max: parseInt(singleMatch[1], 10) };
+                return null;
+              }
+              function strategyBadge(strategy, distance) {
+                if (/SEDENTARY/i.test(distance)) return { label: 'Sedentary', bg: '#f1f5f9', color: '#475569', border: '#94a3b8' };
+                if (/Irruptive/i.test(strategy)) return { label: 'Irruptive', bg: '#ede9fe', color: '#5b21b6', border: '#a78bfa' };
+                if (/Long-distance|neotropical|trans-Atlantic|continent/i.test(strategy)) return { label: 'Long-distance', bg: '#fee2e2', color: '#991b1b', border: '#f87171' };
+                if (/Medium-distance|Medium /i.test(strategy)) return { label: 'Medium-distance', bg: '#fed7aa', color: '#9a3412', border: '#f97316' };
+                if (/Short-distance|Short to medium|Short /i.test(strategy)) return { label: 'Short-distance', bg: '#fef3c7', color: '#854d0e', border: '#facc15' };
+                return { label: 'Migrator', bg: '#dbeafe', color: '#1e40af', border: '#60a5fa' };
+              }
+              var SCALE_MAX = 6000; // miles, the upper end of the scale
+              return h('div', { className: 'space-y-3' },
+                h('p', { className: 'text-sm text-slate-700 italic' },
+                  '8 species + the migration strategy each one uses. Distance bars are scaled to the longest migrator (~6,000 miles, blackpoll warbler trans-Atlantic).'),
+                // Compact legend strip explaining the scale
+                h('div', { className: 'bg-white rounded-xl border border-slate-300 p-3' },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '📏 Distance scale (one-way miles)'),
+                  h('div', { className: 'relative h-4 rounded-full overflow-hidden bg-gradient-to-r from-slate-200 via-amber-200 via-orange-300 to-rose-400' }),
+                  h('div', { className: 'flex justify-between mt-1 text-[9px] font-mono text-slate-700' },
+                    h('span', null, '0'),
+                    h('span', null, '500 mi'),
+                    h('span', null, '2,000'),
+                    h('span', null, '6,000+')
+                  )
+                ),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                  FEATURED_MIGRATORS.map(function(m) {
+                    var rng = parseRange(m.distance);
+                    var badge = strategyBadge(m.strategy, m.distance);
+                    return h('div', { key: m.species, className: 'bg-white border-2 border-orange-300 rounded-xl shadow p-4' },
+                      h('div', { className: 'flex items-baseline justify-between gap-2 mb-2 flex-wrap' },
+                        h('h3', { className: 'text-base font-black text-slate-800' }, m.species),
+                        h('span', {
+                          style: {
+                            background: badge.bg, color: badge.color,
+                            border: '1.5px solid ' + badge.border,
+                            padding: '2px 9px', borderRadius: 999,
+                            fontSize: 10, fontWeight: 800, letterSpacing: '0.05em',
+                            textTransform: 'uppercase'
+                          }
+                        }, badge.label)
+                      ),
+                      // Distance scale bar
+                      h('div', { className: 'mb-2' },
+                        h('div', { className: 'flex items-center justify-between gap-2 mb-1' },
+                          h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Route distance'),
+                          h('span', { className: 'text-xs font-mono text-orange-700 font-bold' }, m.distance)
+                        ),
+                        rng && rng.kind !== 'sedentary' && h('div', {
+                          className: 'relative h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-300',
+                          'aria-label': 'Distance bar ' + (rng.min) + ' to ' + (rng.max) + ' miles on a 0 to 6000-mile scale'
+                        },
+                          // Range fill: from min to max
+                          h('div', {
+                            style: {
+                              position: 'absolute', top: 0, bottom: 0,
+                              left: Math.min(100, (rng.min / SCALE_MAX) * 100) + '%',
+                              width: Math.max(2, Math.min(100 - (rng.min / SCALE_MAX) * 100, ((rng.max - rng.min) / SCALE_MAX) * 100)) + '%',
+                              background: 'linear-gradient(90deg, ' + badge.border + ', ' + badge.color + ')',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)',
+                              borderRadius: '999px'
+                            }
+                          }),
+                          // For "+" type (e.g. "2000+"): add a fade beyond the marker
+                          rng.kind === 'plus' && h('div', {
+                            style: {
+                              position: 'absolute', top: 0, bottom: 0,
+                              left: Math.min(100, (rng.max / SCALE_MAX) * 100) + '%',
+                              right: 0,
+                              background: 'linear-gradient(90deg, ' + badge.color + ', transparent)',
+                              opacity: 0.5
+                            }
+                          }),
+                          // Maine "home" marker at distance 0 (left edge)
+                          h('div', {
+                            'aria-hidden': 'true',
+                            style: {
+                              position: 'absolute', top: -2, left: 0, width: 6, height: 16,
+                              background: '#dc2626', borderRadius: '0 2px 2px 0',
+                              boxShadow: '0 1px 2px rgba(0,0,0,0.2)'
+                            },
+                            title: 'Maine'
+                          })
+                        ),
+                        rng && rng.kind === 'sedentary' && h('div', { className: 'relative h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-300 flex items-center px-1.5' },
+                          h('span', { className: 'text-[8px] font-bold tracking-wider text-slate-700', style: { letterSpacing: '0.06em' } }, 'STAYS IN MAINE'),
+                          h('div', { 'aria-hidden': 'true',
+                            style: {
+                              position: 'absolute', top: -2, left: 0, width: 6, height: 16,
+                              background: '#dc2626', borderRadius: '0 2px 2px 0'
+                            }
+                          })
+                        )
+                      ),
+                      h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-2' },
+                        h('strong', null, 'Strategy: '), m.strategy),
+                      h('div', { className: 'p-2 bg-amber-50 border border-amber-200 rounded text-xs text-slate-800' },
+                        h('strong', { className: 'text-amber-900' }, '🌲 Maine note: '), m.maineNote)
+                    );
+                  })
+                )
+              );
+            })(),
             // CROSS-LINK to migration.js
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 flex items-start gap-3' },
               h('span', { className: 'text-3xl flex-shrink-0', 'aria-hidden': true }, '✈️'),
@@ -5200,31 +5301,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   );
                 })
               ),
-              picked && h('div', { className: 'bg-white rounded-2xl border-2 border-sky-500 shadow-lg p-5 mt-4', 'aria-live': 'polite' },
-                h('div', { className: 'flex items-start gap-3 mb-3' },
-                  h('span', { 'aria-hidden': true, className: 'text-4xl' }, picked.icon),
-                  h('div', { className: 'flex-1' },
-                    h('h2', { className: 'text-xl font-black text-slate-800' }, picked.name),
-                    h('p', { className: 'text-sm italic text-slate-700' }, picked.org),
-                    h('div', { className: 'flex flex-wrap gap-1.5 mt-1' }, tierBadge(picked.tier))
-                  )
-                ),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' }, picked.what),
-                h('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded-xl mb-3' },
-                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800 mb-1' }, '🎯 Best for you if...'),
-                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.matchFor)
-                ),
-                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-3' },
-                  h('div', { className: 'p-3 bg-slate-50 border border-slate-300 rounded-xl' },
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, '💰 Cost'),
-                    h('p', { className: 'text-sm text-slate-800' }, picked.cost)
+              picked && h('div', { className: 'bg-white rounded-2xl border-2 border-sky-500 shadow-lg overflow-hidden mt-4', 'aria-live': 'polite' },
+                // ── Hero band ──
+                h('div', { className: 'relative px-5 py-5 bg-gradient-to-br from-sky-100 via-cyan-50 to-emerald-50 border-b-2 border-sky-300 overflow-hidden' },
+                  // Decorative bird silhouettes drifting across hero
+                  h('svg', { 'aria-hidden': 'true',
+                    style: { position: 'absolute', top: 6, right: 50, opacity: 0.2 },
+                    width: 100, height: 28, viewBox: '0 0 100 28' },
+                    h('path', { d: 'M 5 14 Q 12 6 20 14 Q 28 22 35 14', fill: 'none', stroke: '#0369a1', strokeWidth: 2, strokeLinecap: 'round' }),
+                    h('path', { d: 'M 50 10 Q 57 4 65 10 Q 73 16 80 10', fill: 'none', stroke: '#0369a1', strokeWidth: 2, strokeLinecap: 'round' }),
+                    h('path', { d: 'M 30 22 Q 36 18 42 22', fill: 'none', stroke: '#0369a1', strokeWidth: 1.5, strokeLinecap: 'round' })
                   ),
-                  h('div', { className: 'p-3 bg-slate-50 border border-slate-300 rounded-xl' },
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, '🔗 Where to start'),
-                    h('p', { className: 'text-sm text-slate-800 font-mono break-all' }, picked.url)
+                  h('div', { className: 'relative flex items-start gap-4 flex-wrap', style: { zIndex: 1 } },
+                    // Big icon in white-backed circle
+                    h('div', {
+                      className: 'flex-shrink-0',
+                      style: {
+                        width: 72, height: 72, borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.95)',
+                        border: '3px solid #0ea5e9',
+                        boxShadow: '0 0 0 4px rgba(14,165,233,0.18), 0 6px 14px rgba(0,0,0,0.12)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 38
+                      }
+                    }, picked.icon),
+                    h('div', { className: 'flex-1 min-w-0', style: { paddingTop: 4 } },
+                      h('h2', {
+                        className: 'text-xl md:text-2xl font-black text-slate-800',
+                        style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.15 }
+                      }, picked.name),
+                      h('p', {
+                        className: 'text-sm italic text-slate-700',
+                        style: { textShadow: '0 1px 0 rgba(255,255,255,0.7)' }
+                      }, picked.org),
+                      h('div', { className: 'flex flex-wrap gap-1.5 mt-2 items-center' },
+                        tierBadge(picked.tier),
+                        h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300' },
+                          picked.cost === 'Free' ? '✓ Free' : picked.cost.indexOf('Free') === 0 ? '✓ ' + picked.cost : '$ ' + picked.cost),
+                        h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-900 border border-sky-300' },
+                          '⏱ ' + (picked.timeMin === 0 ? 'No commitment' : picked.timeMin + '–' + picked.timeMax + ' min/session')
+                        )
+                      )
+                    )
                   )
                 ),
-                h('p', { className: 'text-xs text-slate-600 italic' }, '📚 ' + picked.citation)
+                // ── Body content ──
+                h('div', { className: 'p-5 space-y-3' },
+                  h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.what),
+                  h('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded-xl' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-800 mb-1' }, '🎯 Best for you if...'),
+                    h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, picked.matchFor)
+                  ),
+                  // Where-to-start CTA — make the URL feel like an actual link
+                  h('a', {
+                    href: picked.url.indexOf('http') === 0 ? picked.url : 'https://' + picked.url,
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                    className: 'flex items-center justify-between gap-3 p-3 rounded-xl border-2 border-sky-400 hover:border-sky-600 hover:bg-sky-50 transition focus:outline-none focus:ring-4 ring-sky-500/40',
+                    style: { textDecoration: 'none', background: 'linear-gradient(90deg, #f0f9ff 0%, #ffffff 100%)' }
+                  },
+                    h('div', { className: 'flex items-center gap-2 min-w-0 flex-1' },
+                      h('span', { 'aria-hidden': true, className: 'text-xl flex-shrink-0' }, '🔗'),
+                      h('div', { className: 'min-w-0 flex-1' },
+                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-sky-800' }, 'Visit project'),
+                        h('div', { className: 'text-sm font-mono text-slate-800 break-all' }, picked.url)
+                      )
+                    ),
+                    h('span', { 'aria-hidden': true, className: 'text-sm font-bold text-sky-700 flex-shrink-0' }, 'Open ↗')
+                  ),
+                  h('p', { className: 'text-xs text-slate-600 italic' }, '📚 ' + picked.citation)
+                )
               )
             ),
             // ─── Match Quiz ───
