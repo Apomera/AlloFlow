@@ -3008,18 +3008,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 });
               })
             ),
-            // Detail card for picked hotspot
-            picked && h('div', { className: 'bg-white rounded-2xl border-2 border-sky-400 shadow p-5', 'aria-live': 'polite' },
-              h('h2', { className: 'text-xl font-black text-slate-800 mb-2' }, picked.label),
-              h('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded-lg mb-2' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '👁 What it looks like'),
-                h('p', { className: 'text-sm text-slate-800' }, picked.what)
-              ),
-              h('div', { className: 'p-3 bg-blue-50 border border-blue-200 rounded-lg' },
-                h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, '🎯 Why it matters for ID'),
-                h('p', { className: 'text-sm text-slate-800' }, picked.why)
-              )
-            ),
+            // Detail card for picked hotspot — specimen-card layout with zoom inset
+            picked && (function() {
+              // Compute a zoomed-in viewBox centered on this hotspot.
+              // Hotspot has x,y in 320x240 space and a radius r.
+              var zoomSize = Math.max(60, picked.r * 4.5);
+              var cx = Math.max(zoomSize / 2, Math.min(320 - zoomSize / 2, picked.x));
+              var cy = Math.max(zoomSize / 2, Math.min(240 - zoomSize / 2, picked.y));
+              var zoomVB = (cx - zoomSize / 2) + ' ' + (cy - zoomSize / 2) + ' ' + zoomSize + ' ' + zoomSize;
+              var totalHotspots = fm.hotspots.length;
+              var visitedNum = visitedCount; // closure variable — count includes picked
+              return h('div', { className: 'bg-white rounded-2xl border-2 border-sky-400 shadow-lg overflow-hidden', 'aria-live': 'polite' },
+                // ── Hero band: zoom inset + name + progress ──
+                h('div', { className: 'p-4 bg-gradient-to-br from-sky-100 via-cyan-50 to-emerald-50 border-b-2 border-sky-300 flex items-start gap-4 flex-wrap' },
+                  // Zoom inset showing this hotspot magnified
+                  h('div', {
+                    className: 'flex-shrink-0',
+                    style: {
+                      width: 100, height: 100, borderRadius: '50%',
+                      background: '#ffffff',
+                      border: '4px solid #0284c7',
+                      boxShadow: '0 0 0 5px rgba(2,132,199,0.18), 0 6px 14px rgba(0,0,0,0.18)',
+                      overflow: 'hidden',
+                      position: 'relative'
+                    }
+                  },
+                    h('svg', {
+                      viewBox: zoomVB,
+                      width: '100%', height: '100%',
+                      preserveAspectRatio: 'xMidYMid slice',
+                      role: 'img', 'aria-label': 'Zoomed view of ' + picked.label + ' on the chickadee'
+                    },
+                      fm.bigSvg(h),
+                      // Highlight ring on the hotspot inside the zoom
+                      h('circle', {
+                        cx: picked.x, cy: picked.y, r: picked.r,
+                        fill: 'none', stroke: '#0284c7', strokeWidth: 2,
+                        opacity: 0.85
+                      }),
+                      // Subtle inner glow ring
+                      h('circle', {
+                        cx: picked.x, cy: picked.y, r: picked.r * 0.6,
+                        fill: 'none', stroke: '#fbbf24', strokeWidth: 1,
+                        opacity: 0.5,
+                        strokeDasharray: '2,2'
+                      })
+                    ),
+                    // Magnifying-glass icon overlay (top-left)
+                    h('div', {
+                      'aria-hidden': 'true',
+                      style: {
+                        position: 'absolute', top: -4, right: -4,
+                        width: 28, height: 28, borderRadius: '50%',
+                        background: '#fbbf24',
+                        border: '2px solid #92400e',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: 14, boxShadow: '0 2px 4px rgba(0,0,0,0.18)'
+                      }
+                    }, '🔍')
+                  ),
+                  // Title + progress
+                  h('div', { className: 'flex-1 min-w-0', style: { paddingTop: 4 } },
+                    h('div', {
+                      style: {
+                        fontSize: 10, fontWeight: 800, letterSpacing: '0.08em',
+                        textTransform: 'uppercase', color: '#0c4a6e', marginBottom: 4
+                      }
+                    }, '🪶 Field mark detail'),
+                    h('h2', {
+                      className: 'text-2xl font-black text-slate-800',
+                      style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.1 }
+                    }, picked.label),
+                    h('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
+                      h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300' },
+                        '✓ Explored'),
+                      h('span', { className: 'text-[11px] text-slate-700 font-mono' },
+                        visitedNum + ' / ' + totalHotspots + ' field marks visited')
+                    ),
+                    // Mini progress bar
+                    h('div', { className: 'mt-1.5 h-1.5 bg-slate-200 rounded-full overflow-hidden', style: { maxWidth: 220 }, 'aria-hidden': 'true' },
+                      h('div', { className: 'h-full bg-emerald-500',
+                        style: { width: Math.round((visitedNum / totalHotspots) * 100) + '%', borderRadius: '999px' } })
+                    )
+                  )
+                ),
+                // ── Body: what it looks like + why it matters ──
+                h('div', { className: 'p-5 space-y-3' },
+                  h('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded-lg' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '👁 What it looks like'),
+                    h('p', { className: 'text-sm text-slate-800' }, picked.what)
+                  ),
+                  h('div', { className: 'p-3 bg-blue-50 border border-blue-200 rounded-lg' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-blue-900 mb-1' }, '🎯 Why it matters for ID'),
+                    h('p', { className: 'text-sm text-slate-800' }, picked.why)
+                  )
+                )
+              );
+            })(),
             // Hotspot list (keyboard-navigable + secondary access)
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
               h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'All field marks (keyboard list)'),
