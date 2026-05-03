@@ -4114,14 +4114,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 var wrongPicks = pool.filter(function(s) { return picks[s] && hab.belong.indexOf(s) === -1; }).length;
                 var pickedTotal = Object.keys(picks).length;
 
-                return h('div', { className: 'bg-white rounded-2xl border-2 border-lime-300 shadow p-5 space-y-4' },
+                // Compute reveal-time score
+                var missedCount = revealed ? hab.belong.filter(function(s) { return !picks[s]; }).length : 0;
+                var revealPct = revealed ? Math.round((correctPicks / hab.belong.length) * 100) : 0;
+                var revealTier = revealPct === 100 && wrongPicks === 0 ? 'perfect' : revealPct >= 70 ? 'strong' : 'learning';
+                var revealColor = revealTier === 'perfect' ? '#d97706' : revealTier === 'strong' ? '#16a34a' : '#0ea5e9';
+                var revealHero = revealTier === 'perfect' ? '🏆' : revealTier === 'strong' ? '🎯' : '🪶';
+                var revealMsg = revealTier === 'perfect' ? 'Perfect — every belong-here species picked, no wrong picks.' :
+                                revealTier === 'strong' ? 'Strong reasoning. The misses are the worth-reviewing edges.' :
+                                'Open the I-Spy habitat panel and read the habitat description, then try again.';
+                return h('div', { className: 'bg-white rounded-2xl border-2 border-lime-300 shadow overflow-hidden' },
+                  // ── Reveal header (when revealed) — score donut + tier banner ──
+                  revealed && h('div', {
+                    className: 'p-4 flex items-start gap-4 flex-wrap border-b-2',
+                    style: {
+                      background: 'linear-gradient(135deg, ' + revealColor + '20 0%, #ffffff 100%)',
+                      borderColor: revealColor
+                    }
+                  },
+                    // Score donut
+                    (function() {
+                      var rad = 32, circ = 2 * Math.PI * rad;
+                      var dashOff = circ - (revealPct / 100) * circ;
+                      return h('div', { className: 'relative flex-shrink-0', style: { width: 92, height: 92 } },
+                        h('svg', { viewBox: '0 0 100 100', width: 92, height: 92, 'aria-label': 'Score: ' + correctPicks + ' of ' + hab.belong.length },
+                          h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: '#e5e7eb', strokeWidth: 9 }),
+                          h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: revealColor, strokeWidth: 9,
+                            strokeLinecap: 'round',
+                            strokeDasharray: circ,
+                            strokeDashoffset: dashOff,
+                            transform: 'rotate(-90 50 50)' })
+                        ),
+                        h('div', {
+                          style: {
+                            position: 'absolute', inset: 0,
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                          }
+                        },
+                          h('div', { style: { fontSize: 22, fontWeight: 900, color: revealColor, lineHeight: 1 } }, revealPct + '%'),
+                          h('div', { className: 'text-[9px] font-bold uppercase tracking-wider text-slate-700' },
+                            correctPicks + ' / ' + hab.belong.length)
+                        )
+                      );
+                    })(),
+                    // Tier message
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                        h('span', { className: 'text-2xl', 'aria-hidden': true }, revealHero),
+                        h('span', { className: 'text-base font-black', style: { color: revealColor } },
+                          revealTier === 'perfect' ? 'Perfect run' : revealTier === 'strong' ? 'Solid reasoning' : 'Worth re-trying')
+                      ),
+                      h('p', { className: 'text-sm text-slate-800 leading-snug mb-2' }, revealMsg),
+                      // Tally chips
+                      h('div', { className: 'flex flex-wrap gap-1.5 text-xs font-bold' },
+                        h('span', { className: 'px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-300' },
+                          '✓ ' + correctPicks + ' correct'),
+                        wrongPicks > 0 && h('span', { className: 'px-2 py-0.5 rounded-full bg-rose-100 text-rose-900 border border-rose-300' },
+                          '✗ ' + wrongPicks + ' wrong'),
+                        missedCount > 0 && h('span', { className: 'px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300' },
+                          '⊘ ' + missedCount + ' missed')
+                      )
+                    )
+                  ),
+                  // ── Body ──
+                  h('div', { className: 'p-5 space-y-4' },
                   h('h3', { className: 'text-xl font-black text-slate-800' },
                     hab.icon + ' ' + hab.label,
                     h('span', { className: 'ml-2 text-sm font-normal text-slate-700' }, '(pick all the species you\'d find here)')
                   ),
-                  h('p', { className: 'text-xs text-slate-700' },
-                    revealed ? ('Correct picks: ' + correctPicks + ' of ' + hab.belong.length + ' · Wrong picks: ' + wrongPicks) :
-                    ('Selected: ' + pickedTotal + ' (target: ' + hab.belong.length + ')')
+                  !revealed && h('p', { className: 'text-xs text-slate-700' },
+                    'Selected: ' + pickedTotal + ' (target: ' + hab.belong.length + ')'
                   ),
                   h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                     pool.map(function(species) {
@@ -4171,6 +4233,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     h('span', null, '⊘ correct (you missed)  '),
                     h('span', null, '✗ incorrect (you picked)')
                   )
+                  ) // close body p-5 space-y-4
                 );
               })()
             ),
@@ -6987,6 +7050,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           );
         }
         if (step === 'notebook') {
+          // ── Compute stats for populated notebooks (≥ 2 entries) ──
+          var nbStats = (function() {
+            if (notebook.length < 2) return null;
+            var counts = {};
+            var locCounts = {};
+            var totalBirds = 0;
+            var dates = [];
+            notebook.forEach(function(e) {
+              var sp = e.speciesName || 'Unidentified';
+              counts[sp] = (counts[sp] || 0) + 1;
+              var loc = (e.location || '').trim();
+              if (loc) locCounts[loc] = (locCounts[loc] || 0) + 1;
+              totalBirds += (parseInt(e.count, 10) || 1);
+              if (e.date) dates.push(e.date);
+            });
+            // Top species + top location
+            var topSpecies = Object.keys(counts).sort(function(a, b) { return counts[b] - counts[a]; }).slice(0, 3);
+            var topLocation = Object.keys(locCounts).sort(function(a, b) { return locCounts[b] - locCounts[a]; })[0];
+            dates.sort();
+            return {
+              totalEntries: notebook.length,
+              uniqueSpecies: Object.keys(counts).length,
+              totalBirds: totalBirds,
+              topSpecies: topSpecies,
+              topSpeciesCount: counts[topSpecies[0]],
+              topLocation: topLocation,
+              topLocationCount: locCounts[topLocation],
+              firstDate: dates[0],
+              lastDate: dates[dates.length - 1]
+            };
+          })();
           return h('div', { className: 'min-h-screen bg-slate-50' },
             h(BackBar, { icon: '📓', title: 'My Field Notebook' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
@@ -6996,6 +7090,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 h('button', { onClick: startOver,
                   className: 'px-4 py-2 rounded-xl bg-teal-700 text-white text-sm font-bold hover:bg-teal-800 focus:outline-none focus:ring-2 ring-teal-500/40'
                 }, '+ New observation')
+              ),
+              // ── Stats summary (only if ≥ 2 entries, since with 1 entry nothing meaningful) ──
+              nbStats && h('div', { className: 'bg-gradient-to-br from-teal-50 via-emerald-50 to-amber-50 rounded-2xl border-2 border-teal-300 shadow-lg overflow-hidden' },
+                h('div', { className: 'px-5 py-3 border-b-2 border-teal-300 flex items-center justify-between flex-wrap gap-2', style: { background: 'rgba(20,184,166,0.08)' } },
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-xl' }, '📊'),
+                    h('div', { className: 'text-base font-black text-teal-900' }, 'Your birding portfolio'),
+                  ),
+                  h('div', { className: 'text-xs italic text-slate-700' },
+                    nbStats.firstDate === nbStats.lastDate
+                      ? ('Logged ' + nbStats.firstDate)
+                      : (nbStats.firstDate + ' — ' + nbStats.lastDate)
+                  )
+                ),
+                // Big-stat row
+                h('div', { className: 'grid grid-cols-3 gap-px', style: { background: '#cbd5e1' } },
+                  // Total entries
+                  h('div', { className: 'p-3 text-center', style: { background: '#ffffff' } },
+                    h('div', { style: { fontSize: 28, fontWeight: 900, color: '#0f766e', lineHeight: 1 } }, nbStats.totalEntries),
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mt-1' }, 'Observations')
+                  ),
+                  // Unique species
+                  h('div', { className: 'p-3 text-center', style: { background: '#ffffff' } },
+                    h('div', { style: { fontSize: 28, fontWeight: 900, color: '#059669', lineHeight: 1 } }, nbStats.uniqueSpecies),
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mt-1' }, 'Unique species')
+                  ),
+                  // Total birds counted
+                  h('div', { className: 'p-3 text-center', style: { background: '#ffffff' } },
+                    h('div', { style: { fontSize: 28, fontWeight: 900, color: '#d97706', lineHeight: 1 } }, nbStats.totalBirds),
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mt-1' }, 'Birds tallied')
+                  )
+                ),
+                // Highlights row
+                h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-2 gap-2 bg-white' },
+                  h('div', { className: 'p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg flex items-start gap-2' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-base flex-shrink-0' }, '🥇'),
+                    h('div', { className: 'min-w-0 flex-1' },
+                      h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-800' }, 'Most-seen species'),
+                      h('div', { className: 'text-sm font-black text-slate-800 truncate' }, nbStats.topSpecies[0] || '—'),
+                      h('div', { className: 'text-[11px] text-slate-700' },
+                        nbStats.topSpeciesCount + ' sighting' + (nbStats.topSpeciesCount === 1 ? '' : 's'),
+                        nbStats.topSpecies.length > 1 ? (' · also ' + nbStats.topSpecies.slice(1).join(', ')) : ''
+                      )
+                    )
+                  ),
+                  nbStats.topLocation && h('div', { className: 'p-2.5 bg-sky-50 border border-sky-200 rounded-lg flex items-start gap-2' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-base flex-shrink-0' }, '📍'),
+                    h('div', { className: 'min-w-0 flex-1' },
+                      h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-sky-800' }, 'Most-visited spot'),
+                      h('div', { className: 'text-sm font-black text-slate-800 truncate' }, nbStats.topLocation),
+                      h('div', { className: 'text-[11px] text-slate-700' },
+                        nbStats.topLocationCount + ' visit' + (nbStats.topLocationCount === 1 ? '' : 's'))
+                    )
+                  )
+                )
               ),
               notebook.length === 0
                 ? h('div', { className: 'bg-gradient-to-br from-teal-50 via-emerald-50 to-sky-50 rounded-2xl border-2 border-dashed border-teal-300 p-10 text-center relative overflow-hidden' },
