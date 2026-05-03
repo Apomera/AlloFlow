@@ -3431,6 +3431,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // here is the mnemonic — once you have "drink-your-tea" etched in
       // your head, towhees become unmissable in the field.
       // ─────────────────────────────────────────────────────
+      // Visual rhythm strip from a mnemonic string. Splits on whitespace into
+      // phrases, then hyphens into syllables, and assigns each syllable a bar
+      // height/width based on emphasis cues (ALL-CAPS, repeated vowels, trailing
+      // punctuation). Helps students see the song's cadence + emphasis pattern,
+      // not just read the words.
+      function songRhythmStrip(mnemonic, color) {
+        if (!mnemonic) return null;
+        var clean = mnemonic.replace(/^["']|["']$/g, '').replace(/[()]/g, '');
+        var phrases = clean.split(/\s+/).filter(Boolean);
+        var bars = [];
+        var x = 0;
+        var beatColor = color || '#7c3aed';
+        phrases.forEach(function(phrase, pi) {
+          var syllables = phrase.split('-').filter(Boolean);
+          syllables.forEach(function(rawSyl) {
+            var letters = rawSyl.replace(/[^a-zA-Z]/g, '');
+            if (!letters) return;
+            var isUpper = letters === letters.toUpperCase() && letters.length > 1;
+            var hasRepeatedVowel = /(EE|OO|AA|II|UU|ee|oo){2,}|EE{1,}!|OO{1,}!/i.test(rawSyl) || /[A-Z]{4,}/.test(letters);
+            var hasBang = /[!]+/.test(rawSyl);
+            var hasQuestion = /[?]+/.test(rawSyl);
+            var height = 8;
+            if (isUpper) height += 4;
+            if (hasRepeatedVowel) height += 6;
+            if (hasBang) height += 4;
+            // Width tracks syllable length
+            var width = Math.max(3, Math.min(10, letters.length));
+            bars.push({
+              x: x, w: width, h: height,
+              emph: isUpper || hasRepeatedVowel || hasBang,
+              question: hasQuestion
+            });
+            x += width + 2;
+          });
+          // Phrase gap (between distinct phrases)
+          x += 6;
+        });
+        var totalW = Math.max(60, x);
+        return h('svg', {
+          viewBox: '0 0 ' + totalW + ' 26',
+          width: '100%',
+          style: { maxWidth: totalW + 'px', height: 22, display: 'block' },
+          'aria-hidden': 'true'
+        },
+          // Baseline
+          h('line', { x1: 0, y1: 24, x2: totalW, y2: 24, stroke: '#cbd5e1', strokeWidth: 0.6 }),
+          // Bars (one per syllable)
+          bars.map(function(b, i) {
+            return h('rect', { key: 'b' + i,
+              x: b.x, y: 24 - b.h, width: b.w, height: b.h,
+              rx: 1.2,
+              fill: beatColor,
+              opacity: b.emph ? 0.95 : 0.55
+            });
+          }),
+          // Trailing question-mark hint (if last syllable is a question)
+          bars.length > 0 && bars[bars.length - 1].question && h('text', {
+            x: bars[bars.length - 1].x + bars[bars.length - 1].w + 3, y: 18,
+            fontSize: 9, fontWeight: 'bold', fill: beatColor
+          }, '?')
+        );
+      }
       function BirdCallTrainer() {
         var mode_state = useState('reference');
         var mode = mode_state[0], setMode = mode_state[1];
@@ -3540,7 +3602,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     ),
                     h('div', { className: 'p-3 bg-violet-50 border border-violet-200 rounded-lg mb-2' },
                       h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' }, '🎵 Mnemonic'),
-                      h('p', { className: 'text-sm text-slate-800 italic' }, c.mnemonic)
+                      h('p', { className: 'text-sm text-slate-800 italic mb-1.5' }, c.mnemonic),
+                      // Rhythm strip — visual cadence
+                      h('div', { className: 'flex items-end gap-2 mt-1.5 pt-1.5 border-t border-violet-200' },
+                        h('span', { className: 'text-[9px] font-bold uppercase tracking-wider text-violet-700 flex-shrink-0', style: { lineHeight: '22px' } }, 'Rhythm'),
+                        h('div', { style: { flex: 1, minWidth: 0 } }, songRhythmStrip(c.mnemonic, '#7c3aed'))
+                      )
                     ),
                     h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' },
                       h('strong', null, 'What it sounds like: '), c.description),
@@ -3568,7 +3635,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 return h('div', { className: 'bg-white rounded-2xl border-2 border-violet-300 shadow p-5 space-y-4' },
                   h('div', { className: 'p-4 bg-slate-100 border-l-4 border-violet-500 rounded-lg' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700 mb-1' }, 'Match this call to the species'),
-                    h('p', { className: 'text-base text-slate-800 italic mb-1' }, current.mnemonic),
+                    h('p', { className: 'text-base text-slate-800 italic mb-2' }, current.mnemonic),
+                    // Rhythm strip — gives a second visual cue beyond just the words
+                    h('div', { className: 'p-2 bg-white border border-violet-300 rounded-lg mb-2' },
+                      h('div', { className: 'text-[9px] font-bold uppercase tracking-wider text-violet-700 mb-1' }, '🎵 Rhythm pattern'),
+                      songRhythmStrip(current.mnemonic, '#7c3aed')
+                    ),
                     h('p', { className: 'text-sm text-slate-700' }, current.description),
                     h('p', { className: 'text-xs text-slate-700 mt-1' }, h('strong', null, 'Habitat: '), current.habitat)
                   ),
@@ -3607,19 +3679,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   )
                 );
               })(),
-              quizComplete && h('div', { className: 'bg-white rounded-2xl border-2 border-emerald-400 shadow p-6 text-center' },
-                h('div', { className: 'text-5xl mb-2' }, quizScore === quizPool.length ? '🏆' : quizScore >= quizPool.length * 0.7 ? '🎉' : '🪶'),
-                h('h2', { className: 'text-xl font-black text-slate-800 mb-2' },
-                  'Quiz complete · ' + quizScore + ' / ' + quizPool.length),
-                h('p', { className: 'text-sm text-slate-700 mb-3' },
-                  quizScore === quizPool.length ? 'Perfect score. You\'re ready for the field.' :
-                  quizScore >= quizPool.length * 0.7 ? 'Strong work. The mnemonics that tripped you up — review those cards.' :
-                  'Keep going. Every birder starts here. The Mnemonic Reference is the next stop.'),
-                h('button', {
-                  onClick: restartQuiz,
-                  className: 'px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition focus:outline-none focus:ring-4 ring-violet-500/40'
-                }, '🔄 New quiz with fresh questions')
-              )
+              quizComplete && (function() {
+                var pct = Math.round((quizScore / quizPool.length) * 100);
+                var tier = quizScore === quizPool.length ? 'perfect' : pct >= 70 ? 'strong' : 'learning';
+                var tierColor = tier === 'perfect' ? '#d97706' : tier === 'strong' ? '#16a34a' : '#7c3aed';
+                var tierBg = tier === 'perfect' ? 'from-amber-50 to-yellow-100' : tier === 'strong' ? 'from-emerald-50 to-teal-100' : 'from-violet-50 to-indigo-100';
+                var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎯' : '🪶';
+                var tierTitle = tier === 'perfect' ? 'Perfect score!' : tier === 'strong' ? 'Strong birding ear' : 'You\'re building it';
+                var tierMsg = tier === 'perfect' ? 'You\'re ready for the field. Open Merlin Bird ID outside and identify what you hear in real time.' :
+                              tier === 'strong' ? 'Strong work. The ones that tripped you up — review those cards above.' :
+                              'Keep going. Every birder starts here. Re-read the Mnemonic Reference, then re-quiz.';
+                // Score donut math
+                var rad = 36, circumference = 2 * Math.PI * rad;
+                var dashOffset = circumference - (pct / 100) * circumference;
+                // Per-question results (which were right/wrong)
+                var results = quizPool.map(function(q, i) {
+                  return { species: q.species, correct: quizPicks[i] === q.species, picked: quizPicks[i] };
+                });
+                return h('div', { className: 'rounded-2xl shadow-lg overflow-hidden border-2 bg-gradient-to-br ' + tierBg, style: { borderColor: tierColor } },
+                  // Hero — score donut + tier message
+                  h('div', { className: 'p-6 flex flex-col md:flex-row items-center gap-5' },
+                    // Score donut
+                    h('div', { className: 'relative flex-shrink-0', style: { width: 110, height: 110 } },
+                      h('svg', { viewBox: '0 0 100 100', width: 110, height: 110, 'aria-label': 'Score: ' + quizScore + ' out of ' + quizPool.length },
+                        h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: '#e5e7eb', strokeWidth: 10 }),
+                        h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 10,
+                          strokeLinecap: 'round',
+                          strokeDasharray: circumference,
+                          strokeDashoffset: dashOffset,
+                          transform: 'rotate(-90 50 50)' })
+                      ),
+                      h('div', {
+                        style: {
+                          position: 'absolute', inset: 0,
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
+                        }
+                      },
+                        h('div', { style: { fontSize: 28, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                        h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, quizScore + ' / ' + quizPool.length)
+                      )
+                    ),
+                    // Tier message
+                    h('div', { className: 'flex-1 text-center md:text-left' },
+                      h('div', { className: 'text-4xl mb-1', 'aria-hidden': true }, tierIcon),
+                      h('h2', { className: 'text-2xl font-black mb-1', style: { color: tierColor } }, tierTitle),
+                      h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, tierMsg)
+                    )
+                  ),
+                  // Per-question result strip
+                  h('div', { className: 'px-6 pb-2' },
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Your answers'),
+                    h('div', { className: 'flex flex-wrap gap-1' },
+                      results.map(function(r, i) {
+                        return h('div', { key: i,
+                          title: 'Q' + (i + 1) + ': ' + r.species + (r.correct ? ' ✓' : ' (you said: ' + (r.picked || 'no answer') + ')'),
+                          style: {
+                            width: 14, height: 14, borderRadius: 3,
+                            background: r.correct ? '#10b981' : '#f43f5e',
+                            border: '1.5px solid ' + (r.correct ? '#047857' : '#be123c'),
+                            boxShadow: '0 1px 1px rgba(0,0,0,0.08)'
+                          },
+                          'aria-label': 'Q' + (i + 1) + (r.correct ? ' correct' : ' incorrect')
+                        });
+                      })
+                    )
+                  ),
+                  // Action row
+                  h('div', { className: 'p-4 bg-white/70 border-t flex gap-2 flex-wrap justify-center', style: { borderColor: tierColor + '40' } },
+                    h('button', {
+                      onClick: restartQuiz,
+                      className: 'px-5 py-2.5 rounded-xl bg-violet-600 text-white font-bold hover:bg-violet-700 transition focus:outline-none focus:ring-4 ring-violet-500/40'
+                    }, '🔄 New quiz with fresh questions'),
+                    h('button', {
+                      onClick: function() { setMode('reference'); announce('Reference mode'); },
+                      className: 'px-5 py-2.5 rounded-xl bg-white text-violet-800 border-2 border-violet-400 font-bold hover:border-violet-600 transition focus:outline-none focus:ring-4 ring-violet-500/40'
+                    }, '📖 Review the mnemonics')
+                  )
+                );
+              })()
             ),
             h(TeacherNotes, {
               standards: ['NGSS HS-LS4-2 (Adaptation evidence)', 'NGSS MS-LS1-4 (Behavioral roles in survival)', 'CTE Family & Consumer Sciences (observation skills)'],

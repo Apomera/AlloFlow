@@ -2205,7 +2205,7 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
                           <option value="english">{t('languages.english')}</option>
                       </select>
                   )}
-                  <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-400 border border-indigo-500">
+                  <div className="bg-indigo-800 px-4 py-1 rounded-full font-bold text-yellow-200 border border-indigo-500">
                       {t('common.score')}: {score}
                   </div>
                   <GameThemeToggle />
@@ -2222,12 +2222,12 @@ const VennGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameCo
           <div className="flex-grow relative bg-slate-100 overflow-hidden flex flex-col items-center justify-center">
               <div className="absolute inset-0 bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:20px_20px] opacity-40 pointer-events-none"></div>
               {isWon && (
-                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white p-8 rounded-3xl text-center shadow-2xl animate-bounce">
-                        <h2 className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="venn-victory-title">
+                    <div className={`bg-white p-8 rounded-3xl text-center shadow-2xl ${!useReducedMotion() ? 'animate-bounce' : ''}`}>
+                        <h2 id="venn-victory-title" className="text-4xl font-black text-indigo-600 mb-2">{t('concept_map.venn.victory_title')}</h2>
                         <p className="text-slate-600">{t('concept_map.venn.victory_desc')}</p>
                     </div>
-                    <ConfettiExplosion />
+                    {!useReducedMotion() && <ConfettiExplosion />}
                 </div>
               )}
               {lastHint && (
