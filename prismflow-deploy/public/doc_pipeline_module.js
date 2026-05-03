@@ -12241,83 +12241,97 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                const shared = branches[2] || { title: 'Shared', items: [] };
                const sharedCount = (shared.items || []).length;
                const sharedFontSize = sharedCount > 6 ? '0.78em' : sharedCount > 4 ? '0.85em' : '0.95em';
-               const sharedItemPad = sharedCount > 6 ? '3px 8px' : '5px 10px';
-               const sharedItemMargin = sharedCount > 6 ? '4px' : '6px';
-               const renderList = (items, items_en, limit = 8, bg = 'rgba(255,255,255,0.6)', overrides = {}) => items.slice(0, limit).map((it, i) => {
-                   const fs = overrides.fontSize || '0.9em';
-                   const pad = overrides.padding || '6px 12px';
-                   const mb = overrides.marginBottom || '8px';
-                   return `<li style="margin-bottom: ${mb}; font-size: ${fs}; line-height: 1.35; background: ${bg}; padding: ${pad}; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                       <span style="font-weight: 600;">${it}</span> ${items_en?.[i] ? `<br><span style="font-size:0.85em;opacity:0.85;font-style:italic;font-weight:normal;">(${items_en[i]})</span>` : ''}
+               const sharedItemPad = sharedCount > 6 ? '4px 10px' : '6px 12px';
+               const sharedItemMargin = sharedCount > 6 ? '5px' : '7px';
+               // Color-coded item card per circle: light tint background + colored left border
+               // so each item visually belongs to its circle even when scanned from a distance.
+               const renderItem = (it, en, opts) => `<li style="margin-bottom: ${opts.mb}; font-size: ${opts.fs}; line-height: 1.4; background: ${opts.bg}; color: ${opts.text}; padding: ${opts.pad}; border-radius: 10px; border-left: 4px solid ${opts.accent}; box-shadow: 0 1px 2px rgba(0,0,0,0.04); text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                       <span style="font-weight: 600;">${it}</span>${en ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;font-weight:normal;">(${en})</span>` : ''}
                     </li>`;
-               }).join('');
+               const renderListA = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#fff1f2', text: '#881337', accent: '#fb7185' })).join('');
+               const renderListB = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#eff6ff', text: '#1e3a8a', accent: '#60a5fa' })).join('');
+               const renderListShared = (items, items_en, limit = 5) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: sharedFontSize, pad: sharedItemPad, mb: sharedItemMargin, bg: '#f5f3ff', text: '#5b21b6', accent: '#a78bfa' })).join('');
                // Overflow list: extra shared items beyond the diagram fit
                const sharedOverflow = (shared.items || []).slice(5);
                const sharedOverflowHtml = sharedOverflow.length > 0
-                 ? `<div class="venn-overflow" style="max-width: 720px; margin: 16px auto 0; padding: 12px 16px; background: #faf5ff; border: 2px solid #e9d5ff; border-radius: 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid;">
-                      <div style="font-size: 0.78em; font-weight: 800; color: #6b21a8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; text-align: center;">Shared (continued)</div>
-                      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
-                        ${sharedOverflow.map(it => `<li style="font-size: 0.85em; font-weight: 600; color: #581c87; background: white; padding: 4px 10px; border-radius: 999px; border: 1px solid #d8b4fe;">${it}</li>`).join('')}
+                 ? `<div class="venn-overflow" style="max-width: 720px; margin: 18px auto 0; padding: 14px 18px; background: linear-gradient(to bottom, #faf5ff, #f5f3ff); border: 2px solid #ddd6fe; border-radius: 14px; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid; box-shadow: 0 2px 6px rgba(124, 58, 237, 0.08);">
+                      <div style="font-size: 0.8em; font-weight: 800; color: #6d28d9; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <span style="display: inline-block; width: 18px; height: 2px; background: #c4b5fd;"></span>
+                        Shared (continued)
+                        <span style="display: inline-block; width: 18px; height: 2px; background: #c4b5fd;"></span>
+                      </div>
+                      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 7px; justify-content: center;">
+                        ${sharedOverflow.map(it => `<li style="font-size: 0.85em; font-weight: 600; color: #5b21b6; background: white; padding: 5px 12px; border-radius: 999px; border: 1.5px solid #c4b5fd; box-shadow: 0 1px 2px rgba(124,58,237,0.06);">${it}</li>`).join('')}
                       </ul>
                     </div>`
                  : '';
                innerContent = `
                   <style>
-                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .venn-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 32px 24px; border-radius: 16px; }
                     .venn-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                     @media print {
-                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
+                      .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 16px; }
                       .venn-print-wrapper [data-venn-circle] { box-shadow: none !important; }
                       .venn-print-wrapper li { box-shadow: none !important; }
                       .venn-print-wrapper h3, .venn-print-wrapper h4 { color: #000 !important; }
                     }
                   </style>
                   <div class="venn-print-wrapper">
-                  <div style="text-align:center; margin-bottom: 40px;">
-                      <h3 style="margin:0; font-size: 1.8em; color: #2c3e50; font-weight: 800;">${main}</h3>
-                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:5px;">(${main_en})</div>` : ''}
+                  <div style="text-align:center; margin-bottom: 32px;">
+                      <h3 style="margin:0; font-size: 1.9em; color: #1e293b; font-weight: 800; letter-spacing: -0.02em;">${main}</h3>
+                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
+                      <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;">
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fb7185;"></span>
+                        <span style="font-size: 0.7em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
+                        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
+                      </div>
                   </div>
                   <div role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
                       <!-- Set A (Left Circle) -->
                       <div style="position: absolute; top: 0; left: 0; width: 440px;">
-                          <!-- Header Outside Circle -->
-                          <div style="text-align: center; margin-bottom: 12px; padding-right: 120px;">
-                              <h4 style="margin: 0; color: #9f1239; font-size: 1.15em; font-weight: 800; background: white; display: inline-block; padding: 6px 20px; border-radius: 24px; border: 2px solid #fecaca; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative; z-index: 20;">
+                          <!-- Header pill -->
+                          <div style="text-align: center; margin-bottom: 14px; padding-right: 120px;">
+                              <h4 style="margin: 0; color: #9f1239; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #fda4af; box-shadow: 0 4px 10px -2px rgba(244,63,94,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
                                   ${setA.title}
                               </h4>
-                              ${setA.title_en ? `<div style="font-size:0.85em; color:#991b1b; margin-top:4px;">(${setA.title_en})</div>` : ''}
+                              ${setA.title_en ? `<div style="font-size:0.85em; color:#991b1b; margin-top:6px; font-style: italic;">(${setA.title_en})</div>` : ''}
                           </div>
-                          <!-- Circle Body -->
-                          <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(254, 226, 226, 0.7); border: 4px solid #fca5a5; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(254, 226, 226, 0.4); z-index: 1;">
-                              <ul style="list-style: none; padding: 0; margin: 0; color: #881337; width: 100%;">
-                                  ${renderList(setA.items, setA.items_en, 8, 'rgba(255,255,255,0.8)')}
+                          <!-- Circle Body — solid fill so backdrop never bleeds through; radial gradient adds soft depth -->
+                          <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 30% 35%, #ffe4e6 0%, #fecdd3 100%); border: 4px solid #fb7185; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(244,63,94,0.28); z-index: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                              <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                                  ${renderListA(setA.items, setA.items_en, 8)}
                               </ul>
                           </div>
                       </div>
                       <!-- Set B (Right Circle) -->
                       <div style="position: absolute; top: 0; right: 0; width: 440px;">
-                          <!-- Header Outside Circle -->
-                          <div style="text-align: center; margin-bottom: 12px; padding-left: 120px;">
-                              <h4 style="margin: 0; color: #1e40af; font-size: 1.15em; font-weight: 800; background: white; display: inline-block; padding: 6px 20px; border-radius: 24px; border: 2px solid #bfdbfe; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); position: relative; z-index: 20;">
+                          <!-- Header pill -->
+                          <div style="text-align: center; margin-bottom: 14px; padding-left: 120px;">
+                              <h4 style="margin: 0; color: #1e40af; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #93c5fd; box-shadow: 0 4px 10px -2px rgba(59,130,246,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
                                   ${setB.title}
                               </h4>
-                              ${setB.title_en ? `<div style="font-size:0.85em; color:#1e40af; margin-top:4px;">(${setB.title_en})</div>` : ''}
+                              ${setB.title_en ? `<div style="font-size:0.85em; color:#1e40af; margin-top:6px; font-style: italic;">(${setB.title_en})</div>` : ''}
                           </div>
                           <!-- Circle Body -->
-                          <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background-color: rgba(219, 234, 254, 0.7); border: 4px solid #93c5fd; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 10px 25px -5px rgba(219, 234, 254, 0.4); z-index: 2;">
-                              <ul style="list-style: none; padding: 0; margin: 0; color: #1e3a8a; width: 100%;">
-                                  ${renderList(setB.items, setB.items_en, 8, 'rgba(255,255,255,0.8)')}
+                          <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 70% 35%, #dbeafe 0%, #bfdbfe 100%); border: 4px solid #60a5fa; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(59,130,246,0.28); z-index: 2; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                              <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
+                                  ${renderListB(setB.items, setB.items_en, 8)}
                               </ul>
                           </div>
                       </div>
-                      <!-- Shared Region (Absolute Center) -->
-                      <div style="position: absolute; top: 120px; left: 50%; transform: translateX(-50%); width: 160px; text-align: center; z-index: 10;">
-                          <h4 style="font-size: 0.85em; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #6b21a8; margin: 0 0 12px 0; background: white; display: inline-block; padding: 4px 14px; border-radius: 12px; border: 2px solid #e9d5ff; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-                              ${shared.title || 'Shared'}
-                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.8; font-size: 0.9em; text-transform: none; letter-spacing: normal;"> (${shared.title_en})</span>` : ''}
+                      <!-- Shared Region (Absolute Center, in the lens overlap) -->
+                      <div style="position: absolute; top: 90px; left: 50%; transform: translateX(-50%); width: 180px; text-align: center; z-index: 15;">
+                          <!-- Prominent SHARED badge -->
+                          <h4 style="font-size: 0.95em; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #6d28d9; margin: 0 0 14px 0; background: linear-gradient(to bottom, white, #faf5ff); display: inline-block; padding: 7px 18px; border-radius: 999px; border: 2px solid #c4b5fd; box-shadow: 0 4px 10px -2px rgba(124,58,237,0.25); position: relative;">
+                              <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
+                                ${shared.title || 'Shared'}
+                                <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
+                              </span>
+                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.85; font-size: 0.85em; text-transform: none; letter-spacing: normal; color: #6d28d9;"> (${shared.title_en})</span>` : ''}
                           </h4>
-                          <ul style="list-style: none; padding: 0; margin: 0; color: #581c87; font-weight: bold; font-size: ${sharedFontSize};">
-                               ${renderList(shared.items, shared.items_en, 5, 'rgba(255,255,255,0.9)', { fontSize: sharedFontSize, padding: sharedItemPad, marginBottom: sharedItemMargin })}
+                          <ul style="list-style: none; padding: 0; margin: 0;">
+                               ${renderListShared(shared.items, shared.items_en, 5)}
                           </ul>
                       </div>
                   </div>
