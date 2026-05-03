@@ -129,7 +129,8 @@
       pomodorosCompleted: 0,
       reflectionsSubmitted: 0,
       promptsForToday: [],           // array of 3 prompt ids selected at first visit of day
-      quizTokensEarnedToday: 0       // memory-palace quiz tokens (capped at 2/day)
+      quizTokensEarnedToday: 0,      // memory-palace quiz tokens (capped at 2/day)
+      storyWalkTokensEarnedToday: 0  // story-method walk tokens (capped at 1/day)
     },
 
     // ── Pomodoro ──
@@ -170,8 +171,23 @@
       // { id, date: ISO, prompt: string|null, text, topics: [], tokensEarned: 1 }
     ],
 
+    // ── Stories (method-of-loci chain mnemonic) ──
+    // Each story is an ordered sequence of decorations + per-step narrative
+    // text. Walking a completed story (≥3 steps) is a retrieval exercise:
+    // the student sees one step at a time, recalling how it connects to the
+    // next item. Stories are top-level artifacts, not per-decoration content.
+    stories: [
+      // {
+      //   id, title,
+      //   steps: [{ decorationId, narrative }],
+      //   createdAt, updatedAt,
+      //   lastReviewedAt: null|ISO,
+      //   reviewCount: 0
+      // }
+    ],
+
     // ── Active modal (within AlloHaven; NOT the outer Open/Close state) ──
-    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | null
+    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | null
     generateContext: null            // { surface, cellIndex } when generate modal open
   };
 
@@ -1753,6 +1769,11 @@
         };
       } else if (type === 'notes') {
         initialDraft = { type: 'notes', data: { text: '' } };
+      } else if (type === 'image-link') {
+        initialDraft = {
+          type: 'image-link',
+          data: { targetDecorationId: null, association: '', correctCount: 0, missCount: 0 }
+        };
       }
       setDraft(initialDraft);
       setMode('edit');
@@ -1790,6 +1811,25 @@
           return;
         }
         p.onSave(Object.assign({}, draft, { data: { text: text } }));
+      } else if (draft.type === 'image-link') {
+        var targetId = (draft.data && draft.data.targetDecorationId) || null;
+        var assoc = (draft.data && draft.data.association || '').trim();
+        if (!targetId) {
+          alert('Pick a decoration to link to first.');
+          return;
+        }
+        if (!assoc) {
+          alert('Write a short association — what does this remind you of?');
+          return;
+        }
+        var preserved = (existing && existing.type === 'image-link' && existing.data) || {};
+        var cleaned3 = Object.assign({}, draft, { data: {
+          targetDecorationId: targetId,
+          association: assoc,
+          correctCount: preserved.correctCount || 0,
+          missCount:    preserved.missCount    || 0
+        }});
+        p.onSave(cleaned3);
       }
       setMode('view');
     }
@@ -1842,6 +1882,17 @@
           done: false
         });
         setMode('quiz');
+      } else if (existing.type === 'image-link') {
+        // Single-card retrieval. Student wrote the association themselves;
+        // quiz is "do you remember what you connected this to?"
+        setQuiz({
+          type: 'image-link',
+          truth: (existing.data && existing.data.association) || '',
+          guess: '',
+          revealed: false,
+          done: false
+        });
+        setMode('quiz');
       }
     }
 
@@ -1863,7 +1914,8 @@
         { id: 'view',  label: 'View' },
         { id: 'edit',  label: 'Edit' }
       ];
-      // Notes get a Quiz tab only when they contain {cloze} markers
+      // Notes get a Quiz tab only when they contain {cloze} markers.
+      // Flashcards / acronyms / image-links always get one.
       var notesQuizzable = existing.type === 'notes' && hasClozeMarkers(existing);
       if (existing.type !== 'notes' || notesQuizzable) tabs.push({ id: 'quiz', label: 'Quiz' });
       return h('div', {
@@ -1923,11 +1975,25 @@
     }
 
     function renderPickType() {
+      // Image-link is only offered when at least one OTHER decoration exists
+      // — there's no point linking to nothing.
+      var otherDecorations = (p.allDecorations || []).filter(function(d) {
+        return d.id !== decoration.id;
+      });
+      var canImageLink = otherDecorations.length > 0;
       var pickerCards = [
         { type: 'flashcards', icon: '📚', title: 'Flashcards', desc: 'Q&A pairs you study with. Best for vocab, definitions, formulas, key concepts.', mnemonic: 'active recall' },
         { type: 'acronym',    icon: '🔤', title: 'Acronym / list', desc: 'A word where each letter stands for something. Like "ROY G BIV" for rainbow colors.', mnemonic: 'chunking' },
         { type: 'notes',      icon: '📝', title: 'Free notes', desc: 'Plain text — for rhymes, story chains, mind maps, or anything that doesn\'t fit the others.', mnemonic: 'open expression' }
       ];
+      if (canImageLink) {
+        pickerCards.push({
+          type: 'image-link', icon: '🔗',
+          title: 'Image link',
+          desc: 'Connect this decoration to another one with a personal association. Like "this dragon = mitosis" — pictures stick better than words.',
+          mnemonic: 'visual association'
+        });
+      }
       return h('div', null,
         h('p', { style: { fontSize: '13px', color: palette.textDim, lineHeight: '1.55', marginBottom: '14px' } },
           'Attach memory content to your ' + label.toLowerCase() + '. Where you place this decoration in your room becomes a spatial anchor for what you\'re learning — that\'s the method of loci, a 2,400-year-old memory technique.'),
@@ -2043,6 +2109,62 @@
               );
             })
           )
+        );
+      }
+      if (lc.type === 'image-link') {
+        var allDecs = p.allDecorations || [];
+        var targetId = (lc.data && lc.data.targetDecorationId) || null;
+        var target = allDecs.filter(function(d) { return d.id === targetId; })[0] || null;
+        var assoc = (lc.data && lc.data.association) || '';
+        var attempts = ((lc.data && lc.data.correctCount) || 0) + ((lc.data && lc.data.missCount) || 0);
+        var pctCorrect = attempts > 0 ? Math.round(((lc.data.correctCount || 0) / attempts) * 100) : null;
+        return h('div', null,
+          h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+            '🔗 Image link'),
+          // Side-by-side decoration preview with arrow between
+          h('div', {
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '12px', marginBottom: '14px',
+              padding: '14px', background: palette.surface,
+              border: '1px solid ' + palette.border, borderRadius: '10px'
+            }
+          },
+            h('div', { style: { textAlign: 'center', flex: '0 0 90px' } },
+              decoration.imageBase64 ? h('img', {
+                src: decoration.imageBase64, alt: '',
+                style: { width: '90px', height: '90px', objectFit: 'contain', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '8px' }
+              }) : null,
+              h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px' } },
+                decoration.templateLabel || decoration.template || 'this')
+            ),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '20px', color: palette.accent, fontWeight: 800 } }, '→'),
+            h('div', { style: { textAlign: 'center', flex: '0 0 90px' } },
+              target ? h('img', {
+                src: target.imageBase64, alt: '',
+                style: { width: '90px', height: '90px', objectFit: 'contain', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '8px' }
+              }) : h('div', {
+                style: { width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.bg, border: '1px dashed ' + palette.border, borderRadius: '8px', color: palette.textMute, fontSize: '24px' }
+              }, '?'),
+              h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px' } },
+                target ? (target.templateLabel || target.template || 'linked item') : '(removed)')
+            )
+          ),
+          h('div', {
+            style: {
+              padding: '12px 14px',
+              background: palette.surface,
+              borderLeft: '3px solid ' + palette.accent,
+              borderRadius: '0 8px 8px 0',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              color: palette.text,
+              fontStyle: 'italic'
+            }
+          }, '"' + assoc + '"'),
+          attempts > 0 ? h('div', {
+            style: { marginTop: '10px', fontSize: '11px', color: palette.textMute, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }
+          }, 'Recalled correctly ' + (lc.data.correctCount || 0) + ' / ' + attempts + ' times' + (pctCorrect !== null ? ' · ' + pctCorrect + '%' : '')) : null
         );
       }
       if (lc.type === 'notes') {
@@ -2228,6 +2350,7 @@
       if (draft.type === 'flashcards') return h('div', null, renderFlashcardEditor(), removePanel, saveBar);
       if (draft.type === 'acronym')    return h('div', null, renderAcronymEditor(),  removePanel, saveBar);
       if (draft.type === 'notes')      return h('div', null, renderNotesEditor(),    removePanel, saveBar);
+      if (draft.type === 'image-link') return h('div', null, renderImageLinkEditor(), removePanel, saveBar);
       return null;
     }
 
@@ -2521,6 +2644,143 @@
       );
     }
 
+    // Image-link editor — pick a target decoration via thumbnail grid, then
+    // type the personal association. Decorations grid excludes self
+    // (can\'t link to itself) and starter fern is fair game (good visual
+    // hook — most students see it every day).
+    function renderImageLinkEditor() {
+      var allDecs = (p.allDecorations || []).filter(function(d) { return d.id !== decoration.id; });
+      var data = (draft && draft.data) || {};
+      var targetId = data.targetDecorationId || null;
+      var assoc = data.association || '';
+
+      function pickTarget(id) {
+        setDraft(Object.assign({}, draft, { data: Object.assign({}, draft.data, { targetDecorationId: id }) }));
+      }
+      function updateAssoc(val) {
+        setDraft(Object.assign({}, draft, { data: Object.assign({}, draft.data, { association: val }) }));
+      }
+
+      if (allDecs.length === 0) {
+        return h('div', null,
+          h('p', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.55', textAlign: 'center', padding: '20px' } },
+            'You only have one decoration so far. Add another decoration to your room — then come back and link them.')
+        );
+      }
+      var selected = allDecs.filter(function(d) { return d.id === targetId; })[0] || null;
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '🔗 Image link'),
+        h('p', {
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '10px', lineHeight: '1.5' }
+        }, 'Pictures stick better than words. Connect this decoration to another one with a personal association — the weirder, the better. "This dragon = mitosis because both split apart." That\'s how visual mnemonics work.'),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '6px', fontWeight: 600 } },
+          '1. Pick a decoration to link to'),
+        h('div', {
+          style: {
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px',
+            padding: '10px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            marginBottom: '14px',
+            maxHeight: '180px',
+            overflowY: 'auto'
+          }
+        },
+          allDecs.map(function(d) {
+            var isSel = d.id === targetId;
+            var dLabel = d.templateLabel || d.template || 'item';
+            return h('button', {
+              key: 'tgt-' + d.id,
+              type: 'button',
+              onClick: function() { pickTarget(d.id); },
+              'aria-pressed': isSel,
+              'aria-label': 'Link to ' + dLabel + (isSel ? ' (selected)' : ''),
+              title: dLabel,
+              style: {
+                width: '64px',
+                height: '64px',
+                padding: 0,
+                background: palette.bg,
+                border: isSel ? ('2.5px solid ' + palette.accent) : ('1.5px solid ' + palette.border),
+                borderRadius: '8px',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                position: 'relative',
+                fontFamily: 'inherit'
+              }
+            },
+              d.imageBase64 ? h('img', {
+                src: d.imageBase64, alt: '',
+                style: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' }
+              }) : h('span', { style: { fontSize: '20px', color: palette.textMute } }, '?'),
+              isSel ? h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  position: 'absolute', top: 0, right: 0,
+                  background: palette.accent, color: palette.onAccent,
+                  fontSize: '10px', fontWeight: 800,
+                  padding: '1px 5px', borderRadius: '0 6px 0 6px',
+                  lineHeight: 1.2
+                }
+              }, '✓') : null
+            );
+          })
+        ),
+        // Live preview of the association once a target is selected
+        selected ? h('div', {
+          style: {
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '8px', marginBottom: '12px',
+            padding: '10px', background: palette.surface,
+            border: '1px dashed ' + palette.border, borderRadius: '8px'
+          }
+        },
+          h('div', { style: { textAlign: 'center', flex: '0 0 64px' } },
+            decoration.imageBase64 ? h('img', {
+              src: decoration.imageBase64, alt: '',
+              style: { width: '64px', height: '64px', objectFit: 'contain', borderRadius: '6px', background: palette.bg }
+            }) : null
+          ),
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '18px', color: palette.accent } }, '→'),
+          h('div', { style: { textAlign: 'center', flex: '0 0 64px' } },
+            selected.imageBase64 ? h('img', {
+              src: selected.imageBase64, alt: '',
+              style: { width: '64px', height: '64px', objectFit: 'contain', borderRadius: '6px', background: palette.bg }
+            }) : null
+          )
+        ) : null,
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '6px', fontWeight: 600 } },
+          '2. Write the association — what does this remind you of?'),
+        h('textarea', {
+          value: assoc,
+          onChange: function(e) { updateAssoc(e.target.value); },
+          placeholder: 'e.g. "the dragon = mitosis (both split apart and grow stronger)"',
+          'aria-label': 'Image-link association',
+          rows: 3,
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '13px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            resize: 'vertical',
+            lineHeight: '1.5'
+          }
+        }),
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
+          'Quiz mode shows the first decoration and asks you to recall the association. Forgiving substring matching, like flashcards.')
+      );
+    }
+
     function renderQuizMode() {
       if (!quiz) return null;
       if (quiz.finished) {
@@ -2529,6 +2789,7 @@
       if (quiz.type === 'flashcards') return renderQuizFlashcards();
       if (quiz.type === 'acronym')    return renderQuizAcronym();
       if (quiz.type === 'cloze')      return renderQuizCloze();
+      if (quiz.type === 'image-link') return renderQuizImageLink();
       return null;
     }
 
@@ -2922,6 +3183,184 @@
       );
     }
 
+    // Image-link quiz — show this decoration big, ask student to recall
+    // the association they wrote. Single-card retrieval. Reveal-and-grade
+    // pattern (no auto-grading by string match — the association is the
+    // student\'s own personal phrasing; substring match is informational
+    // only, the student self-grades like flashcards).
+    function renderQuizImageLink() {
+      var allDecs = p.allDecorations || [];
+      var lc = existing;
+      var data = (lc && lc.data) || {};
+      var target = allDecs.filter(function(d) { return d.id === data.targetDecorationId; })[0] || null;
+      var truth = quiz.truth || '';
+      var guess = quiz.guess || '';
+      var revealed = !!quiz.revealed;
+
+      function updateGuess(val) { setQuiz(Object.assign({}, quiz, { guess: val })); }
+      function reveal() { setQuiz(Object.assign({}, quiz, { revealed: true })); }
+      function grade(gotIt) {
+        // Persist correctCount/missCount on the linkedContent.data so the
+        // image-link tracks its own per-decoration accuracy.
+        var newCorrect = (data.correctCount || 0) + (gotIt ? 1 : 0);
+        var newMiss    = (data.missCount    || 0) + (gotIt ? 0 : 1);
+        var newData = Object.assign({}, data, { correctCount: newCorrect, missCount: newMiss });
+        p.onSave({ type: 'image-link', data: newData });
+        finishQuiz(gotIt ? 1 : 0, 1);
+      }
+
+      // Auto-substring hint (informational only — student self-grades)
+      var looksRight = guess.trim().length > 0 && clozeAnswerCorrect(truth, guess);
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '14px', textAlign: 'center' } },
+          'What did you connect this decoration to?'),
+        h('div', {
+          style: {
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '12px', marginBottom: '14px'
+          }
+        },
+          h('div', { style: { textAlign: 'center', flex: '0 0 110px' } },
+            decoration.imageBase64 ? h('img', {
+              src: decoration.imageBase64, alt: '',
+              style: { width: '110px', height: '110px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
+            }) : null
+          ),
+          h('div', { 'aria-hidden': 'true', style: { fontSize: '24px', color: palette.accent, fontWeight: 800 } }, '→'),
+          h('div', { style: { textAlign: 'center', flex: '0 0 110px' } },
+            revealed && target && target.imageBase64 ? h('img', {
+              src: target.imageBase64, alt: '',
+              style: { width: '110px', height: '110px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
+            }) : h('div', {
+              style: {
+                width: '110px', height: '110px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: palette.surface, border: '1px dashed ' + palette.border,
+                borderRadius: '10px', color: palette.textMute, fontSize: '36px'
+              }
+            }, '?')
+          )
+        ),
+        !revealed ? h('div', null,
+          h('input', {
+            type: 'text',
+            value: guess,
+            onChange: function(e) { updateGuess(e.target.value); },
+            placeholder: 'Type what this reminds you of…',
+            'aria-label': 'Your recall of the association',
+            autoFocus: true,
+            onKeyDown: function(e) {
+              if (e.key === 'Enter') { e.preventDefault(); reveal(); }
+            },
+            style: {
+              width: '100%',
+              padding: '10px 12px',
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              color: palette.text,
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box',
+              marginBottom: '10px'
+            }
+          }),
+          h('div', { style: { display: 'flex', gap: '10px' } },
+            h('button', {
+              onClick: function() { setMode('view'); setQuiz(null); },
+              style: {
+                flex: 1,
+                background: 'transparent',
+                color: palette.textDim,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, 'Cancel'),
+            h('button', {
+              onClick: reveal,
+              style: {
+                flex: 1,
+                background: palette.accent,
+                color: palette.onAccent,
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, 'Reveal answer')
+          )
+        ) : h('div', null,
+          h('div', {
+            style: {
+              padding: '12px 14px',
+              background: palette.surface,
+              borderLeft: '3px solid ' + palette.accent,
+              borderRadius: '0 8px 8px 0',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              color: palette.text,
+              fontStyle: 'italic',
+              marginBottom: '8px'
+            }
+          }, '"' + truth + '"'),
+          guess.trim().length > 0 ? h('div', {
+            style: {
+              fontSize: '11px',
+              color: looksRight ? (palette.success || palette.accent) : palette.textMute,
+              marginBottom: '14px',
+              textAlign: 'center',
+              fontStyle: 'italic'
+            }
+          }, 'Your guess: "' + guess + '"' + (looksRight ? ' · close match!' : '')) : h('div', {
+            style: { fontSize: '11px', color: palette.textMute, marginBottom: '14px', textAlign: 'center', fontStyle: 'italic' }
+          }, '(no guess typed)'),
+          h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textAlign: 'center' } },
+            'Did you remember it?'),
+          h('div', { style: { display: 'flex', gap: '10px' } },
+            h('button', {
+              onClick: function() { grade(false); },
+              style: {
+                flex: 1,
+                background: 'transparent',
+                color: palette.textDim,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '✗ Not quite'),
+            h('button', {
+              onClick: function() { grade(true); },
+              style: {
+                flex: 1,
+                background: palette.accent,
+                color: palette.onAccent,
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '✓ Got it')
+          )
+        )
+      );
+    }
+
     function renderQuizResult() {
       var pct = quiz.scorePct;
       var emoji = pct >= 90 ? '🌟' : pct >= 80 ? '✨' : pct >= 50 ? '🌱' : '💪';
@@ -3037,6 +3476,509 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 6.5: STORY BUILDER + WALK SUB-COMPONENTS (Phase 2e)
+  // ─────────────────────────────────────────────────────────
+  // Story-method mnemonic: chain ≥3 decorations into a narrative
+  // sequence. Each step has a decoration + a sentence connecting it to
+  // the next item. Walking the story is retrieval practice — students
+  // recall not just facts but how facts hang together.
+
+  function StoryBuilderInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+    var allDecs = p.allDecorations || [];
+
+    // Local draft so abrupt close doesn\'t auto-persist half-typed work.
+    // Save button writes through to parent.
+    var draftTuple = useState(function() {
+      return {
+        title: (p.story && p.story.title) || '',
+        steps: ((p.story && p.story.steps) || []).slice()
+      };
+    });
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    // Picker open-state for "add step" — when an index is set we show
+    // the decoration grid for that step.
+    var pickerForTuple = useState(null); // null | step index (number, or 'append')
+    var pickerFor = pickerForTuple[0];
+    var setPickerFor = pickerForTuple[1];
+
+    function setTitle(val) { setDraft(Object.assign({}, draft, { title: val })); }
+
+    function setStepNarrative(idx, val) {
+      var newSteps = draft.steps.slice();
+      newSteps[idx] = Object.assign({}, newSteps[idx], { narrative: val });
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+    }
+    function setStepDecoration(idx, decorationId) {
+      var newSteps = draft.steps.slice();
+      if (idx === draft.steps.length || idx === 'append') {
+        newSteps.push({ decorationId: decorationId, narrative: '' });
+      } else {
+        newSteps[idx] = Object.assign({}, newSteps[idx], { decorationId: decorationId });
+      }
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+      setPickerFor(null);
+    }
+    function removeStep(idx) {
+      var newSteps = draft.steps.slice();
+      newSteps.splice(idx, 1);
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+    }
+    function moveStep(idx, dir) {
+      var newSteps = draft.steps.slice();
+      var swapWith = idx + dir;
+      if (swapWith < 0 || swapWith >= newSteps.length) return;
+      var tmp = newSteps[idx];
+      newSteps[idx] = newSteps[swapWith];
+      newSteps[swapWith] = tmp;
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+    }
+
+    function findDecoration(id) {
+      return allDecs.filter(function(d) { return d.id === id; })[0] || null;
+    }
+
+    function handleSave() {
+      var cleanedSteps = draft.steps.filter(function(st) { return !!st.decorationId; });
+      p.onSave({
+        title: (draft.title || '').trim(),
+        steps: cleanedSteps
+      });
+    }
+
+    var validSteps = draft.steps.filter(function(st) {
+      return st.decorationId && (st.narrative || '').trim().length > 0;
+    });
+    var titleOk = (draft.title || '').trim().length > 0;
+    var canSave = titleOk && validSteps.length >= 1; // save partial; only ≥3 unlocks walk
+    var canWalk = titleOk && validSteps.length >= 3;
+
+    // Decoration picker (modal-within-modal)
+    function renderPicker() {
+      if (pickerFor === null) return null;
+      // Suggest decorations not already in the story (still allowed —
+      // dim them to discourage repeats in the chain mnemonic).
+      var usedIds = {};
+      draft.steps.forEach(function(st) { if (st.decorationId) usedIds[st.decorationId] = true; });
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Pick a decoration for this step',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setPickerFor(null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '12px', padding: '20px',
+            maxWidth: '500px', width: '100%', maxHeight: '70vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+            h('h4', { style: { margin: 0, color: palette.text, fontSize: '15px', fontWeight: 700 } },
+              'Pick a decoration · step ' + (typeof pickerFor === 'number' ? pickerFor + 1 : draft.steps.length + 1)),
+            h('button', {
+              onClick: function() { setPickerFor(null); },
+              'aria-label': 'Cancel decoration picker',
+              style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '6px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }
+            }, '✕')
+          ),
+          allDecs.length === 0 ? h('p', {
+            style: { color: palette.textDim, fontSize: '13px', textAlign: 'center', padding: '20px', lineHeight: '1.55' }
+          }, 'You don\'t have any decorations yet. Add some to your room first, then come back to build a story.') : h('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '8px' }
+          },
+            allDecs.map(function(d) {
+              var inUse = !!usedIds[d.id];
+              var dLabel = d.templateLabel || d.template || 'item';
+              return h('button', {
+                key: 'pk-' + d.id,
+                onClick: function() { setStepDecoration(pickerFor, d.id); },
+                'aria-label': dLabel + (inUse ? ' (already in this story)' : ''),
+                title: dLabel + (inUse ? ' (already used)' : ''),
+                style: {
+                  width: '72px', height: '72px', padding: 0,
+                  background: palette.bg,
+                  border: '1.5px solid ' + palette.border,
+                  borderRadius: '8px', cursor: 'pointer',
+                  overflow: 'hidden', position: 'relative',
+                  opacity: inUse ? 0.45 : 1, fontFamily: 'inherit'
+                }
+              },
+                d.imageBase64 ? h('img', {
+                  src: d.imageBase64, alt: '',
+                  style: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' }
+                }) : null,
+                inUse ? h('span', {
+                  'aria-hidden': 'true',
+                  style: {
+                    position: 'absolute', top: 0, right: 0,
+                    background: palette.textMute, color: palette.bg,
+                    fontSize: '9px', fontWeight: 700, padding: '1px 4px',
+                    borderRadius: '0 6px 0 6px'
+                  }
+                }, 'used') : null
+              );
+            })
+          )
+        )
+      );
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': p.story && p.story.title ? 'Edit story · ' + p.story.title : 'Build a new story',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onCancel();
+      },
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)', zIndex: 175,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '1px solid ' + palette.border,
+          borderRadius: '14px', padding: '24px',
+          maxWidth: '620px', width: '100%', maxHeight: '88vh',
+          overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+            '📜 ' + (p.story && p.story.title ? 'Edit story' : 'Build a story')),
+          h('button', {
+            onClick: p.onCancel, 'aria-label': 'Close story builder',
+            style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        h('p', {
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '12px', lineHeight: '1.5' }
+        }, 'Chain ≥3 decorations into a narrative. Each step links to the next: "the dragon → the fern → the lamp". The story walk becomes retrieval practice for whatever you wove into it.'),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'Title'),
+        h('input', {
+          type: 'text', value: draft.title,
+          onChange: function(e) { setTitle(e.target.value); },
+          placeholder: 'e.g. "The water cycle journey"',
+          'aria-label': 'Story title',
+          style: {
+            width: '100%', padding: '8px 10px',
+            background: palette.surface, border: '1px solid ' + palette.border,
+            borderRadius: '8px', color: palette.text,
+            fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box',
+            marginBottom: '14px'
+          }
+        }),
+        h('div', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', fontWeight: 600 } },
+          'Steps · ' + draft.steps.length + (canWalk ? ' ✓ ready to walk' : ' (need ≥3 with narrative)')),
+        // Step list
+        draft.steps.length === 0 ? h('p', {
+          style: { fontSize: '12px', color: palette.textMute, fontStyle: 'italic', textAlign: 'center', padding: '20px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '8px', marginBottom: '10px' }
+        }, 'No steps yet. Click "+ Add step" below to pick a decoration and start your chain.') : h('div', {
+          style: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }
+        },
+          draft.steps.map(function(step, idx) {
+            var dec = findDecoration(step.decorationId);
+            return h('div', {
+              key: 'step-' + idx,
+              style: {
+                display: 'flex', gap: '10px', alignItems: 'flex-start',
+                padding: '10px', background: palette.surface,
+                border: '1px solid ' + palette.border, borderRadius: '8px'
+              }
+            },
+              // Step number + reorder buttons
+              h('div', { style: { flex: '0 0 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' } },
+                h('button', {
+                  onClick: function() { moveStep(idx, -1); },
+                  disabled: idx === 0,
+                  'aria-label': 'Move step ' + (idx + 1) + ' up',
+                  style: { background: 'transparent', border: 'none', color: idx === 0 ? palette.textMute : palette.textDim, cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px', padding: '2px', opacity: idx === 0 ? 0.4 : 1 }
+                }, '▲'),
+                h('span', { style: { fontSize: '14px', fontWeight: 800, color: palette.accent } }, idx + 1),
+                h('button', {
+                  onClick: function() { moveStep(idx, 1); },
+                  disabled: idx === draft.steps.length - 1,
+                  'aria-label': 'Move step ' + (idx + 1) + ' down',
+                  style: { background: 'transparent', border: 'none', color: idx === draft.steps.length - 1 ? palette.textMute : palette.textDim, cursor: idx === draft.steps.length - 1 ? 'default' : 'pointer', fontSize: '12px', padding: '2px', opacity: idx === draft.steps.length - 1 ? 0.4 : 1 }
+                }, '▼')
+              ),
+              // Decoration thumbnail
+              h('button', {
+                onClick: function() { setPickerFor(idx); },
+                'aria-label': dec ? 'Change decoration for step ' + (idx + 1) : 'Pick decoration for step ' + (idx + 1),
+                title: dec ? 'Click to change decoration' : 'Pick a decoration',
+                style: {
+                  width: '64px', height: '64px', flexShrink: 0,
+                  padding: 0, background: palette.bg,
+                  border: dec ? ('1.5px solid ' + palette.border) : ('1.5px dashed ' + palette.textMute),
+                  borderRadius: '8px', cursor: 'pointer', overflow: 'hidden',
+                  fontFamily: 'inherit'
+                }
+              },
+                dec && dec.imageBase64 ? h('img', {
+                  src: dec.imageBase64, alt: '',
+                  style: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' }
+                }) : h('span', { style: { fontSize: '20px', color: palette.textMute } }, '+')
+              ),
+              // Narrative textarea + delete
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('textarea', {
+                  value: step.narrative || '',
+                  onChange: function(e) { setStepNarrative(idx, e.target.value); },
+                  placeholder: idx === 0
+                    ? 'How does the story start with this item?'
+                    : 'How does the previous item lead to this one?',
+                  'aria-label': 'Narrative for step ' + (idx + 1),
+                  rows: 2,
+                  style: {
+                    width: '100%', padding: '6px 8px',
+                    background: palette.bg, border: '1px solid ' + palette.border,
+                    borderRadius: '6px', color: palette.text, fontSize: '12px',
+                    fontFamily: 'inherit', boxSizing: 'border-box',
+                    resize: 'vertical', lineHeight: '1.45'
+                  }
+                }),
+                h('button', {
+                  onClick: function() { removeStep(idx); },
+                  style: { marginTop: '4px', background: 'transparent', border: 'none', color: palette.textMute, fontSize: '10px', cursor: 'pointer', padding: '2px 4px', textDecoration: 'underline' }
+                }, 'Remove step')
+              )
+            );
+          })
+        ),
+        h('button', {
+          onClick: function() { setPickerFor('append'); },
+          style: {
+            display: 'block', width: '100%', padding: '10px',
+            background: 'transparent', color: palette.accent,
+            border: '1px dashed ' + palette.accent, borderRadius: '8px',
+            fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+            fontFamily: 'inherit', marginBottom: '14px'
+          }
+        }, '+ Add step'),
+        // Save / cancel
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
+          h('button', {
+            onClick: function() {
+              if (window.confirm && !window.confirm('Delete this story? This can\'t be undone.')) return;
+              if (p.onDelete) p.onDelete();
+            },
+            style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🗑 Delete story'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', {
+              onClick: p.onCancel,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: handleSave,
+              disabled: !canSave,
+              style: {
+                background: canSave ? palette.accent : palette.surface,
+                color: canSave ? palette.onAccent : palette.textMute,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: canSave ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit', opacity: canSave ? 1 : 0.6
+              }
+            }, 'Save')
+          )
+        ),
+        renderPicker()
+      )
+    );
+  }
+
+  // Walk inner — full-screen-ish step-through viewer for a completed story.
+  // Esc / Close exits without recording. Reaching the final step + clicking
+  // "Finish walk" calls onFinish which writes lastReviewedAt + tokens.
+  function StoryWalkInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+    var palette = p.palette;
+    var story = p.story;
+    var steps = (story.steps || []);
+    var allDecs = p.allDecorations || [];
+
+    var idxTuple = useState(0);
+    var idx = idxTuple[0];
+    var setIdx = idxTuple[1];
+
+    function findDecoration(id) {
+      return allDecs.filter(function(d) { return d.id === id; })[0] || null;
+    }
+    var step = steps[idx] || null;
+    var dec = step ? findDecoration(step.decorationId) : null;
+    var atEnd = idx >= steps.length - 1;
+
+    // Esc closes (without recording)
+    useEffect(function() {
+      var handler = function(e) {
+        if (e.key === 'Escape') p.onClose();
+        if (e.key === 'ArrowRight' && idx < steps.length - 1) setIdx(idx + 1);
+        if (e.key === 'ArrowLeft' && idx > 0) setIdx(idx - 1);
+      };
+      window.addEventListener('keydown', handler);
+      return function() { window.removeEventListener('keydown', handler); };
+    }, [idx]);
+
+    if (!step || !dec) {
+      return h('div', {
+        role: 'dialog',
+        style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 175, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }
+      },
+        h('div', { style: { background: palette.bg, padding: '28px', borderRadius: '14px', textAlign: 'center', maxWidth: '420px' } },
+          h('h3', { style: { color: palette.text, marginBottom: '10px' } }, 'Story can\'t be walked'),
+          h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55' } },
+            'A decoration in this story is missing — it may have been removed from the room. Edit the story to fix or replace it.'),
+          h('button', {
+            onClick: p.onClose,
+            style: { marginTop: '14px', background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+          }, 'Close')
+        )
+      );
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Walking story · ' + (story.title || 'untitled'),
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.85)', zIndex: 180,
+        display: 'flex', flexDirection: 'column',
+        padding: '24px 16px', boxSizing: 'border-box',
+        color: palette.text
+      }
+    },
+      // Header — title + close
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '720px', width: '100%', margin: '0 auto', marginBottom: '14px' } },
+        h('h3', { style: { margin: 0, fontSize: '17px', color: palette.text, fontWeight: 700 } },
+          '📜 ' + (story.title || 'Untitled story')),
+        h('button', {
+          onClick: p.onClose, 'aria-label': 'Close story walk',
+          style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }
+        }, '✕')
+      ),
+      // Decoration big
+      h('div', {
+        style: {
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          maxWidth: '720px', width: '100%', margin: '0 auto'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.surface,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '14px',
+            padding: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            maxWidth: '480px',
+            marginBottom: '20px'
+          }
+        },
+          dec.imageBase64 ? h('img', {
+            src: dec.imageBase64, alt: dec.templateLabel || dec.template || 'step ' + (idx + 1),
+            style: { maxWidth: '100%', maxHeight: '320px', objectFit: 'contain', borderRadius: '8px' }
+          }) : null
+        ),
+        h('div', {
+          style: {
+            fontSize: '11px', color: palette.textMute, marginBottom: '10px',
+            letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700
+          }
+        }, 'Step ' + (idx + 1) + ' of ' + steps.length),
+        h('p', {
+          style: {
+            fontSize: '17px', color: palette.text, lineHeight: '1.6',
+            textAlign: 'center', maxWidth: '560px', margin: '0 0 24px 0',
+            fontStyle: 'italic'
+          }
+        }, '"' + (step.narrative || '') + '"')
+      ),
+      // Footer — nav buttons
+      h('div', {
+        style: {
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          maxWidth: '720px', width: '100%', margin: '0 auto', gap: '10px'
+        }
+      },
+        h('button', {
+          onClick: function() { if (idx > 0) setIdx(idx - 1); },
+          disabled: idx === 0,
+          'aria-label': 'Previous step',
+          style: {
+            background: 'transparent', color: idx === 0 ? palette.textMute : palette.textDim,
+            border: '1px solid ' + palette.border, borderRadius: '8px',
+            padding: '10px 18px', fontSize: '13px', fontWeight: 600,
+            cursor: idx === 0 ? 'default' : 'pointer',
+            opacity: idx === 0 ? 0.4 : 1, fontFamily: 'inherit'
+          }
+        }, '◀ Previous'),
+        // Progress dots
+        h('div', { style: { display: 'flex', gap: '4px' } },
+          steps.map(function(_, i) {
+            return h('span', {
+              key: 'wd-' + i,
+              'aria-hidden': 'true',
+              style: {
+                width: i === idx ? '14px' : '6px',
+                height: '6px', borderRadius: '999px',
+                background: i <= idx ? palette.accent : palette.surface,
+                border: '1px solid ' + (i <= idx ? palette.accent : palette.border),
+                transition: 'width 200ms'
+              }
+            });
+          })
+        ),
+        atEnd ? h('button', {
+          onClick: function() { p.onFinish(); },
+          'aria-label': 'Finish story walk',
+          style: {
+            background: palette.accent, color: palette.onAccent,
+            border: 'none', borderRadius: '8px',
+            padding: '10px 22px', fontSize: '13px', fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit'
+          }
+        }, '✓ Finish walk') : h('button', {
+          onClick: function() { setIdx(idx + 1); },
+          'aria-label': 'Next step',
+          style: {
+            background: palette.accent, color: palette.onAccent,
+            border: 'none', borderRadius: '8px',
+            padding: '10px 22px', fontSize: '13px', fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit'
+          }
+        }, 'Next ▶')
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 7: REACT COMPONENT
   // ─────────────────────────────────────────────────────────
   // Receives callback-only props from App.jsx (matches Symbol Studio pattern).
@@ -3080,6 +4022,7 @@
       if (!Array.isArray(merged.decorations))    merged.decorations    = [];
       if (!Array.isArray(merged.journalEntries)) merged.journalEntries = [];
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
+      if (!Array.isArray(merged.stories))        merged.stories        = [];
       return merged;
     });
     var state = stateTuple[0];
@@ -3153,7 +4096,8 @@
           pomodorosCompleted: 0,
           reflectionsSubmitted: 0,
           promptsForToday: [],
-          quizTokensEarnedToday: 0
+          quizTokensEarnedToday: 0,
+          storyWalkTokensEarnedToday: 0
         });
       }
       // eslint-disable-next-line
@@ -3568,6 +4512,112 @@
       setStateMulti(updates);
     }
 
+    // ── Story method (Phase 2e) ──
+    // Stories are top-level artifacts: an ordered chain of ≥3 decorations
+    // with per-step narrative text. Walking a completed story is retrieval
+    // practice — the spatial mnemonic of the room compounds with the
+    // narrative chaining technique. Tokens: +1 one-time on first save of
+    // a ≥3-step story; +1 per walk completion (capped 1/day total across
+    // all stories — gentle, anti-grind).
+
+    function createStory() {
+      var newStory = {
+        id: 'story-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        title: '',
+        steps: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastReviewedAt: null,
+        reviewCount: 0,
+        firstSaveAwarded: false
+      };
+      setStateMulti({
+        stories: state.stories.concat([newStory]),
+        activeModal: 'story-builder',
+        generateContext: { storyId: newStory.id }
+      });
+    }
+
+    function updateStory(storyId, updates) {
+      // updates is { title?, steps? } — patch shape onto existing story.
+      // First-save token: when a story crosses ≥3 valid steps for the
+      // first time AND has a title, award +1.
+      var current = state.stories.filter(function(s) { return s.id === storyId; })[0];
+      if (!current) return;
+      var nowIso = new Date().toISOString();
+      var nextStory = Object.assign({}, current, updates, { updatedAt: nowIso });
+      var validSteps = (nextStory.steps || []).filter(function(st) {
+        return st.decorationId && (st.narrative || '').trim().length > 0;
+      });
+      var qualifies = validSteps.length >= 3 && (nextStory.title || '').trim().length > 0;
+      var awarded = false;
+      if (qualifies && !current.firstSaveAwarded) {
+        nextStory.firstSaveAwarded = true;
+        awarded = true;
+      }
+      var newStories = state.stories.map(function(s) {
+        return s.id === storyId ? nextStory : s;
+      });
+      var stateUpdates = { stories: newStories };
+      if (awarded) {
+        stateUpdates.tokens = state.tokens + 1;
+        stateUpdates.earnings = state.earnings.concat([{
+          source: 'story-created',
+          tokens: 1,
+          date: nowIso,
+          metadata: { storyId: storyId, stepCount: validSteps.length }
+        }]);
+        setTimeout(function() {
+          addToast('🪙 +1 token. Your story is ready to walk through.');
+        }, 50);
+      }
+      setStateMulti(stateUpdates);
+    }
+
+    function deleteStory(storyId) {
+      setStateField('stories', state.stories.filter(function(s) { return s.id !== storyId; }));
+      addToast('Story removed.');
+    }
+
+    // Award a token for completing a story walk (≥3 steps, walked through
+    // every step). Capped at 1/day across all stories.
+    function recordStoryWalk(storyId) {
+      var story = state.stories.filter(function(s) { return s.id === storyId; })[0];
+      if (!story) return;
+      var nowIso = new Date().toISOString();
+      var capHit = (state.dailyState.storyWalkTokensEarnedToday || 0) >= 1;
+      var earned = capHit ? 0 : 1;
+
+      var nextStory = Object.assign({}, story, {
+        lastReviewedAt: nowIso,
+        reviewCount: (story.reviewCount || 0) + 1
+      });
+      var newStories = state.stories.map(function(s) {
+        return s.id === storyId ? nextStory : s;
+      });
+      var updates = { stories: newStories };
+      if (earned > 0) {
+        updates.tokens = state.tokens + earned;
+        updates.earnings = state.earnings.concat([{
+          source: 'story-walk',
+          tokens: earned,
+          date: nowIso,
+          metadata: { storyId: storyId, stepCount: (story.steps || []).length }
+        }]);
+        updates.dailyState = Object.assign({}, state.dailyState, {
+          storyWalkTokensEarnedToday: (state.dailyState.storyWalkTokensEarnedToday || 0) + earned
+        });
+        setTimeout(function() {
+          addToast('🪙 +1 token. Story walked. Memory compounds.');
+        }, 50);
+      } else {
+        setTimeout(function() {
+          addToast('Walk recorded. (Daily story token already earned today — that\'s fine.)');
+        }, 50);
+      }
+      setStateMulti(updates);
+    }
+
     // Helper: is a decoration's memory content "due for review"?
     // Adaptive thresholds based on bestQuizScore — struggling decks
     // resurface faster than mastered ones. (Lightweight Leitner-inspired:
@@ -3936,6 +4986,20 @@
               }, dueCount + ' due') : null
             );
           })(),
+          (function() {
+            var storyCount = (state.stories || []).length;
+            var validStoryCount = (state.stories || []).filter(function(s) {
+              var validSteps = (s.steps || []).filter(function(st) {
+                return st.decorationId && (st.narrative || '').trim().length > 0;
+              });
+              return validSteps.length >= 3 && (s.title || '').trim().length > 0;
+            }).length;
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'stories'); },
+              'aria-label': 'Stories' + (storyCount > 0 ? ', ' + storyCount + ' total' + (validStoryCount > 0 ? ', ' + validStoryCount + ' walkable' : '') : ''),
+              style: secondaryBtnStyle(palette)
+            }, '📜 Stories' + (storyCount > 0 ? ' · ' + storyCount : ''));
+          })(),
           h('button', {
             onClick: function() { setStateField('activeModal', 'settings'); },
             style: secondaryBtnStyle(palette)
@@ -3978,6 +5042,11 @@
             var t = (lc.data && lc.data.text) || '';
             var cn = extractClozeAnswers(t).length;
             memoryDescription = cn > 0 ? ('notes · ' + cn + ' blank' + (cn === 1 ? '' : 's')) : 'notes';
+          } else if (lc.type === 'image-link') {
+            var tgtId = (lc.data && lc.data.targetDecorationId) || null;
+            var tgtDec = tgtId ? state.decorations.filter(function(d) { return d.id === tgtId; })[0] : null;
+            var tgtLabel = tgtDec ? (tgtDec.templateLabel || tgtDec.template || 'item') : 'removed item';
+            memoryDescription = 'image link → ' + tgtLabel;
           } else {
             memoryDescription = 'memory content';
           }
@@ -4608,13 +5677,20 @@
       var isSoon = tier === 'soon';
       var lc = decoration.linkedContent;
       var label = decoration.templateLabel || decoration.template || 'item';
-      var typeIcon = lc.type === 'flashcards' ? '📚' : lc.type === 'acronym' ? '🔤' : '📝';
+      var typeIcon = lc.type === 'flashcards' ? '📚'
+                   : lc.type === 'acronym'    ? '🔤'
+                   : lc.type === 'image-link' ? '🔗'
+                                                : '📝';
       var summary = '';
       if (lc.type === 'flashcards') {
         var cardCount = (lc.data && lc.data.cards) ? lc.data.cards.length : 0;
         summary = cardCount + ' card' + (cardCount === 1 ? '' : 's');
       } else if (lc.type === 'acronym') {
         summary = ((lc.data && lc.data.letters) || '').toUpperCase();
+      } else if (lc.type === 'image-link') {
+        var lTgtId = (lc.data && lc.data.targetDecorationId) || null;
+        var lTgt = lTgtId ? state.decorations.filter(function(d) { return d.id === lTgtId; })[0] : null;
+        summary = '→ ' + (lTgt ? (lTgt.templateLabel || lTgt.template || 'item') : '(removed item)');
       } else if (lc.type === 'notes') {
         var text = (lc.data && lc.data.text) || '';
         var clozeCount = extractClozeAnswers(text).length;
@@ -4624,7 +5700,8 @@
           summary = text.length + ' character' + (text.length === 1 ? '' : 's');
         }
       }
-      // Notes are quizzable only when they contain {cloze} markers
+      // Notes are quizzable only when they contain {cloze} markers;
+      // flashcards / acronyms / image-links always quizzable.
       var quizAvailable = lc.type !== 'notes' || hasClozeMarkers(lc);
 
       var reviewedLabel;
@@ -4793,6 +5870,7 @@
       }
       return h(MemoryModalInner, {
         decoration: decoration,
+        allDecorations: state.decorations,
         palette: palette,
         autoStartQuiz: !!ctx.autoStartQuiz,
         onClose: function() {
@@ -5038,6 +6116,179 @@
     }
 
     // ─────────────────────────────────────────────────
+    // STORIES LIST MODAL (Phase 2e) — index of all stories with
+    // walk / edit / delete affordances per story.
+    // ─────────────────────────────────────────────────
+    function renderStoriesListModal() {
+      if (state.activeModal !== 'stories') return null;
+      var stories = state.stories || [];
+      var sortedStories = stories.slice().sort(function(a, b) {
+        return (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || '');
+      });
+
+      function isWalkable(s) {
+        var validSteps = (s.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        return validSteps.length >= 3 && (s.title || '').trim().length > 0;
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Stories',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '600px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '📜 Stories · ' + stories.length),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close stories list',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
+          }, 'The story method is the most powerful classical mnemonic — chain ≥3 decorations into a narrative sequence, then walk through it. Each step is a hook for what came before.'),
+          h('button', {
+            onClick: createStory,
+            style: Object.assign({}, primaryBtnStyle(palette), { width: '100%', marginBottom: '14px', padding: '10px' })
+          }, '+ New story'),
+
+          // Empty state
+          stories.length === 0 ? h('div', {
+            style: {
+              padding: '32px 20px', background: palette.surface,
+              border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center'
+            }
+          },
+            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '📜'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              'No stories yet. Click "+ New story" above to chain decorations into a narrative — the story method earns +1 token on first save and +1 per walk.')
+          ) : null,
+
+          // Stories list
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            sortedStories.map(function(s) {
+              var walkable = isWalkable(s);
+              var stepCount = (s.steps || []).length;
+              var validSteps = (s.steps || []).filter(function(st) {
+                return st.decorationId && (st.narrative || '').trim().length > 0;
+              }).length;
+              var lastReviewedLabel;
+              if (!s.lastReviewedAt) {
+                lastReviewedLabel = walkable ? 'Never walked' : 'Draft';
+              } else {
+                var days = Math.floor((Date.now() - new Date(s.lastReviewedAt).getTime()) / (24 * 60 * 60 * 1000));
+                if (days === 0) lastReviewedLabel = 'Walked today';
+                else if (days === 1) lastReviewedLabel = 'Walked yesterday';
+                else lastReviewedLabel = 'Walked ' + days + ' days ago';
+              }
+              return h('div', {
+                key: 'story-row-' + s.id,
+                style: {
+                  display: 'flex', gap: '10px', alignItems: 'center',
+                  padding: '12px', background: palette.surface,
+                  border: '1px solid ' + palette.border, borderRadius: '8px'
+                }
+              },
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text, marginBottom: '4px' } },
+                    s.title || h('span', { style: { color: palette.textMute, fontStyle: 'italic' } }, '(untitled story)')),
+                  h('div', { style: { fontSize: '11px', color: palette.textDim } },
+                    stepCount + ' step' + (stepCount === 1 ? '' : 's')
+                    + (validSteps !== stepCount ? ' · ' + validSteps + ' complete' : '')
+                    + ' · ' + lastReviewedLabel)
+                ),
+                walkable ? h('button', {
+                  onClick: function() {
+                    setStateMulti({ activeModal: 'story-walk', generateContext: { storyId: s.id } });
+                  },
+                  'aria-label': 'Walk story: ' + (s.title || 'untitled'),
+                  style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }
+                }, '↻ Walk') : h('span', {
+                  style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', flexShrink: 0 }
+                }, 'needs ≥3 steps'),
+                h('button', {
+                  onClick: function() {
+                    setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: s.id } });
+                  },
+                  'aria-label': 'Edit story: ' + (s.title || 'untitled'),
+                  style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '7px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }
+                }, 'Edit')
+              );
+            })
+          )
+        )
+      );
+    }
+
+    function renderStoryBuilderModal() {
+      if (state.activeModal !== 'story-builder') return null;
+      var ctx = state.generateContext || {};
+      var story = (state.stories || []).filter(function(s) { return s.id === ctx.storyId; })[0];
+      if (!story) {
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      return h(StoryBuilderInner, {
+        story: story,
+        allDecorations: state.decorations,
+        palette: palette,
+        onSave: function(updates) {
+          updateStory(story.id, updates);
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        },
+        onCancel: function() {
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        },
+        onDelete: function() {
+          deleteStory(story.id);
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        }
+      });
+    }
+
+    function renderStoryWalkModal() {
+      if (state.activeModal !== 'story-walk') return null;
+      var ctx = state.generateContext || {};
+      var story = (state.stories || []).filter(function(s) { return s.id === ctx.storyId; })[0];
+      if (!story) {
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      return h(StoryWalkInner, {
+        story: story,
+        allDecorations: state.decorations,
+        palette: palette,
+        onClose: function() {
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        },
+        onFinish: function() {
+          recordStoryWalk(story.id);
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        }
+      });
+    }
+
+    // ─────────────────────────────────────────────────
     // SETTINGS MODAL — Pomodoro duration presets + custom.
     // ─────────────────────────────────────────────────
     function renderSettingsModal() {
@@ -5216,6 +6467,9 @@
       renderGenerateModal(),
       renderMemoryModal(),
       renderMemoryOverviewModal(),
+      renderStoriesListModal(),
+      renderStoryBuilderModal(),
+      renderStoryWalkModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderDeleteDecorationModal(),
