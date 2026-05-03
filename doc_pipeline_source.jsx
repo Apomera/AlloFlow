@@ -10735,6 +10735,13 @@ tr { page-break-inside: avoid; }
     const parentTreeNums = [];
     for (let pi = 0; pi < pages.length; pi++) {
       const page = pages[pi];
+      // PDF/UA-1 §7.18 — /Tabs=/S forces tab order to follow the structure
+      // tree (the order screen readers traverse) instead of the default
+      // coordinate-based order. Without this, Tab-key navigation in
+      // multi-column or wrap-around layouts jumps around erratically.
+      // Setting it on every page is one line and a real keyboard-only
+      // accessibility win.
+      try { page.node.set(PDFName.of('Tabs'), PDFName.of('S')); } catch (_) {}
       // Path B — invisible OCR text layer for scanned PDFs. opacity:0 keeps
       // it invisible to sighted users while SR readers still pick it up via
       // the content stream. Wrapped later by the BDC/EMC pass below.
@@ -10953,6 +10960,11 @@ tr { page-break-inside: avoid; }
     // fallback is honest: the visible hierarchy is the value, the precise
     // page jump is a stretch goal for a future pass.
     let outlineRootRef = null;
+    // Tracks how many bookmarks landed on a specific (mapped) page vs how
+    // many fell back to page 1. Surfaced in the toast so the user can see
+    // whether per-heading mapping actually ran (e.g. a 0/8 result signals
+    // pdfjs failed to load or the AI rewrote heading text past the matcher).
+    let _bookmarksMappedToPages = 0;
     try {
       // Filter outline items down to headings only and build a tree by
       // level. Stack-based — pop lower-or-equal levels off the stack
@@ -10966,14 +10978,51 @@ tr { page-break-inside: avoid; }
       if (headingItems.length > 0 && pages.length > 0) {
         outlineRootRef = context.nextRef();
         const firstPageRef = pages[0].ref;
-        // Each node tracked as { ref, parentRef, level, kids: [] }
+        // ── Per-heading page mapping ──
+        // Reuse pdfjsDocForTagging (already loaded earlier in this function
+        // for content-stream tagging). For each page, concatenate all
+        // pdf.js text items into a normalized blob, then for each heading,
+        // find the first page whose blob contains the heading text. This
+        // makes bookmarks actually navigate — clicking "Chapter 3" lands
+        // on the chapter, not on page 1. Fully best-effort: any failure
+        // falls through to firstPageRef so bookmarks still work, just
+        // generically.
+        const pageTexts = new Array(pages.length).fill('');
+        try {
+          if (pdfjsDocForTagging) {
+            const numPages = Math.min(pages.length, pdfjsDocForTagging.numPages || 0);
+            for (let _p = 0; _p < numPages; _p++) {
+              const items = await _stage4_extractPdfjsItems(pdfjsDocForTagging, _p);
+              // Lowercase + collapse whitespace so heading match is robust
+              // against rendering / wrapping differences in the original.
+              pageTexts[_p] = items.map(it => it.str || '').join(' ').toLowerCase().replace(/\s+/g, ' ');
+            }
+          }
+        } catch (textErr) {
+          try { warnLog('[createTaggedPdf] per-page text extract failed (non-fatal): ' + (textErr && textErr.message)); } catch(_) {}
+        }
+        const _findPageForHeading = (text) => {
+          if (!text) return -1;
+          // Normalize the same way the page text was: lowercase, collapsed
+          // whitespace. Take the first 60 chars so we tolerate small
+          // discrepancies (trailing colons, trademark glyphs, etc.).
+          const needle = text.toLowerCase().replace(/\s+/g, ' ').trim().substring(0, 60);
+          if (needle.length < 3) return -1;
+          for (let _p = 0; _p < pageTexts.length; _p++) {
+            if (pageTexts[_p] && pageTexts[_p].indexOf(needle) !== -1) return _p;
+          }
+          return -1;
+        };
+        // Each node tracked as { ref, parentRef, level, kids, pageIdx }
         const rootKids = [];
         const stack = [];
         for (const h of headingItems) {
           // Pop until we find a strictly lower-level node (or root).
           while (stack.length > 0 && stack[stack.length - 1].level >= h.level) stack.pop();
           const parent = stack.length > 0 ? stack[stack.length - 1] : null;
-          const node = { ref: context.nextRef(), parentRef: parent ? parent.ref : outlineRootRef, level: h.level, title: h.text.substring(0, 200), kids: [] };
+          const pageIdx = _findPageForHeading(h.text);
+          if (pageIdx >= 0) _bookmarksMappedToPages++;
+          const node = { ref: context.nextRef(), parentRef: parent ? parent.ref : outlineRootRef, level: h.level, title: h.text.substring(0, 200), kids: [], pageIdx };
           (parent ? parent.kids : rootKids).push(node);
           stack.push(node);
         }
@@ -10983,10 +11032,11 @@ tr { page-break-inside: avoid; }
         const emit = (siblings) => {
           for (let i = 0; i < siblings.length; i++) {
             const node = siblings[i];
+            const destPageRef = (node.pageIdx >= 0 && node.pageIdx < pages.length) ? pages[node.pageIdx].ref : firstPageRef;
             const dictBody = {
               Title: PDFString.of(node.title),
               Parent: node.parentRef,
-              Dest: context.obj([firstPageRef, PDFName.of('XYZ'), null, null, null]),
+              Dest: context.obj([destPageRef, PDFName.of('XYZ'), null, null, null]),
             };
             if (i > 0) dictBody.Prev = siblings[i - 1].ref;
             if (i < siblings.length - 1) dictBody.Next = siblings[i + 1].ref;
@@ -11092,6 +11142,11 @@ tr { page-break-inside: avoid; }
             // True when /Outlines was successfully built — UI can announce
             // "bookmarks generated from N headings" in the toast.
             bookmarks: outlineRootRef ? headings : 0,
+            // How many of those bookmarks actually point to a specific page
+            // (rather than falling back to page 1). Lets the toast show a
+            // concrete "8 mapped to specific pages, 0 fell back" line so
+            // the user sees navigation actually works.
+            bookmarksMappedToPages: _bookmarksMappedToPages,
             // PDF/UA-1 declared via XMP packet (see XMP block above). True
             // unless XMP write threw, in which case the doc still carries
             // MarkInfo + struct tree but doesn't formally declare PDF/UA.
