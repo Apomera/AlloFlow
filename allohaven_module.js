@@ -449,6 +449,65 @@
     return arr[Math.floor(Math.random() * arr.length)];
   }
 
+  // ── Cloze-deletion helpers (Phase 2c) ──
+  // Notes can include {curly-braced} words/phrases. Those get hidden
+  // during the cloze quiz and the student types them in. Forgiving
+  // substring match like the acronym quiz.
+  // Example:
+  //   "The mitochondria is the {powerhouse} of the {cell}."
+  // → quiz shows "The mitochondria is the ___ of the ___."
+  // → student fills 2 blanks, gets graded
+  var CLOZE_REGEX = /\{([^{}]+)\}/g;
+
+  function hasClozeMarkers(linkedContent) {
+    if (!linkedContent || linkedContent.type !== 'notes') return false;
+    var text = (linkedContent.data && linkedContent.data.text) || '';
+    return CLOZE_REGEX.test(text);
+  }
+
+  // Extract the cloze answers (in document order) from a notes string
+  function extractClozeAnswers(text) {
+    var answers = [];
+    var match;
+    var re = new RegExp(CLOZE_REGEX.source, 'g'); // fresh regex (lastIndex)
+    while ((match = re.exec(text)) !== null) {
+      answers.push(match[1].trim());
+    }
+    return answers;
+  }
+
+  // Replace {answer} markers with a placeholder so the rendered text
+  // can show ___ where the blanks are. Returns segments + indices for
+  // typed-input mapping.
+  function buildClozeSegments(text) {
+    var segments = [];
+    var lastIdx = 0;
+    var blankIdx = 0;
+    var match;
+    var re = new RegExp(CLOZE_REGEX.source, 'g');
+    while ((match = re.exec(text)) !== null) {
+      if (match.index > lastIdx) {
+        segments.push({ kind: 'text', value: text.slice(lastIdx, match.index) });
+      }
+      segments.push({ kind: 'blank', answer: match[1].trim(), blankIdx: blankIdx });
+      blankIdx++;
+      lastIdx = match.index + match[0].length;
+    }
+    if (lastIdx < text.length) {
+      segments.push({ kind: 'text', value: text.slice(lastIdx) });
+    }
+    return segments;
+  }
+
+  // Forgiving substring match — same logic as acronym quiz so behavior
+  // is consistent.
+  function clozeAnswerCorrect(truth, guess) {
+    var t = (truth || '').trim().toLowerCase();
+    var g = (guess || '').trim().toLowerCase();
+    if (!t || !g) return false;
+    return t === g || t.indexOf(g) === 0 || g.indexOf(t) === 0;
+  }
+
   // Surprise me — returns a fully populated slots object for the given
   // template, randomized. For hierarchical templates, also resolves the
   // dependent slot consistently.
@@ -1582,9 +1641,10 @@
       if (!p.autoStartQuiz) return;
       if (autoQuizFired) return;
       if (!hasContent) return;
-      if (!existing || existing.type === 'notes') return;
+      if (!existing) return;
+      // Notes are only quizzable if they contain {cloze} markers
+      if (existing.type === 'notes' && !hasClozeMarkers(existing)) return;
       setAutoQuizFired(true);
-      // Defer one tick so the modal has rendered before quiz state initializes
       setTimeout(function() { startQuiz(); }, 30);
       // eslint-disable-next-line
     }, []);
@@ -1656,6 +1716,8 @@
           var j = Math.floor(Math.random() * (i + 1));
           var tmp = cards[i]; cards[i] = cards[j]; cards[j] = tmp;
         }
+        // Reverse mode persists per-deck (saved on linkedContent.data.reverseMode)
+        var reverseMode = !!(existing.data && existing.data.reverseMode);
         setQuiz({
           type: 'flashcards',
           cards: cards,
@@ -1663,7 +1725,8 @@
           flipped: false,
           correct: 0,
           missed: 0,
-          done: false
+          done: false,
+          reverseMode: reverseMode
         });
         setMode('quiz');
       } else if (existing.type === 'acronym') {
@@ -1675,6 +1738,18 @@
           truthMeanings: meanings,
           currentIdx: 0,
           guesses: meanings.map(function() { return ''; }),
+          done: false
+        });
+        setMode('quiz');
+      } else if (existing.type === 'notes' && hasClozeMarkers(existing)) {
+        var noteText = (existing.data && existing.data.text) || '';
+        var answers = extractClozeAnswers(noteText);
+        setQuiz({
+          type: 'cloze',
+          text: noteText,
+          truthAnswers: answers,
+          guesses: answers.map(function() { return ''; }),
+          submitted: false,
           done: false
         });
         setMode('quiz');
@@ -1699,7 +1774,9 @@
         { id: 'view',  label: 'View' },
         { id: 'edit',  label: 'Edit' }
       ];
-      if (existing.type !== 'notes') tabs.push({ id: 'quiz', label: 'Quiz' });
+      // Notes get a Quiz tab only when they contain {cloze} markers
+      var notesQuizzable = existing.type === 'notes' && hasClozeMarkers(existing);
+      if (existing.type !== 'notes' || notesQuizzable) tabs.push({ id: 'quiz', label: 'Quiz' });
       return h('div', {
         role: 'tablist',
         style: {
@@ -1849,6 +1926,46 @@
       }
       if (lc.type === 'notes') {
         var text = (lc.data && lc.data.text) || '';
+        var clozeCount = extractClozeAnswers(text).length;
+        // If cloze markers exist, render with the answers visually
+        // highlighted so the View tab serves as the "answer key" while
+        // the Quiz tab tests recall.
+        if (clozeCount > 0) {
+          var segments = buildClozeSegments(text);
+          return h('div', null,
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                marginBottom: '8px',
+                fontStyle: 'italic'
+              }
+            }, '📝 ' + clozeCount + ' fill-in answer' + (clozeCount === 1 ? '' : 's') + ' below (highlighted)'),
+            h('div', {
+              style: {
+                color: palette.text,
+                fontSize: '13px',
+                lineHeight: '1.7',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word'
+              }
+            },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'vs-' + i }, seg.value);
+                return h('span', {
+                  key: 'vs-' + i,
+                  style: {
+                    background: palette.accent,
+                    color: palette.onAccent,
+                    padding: '1px 6px',
+                    borderRadius: '4px',
+                    fontWeight: 700
+                  }
+                }, seg.answer);
+              })
+            )
+          );
+        }
         return h('div', {
           style: {
             color: palette.text,
@@ -2211,6 +2328,7 @@
 
     function renderNotesEditor() {
       var text = (draft.data.text || '');
+      var clozeCount = extractClozeAnswers(text).length;
       function updateText(val) {
         setDraft(Object.assign({}, draft, { data: { text: val } }));
       }
@@ -2218,12 +2336,34 @@
         h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
           '📝 Free notes'),
         h('p', {
-          style: { fontSize: '12px', color: palette.textDim, marginBottom: '10px', lineHeight: '1.5' }
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' }
         }, 'Whatever helps you remember. A rhyme. A story chain. A diagram in text. Lyrics. Whatever.'),
+        // Cloze-syntax hint card — teaches the {braces} mechanic in the
+        // editor itself. Subtle so it doesn\'t feel like a tutorial,
+        // but visible enough that students notice the feature exists.
+        h('div', {
+          style: {
+            fontSize: '11px',
+            color: palette.textDim,
+            background: palette.surface,
+            border: '1px dashed ' + palette.border,
+            borderRadius: '6px',
+            padding: '8px 10px',
+            marginBottom: '10px',
+            lineHeight: '1.5'
+          }
+        },
+          h('strong', { style: { color: palette.accent } }, '✨ Tip: '),
+          'Wrap any word in ',
+          h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' } }, '{curly braces}'),
+          ' to turn it into a fill-in-the-blank. e.g. ',
+          h('em', null, '"The mitochondria is the {powerhouse} of the {cell}."'),
+          ' adds a Quiz tab.'
+        ),
         h('textarea', {
           value: text,
           onChange: function(e) { updateText(e.target.value); },
-          placeholder: 'Write your notes here...',
+          placeholder: 'Write your notes here. Use {braces} for fill-in-the-blank quiz mode.',
           'aria-label': 'Free notes',
           rows: 10,
           style: {
@@ -2241,8 +2381,22 @@
           }
         }),
         h('div', {
-          style: { fontSize: '11px', color: palette.textMute, marginTop: '4px', textAlign: 'right' }
-        }, text.length + ' character' + (text.length === 1 ? '' : 's'))
+          style: {
+            fontSize: '11px',
+            color: palette.textMute,
+            marginTop: '4px',
+            display: 'flex',
+            justifyContent: 'space-between'
+          }
+        },
+          h('span', null,
+            clozeCount > 0
+              ? h('span', { style: { color: palette.accent, fontWeight: 700 } },
+                  '✓ ' + clozeCount + ' blank' + (clozeCount === 1 ? '' : 's') + ' detected — Quiz tab will appear after save')
+              : 'No {braces} yet — Notes tab only, no quiz'
+          ),
+          h('span', null, text.length + ' character' + (text.length === 1 ? '' : 's'))
+        )
       );
     }
 
@@ -2253,7 +2407,112 @@
       }
       if (quiz.type === 'flashcards') return renderQuizFlashcards();
       if (quiz.type === 'acronym')    return renderQuizAcronym();
+      if (quiz.type === 'cloze')      return renderQuizCloze();
       return null;
+    }
+
+    // Cloze quiz — fill in the {braced} blanks from notes. All blanks
+    // shown at once with the surrounding context visible — students see
+    // the sentence shape, type the missing word(s), submit once for
+    // graded feedback. Forgiving substring match like the acronym quiz.
+    function renderQuizCloze() {
+      var segments = buildClozeSegments(quiz.text);
+      var totalBlanks = quiz.truthAnswers.length;
+      if (totalBlanks === 0) {
+        return h('p', { style: { color: palette.textMute, padding: '12px', textAlign: 'center' } },
+          'No {braced} answers found in this note. Add some {curly braces} around words to make a cloze quiz.');
+      }
+      function updateGuess(blankIdx, val) {
+        var newGuesses = quiz.guesses.slice();
+        newGuesses[blankIdx] = val;
+        setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+      }
+      function submit() {
+        var correctCount = 0;
+        for (var i = 0; i < totalBlanks; i++) {
+          if (clozeAnswerCorrect(quiz.truthAnswers[i], quiz.guesses[i])) correctCount++;
+        }
+        finishQuiz(correctCount, totalBlanks);
+      }
+
+      // Inline input style — matches the surrounding text size
+      var inputStyle = {
+        background: palette.surface,
+        border: '1px solid ' + palette.border,
+        borderRadius: '4px',
+        color: palette.text,
+        padding: '2px 8px',
+        fontSize: 'inherit',
+        fontFamily: 'inherit',
+        margin: '0 2px',
+        minWidth: '70px'
+      };
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
+          'Fill in the blanks · ' + totalBlanks + ' answer' + (totalBlanks === 1 ? '' : 's')),
+        h('div', {
+          style: {
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '10px',
+            padding: '16px 18px',
+            fontSize: '15px',
+            lineHeight: '2.0',
+            color: palette.text,
+            marginBottom: '14px',
+            wordBreak: 'break-word'
+          }
+        },
+          segments.map(function(seg, i) {
+            if (seg.kind === 'text') {
+              return h('span', { key: 'cs-' + i, style: { whiteSpace: 'pre-wrap' } }, seg.value);
+            }
+            // blank
+            return h('input', {
+              key: 'cs-' + i,
+              type: 'text',
+              value: quiz.guesses[seg.blankIdx] || '',
+              onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
+              'aria-label': 'Blank ' + (seg.blankIdx + 1) + ' of ' + totalBlanks,
+              placeholder: '___',
+              style: inputStyle
+            });
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: '10px' } },
+          h('button', {
+            onClick: function() { setMode('view'); setQuiz(null); },
+            style: {
+              flex: 1,
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Cancel'),
+          h('button', {
+            onClick: submit,
+            style: {
+              flex: 1,
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Check answers')
+        )
+      );
     }
 
     function renderQuizFlashcards() {
@@ -2264,7 +2523,32 @@
       var card = cards[quiz.currentIdx];
       var progress = (quiz.currentIdx + 1) + ' / ' + cards.length;
 
+      // Reverse mode swaps which side shows first. Bidirectional drilling
+      // is a known retention boost — students who only see Front→Back
+      // often can't go in the other direction.
+      var rev = !!quiz.reverseMode;
+      var firstSide  = rev ? card.back : card.front;
+      var secondSide = rev ? card.front : card.back;
+      var firstLabel  = rev ? 'Back (now shown first)' : 'Front';
+      var secondLabel = rev ? 'Front' : 'Back';
+
       function flip() { setQuiz(Object.assign({}, quiz, { flipped: true })); }
+      function toggleReverse() {
+        // Persist per-deck: writes through to linkedContent.data.reverseMode
+        // so it sticks across sessions. Resets the in-progress quiz.
+        var newMode = !rev;
+        var newData = Object.assign({}, existing.data, { reverseMode: newMode });
+        p.onSave({ type: 'flashcards', data: newData });
+        // Restart quiz with the new direction (don't lose card list, just
+        // flip side semantics)
+        setQuiz(Object.assign({}, quiz, {
+          reverseMode: newMode,
+          flipped: false,
+          currentIdx: 0,
+          correct: 0,
+          missed: 0
+        }));
+      }
       function gradeAndAdvance(gotIt) {
         var nextIdx = quiz.currentIdx + 1;
         var newCorrect = quiz.correct + (gotIt ? 1 : 0);
@@ -2277,8 +2561,37 @@
       }
 
       return h('div', null,
-        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
-          'Card ' + progress),
+        h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '10px'
+          }
+        },
+          h('span', { style: { fontSize: '11px', color: palette.textMute } },
+            'Card ' + progress),
+          // Reverse-mode toggle — small chip; clearly labels current
+          // direction. Click to flip + restart the quiz from the start.
+          h('button', {
+            onClick: toggleReverse,
+            'aria-pressed': rev ? 'true' : 'false',
+            'aria-label': 'Toggle quiz direction · currently ' + (rev ? 'back to front' : 'front to back'),
+            title: 'Switch direction (Front↔Back)',
+            style: {
+              background: rev ? palette.accent : 'transparent',
+              color: rev ? palette.onAccent : palette.textDim,
+              border: '1px solid ' + (rev ? palette.accent : palette.border),
+              borderRadius: '999px',
+              padding: '3px 10px',
+              fontSize: '10px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              letterSpacing: '0.04em'
+            }
+          }, rev ? '↺ Back → Front' : '↻ Reverse direction')
+        ),
         h('div', {
           'aria-live': 'polite',
           style: {
@@ -2296,9 +2609,9 @@
         },
           h('div', null,
             h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
-              quiz.flipped ? 'Back' : 'Front'),
+              quiz.flipped ? secondLabel : firstLabel),
             h('div', { style: { fontSize: '17px', fontWeight: 700, color: palette.text, lineHeight: '1.4' } },
-              quiz.flipped ? card.back : card.front)
+              quiz.flipped ? secondSide : firstSide)
           )
         ),
         !quiz.flipped ? h('button', {
@@ -3097,14 +3410,31 @@
     }
 
     // Helper: is a decoration's memory content "due for review"?
-    // True if it has linkedContent AND (never reviewed OR ≥5 days since last review).
+    // Adaptive thresholds based on bestQuizScore — struggling decks
+    // resurface faster than mastered ones. (Lightweight Leitner-inspired:
+    // Anki uses an exponential ease curve; v2c uses 3 buckets for
+    // simplicity. v2d could refine.)
+    //
+    //   Score < 60%  →  due after 2 days  (still wobbly, drill it)
+    //   Score 60-89% →  due after 5 days  (default)
+    //   Score ≥ 90%  →  due after 10 days (locked in, low priority)
+    //
+    //   Never reviewed → always due (encourages first-pass review)
+    //   No quiz primitive (notes without cloze) → never auto-due
     function isMemoryDue(decoration) {
       var lc = decoration.linkedContent;
       if (!lc) return false;
+      // Notes with no cloze markers can't be quizzed → don't auto-mark due
+      if (lc.type === 'notes' && !hasClozeMarkers(lc)) return false;
       if (!lc.lastReviewedAt) return true;
       var lastMs = new Date(lc.lastReviewedAt).getTime();
       var ageMs = Date.now() - lastMs;
-      return ageMs >= 5 * 24 * 60 * 60 * 1000;
+      var bestScore = lc.bestQuizScore || 0;
+      var thresholdDays;
+      if (bestScore < 60)      thresholdDays = 2;
+      else if (bestScore < 90) thresholdDays = 5;
+      else                     thresholdDays = 10;
+      return ageMs >= thresholdDays * 24 * 60 * 60 * 1000;
     }
 
     // ── Decoration deletion handler ──
@@ -3485,7 +3815,9 @@
           } else if (lc.type === 'acronym') {
             memoryDescription = 'acronym · ' + ((lc.data && lc.data.letters) || '');
           } else if (lc.type === 'notes') {
-            memoryDescription = 'notes';
+            var t = (lc.data && lc.data.text) || '';
+            var cn = extractClozeAnswers(t).length;
+            memoryDescription = cn > 0 ? ('notes · ' + cn + ' blank' + (cn === 1 ? '' : 's')) : 'notes';
           } else {
             memoryDescription = 'memory content';
           }
@@ -4084,9 +4416,15 @@
         summary = ((lc.data && lc.data.letters) || '').toUpperCase();
       } else if (lc.type === 'notes') {
         var text = (lc.data && lc.data.text) || '';
-        summary = text.length + ' character' + (text.length === 1 ? '' : 's');
+        var clozeCount = extractClozeAnswers(text).length;
+        if (clozeCount > 0) {
+          summary = clozeCount + ' blank' + (clozeCount === 1 ? '' : 's') + ' to fill in';
+        } else {
+          summary = text.length + ' character' + (text.length === 1 ? '' : 's');
+        }
       }
-      var quizAvailable = lc.type !== 'notes';
+      // Notes are quizzable only when they contain {cloze} markers
+      var quizAvailable = lc.type !== 'notes' || hasClozeMarkers(lc);
 
       var reviewedLabel;
       if (!lc.lastReviewedAt) {
