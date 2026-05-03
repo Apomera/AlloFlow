@@ -2179,6 +2179,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         );
       }
 
+      // Gold/silver/bronze rank palette + medallion ribbon — shared by Photo ID and Match Quiz.
+      // Pass an optional override label (e.g., 'Strongest match') to customize the ribbon text.
+      function rankPalette(i, overrideLabel) {
+        var p;
+        if (i === 0) p = {
+          label: 'Most likely',
+          disc: 'radial-gradient(circle at 35% 28%, #fef9c3 0%, #fde68a 30%, #fbbf24 55%, #d97706 90%)',
+          ring: '#92400e', text: '#7c2d12',
+          ribbon: 'linear-gradient(180deg, #fef3c7 0%, #fde68a 100%)',
+          ribbonBorder: '#d97706',
+          cardBorder: '#d97706', cardBorderWidth: '3px',
+          cardShadow: '0 0 0 1px #fde68a, 0 8px 22px rgba(217,119,6,0.25), 0 2px 6px rgba(0,0,0,0.06)',
+          cardTint: 'linear-gradient(180deg, #fffbeb 0%, #ffffff 70%)',
+          glow: true
+        };
+        else if (i === 1) p = {
+          label: 'Second guess',
+          disc: 'radial-gradient(circle at 35% 28%, #ffffff 0%, #f1f5f9 30%, #cbd5e1 55%, #64748b 92%)',
+          ring: '#475569', text: '#1e293b',
+          ribbon: 'linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%)',
+          ribbonBorder: '#64748b',
+          cardBorder: '#64748b', cardBorderWidth: '2px',
+          cardShadow: '0 6px 14px rgba(100,116,139,0.18), 0 1px 3px rgba(0,0,0,0.05)',
+          cardTint: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 70%)',
+          glow: false
+        };
+        else if (i === 2) p = {
+          label: 'Third candidate',
+          disc: 'radial-gradient(circle at 35% 28%, #fed7aa 0%, #fdba74 30%, #ea580c 60%, #9a3412 95%)',
+          ring: '#7c2d12', text: '#7c2d12',
+          ribbon: 'linear-gradient(180deg, #ffedd5 0%, #fed7aa 100%)',
+          ribbonBorder: '#c2410c',
+          cardBorder: '#c2410c', cardBorderWidth: '2px',
+          cardShadow: '0 6px 14px rgba(194,65,12,0.18), 0 1px 3px rgba(0,0,0,0.05)',
+          cardTint: 'linear-gradient(180deg, #fff7ed 0%, #ffffff 70%)',
+          glow: false
+        };
+        else p = {
+          label: 'Other candidate',
+          disc: 'radial-gradient(circle at 35% 28%, #f1f5f9 0%, #e2e8f0 60%, #94a3b8 95%)',
+          ring: '#94a3b8', text: '#334155',
+          ribbon: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)',
+          ribbonBorder: '#94a3b8',
+          cardBorder: '#cbd5e1', cardBorderWidth: '2px',
+          cardShadow: '0 4px 10px rgba(15,23,42,0.06)',
+          cardTint: '#ffffff',
+          glow: false
+        };
+        if (overrideLabel) p.label = overrideLabel;
+        return p;
+      }
+      function rankMedallion(i, overrideLabel) {
+        var p = rankPalette(i, overrideLabel);
+        return h('div', {
+          'aria-label': 'Rank ' + (i + 1) + ', ' + p.label,
+          style: {
+            position: 'absolute', top: -16, left: 14,
+            display: 'flex', alignItems: 'center', gap: 0,
+            filter: p.glow ? 'drop-shadow(0 0 6px rgba(251,191,36,0.55))' : 'drop-shadow(0 2px 4px rgba(0,0,0,0.18))',
+            zIndex: 3
+          }
+        },
+          h('div', {
+            'aria-hidden': 'true',
+            style: {
+              width: 38, height: 38, borderRadius: '50%',
+              background: p.disc, border: '2px solid ' + p.ring,
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), inset 0 -2px 4px rgba(0,0,0,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: p.text, fontWeight: 900, fontSize: 18, fontFamily: 'serif',
+              textShadow: '0 1px 0 rgba(255,255,255,0.5)',
+              position: 'relative', zIndex: 2
+            }
+          }, String(i + 1)),
+          h('div', {
+            style: {
+              marginLeft: -10, paddingLeft: 14, paddingRight: 12, height: 26,
+              display: 'flex', alignItems: 'center',
+              background: p.ribbon, border: '2px solid ' + p.ribbonBorder, borderLeft: 'none',
+              borderTopRightRadius: 13, borderBottomRightRadius: 13,
+              color: p.text, fontWeight: 800, fontSize: 11, letterSpacing: '0.06em', textTransform: 'uppercase',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5)'
+            }
+          }, p.label)
+        );
+      }
+
       function TeacherNotes(props) {
         return h('details', { className: 'birdlab-teacher-notes bg-amber-50 border-2 border-amber-300 rounded-xl p-4' },
           h('summary', {
@@ -2383,12 +2470,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           );
         };
 
+        // Season-aware tagline
+        var __month = (new Date()).getMonth();
+        var __seasonTag = (__month >= 2 && __month <= 4)
+          ? 'Spring migration is in full swing — warblers are arriving daily.'
+          : (__month >= 5 && __month <= 7)
+          ? 'Breeding season — listen for territorial songs at dawn.'
+          : (__month >= 8 && __month <= 10)
+          ? 'Fall migration — hawks and waterfowl are passing through.'
+          : 'Winter — feeder birds, irruptive owls, and resilient year-round residents.';
         return h('div', { className: 'p-6 max-w-6xl mx-auto' },
-          h('div', { className: 'text-center mb-6' },
-            h('div', { className: 'text-6xl mb-3' }, '🐦'),
-            h('h1', { className: 'text-4xl font-black text-slate-800 mb-2' }, 'BirdLab'),
-            h('p', { className: 'text-lg text-slate-700 max-w-2xl mx-auto' },
-              'I-Spy ornithology. Identify birds in animated habitat scenes. Real movement, real field marks, real Cornell Lab science.')
+          // ── Hero: layered SVG scene with title overlay ──
+          h('div', { className: 'mb-6 rounded-3xl overflow-hidden shadow-lg relative', style: { background: '#0f172a' } },
+            h('svg', {
+              viewBox: '0 0 800 240', width: '100%',
+              role: 'img', 'aria-label': 'BirdLab hero illustration: sky with flying birds over Maine pine silhouettes',
+              style: { display: 'block', height: 'auto' }
+            },
+              // Gradients
+              h('defs', null,
+                h('linearGradient', { id: 'bl-hero-sky', x1: 0, y1: 0, x2: 0, y2: 1 },
+                  h('stop', { offset: '0%', stopColor: '#3b6e9c' }),
+                  h('stop', { offset: '40%', stopColor: '#7ec8f5' }),
+                  h('stop', { offset: '85%', stopColor: '#fde6c3' }),
+                  h('stop', { offset: '100%', stopColor: '#f59e0b' })
+                ),
+                h('radialGradient', { id: 'bl-hero-sun', cx: '50%', cy: '50%', r: '50%' },
+                  h('stop', { offset: '0%', stopColor: '#fff7d6', stopOpacity: 1 }),
+                  h('stop', { offset: '40%', stopColor: '#fde68a', stopOpacity: 0.8 }),
+                  h('stop', { offset: '100%', stopColor: '#fde68a', stopOpacity: 0 })
+                )
+              ),
+              // Sky
+              h('rect', { x: 0, y: 0, width: 800, height: 240, fill: 'url(#bl-hero-sky)' }),
+              // Sun
+              h('circle', { cx: 660, cy: 95, r: 72, fill: 'url(#bl-hero-sun)' }),
+              h('circle', { cx: 660, cy: 95, r: 26, fill: '#fff5c2', opacity: 0.95 }),
+              // Distant ridge
+              h('path', { d: 'M 0 180 L 80 160 L 160 175 L 240 150 L 340 170 L 420 145 L 520 170 L 620 155 L 720 175 L 800 160 L 800 200 L 0 200 Z',
+                fill: '#516e7d', opacity: 0.55 }),
+              // Mid ridge
+              h('path', { d: 'M 0 200 L 70 185 L 170 205 L 270 180 L 380 205 L 490 190 L 600 210 L 720 195 L 800 200 L 800 220 L 0 220 Z',
+                fill: '#3a5266', opacity: 0.75 }),
+              // Pine silhouettes — denser cluster across bottom
+              (function() {
+                var pines = [];
+                var xs = [10, 32, 55, 78, 102, 128, 155, 185, 215, 245, 275, 305, 335, 368, 402, 438, 475, 512, 550, 585, 620, 655, 690, 720, 752, 782];
+                var hs = [38, 50, 42, 56, 44, 60, 38, 52, 64, 46, 40, 56, 48, 42, 58, 50, 44, 62, 48, 40, 56, 50, 44, 60, 48, 52];
+                xs.forEach(function(x, i) {
+                  var hgt = hs[i % hs.length];
+                  var baseY = 218;
+                  pines.push(h('path', { key: 'hp' + i,
+                    d: 'M ' + x + ' ' + baseY + ' L ' + (x - 10) + ' ' + (baseY - hgt * 0.4) +
+                       ' L ' + (x - 5) + ' ' + (baseY - hgt * 0.4) + ' L ' + (x - 8) + ' ' + (baseY - hgt * 0.7) +
+                       ' L ' + (x - 4) + ' ' + (baseY - hgt * 0.7) + ' L ' + x + ' ' + (baseY - hgt) +
+                       ' L ' + (x + 4) + ' ' + (baseY - hgt * 0.7) + ' L ' + (x + 8) + ' ' + (baseY - hgt * 0.7) +
+                       ' L ' + (x + 5) + ' ' + (baseY - hgt * 0.4) + ' L ' + (x + 10) + ' ' + (baseY - hgt * 0.4) + ' Z',
+                    fill: '#1f2f29', opacity: 0.95 }));
+                });
+                return pines;
+              })(),
+              // Foreground ground band
+              h('rect', { x: 0, y: 218, width: 800, height: 22, fill: '#142420' }),
+              // Flying-bird silhouettes in the sky (varied size + position for parallax feel)
+              h('path', { d: 'M 130 60 q 12 -10 22 0 q 10 -10 22 0', stroke: '#0f172a', strokeWidth: 2.5, fill: 'none', strokeLinecap: 'round', opacity: 0.85 }),
+              h('path', { d: 'M 220 95 q 8 -7 16 0 q 8 -7 16 0', stroke: '#0f172a', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', opacity: 0.7 }),
+              h('path', { d: 'M 75 130 q 9 -7 18 0 q 9 -7 18 0', stroke: '#0f172a', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', opacity: 0.65 }),
+              h('path', { d: 'M 360 50 q 14 -11 26 0 q 13 -11 26 0', stroke: '#0f172a', strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', opacity: 0.92 }),
+              h('path', { d: 'M 480 78 q 9 -7 18 0 q 9 -7 18 0', stroke: '#0f172a', strokeWidth: 2.2, fill: 'none', strokeLinecap: 'round', opacity: 0.78 }),
+              h('path', { d: 'M 540 130 q 7 -6 14 0 q 7 -6 14 0', stroke: '#0f172a', strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round', opacity: 0.55 }),
+              h('path', { d: 'M 280 155 q 10 -8 20 0 q 10 -8 20 0', stroke: '#0f172a', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', opacity: 0.65 }),
+              // V-formation (small flock high in the sky)
+              h('g', { transform: 'translate(420 30)', opacity: 0.7 },
+                h('path', { d: 'M 0 0 q 5 -4 10 0 q 5 -4 10 0', stroke: '#0f172a', strokeWidth: 1.8, fill: 'none', strokeLinecap: 'round' }),
+                h('path', { d: 'M -8 8 q 4 -3 8 0 q 4 -3 8 0', stroke: '#0f172a', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' }),
+                h('path', { d: 'M 28 8 q 4 -3 8 0 q 4 -3 8 0', stroke: '#0f172a', strokeWidth: 1.6, fill: 'none', strokeLinecap: 'round' }),
+                h('path', { d: 'M -16 16 q 3 -2 6 0 q 3 -2 6 0', stroke: '#0f172a', strokeWidth: 1.4, fill: 'none', strokeLinecap: 'round' }),
+                h('path', { d: 'M 36 16 q 3 -2 6 0 q 3 -2 6 0', stroke: '#0f172a', strokeWidth: 1.4, fill: 'none', strokeLinecap: 'round' })
+              )
+            ),
+            // Title overlay (positioned over the SVG)
+            h('div', { className: 'absolute inset-0 flex flex-col justify-center pointer-events-none px-8' },
+              h('div', { style: { textShadow: '0 2px 8px rgba(0,0,0,0.55), 0 0 24px rgba(0,0,0,0.35)' } },
+                h('h1', { className: 'text-5xl md:text-6xl font-black text-white tracking-tight leading-none' }, '🪶 BirdLab'),
+                h('p', { className: 'text-base md:text-lg text-amber-50 mt-2 max-w-2xl font-semibold' },
+                  'I-Spy ornithology. Real movement, real field marks, real Cornell Lab science.')
+              )
+            )
+          ),
+          // Season ribbon under hero
+          h('div', { className: 'mb-5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-50 via-emerald-50 to-sky-50 border border-emerald-200 flex items-center gap-2 text-sm', role: 'note' },
+            h('span', { 'aria-hidden': true, className: 'text-base' },
+              (__month >= 2 && __month <= 4) ? '🌱' :
+              (__month >= 5 && __month <= 7) ? '☀️' :
+              (__month >= 8 && __month <= 10) ? '🍂' : '❄️'),
+            h('span', { className: 'font-semibold text-slate-800' },
+              (__month >= 2 && __month <= 4) ? 'Spring' :
+              (__month >= 5 && __month <= 7) ? 'Summer' :
+              (__month >= 8 && __month <= 10) ? 'Fall' : 'Winter'
+            ),
+            h('span', { className: 'text-slate-700' }, '— ' + __seasonTag)
           ),
           // Framing banner
           h('div', { className: 'mb-6 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300' },
@@ -4295,13 +4476,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       'Based on your answers, these two projects fit you best. Start with the first one — it\'s the strongest match. The second is a good "after that" or alternative.'
                     ),
                     top.map(function(p, i) {
-                      return h('div', { key: p.id, className: 'p-4 bg-white border-2 ' + (i === 0 ? 'border-emerald-600' : 'border-emerald-300') + ' rounded-xl mb-3' },
+                      var pal = rankPalette(i, i === 0 ? 'Strongest match' : 'Also fits');
+                      return h('div', { key: p.id,
+                        className: 'p-4 pt-6 rounded-xl mb-3 relative',
+                        style: {
+                          background: pal.cardTint,
+                          border: pal.cardBorderWidth + ' solid ' + pal.cardBorder,
+                          boxShadow: pal.cardShadow,
+                          marginTop: i === 0 ? 18 : 12
+                        }
+                      },
+                        rankMedallion(i, i === 0 ? 'Strongest match' : 'Also fits'),
                         h('div', { className: 'flex items-start gap-3 mb-2' },
                           h('span', { 'aria-hidden': true, className: 'text-3xl flex-shrink-0' }, p.icon),
                           h('div', { className: 'flex-1' },
-                            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-700 mb-1' },
-                              i === 0 ? '🥇 Strongest match' : '🥈 Also fits'
-                            ),
                             h('h4', { className: 'text-base font-black text-slate-800' }, p.name),
                             h('div', { className: 'text-xs text-slate-700 italic' }, p.tagline)
                           )
@@ -4813,26 +5001,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           );
         }
         if (trackOutcome === 'fail') {
+          var __pct = Math.round((onTargetMs / GOAL_MS) * 100);
+          // Celebrate any progress, not just the win
+          var __headline = __pct >= 70 ? 'So close — the bird flew off at the last moment.'
+            : __pct >= 40 ? 'You held it for a while — birds are fast.'
+            : __pct >= 15 ? 'Tough start. Even pros lose them in the first few seconds.'
+            : 'It darted before you could lock in.';
           return h('div', { className: 'min-h-screen bg-slate-50' },
-            h(BackBar, { icon: '🔭', title: 'Tracking — over' }),
+            h(BackBar, { icon: '🔭', title: 'Tracking — bird flew off' }),
             h('div', { className: 'p-6 max-w-2xl mx-auto space-y-4' },
-              h('div', { className: 'bg-amber-50 border-2 border-amber-400 rounded-2xl p-5 text-center' },
-                h('div', { className: 'text-5xl mb-3' }, '🦅'),
-                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, 'The bird flew off before you locked in.'),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
-                  'You held the bird in view for ',
-                  h('strong', null, (onTargetMs / 1000).toFixed(1) + ' / ' + (GOAL_MS / 1000) + ' seconds'),
-                  '. Real birding is exactly this hard — most birds don\'t hold still. Try again with a fresh bird.'
+              // Hero scene: bird flying away into the distance
+              h('div', { className: 'rounded-3xl overflow-hidden shadow border-2 border-amber-300' },
+                h('svg', { viewBox: '0 0 540 200', width: '100%',
+                  role: 'img', 'aria-label': 'Bird flying away into the distance' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'bl-fail-sky', x1: 0, y1: 0, x2: 0, y2: 1 },
+                      h('stop', { offset: '0%', stopColor: '#fde68a' }),
+                      h('stop', { offset: '60%', stopColor: '#fcd34d' }),
+                      h('stop', { offset: '100%', stopColor: '#f59e0b' })
+                    )
+                  ),
+                  h('rect', { x: 0, y: 0, width: 540, height: 200, fill: 'url(#bl-fail-sky)' }),
+                  // Distant ridge
+                  h('path', { d: 'M 0 145 L 70 130 L 150 150 L 230 125 L 320 145 L 410 130 L 490 145 L 540 135 L 540 200 L 0 200 Z',
+                    fill: '#854d0e', opacity: 0.4 }),
+                  // Pine silhouettes
+                  (function() {
+                    var pines = [];
+                    var xs = [12, 38, 62, 88, 115, 145, 175, 210, 240, 275, 310, 345, 380, 415, 445, 475, 505];
+                    var hs = [22, 30, 26, 34, 28, 36, 24, 32, 38, 28, 26, 34, 30, 28, 36, 30, 28];
+                    xs.forEach(function(x, i) {
+                      var hgt = hs[i % hs.length];
+                      var baseY = 155;
+                      pines.push(h('path', { key: 'fp' + i,
+                        d: 'M ' + x + ' ' + baseY + ' L ' + (x - 7) + ' ' + (baseY - hgt * 0.4) +
+                           ' L ' + (x - 4) + ' ' + (baseY - hgt * 0.4) + ' L ' + x + ' ' + (baseY - hgt) +
+                           ' L ' + (x + 4) + ' ' + (baseY - hgt * 0.4) + ' L ' + (x + 7) + ' ' + (baseY - hgt * 0.4) + ' Z',
+                        fill: '#3a2412', opacity: 0.85 }));
+                    });
+                    return pines;
+                  })(),
+                  // Ground
+                  h('rect', { x: 0, y: 155, width: 540, height: 45, fill: '#2c1a0d' }),
+                  // Trail of fading dots showing the bird's flight path
+                  h('circle', { cx: 90,  cy: 105, r: 2, fill: '#0f172a', opacity: 0.20 }),
+                  h('circle', { cx: 130, cy: 90,  r: 2.5, fill: '#0f172a', opacity: 0.30 }),
+                  h('circle', { cx: 175, cy: 78,  r: 2.8, fill: '#0f172a', opacity: 0.42 }),
+                  h('circle', { cx: 225, cy: 68,  r: 3, fill: '#0f172a', opacity: 0.55 }),
+                  h('circle', { cx: 280, cy: 58,  r: 3.2, fill: '#0f172a', opacity: 0.68 }),
+                  h('circle', { cx: 340, cy: 48,  r: 3.5, fill: '#0f172a', opacity: 0.80 }),
+                  // The bird, mid-flight, far from the viewer
+                  h('g', { transform: 'translate(420 38)' },
+                    h('path', { d: 'M -16 0 q 8 -10 16 0 q 8 -10 16 0', stroke: '#0f172a', strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round' })
+                  ),
+                  // Even smaller, vanishing further
+                  h('g', { transform: 'translate(490 22)' },
+                    h('path', { d: 'M -10 0 q 5 -6 10 0 q 5 -6 10 0', stroke: '#0f172a', strokeWidth: 2, fill: 'none', strokeLinecap: 'round', opacity: 0.7 })
+                  ),
+                  // Empty reticle ghost where the bird used to be (depth-of-field haze still visible)
+                  h('g', { transform: 'translate(180 130)' },
+                    h('circle', { cx: 0, cy: 0, r: 38, fill: 'none', stroke: '#92400e', strokeWidth: 2, strokeDasharray: '4 4', opacity: 0.5 }),
+                    h('text', { x: 0, y: 4, textAnchor: 'middle', fontSize: 11, fontWeight: 700, fill: '#92400e', opacity: 0.7 }, '...')
+                  )
+                )
+              ),
+              h('div', { className: 'bg-amber-50 border-2 border-amber-400 rounded-2xl p-5' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2 text-center' }, __headline),
+                // Big visible time stat (turn the failure into useful data)
+                h('div', { className: 'flex items-center justify-center gap-3 mb-3 p-3 bg-white rounded-xl' },
+                  h('div', { className: 'flex flex-col items-center px-4' },
+                    h('div', { className: 'text-3xl font-black font-mono ' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
+                      (onTargetMs / 1000).toFixed(1) + 's'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'On target')
+                  ),
+                  h('div', { className: 'text-3xl text-slate-400 font-light' }, '/'),
+                  h('div', { className: 'flex flex-col items-center px-4' },
+                    h('div', { className: 'text-3xl font-black font-mono text-slate-700' }, (GOAL_MS / 1000) + 's'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'Goal')
+                  ),
+                  h('div', { className: 'text-3xl text-slate-400 font-light' }, '='),
+                  h('div', { className: 'flex flex-col items-center px-4' },
+                    h('div', { className: 'text-3xl font-black font-mono ' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
+                      __pct + '%'),
+                    h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'Of goal')
+                  )
                 ),
-                h('p', { className: 'text-xs text-slate-700 italic mb-3' },
-                  '💡 Tip: anticipate movement. Birds often dart in 2–3 second cycles — predict where they\'re headed instead of chasing where they are.')
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3 text-center' },
+                  __pct >= 70 ? 'Real birding is exactly this hard. You almost had it — that\'s a real skill emerging.'
+                    : __pct >= 40 ? 'Most birds don\'t hold still. Track again with a fresh bird and you\'ll likely improve.'
+                    : 'Don\'t sweat it. Even Cornell-trained birders lose birds in the first few seconds. Try a different one.'
+                ),
+                h('div', { className: 'p-3 rounded-xl bg-white border border-amber-200' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800 mb-1' }, '💡 Birding tip'),
+                  h('p', { className: 'text-xs text-slate-800 leading-relaxed' },
+                    'Anticipate movement instead of chasing it. Birds often dart in 2–3 second cycles — predict where they\'re headed, not where they are. Real binoculars use the same trick: lead the bird like a quarterback leading a receiver.')
+                )
               ),
               h('div', { className: 'flex gap-2 flex-wrap' },
                 h('button', { onClick: startTracking,
-                  className: 'px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40'
-                }, '🔁 Try again with a different bird'),
+                  className: 'flex-1 px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40 shadow-md hover:shadow-lg transition-all'
+                }, '🔁 Try again with a fresh bird'),
                 h('button', { onClick: function() { setStep('intro'); },
-                  className: 'px-5 py-3 rounded-xl bg-white text-slate-800 border-2 border-slate-400 text-base font-bold hover:border-slate-600 focus:outline-none focus:ring-4 ring-slate-400/40'
+                  className: 'px-5 py-3 rounded-xl bg-white text-slate-800 border-2 border-slate-300 text-base font-bold hover:border-slate-500 focus:outline-none focus:ring-4 ring-slate-400/40'
                 }, '← Back to intro')
               )
             )
@@ -5345,10 +5615,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 ),
                 result.candidates.map(function(cand, i) {
                   var conflabel = confidenceLabel(cand.confidence);
-                  return h('div', { key: i, className: 'bg-white rounded-2xl border-2 ' + (i === 0 ? 'border-violet-500' : 'border-slate-300') + ' shadow p-4' },
-                    h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
-                      h('span', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700' },
-                        i === 0 ? '🥇 Most likely' : (i === 1 ? '🥈 Second guess' : '🥉 Third')),
+                  var pal = rankPalette(i);
+                  return h('div', { key: i,
+                    className: 'rounded-2xl shadow p-4 pt-6 relative',
+                    style: {
+                      background: pal.cardTint,
+                      border: pal.cardBorderWidth + ' solid ' + pal.cardBorder,
+                      boxShadow: pal.cardShadow,
+                      marginTop: i === 0 ? 18 : 12
+                    }
+                  },
+                    rankMedallion(i),
+                    h('div', { className: 'flex items-center gap-2 mb-2 flex-wrap justify-end' },
                       h('span', { className: 'text-xs font-bold ' + conflabel.tone }, conflabel.icon + ' ' + conflabel.text)
                     ),
                     h('h4', { className: 'text-lg font-black text-slate-800' }, cand.name),
