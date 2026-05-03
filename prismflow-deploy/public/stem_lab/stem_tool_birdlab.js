@@ -2780,31 +2780,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               )
             ),
             // Info panel for picked bird
-            picked && h('div', { className: 'bg-white rounded-2xl border-2 border-emerald-400 shadow p-5', 'aria-live': 'polite' },
-              h('div', { className: 'flex items-start gap-4 flex-wrap' },
-                h('div', { className: 'flex-shrink-0' },
-                  h('svg', { viewBox: '0 0 30 30', style: { width: '80px', height: '80px' }, role: 'img', 'aria-label': picked.name + ' illustration' },
-                    h('g', { transform: 'translate(2, 2)' }, picked.svg(h))
-                  )
+            picked && h('div', { className: 'bg-white rounded-2xl border-2 border-emerald-400 shadow-lg overflow-hidden', 'aria-live': 'polite' },
+              // ── Discovery scene (sun rays + sparkles around the bird) ──
+              h('div', { className: 'relative bg-gradient-to-br from-emerald-100 via-amber-50 to-sky-100 px-5 pt-5 pb-4 border-b-2 border-emerald-300 overflow-hidden' },
+                // Sun-ray burst behind the bird
+                h('svg', {
+                  'aria-hidden': 'true',
+                  style: { position: 'absolute', top: '50%', left: '60px', transform: 'translate(-50%, -50%)', width: 200, height: 200, opacity: 0.55, pointerEvents: 'none' },
+                  viewBox: '-100 -100 200 200'
+                },
+                  h('defs', null,
+                    h('radialGradient', { id: 'discoGlow' },
+                      h('stop', { offset: '0%', stopColor: '#fffbeb', stopOpacity: '0.95' }),
+                      h('stop', { offset: '60%', stopColor: '#fef3c7', stopOpacity: '0.4' }),
+                      h('stop', { offset: '100%', stopColor: '#fde68a', stopOpacity: '0' })
+                    )
+                  ),
+                  h('circle', { cx: 0, cy: 0, r: 90, fill: 'url(#discoGlow)' }),
+                  // Sun rays
+                  Array.from({length: 12}, function(_, i) {
+                    var ang = (i * 30) * Math.PI / 180;
+                    var x1 = Math.cos(ang) * 28, y1 = Math.sin(ang) * 28;
+                    var x2 = Math.cos(ang) * 80, y2 = Math.sin(ang) * 80;
+                    return h('line', { key: 'ry' + i,
+                      x1: x1, y1: y1, x2: x2, y2: y2,
+                      stroke: '#fbbf24', strokeWidth: i % 2 === 0 ? 2.5 : 1.5,
+                      strokeLinecap: 'round', opacity: 0.7 });
+                  })
                 ),
-                h('div', { className: 'flex-1 min-w-0' },
-                  h('h2', { className: 'text-xl font-black text-slate-800' }, picked.name),
-                  h('div', { className: 'text-sm italic text-slate-700 mb-2' }, picked.sciName + ' · ' + picked.size),
-                  h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-800 mb-2' },
-                    h('div', null, h('strong', null, '🌲 Habitat: '), picked.habitat),
-                    h('div', null, h('strong', null, '📍 Maine: '), picked.mainePresence),
-                    h('div', { className: 'md:col-span-2' }, h('strong', null, '🎶 Call: '), picked.callDescription),
-                    h('div', { className: 'md:col-span-2' }, h('strong', null, '✨ Did you know: '), picked.funFact)
+                // Sparkles scattered
+                [{x:30,y:14},{x:90,y:18},{x:140,y:42},{x:160,y:78},{x:96,y:98}].map(function(s, i) {
+                  return h('div', { key: 'sp' + i, 'aria-hidden': 'true',
+                    style: {
+                      position: 'absolute', left: s.x, top: s.y, width: 8, height: 8,
+                      background: '#fbbf24',
+                      clipPath: 'polygon(50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%)',
+                      opacity: 0.85
+                    }
+                  });
+                }),
+                // "✓ IDENTIFIED" stamp top-right
+                h('div', {
+                  style: {
+                    position: 'absolute', top: 12, right: 12,
+                    background: '#065f46', color: '#a7f3d0',
+                    padding: '5px 14px', borderRadius: 999,
+                    border: '2px solid #10b981',
+                    fontSize: 11, fontWeight: 900, letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.2)'
+                  }
+                }, '✓ Identified'),
+                // Bird + name row (in front of all the decoration)
+                h('div', { className: 'relative flex items-start gap-4 flex-wrap', style: { zIndex: 1 } },
+                  // Bird in white-backed circle with green ring
+                  h('div', {
+                    className: 'flex-shrink-0',
+                    style: {
+                      width: 96, height: 96, borderRadius: '50%',
+                      background: 'rgba(255,255,255,0.95)',
+                      border: '3px solid #10b981',
+                      boxShadow: '0 0 0 4px rgba(16,185,129,0.18), 0 6px 14px rgba(0,0,0,0.12)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }
+                  },
+                    h('svg', { viewBox: '0 0 30 30', style: { width: '76px', height: '76px' }, role: 'img', 'aria-label': picked.name + ' illustration' },
+                      h('g', { transform: 'translate(2, 2)' }, picked.svg(h))
+                    )
+                  ),
+                  h('div', { className: 'flex-1 min-w-0', style: { paddingTop: 8 } },
+                    h('h2', {
+                      className: 'text-2xl font-black text-slate-800',
+                      style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)', lineHeight: 1.1 }
+                    }, picked.name),
+                    h('div', {
+                      className: 'text-sm italic text-slate-700',
+                      style: { textShadow: '0 1px 0 rgba(255,255,255,0.7)' }
+                    }, picked.sciName + ' · ' + picked.size),
+                    h('div', { className: 'mt-1 flex flex-wrap gap-1.5' },
+                      h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-200 text-emerald-900 border border-emerald-400' },
+                        '🐾 ' + (picked.movement || '').replace(/-/g, ' ')),
+                      h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-200 text-sky-900 border border-sky-400' },
+                        '📍 ' + foundCount + '/' + totalBirds + ' in this habitat')
+                    )
                   )
                 )
               ),
-              h('div', { className: 'mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-slate-800' },
-                h('strong', { className: 'text-blue-900' }, 'Want to hear it? '),
-                'Open the free ',
-                h('strong', { className: 'font-mono' }, 'Merlin Bird ID'),
-                ' app (Cornell Lab) and search "',
-                picked.name,
-                '" — they have professional recordings.')
+              // ── Body content (info grid) ──
+              h('div', { className: 'p-5 space-y-3' },
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-800' },
+                  h('div', null, h('strong', null, '🌲 Habitat: '), picked.habitat),
+                  h('div', null, h('strong', null, '📍 Maine: '), picked.mainePresence),
+                  h('div', { className: 'md:col-span-2' }, h('strong', null, '🎶 Call: '), picked.callDescription),
+                  h('div', { className: 'md:col-span-2' }, h('strong', null, '✨ Did you know: '), picked.funFact)
+                ),
+                h('div', { className: 'p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-slate-800' },
+                  h('strong', { className: 'text-blue-900' }, 'Want to hear it? '),
+                  'Open the free ',
+                  h('strong', { className: 'font-mono' }, 'Merlin Bird ID'),
+                  ' app (Cornell Lab) and search "',
+                  picked.name,
+                  '" — they have professional recordings.'),
+                // Deep-link cluster — verify or read more on real ID resources
+                h('div', { className: 'p-3 bg-white border-2 border-emerald-300 rounded-lg' },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-800 mb-1.5' }, '🔗 Open in real-world resources'),
+                  birdLinkButtons(picked.name, picked.sciName, { size: 'xs' })
+                )
+              )
             ),
             // Keyboard alternative — list of birds for tabbing
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
