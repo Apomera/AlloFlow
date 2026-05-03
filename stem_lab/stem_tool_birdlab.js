@@ -5517,12 +5517,106 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           return h('div', { className: 'min-h-screen bg-slate-50' },
             h(BackBar, { icon: '🪶', title: 'Reflection' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
-              h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-2xl p-5' },
-                h('h2', { className: 'text-base font-black text-violet-900 mb-2' }, '🪶 What stood out?'),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                  'Two or three sentences on what struck you about this bird. Could be its behavior, sound, color, posture, the surrounding habitat, what it reminded you of, or what you noticed for the first time.'),
-                h('p', { className: 'text-xs text-slate-700 italic' },
-                  'Reflection is what turns observation into long-term memory. Birders who reflect retain field marks better than those who just identify-and-move-on.')
+              // ── Field-journal hero scene ──
+              h('div', { className: 'rounded-2xl overflow-hidden shadow border-2 border-violet-300 relative' },
+                h('svg', {
+                  viewBox: '0 0 540 170', width: '100%',
+                  style: { display: 'block' },
+                  role: 'img', 'aria-label': 'Open field journal page with a feather quill resting on it'
+                },
+                  h('defs', null,
+                    h('linearGradient', { id: 'reflBg', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#f5f3ff' }),
+                      h('stop', { offset: '100%', stopColor: '#ede9fe' })
+                    ),
+                    h('linearGradient', { id: 'reflPaper', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#fffbeb' }),
+                      h('stop', { offset: '100%', stopColor: '#fef3c7' })
+                    ),
+                    h('linearGradient', { id: 'reflFeather', x1: '0%', y1: '0%', x2: '100%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#7c3aed' }),
+                      h('stop', { offset: '50%', stopColor: '#a78bfa' }),
+                      h('stop', { offset: '100%', stopColor: '#f5f3ff' })
+                    )
+                  ),
+                  h('rect', { x: 0, y: 0, width: 540, height: 170, fill: 'url(#reflBg)' }),
+                  // Open journal — left page
+                  h('g', { transform: 'rotate(-2 270 90)' },
+                    h('path', { d: 'M40,30 L262,30 Q268,30 270,36 L270,150 Q268,156 262,156 L40,156 Q34,156 34,150 L34,36 Q34,30 40,30 Z',
+                      fill: 'url(#reflPaper)', stroke: '#a8a29e', strokeWidth: 1 }),
+                    // Lines on left page
+                    [50, 64, 78, 92, 106, 120, 134].map(function(y, i) {
+                      return h('line', { key: 'lL' + i, x1: 48, y1: y, x2: 256, y2: y,
+                        stroke: '#fbbf24', strokeWidth: 0.5, opacity: 0.5 });
+                    }),
+                    // Faint sketches on left page (bird silhouettes)
+                    h('path', { d: 'M70,52 Q78,46 86,52 Q90,58 86,62 Z M86,52 L92,55',
+                      fill: '#a16207', opacity: 0.55 }),
+                    h('path', { d: 'M150,72 Q158,66 168,72 Q172,78 168,82 Z M168,72 L174,76',
+                      fill: '#a16207', opacity: 0.45 }),
+                    // "Notes" text
+                    h('text', { x: 48, y: 44, fontSize: 9, fontFamily: 'cursive, serif',
+                      fill: '#7c2d12', opacity: 0.7, fontStyle: 'italic' }, 'Field Notes —')
+                  ),
+                  // Open journal — right page (the active page, with margin lines)
+                  h('g', { transform: 'rotate(1.5 380 90)' },
+                    h('path', { d: 'M280,28 L502,28 Q508,28 508,34 L508,148 Q508,154 502,154 L280,154 Q274,154 274,148 L274,34 Q274,28 280,28 Z',
+                      fill: 'url(#reflPaper)', stroke: '#a8a29e', strokeWidth: 1 }),
+                    // Margin line
+                    h('line', { x1: 290, y1: 32, x2: 290, y2: 150, stroke: '#dc2626', strokeWidth: 0.6, opacity: 0.55 }),
+                    // Ruled lines
+                    [48, 62, 76, 90, 104, 118, 132, 146].map(function(y, i) {
+                      return h('line', { key: 'lR' + i, x1: 295, y1: y, x2: 502, y2: y,
+                        stroke: '#fbbf24', strokeWidth: 0.5, opacity: 0.5 });
+                    }),
+                    // "Reflection" header on right page
+                    h('text', { x: 298, y: 44, fontSize: 11, fontFamily: 'serif',
+                      fill: '#581c87', fontWeight: 'bold' }, 'Reflection —'),
+                    // Faint pencil scribbles (waiting to be filled)
+                    h('path', { d: 'M296,60 Q310,56 320,60 M324,60 Q330,58 336,60',
+                      fill: 'none', stroke: '#a78bfa', strokeWidth: 0.6, opacity: 0.4 }),
+                    h('path', { d: 'M296,74 Q314,70 332,74 Q344,76 354,74',
+                      fill: 'none', stroke: '#a78bfa', strokeWidth: 0.6, opacity: 0.4 })
+                  ),
+                  // Center spine binding
+                  h('line', { x1: 270, y1: 30, x2: 272, y2: 150, stroke: '#78716c', strokeWidth: 1.2, opacity: 0.7 }),
+                  // Feather quill resting diagonally
+                  h('g', { transform: 'translate(370, 90) rotate(-32)' },
+                    // Shaft
+                    h('line', { x1: -90, y1: 0, x2: 90, y2: 0, stroke: '#581c87', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                    // Vane (feather barbs)
+                    h('path', { d: 'M-90,0 Q-60,-22 -30,-12 Q0,-2 60,-8 Q80,-10 90,-2 L90,2 Q80,10 60,8 Q0,2 -30,12 Q-60,22 -90,0 Z',
+                      fill: 'url(#reflFeather)', stroke: '#7c3aed', strokeWidth: 0.5, opacity: 0.95 }),
+                    // Barb detail lines
+                    [-72, -54, -36, -18, 0, 18, 36, 54, 72].map(function(x, i) {
+                      var hgt = 12 - Math.abs(x) / 14;
+                      return h('g', { key: 'br' + i },
+                        h('line', { x1: x, y1: 0, x2: x - 1, y2: -hgt, stroke: '#581c87', strokeWidth: 0.4, opacity: 0.65 }),
+                        h('line', { x1: x, y1: 0, x2: x + 1, y2: hgt, stroke: '#581c87', strokeWidth: 0.4, opacity: 0.65 })
+                      );
+                    }),
+                    // Quill tip
+                    h('path', { d: 'M-90,-1 L-100,0 L-90,1 Z', fill: '#1e1b4b' }),
+                    // Tiny ink droplet near tip
+                    h('ellipse', { cx: -98, cy: 4, rx: 1.5, ry: 0.8, fill: '#1e1b4b', opacity: 0.7 })
+                  ),
+                  // Title overlay top-left
+                  h('g', { transform: 'translate(20, 22)' },
+                    h('rect', { x: 0, y: 0, width: 220, height: 32, rx: 16,
+                      fill: '#581c87', opacity: 0.92,
+                      stroke: '#a78bfa', strokeWidth: 1.5 }),
+                    h('text', { x: 110, y: 21, textAnchor: 'middle',
+                      fill: '#f5f3ff', fontWeight: 900, fontSize: 14, letterSpacing: '0.04em',
+                      style: { fontFamily: 'system-ui, sans-serif' }
+                    }, '🪶 What stood out?')
+                  )
+                ),
+                h('div', { className: 'bg-violet-50 px-5 py-3 border-t-2 border-violet-300' },
+                  h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-1' },
+                    'Two or three sentences on what struck you about this bird. Behavior, sound, color, posture, the surrounding habitat, what it reminded you of, or what you noticed for the first time.'),
+                  h('p', { className: 'text-xs text-violet-800 italic' },
+                    'Reflection is what turns observation into long-term memory. Birders who reflect retain field marks better than those who just identify-and-move-on.')
+                )
               ),
               h('div', { className: 'bg-white rounded-2xl border-2 border-violet-300 shadow p-4' },
                 h('label', { htmlFor: 'fo-reflect', className: 'block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' },
@@ -5557,22 +5651,119 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         if (step === 'done') {
           var lastEntry = notebook[0];
           var sb2 = sessionBird || (lastEntry ? { icon: lastEntry.speciesIcon, name: lastEntry.speciesName } : { icon: '🐦', name: 'Bird' });
+          var __today = new Date();
+          var __dateLabel = __today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
           return h('div', { className: 'min-h-screen bg-slate-50' },
             h(BackBar, { icon: '🎉', title: 'Saved to notebook' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
-              h('div', { className: 'bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-6 text-center' },
-                h('div', { className: 'text-5xl mb-3' }, '📓'),
-                h('h2', { className: 'text-xl font-black text-emerald-900 mb-2' }, 'Saved!'),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-4' },
-                  'Your observation of the ', h('strong', null, sb2.name), ' is now in your field notebook (', notebook.length, ' total entr', notebook.length === 1 ? 'y' : 'ies', ').'),
-                h('div', { className: 'flex gap-2 flex-wrap justify-center' },
-                  h('button', { onClick: startOver,
-                    className: 'px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40'
-                  }, '🔭 Start another observation'),
-                  h('button', { onClick: function() { setStep('notebook'); },
-                    className: 'px-5 py-3 rounded-xl bg-white text-emerald-800 border-2 border-emerald-500 text-base font-bold hover:border-emerald-700 focus:outline-none focus:ring-4 ring-emerald-500/40'
-                  }, '📓 Read my notebook')
+              // ── Stamped journal-page hero ──
+              h('div', { className: 'rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-400 relative', 'aria-live': 'polite' },
+                h('svg', {
+                  viewBox: '0 0 540 220', width: '100%',
+                  style: { display: 'block' },
+                  role: 'img', 'aria-label': 'Field journal page with observation stamped in'
+                },
+                  h('defs', null,
+                    h('linearGradient', { id: 'doneBg', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ecfdf5' }),
+                      h('stop', { offset: '100%', stopColor: '#fef9c3' })
+                    ),
+                    h('linearGradient', { id: 'donePaper', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#fffbeb' }),
+                      h('stop', { offset: '100%', stopColor: '#fde68a' })
+                    )
+                  ),
+                  h('rect', { x: 0, y: 0, width: 540, height: 220, fill: 'url(#doneBg)' }),
+                  // Confetti ribbons in background
+                  [{x:50,y:30,r:-20,c:'#10b981'},{x:480,y:40,r:25,c:'#fbbf24'},{x:90,y:180,r:15,c:'#a78bfa'},{x:460,y:170,r:-25,c:'#f43f5e'},{x:250,y:18,r:-10,c:'#0ea5e9'}].map(function(c, i) {
+                    return h('rect', { key: 'cf' + i, x: c.x, y: c.y, width: 14, height: 4,
+                      transform: 'rotate(' + c.r + ' ' + (c.x + 7) + ' ' + (c.y + 2) + ')',
+                      fill: c.c, opacity: 0.8 });
+                  }),
+                  // Sparkles
+                  [{x:130,y:50},{x:420,y:75},{x:80,y:130},{x:470,y:130},{x:400,y:30},{x:200,y:200}].map(function(s, idx) {
+                    return h('path', { key: 'sk' + idx,
+                      d: 'M' + s.x + ',' + (s.y - 5) + ' L' + (s.x + 1.2) + ',' + (s.y - 1.2) + ' L' + (s.x + 5) + ',' + s.y + ' L' + (s.x + 1.2) + ',' + (s.y + 1.2) + ' L' + s.x + ',' + (s.y + 5) + ' L' + (s.x - 1.2) + ',' + (s.y + 1.2) + ' L' + (s.x - 5) + ',' + s.y + ' L' + (s.x - 1.2) + ',' + (s.y - 1.2) + ' Z',
+                      fill: '#fbbf24', opacity: 0.85 });
+                  }),
+                  // Journal page (slight tilt)
+                  h('g', { transform: 'rotate(-1.5 270 110)' },
+                    // Page shadow
+                    h('rect', { x: 92, y: 36, width: 358, height: 158, rx: 6, fill: '#0f172a', opacity: 0.12 }),
+                    // Page
+                    h('path', { d: 'M88,32 L448,32 Q454,32 454,38 L454,188 Q454,194 448,194 L88,194 Q82,194 82,188 L82,38 Q82,32 88,32 Z',
+                      fill: 'url(#donePaper)', stroke: '#a16207', strokeWidth: 1 }),
+                    // Margin
+                    h('line', { x1: 100, y1: 38, x2: 100, y2: 188, stroke: '#dc2626', strokeWidth: 0.7, opacity: 0.5 }),
+                    // Ruled lines
+                    [62, 80, 98, 116, 134, 152, 170].map(function(y, i) {
+                      return h('line', { key: 'dl' + i, x1: 106, y1: y, x2: 446, y2: y,
+                        stroke: '#fbbf24', strokeWidth: 0.5, opacity: 0.5 });
+                    }),
+                    // Date stamp top-right of page
+                    h('g', { transform: 'translate(380, 42) rotate(-3)' },
+                      h('rect', { x: 0, y: 0, width: 64, height: 18, rx: 2,
+                        fill: 'none', stroke: '#065f46', strokeWidth: 1.5, opacity: 0.85 }),
+                      h('text', { x: 32, y: 12, textAnchor: 'middle',
+                        fontSize: 9, fontWeight: 'bold', fill: '#065f46',
+                        style: { fontFamily: 'system-ui, sans-serif', textTransform: 'uppercase', letterSpacing: '0.04em' }
+                      }, __dateLabel)
+                    ),
+                    // Entry header (handwritten-looking)
+                    h('text', { x: 108, y: 56, fontSize: 14, fontFamily: 'serif',
+                      fontStyle: 'italic', fontWeight: 'bold', fill: '#581c87' }, 'Observation logged'),
+                    // Species name
+                    h('text', { x: 108, y: 76, fontSize: 16, fontWeight: 'bold',
+                      fill: '#1e293b' }, sb2.name),
+                    // Entry summary (handwritten-style transcription cues)
+                    h('path', { d: 'M108,94 Q150,90 200,94 Q260,98 320,94 Q380,90 440,94',
+                      fill: 'none', stroke: '#1e293b', strokeWidth: 0.8, opacity: 0.5 }),
+                    h('path', { d: 'M108,112 Q160,108 220,112 Q280,116 340,112 Q400,108 430,112',
+                      fill: 'none', stroke: '#1e293b', strokeWidth: 0.8, opacity: 0.5 }),
+                    h('path', { d: 'M108,130 Q150,126 200,130 Q260,134 320,130',
+                      fill: 'none', stroke: '#1e293b', strokeWidth: 0.8, opacity: 0.5 }),
+                    // Bird sketch on right side of page
+                    h('g', { transform: 'translate(370, 130)' },
+                      h('ellipse', { cx: 0, cy: 0, rx: 22, ry: 16, fill: '#a16207', opacity: 0.4 }),
+                      h('circle', { cx: -16, cy: -6, r: 9, fill: '#a16207', opacity: 0.4 }),
+                      h('circle', { cx: -19, cy: -8, r: 1.5, fill: '#1c1917' }),
+                      h('path', { d: 'M-24,-6 L-30,-4 L-24,-3 Z', fill: '#f59e0b', opacity: 0.7 }),
+                      h('path', { d: 'M16,-2 Q26,-4 30,2 Q26,6 16,4 Z', fill: '#78350f', opacity: 0.4 }),
+                      h('path', { d: 'M22,2 L32,-2 L32,6 Z', fill: '#78350f', opacity: 0.4 })
+                    ),
+                    // "✓ SAVED" stamp diagonal across page (the big celebration)
+                    h('g', { transform: 'translate(285, 175) rotate(-12)' },
+                      h('rect', { x: -70, y: -16, width: 140, height: 32, rx: 4,
+                        fill: 'none', stroke: '#dc2626', strokeWidth: 3, opacity: 0.85 }),
+                      h('text', { x: 0, y: 6, textAnchor: 'middle',
+                        fontSize: 22, fontWeight: 900, fill: '#dc2626', opacity: 0.9,
+                        style: { fontFamily: 'serif', letterSpacing: '0.08em' }
+                      }, '✓ SAVED')
+                    )
+                  )
+                ),
+                // Banner below scene
+                h('div', { className: 'bg-gradient-to-r from-emerald-50 to-amber-50 px-5 py-3 border-t-2 border-emerald-400 flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', null,
+                    h('div', { className: 'text-2xl font-black text-emerald-900', style: { lineHeight: 1.1 } }, 'Entry saved!'),
+                    h('div', { className: 'text-sm text-slate-800' },
+                      h('strong', { className: 'text-emerald-800' }, sb2.name),
+                      ' is now in your field notebook.')
+                  ),
+                  h('div', { className: 'text-right' },
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700' }, 'Total entries'),
+                    h('div', { className: 'text-3xl font-black text-emerald-700 font-mono' }, notebook.length)
+                  )
                 )
+              ),
+              // Action buttons
+              h('div', { className: 'flex gap-2 flex-wrap justify-center' },
+                h('button', { onClick: startOver,
+                  className: 'px-5 py-3 rounded-xl bg-teal-700 text-white text-base font-bold hover:bg-teal-800 focus:outline-none focus:ring-4 ring-teal-500/40'
+                }, '🔭 Start another observation'),
+                h('button', { onClick: function() { setStep('notebook'); },
+                  className: 'px-5 py-3 rounded-xl bg-white text-emerald-800 border-2 border-emerald-500 text-base font-bold hover:border-emerald-700 focus:outline-none focus:ring-4 ring-emerald-500/40'
+                }, '📓 Read my notebook (' + notebook.length + ')')
               )
             )
           );
