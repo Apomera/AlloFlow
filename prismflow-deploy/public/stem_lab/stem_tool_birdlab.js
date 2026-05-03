@@ -3130,32 +3130,161 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         {
           id: 'perching', label: 'Perching (anisodactyl)',
           lifestyle: 'Songbirds — 3 toes forward + 1 back; tendons LOCK around branch when bird relaxes',
-          examples: 'Robin, chickadee, cardinal, blue jay — most birds you\'ll see at a feeder'
+          examples: 'Robin, chickadee, cardinal, blue jay — most birds you\'ll see at a feeder',
+          svg: function(h) {
+            // 3 toes wrapping a horizontal branch + 1 back toe
+            return h('g', null,
+              // Branch (cross-section)
+              h('ellipse', { cx: 20, cy: 26, rx: 18, ry: 5, fill: '#92400e', stroke: '#451a03', strokeWidth: 0.5 }),
+              h('path', { d: 'M 4 26 Q 4 21 8 21 L 32 21 Q 36 21 36 26', fill: '#a16207', stroke: '#451a03', strokeWidth: 0.5 }),
+              // Leg
+              h('line', { x1: 20, y1: 4, x2: 20, y2: 18, stroke: '#fde68a', strokeWidth: 3, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 4, x2: 20, y2: 18, stroke: '#a16207', strokeWidth: 1, strokeLinecap: 'round' }),
+              // Front 3 toes curling over branch
+              h('path', { d: 'M 20 18 Q 12 22 8 28', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
+              h('path', { d: 'M 20 18 Q 20 24 20 30', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
+              h('path', { d: 'M 20 18 Q 28 22 32 28', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
+              // Back toe (hallux) — wraps backward under branch
+              h('path', { d: 'M 20 18 Q 22 25 26 28', fill: 'none', stroke: '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
+              // Toe tips (claws)
+              h('circle', { cx: 8, cy: 28, r: 0.8, fill: '#1c1917' }),
+              h('circle', { cx: 20, cy: 30, r: 0.8, fill: '#1c1917' }),
+              h('circle', { cx: 32, cy: 28, r: 0.8, fill: '#1c1917' })
+            );
+          }
         },
         {
           id: 'raptor', label: 'Raptor talons',
           lifestyle: 'Hawks, eagles, owls — powerful crushing grip with curved talons',
-          examples: 'Bald Eagle, Cooper\'s Hawk, owls — designed to kill prey on contact'
+          examples: 'Bald Eagle, Cooper\'s Hawk, owls — designed to kill prey on contact',
+          svg: function(h) {
+            return h('g', null,
+              // Thick yellow leg
+              h('rect', { x: 17, y: 2, width: 6, height: 14, rx: 2, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 0.6 }),
+              // Scales
+              [5, 8, 11, 14].map(function(y, i) {
+                return h('line', { key: 'sc' + i, x1: 17, y1: y, x2: 23, y2: y, stroke: '#92400e', strokeWidth: 0.4, opacity: 0.6 });
+              }),
+              // 3 forward talons - curved, sharp
+              h('path', { d: 'M 20 16 Q 12 20 6 26 Q 4 30 7 32', fill: 'none', stroke: '#1c1917', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              h('path', { d: 'M 20 16 Q 20 22 19 30 Q 19 33 20 34', fill: 'none', stroke: '#1c1917', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              h('path', { d: 'M 20 16 Q 28 20 34 26 Q 36 30 33 32', fill: 'none', stroke: '#1c1917', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              // Back talon (hallux — kill talon, the largest)
+              h('path', { d: 'M 20 16 Q 24 22 28 26 Q 30 28 28 30', fill: 'none', stroke: '#1c1917', strokeWidth: 3, strokeLinecap: 'round' }),
+              // Talon tips (sharp triangles)
+              h('path', { d: 'M 5 32 L 8 30 L 8 33 Z', fill: '#1c1917' }),
+              h('path', { d: 'M 18 34 L 21 32 L 21 36 Z', fill: '#1c1917' }),
+              h('path', { d: 'M 31 32 L 34 30 L 34 33 Z', fill: '#1c1917' })
+            );
+          }
         },
         {
           id: 'climbing', label: 'Climbing (zygodactyl)',
           lifestyle: 'Woodpeckers + parrots — 2 toes forward + 2 back; clings to vertical bark while hammering',
-          examples: 'Pileated Woodpecker, all woodpeckers, nuthatches (use modified version)'
+          examples: 'Pileated Woodpecker, all woodpeckers, nuthatches (use modified version)',
+          svg: function(h) {
+            return h('g', null,
+              // Vertical tree trunk (textured)
+              h('rect', { x: 14, y: 0, width: 12, height: 40, fill: '#6b3410' }),
+              h('path', { d: 'M 14 6 L 17 4 M 14 14 L 17 12 M 14 22 L 17 20 M 14 30 L 17 28', stroke: '#3f1d04', strokeWidth: 0.8 }),
+              h('path', { d: 'M 26 8 L 23 6 M 26 18 L 23 16 M 26 26 L 23 24 M 26 36 L 23 34', stroke: '#3f1d04', strokeWidth: 0.8 }),
+              // Leg (horizontal — bird is clinging)
+              h('rect', { x: 17, y: 18, width: 8, height: 4, rx: 1.5, fill: '#fde68a', stroke: '#92400e', strokeWidth: 0.4 }),
+              // 2 forward toes (above)
+              h('path', { d: 'M 20 19 L 12 12 L 9 14', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
+              h('path', { d: 'M 22 19 L 30 12 L 33 14', fill: 'none', stroke: '#fbbf24', strokeWidth: 2, strokeLinecap: 'round' }),
+              // 2 back toes (below)
+              h('path', { d: 'M 20 22 L 12 30 L 9 28', fill: 'none', stroke: '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
+              h('path', { d: 'M 22 22 L 30 30 L 33 28', fill: 'none', stroke: '#d97706', strokeWidth: 2, strokeLinecap: 'round' }),
+              // Claws
+              h('circle', { cx: 9, cy: 14, r: 0.7, fill: '#1c1917' }),
+              h('circle', { cx: 33, cy: 14, r: 0.7, fill: '#1c1917' }),
+              h('circle', { cx: 9, cy: 28, r: 0.7, fill: '#1c1917' }),
+              h('circle', { cx: 33, cy: 28, r: 0.7, fill: '#1c1917' })
+            );
+          }
         },
         {
           id: 'webbed', label: 'Webbed',
           lifestyle: 'Swimming — paddle-like skin between front toes; powerful underwater propulsion',
-          examples: 'Mallard, Common Eider, gulls, ducks, geese'
+          examples: 'Mallard, Common Eider, gulls, ducks, geese',
+          svg: function(h) {
+            return h('g', null,
+              // Water surface line
+              h('path', { d: 'M 2 8 Q 8 6 14 8 Q 20 6 26 8 Q 32 6 38 8', fill: 'none', stroke: '#0ea5e9', strokeWidth: 1, opacity: 0.6 }),
+              h('path', { d: 'M 2 4 Q 8 2 14 4 Q 20 2 26 4 Q 32 2 38 4', fill: 'none', stroke: '#0ea5e9', strokeWidth: 0.7, opacity: 0.4 }),
+              // Leg
+              h('rect', { x: 18, y: 8, width: 4, height: 8, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 0.4 }),
+              // Webbed foot — 3 toes connected by skin
+              h('path', { d: 'M 20 16 L 8 32 L 16 34 L 20 24 L 24 34 L 32 32 Z',
+                fill: '#fbbf24', stroke: '#92400e', strokeWidth: 0.7 }),
+              // Toe bones inside webbing (suggesting structure)
+              h('line', { x1: 20, y1: 16, x2: 9, y2: 32, stroke: '#92400e', strokeWidth: 0.5, opacity: 0.7 }),
+              h('line', { x1: 20, y1: 16, x2: 20, y2: 30, stroke: '#92400e', strokeWidth: 0.5, opacity: 0.7 }),
+              h('line', { x1: 20, y1: 16, x2: 31, y2: 32, stroke: '#92400e', strokeWidth: 0.5, opacity: 0.7 }),
+              // Claws
+              h('circle', { cx: 9, cy: 32, r: 0.6, fill: '#1c1917' }),
+              h('circle', { cx: 20, cy: 24, r: 0.6, fill: '#1c1917' }),
+              h('circle', { cx: 31, cy: 32, r: 0.6, fill: '#1c1917' })
+            );
+          }
         },
         {
           id: 'wading', label: 'Wading (long toes)',
           lifestyle: 'Long unwebbed toes spread weight across mud and lily pads without sinking',
-          examples: 'Great Blue Heron, egrets, sandpipers, rails'
+          examples: 'Great Blue Heron, egrets, sandpipers, rails',
+          svg: function(h) {
+            return h('g', null,
+              // Lily pad / mud
+              h('ellipse', { cx: 20, cy: 36, rx: 18, ry: 3, fill: '#16a34a', opacity: 0.7 }),
+              h('path', { d: 'M 6 36 Q 14 33 22 36 Q 30 33 36 36', fill: 'none', stroke: '#15803d', strokeWidth: 0.6 }),
+              // Long thin leg
+              h('line', { x1: 20, y1: 0, x2: 20, y2: 22, stroke: '#fde68a', strokeWidth: 2.5, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 0, x2: 20, y2: 22, stroke: '#a16207', strokeWidth: 0.8, strokeLinecap: 'round' }),
+              // Long thin toes spread in 4 directions (wide stance)
+              h('line', { x1: 20, y1: 22, x2: 4, y2: 36, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 22, x2: 14, y2: 38, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 22, x2: 26, y2: 38, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 22, x2: 36, y2: 36, stroke: '#fbbf24', strokeWidth: 1.5, strokeLinecap: 'round' }),
+              // Back toe
+              h('line', { x1: 20, y1: 22, x2: 20, y2: 30, stroke: '#d97706', strokeWidth: 1.4, strokeLinecap: 'round' }),
+              // Claws
+              h('circle', { cx: 4, cy: 36, r: 0.5, fill: '#1c1917' }),
+              h('circle', { cx: 14, cy: 38, r: 0.5, fill: '#1c1917' }),
+              h('circle', { cx: 26, cy: 38, r: 0.5, fill: '#1c1917' }),
+              h('circle', { cx: 36, cy: 36, r: 0.5, fill: '#1c1917' })
+            );
+          }
         },
         {
           id: 'shorebird', label: 'Shorebird (small webbing)',
           lifestyle: 'Mix of running fast on sand + swimming when needed; partial webbing',
-          examples: 'Sandpipers, plovers (Piping Plover endangered in Maine), gulls (semi-webbed)'
+          examples: 'Sandpipers, plovers (Piping Plover endangered in Maine), gulls (semi-webbed)',
+          svg: function(h) {
+            return h('g', null,
+              // Sand/wet beach
+              h('ellipse', { cx: 20, cy: 36, rx: 18, ry: 2.5, fill: '#fde68a', opacity: 0.7 }),
+              h('circle', { cx: 6, cy: 35, r: 0.6, fill: '#a16207', opacity: 0.5 }),
+              h('circle', { cx: 12, cy: 36, r: 0.5, fill: '#a16207', opacity: 0.5 }),
+              h('circle', { cx: 28, cy: 36, r: 0.6, fill: '#a16207', opacity: 0.5 }),
+              h('circle', { cx: 34, cy: 35, r: 0.5, fill: '#a16207', opacity: 0.5 }),
+              // Leg
+              h('rect', { x: 18.5, y: 6, width: 3, height: 14, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 0.4 }),
+              // 3 forward toes with PARTIAL webbing at base
+              h('path', { d: 'M 20 20 L 8 32 L 12 34 Q 16 30 20 30 Q 24 30 28 34 L 32 32 Z',
+                fill: '#fbbf24', stroke: '#92400e', strokeWidth: 0.6, opacity: 0.55 }),
+              // Distinct toes (drawn over the webbing)
+              h('line', { x1: 20, y1: 20, x2: 8, y2: 32, stroke: '#92400e', strokeWidth: 1.4, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 20, x2: 20, y2: 32, stroke: '#92400e', strokeWidth: 1.4, strokeLinecap: 'round' }),
+              h('line', { x1: 20, y1: 20, x2: 32, y2: 32, stroke: '#92400e', strokeWidth: 1.4, strokeLinecap: 'round' }),
+              // Tiny back toe
+              h('line', { x1: 20, y1: 20, x2: 22, y2: 24, stroke: '#d97706', strokeWidth: 1, strokeLinecap: 'round' }),
+              // Claws
+              h('circle', { cx: 8, cy: 32, r: 0.5, fill: '#1c1917' }),
+              h('circle', { cx: 20, cy: 32, r: 0.5, fill: '#1c1917' }),
+              h('circle', { cx: 32, cy: 32, r: 0.5, fill: '#1c1917' })
+            );
+          }
         }
       ];
 
@@ -3206,12 +3335,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   );
                 })
               ),
-              pickedBeak && h('div', { className: 'mt-3 p-4 bg-amber-50 border-2 border-amber-400 rounded-xl', 'aria-live': 'polite' },
-                h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, pickedBeak.label),
-                h('p', { className: 'text-sm text-slate-800 mb-2' },
-                  h('strong', null, '🍽 Diet: '), pickedBeak.diet),
-                h('p', { className: 'text-sm text-slate-800' },
-                  h('strong', null, '🐦 Examples: '), pickedBeak.examples)
+              pickedBeak && h('div', { className: 'mt-3 p-4 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-start gap-4 flex-wrap', 'aria-live': 'polite' },
+                pickedBeak.svg && h('div', { className: 'flex-shrink-0 bg-white rounded-xl border-2 border-amber-300 p-2 shadow-sm', style: { width: 100, height: 64, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                  h('svg', { viewBox: '0 0 35 20', style: { width: 84, height: 48 }, role: 'img', 'aria-label': pickedBeak.label + ' diagram' }, pickedBeak.svg(h))
+                ),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, pickedBeak.label),
+                  h('p', { className: 'text-sm text-slate-800 mb-2' },
+                    h('strong', null, '🍽 Diet: '), pickedBeak.diet),
+                  h('p', { className: 'text-sm text-slate-800' },
+                    h('strong', null, '🐦 Examples: '), pickedBeak.examples)
+                )
               )
             ),
             // Feet Reference grid
@@ -3227,16 +3361,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     className: 'text-left p-3 rounded-xl border-2 transition focus:outline-none focus:ring-2 ring-amber-500/40 birdlab-card-lift ' +
                       (sel ? 'bg-amber-100 border-amber-600 shadow-lg' : 'bg-white border-slate-300 hover:border-amber-500')
                   },
-                    h('div', { className: 'text-sm font-bold text-slate-800 mb-1' }, f.label)
+                    h('div', { className: 'flex items-center justify-center bg-slate-50 rounded-lg p-2 mb-2', style: { height: '60px' } },
+                      f.svg ? h('svg', { viewBox: '0 0 40 40', style: { width: '60px', height: '52px' } }, f.svg(h))
+                            : h('span', { className: 'text-3xl text-slate-400', 'aria-hidden': true }, '🦶')
+                    ),
+                    h('div', { className: 'text-xs font-bold text-slate-800' }, f.label)
                   );
                 })
               ),
-              pickedFoot && h('div', { className: 'mt-3 p-4 bg-amber-50 border-2 border-amber-400 rounded-xl', 'aria-live': 'polite' },
-                h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, pickedFoot.label),
-                h('p', { className: 'text-sm text-slate-800 mb-2' },
-                  h('strong', null, '🚶 Lifestyle: '), pickedFoot.lifestyle),
-                h('p', { className: 'text-sm text-slate-800' },
-                  h('strong', null, '🐦 Examples: '), pickedFoot.examples)
+              pickedFoot && h('div', { className: 'mt-3 p-4 bg-amber-50 border-2 border-amber-400 rounded-xl flex items-start gap-4 flex-wrap', 'aria-live': 'polite' },
+                pickedFoot.svg && h('div', { className: 'flex-shrink-0 bg-white rounded-xl border-2 border-amber-300 p-2 shadow-sm', style: { width: 84, height: 84, display: 'flex', alignItems: 'center', justifyContent: 'center' } },
+                  h('svg', { viewBox: '0 0 40 40', style: { width: 64, height: 64 }, role: 'img', 'aria-label': pickedFoot.label + ' diagram' }, pickedFoot.svg(h))
+                ),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, pickedFoot.label),
+                  h('p', { className: 'text-sm text-slate-800 mb-2' },
+                    h('strong', null, '🚶 Lifestyle: '), pickedFoot.lifestyle),
+                  h('p', { className: 'text-sm text-slate-800' },
+                    h('strong', null, '🐦 Examples: '), pickedFoot.examples)
+                )
               )
             ),
             // Beak / foot match observations
