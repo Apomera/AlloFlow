@@ -467,11 +467,11 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
           <>
           <div className="h-4 w-px bg-slate-300 shrink-0"></div>
           <div className="flex items-center gap-2 shrink-0">
-            <button onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={t('common.previous')}><ChevronLeft size={14}/></button>
+            <button onClick={() => setChunkReaderIdx(Math.max(0, chunkReaderIdx - 1))} disabled={chunkReaderIdx <= 0} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.previous', 'Previous') + ' (← / Home)'}><ChevronLeft size={14}/></button>
             <span className="text-xs font-bold text-slate-600 tabular-nums min-w-[3rem] text-center">{chunkReaderIdx + 1} / {totalSentences}</span>
-            <button onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={t('common.next')}><ChevronRight size={14}/></button>
+            <button onClick={() => setChunkReaderIdx(Math.min(totalSentences - 1, chunkReaderIdx + 1))} disabled={chunkReaderIdx >= totalSentences - 1} className="p-1 rounded-full bg-slate-100 hover:bg-slate-200 disabled:opacity-30 transition-all" title={safeT(t, 'common.next', 'Next') + ' (→ / End)'}><ChevronRight size={14}/></button>
             <div className="h-4 w-px bg-slate-200"></div>
-            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')}>
+            <button onClick={() => setChunkReaderAutoPlay(!chunkReaderAutoPlay)} className={`px-2 py-1 text-xs font-bold rounded-full transition-all ${chunkReaderAutoPlay ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`} title={(chunkReaderAutoPlay ? safeT(t, 'common.pause', 'Pause') : safeT(t, 'common.auto_play', 'Auto')) + ' (Space) · Esc exits · Enter skips typewriter reveal'}>
               {chunkReaderAutoPlay ? <Pause size={12} className="inline"/> : <Play size={12} className="inline"/>}
             </button>
             <div className="flex items-center gap-1">
@@ -647,12 +647,28 @@ const ImmersiveToolbar = React.memo(({ settings, setSettings, onClose, playbackR
 // ============================================================================
 const PerspectiveCrawlOverlay = React.memo(({ text, onClose, isOpen }) => {
     const { t } = useContext(LanguageContext);
-    const [speedPxPerSec, setSpeedPxPerSec] = useState(70);
+    // Persist user's preferred speed / palette / ambient across sessions so each
+    // open doesn't reset to defaults. Direct localStorage with try/catch — same
+    // lightweight pattern used elsewhere (no safeGetItem dep needed).
+    const [speedPxPerSec, setSpeedPxPerSec] = useState(() => {
+        try { const v = parseInt(localStorage.getItem('allo_crawl_speed'), 10); return (v >= 10 && v <= 140) ? v : 70; } catch { return 70; }
+    });
+    useEffect(() => { try { localStorage.setItem('allo_crawl_speed', String(speedPxPerSec)); } catch {} }, [speedPxPerSec]);
     const [isPlaying, setIsPlaying] = useState(true);
     const [translateY, setTranslateY] = useState(0); // negative = scrolled up — used for render only
-    const [palette, setPalette] = useState('gold'); // 'gold' | 'teal' | 'paper'
+    const [palette, setPalette] = useState(() => {
+        try { const v = localStorage.getItem('allo_crawl_palette'); return ['gold', 'teal', 'paper'].includes(v) ? v : 'gold'; } catch { return 'gold'; }
+    }); // 'gold' | 'teal' | 'paper'
+    useEffect(() => { try { localStorage.setItem('allo_crawl_palette', palette); } catch {} }, [palette]);
     const [finished, setFinished] = useState(false);
-    const [ambientOn, setAmbientOn] = useState(true);
+    // Ambient pad defaults OFF — clicking "Cinematic Crawl" counts as a user
+    // gesture, so the AudioContext would otherwise start playing immediately and
+    // surprise users who didn't expect audio. Users who want it can press M or
+    // click ♪; their preference persists across sessions.
+    const [ambientOn, setAmbientOn] = useState(() => {
+        try { return localStorage.getItem('allo_crawl_ambient') === '1'; } catch { return false; }
+    });
+    useEffect(() => { try { localStorage.setItem('allo_crawl_ambient', ambientOn ? '1' : '0'); } catch {} }, [ambientOn]);
     const [progressPct, setProgressPct] = useState(0);
     const palettes = {
         gold: { bg: '#000000', text: '#fde047', accent: '#facc15' },
