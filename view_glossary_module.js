@@ -73,6 +73,14 @@
   var gradeLevel = props.gradeLevel;
   var inputText = props.inputText;
   var includeEtymology = props.includeEtymology;
+  // Phonics popup wiring — reuses the simplified-view handler so each glossary
+  // term can show pronunciation/IPA/syllables on click. The popup state lives
+  // at the host level (AlloFlowANTI) so triggering it from glossary surfaces
+  // the same overlay used elsewhere in the app.
+  var handlePhonicsClick = props.handlePhonicsClick;
+  var phonicsData = props.phonicsData;
+  var closePhonics = props.closePhonics;
+  var voiceSpeed = props.voiceSpeed;
   // Derived state from host
   var filteredGlossaryData = props.filteredGlossaryData;
   // Edit / add / lookup state
@@ -246,7 +254,10 @@
   var BingoGame = props.BingoGame;
   var StudentBingoGame = props.StudentBingoGame;
   var WordScrambleGame = props.WordScrambleGame;
-  return /*#__PURE__*/React.createElement("div", {
+  // Wrapped in a Fragment so the phonics popup can render as a sibling of
+  // the main content. The popup state (phonicsData) lives at the host level
+  // and is set by handlePhonicsClick — same one the simplified view uses.
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-blue-50 p-4 rounded-lg border border-blue-100 mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
@@ -1432,7 +1443,17 @@
       size: 14
     }) : /*#__PURE__*/React.createElement(Volume2, {
       size: 14
-    })), /*#__PURE__*/React.createElement("button", {
+    })),
+    // Pronounce button — opens the same phonics popup the simplified view uses
+    // (phonetic spelling + IPA + syllables + audio playback). Only rendered if
+    // the host wired handlePhonicsClick into the props.
+    handlePhonicsClick && /*#__PURE__*/React.createElement("button", {
+      onClick: (ev) => handlePhonicsClick(item.term, ev),
+      className: "text-slate-600 hover:text-emerald-700 hover:bg-emerald-50 p-1 rounded-full transition-colors flex-shrink-0 font-bold text-[11px] tracking-tight",
+      "aria-label": (t('glossary.pronounce_term') || 'Pronounce') + ': ' + item.term,
+      title: t('glossary.pronounce_term_title') || 'Show pronunciation, IPA, and syllables',
+      "data-help-key": "glossary_pronounce_term"
+    }, "/əˈ/"), /*#__PURE__*/React.createElement("button", {
       onClick: () => handleDownloadAudio(item.term, `term-${idx}-audio`, `dl-term-${idx}`),
       disabled: downloadingContentId === `dl-term-${idx}`,
       className: "text-slate-600 hover:text-indigo-600 p-1 rounded-full transition-colors",
@@ -2126,7 +2147,118 @@
   }), generatedContent?.data.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: 3 + selectedLanguages.length,
     className: "p-8 text-center text-slate-600 italic"
-  }, t('glossary.no_terms'))))))));
+  }, t('glossary.no_terms')))))))
+  ,
+  // ── Phonics popup (sibling) ──
+  // Mirrors the simplified-view popup at view_simplified_module.js:784–865.
+  // Renders only when the host has set phonicsData (via handlePhonicsClick),
+  // and only when the active view is glossary so it doesn't double-render
+  // alongside the simplified-view copy if both views were ever to coexist.
+  phonicsData && activeView === 'glossary' && /*#__PURE__*/React.createElement(React.Fragment, null,
+    /*#__PURE__*/React.createElement("div", {
+      role: "button",
+      tabIndex: 0,
+      onKeyDown: function(e) { if (e.key === 'Escape') { e.currentTarget.click(); } },
+      className: "fixed inset-0 z-[90]",
+      onClick: closePhonics
+    }),
+    /*#__PURE__*/React.createElement("div", {
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-labelledby": "glossary-phonics-popup-title",
+      className: "fixed z-[100] bg-white allo-popover-solid p-5 rounded-xl shadow-2xl border-2 border-emerald-200 w-72 animate-in zoom-in-95 duration-200",
+      style: {
+        top: Math.min(window.innerHeight - 300, (phonicsData.y || 100) + 10) + 'px',
+        left: Math.min(window.innerWidth - 300, (phonicsData.x || 100) - 20) + 'px'
+      }
+    },
+      /*#__PURE__*/React.createElement("div", { className: "flex justify-between items-start mb-3" },
+        /*#__PURE__*/React.createElement("h5", {
+          id: "glossary-phonics-popup-title",
+          className: "font-black text-emerald-900 text-2xl capitalize tracking-tight"
+        }, phonicsData.word),
+        /*#__PURE__*/React.createElement("button", {
+          onClick: closePhonics,
+          className: "text-slate-600 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-full p-1",
+          "aria-label": t('common.close')
+        }, /*#__PURE__*/React.createElement(X, { size: 14 }))
+      ),
+      phonicsData.isLoading
+        ? /*#__PURE__*/React.createElement("div", {
+            className: "flex flex-col items-center justify-center py-6 gap-2 text-emerald-600"
+          },
+            /*#__PURE__*/React.createElement(RefreshCw, { size: 24, className: "animate-spin" }),
+            /*#__PURE__*/React.createElement("span", {
+              className: "text-xs font-bold uppercase tracking-wider"
+            }, t('glossary.popups.analyzing'))
+          )
+        : phonicsData.data
+        ? /*#__PURE__*/React.createElement("div", { className: "space-y-4" },
+            /*#__PURE__*/React.createElement("div", {
+              className: "flex items-center justify-between bg-emerald-50 p-3 rounded-lg border border-emerald-100"
+            },
+              /*#__PURE__*/React.createElement("div", null,
+                /*#__PURE__*/React.createElement("div", {
+                  className: "text-xs font-bold text-emerald-600 uppercase tracking-wider mb-1"
+                }, t('glossary.phonetic_spelling')),
+                /*#__PURE__*/React.createElement("div", {
+                  className: "text-lg font-serif italic text-slate-700"
+                }, "/", phonicsData.data.phoneticSpelling, "/")
+              ),
+              /*#__PURE__*/React.createElement("button", {
+                "aria-label": t('common.volume'),
+                onClick: function() {
+                  if (phonicsData.audioUrl) {
+                    var audio = new Audio(phonicsData.audioUrl);
+                    audio.playbackRate = voiceSpeed || 1;
+                    audio.play().catch(function() {});
+                  }
+                },
+                className: "bg-emerald-700 hover:bg-emerald-800 text-white p-2 rounded-full shadow-md transition-transform hover:scale-110 active:scale-95",
+                title: t('glossary.popups.replay')
+              }, /*#__PURE__*/React.createElement(Volume2, { size: 20, className: "fill-current" }))
+            ),
+            /*#__PURE__*/React.createElement("div", { className: "grid grid-cols-2 gap-2" },
+              /*#__PURE__*/React.createElement("div", {
+                className: "bg-slate-50 p-2 rounded border border-slate-100"
+              },
+                /*#__PURE__*/React.createElement("div", {
+                  className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1"
+                }, t('glossary.popups.ipa')),
+                /*#__PURE__*/React.createElement("div", {
+                  className: "font-mono text-sm text-slate-600"
+                }, phonicsData.data.ipa)
+              ),
+              /*#__PURE__*/React.createElement("div", {
+                className: "bg-slate-50 p-2 rounded border border-slate-100"
+              },
+                /*#__PURE__*/React.createElement("div", {
+                  className: "text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1"
+                }, t('glossary.popups.syllables')),
+                /*#__PURE__*/React.createElement("div", {
+                  className: "flex flex-wrap items-center gap-0.5"
+                }, (phonicsData.data.syllables || []).map(function(syl, i) {
+                  return /*#__PURE__*/React.createElement(React.Fragment, { key: i },
+                    i > 0 && /*#__PURE__*/React.createElement("span", {
+                      className: "text-emerald-500 font-bold px-0.5",
+                      "aria-hidden": "true"
+                    }, "•"),
+                    /*#__PURE__*/React.createElement("span", {
+                      className: "bg-white px-1.5 rounded border border-slate-400 text-sm font-bold text-slate-700 shadow-sm"
+                    }, syl)
+                  );
+                }))
+              )
+            )
+          )
+        : /*#__PURE__*/React.createElement("div", {
+            className: "text-center text-red-400 text-xs font-bold py-4"
+          }, t('glossary.popups.failed')),
+      /*#__PURE__*/React.createElement("div", {
+        className: "allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45"
+      })
+    )
+  )));
 }
 
   window.AlloModules = window.AlloModules || {};

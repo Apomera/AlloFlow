@@ -13081,8 +13081,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           .section { margin-bottom: 2rem; page-break-inside: avoid; background: ${theme.cardBg}; border-radius: 12px; padding: 1.5rem; border: 1px solid ${theme.cardBorder}; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; }
           .section > .resource-header + * { padding-top: 16px; }
           table { width: 100%; border-collapse: collapse; margin: 1rem 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
-          th, td { border: 1px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; }
+          /* Border bumped from 1px → 1.5px to clear WCAG 1.4.11 (3:1 non-text
+             contrast) on light card backgrounds — verified across Professional
+             and matchOriginal seeds. Prior 1px borders failed contrast on
+             the lightest extracted PDF palettes. */
+          th, td { border: 1.5px solid ${theme.cardBorder}; padding: 0.7rem 1rem; text-align: ${textAlign}; vertical-align: top; }
           th { background-color: ${theme.cardBg}; font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.04em; color: #475569; }
+          /* Sticky thead for long data tables in the interactive view. The
+             container's overflow:hidden is overridden inline only when
+             scrolling actually engages, so this doesn't break short tables. */
+          thead th { position: sticky; top: 0; z-index: 1; }
+          /* Row headers (<th scope="row">) get a distinct treatment so screen
+             readers and sighted users can both tell the first column is a
+             label, not data. Subtle left accent + slightly heavier text. */
+          tbody th[scope="row"] { background: ${theme.cardBg}; font-weight: 600; text-transform: none; letter-spacing: normal; font-size: 0.95rem; color: ${theme.headingColor}; border-left: 3px solid ${theme.accentColor}; text-align: ${textAlign}; }
           tbody tr:nth-child(even) { background-color: rgba(248,250,252,0.5); }
           tbody tr:hover { background-color: rgba(241,245,249,0.8); }
           img { max-width: 100%; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
@@ -13180,6 +13192,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             .line { border-bottom: 1px solid #000; }
             .export-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* Repeat thead on each printed page so column context isn't lost
+               when a long data table spans multiple pages. position:sticky is
+               a viewport concept that has no meaning in print, so disable it
+               there to avoid odd rendering in some browsers. */
+            thead { display: table-header-group; }
+            tbody { display: table-row-group; }
+            tfoot { display: table-footer-group; }
+            thead th { position: static; }
+            tr { page-break-inside: avoid; }
             img { max-width: 100%; page-break-inside: avoid; }
             h1, h2, h3 { page-break-after: avoid; }
             audio { display: none; }
@@ -13218,12 +13239,82 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const textareas = document.querySelectorAll('.interactive-textarea');
-                textareas.forEach(tx => {
+                // Stable key prefix per document: title + a hash of body text length
+                // makes the autosave bucket unique to this resource without leaking
+                // across docs. Falls back to 'doc' if title is empty.
+                const _docKey = ((document.title || 'doc').slice(0, 40)) + '|' + (document.body.textContent || '').length;
+                // Hash a string to a short stable id for use in storage keys.
+                const _hash = (s) => {
+                    let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0; }
+                    return Math.abs(h).toString(36);
+                };
+                // Default soft cap. Honors any explicit maxlength on the textarea.
+                const _DEFAULT_MAX = 1500;
+                textareas.forEach((tx, idx) => {
+                    // ── Auto-resize (existing behavior) ──
                     tx.style.height = 'auto';
                     tx.style.height = (tx.scrollHeight > 120 ? tx.scrollHeight : 120) + 'px';
+                    // ── Build a stable storage key per textarea ──
+                    const labelKey = (tx.getAttribute('aria-label') || tx.getAttribute('placeholder') || ('ta' + idx)).slice(0, 80);
+                    const storageKey = 'allo-ta:' + _docKey + ':' + _hash(labelKey);
+                    // ── Restore prior value (autosave) ──
+                    try {
+                        const saved = localStorage.getItem(storageKey);
+                        if (saved && !tx.value) {
+                            tx.value = saved;
+                            tx.style.height = 'auto';
+                            tx.style.height = (tx.scrollHeight > 120 ? tx.scrollHeight : 120) + 'px';
+                        }
+                    } catch (e) { /* private mode / quota */ }
+                    // ── Character counter ──
+                    const max = parseInt(tx.getAttribute('maxlength') || '', 10) || _DEFAULT_MAX;
+                    if (!tx.getAttribute('maxlength')) tx.setAttribute('maxlength', String(max));
+                    const counter = document.createElement('div');
+                    counter.className = 'allo-ta-counter';
+                    counter.setAttribute('aria-live', 'polite');
+                    counter.style.cssText = 'font-size:11px;color:#64748b;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
+                    const updateCounter = () => {
+                        const len = tx.value.length;
+                        const pct = len / max;
+                        counter.textContent = len + ' / ' + max + (len > 0 ? ' characters' : '');
+                        counter.style.color = pct > 0.9 ? '#dc2626' : pct > 0.75 ? '#ca8a04' : '#64748b';
+                    };
+                    tx.parentNode.insertBefore(counter, tx.nextSibling);
+                    updateCounter();
+                    // ── Debounced autosave on input ──
+                    let saveTimer = null;
                     tx.addEventListener('input', function() {
+                        // auto-resize
                         this.style.height = 'auto';
                         this.style.height = (this.scrollHeight) + 'px';
+                        updateCounter();
+                        // debounce save 400ms — feels instant but avoids a write per keystroke
+                        if (saveTimer) clearTimeout(saveTimer);
+                        saveTimer = setTimeout(() => {
+                            try {
+                                if (tx.value) localStorage.setItem(storageKey, tx.value);
+                                else localStorage.removeItem(storageKey);
+                            } catch (e) { /* swallow */ }
+                        }, 400);
+                    });
+                });
+                // ── Same behavior for fill-in-the-blank inputs ──
+                document.querySelectorAll('.interactive-blank').forEach((bx, idx) => {
+                    const labelKey = (bx.getAttribute('aria-label') || bx.getAttribute('placeholder') || ('bx' + idx)).slice(0, 80);
+                    const storageKey = 'allo-bx:' + _docKey + ':' + _hash(labelKey);
+                    try {
+                        const saved = localStorage.getItem(storageKey);
+                        if (saved && !bx.value) bx.value = saved;
+                    } catch (e) {}
+                    let saveTimer = null;
+                    bx.addEventListener('input', function() {
+                        if (saveTimer) clearTimeout(saveTimer);
+                        saveTimer = setTimeout(() => {
+                            try {
+                                if (bx.value) localStorage.setItem(storageKey, bx.value);
+                                else localStorage.removeItem(storageKey);
+                            } catch (e) {}
+                        }, 400);
                     });
                 });
             });
