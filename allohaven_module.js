@@ -567,9 +567,18 @@
       // Loading-slide bar — used during AI image generation (~5-15s).
       // Indeterminate progress: a 40% bar slides left↔right.
       '@keyframes ah-loading-slide { 0% { left: -40%; } 100% { left: 100%; } }',
+      // Memory-content "due for review" pulse — soft yellow halo on the
+      // 📖 indicator when a decoration\'s linkedContent hasn\'t been
+      // reviewed in 5+ days. Subtle so it doesn\'t demand attention,
+      // just signals "this knowledge is fading". Suppressed under
+      // reduced-motion (the brighter background still serves as a
+      // non-animated cue).
+      '@keyframes ah-memory-due-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,220,140,0.6); } 50% { box-shadow: 0 0 0 4px rgba(255,220,140,0); } }',
+      '.ah-root .ah-memory-indicator.ah-memory-due { animation: ah-memory-due-pulse 2400ms ease-in-out infinite; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
-      '  .ah-root .ah-welcome { animation: none !important; }',
+      '  .ah-root .ah-welcome,',
+      '  .ah-root .ah-memory-indicator.ah-memory-due { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible { transform: none !important; }',
       '  button { animation: none !important; }',
@@ -1502,6 +1511,1038 @@
           }, '✕') : null
         ),
         stepBody
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6.6: MEMORY MODAL (Phase 2a)
+  // ─────────────────────────────────────────────────────────
+  // Self-authored memory palace. Each placed decoration can hold one
+  // of three content types: flashcards (Q/A), acronym (letters +
+  // meanings), or free notes (open text). The decoration's spatial
+  // location in the room provides the method-of-loci anchor.
+  // Mnemonic devices supported: active recall (flashcards),
+  // chunking (acronyms), and freeform (notes for rhymes / story
+  // chains / mind maps the student invents).
+  function MemoryModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+
+    var palette = p.palette;
+    var decoration = p.decoration;
+    var existing = decoration && decoration.linkedContent;
+    var hasContent = !!existing;
+
+    // ── Modal mode ──
+    // 'pick-type'   — empty state, choosing what kind of content to add
+    // 'view'        — read-only display of existing content
+    // 'edit'        — editing existing content
+    // 'quiz'        — interactive review (flashcards or acronym only)
+    var initialMode = hasContent ? 'view' : 'pick-type';
+    var modeTuple = useState(initialMode);
+    var mode = modeTuple[0];
+    var setMode = modeTuple[1];
+
+    // Draft content state — copied from existing on mount; saved back via p.onSave
+    var draftTuple = useState(function() {
+      if (existing) {
+        return JSON.parse(JSON.stringify(existing)); // deep copy
+      }
+      return null;
+    });
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    // Quiz session state (held outside content so it doesn't pollute saved data)
+    var quizTuple = useState(null);
+    var quiz = quizTuple[0];
+    var setQuiz = quizTuple[1];
+
+    // Confirm-remove flag
+    var confirmRemoveTuple = useState(false);
+    var confirmRemove = confirmRemoveTuple[0];
+    var setConfirmRemove = confirmRemoveTuple[1];
+
+    if (!decoration) {
+      return null;
+    }
+
+    var label = decoration.templateLabel || decoration.template || 'this decoration';
+
+    // ── Helpers ──
+    function startEditEmpty(type) {
+      var initialDraft;
+      if (type === 'flashcards') {
+        initialDraft = {
+          type: 'flashcards',
+          data: { cards: [
+            { id: 'c-' + Date.now(), front: '', back: '', correctCount: 0, missCount: 0 }
+          ]}
+        };
+      } else if (type === 'acronym') {
+        initialDraft = {
+          type: 'acronym',
+          data: { letters: '', meanings: [], context: '' }
+        };
+      } else if (type === 'notes') {
+        initialDraft = { type: 'notes', data: { text: '' } };
+      }
+      setDraft(initialDraft);
+      setMode('edit');
+    }
+
+    function commitDraft() {
+      if (!draft) return;
+      // Type-specific validation
+      if (draft.type === 'flashcards') {
+        // Drop empty cards
+        var nonEmpty = (draft.data.cards || []).filter(function(c) {
+          return (c.front || '').trim() && (c.back || '').trim();
+        });
+        if (nonEmpty.length === 0) {
+          alert('Add at least one card with both a front and back.');
+          return;
+        }
+        var cleaned = Object.assign({}, draft, { data: { cards: nonEmpty } });
+        p.onSave(cleaned);
+      } else if (draft.type === 'acronym') {
+        var letters = (draft.data.letters || '').trim();
+        if (!letters) {
+          alert('Type a word or letter sequence first.');
+          return;
+        }
+        var paddedMeanings = letters.split('').map(function(_, i) {
+          return (draft.data.meanings && draft.data.meanings[i]) || '';
+        });
+        var cleaned2 = Object.assign({}, draft, { data: { letters: letters, meanings: paddedMeanings, context: draft.data.context || '' } });
+        p.onSave(cleaned2);
+      } else if (draft.type === 'notes') {
+        var text = (draft.data.text || '').trim();
+        if (!text) {
+          alert('Write something first.');
+          return;
+        }
+        p.onSave(Object.assign({}, draft, { data: { text: text } }));
+      }
+      setMode('view');
+    }
+
+    function startQuiz() {
+      if (!existing || !existing.data) return;
+      if (existing.type === 'flashcards') {
+        var cards = (existing.data.cards || []).slice();
+        // Fisher-Yates shuffle
+        for (var i = cards.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var tmp = cards[i]; cards[i] = cards[j]; cards[j] = tmp;
+        }
+        setQuiz({
+          type: 'flashcards',
+          cards: cards,
+          currentIdx: 0,
+          flipped: false,
+          correct: 0,
+          missed: 0,
+          done: false
+        });
+        setMode('quiz');
+      } else if (existing.type === 'acronym') {
+        var letters = (existing.data.letters || '').toUpperCase();
+        var meanings = existing.data.meanings || [];
+        setQuiz({
+          type: 'acronym',
+          letters: letters,
+          truthMeanings: meanings,
+          currentIdx: 0,
+          guesses: meanings.map(function() { return ''; }),
+          done: false
+        });
+        setMode('quiz');
+      }
+    }
+
+    function finishQuiz(correctCount, totalCount) {
+      var pct = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+      p.onQuizComplete(pct);
+      setQuiz({
+        finished: true,
+        scorePct: pct,
+        correctCount: correctCount,
+        totalCount: totalCount
+      });
+    }
+
+    // ── Tab navigation header (for non-empty states) ──
+    function renderTabs() {
+      if (!hasContent || mode === 'pick-type') return null;
+      var tabs = [
+        { id: 'view',  label: 'View' },
+        { id: 'edit',  label: 'Edit' }
+      ];
+      if (existing.type !== 'notes') tabs.push({ id: 'quiz', label: 'Quiz' });
+      return h('div', {
+        role: 'tablist',
+        style: {
+          display: 'flex',
+          gap: '4px',
+          borderBottom: '1px solid ' + palette.border,
+          marginBottom: '14px',
+          paddingBottom: '0'
+        }
+      },
+        tabs.map(function(t) {
+          var active = mode === t.id;
+          return h('button', {
+            key: 't-' + t.id,
+            role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() {
+              if (t.id === 'quiz' && mode !== 'quiz') {
+                startQuiz();
+              } else {
+                setMode(t.id);
+                setQuiz(null);
+                if (t.id === 'edit' && existing) {
+                  setDraft(JSON.parse(JSON.stringify(existing)));
+                }
+              }
+            },
+            style: {
+              background: active ? palette.surface : 'transparent',
+              border: 'none',
+              borderBottom: '3px solid ' + (active ? palette.accent : 'transparent'),
+              color: active ? palette.accent : palette.textDim,
+              fontFamily: 'inherit',
+              fontSize: '13px',
+              fontWeight: active ? 700 : 500,
+              padding: '8px 14px',
+              cursor: 'pointer'
+            }
+          }, t.label);
+        })
+      );
+    }
+
+    // ── Step bodies ──
+    var body;
+
+    if (mode === 'pick-type') {
+      body = renderPickType();
+    } else if (mode === 'view') {
+      body = renderViewTab();
+    } else if (mode === 'edit') {
+      body = renderEditTab();
+    } else if (mode === 'quiz') {
+      body = renderQuizMode();
+    }
+
+    function renderPickType() {
+      var pickerCards = [
+        { type: 'flashcards', icon: '📚', title: 'Flashcards', desc: 'Q&A pairs you study with. Best for vocab, definitions, formulas, key concepts.', mnemonic: 'active recall' },
+        { type: 'acronym',    icon: '🔤', title: 'Acronym / list', desc: 'A word where each letter stands for something. Like "ROY G BIV" for rainbow colors.', mnemonic: 'chunking' },
+        { type: 'notes',      icon: '📝', title: 'Free notes', desc: 'Plain text — for rhymes, story chains, mind maps, or anything that doesn\'t fit the others.', mnemonic: 'open expression' }
+      ];
+      return h('div', null,
+        h('p', { style: { fontSize: '13px', color: palette.textDim, lineHeight: '1.55', marginBottom: '14px' } },
+          'Attach memory content to your ' + label.toLowerCase() + '. Where you place this decoration in your room becomes a spatial anchor for what you\'re learning — that\'s the method of loci, a 2,400-year-old memory technique.'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          pickerCards.map(function(card) {
+            return h('button', {
+              key: 'pt-' + card.type,
+              onClick: function() { startEditEmpty(card.type); },
+              style: {
+                background: palette.surface,
+                border: '1.5px solid ' + palette.border,
+                borderRadius: '10px',
+                padding: '14px 16px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textAlign: 'left',
+                color: palette.text,
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'flex-start',
+                transition: 'border-color 140ms ease'
+              }
+            },
+              h('span', { style: { fontSize: '28px', flexShrink: 0 } }, card.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' } },
+                  h('span', { style: { fontSize: '14px', fontWeight: 700 } }, card.title),
+                  h('span', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } }, card.mnemonic)
+                ),
+                h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5' } }, card.desc)
+              )
+            );
+          })
+        ),
+        h('p', {
+          style: { marginTop: '16px', fontSize: '11px', color: palette.textMute, fontStyle: 'italic', lineHeight: '1.5', textAlign: 'center' }
+        }, 'Adding memory content earns +1 token (one-time per decoration).')
+      );
+    }
+
+    function renderViewTab() {
+      var lc = existing;
+      if (!lc) return null;
+      if (lc.type === 'flashcards') {
+        var cards = (lc.data && lc.data.cards) || [];
+        return h('div', null,
+          h('div', { style: { fontSize: '12px', color: palette.textMute, marginBottom: '10px' } },
+            '📚 ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+          h('ol', { style: { paddingLeft: '20px', margin: 0, color: palette.text, fontSize: '13px', lineHeight: '1.6' } },
+            cards.map(function(card) {
+              return h('li', { key: card.id, style: { marginBottom: '8px' } },
+                h('div', { style: { fontWeight: 600 } }, card.front),
+                h('div', { style: { color: palette.textDim, fontStyle: 'italic', fontSize: '12px' } }, card.back)
+              );
+            })
+          )
+        );
+      }
+      if (lc.type === 'acronym') {
+        var letters = (lc.data && lc.data.letters) || '';
+        var meanings = (lc.data && lc.data.meanings) || [];
+        return h('div', null,
+          lc.data && lc.data.context ? h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '10px', fontStyle: 'italic' }
+          }, lc.data.context) : null,
+          h('div', { style: { fontSize: '24px', fontWeight: 800, color: palette.accent, letterSpacing: '0.16em', marginBottom: '14px' } }, letters.toUpperCase()),
+          h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+            letters.split('').map(function(letter, i) {
+              return h('li', { key: 'al-' + i, style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '6px' } },
+                h('span', {
+                  style: {
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    color: palette.accent,
+                    width: '28px',
+                    flexShrink: 0,
+                    textAlign: 'center'
+                  }
+                }, letter.toUpperCase()),
+                h('span', { style: { color: palette.text, fontSize: '13px' } }, meanings[i] || '—')
+              );
+            })
+          )
+        );
+      }
+      if (lc.type === 'notes') {
+        var text = (lc.data && lc.data.text) || '';
+        return h('div', {
+          style: {
+            color: palette.text,
+            fontSize: '13px',
+            lineHeight: '1.65',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }
+        }, text);
+      }
+      return null;
+    }
+
+    function renderEditTab() {
+      if (!draft) return null;
+      var saveBar = h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px' } },
+        h('button', {
+          onClick: function() { setConfirmRemove(true); },
+          style: {
+            background: 'transparent',
+            color: palette.textMute,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            padding: '6px 12px',
+            fontSize: '11px',
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, '🗑 Remove memory'),
+        h('div', { style: { display: 'flex', gap: '8px' } },
+          h('button', {
+            onClick: function() {
+              if (hasContent) {
+                setMode('view');
+                setDraft(JSON.parse(JSON.stringify(existing)));
+              } else {
+                setMode('pick-type');
+                setDraft(null);
+              }
+            },
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, hasContent ? 'Cancel' : 'Back'),
+          h('button', {
+            onClick: commitDraft,
+            style: {
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 18px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Save')
+        )
+      );
+      // Hide remove button for never-saved drafts
+      if (!hasContent) {
+        saveBar = h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '14px' } },
+          h('button', {
+            onClick: function() { setMode('pick-type'); setDraft(null); },
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Back'),
+          h('button', {
+            onClick: commitDraft,
+            style: {
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 18px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Save')
+        );
+      }
+      // Confirm-remove inline panel
+      var removePanel = confirmRemove ? h('div', {
+        style: {
+          marginTop: '14px',
+          padding: '12px 14px',
+          background: 'rgba(220,38,38,0.08)',
+          border: '1px solid rgba(220,38,38,0.4)',
+          borderRadius: '8px'
+        }
+      },
+        h('p', { style: { margin: 0, fontSize: '13px', color: palette.text, marginBottom: '10px' } },
+          'Remove all memory content from this decoration? Tokens already earned won\'t be refunded.'),
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
+          h('button', {
+            onClick: function() { setConfirmRemove(false); },
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1px solid ' + palette.border, borderRadius: '6px',
+              padding: '4px 12px', fontSize: '11px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Keep it'),
+          h('button', {
+            onClick: function() {
+              p.onRemove();
+              setConfirmRemove(false);
+            },
+            style: {
+              background: '#dc2626', color: '#fff', border: 'none',
+              borderRadius: '6px', padding: '4px 12px',
+              fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Remove')
+        )
+      ) : null;
+
+      if (draft.type === 'flashcards') return h('div', null, renderFlashcardEditor(), removePanel, saveBar);
+      if (draft.type === 'acronym')    return h('div', null, renderAcronymEditor(),  removePanel, saveBar);
+      if (draft.type === 'notes')      return h('div', null, renderNotesEditor(),    removePanel, saveBar);
+      return null;
+    }
+
+    function renderFlashcardEditor() {
+      var cards = (draft.data.cards) || [];
+      function updateCard(id, field, val) {
+        var newCards = cards.map(function(c) {
+          if (c.id !== id) return c;
+          var u = {}; u[field] = val;
+          return Object.assign({}, c, u);
+        });
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
+      function addCard() {
+        var newCards = cards.concat([{
+          id: 'c-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+          front: '', back: '', correctCount: 0, missCount: 0
+        }]);
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
+      function deleteCard(id) {
+        var newCards = cards.filter(function(c) { return c.id !== id; });
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '📚 Flashcard deck · ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          cards.map(function(card, idx) {
+            return h('div', {
+              key: card.id,
+              style: {
+                padding: '10px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px'
+              }
+            },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700 } }, 'Card ' + (idx + 1)),
+                cards.length > 1 ? h('button', {
+                  onClick: function() { deleteCard(card.id); },
+                  'aria-label': 'Delete card ' + (idx + 1),
+                  style: {
+                    background: 'transparent',
+                    color: palette.textMute,
+                    border: 'none',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    padding: '2px 4px'
+                  }
+                }, '✕') : null
+              ),
+              h('input', {
+                type: 'text',
+                value: card.front,
+                onChange: function(e) { updateCard(card.id, 'front', e.target.value); },
+                placeholder: 'Front (question or term)',
+                'aria-label': 'Card ' + (idx + 1) + ' front',
+                style: {
+                  width: '100%',
+                  padding: '6px 8px',
+                  marginBottom: '6px',
+                  background: palette.bg,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '6px',
+                  color: palette.text,
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box'
+                }
+              }),
+              h('input', {
+                type: 'text',
+                value: card.back,
+                onChange: function(e) { updateCard(card.id, 'back', e.target.value); },
+                placeholder: 'Back (answer or definition)',
+                'aria-label': 'Card ' + (idx + 1) + ' back',
+                style: {
+                  width: '100%',
+                  padding: '6px 8px',
+                  background: palette.bg,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '6px',
+                  color: palette.text,
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box'
+                }
+              })
+            );
+          })
+        ),
+        h('button', {
+          onClick: addCard,
+          style: {
+            marginTop: '10px',
+            width: '100%',
+            background: 'transparent',
+            color: palette.accent,
+            border: '1px dashed ' + palette.accent,
+            borderRadius: '8px',
+            padding: '8px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, '+ Add card')
+      );
+    }
+
+    function renderAcronymEditor() {
+      var letters = (draft.data.letters || '');
+      var meanings = (draft.data.meanings || []);
+      var ctx = (draft.data.context || '');
+      function updateLetters(val) {
+        var clean = val.replace(/\s+/g, '').toUpperCase();
+        // Resize meanings array to match
+        var newMeanings = [];
+        for (var i = 0; i < clean.length; i++) {
+          newMeanings.push(meanings[i] || '');
+        }
+        setDraft(Object.assign({}, draft, { data: { letters: clean, meanings: newMeanings, context: ctx } }));
+      }
+      function updateMeaning(i, val) {
+        var newMeanings = meanings.slice();
+        newMeanings[i] = val;
+        setDraft(Object.assign({}, draft, { data: { letters: letters, meanings: newMeanings, context: ctx } }));
+      }
+      function updateContext(val) {
+        setDraft(Object.assign({}, draft, { data: { letters: letters, meanings: meanings, context: val } }));
+      }
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '🔤 Acronym / list'),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'The word or letters'),
+        h('input', {
+          type: 'text',
+          value: letters,
+          onChange: function(e) { updateLetters(e.target.value); },
+          placeholder: 'e.g. PEMDAS or ROY G BIV',
+          'aria-label': 'Acronym letters',
+          style: {
+            width: '100%',
+            padding: '8px 10px',
+            marginBottom: '12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '18px',
+            letterSpacing: '0.12em',
+            fontWeight: 700,
+            fontFamily: 'inherit',
+            boxSizing: 'border-box'
+          }
+        }),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'What it stands for (optional context)'),
+        h('input', {
+          type: 'text',
+          value: ctx,
+          onChange: function(e) { updateContext(e.target.value); },
+          placeholder: 'e.g. order of operations',
+          'aria-label': 'Acronym context',
+          style: {
+            width: '100%',
+            padding: '6px 10px',
+            marginBottom: '14px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '13px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box'
+          }
+        }),
+        letters.length > 0 ? h('div', null,
+          h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', fontWeight: 600 } }, 'Letter meanings'),
+          h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+            letters.split('').map(function(letter, i) {
+              return h('li', { key: 'lt-' + i, style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' } },
+                h('span', {
+                  style: {
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    color: palette.accent,
+                    width: '28px',
+                    flexShrink: 0,
+                    textAlign: 'center'
+                  }
+                }, letter),
+                h('input', {
+                  type: 'text',
+                  value: meanings[i] || '',
+                  onChange: function(e) { updateMeaning(i, e.target.value); },
+                  placeholder: 'meaning of ' + letter,
+                  'aria-label': 'Meaning of ' + letter,
+                  style: {
+                    flex: 1,
+                    padding: '6px 10px',
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '6px',
+                    color: palette.text,
+                    fontSize: '13px',
+                    fontFamily: 'inherit'
+                  }
+                })
+              );
+            })
+          )
+        ) : h('p', {
+          style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', lineHeight: '1.5', textAlign: 'center', padding: '12px' }
+        }, 'Type a word above to start filling in meanings.')
+      );
+    }
+
+    function renderNotesEditor() {
+      var text = (draft.data.text || '');
+      function updateText(val) {
+        setDraft(Object.assign({}, draft, { data: { text: val } }));
+      }
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '📝 Free notes'),
+        h('p', {
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '10px', lineHeight: '1.5' }
+        }, 'Whatever helps you remember. A rhyme. A story chain. A diagram in text. Lyrics. Whatever.'),
+        h('textarea', {
+          value: text,
+          onChange: function(e) { updateText(e.target.value); },
+          placeholder: 'Write your notes here...',
+          'aria-label': 'Free notes',
+          rows: 10,
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '14px',
+            fontFamily: 'inherit',
+            lineHeight: '1.5',
+            resize: 'vertical',
+            boxSizing: 'border-box'
+          }
+        }),
+        h('div', {
+          style: { fontSize: '11px', color: palette.textMute, marginTop: '4px', textAlign: 'right' }
+        }, text.length + ' character' + (text.length === 1 ? '' : 's'))
+      );
+    }
+
+    function renderQuizMode() {
+      if (!quiz) return null;
+      if (quiz.finished) {
+        return renderQuizResult();
+      }
+      if (quiz.type === 'flashcards') return renderQuizFlashcards();
+      if (quiz.type === 'acronym')    return renderQuizAcronym();
+      return null;
+    }
+
+    function renderQuizFlashcards() {
+      var cards = quiz.cards;
+      if (!cards || cards.length === 0) {
+        return h('p', { style: { color: palette.textMute, padding: '12px', textAlign: 'center' } }, 'No cards to quiz on.');
+      }
+      var card = cards[quiz.currentIdx];
+      var progress = (quiz.currentIdx + 1) + ' / ' + cards.length;
+
+      function flip() { setQuiz(Object.assign({}, quiz, { flipped: true })); }
+      function gradeAndAdvance(gotIt) {
+        var nextIdx = quiz.currentIdx + 1;
+        var newCorrect = quiz.correct + (gotIt ? 1 : 0);
+        var newMissed = quiz.missed + (gotIt ? 0 : 1);
+        if (nextIdx >= cards.length) {
+          finishQuiz(newCorrect, cards.length);
+        } else {
+          setQuiz(Object.assign({}, quiz, { currentIdx: nextIdx, flipped: false, correct: newCorrect, missed: newMissed }));
+        }
+      }
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
+          'Card ' + progress),
+        h('div', {
+          'aria-live': 'polite',
+          style: {
+            background: palette.surface,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '12px',
+            padding: '32px 20px',
+            minHeight: '120px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            marginBottom: '14px'
+          }
+        },
+          h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
+              quiz.flipped ? 'Back' : 'Front'),
+            h('div', { style: { fontSize: '17px', fontWeight: 700, color: palette.text, lineHeight: '1.4' } },
+              quiz.flipped ? card.back : card.front)
+          )
+        ),
+        !quiz.flipped ? h('button', {
+          onClick: flip,
+          autoFocus: true,
+          style: {
+            width: '100%',
+            background: palette.accent,
+            color: palette.onAccent,
+            border: 'none',
+            borderRadius: '8px',
+            padding: '10px',
+            fontSize: '14px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, 'Flip card') : h('div', { style: { display: 'flex', gap: '10px' } },
+          h('button', {
+            onClick: function() { gradeAndAdvance(false); },
+            style: {
+              flex: 1,
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Try again'),
+          h('button', {
+            onClick: function() { gradeAndAdvance(true); },
+            style: {
+              flex: 1,
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Got it')
+        )
+      );
+    }
+
+    function renderQuizAcronym() {
+      var idx = quiz.currentIdx;
+      var letter = quiz.letters[idx] || '';
+      var truth = (quiz.truthMeanings[idx] || '').trim().toLowerCase();
+      var guesses = quiz.guesses;
+      var currentGuess = guesses[idx] || '';
+
+      function updateGuess(val) {
+        var newGuesses = guesses.slice();
+        newGuesses[idx] = val;
+        setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+      }
+      function checkAndAdvance() {
+        var nextIdx = idx + 1;
+        if (nextIdx >= quiz.letters.length) {
+          // Compute correct count
+          var correctCount = 0;
+          for (var i = 0; i < quiz.letters.length; i++) {
+            var truthI = (quiz.truthMeanings[i] || '').trim().toLowerCase();
+            var guessI = (guesses[i] || '').trim().toLowerCase();
+            if (truthI && guessI && (truthI === guessI || truthI.indexOf(guessI) === 0 || guessI.indexOf(truthI) === 0)) {
+              correctCount++;
+            }
+          }
+          finishQuiz(correctCount, quiz.letters.length);
+        } else {
+          setQuiz(Object.assign({}, quiz, { currentIdx: nextIdx }));
+        }
+      }
+      function skip() {
+        var newGuesses = guesses.slice();
+        newGuesses[idx] = '';
+        setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+        checkAndAdvance();
+      }
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
+          'Letter ' + (idx + 1) + ' / ' + quiz.letters.length),
+        h('div', { style: { fontSize: '64px', fontWeight: 800, color: palette.accent, textAlign: 'center', marginBottom: '14px', letterSpacing: '0.04em' } },
+          letter),
+        h('input', {
+          type: 'text',
+          value: currentGuess,
+          onChange: function(e) { updateGuess(e.target.value); },
+          placeholder: 'What does ' + letter + ' stand for?',
+          'aria-label': 'Meaning of ' + letter,
+          autoFocus: true,
+          onKeyDown: function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); checkAndAdvance(); }
+          },
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '15px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            marginBottom: '14px'
+          }
+        }),
+        h('div', { style: { display: 'flex', gap: '10px' } },
+          h('button', {
+            onClick: skip,
+            style: {
+              flex: 1,
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Skip'),
+          h('button', {
+            onClick: checkAndAdvance,
+            style: {
+              flex: 1,
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, idx + 1 >= quiz.letters.length ? 'Finish' : 'Next')
+        )
+      );
+    }
+
+    function renderQuizResult() {
+      var pct = quiz.scorePct;
+      var emoji = pct >= 90 ? '🌟' : pct >= 80 ? '✨' : pct >= 50 ? '🌱' : '💪';
+      var msg = pct >= 80
+        ? 'Strong recall — you know this material.'
+        : pct >= 50
+        ? 'Solid effort. Try again later to lock it in.'
+        : 'A start. Coming back tomorrow is how memory works.';
+      return h('div', { style: { textAlign: 'center', padding: '20px 0' } },
+        h('div', { style: { fontSize: '56px', marginBottom: '10px' } }, emoji),
+        h('div', { style: { fontSize: '32px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums' } },
+          pct + '%'),
+        h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px' } },
+          quiz.correctCount + ' of ' + quiz.totalCount + ' correct'),
+        h('p', { style: { fontSize: '13px', color: palette.textDim, marginTop: '14px', lineHeight: '1.55' } }, msg),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '18px' } },
+          h('button', {
+            onClick: function() { setMode('view'); setQuiz(null); },
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 18px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Done'),
+          h('button', {
+            onClick: startQuiz,
+            style: {
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 20px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Quiz again')
+        )
+      );
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Memory content for ' + label,
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onClose();
+      },
+      style: {
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)',
+        zIndex: 175,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg,
+          border: '1px solid ' + palette.border,
+          borderRadius: '14px',
+          padding: '24px',
+          maxWidth: '540px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        // Header — decoration preview + close button
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '10px' }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+            decoration.imageBase64 ? h('img', {
+              src: decoration.imageBase64,
+              alt: '',
+              'aria-hidden': 'true',
+              style: { width: '44px', height: '44px', borderRadius: '6px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border }
+            }) : null,
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '17px', fontWeight: 700 } },
+              hasContent ? 'Memory · ' + label : 'Add memory · ' + label)
+          ),
+          h('button', {
+            onClick: p.onClose,
+            'aria-label': 'Close memory modal',
+            style: {
+              background: 'transparent',
+              border: '1px solid ' + palette.border,
+              color: palette.textDim,
+              borderRadius: '8px',
+              padding: '4px 10px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, '✕')
+        ),
+        renderTabs(),
+        body
       )
     );
   }
@@ -2819,6 +3860,40 @@
     }
 
     // ─────────────────────────────────────────────────
+    // MEMORY MODAL — Phase 2a self-authored memory palace.
+    // Each placed decoration can hold one of three content types
+    // (flashcards / acronym / free notes). Spatial location in the
+    // room provides the method-of-loci anchor.
+    // ─────────────────────────────────────────────────
+    function renderMemoryModal() {
+      if (state.activeModal !== 'memory') return null;
+      var decorationId = (state.generateContext || {}).decorationId;
+      var decoration = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!decoration) {
+        // Decoration vanished — close silently
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      return h(MemoryModalInner, {
+        decoration: decoration,
+        palette: palette,
+        onClose: function() {
+          setStateMulti({ activeModal: null, generateContext: null });
+        },
+        onSave: function(contentObj) {
+          saveMemoryContent(decorationId, contentObj);
+        },
+        onRemove: function() {
+          removeMemoryContent(decorationId);
+          setStateMulti({ activeModal: null, generateContext: null });
+        },
+        onQuizComplete: function(scorePct) {
+          recordQuizSession(decorationId, scorePct);
+        }
+      });
+    }
+
+    // ─────────────────────────────────────────────────
     // GENERATE MODAL — multi-step decoration creation.
     // Delegates to GenerateModalInner so its local state doesn't pollute
     // the outer component on close.
@@ -3221,6 +4296,7 @@
       renderRoom(),
       renderPomodoroOverlay(),
       renderGenerateModal(),
+      renderMemoryModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderDeleteDecorationModal(),
