@@ -3697,7 +3697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var drivingRef = useRef(false);
       var pausedRef = useRef(false);
       var timeRef = useRef(0);
-      var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, driveEvents: [], _lastEvent: {} });
+      var statsRef = useRef({ startTime: 0, distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} });
       var lastStateRef = useRef({ speed: 0, accel: 0 });
       var showHUDRef = useRef(true);
       var cameraModeRef = useRef('cockpit'); // cockpit | chase | overhead
@@ -4100,7 +4100,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             cy.y = startY + (cy.y >= startY ? 25 : -25);
           }
         });
-        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, driveEvents: [], _lastEvent: {} };
+        statsRef.current = { startTime: Date.now(), distance: 0, maxSpeed: 0, mpgSum: 0, mpgSamples: 0, hardBrakes: 0, jackrabbits: 0, speedViolations: 0, secondsOverLimit: 0, _wasOverLimit: false, closeFollows: 0, crashes: 0, stops: 0, safetyScore: 100, efficiencyScore: 100, fuelUsed: 0, skidSeconds: 0, cyclistClose: 0, unsignaledLaneChanges: 0, emergencyYields: 0, busStopCompliance: 0, pedYields: 0, wrongSideViolations: 0, childStrike: 0, aiCausedCrashes: 0, wildlifeEncountered: 0, wildlifeHit: 0, _lastCrashAt: 0, driveEvents: [], _lastEvent: {} };
         // Reset challenge state per drive. First offer arrives ~45s in — give the driver time to settle.
         challengeRef.current = { nextOfferAt: 45, offered: null, active: null, completedCount: 0, biomesVisited: {}, lastBiome: null, photoCooldown: 0, currentTown: null };
         // Reset per-drive journal and seed the first entry.
@@ -4420,7 +4420,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (s.stops >= 3) newBadges.full_stop = true;
         if ((s.unsignaledLaneChanges || 0) === 0) newBadges.signal_perfect = true;
         if (Math.round(s.maxSpeed * MS_TO_MPH) >= 80) newBadges.speed_demon = true;
-        if (wildlifeRef.current === null && s.distance > 500 && ['rural','snow','fog','night'].indexOf(currentScenario.id) !== -1) newBadges.moose_dodge = true;
+        // Badge intent ("Encounter a moose and NOT hit it") requires the player
+        // to have actually encountered wildlife and avoided striking any of it.
+        // Previously this awarded simply for driving 500 m in an eligible scenario
+        // without anything spawning. 'dawn' is now included since moose are most
+        // active then (highest natural spawn rate, ~2.5%).
+        if ((s.wildlifeEncountered || 0) > 0 &&
+            (s.wildlifeHit || 0) === 0 &&
+            s.distance > 500 &&
+            ['rural','snow','fog','night','dawn'].indexOf(currentScenario.id) !== -1) {
+          newBadges.moose_dodge = true;
+        }
         if (s.emergencyYields > 0) newBadges.emergency_yield = true;
         if (currentScenario.time === 'night' || currentScenario.id === 'dawn') newBadges.night_drive = true;
         // Track total drives for Road Veteran badge
@@ -5774,6 +5784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var impactMph = Math.abs(car.speed) * MS_TO_MPH;
                 if (impactMph > 5) {
                   statsRef.current.crashes++;
+                  statsRef.current._lastCrashAt = timeRef.current;
                   pushDriveEvent(statsRef, 'crash', impactMph, frictionCoef(scn.weather), scn.speedLimit, 3);
                   journalLog('crash', '💥', 'Crash at ' + Math.round(impactMph) + ' mph');
                   // A crash is an automatic major deduction on the road test (-25 pts, crash any speed = fail zone).
@@ -6654,6 +6665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // same frame and double-charge the crash + safety penalty.
                     t._hitCooldown = timeRef.current;
                     statsRef.current.crashes++;
+                    statsRef.current._lastCrashAt = timeRef.current;
                     // ── FAULT DETERMINATION ──
                     // Normally a rear-end = rear car's fault (following too close). BUT if the
                     // player brake-checked (they just decelerated hard from speed to near-stop),
@@ -7186,6 +7198,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 maxSwerve: 0,
                 scored: false
               };
+              // Count this as a wildlife encounter so the moose_dodge badge can
+              // reward players who actually saw a moose and avoided it (not just
+              // anyone who drove rural for 500 m without anything spawning).
+              statsRef.current.wildlifeEncountered = (statsRef.current.wildlifeEncountered || 0) + 1;
               eventToastRef.current = { msg: '⚠️ ' + spawn.warn + ' Brake straight — DO NOT swerve!', until: timeRef.current + 5 };
               addToast('⚠️ ' + spawn.warn);
               return;
@@ -7270,6 +7286,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var dist = Math.hypot(dx, dy);
             if (!w.hit && dist < 1.2) {
               w.hit = true;
+              // Stamp crash time so dependent guards (e.g., suppressing the
+              // child-from-bus spawn within 5s of a prior crash) can react.
+              statsRef.current._lastCrashAt = timeRef.current;
               // Special case: hitting a CHILD is the worst possible outcome — it's the
               // exact thing the school-bus stop-arm exists to prevent.
               if (w.kind === 'child') {
@@ -7283,15 +7302,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 car.speed *= 0.05;
               } else if (w.mass === 'massive') {
                 statsRef.current.crashes++;
+                statsRef.current.wildlifeHit = (statsRef.current.wildlifeHit || 0) + 1;
                 statsRef.current.safetyScore -= 60;
                 addToast('💥 MOOSE STRIKE — catastrophic. -60 safety');
                 car.speed *= 0.1;
               } else if (w.mass === 'medium') {
                 statsRef.current.crashes++;
+                statsRef.current.wildlifeHit = (statsRef.current.wildlifeHit || 0) + 1;
                 statsRef.current.safetyScore -= 30;
                 addToast('💥 Deer strike. -30 safety');
                 car.speed *= 0.4;
               } else {
+                statsRef.current.wildlifeHit = (statsRef.current.wildlifeHit || 0) + 1;
                 statsRef.current.safetyScore -= 15;
                 addToast('💥 Animal struck. -15 safety');
               }
@@ -7559,7 +7581,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Pedagogical: this is WHY the stop-arm exists. If the player ignores the bus,
             // they may hit a child — which delivers a visceral lesson + a major safety penalty.
             // Skipped if a wildlife/event entity is already active (only one hazard at a time).
-            if (bus._busCompArmed && !bus._childSpawned && !wildlifeRef.current) {
+            // Suppress the child spawn for 5 sec after any major crash so we
+            // don't pile a "hit a child" moment on top of a wreck the player is
+            // already recovering from. The pedagogical lesson lands harder when
+            // it's a clean encounter, not a chained tragedy.
+            var _recentCrash = statsRef.current._lastCrashAt
+              && (timeRef.current - statsRef.current._lastCrashAt) < 5;
+            if (bus._busCompArmed && !bus._childSpawned && !wildlifeRef.current && !_recentCrash) {
               if (!bus._childSpawnTimer) bus._childSpawnTimer = timeRef.current + 2.5;
               if (timeRef.current >= bus._childSpawnTimer) {
                 bus._childSpawned = true;
@@ -7682,6 +7710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             if (dist < 0.6) {
               statsRef.current.crashes++;
+              statsRef.current._lastCrashAt = timeRef.current;
               statsRef.current.safetyScore -= 50;
               addToast('💥 Struck a ' + cy.type + '! -50');
               eventToastRef.current = { msg: '💥 You struck a ' + cy.type + '. In real life this is a serious injury or fatality.', until: timeRef.current + 5 };
@@ -8388,6 +8417,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 t._rearEndCooldown = timeRef.current;
                 var impactSpeed = relativeSpeed * MS_TO_MPH;
                 statsRef.current.crashes++;
+                statsRef.current._lastCrashAt = timeRef.current;
                 if (impactSpeed > 30) {
                   statsRef.current.safetyScore -= 40;
                   addToast('💥 HIGH-SPEED COLLISION! -40 safety');
@@ -8457,6 +8487,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (!p._hitCooldown || timeRef.current - p._hitCooldown > 5) {
                 p._hitCooldown = timeRef.current;
                 statsRef.current.crashes++;
+                statsRef.current._lastCrashAt = timeRef.current;
                 statsRef.current.safetyScore -= 60;
                 addToast('💥 PEDESTRIAN STRUCK! -60 safety');
                 eventToastRef.current = { msg: '💥 You struck a pedestrian. In real life, this is a potential fatality and criminal charges.', until: timeRef.current + 6 };
@@ -8473,6 +8504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (emDist < 1.5 && absSpeed > 1 && !em._hitPlayer) {
               em._hitPlayer = true;
               statsRef.current.crashes++;
+              statsRef.current._lastCrashAt = timeRef.current;
               statsRef.current.safetyScore -= 50;
               addToast('💥 STRUCK EMERGENCY VEHICLE! -50 safety');
               eventToastRef.current = { msg: '💥 You collided with an emergency vehicle. Criminal offense + massive liability.', until: timeRef.current + 5 };

@@ -128,7 +128,8 @@
       date: null,                    // 'YYYY-MM-DD' — null = uninitialized
       pomodorosCompleted: 0,
       reflectionsSubmitted: 0,
-      promptsForToday: []            // array of 3 prompt ids selected at first visit of day
+      promptsForToday: [],           // array of 3 prompt ids selected at first visit of day
+      quizTokensEarnedToday: 0       // memory-palace quiz tokens (capped at 2/day)
     },
 
     // ── Pomodoro ──
@@ -1621,7 +1622,8 @@
           date: todayStr,
           pomodorosCompleted: 0,
           reflectionsSubmitted: 0,
-          promptsForToday: []
+          promptsForToday: [],
+          quizTokensEarnedToday: 0
         });
       }
       // eslint-disable-next-line
@@ -1924,6 +1926,124 @@
         speechRecRef.current = null;
       }
       setIsRecording(false);
+    }
+
+    // ── Memory palace handlers ──
+    // Open the memory modal scoped to a specific decoration. The
+    // generateContext field doubles as the carrier (already used for
+    // empty-cell + delete confirmations); decorationId tells the modal
+    // which decoration's linkedContent to read/write.
+    function openMemoryModal(decorationId) {
+      setStateMulti({
+        activeModal: 'memory',
+        generateContext: { decorationId: decorationId }
+      });
+    }
+
+    // Save memory content (linkedContent) onto a decoration. Awards a
+    // first-time token if the decoration didn't already have content.
+    function saveMemoryContent(decorationId, contentObj) {
+      var decoration = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!decoration) return;
+      var hadContentBefore = !!decoration.linkedContent;
+      var nowIso = new Date().toISOString();
+      var newContent = Object.assign({}, decoration.linkedContent || {}, contentObj, {
+        updatedAt: nowIso,
+        createdAt: (decoration.linkedContent && decoration.linkedContent.createdAt) || nowIso
+      });
+      // Default review fields when first added
+      if (!hadContentBefore) {
+        newContent.lastReviewedAt = null;
+        newContent.reviewCount = 0;
+        newContent.bestQuizScore = 0;
+      }
+      var newDecorations = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { linkedContent: newContent });
+      });
+      var updates = { decorations: newDecorations };
+      if (!hadContentBefore) {
+        updates.tokens = state.tokens + 1;
+        updates.earnings = state.earnings.concat([{
+          source: 'memory-content-added',
+          tokens: 1,
+          date: nowIso,
+          metadata: { decorationId: decorationId, type: contentObj.type }
+        }]);
+        setTimeout(function() {
+          addToast('🪙 +1 token. Your decoration now holds a study aid.');
+        }, 50);
+      }
+      setStateMulti(updates);
+    }
+
+    // Remove memory content from a decoration entirely. Token NOT refunded
+    // (matches add-and-delete logic from existing decoration deletion).
+    function removeMemoryContent(decorationId) {
+      var newDecorations = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { linkedContent: null });
+      });
+      setStateField('decorations', newDecorations);
+      addToast('Memory content removed.');
+    }
+
+    // Award token for a quiz session if score ≥80% AND daily cap not hit.
+    // Updates lastReviewedAt + reviewCount + bestQuizScore on the linkedContent.
+    function recordQuizSession(decorationId, scorePct) {
+      var decoration = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!decoration || !decoration.linkedContent) return;
+      var nowIso = new Date().toISOString();
+      var capHit = (state.dailyState.quizTokensEarnedToday || 0) >= 2;
+      var qualifies = scorePct >= 80;
+      var earned = (qualifies && !capHit) ? 1 : 0;
+
+      var newContent = Object.assign({}, decoration.linkedContent, {
+        lastReviewedAt: nowIso,
+        reviewCount: (decoration.linkedContent.reviewCount || 0) + 1,
+        bestQuizScore: Math.max(decoration.linkedContent.bestQuizScore || 0, scorePct)
+      });
+      var newDecorations = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { linkedContent: newContent });
+      });
+
+      var updates = { decorations: newDecorations };
+      if (earned > 0) {
+        updates.tokens = state.tokens + earned;
+        updates.earnings = state.earnings.concat([{
+          source: 'memory-quiz',
+          tokens: earned,
+          date: nowIso,
+          metadata: { decorationId: decorationId, scorePct: scorePct }
+        }]);
+        updates.dailyState = Object.assign({}, state.dailyState, {
+          quizTokensEarnedToday: (state.dailyState.quizTokensEarnedToday || 0) + earned
+        });
+        setTimeout(function() {
+          addToast('🪙 +1 token. ' + Math.round(scorePct) + '% on review.');
+        }, 50);
+      } else if (qualifies && capHit) {
+        setTimeout(function() {
+          addToast(Math.round(scorePct) + '% — great work! (Daily quiz tokens already earned.)');
+        }, 50);
+      } else {
+        setTimeout(function() {
+          addToast(Math.round(scorePct) + '%. No tokens this round; review again whenever you want.');
+        }, 50);
+      }
+      setStateMulti(updates);
+    }
+
+    // Helper: is a decoration's memory content "due for review"?
+    // True if it has linkedContent AND (never reviewed OR ≥5 days since last review).
+    function isMemoryDue(decoration) {
+      var lc = decoration.linkedContent;
+      if (!lc) return false;
+      if (!lc.lastReviewedAt) return true;
+      var lastMs = new Date(lc.lastReviewedAt).getTime();
+      var ageMs = Date.now() - lastMs;
+      return ageMs >= 5 * 24 * 60 * 60 * 1000;
     }
 
     // ── Decoration deletion handler ──
@@ -2266,15 +2386,42 @@
       if (decoration) {
         var rot = decoration.rotation || 0;
         var label = decoration.templateLabel || decoration.template || 'item';
+        var hasMemoryContent = !!decoration.linkedContent;
+        var memoryDue = isMemoryDue(decoration);
+        var memoryDescription = '';
+        if (hasMemoryContent) {
+          var lc = decoration.linkedContent;
+          if (lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+            memoryDescription = 'flashcards · ' + lc.data.cards.length + ' card' + (lc.data.cards.length === 1 ? '' : 's');
+          } else if (lc.type === 'acronym') {
+            memoryDescription = 'acronym · ' + ((lc.data && lc.data.letters) || '');
+          } else if (lc.type === 'notes') {
+            memoryDescription = 'notes';
+          } else {
+            memoryDescription = 'memory content';
+          }
+        }
         var hoverTitle = decoration.studentReflection
           ? '"' + decoration.studentReflection + '" · ' + label
           : label;
+        if (hasMemoryContent) hoverTitle += ' · ' + memoryDescription + (memoryDue ? ' (due for review)' : '');
         return h('div', {
           key: surface + '-cell-' + index,
-          role: 'group',
-          'aria-label': 'Decoration: ' + label + (decoration.studentReflection ? ' (with reflection)' : ''),
+          role: 'button',
+          tabIndex: 0,
+          'aria-label': 'Decoration: ' + label
+            + (decoration.studentReflection ? ' (with reflection)' : '')
+            + (hasMemoryContent ? ' (with ' + memoryDescription + (memoryDue ? ', due for review' : '') + ')' : '')
+            + ' — click to add or review memory content',
           className: 'ah-decoration',
           title: hoverTitle,
+          onClick: function() { openMemoryModal(decoration.id); },
+          onKeyDown: function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openMemoryModal(decoration.id);
+            }
+          },
           style: {
             background: palette.surface,
             border: '1px solid ' + palette.border,
@@ -2285,6 +2432,7 @@
             justifyContent: 'center',
             position: 'relative',
             transform: 'rotate(' + rot + 'deg)',
+            cursor: 'pointer',
             boxShadow: surface === 'floor' ? '0 3px 8px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.2)'
           }
         },
@@ -2316,6 +2464,25 @@
               letterSpacing: '0.04em'
             }
           }, 'starter') : null,
+          // Memory-content indicator — small 📖 in bottom-left (away
+          // from the starter badge which lives bottom-right). Brighter
+          // when due for review (yellow halo); dim when recently reviewed.
+          hasMemoryContent ? h('span', {
+            'aria-hidden': 'true',
+            className: 'ah-memory-indicator' + (memoryDue ? ' ah-memory-due' : ''),
+            style: {
+              position: 'absolute',
+              bottom: '2px',
+              left: '4px',
+              fontSize: '11px',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              background: memoryDue ? 'rgba(255,220,140,0.9)' : 'rgba(0,0,0,0.45)',
+              color: memoryDue ? '#1a1108' : '#fff',
+              opacity: memoryDue ? 1 : 0.7,
+              lineHeight: 1
+            }
+          }, '📖') : null,
           // Hover-revealed ✕ delete button (top-right corner). Suppressed
           // on the starter decoration — students shouldn't accidentally
           // delete the welcome gift; v2+ could allow it via Settings.

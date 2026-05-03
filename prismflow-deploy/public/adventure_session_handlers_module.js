@@ -662,7 +662,6 @@ window.AlloModules.AdventureSessionHandlers = {
   generateAdventureImage,
   generateNarrativeLedger,
 };
-
 window.AlloModules.AdventureSessionHandlersModule = true;
 console.log("[AdventureSessionHandlers] 3 helpers registered");
 })();

@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.ContentEngineModule){return;}
+if(window.AlloModules&&window.AlloModules.ContentEngineModule){console.log("[CDN] ContentEngineModule already loaded, skipping"); return;}
 // content_engine_source.jsx — Content Generation + Text Revision handlers
 // Pure function extraction — no hooks. Uses factory + window state bag pattern.
 
@@ -1897,5 +1897,4 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.createContentEngine = createContentEngine;
 window.AlloModules.ContentEngineModule = true;
 console.log('[ContentEngineModule] Content engine factory registered');
-
 })();

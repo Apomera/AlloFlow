@@ -1,5 +1,5 @@
 (function(){"use strict";
-if(window.AlloModules&&window.AlloModules.TimelineRevisionModule){return;}
+if(window.AlloModules&&window.AlloModules.TimelineRevisionModule){console.log("[CDN] TimelineRevisionModule already loaded, skipping"); return;}
 // timeline_revision_source.jsx — Timeline / Sequence Builder utilities
 // Pure-function extraction + AI-call wrappers + stateful handlers.
 // No hooks; factory pattern. Source of truth; compiled to
@@ -548,5 +548,4 @@ window.AlloModules = window.AlloModules || {};
 window.AlloModules.createTimelineRevision = createTimelineRevision;
 window.AlloModules.TimelineRevisionModule = true;
 console.log('[TimelineRevisionModule] Factory registered');
-
 })();
