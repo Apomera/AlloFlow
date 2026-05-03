@@ -12393,10 +12393,78 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       `</ul></div>`).join('')}</div></div>`;
               }
           }
+          // Text-only fallback for screen readers and printable PDFs.
+          // Diagrams (Venn, Flow Chart, Mind Map, Cause-Effect, Problem
+          // Solution, default) all use absolutely-positioned visual layouts
+          // that screen readers can't traverse meaningfully — they just hear
+          // the role="img" aria-label, which is a one-line summary at best.
+          // The collapsible "View as text" section below renders the same
+          // content as a structured plain-text outline so screen-reader
+          // users get the actual relationships, and so the diagram is
+          // legible if someone prints to a small page where the visual
+          // layout breaks. Inspired by WCAG 1.1.1 long descriptions.
+          const _textFallback = (() => {
+              const escape = (s) => String(s == null ? '' : s).replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
+              const renderItems = (items, items_en) => {
+                  if (!Array.isArray(items) || items.length === 0) return '';
+                  return '<ul>' + items.map((it, i) => {
+                      const en = items_en && items_en[i] ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(items_en[i])})</em>` : '';
+                      return `<li>${escape(it)}${en}</li>`;
+                  }).join('') + '</ul>';
+              };
+              // Per-type framing so the relationships read sensibly aloud.
+              let body = '';
+              if (type === 'Venn Diagram') {
+                  const setA = branches[0] || { title: 'Set A', items: [] };
+                  const setB = branches[1] || { title: 'Set B', items: [] };
+                  const shared = branches[2] || { title: 'Shared', items: [] };
+                  body = `
+                      <h4>${escape(setA.title)} only</h4>${renderItems(setA.items, setA.items_en)}
+                      <h4>${escape(setB.title)} only</h4>${renderItems(setB.items, setB.items_en)}
+                      <h4>${escape(shared.title || 'Shared')}</h4>${renderItems(shared.items, shared.items_en)}
+                  `;
+              } else if (type === 'Cause-Effect') {
+                  body = branches.map(b => `
+                      <h4>${escape(b.title)} (cause)</h4>${renderItems(b.items, b.items_en)}
+                  `).join('');
+              } else if (type === 'Problem Solution') {
+                  body = `
+                      <p><strong>Problem:</strong> ${escape(main)}</p>
+                      <h4>Solutions</h4>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'Mind Map') {
+                  body = `
+                      <p><strong>Center:</strong> ${escape(main)}</p>
+                      ${branches.map(b => `<p><strong>${escape(b.title)}</strong></p>${renderItems(b.items, b.items_en)}`).join('')}
+                  `;
+              } else if (type === 'Flow Chart' || type === 'Process Flow / Sequence') {
+                  body = '<ol>' + branches.map(b => {
+                      const isDecision = (b.title || '').includes('?') || (b.title || '').toLowerCase().includes('decision');
+                      const tag = isDecision ? '<em>(decision)</em> ' : '';
+                      return `<li>${tag}<strong>${escape(b.title)}</strong>${b.title_en ? ` <em>(${escape(b.title_en)})</em>` : ''}${renderItems(b.items, b.items_en)}</li>`;
+                  }).join('') + '</ol>';
+              } else {
+                  body = branches.map(b => `
+                      <h4>${escape(b.title)}${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</h4>
+                      ${renderItems(b.items, b.items_en)}
+                  `).join('');
+              }
+              return `
+                  <details class="diagram-text-fallback" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
+                      <summary style="cursor:pointer;font-weight:700;color:#475569;font-size:0.9rem;">📋 View as text</summary>
+                      <div style="margin-top:0.5rem;color:#1e293b;font-size:0.95rem;line-height:1.5;">
+                          <p style="margin:0 0 0.5rem 0;font-weight:700;">${escape(main)}${main_en ? ` <em style="color:#64748b;font-size:0.9em;font-weight:normal;">(${escape(main_en)})</em>` : ''}</p>
+                          ${body}
+                      </div>
+                  </details>
+              `;
+          })();
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${innerContent}
+                  ${_textFallback}
               </div>
           `;
       } else if (item.type === 'image') {
@@ -12608,7 +12676,98 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               realWorld: item.data.realWorld
           }];
           const graphData = item.data.graphData;
-          const formatMath = (t) => `<span class="math-symbol">${processMathHTML(t)}</span>`;
+          // Build a screen-reader-speakable form of a LaTeX expression. The
+          // visual span class="math-symbol" produces stylized HTML (fractions,
+          // superscripts, etc.) that NVDA/JAWS would otherwise read character
+          // by character ("a 1 b" for "a over b"). Wrapping each math span in
+          // role="math" + aria-label="<spoken form>" gives screen readers a
+          // sentence to announce that matches the visual meaning.
+          //
+          // We don't generate full MathML markup — that'd be a 500-line lift
+          // for marginal gain over a well-formed aria-label. The label below
+          // converts the most common LaTeX operators to plain English.
+          const _latexToSpeakable = (raw) => {
+              if (raw == null || raw === '') return '';
+              let s = String(raw);
+              // Strip math-mode delimiters
+              s = s.replace(/^\$\$/, '').replace(/\$\$$/, '').replace(/^\$/, '').replace(/\$$/, '');
+              // Structural commands first (these contain other math)
+              s = s.replace(/\\frac\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 over $2');
+              s = s.replace(/\\sqrt\s*\[([^\]]+)\]\s*\{([^}]+)\}/g, '$1th root of $2');
+              s = s.replace(/\\sqrt\s*\{([^}]+)\}/g, 'square root of $1');
+              s = s.replace(/\\binom\s*\{([^}]+)\}\s*\{([^}]+)\}/g, '$1 choose $2');
+              s = s.replace(/\\overline\{([^}]+)\}/g, 'the negation of $1');
+              s = s.replace(/\\underline\{([^}]+)\}/g, '$1');
+              s = s.replace(/\\(text|textit|textrm|mathrm|operatorname|textbf|mathbf|mathit|mathbb)\{([^}]+)\}/g, '$2');
+              // Powers and subscripts (longest first so {^...{n}} is caught before {^n})
+              s = s.replace(/\^\{([^}]+)\}/g, ' to the power $1 ');
+              s = s.replace(/\^([0-9a-zA-Z+\-])/g, ' to the power $1 ');
+              s = s.replace(/_\{([^}]+)\}/g, ' sub $1 ');
+              s = s.replace(/_([0-9a-zA-Z])/g, ' sub $1 ');
+              // Big operators
+              s = s.replace(/\\sum/g, 'the sum of');
+              s = s.replace(/\\prod/g, 'the product of');
+              s = s.replace(/\\int/g, 'the integral of');
+              s = s.replace(/\\(iint|iiint)/g, 'the multiple integral of');
+              s = s.replace(/\\oint/g, 'the contour integral of');
+              s = s.replace(/\\lim/g, 'the limit of');
+              s = s.replace(/\\(min|max|sup|inf)/g, '$1 of');
+              // Comparison + arithmetic
+              const phraseMap = {
+                  'leq': 'less than or equal to', 'le': 'less than or equal to',
+                  'geq': 'greater than or equal to', 'ge': 'greater than or equal to',
+                  'neq': 'not equal to', 'ne': 'not equal to',
+                  'approx': 'approximately equal to', 'equiv': 'equivalent to',
+                  'cong': 'congruent to', 'sim': 'similar to', 'simeq': 'similar to',
+                  'propto': 'proportional to',
+                  'times': 'times', 'div': 'divided by', 'cdot': 'times',
+                  'pm': 'plus or minus', 'mp': 'minus or plus',
+                  'rightarrow': 'goes to', 'to': 'goes to',
+                  'Rightarrow': 'implies', 'Leftrightarrow': 'if and only if',
+                  'mapsto': 'maps to',
+                  'in': 'in', 'notin': 'not in', 'subset': 'a subset of', 'supset': 'a superset of',
+                  'subseteq': 'a subset of or equal to', 'cup': 'union', 'cap': 'intersection',
+                  'forall': 'for all', 'exists': 'there exists', 'nexists': 'there does not exist',
+                  'neg': 'not', 'lnot': 'not', 'land': 'and', 'lor': 'or',
+                  'wedge': 'and', 'vee': 'or',
+                  'infty': 'infinity', 'partial': 'partial', 'nabla': 'gradient of',
+                  'angle': 'angle', 'perp': 'perpendicular to', 'parallel': 'parallel to',
+                  'therefore': 'therefore', 'because': 'because',
+                  'ldots': 'and so on', 'cdots': 'and so on', 'dots': 'and so on',
+                  'prime': 'prime', 'degree': 'degrees',
+                  'sin': 'sine', 'cos': 'cosine', 'tan': 'tangent',
+                  'arcsin': 'arc sine', 'arccos': 'arc cosine', 'arctan': 'arc tangent',
+                  'log': 'log', 'ln': 'natural log', 'exp': 'e to the',
+                  // Greek letters keep their Greek names; screen readers handle these well.
+                  'alpha': 'alpha', 'beta': 'beta', 'gamma': 'gamma', 'delta': 'delta',
+                  'epsilon': 'epsilon', 'theta': 'theta', 'lambda': 'lambda', 'mu': 'mu',
+                  'pi': 'pi', 'rho': 'rho', 'sigma': 'sigma', 'tau': 'tau', 'phi': 'phi',
+                  'chi': 'chi', 'psi': 'psi', 'omega': 'omega',
+                  'Gamma': 'capital gamma', 'Delta': 'capital delta', 'Theta': 'capital theta',
+                  'Lambda': 'capital lambda', 'Sigma': 'capital sigma', 'Pi': 'capital pi',
+                  'Phi': 'capital phi', 'Psi': 'capital psi', 'Omega': 'capital omega',
+              };
+              const sortedKeys = Object.keys(phraseMap).sort((a, b) => b.length - a.length);
+              sortedKeys.forEach(cmd => {
+                  const re = new RegExp('\\\\' + cmd + '(?![a-zA-Z])', 'g');
+                  s = s.replace(re, ' ' + phraseMap[cmd] + ' ');
+              });
+              // Strip remaining LaTeX bookkeeping: backslashes, braces, &, \\
+              s = s.replace(/\\\\/g, ', ');
+              s = s.replace(/[{}\\]/g, ' ');
+              s = s.replace(/&/g, ' ');
+              // Operators in raw form become words
+              s = s.replace(/\+/g, ' plus ').replace(/(?<=[\d\w\)])\s*-\s*(?=[\d\w\(])/g, ' minus ').replace(/=/g, ' equals ');
+              // Collapse whitespace
+              s = s.replace(/\s+/g, ' ').trim();
+              // Quote-safe for HTML attribute
+              return s.replace(/"/g, '&quot;');
+          };
+          const formatMath = (t) => {
+              const speakable = _latexToSpeakable(t);
+              const labelAttr = speakable ? ` aria-label="${speakable}"` : '';
+              return `<span class="math-symbol" role="math"${labelAttr}>${processMathHTML(t)}</span>`;
+          };
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
