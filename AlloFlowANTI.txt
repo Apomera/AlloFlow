@@ -128,6 +128,21 @@ function _upgradeAlloData() {
 }
 window._upgradeAlloData = _upgradeAlloData;
 
+// Shims for firestore_sync_module.js (history-data helpers). The CDN module
+// upgrades these via _upgradeFirestoreSync after load. Until then, the shims
+// are pass-through (return input unchanged) so any code that runs before the
+// module loads degrades safely instead of crashing.
+let stripUndefined = (obj) => obj;
+let sanitizeHistoryForCloud = (items) => items;
+let hydrateHistory = (items) => Array.isArray(items) ? items : [];
+function _upgradeFirestoreSync() {
+    if (typeof window.stripUndefined === 'function') stripUndefined = window.stripUndefined;
+    if (typeof window.sanitizeHistoryForCloud === 'function') sanitizeHistoryForCloud = window.sanitizeHistoryForCloud;
+    if (typeof window.hydrateHistory === 'function') hydrateHistory = window.hydrateHistory;
+    console.log('[FirestoreSync] Monolith shim upgraded from CDN module.');
+}
+window._upgradeFirestoreSync = _upgradeFirestoreSync;
+
 let safeJsonParse = (text) => { try { return text ? JSON.parse(text) : null; } catch { return null; } };
 let cleanJson = (text) => (text || '').replace(/^```json\s*|\s*```$/g, '').trim();
 let calculateTextEntropy = () => 1;
@@ -4018,68 +4033,8 @@ const AlloFlowContent = () => {
   });
   const [isParentMode, setIsParentMode] = useState(false);
   const [isIndependentMode, setIsIndependentMode] = useState(false);
-  const stripUndefined = (obj) => {
-    if (obj === null || obj === undefined) return obj;
-    if (Array.isArray(obj)) return obj.map(stripUndefined);
-    if (typeof obj === 'object' && !(obj instanceof Date)) {
-      return Object.fromEntries(
-        Object.entries(obj)
-          .filter(([_, v]) => v !== undefined)
-          .map(([k, v]) => [k, stripUndefined(v)])
-      );
-    }
-    return obj;
-  };
-  const sanitizeHistoryForCloud = (historyItems) => {
-    return historyItems.map(item => {
-        if (item.type === 'glossary' && Array.isArray(item.data)) {
-            const cleanData = item.data.map(gItem => {
-                const { image, ...rest } = gItem;
-                return rest;
-            });
-            return { ...item, data: cleanData };
-        }
-        if (item.type === 'image' && item.data && item.data.imageUrl) {
-            const { imageUrl, ...rest } = item.data;
-            return { ...item, data: { ...rest, imageUrl: null } };
-        }
-        if (item.type === 'adventure' && item.data) {
-             const { sceneImage, ...rest } = item.data;
-             let cleanInventory = rest.inventory;
-             if (Array.isArray(cleanInventory)) {
-                cleanInventory = cleanInventory.map(inv => {
-                    const { image, ...iRest } = inv;
-                    return iRest;
-                });
-             }
-             let cleanSnapshot = null;
-             if (rest.snapshot) {
-                 cleanSnapshot = {
-                     xp: rest.snapshot.xp,
-                     gold: rest.snapshot.gold,
-                     energy: rest.snapshot.energy,
-                     level: rest.snapshot.level,
-                     xpToNextLevel: rest.snapshot.xpToNextLevel,
-                     stats: rest.snapshot.stats,
-                     turnCount: rest.snapshot.turnCount,
-                     climax: rest.snapshot.climax,
-                     debateMomentum: rest.snapshot.debateMomentum,
-                     missionReportDismissed: rest.snapshot.missionReportDismissed,
-                     inventory: cleanInventory,
-                 };
-             }
-             return { ...item, data: { ...rest, sceneImage: null, inventory: cleanInventory, snapshot: cleanSnapshot } };
-        }
-        if (item.type === 'persona' && Array.isArray(item.data)) {
-             const cleanData = item.data.map(p => {
-                 const { avatarUrl, ...rest } = p;
-                 return rest;
-             });
-             return { ...item, data: cleanData };
-        }
-        return item;
-    });
-  };
+  // stripUndefined + sanitizeHistoryForCloud extracted to firestore_sync_module.js;
+  // top-level shims at file head (line ~130) get upgraded on CDN load.
   const mergeCloudAndLocal = (localItems, cloudItems) => {
       const itemMap = new Map();
       localItems.forEach(item => {
@@ -4101,30 +4056,8 @@ const AlloFlowContent = () => {
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
   };
-  const hydrateHistory = (items) => {
-      if (!Array.isArray(items)) return [];
-      return items.filter(item => item && typeof item === 'object').map(item => {
-          let parsedData = item.data;
-          if (typeof parsedData === 'string') {
-              try {
-                  const result = JSON.parse(parsedData);
-                  parsedData = result;
-              } catch (e) {
-              }
-          }
-          let parsedGameData = item.gameData;
-          if (typeof parsedGameData === 'string') {
-              try {
-                  parsedGameData = JSON.parse(parsedGameData);
-              } catch(e) { warnLog('Caught error:', e?.message || e); }
-          }
-          return {
-              ...item,
-              data: parsedData,
-              gameData: parsedGameData || item.gameData
-          };
-      });
-  };
+  // hydrateHistory extracted to firestore_sync_module.js; top-level shim
+  // at file head (line ~130) gets upgraded on CDN load.
   const [hasSelectedRole, setHasSelectedRole] = useState(false);
   const [showStudentWelcome, setShowStudentWelcome] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
@@ -4926,6 +4859,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0b10ca1/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/firestore_sync_module.js');
     loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0b10ca1/large_file_module.js');
     loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0b10ca1/key_concept_map_module.js');
     loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@0b10ca1/utils_pure_module.js');
