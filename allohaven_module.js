@@ -508,6 +508,93 @@
     return t === g || t.indexOf(g) === 0 || g.indexOf(t) === 0;
   }
 
+  // ── Per-card mastery (Phase 2d) ──
+  // Smart shuffle: weights cards by weakness so struggling ones come
+  // up first in the deck order, while still maintaining randomness.
+  // Cards never quizzed get the average weight (so new cards mix
+  // naturally). Pure-random shuffle for fresh decks.
+  //
+  // Weakness score per card:
+  //   no attempts: 1.0 (treated as average — neither prioritized nor demoted)
+  //   has attempts: missCount / (correctCount + missCount), in [0, 1]
+  //
+  // Then we do a weighted Fisher-Yates: each draw picks proportional
+  // to (weakness + 0.3) — the +0.3 floor ensures every card gets a
+  // shot, even mastered ones, so re-quizzing a deck cleanly stays
+  // possible (no cards stuck behind weakness=0).
+  function cardWeaknessScore(card) {
+    var c = card.correctCount || 0;
+    var m = card.missCount || 0;
+    var total = c + m;
+    if (total === 0) return 1.0; // unseen cards = average
+    return m / total;
+  }
+
+  function smartShuffleCards(cards) {
+    if (!cards || cards.length <= 1) return cards.slice();
+    var pool = cards.slice();
+    var result = [];
+    while (pool.length > 0) {
+      // Compute weights with the +0.3 floor
+      var weights = pool.map(function(c) { return cardWeaknessScore(c) + 0.3; });
+      var totalWeight = weights.reduce(function(s, w) { return s + w; }, 0);
+      var roll = Math.random() * totalWeight;
+      var pickIdx = 0;
+      var cumulative = 0;
+      for (var i = 0; i < weights.length; i++) {
+        cumulative += weights[i];
+        if (roll <= cumulative) { pickIdx = i; break; }
+      }
+      result.push(pool[pickIdx]);
+      pool.splice(pickIdx, 1);
+    }
+    return result;
+  }
+
+  // Mastery bucket (display label + emoji) for a card based on its
+  // accumulated stats. Three buckets matching the broader system's
+  // mental model:
+  //   green:  ≥80% correct AND ≥3 attempts (locked in)
+  //   yellow: any data with <80% correct, OR <3 attempts (still developing)
+  //   red:    ≥3 attempts and <40% correct (struggling)
+  //   gray:   no attempts yet (unknown — neutral)
+  function cardMasteryBucket(card) {
+    var c = card.correctCount || 0;
+    var m = card.missCount || 0;
+    var total = c + m;
+    if (total === 0) return { id: 'gray', label: 'unseen', emoji: '⚪' };
+    var pct = c / total;
+    if (total >= 3 && pct < 0.4) return { id: 'red', label: 'needs work', emoji: '🔴' };
+    if (total >= 3 && pct >= 0.8) return { id: 'green', label: 'mastered', emoji: '🟢' };
+    return { id: 'yellow', label: 'wobbly', emoji: '🟡' };
+  }
+
+  // Days remaining until a decoration's content becomes due. Used
+  // for the "due-soon" warm-color indicator (1-2 days before due).
+  // Returns null if not quizzable / never-reviewed paths handled by
+  // isMemoryDue() instead.
+  function daysUntilDue(decoration) {
+    var lc = decoration.linkedContent;
+    if (!lc) return null;
+    if (lc.type === 'notes' && !hasClozeMarkers(lc)) return null;
+    if (!lc.lastReviewedAt) return null; // already due (handled separately)
+    var lastMs = new Date(lc.lastReviewedAt).getTime();
+    var ageMs = Date.now() - lastMs;
+    var bestScore = lc.bestQuizScore || 0;
+    var thresholdDays;
+    if (bestScore < 60)      thresholdDays = 2;
+    else if (bestScore < 90) thresholdDays = 5;
+    else                     thresholdDays = 10;
+    var thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
+    if (ageMs >= thresholdMs) return 0; // already due
+    return Math.ceil((thresholdMs - ageMs) / (24 * 60 * 60 * 1000));
+  }
+
+  function isMemoryDueSoon(decoration) {
+    var days = daysUntilDue(decoration);
+    return days !== null && days > 0 && days <= 2;
+  }
+
   // Surprise me — returns a fully populated slots object for the given
   // template, randomized. For hierarchical templates, also resolves the
   // dependent slot consistently.
@@ -1711,11 +1798,12 @@
       if (!existing || !existing.data) return;
       if (existing.type === 'flashcards') {
         var cards = (existing.data.cards || []).slice();
-        // Fisher-Yates shuffle
-        for (var i = cards.length - 1; i > 0; i--) {
-          var j = Math.floor(Math.random() * (i + 1));
-          var tmp = cards[i]; cards[i] = cards[j]; cards[j] = tmp;
-        }
+        // Smart shuffle: cards with the highest miss rate surface first.
+        // Computes a "weakness score" per card, weighted random pick
+        // each step (Fisher-Yates with score-bias). Falls back to pure
+        // random for cards never quizzed before. Brand-new decks behave
+        // identically to a vanilla shuffle.
+        cards = smartShuffleCards(cards);
         // Reverse mode persists per-deck (saved on linkedContent.data.reverseMode)
         var reverseMode = !!(existing.data && existing.data.reverseMode);
         setQuiz({
@@ -1726,7 +1814,8 @@
           correct: 0,
           missed: 0,
           done: false,
-          reverseMode: reverseMode
+          reverseMode: reverseMode,
+          gradeLog: []
         });
         setMode('quiz');
       } else if (existing.type === 'acronym') {
@@ -1884,13 +1973,45 @@
       if (!lc) return null;
       if (lc.type === 'flashcards') {
         var cards = (lc.data && lc.data.cards) || [];
+        // Mastery distribution summary — quick "how am I doing on this deck"
+        var buckets = { green: 0, yellow: 0, red: 0, gray: 0 };
+        cards.forEach(function(card) { buckets[cardMasteryBucket(card).id] += 1; });
+        var hasAnyAttempts = cards.some(function(c) { return (c.correctCount || 0) + (c.missCount || 0) > 0; });
         return h('div', null,
-          h('div', { style: { fontSize: '12px', color: palette.textMute, marginBottom: '10px' } },
-            '📚 ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+          h('div', {
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }
+          },
+            h('span', { style: { fontSize: '12px', color: palette.textMute } },
+              '📚 ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+            // Mastery distribution chips — only if any cards have been quizzed
+            hasAnyAttempts ? h('span', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+              buckets.green > 0 ? '🟢 ' + buckets.green + ' ' : '',
+              buckets.yellow > 0 ? '🟡 ' + buckets.yellow + ' ' : '',
+              buckets.red > 0 ? '🔴 ' + buckets.red + ' ' : '',
+              buckets.gray > 0 ? '⚪ ' + buckets.gray : ''
+            ) : null
+          ),
           h('ol', { style: { paddingLeft: '20px', margin: 0, color: palette.text, fontSize: '13px', lineHeight: '1.6' } },
             cards.map(function(card) {
-              return h('li', { key: card.id, style: { marginBottom: '8px' } },
-                h('div', { style: { fontWeight: 600 } }, card.front),
+              var mastery = cardMasteryBucket(card);
+              var attempts = (card.correctCount || 0) + (card.missCount || 0);
+              return h('li', { key: card.id, style: { marginBottom: '10px' } },
+                h('div', {
+                  style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }
+                },
+                  h('div', { style: { fontWeight: 600, flex: 1 } }, card.front),
+                  // Per-card mastery indicator with attempt count
+                  attempts > 0 ? h('span', {
+                    'aria-label': mastery.label + ', ' + (card.correctCount || 0) + ' correct out of ' + attempts,
+                    title: mastery.label + ' · ' + (card.correctCount || 0) + ' / ' + attempts + ' correct',
+                    style: {
+                      fontSize: '10px',
+                      flexShrink: 0,
+                      color: palette.textMute,
+                      fontVariantNumeric: 'tabular-nums'
+                    }
+                  }, mastery.emoji + ' ' + (card.correctCount || 0) + '/' + attempts) : null
+                ),
                 h('div', { style: { color: palette.textDim, fontStyle: 'italic', fontSize: '12px' } }, card.back)
               );
             })
@@ -2546,18 +2667,56 @@
           flipped: false,
           currentIdx: 0,
           correct: 0,
-          missed: 0
+          missed: 0,
+          gradeLog: []
         }));
       }
       function gradeAndAdvance(gotIt) {
         var nextIdx = quiz.currentIdx + 1;
         var newCorrect = quiz.correct + (gotIt ? 1 : 0);
         var newMissed = quiz.missed + (gotIt ? 0 : 1);
+        // Track which card got which grade so we can persist stats at
+        // quiz finish. Quiz state holds the live shuffle; the persistent
+        // record (decoration.linkedContent.data.cards) gets updated once
+        // at the end so we don't write to localStorage every keystroke.
+        var newGradeLog = (quiz.gradeLog || []).concat([{ cardId: card.id, gotIt: gotIt }]);
         if (nextIdx >= cards.length) {
+          // Persist per-card stats before scoring
+          persistCardStats(newGradeLog);
           finishQuiz(newCorrect, cards.length);
         } else {
-          setQuiz(Object.assign({}, quiz, { currentIdx: nextIdx, flipped: false, correct: newCorrect, missed: newMissed }));
+          setQuiz(Object.assign({}, quiz, {
+            currentIdx: nextIdx,
+            flipped: false,
+            correct: newCorrect,
+            missed: newMissed,
+            gradeLog: newGradeLog
+          }));
         }
+      }
+
+      // Update correctCount / missCount on each card in the persistent
+      // deck. Aggregates the quiz-session grade log + writes through
+      // to linkedContent.data.cards. Preserves card order; doesn't
+      // touch reverseMode or other deck-level fields.
+      function persistCardStats(gradeLog) {
+        var existingCards = (existing.data && existing.data.cards) || [];
+        var statsById = {};
+        gradeLog.forEach(function(entry) {
+          if (!statsById[entry.cardId]) statsById[entry.cardId] = { c: 0, m: 0 };
+          if (entry.gotIt) statsById[entry.cardId].c += 1;
+          else             statsById[entry.cardId].m += 1;
+        });
+        var updatedCards = existingCards.map(function(c) {
+          var delta = statsById[c.id];
+          if (!delta) return c;
+          return Object.assign({}, c, {
+            correctCount: (c.correctCount || 0) + delta.c,
+            missCount:    (c.missCount    || 0) + delta.m
+          });
+        });
+        var newData = Object.assign({}, existing.data, { cards: updatedCards });
+        p.onSave({ type: 'flashcards', data: newData });
       }
 
       return h('div', null,
@@ -3807,6 +3966,7 @@
         var label = decoration.templateLabel || decoration.template || 'item';
         var hasMemoryContent = !!decoration.linkedContent;
         var memoryDue = isMemoryDue(decoration);
+        var memoryDueSoon = !memoryDue && isMemoryDueSoon(decoration);
         var memoryDescription = '';
         if (hasMemoryContent) {
           var lc = decoration.linkedContent;
@@ -3825,14 +3985,19 @@
         var hoverTitle = decoration.studentReflection
           ? '"' + decoration.studentReflection + '" · ' + label
           : label;
-        if (hasMemoryContent) hoverTitle += ' · ' + memoryDescription + (memoryDue ? ' (due for review)' : '');
+        if (hasMemoryContent) hoverTitle += ' · ' + memoryDescription
+          + (memoryDue ? ' (due for review)' : (memoryDueSoon ? ' (due soon)' : ''));
         return h('div', {
           key: surface + '-cell-' + index,
           role: 'button',
           tabIndex: 0,
           'aria-label': 'Decoration: ' + label
             + (decoration.studentReflection ? ' (with reflection)' : '')
-            + (hasMemoryContent ? ' (with ' + memoryDescription + (memoryDue ? ', due for review' : '') + ')' : '')
+            + (hasMemoryContent
+                ? ' (with ' + memoryDescription
+                  + (memoryDue ? ', due for review' : (memoryDueSoon ? ', due soon' : ''))
+                  + ')'
+                : '')
             + ' — click to add or review memory content',
           className: 'ah-decoration',
           title: hoverTitle,
@@ -3886,8 +4051,12 @@
             }
           }, 'starter') : null,
           // Memory-content indicator — small 📖 in bottom-left (away
-          // from the starter badge which lives bottom-right). Brighter
-          // when due for review (yellow halo); dim when recently reviewed.
+          // from the starter badge which lives bottom-right). Three
+          // visual tiers:
+          //   recently reviewed: dim, dark background (just visible)
+          //   due soon (1-2d):   warm orange (gentle "hey, soon")
+          //   due now:           bright yellow + pulse halo (fading
+          //                      knowledge needs attention)
           hasMemoryContent ? h('span', {
             'aria-hidden': 'true',
             className: 'ah-memory-indicator' + (memoryDue ? ' ah-memory-due' : ''),
@@ -3898,9 +4067,13 @@
               fontSize: '11px',
               padding: '1px 4px',
               borderRadius: '3px',
-              background: memoryDue ? 'rgba(255,220,140,0.9)' : 'rgba(0,0,0,0.45)',
-              color: memoryDue ? '#1a1108' : '#fff',
-              opacity: memoryDue ? 1 : 0.7,
+              background: memoryDue
+                ? 'rgba(255,220,140,0.9)'
+                : memoryDueSoon
+                  ? 'rgba(255,170,80,0.85)'
+                  : 'rgba(0,0,0,0.45)',
+              color: (memoryDue || memoryDueSoon) ? '#1a1108' : '#fff',
+              opacity: memoryDue ? 1 : (memoryDueSoon ? 0.95 : 0.7),
               lineHeight: 1
             }
           }, '📖') : null,
@@ -4257,11 +4430,14 @@
     function renderMemoryOverviewModal() {
       if (state.activeModal !== 'memory-overview') return null;
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
-      // Partition into due / not-due, then sort within each
+      // Partition into 3 buckets: due / due-soon / fresh
       var due = [];
+      var dueSoon = [];
       var fresh = [];
       withContent.forEach(function(d) {
-        if (isMemoryDue(d)) due.push(d); else fresh.push(d);
+        if (isMemoryDue(d))          due.push(d);
+        else if (isMemoryDueSoon(d)) dueSoon.push(d);
+        else                          fresh.push(d);
       });
       var byLastReviewedDesc = function(a, b) {
         var aIso = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
@@ -4269,6 +4445,7 @@
         return bIso.localeCompare(aIso);
       };
       due.sort(byLastReviewedDesc);
+      dueSoon.sort(byLastReviewedDesc);
       fresh.sort(byLastReviewedDesc);
 
       // Stats
@@ -4361,7 +4538,8 @@
             renderOverviewStat('Decks', totalDecks, palette),
             totalCards > 0 ? renderOverviewStat('Flashcards', totalCards, palette) : null,
             renderOverviewStat('Reviewed this week', pctWeek + '%', palette),
-            due.length > 0 ? renderOverviewStat('Due for review', due.length, palette, true) : null
+            due.length > 0 ? renderOverviewStat('Due for review', due.length, palette, true) : null,
+            due.length === 0 && dueSoon.length > 0 ? renderOverviewStat('Due soon', dueSoon.length, palette, false, '#d97706') : null
           ) : null,
 
           // Due section
@@ -4377,7 +4555,24 @@
               }
             }, '⚡ Due for review · ' + due.length),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-              due.map(function(d) { return renderOverviewRow(d, palette, true); })
+              due.map(function(d) { return renderOverviewRow(d, palette, 'due'); })
+            )
+          ) : null,
+
+          // Due-soon section — gentle 1-2-day-out warning
+          dueSoon.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: '#d97706',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '⏳ Due soon · ' + dueSoon.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              dueSoon.map(function(d) { return renderOverviewRow(d, palette, 'soon'); })
             )
           ) : null,
 
@@ -4392,9 +4587,9 @@
                 letterSpacing: '0.06em',
                 marginBottom: '8px'
               }
-            }, due.length > 0 ? 'Recently reviewed · ' + fresh.length : 'Your decks · ' + fresh.length),
+            }, (due.length + dueSoon.length > 0) ? 'Recently reviewed · ' + fresh.length : 'Your decks · ' + fresh.length),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-              fresh.map(function(d) { return renderOverviewRow(d, palette, false); })
+              fresh.map(function(d) { return renderOverviewRow(d, palette, 'fresh'); })
             )
           ) : null
         )
@@ -4404,7 +4599,13 @@
     // Single overview row — decoration thumbnail + content summary +
     // Review button. Click anywhere on the row (except the button) opens
     // the memory modal at view-tab; click Review jumps to quiz mode.
-    function renderOverviewRow(decoration, palette, isDue) {
+    // tier: 'due' (warn-bordered) | 'soon' (orange-bordered) | 'fresh' (default border)
+    function renderOverviewRow(decoration, palette, tier) {
+      // Backward-compat: old callers may pass a boolean
+      if (tier === true) tier = 'due';
+      if (tier === false || tier == null) tier = 'fresh';
+      var isDue = tier === 'due';
+      var isSoon = tier === 'soon';
       var lc = decoration.linkedContent;
       var label = decoration.templateLabel || decoration.template || 'item';
       var typeIcon = lc.type === 'flashcards' ? '📚' : lc.type === 'acronym' ? '🔤' : '📝';
@@ -4436,18 +4637,25 @@
         else reviewedLabel = 'Reviewed ' + daysAgo + ' days ago';
       }
 
+      var borderColor = isDue
+        ? (palette.warn || palette.accent)
+        : (isSoon ? '#d97706' : palette.border);
+      var leftBorder = (isDue || isSoon)
+        ? ('3px solid ' + borderColor)
+        : ('1px solid ' + palette.border);
       return h('div', {
         key: 'mr-' + decoration.id,
         role: 'group',
-        'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel,
+        'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel
+          + (isSoon ? ', due soon' : ''),
         style: {
           display: 'flex',
           gap: '10px',
           alignItems: 'center',
           padding: '10px 12px',
           background: palette.surface,
-          border: '1px solid ' + (isDue ? (palette.warn || palette.accent) : palette.border),
-          borderLeft: isDue ? ('3px solid ' + (palette.warn || palette.accent)) : ('1px solid ' + palette.border),
+          border: '1px solid ' + borderColor,
+          borderLeft: leftBorder,
           borderRadius: '8px'
         }
       },
@@ -4488,16 +4696,21 @@
           h('div', {
             style: {
               fontSize: '10px',
-              color: isDue ? (palette.warn || palette.accent) : palette.textMute,
-              fontWeight: isDue ? 700 : 400
+              color: isDue
+                ? (palette.warn || palette.accent)
+                : (isSoon ? '#d97706' : palette.textMute),
+              fontWeight: (isDue || isSoon) ? 700 : 400
             }
-          }, reviewedLabel)
+          },
+            isSoon ? (reviewedLabel + ' · due soon') : reviewedLabel)
         ),
         // Review action button (only for quizzable types)
         quizAvailable ? h('button', {
           onClick: function() { openMemoryModal(decoration.id, true); },
           style: {
-            background: isDue ? (palette.warn || palette.accent) : palette.accent,
+            background: isDue
+              ? (palette.warn || palette.accent)
+              : (isSoon ? '#d97706' : palette.accent),
             color: palette.onAccent,
             border: 'none',
             borderRadius: '8px',
@@ -4526,13 +4739,16 @@
       );
     }
 
-    function renderOverviewStat(label, value, palette, highlight) {
+    function renderOverviewStat(label, value, palette, highlight, overrideColor) {
+      var accentColor = overrideColor || (highlight ? (palette.warn || palette.accent) : palette.accent);
+      var borderColor = overrideColor || (highlight ? (palette.warn || palette.accent) : palette.border);
+      var bgColor = (highlight || overrideColor) ? 'rgba(255,220,140,0.08)' : palette.surface;
       return h('div', {
         style: {
           flex: '1 1 100px',
           padding: '8px 12px',
-          background: highlight ? 'rgba(255,220,140,0.08)' : palette.surface,
-          border: '1px solid ' + (highlight ? (palette.warn || palette.accent) : palette.border),
+          background: bgColor,
+          border: '1px solid ' + borderColor,
           borderRadius: '8px',
           textAlign: 'center'
         }
@@ -4541,7 +4757,7 @@
           style: {
             fontSize: '20px',
             fontWeight: 800,
-            color: highlight ? (palette.warn || palette.accent) : palette.accent,
+            color: accentColor,
             fontVariantNumeric: 'tabular-nums',
             lineHeight: 1.1
           }
