@@ -3623,9 +3623,129 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           }, '?')
         );
       }
+      // ───────────────────────────────────────────────
+      // Web Audio "tone sketch" — synthesized whistled
+      // rhythms from a mnemonic. Each syllable maps to a
+      // sine-tone burst with pitch / duration cues.
+      // Not a real recording (copyright); a rhythmic outline
+      // students can hear before opening Merlin Bird ID.
+      // ───────────────────────────────────────────────
+      var __birdAudioCtx = null;
+      var __birdAudioStop = null;
+      function getBirdAudioCtx() {
+        if (__birdAudioCtx) return __birdAudioCtx;
+        try {
+          var Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return null;
+          __birdAudioCtx = new Ctx();
+          return __birdAudioCtx;
+        } catch (_) { return null; }
+      }
+      function mnemonicToTones(mnemonic) {
+        if (!mnemonic) return [];
+        // Strip surrounding quotes / parens
+        var s = mnemonic.replace(/^["']|["']$/g, '').replace(/[()]/g, '');
+        var phrases = s.split(/\s+/).filter(Boolean);
+        var notes = [];
+        var basePitch = 2800; // typical songbird mid range
+        phrases.forEach(function(phrase, pi) {
+          var syllables = phrase.split('-').filter(Boolean);
+          syllables.forEach(function(rawSyl, si) {
+            var letters = rawSyl.replace(/[^a-zA-Z]/g, '');
+            if (!letters) return;
+            var isUpper = letters === letters.toUpperCase() && letters.length > 1;
+            var hasRepeatedVowel = /(EE|OO|AA|II|UU|ee|oo){2,}|EE{1,}|OO{1,}/i.test(rawSyl) || /[A-Z]{4,}/.test(letters);
+            var hasBang = /[!]+/.test(rawSyl);
+            var hasQuestion = /[?]+/.test(rawSyl);
+            // Pitch
+            var pitch = basePitch;
+            if (isUpper)          pitch += 350;
+            if (hasRepeatedVowel) pitch += 500;  // sustained higher tone
+            if (hasBang)          pitch += 250;
+            // Each successive syllable in a phrase drops slightly (natural fall-off)
+            // unless it's a repeated word — common pattern (peter peter peter, chick-a-dee-dee-dee)
+            var prevSyl = si > 0 ? syllables[si - 1] : null;
+            var isRepeatOfPrev = prevSyl && prevSyl.replace(/[^a-zA-Z]/g, '').toLowerCase() === letters.toLowerCase();
+            if (!isRepeatOfPrev && si > 0 && !hasRepeatedVowel) pitch -= 120;
+            // Question — last syllable rises
+            if (hasQuestion) pitch += 600;
+            // Duration: roughly tied to letters; clamp 0.12–0.45s
+            var dur = Math.max(0.12, Math.min(0.45, 0.06 + letters.length * 0.04));
+            // Repeated-vowel words get a longer sustain
+            if (hasRepeatedVowel) dur = Math.min(0.65, dur * 1.5);
+            notes.push({ freq: pitch, dur: dur, gap: 0.04, emph: isUpper || hasBang });
+          });
+          // Phrase boundary: longer pause between phrases
+          if (pi < phrases.length - 1 && notes.length) {
+            notes[notes.length - 1].gap = 0.18;
+          }
+        });
+        return notes;
+      }
+      function playToneSketch(mnemonic, onDone) {
+        var ctx = getBirdAudioCtx();
+        if (!ctx) { if (onDone) onDone(); return; }
+        // Stop any previous playback
+        if (__birdAudioStop) { try { __birdAudioStop(); } catch (_) {} __birdAudioStop = null; }
+        // Resume context if suspended (autoplay policy)
+        try { if (ctx.state === 'suspended') ctx.resume(); } catch (_) {}
+        var notes = mnemonicToTones(mnemonic);
+        if (!notes.length) { if (onDone) onDone(); return; }
+        var t = ctx.currentTime + 0.05;
+        var oscs = [];
+        notes.forEach(function(n) {
+          var osc = ctx.createOscillator();
+          var gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(n.freq, t);
+          // Pitch variation across the note for a more bird-like quality
+          osc.frequency.linearRampToValueAtTime(n.freq * (n.emph ? 1.04 : 0.985), t + n.dur * 0.7);
+          gain.gain.setValueAtTime(0, t);
+          gain.gain.linearRampToValueAtTime(n.emph ? 0.22 : 0.16, t + 0.02);
+          gain.gain.exponentialRampToValueAtTime(0.0008, t + n.dur);
+          osc.connect(gain).connect(ctx.destination);
+          osc.start(t);
+          osc.stop(t + n.dur + 0.02);
+          oscs.push(osc);
+          t += n.dur + n.gap;
+        });
+        // Stop function
+        var stopped = false;
+        var stopFn = function() {
+          if (stopped) return; stopped = true;
+          oscs.forEach(function(o) { try { o.stop(); } catch (_) {} });
+        };
+        __birdAudioStop = stopFn;
+        // Fire onDone after the last note ends
+        var totalMs = (t - ctx.currentTime) * 1000;
+        setTimeout(function() {
+          if (__birdAudioStop === stopFn) __birdAudioStop = null;
+          if (onDone) onDone();
+        }, totalMs + 80);
+      }
+
       function BirdCallTrainer() {
         var mode_state = useState('reference');
         var mode = mode_state[0], setMode = mode_state[1];
+        // Currently-playing tone-sketch (one at a time across all cards)
+        var playingId_state = useState(null);
+        var playingId = playingId_state[0], setPlayingId = playingId_state[1];
+        function toggleTonePlayback(id, mnemonic) {
+          if (playingId === id) {
+            // Stop
+            if (__birdAudioStop) { try { __birdAudioStop(); } catch (_) {} __birdAudioStop = null; }
+            setPlayingId(null);
+            announce('Stopped');
+            return;
+          }
+          // Stop any other + start this
+          if (__birdAudioStop) { try { __birdAudioStop(); } catch (_) {} __birdAudioStop = null; }
+          setPlayingId(id);
+          announce('Playing tone sketch');
+          playToneSketch(mnemonic, function() {
+            setPlayingId(function(curr) { return curr === id ? null : curr; });
+          });
+        }
         var quizIdx_state = useState(0);
         var quizIdx = quizIdx_state[0], setQuizIdx = quizIdx_state[1];
         var quizPicks_state = useState({});
@@ -3810,19 +3930,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             mode === 'reference' && h('div', { className: 'space-y-3' },
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                 FAMOUS_CALLS.map(function(c) {
+                  var isPlaying = playingId === c.id;
                   return h('div', { key: c.id, className: 'bg-white rounded-xl border-2 border-violet-200 shadow p-4' },
                     h('div', { className: 'flex items-baseline justify-between gap-2 mb-2 flex-wrap' },
                       h('h3', { className: 'text-base font-black text-slate-800' }, c.species),
                       h('span', { className: 'text-[11px] text-slate-700 font-mono' }, c.habitat)
                     ),
                     h('div', { className: 'p-3 bg-violet-50 border border-violet-200 rounded-lg mb-2' },
-                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' }, '🎵 Mnemonic'),
+                      h('div', { className: 'flex items-center justify-between gap-2 mb-1 flex-wrap' },
+                        h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900' }, '🎵 Mnemonic'),
+                        h('button', {
+                          onClick: function() { toggleTonePlayback(c.id, c.mnemonic); },
+                          'aria-pressed': isPlaying ? 'true' : 'false',
+                          'aria-label': (isPlaying ? 'Stop tone sketch' : 'Play tone sketch') + ' for ' + c.species,
+                          className: 'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
+                            (isPlaying
+                              ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700'
+                              : 'bg-violet-600 text-white border-2 border-violet-700 hover:bg-violet-700'),
+                          title: 'Synthesized rhythm, not a real recording. Use Merlin Bird ID for actual audio.'
+                        },
+                          h('span', { 'aria-hidden': true, style: { fontSize: 10 } }, isPlaying ? '■' : '▶'),
+                          isPlaying ? 'Stop' : 'Play tone'
+                        )
+                      ),
                       h('p', { className: 'text-sm text-slate-800 italic mb-1.5' }, c.mnemonic),
                       // Rhythm strip — visual cadence
                       h('div', { className: 'flex items-end gap-2 mt-1.5 pt-1.5 border-t border-violet-200' },
                         h('span', { className: 'text-[9px] font-bold uppercase tracking-wider text-violet-700 flex-shrink-0', style: { lineHeight: '22px' } }, 'Rhythm'),
                         h('div', { style: { flex: 1, minWidth: 0 } }, songRhythmStrip(c.mnemonic, '#7c3aed'))
-                      )
+                      ),
+                      isPlaying && h('div', { className: 'mt-1 text-[10px] italic text-violet-700', 'aria-live': 'polite' },
+                        '🎶 Playing synthesized rhythm — open Merlin Bird ID for the real recording.')
                     ),
                     h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-2' },
                       h('strong', null, 'What it sounds like: '), c.description),
