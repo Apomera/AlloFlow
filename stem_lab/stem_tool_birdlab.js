@@ -8070,10 +8070,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               error && h('div', { className: 'mt-4 p-3 bg-rose-50 border border-rose-300 rounded-lg text-sm text-rose-800', role: 'alert' }, '⚠ ' + error)
             ),
             result && h('div', { className: 'space-y-3', 'aria-live': 'polite' },
-              !result.hasBird && h('div', { className: 'bg-amber-50 border-2 border-amber-400 rounded-2xl p-5 text-center' },
-                h('div', { className: 'text-4xl mb-2' }, '🤔'),
-                h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, 'AI didn\'t see a bird in this photo'),
-                h('p', { className: 'text-sm text-slate-800' }, 'Try a clearer photo, or one where the bird is more centered.')
+              !result.hasBird && h('div', { className: 'rounded-2xl overflow-hidden shadow border-2 border-amber-400' },
+                // Hero scene: empty branch with magnifying glass
+                h('svg', { viewBox: '0 0 540 130', width: '100%', style: { display: 'block', background: 'linear-gradient(180deg, #fef3c7 0%, #ffffff 100%)' },
+                  role: 'img', 'aria-label': 'No bird detected in this photo' },
+                  // Subtle distant ridges
+                  h('path', { d: 'M 0 100 Q 80 92 160 98 Q 240 88 320 96 Q 400 86 480 94 Q 540 90 540 130 L 0 130 Z',
+                    fill: '#86efac', opacity: 0.4 }),
+                  // Empty branch (where the bird should be)
+                  h('path', { d: 'M 100 70 Q 200 66 320 72 Q 380 75 440 80',
+                    stroke: '#78350f', strokeWidth: 4, strokeLinecap: 'round', fill: 'none' }),
+                  // Side branches
+                  h('path', { d: 'M 200 68 L 215 50 L 225 55 M 320 72 L 335 55 L 345 60',
+                    stroke: '#78350f', strokeWidth: 2, strokeLinecap: 'round', fill: 'none' }),
+                  // Leaves (sparse)
+                  h('ellipse', { cx: 220, cy: 50, rx: 6, ry: 3, fill: '#15803d', opacity: 0.7, transform: 'rotate(-30 220 50)' }),
+                  h('ellipse', { cx: 340, cy: 55, rx: 7, ry: 3.5, fill: '#15803d', opacity: 0.7, transform: 'rotate(20 340 55)' }),
+                  // Magnifying glass scanning the empty branch
+                  h('g', { transform: 'translate(280, 60)' },
+                    h('circle', { cx: 0, cy: 0, r: 36, fill: 'rgba(254,243,199,0.6)', stroke: '#92400e', strokeWidth: 3.5 }),
+                    h('circle', { cx: 0, cy: 0, r: 32, fill: 'none', stroke: '#a16207', strokeWidth: 0.8, opacity: 0.4 }),
+                    // Glass shine
+                    h('path', { d: 'M -22 -16 Q -10 -28 6 -22', fill: 'none', stroke: '#ffffff', strokeWidth: 2.5, opacity: 0.7, strokeLinecap: 'round' }),
+                    // Question mark inside the glass
+                    h('text', { x: 0, y: 8, textAnchor: 'middle', fontSize: 30, fontWeight: 900, fill: '#92400e', opacity: 0.6 }, '?'),
+                    // Handle
+                    h('line', { x1: 26, y1: 26, x2: 50, y2: 50, stroke: '#92400e', strokeWidth: 5, strokeLinecap: 'round' })
+                  ),
+                  // Title pill
+                  h('g', { transform: 'translate(20, 14)' },
+                    h('rect', { x: 0, y: 0, width: 130, height: 24, rx: 12,
+                      fill: '#92400e', opacity: 0.95, stroke: '#fbbf24', strokeWidth: 1.5 }),
+                    h('text', { x: 65, y: 16, textAnchor: 'middle',
+                      fill: '#fef3c7', fontWeight: 900, fontSize: 11, letterSpacing: '0.05em',
+                      style: { textTransform: 'uppercase', fontFamily: 'system-ui, sans-serif' } }, 'No bird detected')
+                  )
+                ),
+                // Tips
+                h('div', { className: 'bg-amber-50 px-5 py-3 border-t-2 border-amber-300' },
+                  h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, 'AI didn\'t see a bird in this photo'),
+                  h('p', { className: 'text-sm text-slate-800 mb-2' }, 'A clearer photo usually fixes it. Try:'),
+                  h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+                    h('div', { className: 'p-2 bg-white border border-amber-200 rounded-lg flex items-start gap-1.5' },
+                      h('span', { 'aria-hidden': true, className: 'text-base flex-shrink-0' }, '🎯'),
+                      h('span', { className: 'text-xs text-slate-800' }, h('strong', null, 'Center the bird '), 'in the frame')),
+                    h('div', { className: 'p-2 bg-white border border-amber-200 rounded-lg flex items-start gap-1.5' },
+                      h('span', { 'aria-hidden': true, className: 'text-base flex-shrink-0' }, '☀️'),
+                      h('span', { className: 'text-xs text-slate-800' }, h('strong', null, 'Better lighting '), '— front-lit beats back-lit')),
+                    h('div', { className: 'p-2 bg-white border border-amber-200 rounded-lg flex items-start gap-1.5' },
+                      h('span', { 'aria-hidden': true, className: 'text-base flex-shrink-0' }, '🔍'),
+                      h('span', { className: 'text-xs text-slate-800' }, h('strong', null, 'Crop closer '), 'or use a higher-res shot'))
+                  )
+                )
               ),
               result.hasBird && Array.isArray(result.candidates) && result.candidates.length > 0 && h('div', { className: 'space-y-3' },
                 h('h3', { className: 'text-base font-black text-slate-800' },
@@ -8164,21 +8212,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   }, 'Cancel')
                 )
               ),
-              saveState === 'saved' && h('div', { className: 'bg-emerald-50 border-2 border-emerald-500 rounded-2xl p-5 text-center', 'aria-live': 'polite' },
-                h('div', { className: 'text-4xl mb-2' }, '✓'),
-                h('h3', { className: 'text-base font-black text-emerald-900 mb-1' }, 'Saved to your field notebook'),
-                h('p', { className: 'text-sm text-slate-800 mb-3' },
-                  result.candidates[0].name + ' was added with the AI rationale + confidence as notes. Open the notebook to add more detail (behavior, weather, reflection).'
+              saveState === 'saved' && h('div', { className: 'rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-500', 'aria-live': 'polite' },
+                // Mini stamped journal hero
+                h('svg', { viewBox: '0 0 540 130', width: '100%', style: { display: 'block' },
+                  role: 'img', 'aria-label': 'Photo ID saved to field notebook' },
+                  h('defs', null,
+                    h('linearGradient', { id: 'photoSavedBg', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#ecfdf5' }),
+                      h('stop', { offset: '100%', stopColor: '#fef9c3' })
+                    ),
+                    h('linearGradient', { id: 'photoSavedPaper', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#fffbeb' }),
+                      h('stop', { offset: '100%', stopColor: '#fde68a' })
+                    )
+                  ),
+                  h('rect', { x: 0, y: 0, width: 540, height: 130, fill: 'url(#photoSavedBg)' }),
+                  // Confetti
+                  [{x:60,y:25,r:-15,c:'#10b981'},{x:480,y:30,r:20,c:'#fbbf24'},{x:80,y:105,r:10,c:'#a78bfa'},{x:460,y:100,r:-20,c:'#f43f5e'}].map(function(c, i) {
+                    return h('rect', { key: 'cf' + i, x: c.x, y: c.y, width: 12, height: 4,
+                      transform: 'rotate(' + c.r + ' ' + (c.x + 6) + ' ' + (c.y + 2) + ')',
+                      fill: c.c, opacity: 0.85 });
+                  }),
+                  // Sparkles
+                  [{x:130,y:35},{x:430,y:55},{x:200,y:108},{x:380,y:25}].map(function(s, idx) {
+                    return h('path', { key: 'sk' + idx,
+                      d: 'M ' + s.x + ' ' + (s.y - 4) + ' L ' + (s.x + 1) + ' ' + (s.y - 1) + ' L ' + (s.x + 4) + ' ' + s.y + ' L ' + (s.x + 1) + ' ' + (s.y + 1) + ' L ' + s.x + ' ' + (s.y + 4) + ' L ' + (s.x - 1) + ' ' + (s.y + 1) + ' L ' + (s.x - 4) + ' ' + s.y + ' L ' + (s.x - 1) + ' ' + (s.y - 1) + ' Z',
+                      fill: '#fbbf24', opacity: 0.85 });
+                  }),
+                  // Tilted journal page
+                  h('g', { transform: 'rotate(-2 270 65)' },
+                    h('rect', { x: 142, y: 24, width: 256, height: 86, rx: 4, fill: '#0f172a', opacity: 0.10 }),
+                    h('rect', { x: 138, y: 20, width: 256, height: 86, rx: 4, fill: 'url(#photoSavedPaper)', stroke: '#a16207', strokeWidth: 1 }),
+                    // Margin
+                    h('line', { x1: 152, y1: 24, x2: 152, y2: 102, stroke: '#dc2626', strokeWidth: 0.6, opacity: 0.5 }),
+                    // Ruled lines
+                    [38, 52, 66, 80, 94].map(function(y, i) {
+                      return h('line', { key: 'pl' + i, x1: 158, y1: y, x2: 388, y2: y,
+                        stroke: '#fbbf24', strokeWidth: 0.5, opacity: 0.5 });
+                    }),
+                    // Entry header (handwritten-ish)
+                    h('text', { x: 158, y: 36, fontSize: 11, fontFamily: 'serif', fontStyle: 'italic',
+                      fontWeight: 'bold', fill: '#581c87' }, 'AI ID logged'),
+                    // Species name
+                    h('text', { x: 158, y: 50, fontSize: 13, fontWeight: 'bold', fill: '#1e293b' },
+                      result.candidates[0].name.length > 28
+                        ? result.candidates[0].name.slice(0, 26) + '…'
+                        : result.candidates[0].name),
+                    // Squiggle "rationale" lines
+                    h('path', { d: 'M 158 64 Q 200 60 240 64 Q 280 68 320 64 Q 360 60 388 64',
+                      fill: 'none', stroke: '#1e293b', strokeWidth: 0.7, opacity: 0.5 }),
+                    h('path', { d: 'M 158 78 Q 200 74 240 78 Q 280 82 320 78',
+                      fill: 'none', stroke: '#1e293b', strokeWidth: 0.7, opacity: 0.5 }),
+                    h('path', { d: 'M 158 92 Q 200 88 230 92',
+                      fill: 'none', stroke: '#1e293b', strokeWidth: 0.7, opacity: 0.5 }),
+                    // Diagonal SAVED stamp
+                    h('g', { transform: 'translate(310, 75) rotate(-12)' },
+                      h('rect', { x: -54, y: -13, width: 108, height: 26, rx: 3,
+                        fill: 'none', stroke: '#dc2626', strokeWidth: 2.5, opacity: 0.85 }),
+                      h('text', { x: 0, y: 5, textAnchor: 'middle',
+                        fontSize: 18, fontWeight: 900, fill: '#dc2626', opacity: 0.9,
+                        style: { fontFamily: 'serif', letterSpacing: '0.08em' } }, '✓ SAVED')
+                    )
+                  )
                 ),
-                h('div', { className: 'flex gap-2 flex-wrap justify-center' },
-                  h('button', {
-                    onClick: function() { setView('fieldObs'); upd('view', 'fieldObs'); },
-                    className: 'px-4 py-2 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800'
-                  }, '📓 Open field notebook'),
-                  h('button', {
-                    onClick: function() { clearPhoto(); setSaveState(null); setSaveLocation(''); },
-                    className: 'px-4 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500'
-                  }, '📷 Identify another photo')
+                // Banner below
+                h('div', { className: 'bg-gradient-to-r from-emerald-50 to-amber-50 px-5 py-3 border-t-2 border-emerald-400' },
+                  h('div', { className: 'flex items-baseline justify-between gap-2 mb-1 flex-wrap' },
+                    h('h3', { className: 'text-base font-black text-emerald-900' }, 'Saved to your field notebook'),
+                    h('span', { className: 'text-xs text-slate-700 font-mono' }, '📓 ' + (notebook.length + 1) + (notebook.length === 0 ? 'st' : (notebook.length + 1) % 10 === 1 && (notebook.length + 1) % 100 !== 11 ? 'st' : (notebook.length + 1) % 10 === 2 && (notebook.length + 1) % 100 !== 12 ? 'nd' : (notebook.length + 1) % 10 === 3 && (notebook.length + 1) % 100 !== 13 ? 'rd' : 'th') + ' entry')
+                  ),
+                  h('p', { className: 'text-sm text-slate-800 mb-3' },
+                    h('strong', { className: 'text-emerald-800' }, result.candidates[0].name),
+                    ' was added with the AI rationale + confidence as notes. Open the notebook to add behavior, weather, or reflection.'
+                  ),
+                  h('div', { className: 'flex gap-2 flex-wrap' },
+                    h('button', {
+                      onClick: function() { setView('fieldObs'); upd('view', 'fieldObs'); },
+                      className: 'px-4 py-2 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 focus:outline-none focus:ring-4 ring-emerald-500/40'
+                    }, '📓 Open field notebook'),
+                    h('button', {
+                      onClick: function() { clearPhoto(); setSaveState(null); setSaveLocation(''); },
+                      className: 'px-4 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500'
+                    }, '📷 Identify another photo')
+                  )
                 )
               )
             )
