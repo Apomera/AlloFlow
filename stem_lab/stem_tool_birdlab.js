@@ -129,6 +129,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  outline: 3px solid #fbbf24;',
       '  outline-offset: 4px;',
       '  border-radius: 50%;',
+      '}',
+      // Map-pin focus indicator (SVG <g> elements with role=button + tabIndex=0)
+      '.birdlab-map-pin { outline: none; cursor: pointer; }',
+      '.birdlab-map-pin:focus { outline: none; }',
+      '.birdlab-map-pin:focus-visible {',
+      '  outline: 3px solid #fbbf24;',
+      '  outline-offset: 2px;',
+      '  border-radius: 50%;',
       '}'
     ].join('\n');
     document.head.appendChild(st);
@@ -2905,7 +2913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       (isFound ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-300 hover:border-emerald-500')
                   },
                     h('div', { className: 'text-xs font-bold text-slate-800 flex items-center gap-1.5' },
-                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-400' }, '○'),
+                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, '○'),
                       sp.name
                     ),
                     h('div', { className: 'text-[10px] text-slate-700 mt-0.5 italic' }, b.hint)
@@ -3485,7 +3493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   },
                     h('div', { className: 'flex items-center justify-center bg-slate-50 rounded-lg p-2 mb-2', style: { height: '60px' } },
                       f.svg ? h('svg', { viewBox: '0 0 40 40', style: { width: '60px', height: '52px' } }, f.svg(h))
-                            : h('span', { className: 'text-3xl text-slate-400', 'aria-hidden': true }, '🦶')
+                            : h('span', { className: 'text-3xl text-slate-500', 'aria-hidden': true }, '🦶')
                     ),
                     h('div', { className: 'text-xs font-bold text-slate-800' }, f.label)
                   );
@@ -4394,12 +4402,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var pickedHotspot = pickedHotspot_state[0], setPickedHotspot = pickedHotspot_state[1];
         function focusHotspot(name) {
           setPickedHotspot(name);
+          if (!name) return;
           announce('Focused: ' + name);
           // Smooth-scroll to the matching card after a tick (so the highlight class is applied)
           setTimeout(function() {
             var el = document.getElementById('hotspot-card-' + name.replace(/[^a-z0-9]/gi, '-').toLowerCase());
             if (el && el.scrollIntoView) {
-              el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              // Respect prefers-reduced-motion (WCAG 2.3.3)
+              var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
             }
           }, 50);
         }
@@ -4832,8 +4843,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       if (!p) return null;
                       var isFocused = pickedHotspot === spot.name;
                       return h('g', { key: 'pin-' + i,
+                        className: 'birdlab-map-pin',
                         onClick: function() { focusHotspot(spot.name); },
-                        style: { cursor: 'pointer' },
                         role: 'button', tabIndex: 0,
                         'aria-label': 'Pin ' + (i + 1) + ': ' + spot.name + ' — ' + spot.area + '. Click to view details.',
                         onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focusHotspot(spot.name); } }
@@ -7135,12 +7146,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       (onTargetMs / 1000).toFixed(1) + 's'),
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'On target')
                   ),
-                  h('div', { className: 'text-3xl text-slate-400 font-light' }, '/'),
+                  h('div', { className: 'text-3xl text-slate-500 font-light' }, '/'),
                   h('div', { className: 'flex flex-col items-center px-4' },
                     h('div', { className: 'text-3xl font-black font-mono text-slate-700' }, (GOAL_MS / 1000) + 's'),
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'Goal')
                   ),
-                  h('div', { className: 'text-3xl text-slate-400 font-light' }, '='),
+                  h('div', { className: 'text-3xl text-slate-500 font-light' }, '='),
                   h('div', { className: 'flex flex-col items-center px-4' },
                     h('div', { className: 'text-3xl font-black font-mono ' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
                       __pct + '%'),
