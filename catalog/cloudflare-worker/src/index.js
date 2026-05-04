@@ -102,9 +102,12 @@ function validateSubmission(payload) {
 }
 
 async function commitToGitHub(env, slug, content) {
+  const owner = env.GITHUB_OWNER || 'Apomera';
+  const repo = env.GITHUB_REPO || 'AlloFlow';
+  const branch = env.GITHUB_BRANCH || 'main';
   const filename = `${Date.now()}-${slug}.json`;
   const filePath = `catalog/pending/${filename}`;
-  const url = `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${filePath}`;
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`;
 
   // Cloudflare Workers ship btoa; encode the file content as base64.
   const encodedContent = btoa(unescape(encodeURIComponent(content)));
@@ -120,7 +123,7 @@ async function commitToGitHub(env, slug, content) {
     },
     body: JSON.stringify({
       message: `Catalog submission: ${slug}`,
-      branch: env.GITHUB_BRANCH || 'main',
+      branch: branch,
       content: encodedContent,
     }),
   });

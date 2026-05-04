@@ -245,8 +245,39 @@
       // }
     ],
 
+    // ── Tour (Phase 2p.6) ──
+    // First-visit guided walkthrough. tourSeen flips true when student
+    // dismisses or completes the tour. Replayable from settings.
+    tourSeen: false,
+
+    // ── Achievements (Phase 2p.5) ──
+    // Map of achievement-id → { unlockedAt: ISO }. Once unlocked, stays
+    // unlocked. Computed transparently from existing state by the
+    // detection useEffect — no new tracked counters anywhere.
+    achievements: {},
+
+    // ── Room mode (Phase 2p.3) ──
+    // 'build' = default editing mode: empty cells show dotted outlines,
+    // hover-✕ delete buttons appear, click-empty-to-add active.
+    // 'live'  = rest mode: placement UI hidden, subtle darkening,
+    // companion enters sleep pose. Sims-style mode distinction.
+    roomMode: 'build',
+
+    // ── Companion (Phase 2p — Sims-y critter buddy) ──
+    // null until student creates one through the setup wizard. Once set,
+    // a small SVG figure lives in the bottom-right of the floor surface
+    // and emits state-aware thought bubbles. skillCelebrations[skillId]
+    // remembers the highest level we already congratulated for, so the
+    // confetti only fires on actual NEW level-ups (not on every re-render).
+    companion: null,
+    // {
+    //   species, colorVariant, name,
+    //   createdAt, lastBubbleAt, lastBubbleText,
+    //   skillCelebrations: { focus, memory, reflection, storytelling }
+    // }
+
     // ── Active modal (within AlloHaven; NOT the outer Open/Close state) ──
-    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | null
+    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | 'companion-setup' | null
     generateContext: null,           // { surface, cellIndex } when generate modal open
 
     // ── Reflection insights cache ──
@@ -860,6 +891,29 @@
     return { startDate: start.toISOString(), endDate: end.toISOString() };
   }
 
+  // ── Subject tags (Phase 2p.6) ──
+  // Multi-select academic-domain tags. Sister to mood tags but where
+  // mood is single-select affective, subjects are multi-select cognitive
+  // (a single decoration can be both math AND science, for example).
+  // Maps directly to IEP goal areas so the print packet groups by
+  // subject for parent / IEP-team review.
+  var SUBJECT_TAGS = [
+    { id: 'math',        emoji: '🔢', label: 'Math',         hint: 'Numbers, shapes, logic, problem-solving' },
+    { id: 'reading',     emoji: '📚', label: 'Reading',      hint: 'Words, comprehension, vocabulary, literature' },
+    { id: 'writing',     emoji: '✍️', label: 'Writing',      hint: 'Composition, spelling, grammar' },
+    { id: 'science',     emoji: '🔬', label: 'Science',      hint: 'Biology, chemistry, physics, scientific thinking' },
+    { id: 'social',      emoji: '🌍', label: 'Social',       hint: 'History, geography, cultures, civics' },
+    { id: 'art',         emoji: '🎨', label: 'Art',          hint: 'Drawing, design, visual creativity' },
+    { id: 'music',       emoji: '🎵', label: 'Music',        hint: 'Notes, rhythm, instruments, songs' },
+    { id: 'life-skills', emoji: '🌱', label: 'Life skills',  hint: 'Self-care, social-emotional, life management' }
+  ];
+  function getSubjectTag(id) {
+    for (var i = 0; i < SUBJECT_TAGS.length; i++) {
+      if (SUBJECT_TAGS[i].id === id) return SUBJECT_TAGS[i];
+    }
+    return null;
+  }
+
   // ── Mood tags (Phase 2m) ──
   // Optional affective-domain tag students can attach to a decoration
   // when they place it (or edit later). Surfaces in the print packet
@@ -876,6 +930,388 @@
   function getMoodOption(id) {
     for (var i = 0; i < MOOD_OPTIONS.length; i++) {
       if (MOOD_OPTIONS[i].id === id) return MOOD_OPTIONS[i];
+    }
+    return null;
+  }
+
+  // ── Time-of-day room lighting (Phase 2p.3) ──
+  // Reads system clock and returns a subtle wallpaper tint matching the
+  // hour. Returns null at midday (no overlay), so daytime sessions read
+  // neutral and the tint only appears morning/evening/night. Strong
+  // enough to signal time-of-day, soft enough not to compete with
+  // decoration colors. Suppressed in high-contrast mode by the caller.
+  function getTimeOfDayTint() {
+    var hour = new Date().getHours();
+    if (hour >= 5 && hour < 9)   return { color: 'rgba(255,180,170,0.10)', label: 'dawn' };
+    if (hour >= 17 && hour < 20) return { color: 'rgba(255,150,80,0.13)',  label: 'dusk' };
+    if (hour >= 20 || hour < 5)  return { color: 'rgba(60,80,140,0.18)',   label: 'night' };
+    return null;
+  }
+
+  // ── Mood-driven room tint (Phase 2p.2) ──
+  // Maps the dominant mood across recent decorations to a subtle radial
+  // gradient overlay color. Returns null when there's no signal (under
+  // 3 mood-tagged decorations in the last 30 days, or no clear winner).
+  // The overlay is layered on the floor surface at low opacity so the
+  // room "feels" like the student's recent affective state without
+  // hijacking the existing warm-light gradient.
+  function getDominantMoodTint(state) {
+    var thirtyAgoMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    var recent = (state.decorations || []).filter(function(d) {
+      return d.mood && d.earnedAt && new Date(d.earnedAt).getTime() >= thirtyAgoMs;
+    });
+    if (recent.length < 3) return null;
+    var counts = {};
+    recent.forEach(function(d) {
+      counts[d.mood] = (counts[d.mood] || 0) + 1;
+    });
+    var top = null, topN = 0, runnerN = 0;
+    Object.keys(counts).forEach(function(k) {
+      if (counts[k] > topN) { runnerN = topN; topN = counts[k]; top = k; }
+      else if (counts[k] > runnerN) { runnerN = counts[k]; }
+    });
+    // Only return a tint if dominance is clear (top > 1.5x runner-up)
+    if (!top || topN < runnerN * 1.5) return null;
+    // Mood → tint color mapping (subtle, low-opacity radial)
+    var tints = {
+      joy:       'rgba(255,200,90,0.10)',   // warm yellow-orange
+      pride:     'rgba(255,170,80,0.10)',   // warm orange
+      curiosity: 'rgba(180,140,220,0.09)',  // soft purple
+      calm:      'rgba(120,180,200,0.09)',  // cool teal
+      struggle:  'rgba(200,150,170,0.08)'   // soft pink (gentle, not alarming)
+    };
+    return { mood: top, color: tints[top] || null, count: topN, total: recent.length };
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4.5: COMPANION CRITTERS + SKILL LEVELS (Phase 2p)
+  // ─────────────────────────────────────────────────────────
+  // A personalizable critter (cat / fox / owl / turtle / dragon) with
+  // four color variants per species, free-text name, idle animations,
+  // click-to-react, and state-aware thought bubbles. Plus four
+  // skill-level tracks (Focus / Memory / Reflection / Storytelling)
+  // derived from the existing earnings ledger — no new counters.
+  //
+  // Design rules:
+  //   • Hand-built inline SVGs (not AI). Consistency, zero render cost.
+  //   • Bubbles are observational, never guilt-inducing. No "I'm sad".
+  //   • Skill levels are status, not currency: NO token bonus on level-up.
+  //   • Reduced-motion already wraps via the existing @media block —
+  //     all new keyframes auto-suppress.
+
+  // Threshold ladder for skill levels — logarithmic-ish so lower levels
+  // feel achievable, higher levels represent meaningful sustained
+  // engagement. Level N requires THRESHOLDS[N] total events.
+  var SKILL_THRESHOLDS = [0, 3, 8, 15, 25, 40, 60, 90, 130, 180];
+
+  // Skill definitions. Each one says how to count from state.earnings.
+  var SKILL_DEFS = [
+    {
+      id: 'focus',         emoji: '🍅',
+      label: 'Focus',
+      hint: 'Earn from completing Pomodoro sessions.',
+      sources: ['pomodoro', 'cycle-bonus']
+    },
+    {
+      id: 'memory',        emoji: '🧠',
+      label: 'Memory',
+      hint: 'Earn from quiz sessions you pass.',
+      sources: ['memory-quiz', 'reflection-cloze-quiz']
+    },
+    {
+      id: 'reflection',    emoji: '📝',
+      label: 'Reflection',
+      hint: 'Earn from journal entries.',
+      sources: ['reflection']
+    },
+    {
+      id: 'storytelling',  emoji: '📜',
+      label: 'Storytelling',
+      hint: 'Earn from creating + walking stories.',
+      sources: ['story-walk', 'story-created']
+    }
+  ];
+
+  function countSkillEvents(state, skillId) {
+    var def = null;
+    for (var i = 0; i < SKILL_DEFS.length; i++) {
+      if (SKILL_DEFS[i].id === skillId) { def = SKILL_DEFS[i]; break; }
+    }
+    if (!def) return 0;
+    var sources = def.sources;
+    return (state.earnings || []).filter(function(e) {
+      return sources.indexOf(e.source) !== -1;
+    }).length;
+  }
+
+  // Returns { level, current, nextThreshold, pct, atMax }.
+  // pct is progress toward the NEXT level (0–100).
+  function computeSkillLevel(count) {
+    var lvl = 0;
+    for (var i = 0; i < SKILL_THRESHOLDS.length; i++) {
+      if (count >= SKILL_THRESHOLDS[i]) lvl = i;
+    }
+    var atMax = lvl >= SKILL_THRESHOLDS.length - 1;
+    var floor = SKILL_THRESHOLDS[lvl];
+    var ceil = atMax ? floor : SKILL_THRESHOLDS[lvl + 1];
+    var span = atMax ? 1 : (ceil - floor);
+    var into = count - floor;
+    var pct = atMax ? 100 : Math.min(100, Math.round((into / span) * 100));
+    return {
+      level: lvl, current: count,
+      nextThreshold: atMax ? null : ceil,
+      pct: pct,
+      atMax: atMax
+    };
+  }
+
+  // Companion species metadata. Each species has a distinct voice prefix
+  // pattern that flavors the same observation.
+  var COMPANION_SPECIES = [
+    {
+      id: 'cat',     emoji: '🐱', label: 'Cat',
+      blurb: 'Calm and observant. Notices things others miss.',
+      voicePrefix: 'Hmm. ',
+      affirm: 'You did well.'
+    },
+    {
+      id: 'fox',     emoji: '🦊', label: 'Fox',
+      blurb: 'Curious and clever. Always asking what if.',
+      voicePrefix: 'What if you ',
+      affirm: 'Clever, very clever.'
+    },
+    {
+      id: 'owl',     emoji: '🦉', label: 'Owl',
+      blurb: 'Wise and deliberate. Likes steady study.',
+      voicePrefix: 'Considering... ',
+      affirm: 'Thoughtful work.'
+    },
+    {
+      id: 'turtle',  emoji: '🐢', label: 'Turtle',
+      blurb: 'Patient and gentle. Step by step is the way.',
+      voicePrefix: 'Step by step — ',
+      affirm: 'Slow is steady.'
+    },
+    {
+      id: 'dragon',  emoji: '🐉', label: 'Baby dragon',
+      blurb: 'Enthusiastic and imaginative. Adventures await.',
+      voicePrefix: 'Whoa! ',
+      affirm: 'Epic move!'
+    }
+  ];
+  function getCompanionSpecies(id) {
+    for (var i = 0; i < COMPANION_SPECIES.length; i++) {
+      if (COMPANION_SPECIES[i].id === id) return COMPANION_SPECIES[i];
+    }
+    return null;
+  }
+
+  // 4 color variants × 5 species = 20 hand-tuned trios. Each trio is
+  // { primary, secondary, accent } — primary = main body, secondary =
+  // belly/inner ear/wing, accent = stripes/eyes/tail-tip.
+  // Tuned to look acceptable across all 5 AlloHaven theme bases.
+  var COMPANION_PALETTES = {
+    cat: {
+      warm:   { primary: '#a86a3d', secondary: '#f4d4b0', accent: '#3d2418' },
+      cool:   { primary: '#6a8a9a', secondary: '#cfdde6', accent: '#2a3a4a' },
+      pastel: { primary: '#f4cdd6', secondary: '#fff0f4', accent: '#a36876' },
+      dark:   { primary: '#2a2a2a', secondary: '#5a5a5a', accent: '#fbbf24' }
+    },
+    fox: {
+      warm:   { primary: '#d4732a', secondary: '#fff5e6', accent: '#3d2418' },
+      cool:   { primary: '#7a9aaa', secondary: '#dfe9f0', accent: '#1a2a3a' },
+      pastel: { primary: '#f0a888', secondary: '#fff0e8', accent: '#8a4838' },
+      dark:   { primary: '#3a2418', secondary: '#7a5a3a', accent: '#f4d4b0' }
+    },
+    owl: {
+      warm:   { primary: '#8a5a3a', secondary: '#d4a878', accent: '#fbbf24' },
+      cool:   { primary: '#5a6a7a', secondary: '#a0b0c0', accent: '#e8c878' },
+      pastel: { primary: '#c8a098', secondary: '#f0d8d0', accent: '#f4b04a' },
+      dark:   { primary: '#1a1a2a', secondary: '#4a4a6a', accent: '#fbbf24' }
+    },
+    turtle: {
+      warm:   { primary: '#6a8a3a', secondary: '#a4c068', accent: '#8a5a2a' },
+      cool:   { primary: '#3a7a8a', secondary: '#7aa8b8', accent: '#1a4858' },
+      pastel: { primary: '#a8d4a8', secondary: '#d8eed8', accent: '#5a8a5a' },
+      dark:   { primary: '#1a3a2a', secondary: '#3a5a4a', accent: '#88c878' }
+    },
+    dragon: {
+      warm:   { primary: '#d4583a', secondary: '#f8c0a8', accent: '#3a1818' },
+      cool:   { primary: '#5a7aaa', secondary: '#a0c0e0', accent: '#1a2a4a' },
+      pastel: { primary: '#d8b8e8', secondary: '#f0e0f8', accent: '#7a4a8a' },
+      dark:   { primary: '#2a1a3a', secondary: '#5a3a6a', accent: '#fbbf24' }
+    }
+  };
+  function getCompanionPalette(speciesId, variantId) {
+    var sp = COMPANION_PALETTES[speciesId];
+    if (!sp) return { primary: '#888', secondary: '#ccc', accent: '#444' };
+    return sp[variantId] || sp.warm;
+  }
+  var COMPANION_VARIANTS = [
+    { id: 'warm',   label: 'Warm' },
+    { id: 'cool',   label: 'Cool' },
+    { id: 'pastel', label: 'Pastel' },
+    { id: 'dark',   label: 'Dark' }
+  ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4.6: ACHIEVEMENT MILESTONES (Phase 2p.5)
+  // ─────────────────────────────────────────────────────────
+  // Gentle progression markers — no streaks, no daily punishment, no
+  // comparisons. Unlocked transparently as students do the actions
+  // they were already doing. Each `check(state)` returns true when the
+  // achievement is currently earned. Once unlocked, persists in
+  // state.achievements[id] = { unlockedAt: ISO } and never re-locks.
+  var ACHIEVEMENT_CATALOG = [
+    // First-time markers (fire fast, encourage exploration)
+    { id: 'first-decoration', emoji: '🌱', label: 'First decoration',
+      desc: 'Placed your first decoration in the room.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !d.isStarter; }); } },
+    { id: 'first-reflection', emoji: '📝', label: 'First reflection',
+      desc: 'Wrote your first journal entry.',
+      check: function(s) { return (s.journalEntries || []).length >= 1; } },
+    { id: 'first-pomodoro', emoji: '🍅', label: 'First Pomodoro',
+      desc: 'Completed your first focus session.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'pomodoro' || e.source === 'cycle-bonus'; }); } },
+    { id: 'first-quiz-passed', emoji: '✓', label: 'First quiz passed',
+      desc: 'Scored ≥80% on a memory deck.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz'; }); } },
+    { id: 'first-story', emoji: '📜', label: 'First story',
+      desc: 'Created a story with at least 3 steps.',
+      check: function(s) {
+        return (s.stories || []).some(function(st) {
+          var v = (st.steps || []).filter(function(stp) { return stp.decorationId && (stp.narrative || '').trim().length > 0; });
+          return v.length >= 3 && (st.title || '').trim().length > 0;
+        });
+      } },
+    { id: 'first-walk', emoji: '🚶', label: 'First story walk',
+      desc: 'Walked through a complete story.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'story-walk'; }); } },
+    { id: 'first-image-link', emoji: '🔗', label: 'First image link',
+      desc: 'Linked two decorations with a personal association.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return d.linkedContent && d.linkedContent.type === 'image-link'; }); } },
+    { id: 'first-goal-completed', emoji: '🎯', label: 'First goal completed',
+      desc: 'Hit a target you set for yourself.',
+      check: function(s) { return (s.goals || []).some(function(g) { return !!g.completedAt; }); } },
+    { id: 'first-companion', emoji: '🌿', label: 'Met your buddy',
+      desc: 'Created your AlloHaven companion.',
+      check: function(s) { return s.companion && s.companion.species; } },
+    { id: 'first-mood-tag', emoji: '🎭', label: 'First mood tag',
+      desc: 'Tagged a decoration with how you felt.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!d.mood; }); } },
+
+    // Volume markers (slower-burn, signal sustained engagement)
+    { id: 'ten-decorations', emoji: '🌷', label: '10 decorations',
+      desc: 'Filled out a substantial part of your room.',
+      check: function(s) { return (s.decorations || []).filter(function(d) { return !d.isStarter; }).length >= 10; } },
+    { id: 'thirty-cards-quizzed', emoji: '🧠', label: '30 cards quizzed',
+      desc: 'Real retrieval reps add up.',
+      check: function(s) {
+        var total = 0;
+        (s.decorations || []).forEach(function(d) {
+          if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return;
+          var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+          cards.forEach(function(c) {
+            total += (c.correctCount || 0) + (c.missCount || 0);
+          });
+        });
+        return total >= 30;
+      } },
+    { id: 'hundred-cards-quizzed', emoji: '🦉', label: '100 cards quizzed',
+      desc: 'Triple-digit retrieval. Memory shapes itself this way.',
+      check: function(s) {
+        var total = 0;
+        (s.decorations || []).forEach(function(d) {
+          if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return;
+          var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+          cards.forEach(function(c) {
+            total += (c.correctCount || 0) + (c.missCount || 0);
+          });
+        });
+        return total >= 100;
+      } },
+    { id: 'five-walks', emoji: '👣', label: '5 story walks',
+      desc: 'Method of loci, repeated. The room is your mind.',
+      check: function(s) {
+        return (s.earnings || []).filter(function(e) { return e.source === 'story-walk'; }).length >= 5;
+      } },
+    { id: 'ten-reflections', emoji: '📓', label: '10 reflections',
+      desc: 'A real journal grows here.',
+      check: function(s) { return (s.journalEntries || []).length >= 10; } },
+    { id: 'pomodoro-cycle', emoji: '🍅', label: 'Full Pomodoro cycle',
+      desc: 'Completed all 4 focus sessions in a single cycle.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'cycle-bonus'; }); } },
+
+    // Diversity markers (encourage exploring all parts of the tool)
+    { id: 'all-memory-types', emoji: '🌈', label: 'All memory types',
+      desc: 'Used flashcards, acronym, notes, AND image-link at least once.',
+      check: function(s) {
+        var types = {};
+        (s.decorations || []).forEach(function(d) {
+          if (d.linkedContent) types[d.linkedContent.type] = true;
+        });
+        return types.flashcards && types.acronym && types.notes && types['image-link'];
+      } },
+    { id: 'all-mood-tags', emoji: '🎨', label: 'All five moods',
+      desc: 'Tagged decorations with each of the 5 moods.',
+      check: function(s) {
+        var moods = {};
+        (s.decorations || []).forEach(function(d) {
+          if (d.mood) moods[d.mood] = true;
+        });
+        return Object.keys(moods).length >= 5;
+      } },
+    { id: 'cloze-author', emoji: '✏️', label: 'Cloze author',
+      desc: 'Created a fill-in-blank in notes, reflection, or story.',
+      check: function(s) {
+        var inNotes = (s.decorations || []).some(function(d) {
+          return d.linkedContent && d.linkedContent.type === 'notes' && hasClozeMarkers(d.linkedContent);
+        });
+        if (inNotes) return true;
+        var inJournal = (s.journalEntries || []).some(function(e) {
+          return extractClozeAnswers(e.text || '').length > 0;
+        });
+        if (inJournal) return true;
+        return (s.stories || []).some(function(st) {
+          return (st.steps || []).some(function(stp) {
+            return extractClozeAnswers(stp.narrative || '').length > 0;
+          });
+        });
+      } },
+    { id: 'memory-palace-builder', emoji: '🏛️', label: 'Memory palace builder',
+      desc: 'Attached memory content to 5 different decorations.',
+      check: function(s) {
+        return (s.decorations || []).filter(function(d) { return !!d.linkedContent; }).length >= 5;
+      } },
+
+    // Time-based markers (gentle, no streak punishment)
+    { id: 'companion-week', emoji: '🗓️', label: 'A week with your buddy',
+      desc: 'Your companion has been with you 7+ days.',
+      check: function(s) {
+        if (!s.companion || !s.companion.createdAt) return false;
+        var days = (Date.now() - new Date(s.companion.createdAt).getTime()) / (24 * 60 * 60 * 1000);
+        return days >= 7;
+      } },
+    { id: 'companion-month', emoji: '🌙', label: 'A month with your buddy',
+      desc: 'Your companion has been with you 30+ days.',
+      check: function(s) {
+        if (!s.companion || !s.companion.createdAt) return false;
+        var days = (Date.now() - new Date(s.companion.createdAt).getTime()) / (24 * 60 * 60 * 1000);
+        return days >= 30;
+      } },
+
+    // Skill-tier markers
+    { id: 'focus-l3', emoji: '🍅', label: 'Focus level 3',
+      desc: 'Built up real focus practice.',
+      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'focus')).level >= 3; } },
+    { id: 'memory-l3', emoji: '🧠', label: 'Memory level 3',
+      desc: 'Real retrieval reps logged.',
+      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'memory')).level >= 3; } }
+  ];
+
+  function getAchievement(id) {
+    for (var i = 0; i < ACHIEVEMENT_CATALOG.length; i++) {
+      if (ACHIEVEMENT_CATALOG[i].id === id) return ACHIEVEMENT_CATALOG[i];
     }
     return null;
   }
@@ -1018,6 +1454,272 @@
     return 'data:image/svg+xml;base64,' + (typeof btoa !== 'undefined' ? btoa(STARTER_FERN_SVG) : '');
   }
 
+  // ── Companion SVG generators (Phase 2p) ──
+  // Each species returns a React element tree (NOT a data URI string)
+  // because we need DOM-targetable groups for animation:
+  //   .ah-companion-body   → breathes (gentle scale)
+  //   .ah-companion-eyelid → blinks  (random 4-7s)
+  //   .ah-companion-tail   → flicks (species-varied 4-9s)
+  //   .ah-companion-root   → bobs   (gentle 5.5s y-translate)
+  //   .ah-companion-react  → applied on click for 600ms (excited bounce)
+  //
+  // ViewBox 0 0 100 100. Built from <ellipse> / <circle> / <path>
+  // primitives so each part is independently fillable + groupable.
+  // Color palette via direct fill props so a theme switch is just a
+  // re-render (no CSS-variable indirection needed).
+  function getCompanionSvg(speciesId, palette, animState) {
+    var React = window.React;
+    var h = React.createElement;
+    var p = palette || { primary: '#888', secondary: '#ccc', accent: '#444' };
+    var blinking = animState && animState.blinking;
+    var sleeping = animState && animState.sleeping;
+    // Pupil offset (cursor tracking) — clamped to ±2 viewBox units so
+    // pupils move within the eye sclera. Caller passes { x: -1..1, y: -1..1 }
+    // representing normalized cursor offset from companion center.
+    // When sleeping, pupil tracking is forced to zero (eyes are closed).
+    var pupilOffset = (animState && animState.pupilOffset) || { x: 0, y: 0 };
+    var px = sleeping ? 0 : Math.max(-2, Math.min(2, (pupilOffset.x || 0) * 2));
+    var py = sleeping ? 0 : Math.max(-2, Math.min(2, (pupilOffset.y || 0) * 2));
+    // Eyelid is shut continuously when sleeping; otherwise toggled by blink.
+    var eyelidOpacity = (sleeping || blinking) ? 1 : 0;
+    var commonRoot = {
+      viewBox: '0 0 100 100',
+      width: '100%', height: '100%',
+      style: { display: 'block', overflow: 'visible' },
+      'aria-hidden': 'true'
+    };
+    // Pupil-tracking transform applied to a wrapping <g> around eye details
+    var pupilTransform = 'translate(' + px.toFixed(2) + ' ' + py.toFixed(2) + ')';
+    var pupilStyle = { transform: pupilTransform, transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1)' };
+
+    if (speciesId === 'cat') {
+      return h('svg', commonRoot,
+        // Tail (sitting curl) — pivots at base; transform-origin in CSS
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '74px 70px' } },
+          h('path', { d: 'M74 70 Q92 64 90 50 Q88 42 82 44', stroke: p.primary, strokeWidth: 9, fill: 'none', strokeLinecap: 'round' }),
+          h('circle', { cx: 82, cy: 44, r: 4, fill: p.accent })
+        ),
+        // Body (sitting cat oval)
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          h('ellipse', { cx: 50, cy: 70, rx: 22, ry: 24, fill: p.primary }),
+          h('ellipse', { cx: 50, cy: 76, rx: 14, ry: 16, fill: p.secondary }),
+          // Head
+          h('ellipse', { cx: 50, cy: 38, rx: 18, ry: 17, fill: p.primary }),
+          // Inner ears
+          h('path', { d: 'M36 26 L33 14 L44 22 Z', fill: p.primary }),
+          h('path', { d: 'M64 26 L67 14 L56 22 Z', fill: p.primary }),
+          h('path', { d: 'M37 24 L36 18 L42 22 Z', fill: p.secondary }),
+          h('path', { d: 'M63 24 L64 18 L58 22 Z', fill: p.secondary }),
+          // Cheeks (subtle)
+          h('ellipse', { cx: 40, cy: 44, rx: 4, ry: 2.5, fill: p.secondary, opacity: 0.5 }),
+          h('ellipse', { cx: 60, cy: 44, rx: 4, ry: 2.5, fill: p.secondary, opacity: 0.5 }),
+          // Eyes (pupils track cursor on hover via pupilStyle wrapper)
+          h('g', { style: pupilStyle },
+            h('ellipse', { cx: 42, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
+            h('ellipse', { cx: 58, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
+            h('circle', { cx: 43, cy: 37, r: 0.8, fill: '#fff' }),
+            h('circle', { cx: 59, cy: 37, r: 0.8, fill: '#fff' })
+          ),
+          // Nose
+          h('path', { d: 'M48 44 L52 44 L50 47 Z', fill: p.accent }),
+          // Mouth (subtle smile)
+          h('path', { d: 'M50 47 Q47 50 45 49 M50 47 Q53 50 55 49', stroke: p.accent, strokeWidth: 1, fill: 'none', strokeLinecap: 'round' }),
+          // Whiskers
+          h('path', { d: 'M30 44 L40 44 M30 47 L40 46 M70 44 L60 44 M70 47 L60 46', stroke: p.accent, strokeWidth: 0.6, opacity: 0.5 })
+        ),
+        // Eyelids (overlay when blinking)
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 3.5, fill: p.primary }),
+          h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 3.5, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'fox') {
+      return h('svg', commonRoot,
+        // Tail (big fluffy)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '74px 72px' } },
+          h('path', { d: 'M72 72 Q92 70 90 50 Q86 40 78 50', fill: p.primary }),
+          h('path', { d: 'M84 50 Q92 48 88 38', stroke: p.secondary, strokeWidth: 6, fill: 'none', strokeLinecap: 'round' })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Body
+          h('ellipse', { cx: 50, cy: 72, rx: 20, ry: 22, fill: p.primary }),
+          h('ellipse', { cx: 50, cy: 76, rx: 12, ry: 14, fill: p.secondary }),
+          // Head — pointier than cat
+          h('path', { d: 'M28 38 Q30 24 50 22 Q70 24 72 38 Q70 52 50 54 Q30 52 28 38 Z', fill: p.primary }),
+          // Snout
+          h('path', { d: 'M44 44 Q50 56 56 44 Q53 50 47 50 Z', fill: p.secondary }),
+          // Ears (tall triangles)
+          h('path', { d: 'M32 28 L28 12 L44 22 Z', fill: p.primary }),
+          h('path', { d: 'M68 28 L72 12 L56 22 Z', fill: p.primary }),
+          h('path', { d: 'M34 24 L32 16 L40 22 Z', fill: p.accent }),
+          h('path', { d: 'M66 24 L68 16 L60 22 Z', fill: p.accent }),
+          // Eyes (sly half-moon, pupils track cursor)
+          h('g', { style: pupilStyle },
+            h('ellipse', { cx: 41, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
+            h('ellipse', { cx: 59, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
+            h('circle', { cx: 42, cy: 35, r: 0.7, fill: '#fff' }),
+            h('circle', { cx: 60, cy: 35, r: 0.7, fill: '#fff' })
+          ),
+          // Nose at the tip
+          h('ellipse', { cx: 50, cy: 48, rx: 2, ry: 1.5, fill: p.accent }),
+          // Tail-tip white
+          h('circle', { cx: 90, cy: 42, r: 4, fill: p.secondary })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('ellipse', { cx: 41, cy: 36, rx: 3, ry: 3, fill: p.primary }),
+          h('ellipse', { cx: 59, cy: 36, rx: 3, ry: 3, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'owl') {
+      return h('svg', commonRoot,
+        // Branch perch (tiny)
+        h('rect', { x: 28, cy: 84, y: 84, width: 44, height: 4, rx: 2, fill: p.accent, opacity: 0.6 }),
+        // Tail feathers (folded)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '50px 80px' } },
+          h('path', { d: 'M44 76 L40 88 L48 84 L50 88 L52 84 L60 88 L56 76 Z', fill: p.accent })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Body (round teardrop)
+          h('ellipse', { cx: 50, cy: 60, rx: 26, ry: 30, fill: p.primary }),
+          // Belly
+          h('ellipse', { cx: 50, cy: 64, rx: 16, ry: 20, fill: p.secondary }),
+          // Belly speckles
+          h('circle', { cx: 44, cy: 56, r: 1.5, fill: p.primary, opacity: 0.4 }),
+          h('circle', { cx: 56, cy: 60, r: 1.5, fill: p.primary, opacity: 0.4 }),
+          h('circle', { cx: 50, cy: 70, r: 1.5, fill: p.primary, opacity: 0.4 }),
+          // Wing tips
+          h('path', { d: 'M24 60 Q22 76 30 80 Q32 70 28 62 Z', fill: p.primary }),
+          h('path', { d: 'M76 60 Q78 76 70 80 Q68 70 72 62 Z', fill: p.primary }),
+          // Tufted ears
+          h('path', { d: 'M30 38 L26 28 L36 34 Z', fill: p.primary }),
+          h('path', { d: 'M70 38 L74 28 L64 34 Z', fill: p.primary }),
+          // Big round eye discs (face plates)
+          h('circle', { cx: 40, cy: 42, r: 9, fill: p.secondary }),
+          h('circle', { cx: 60, cy: 42, r: 9, fill: p.secondary }),
+          // Eyes (big yellow sclera — fixed position, pupils slide within)
+          h('circle', { cx: 40, cy: 42, r: 5.5, fill: p.accent }),
+          h('circle', { cx: 60, cy: 42, r: 5.5, fill: p.accent }),
+          // Pupils + highlights (track cursor)
+          h('g', { style: pupilStyle },
+            h('circle', { cx: 40, cy: 43, r: 2.5, fill: '#1a1a1a' }),
+            h('circle', { cx: 60, cy: 43, r: 2.5, fill: '#1a1a1a' }),
+            h('circle', { cx: 41, cy: 41, r: 0.9, fill: '#fff' }),
+            h('circle', { cx: 61, cy: 41, r: 0.9, fill: '#fff' })
+          ),
+          // Beak
+          h('path', { d: 'M48 50 L52 50 L50 56 Z', fill: p.accent })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('circle', { cx: 40, cy: 42, r: 6, fill: p.primary }),
+          h('circle', { cx: 60, cy: 42, r: 6, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'turtle') {
+      return h('svg', commonRoot,
+        // Tail (small triangle behind shell, animates)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '88px 64px' } },
+          h('path', { d: 'M86 60 L94 62 L86 68 Z', fill: p.primary })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Back legs
+          h('ellipse', { cx: 24, cy: 76, rx: 6, ry: 5, fill: p.primary }),
+          h('ellipse', { cx: 76, cy: 76, rx: 6, ry: 5, fill: p.primary }),
+          // Front legs
+          h('ellipse', { cx: 32, cy: 70, rx: 5, ry: 4, fill: p.primary }),
+          h('ellipse', { cx: 68, cy: 70, rx: 5, ry: 4, fill: p.primary }),
+          // Shell base
+          h('ellipse', { cx: 50, cy: 60, rx: 30, ry: 22, fill: p.accent }),
+          // Shell pattern (hexagons-ish)
+          h('path', { d: 'M50 44 L60 50 L60 64 L50 70 L40 64 L40 50 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1 }),
+          h('path', { d: 'M30 52 L40 50 L40 64 L30 66 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.85 }),
+          h('path', { d: 'M70 52 L60 50 L60 64 L70 66 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.85 }),
+          h('path', { d: 'M44 44 L40 50 L50 44 L60 50 L56 44 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.7 }),
+          h('path', { d: 'M44 76 L40 70 L50 74 L60 70 L56 76 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.7 }),
+          // Head
+          h('ellipse', { cx: 18, cy: 60, rx: 10, ry: 8, fill: p.primary }),
+          // Eyes (single eye visible from this angle, pupils track)
+          h('g', { style: pupilStyle },
+            h('circle', { cx: 14, cy: 58, r: 1.5, fill: p.accent }),
+            h('circle', { cx: 14, cy: 58, r: 0.5, fill: '#fff' })
+          ),
+          // Cheek dot
+          h('circle', { cx: 17, cy: 64, r: 1.2, fill: p.secondary, opacity: 0.6 }),
+          // Smile
+          h('path', { d: 'M10 62 Q14 65 18 62', stroke: p.accent, strokeWidth: 1, fill: 'none', strokeLinecap: 'round' })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('circle', { cx: 14, cy: 58, r: 1.8, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'dragon') {
+      return h('svg', commonRoot,
+        // Tail (curly with spiked tip)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '74px 76px' } },
+          h('path', { d: 'M74 76 Q92 74 88 58 Q82 50 78 58', stroke: p.primary, strokeWidth: 8, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M78 58 L74 50 L82 52 Z', fill: p.accent })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Body (chubby)
+          h('ellipse', { cx: 50, cy: 70, rx: 22, ry: 22, fill: p.primary }),
+          // Belly
+          h('ellipse', { cx: 50, cy: 76, rx: 13, ry: 14, fill: p.secondary }),
+          // Belly scales
+          h('path', { d: 'M40 70 Q44 74 48 70 Q52 74 56 70 Q60 74 60 70 M40 78 Q44 82 48 78 Q52 82 56 78', stroke: p.accent, strokeWidth: 0.7, fill: 'none', opacity: 0.5 }),
+          // Wings (animated as a group — flap independent of body breathe)
+          h('g', { className: 'ah-companion-wings', style: { transformOrigin: '50px 52px' } },
+            h('path', { d: 'M28 50 Q14 40 18 60 Q24 58 32 56 Z', fill: p.accent, opacity: 0.85 }),
+            h('path', { d: 'M72 50 Q86 40 82 60 Q76 58 68 56 Z', fill: p.accent, opacity: 0.85 }),
+            h('path', { d: 'M28 50 L20 56 M28 50 L24 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 }),
+            h('path', { d: 'M72 50 L80 56 M72 50 L76 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 })
+          ),
+          // Head (rounder than fox, with snout)
+          h('ellipse', { cx: 50, cy: 38, rx: 18, ry: 16, fill: p.primary }),
+          // Snout
+          h('ellipse', { cx: 50, cy: 46, rx: 10, ry: 6, fill: p.secondary }),
+          // Horns
+          h('path', { d: 'M40 24 L36 14 L44 22 Z', fill: p.accent }),
+          h('path', { d: 'M60 24 L64 14 L56 22 Z', fill: p.accent }),
+          // Spikes along the back
+          h('path', { d: 'M48 22 L50 16 L52 22 Z', fill: p.accent }),
+          h('path', { d: 'M44 50 L46 44 L48 50 Z M52 50 L54 44 L56 50 Z M60 50 L62 44 L64 50 Z', fill: p.accent, opacity: 0.7 }),
+          // Eyes (big anime style, pupils track cursor)
+          h('g', { style: pupilStyle },
+            h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
+            h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
+            h('circle', { cx: 43, cy: 37, r: 1, fill: '#fff' }),
+            h('circle', { cx: 59, cy: 37, r: 1, fill: '#fff' })
+          ),
+          // Nostrils
+          h('circle', { cx: 47, cy: 46, r: 0.8, fill: p.accent }),
+          h('circle', { cx: 53, cy: 46, r: 0.8, fill: p.accent }),
+          // Smile
+          h('path', { d: 'M44 50 Q50 53 56 50', stroke: p.accent, strokeWidth: 1, fill: 'none', strokeLinecap: 'round' }),
+          // Tiny tooth
+          h('path', { d: 'M52 50 L52 52 L53 50 Z', fill: '#fff' })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('ellipse', { cx: 42, cy: 38, rx: 3.5, ry: 4, fill: p.primary }),
+          h('ellipse', { cx: 58, cy: 38, rx: 3.5, ry: 4, fill: p.primary })
+        )
+      );
+    }
+
+    // Fallback: simple round critter
+    return h('svg', commonRoot,
+      h('circle', { cx: 50, cy: 60, r: 26, fill: p.primary }),
+      h('circle', { cx: 42, cy: 56, r: 2, fill: p.accent }),
+      h('circle', { cx: 58, cy: 56, r: 2, fill: p.accent })
+    );
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 5: STYLE INJECTION
   // ─────────────────────────────────────────────────────────
@@ -1093,12 +1795,59 @@
       // non-animated cue).
       '@keyframes ah-memory-due-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,220,140,0.6); } 50% { box-shadow: 0 0 0 4px rgba(255,220,140,0); } }',
       '.ah-root .ah-memory-indicator.ah-memory-due { animation: ah-memory-due-pulse 2400ms ease-in-out infinite; }',
+      // Companion idle animations (Phase 2p) — gentle, sub-conscious
+      // signals of life. All scoped to .ah-companion-* so they don\'t
+      // bleed onto other room elements. Reduced-motion handler at bottom
+      // suppresses them all for sensory-sensitive students.
+      '@keyframes ah-companion-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
+      '@keyframes ah-companion-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }',
+      '@keyframes ah-companion-tail-cat { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }',
+      '@keyframes ah-companion-tail-fox { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(-4deg); } }',
+      '@keyframes ah-companion-tail-owl { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(2deg); } }',
+      '@keyframes ah-companion-tail-turtle { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(2px); } }',
+      '@keyframes ah-companion-tail-dragon { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }',
+      '@keyframes ah-companion-react { 0% { transform: scale(1); } 30% { transform: scale(1.15); } 60% { transform: scale(0.92); } 100% { transform: scale(1); } }',
+      '@keyframes ah-companion-confetti { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-30px) scale(0.6); opacity: 0; } }',
+      '@keyframes ah-companion-bubble-in { 0% { opacity: 0; transform: translateY(8px) scale(0.92); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+      '@keyframes ah-companion-wing-flap { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }',
+      '.ah-root .ah-companion-wings { animation: ah-companion-wing-flap 1800ms ease-in-out infinite; }',
+      '.ah-root .ah-companion-root { animation: ah-companion-bob 5500ms ease-in-out infinite; transition: transform 200ms ease; cursor: pointer; }',
+      '.ah-root .ah-companion-root.ah-companion-react { animation: ah-companion-react 600ms ease-out 1; }',
+      // transform-origin set inline per-species in viewBox coordinates;
+      // SVG default transform-box (view-box) interprets that correctly.
+      // Don\'t set transform-box: fill-box here — that would re-anchor
+      // the origin to each group\'s bounding box, mis-locating the pivot.
+      '.ah-root .ah-companion-body { animation: ah-companion-breathe 3500ms ease-in-out infinite; }',
+      '.ah-root [data-species="cat"] .ah-companion-tail { animation: ah-companion-tail-cat 6000ms ease-in-out infinite; }',
+      '.ah-root [data-species="fox"] .ah-companion-tail { animation: ah-companion-tail-fox 4500ms ease-in-out infinite; }',
+      '.ah-root [data-species="owl"] .ah-companion-tail { animation: ah-companion-tail-owl 7000ms ease-in-out infinite; }',
+      '.ah-root [data-species="turtle"] .ah-companion-tail { animation: ah-companion-tail-turtle 8000ms ease-in-out infinite; }',
+      '.ah-root [data-species="dragon"] .ah-companion-tail { animation: ah-companion-tail-dragon 4000ms ease-in-out infinite; }',
+      '.ah-root .ah-companion-root:hover { transform: scale(1.05) translateY(-2px); }',
+      '.ah-root .ah-companion-bubble { animation: ah-companion-bubble-in 280ms cubic-bezier(0.34, 1.6, 0.64, 1) 1; transform-origin: bottom right; }',
+      // Sleeping companion (Live mode) — slow the breathe, stop the bob,
+      // freeze the tail. Eyelids are shut via the SVG eyelid group.
+      '.ah-root .ah-companion-root.ah-companion-sleeping { animation: none; transform: translateY(0); cursor: pointer; }',
+      '.ah-root .ah-companion-sleeping .ah-companion-body { animation: ah-companion-breathe 6500ms ease-in-out infinite; }',
+      '.ah-root .ah-companion-sleeping .ah-companion-tail { animation: none !important; }',
+      '.ah-root .ah-companion-sleeping .ah-companion-wings { animation: none !important; }',
+      '@keyframes ah-companion-z { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(8px, -16px) scale(1.1); } }',
+      '.ah-root .ah-companion-z { animation: ah-companion-z 2400ms ease-in-out infinite; }',
+      '.ah-root .ah-companion-confetti-piece { animation: ah-companion-confetti 800ms ease-out 1 forwards; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
       '  .ah-root .ah-welcome,',
-      '  .ah-root .ah-memory-indicator.ah-memory-due { animation: none !important; }',
+      '  .ah-root .ah-memory-indicator.ah-memory-due,',
+      '  .ah-root .ah-companion-root,',
+      '  .ah-root .ah-companion-body,',
+      '  .ah-root .ah-companion-tail,',
+      '  .ah-root .ah-companion-bubble,',
+      '  .ah-root .ah-companion-wings,',
+      '  .ah-root .ah-companion-z,',
+      '  .ah-root .ah-companion-confetti-piece { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
-      '  .ah-root .ah-decoration:focus-visible { transform: none !important; }',
+      '  .ah-root .ah-decoration:focus-visible,',
+      '  .ah-root .ah-companion-root:hover { transform: none !important; }',
       '  button { animation: none !important; }',
       '}'
     ].join('\n');
@@ -1901,6 +2650,16 @@
     var moodTag = moodTagTuple[0];
     var setMoodTag = moodTagTuple[1];
 
+    // Subject tags (Phase 2p.6) — multi-select. Empty array by default.
+    var subjectTagsTuple = useState([]);
+    var subjectTags = subjectTagsTuple[0];
+    var setSubjectTags = subjectTagsTuple[1];
+    function toggleSubject(id) {
+      var idx = subjectTags.indexOf(id);
+      if (idx === -1) setSubjectTags(subjectTags.concat([id]));
+      else setSubjectTags(subjectTags.filter(function(s) { return s !== id; }));
+    }
+
     function handlePickTemplate(t) {
       setTemplate(t);
       // Pre-fill first option for each slot for hierarchical templates
@@ -1955,11 +2714,11 @@
     }
 
     function handleSkipReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag);
+      p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag, subjectTags);
     }
 
     function handleSubmitReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag);
+      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag, subjectTags);
     }
 
     function handleClose() {
@@ -2288,6 +3047,33 @@
                 transition: 'border-color 140ms ease, background 140ms ease'
               }
             }, m.emoji + ' ' + m.label);
+          })
+        ),
+        // Subject tags (Phase 2p.6) — multi-select. Maps to IEP areas.
+        h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
+          'Subject? (multi-select, optional)'),
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '14px' } },
+          SUBJECT_TAGS.map(function(s) {
+            var active = subjectTags.indexOf(s.id) !== -1;
+            return h('button', {
+              key: 'subj-gen-' + s.id,
+              onClick: function() { toggleSubject(s.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': s.label + (active ? ' (selected, click to deselect)' : ''),
+              title: s.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'border-color 140ms ease, background 140ms ease'
+              }
+            }, s.emoji + ' ' + s.label);
           })
         ),
         h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
@@ -4082,42 +4868,47 @@
         : pct >= 50
         ? 'Solid effort. Try again later to lock it in.'
         : 'A start. Coming back tomorrow is how memory works.';
+      // Phase 2p.9 — when this quiz is part of a review queue, swap the
+      // bottom buttons for "Next deck" / "Stop queue" so the student
+      // moves through the queue naturally instead of returning to view.
+      var inQueue = !!(p.queueInfo && typeof p.onAdvanceQueue === 'function');
+      var queueLabel = inQueue
+        ? 'Deck ' + p.queueInfo.current + ' of ' + p.queueInfo.total + ' done'
+        : null;
       return h('div', { style: { textAlign: 'center', padding: '20px 0' } },
-        h('div', { style: { fontSize: '56px', marginBottom: '10px' } }, emoji),
+        inQueue ? h('div', {
+          style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }
+        }, queueLabel) : null,
+        h('div', { 'aria-hidden': 'true', style: { fontSize: '56px', marginBottom: '10px' } }, emoji),
         h('div', { style: { fontSize: '32px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums' } },
           pct + '%'),
         h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px' } },
           quiz.correctCount + ' of ' + quiz.totalCount + ' correct'),
         h('p', { style: { fontSize: '13px', color: palette.textDim, marginTop: '14px', lineHeight: '1.55' } }, msg),
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '18px' } },
-          h('button', {
-            onClick: function() { setMode('view'); setQuiz(null); },
-            style: {
-              background: 'transparent',
-              color: palette.textDim,
-              border: '1px solid ' + palette.border,
-              borderRadius: '8px',
-              padding: '8px 18px',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'inherit'
-            }
-          }, 'Done'),
-          h('button', {
-            onClick: startQuiz,
-            style: {
-              background: palette.accent,
-              color: palette.onAccent,
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 20px',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit'
-            }
-          }, 'Quiz again')
+          inQueue ? [
+            h('button', {
+              key: 'q-stop',
+              onClick: p.onClose,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Stop queue'),
+            h('button', {
+              key: 'q-next',
+              onClick: function() { p.onAdvanceQueue(pct); },
+              style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, p.queueInfo.current >= p.queueInfo.total ? '✓ Finish queue' : 'Next deck ▶')
+          ] : [
+            h('button', {
+              key: 'done',
+              onClick: function() { setMode('view'); setQuiz(null); },
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Done'),
+            h('button', {
+              key: 'again',
+              onClick: startQuiz,
+              style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Quiz again')
+          ]
         )
       );
     }
@@ -4165,7 +4956,9 @@
               style: { width: '44px', height: '44px', borderRadius: '6px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border }
             }) : null,
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '17px', fontWeight: 700 } },
-              hasContent ? 'Memory · ' + label : 'Add memory · ' + label)
+              p.queueInfo
+                ? 'Review queue · deck ' + p.queueInfo.current + ' of ' + p.queueInfo.total + ' · ' + label
+                : (hasContent ? 'Memory · ' + label : 'Add memory · ' + label))
           ),
           h('button', {
             onClick: p.onClose,
@@ -4209,6 +5002,40 @@
                 fontFamily: 'inherit'
               }
             }, m.emoji + ' ' + m.label);
+          })
+        ) : null,
+        // Subject pills (Phase 2p.6) — multi-select tags for academic
+        // domain. Click to toggle. Displayed below mood for symmetry.
+        typeof p.onSetSubjects === 'function' && !decoration.isStarter ? h('div', {
+          style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }
+        },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600 } }, 'Subjects:'),
+          SUBJECT_TAGS.map(function(s) {
+            var current = Array.isArray(decoration.subjects) ? decoration.subjects : [];
+            var active = current.indexOf(s.id) !== -1;
+            return h('button', {
+              key: 'ms-' + s.id,
+              onClick: function() {
+                var next = active
+                  ? current.filter(function(x) { return x !== s.id; })
+                  : current.concat([s.id]);
+                p.onSetSubjects(next);
+              },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': s.label + (active ? ' (currently selected, click to clear)' : ''),
+              title: s.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, s.emoji + ' ' + s.label);
           })
         ) : null,
         renderTabs(),
@@ -4815,6 +5642,416 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 6.55: COMPANION SETUP WIZARD (Phase 2p)
+  // ─────────────────────────────────────────────────────────
+  // Three-step flow: pick species → pick color variant → name your buddy.
+  // Live SVG previews refresh as student selects. No token cost — this
+  // is identity-curation, should feel free.
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6.7: ONBOARDING TOUR (Phase 2p.6)
+  // ─────────────────────────────────────────────────────────
+  // 6-step modal walkthrough introducing the major features.
+  // Skippable, replayable from settings. Tour fires once on first
+  // visit AFTER the welcome card is dismissed (via state.tourSeen).
+  function TourModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+
+    var stepTuple = useState(0);
+    var step = stepTuple[0];
+    var setStep = stepTuple[1];
+
+    var steps = [
+      {
+        emoji: '🌿',
+        title: 'Welcome to AlloHaven',
+        body: 'This is a cozy room you build by focusing and reflecting. The plant you see is a starter gift. Everything else is yours to grow.'
+      },
+      {
+        emoji: '🪙',
+        title: 'Earn tokens by being you',
+        body: 'Complete a Pomodoro focus session for 2 tokens, write a reflection for 1, pass a memory quiz for 1 (capped 2/day). Tokens spend on AI-generated decorations — 3 per item.'
+      },
+      {
+        emoji: '🌱',
+        title: 'Click any cell to add a decoration',
+        body: 'Empty wall + floor cells have dotted outlines in Build mode. Pick a template, customize the slots, and the AI generates a one-of-a-kind item for your room.'
+      },
+      {
+        emoji: '📖',
+        title: 'Click a decoration → memory palace',
+        body: 'Attach flashcards, an acronym, free notes (with {cloze} blanks!), or an image-link to ANY decoration. Where you place a deck shapes how you remember it. Method of loci, since 477 BC.'
+      },
+      {
+        emoji: '🐱',
+        title: 'Meet your buddy',
+        body: 'Pick a critter — cat, fox, owl, turtle, or baby dragon. Four color palettes, your name. They notice your activity, celebrate your wins, and gently prompt review when a deck is due.'
+      },
+      {
+        emoji: '🎯',
+        title: 'Set goals + track progress',
+        body: 'Time-boxed targets (5 Pomodoros this week, 2 quizzes passed, etc.) earn +3 tokens on completion. Goals + skill levels + achievements show up in the print packet for parents and IEP teams.'
+      },
+      {
+        emoji: '🛠 ↔ 🛋',
+        title: 'Build vs Live mode',
+        body: 'Build mode = editing. Live mode = the room rests, your buddy sleeps, lights soften. The toggle in the header swaps you between them whenever you want.'
+      }
+    ];
+
+    var current = steps[step];
+    var isLast = step === steps.length - 1;
+    function next() { if (isLast) p.onFinish(); else setStep(step + 1); }
+    function back() { if (step > 0) setStep(step - 1); }
+    function skip() { p.onFinish(); }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'AlloHaven tour, step ' + (step + 1) + ' of ' + steps.length,
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.65)', zIndex: 200,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '2px solid ' + palette.accent,
+          borderRadius: '16px', padding: '28px',
+          maxWidth: '480px', width: '100%',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.55)',
+          color: palette.text, textAlign: 'center'
+        }
+      },
+        h('div', { 'aria-hidden': 'true', style: { fontSize: '48px', marginBottom: '10px' } }, current.emoji),
+        h('h3', { style: { margin: '0 0 12px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
+          current.title),
+        h('p', { style: { margin: '0 0 20px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
+          current.body),
+        // Progress dots
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '20px' } },
+          steps.map(function(_, i) {
+            return h('span', {
+              key: 'td-' + i,
+              'aria-hidden': 'true',
+              style: {
+                width: i === step ? '20px' : '8px',
+                height: '8px',
+                borderRadius: '999px',
+                background: i <= step ? palette.accent : palette.surface,
+                border: '1px solid ' + (i <= step ? palette.accent : palette.border),
+                transition: 'width 200ms'
+              }
+            });
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center' } },
+          h('button', {
+            onClick: skip,
+            'aria-label': 'Skip the tour',
+            style: { background: 'transparent', color: palette.textMute, border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }
+          }, 'Skip'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            step > 0 ? h('button', {
+              onClick: back,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, '◀ Back') : null,
+            h('button', {
+              onClick: next,
+              style: {
+                background: palette.accent, color: palette.onAccent,
+                border: 'none', borderRadius: '8px', padding: '8px 22px',
+                fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, isLast ? '✨ Got it' : 'Next ▶')
+          )
+        )
+      )
+    );
+  }
+
+  function CompanionSetupInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+    var existing = p.existing || null; // edit mode if non-null
+
+    // Three steps. If editing existing, jump to step 1 anyway (full flow).
+    var stepTuple = useState(1);
+    var step = stepTuple[0];
+    var setStep = stepTuple[1];
+
+    var draftTuple = useState(function() {
+      return {
+        species: existing ? existing.species : null,
+        colorVariant: existing ? existing.colorVariant : 'warm',
+        name: existing ? existing.name : ''
+      };
+    });
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    function setField(field, val) {
+      var next = Object.assign({}, draft);
+      next[field] = val;
+      setDraft(next);
+    }
+
+    function handleSave() {
+      p.onSave({
+        species: draft.species,
+        colorVariant: draft.colorVariant,
+        name: (draft.name || '').trim() || (getCompanionSpecies(draft.species) || {}).label || 'Buddy'
+      });
+    }
+
+    var canAdvanceFrom1 = !!draft.species;
+    var canAdvanceFrom2 = !!draft.colorVariant;
+    var canSave = !!draft.species && !!draft.colorVariant;
+
+    function renderSpeciesPicker() {
+      return h('div', null,
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Pick a critter to live in your room. They\'ll watch you focus, notice when you\'ve been studying, and offer the occasional thought. Friendly only — they never guilt-trip.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' } },
+          COMPANION_SPECIES.map(function(sp) {
+            var active = draft.species === sp.id;
+            var swatch = getCompanionPalette(sp.id, draft.colorVariant || 'warm');
+            return h('button', {
+              key: 'sp-' + sp.id,
+              onClick: function() { setField('species', sp.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': sp.label + ': ' + sp.blurb,
+              style: {
+                background: active ? palette.accent : palette.surface,
+                color: active ? palette.onAccent : palette.text,
+                border: '2px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '12px',
+                padding: '10px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px'
+              }
+            },
+              h('div', {
+                style: { width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+              },
+                getCompanionSvg(sp.id, swatch, { blinking: false })
+              ),
+              h('div', { style: { fontWeight: 700, fontSize: '13px' } }, sp.emoji + ' ' + sp.label),
+              h('div', { style: { fontSize: '10px', opacity: 0.85, lineHeight: '1.35' } }, sp.blurb)
+            );
+          })
+        )
+      );
+    }
+
+    function renderColorPicker() {
+      var sp = getCompanionSpecies(draft.species) || COMPANION_SPECIES[0];
+      return h('div', null,
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Pick a color palette for your ' + sp.label.toLowerCase() + '.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' } },
+          COMPANION_VARIANTS.map(function(v) {
+            var active = draft.colorVariant === v.id;
+            var swatch = getCompanionPalette(draft.species, v.id);
+            return h('button', {
+              key: 'cv-' + v.id,
+              onClick: function() { setField('colorVariant', v.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': v.label + ' palette',
+              style: {
+                background: active ? palette.accent : palette.surface,
+                color: active ? palette.onAccent : palette.text,
+                border: '2px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '12px',
+                padding: '10px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px'
+              }
+            },
+              h('div', { style: { width: '60px', height: '60px' } },
+                getCompanionSvg(draft.species, swatch, { blinking: false })
+              ),
+              h('div', { style: { fontWeight: 700, fontSize: '12px' } }, v.label),
+              // Color trio swatch
+              h('div', { style: { display: 'flex', gap: '3px', marginTop: '2px' } },
+                h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: swatch.primary, border: '1px solid rgba(0,0,0,0.2)' } }),
+                h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: swatch.secondary, border: '1px solid rgba(0,0,0,0.2)' } }),
+                h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: swatch.accent, border: '1px solid rgba(0,0,0,0.2)' } })
+              )
+            );
+          })
+        )
+      );
+    }
+
+    function renderNamePicker() {
+      var sp = getCompanionSpecies(draft.species) || COMPANION_SPECIES[0];
+      var swatch = getCompanionPalette(draft.species, draft.colorVariant);
+      var nameSuggestions = ['Mochi', 'Echo', 'Sage', 'Pip', 'Juniper', 'Atlas', 'Willow', 'Pebble', 'Clover'];
+      return h('div', null,
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Give your ' + sp.label.toLowerCase() + ' a name. (Or leave it blank — they\'ll just be "' + sp.label + '".)'),
+        h('div', { style: { display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '14px' } },
+          h('div', {
+            style: { width: '90px', height: '90px', flexShrink: 0, padding: '6px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '12px' }
+          },
+            getCompanionSvg(draft.species, swatch, { blinking: false })
+          ),
+          h('div', { style: { flex: 1 } },
+            h('input', {
+              type: 'text',
+              value: draft.name,
+              onChange: function(e) { setField('name', e.target.value); },
+              placeholder: 'Type a name…',
+              maxLength: 24,
+              'aria-label': 'Companion name',
+              style: {
+                width: '100%',
+                padding: '10px 12px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                color: palette.text,
+                fontSize: '15px',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box'
+              }
+            }),
+            h('div', { style: { display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' } },
+              nameSuggestions.map(function(n) {
+                return h('button', {
+                  key: 'nm-' + n,
+                  onClick: function() { setField('name', n); },
+                  style: {
+                    background: 'transparent', color: palette.textMute,
+                    border: '1px solid ' + palette.border, borderRadius: '999px',
+                    padding: '2px 8px', fontSize: '10px',
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, n);
+              })
+            )
+          )
+        )
+      );
+    }
+
+    var stepBody = step === 1 ? renderSpeciesPicker()
+                 : step === 2 ? renderColorPicker()
+                 : renderNamePicker();
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': existing ? 'Edit companion' : 'Build a companion',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onCancel();
+      },
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)', zIndex: 175,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '1px solid ' + palette.border,
+          borderRadius: '14px', padding: '24px',
+          maxWidth: '640px', width: '100%', maxHeight: '88vh',
+          overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+            (existing ? 'Edit companion' : 'New companion') + ' · step ' + step + ' of 3'),
+          h('button', {
+            onClick: p.onCancel, 'aria-label': 'Close companion setup',
+            style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        // Progress dots
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '16px' } },
+          [1, 2, 3].map(function(s) {
+            return h('span', {
+              key: 'sd-' + s,
+              'aria-hidden': 'true',
+              style: {
+                width: s === step ? '20px' : '8px',
+                height: '8px', borderRadius: '999px',
+                background: s <= step ? palette.accent : palette.surface,
+                border: '1px solid ' + (s <= step ? palette.accent : palette.border),
+                transition: 'width 200ms'
+              }
+            });
+          })
+        ),
+        stepBody,
+        // Nav buttons
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '20px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
+          existing ? h('button', {
+            onClick: function() {
+              if (window.confirm && !window.confirm('Remove your companion?')) return;
+              if (p.onDelete) p.onDelete();
+            },
+            style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🗑 Remove') : h('span'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            step > 1 ? h('button', {
+              onClick: function() { setStep(step - 1); },
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, '◀ Back') : h('button', {
+              onClick: p.onCancel,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Cancel'),
+            step < 3 ? h('button', {
+              onClick: function() { setStep(step + 1); },
+              disabled: step === 1 ? !canAdvanceFrom1 : !canAdvanceFrom2,
+              style: {
+                background: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? palette.accent : palette.surface,
+                color: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? palette.onAccent : palette.textMute,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit',
+                opacity: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? 1 : 0.6
+              }
+            }, 'Next ▶') : h('button', {
+              onClick: handleSave,
+              disabled: !canSave,
+              style: {
+                background: canSave ? palette.accent : palette.surface,
+                color: canSave ? palette.onAccent : palette.textMute,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: canSave ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit', opacity: canSave ? 1 : 0.6
+              }
+            }, existing ? 'Save changes' : '✨ Create companion')
+          )
+        )
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 6.6: GOAL BUILDER SUB-COMPONENT (Phase 2n)
   // ─────────────────────────────────────────────────────────
   function GoalBuilderInner(p) {
@@ -5121,6 +6358,45 @@
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
       if (!Array.isArray(merged.stories))        merged.stories        = [];
       if (!Array.isArray(merged.goals))          merged.goals          = [];
+      if (!merged.achievements || typeof merged.achievements !== 'object') merged.achievements = {};
+      // Phase 2p.7 defensive normalization: backfill new fields onto
+      // older saved state so post-update loads don\'t crash on undefined
+      // access. These hits run once per session.
+      merged.decorations = merged.decorations.map(function(d) {
+        if (!d) return d;
+        var patched = Object.assign({}, d);
+        if (!Array.isArray(patched.subjects)) patched.subjects = [];  // Phase 2p.6
+        if (typeof patched.mood === 'undefined') patched.mood = null; // Phase 2m
+        return patched;
+      });
+      // Companion: ensure skillCelebrations object + createdAt sane
+      if (merged.companion && typeof merged.companion === 'object') {
+        merged.companion = Object.assign({
+          skillCelebrations: { focus: 0, memory: 0, reflection: 0, storytelling: 0 },
+          lastBubbleAt: null,
+          lastBubbleText: null,
+          lastQuizPromptDeckId: null,
+          lastQuizPromptDismissedAt: null,
+          happiness: 0,             // Phase 2p.8 — petting builds this
+          lastPettedAt: null
+        }, merged.companion);
+        // Normalize skillCelebrations even if present-but-incomplete
+        merged.companion.skillCelebrations = Object.assign(
+          { focus: 0, memory: 0, reflection: 0, storytelling: 0 },
+          merged.companion.skillCelebrations || {}
+        );
+        // Repair createdAt if missing/invalid (treat as just-created)
+        if (!merged.companion.createdAt
+            || isNaN(new Date(merged.companion.createdAt).getTime())) {
+          merged.companion.createdAt = new Date().toISOString();
+        }
+      }
+      // Phase 2p.6 tour
+      if (typeof merged.tourSeen !== 'boolean') merged.tourSeen = false;
+      // Phase 2p.3 room mode
+      if (merged.roomMode !== 'live' && merged.roomMode !== 'build') {
+        merged.roomMode = 'build';
+      }
       return merged;
     });
     var state = stateTuple[0];
@@ -5331,17 +6607,30 @@
       addToast('🎉 Daily trifecta! +' + bonus + ' bonus tokens', 'success');
     }
 
-    // ── Esc to close ──
+    // ── Esc to close (Phase 2p.7 quality pass — WCAG 2.1.1 keyboard) ──
+    // Universal Escape handler: closes the active modal if one is open,
+    // otherwise closes AlloHaven itself. Active Pomodoro takes precedence
+    // — Esc during a focus session is too easy to hit accidentally; users
+    // must explicitly use the Cancel button.
     useEffect(function() {
       if (!props.isOpen) return;
       var handler = function(e) {
-        if (e.key === 'Escape' && !state.activeModal && !(!state.onboardingSeen)) {
-          if (props.onClose) props.onClose();
+        if (e.key !== 'Escape') return;
+        // Ignore Esc during active Pomodoro (accidental cancel guard)
+        if (state.pomodoroState && state.pomodoroState.active) return;
+        // Ignore until welcome card dismissed
+        if (!state.onboardingSeen) return;
+        if (state.activeModal) {
+          // Close the active modal. Some modals (memory/story-walk/goal-
+          // builder/etc.) clear generateContext too; do it universally.
+          setStateMulti({ activeModal: null, generateContext: null });
+          return;
         }
+        if (props.onClose) props.onClose();
       };
       window.addEventListener('keydown', handler);
       return function() { window.removeEventListener('keydown', handler); };
-    }, [props.isOpen, state.activeModal, state.onboardingSeen]);
+    }, [props.isOpen, state.activeModal, state.onboardingSeen, state.pomodoroState.active]);
 
     // ── Pomodoro tick interval (250ms) ──
     // Only runs while the timer is active. Re-renders the mm:ss display.
@@ -5571,6 +6860,17 @@
           dailyState: newDailyState,
           pomodoroState: newPomodoroState
         };
+
+        // Post-Pomodoro warm offer (Phase 2p.4) — clear the companion\'s
+        // quiz-prompt cooldown so a due deck can re-surface "while
+        // you\'re warm". The student just trained their focus muscle;
+        // retrieval practice is most effective on a recently-engaged
+        // brain. Sims-y "want to do this together while we\'re here?".
+        if (state.companion && state.companion.species) {
+          updates.companion = Object.assign({}, state.companion, {
+            lastQuizPromptDismissedAt: null
+          });
+        }
 
         // First-Pomodoro toast (one-time)
         if (!state.toastsSeen.firstPomodoro) {
@@ -5836,6 +7136,75 @@
       addToast('Memory content removed.');
     }
 
+    // ── Review queue (Phase 2p.9) ──
+    // Sequential auto-advance through all currently due decks. Queue
+    // is stored on state.generateContext.reviewQueue when an active
+    // memory modal is part of a queue traversal. advanceReviewQueue()
+    // either opens the next deck or shows the summary modal.
+
+    function startReviewQueue() {
+      var dueDecks = (state.decorations || []).filter(function(d) {
+        return d.linkedContent && isMemoryDue(d);
+      });
+      if (dueDecks.length === 0) {
+        addToast('No decks due for review right now.');
+        return;
+      }
+      // Sort due decks oldest-reviewed-first (same priority as companion picker)
+      dueDecks.sort(function(a, b) {
+        var aR = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
+        var bR = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
+        if (!aR && bR) return -1;
+        if (aR && !bR) return 1;
+        return aR.localeCompare(bR);
+      });
+      var queue = dueDecks.map(function(d) { return d.id; });
+      // Open first deck with queue context attached
+      setStateMulti({
+        activeModal: 'memory',
+        generateContext: {
+          decorationId: queue[0],
+          autoStartQuiz: true,
+          reviewQueue: { decks: queue, currentIdx: 0, results: [] }
+        }
+      });
+    }
+
+    // Called by MemoryModalInner via onAdvanceQueue prop after a deck\'s
+    // quiz finishes. Records the score in the queue results, then either
+    // opens the next deck or shows the summary.
+    function advanceReviewQueue(scorePct) {
+      var ctx = state.generateContext || {};
+      var q = ctx.reviewQueue;
+      if (!q) {
+        // No queue active — fall through to default (close memory modal)
+        setStateMulti({ activeModal: null, generateContext: null });
+        return;
+      }
+      var newResults = (q.results || []).concat([{
+        decorationId: q.decks[q.currentIdx],
+        scorePct: scorePct
+      }]);
+      var nextIdx = q.currentIdx + 1;
+      if (nextIdx >= q.decks.length) {
+        // Queue complete — show summary
+        setStateMulti({
+          activeModal: 'review-queue-summary',
+          generateContext: { reviewQueue: Object.assign({}, q, { results: newResults }) }
+        });
+      } else {
+        // Advance to next deck
+        setStateMulti({
+          activeModal: 'memory',
+          generateContext: {
+            decorationId: q.decks[nextIdx],
+            autoStartQuiz: true,
+            reviewQueue: Object.assign({}, q, { currentIdx: nextIdx, results: newResults })
+          }
+        });
+      }
+    }
+
     // Award token for a quiz session if score ≥80% AND daily cap not hit.
     // Updates lastReviewedAt + reviewCount + bestQuizScore on the linkedContent.
     function recordQuizSession(decorationId, scorePct) {
@@ -6026,6 +7395,281 @@
       }
     }
 
+    // ── Companion + skill levels (Phase 2p) ──
+    // Setup wizard creates state.companion. Once set, the overlay renders
+    // bottom-right of the floor surface. Click the companion to: (a) get a
+    // fresh thought bubble, (b) excited-bounce reaction. Settings access
+    // (re-pick species/color/rename) via the "edit" button on the companion
+    // tooltip menu — opens the same setup wizard.
+
+    function saveCompanion(updates) {
+      // Merge patch onto existing companion (or initialize from null)
+      var current = state.companion || {
+        species: null, colorVariant: 'warm', name: '',
+        createdAt: null, lastBubbleAt: null, lastBubbleText: null,
+        skillCelebrations: { focus: 0, memory: 0, reflection: 0, storytelling: 0 }
+      };
+      var next = Object.assign({}, current, updates);
+      if (!next.createdAt) next.createdAt = new Date().toISOString();
+      // Normalize skillCelebrations always present
+      next.skillCelebrations = Object.assign({ focus: 0, memory: 0, reflection: 0, storytelling: 0 }, next.skillCelebrations || {});
+      setStateField('companion', next);
+    }
+
+    // Generate a state-aware thought bubble — observational only, never
+    // guilt-inducing. Picks the first applicable observation, falling
+    // back to a species-flavored idle line. Voice prefix is NOT prepended
+    // to observations (would produce broken grammar like "What if you I
+    // like the new plant"); voice character lives in the idle filler
+    // pool and the species-specific opener tags below.
+    // Pick the single most-due deck for companion prompting (Phase 2p.4).
+    // Prefers never-reviewed first, then oldest-reviewed. Skips the deck
+    // the companion just prompted about (so we don\'t re-prompt the same
+    // one twice in a row). Returns null if nothing's due.
+    function pickDueDeckForCompanion() {
+      var allDue = (state.decorations || []).filter(function(d) {
+        return d.linkedContent && isMemoryDue(d);
+      });
+      if (allDue.length === 0) return null;
+      // De-prioritize the last-prompted deck so subsequent visits rotate
+      var lastPromptedId = state.companion && state.companion.lastQuizPromptDeckId;
+      var rotated = allDue.filter(function(d) { return d.id !== lastPromptedId; });
+      var pool = rotated.length > 0 ? rotated : allDue;
+      // Sort: never-reviewed first, then oldest-reviewed
+      pool.sort(function(a, b) {
+        var aR = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
+        var bR = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
+        if (!aR && bR) return -1;
+        if (aR && !bR) return 1;
+        return aR.localeCompare(bR);
+      });
+      return pool[0];
+    }
+
+    // Should the companion offer a quiz on this visit?
+    // Rules:
+    //   • A due deck must exist
+    //   • Student hasn\'t dismissed a prompt in the last 6 hours (cooldown)
+    //   • Live mode is OFF (don\'t pester during rest)
+    //   • Daily quiz cap not yet hit
+    function shouldOfferQuizPrompt() {
+      if (state.roomMode === 'live') return false;
+      if (!state.companion || !state.companion.species) return false;
+      var capHit = (state.dailyState && state.dailyState.quizTokensEarnedToday) >= 2;
+      if (capHit) return false;
+      var lastDismissAt = state.companion.lastQuizPromptDismissedAt;
+      if (lastDismissAt) {
+        var ageMs = Date.now() - new Date(lastDismissAt).getTime();
+        if (ageMs < 6 * 60 * 60 * 1000) return false;
+      }
+      return !!pickDueDeckForCompanion();
+    }
+
+    function dismissQuizPrompt() {
+      saveCompanion({
+        lastQuizPromptDismissedAt: new Date().toISOString()
+      });
+    }
+    function acceptQuizPrompt(decoration) {
+      // Stamp this deck as the last-prompted so rotation works
+      saveCompanion({
+        lastQuizPromptDeckId: decoration.id,
+        lastQuizPromptDismissedAt: new Date().toISOString()
+      });
+      // Open the memory modal in quiz auto-start mode
+      openMemoryModal(decoration.id, true);
+    }
+
+    function generateBubbleText(state, species) {
+      var sp = getCompanionSpecies(species);
+      var lastBubble = (state.companion && state.companion.lastBubbleText) || '';
+      // A short species-specific opener that reads as the critter's voice
+      // without grammatical agreement issues. Empty-string-safe.
+      var openers = {
+        cat:    ['Hmm. ', 'Quietly noticed: ', 'I see... '],
+        fox:    ['Sneakily clever: ', 'Spotted: ', 'Aha — '],
+        owl:    ['Observed: ', 'Worth noting: ', 'Hooo — '],
+        turtle: ['Slowly noticed: ', 'Quietly: ', 'Step by step: '],
+        dragon: ['Whoa! ', 'Big news: ', 'Yesss — ']
+      };
+      function pickOpener() {
+        var pool = openers[species] || openers.cat;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+      var candidates = [];
+
+      // Recent decoration (last 24h)
+      var newDecs = (state.decorations || []).filter(function(d) {
+        if (d.isStarter || !d.earnedAt) return false;
+        return (Date.now() - new Date(d.earnedAt).getTime()) < 24 * 60 * 60 * 1000;
+      });
+      if (newDecs.length > 0) {
+        var deco = newDecs[newDecs.length - 1];
+        var dLabel = deco.templateLabel || deco.template || 'decoration';
+        candidates.push(pickOpener() + 'the new ' + dLabel + ' looks nice.');
+      }
+
+      // Pomodoro completed today
+      var pomToday = (state.dailyState && state.dailyState.pomodorosCompleted) || 0;
+      if (pomToday > 0) {
+        candidates.push(pickOpener() + 'you\'ve focused ' + pomToday + ' time' + (pomToday === 1 ? '' : 's') + ' today.');
+      }
+
+      // Quiz cap hit
+      var quizToday = (state.dailyState && state.dailyState.quizTokensEarnedToday) || 0;
+      if (quizToday >= 2) {
+        candidates.push(pickOpener() + 'you really studied today.' + (sp ? ' ' + sp.affirm : ''));
+      }
+
+      // Reflection streak — count consecutive days with at least one entry
+      var entries = (state.journalEntries || []).slice();
+      if (entries.length >= 2) {
+        var byDay = {};
+        entries.forEach(function(e) {
+          if (!e.date) return;
+          byDay[e.date.slice(0, 10)] = true;
+        });
+        var streakDays = 0;
+        for (var i = 0; i < 14; i++) {
+          var dayStr = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+          if (byDay[dayStr]) streakDays++; else break;
+        }
+        if (streakDays >= 3) {
+          candidates.push(pickOpener() + 'you\'ve been reflecting ' + streakDays + ' days in a row.');
+        }
+      }
+
+      // Goal nearing deadline
+      var goals = state.goals || [];
+      goals.forEach(function(g) {
+        if (g.completedAt) return;
+        if (!g.endDate) return;
+        var endMs = new Date(g.endDate).getTime();
+        var msLeft = endMs - Date.now();
+        if (msLeft < 0 || msLeft > 2 * 24 * 60 * 60 * 1000) return;
+        var prog = computeGoalProgress(g, state);
+        candidates.push(pickOpener() + 'your goal "' + g.title + '" ends soon — you\'re at ' + prog.current + '/' + prog.target + '.');
+      });
+
+      // Stale memory (5+ days no quiz on any deck)
+      var staleDecks = (state.decorations || []).filter(function(d) {
+        if (!d.linkedContent) return false;
+        var lc = d.linkedContent;
+        if (lc.type === 'notes' && !hasClozeMarkers(lc)) return false;
+        if (!lc.lastReviewedAt) return true;
+        return (Date.now() - new Date(lc.lastReviewedAt).getTime()) >= 5 * 24 * 60 * 60 * 1000;
+      });
+      if (staleDecks.length > 0) {
+        candidates.push(pickOpener() + staleDecks.length + ' deck' + (staleDecks.length === 1 ? '' : 's') + ' haven\'t been visited lately.');
+      }
+
+      // Mood-cluster (last 7 days, struggle dominant)
+      var weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      var recentDecs = (state.decorations || []).filter(function(d) {
+        return d.mood && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgoMs;
+      });
+      if (recentDecs.length >= 3) {
+        var struggleCount = recentDecs.filter(function(d) { return d.mood === 'struggle'; }).length;
+        if (struggleCount / recentDecs.length >= 0.5) {
+          candidates.push(pickOpener() + 'a tough week — proud of you for showing up.');
+        }
+      }
+
+      // Story walked recently
+      var recentWalk = (state.earnings || []).some(function(e) {
+        if (e.source !== 'story-walk') return false;
+        return (Date.now() - new Date(e.date).getTime()) < 24 * 60 * 60 * 1000;
+      });
+      if (recentWalk) {
+        candidates.push(pickOpener() + 'loved that story walk.');
+      }
+
+      // ── Companion-remembers history facts (Phase 2p.5) ──
+      // Bubble lines that reference cumulative history. Triggers at
+      // round-number thresholds so the buddy "remembers" milestones
+      // without being annoyingly chatty about smaller numbers.
+
+      // Total Pomodoros this week
+      var weekAgoMs2 = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      var pomThisWeek = (state.earnings || []).filter(function(e) {
+        return (e.source === 'pomodoro' || e.source === 'cycle-bonus')
+          && e.date && new Date(e.date).getTime() >= weekAgoMs2;
+      }).length;
+      if (pomThisWeek >= 3) {
+        candidates.push(pickOpener() + 'that\'s ' + pomThisWeek + ' Pomodoros this week. Real focus practice.');
+      }
+
+      // Total cards quizzed (lifetime)
+      var totalCards = 0;
+      (state.decorations || []).forEach(function(d) {
+        if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return;
+        var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+        cards.forEach(function(c) {
+          totalCards += (c.correctCount || 0) + (c.missCount || 0);
+        });
+      });
+      // Round-number threshold: only mention at 25, 50, 100, 200, 500
+      var roundThresholds = [25, 50, 100, 200, 500];
+      if (roundThresholds.indexOf(totalCards) !== -1) {
+        candidates.push(pickOpener() + 'that\'s ' + totalCards + ' cards quizzed total. Memory shapes itself this way.');
+      }
+
+      // Story walks lifetime
+      var totalWalks = (state.earnings || []).filter(function(e) {
+        return e.source === 'story-walk';
+      }).length;
+      if (totalWalks >= 3 && [3, 5, 10, 25].indexOf(totalWalks) !== -1) {
+        candidates.push(pickOpener() + 'we\'ve walked ' + totalWalks + ' stories together now.');
+      }
+
+      // Companion days-old milestones
+      if (state.companion && state.companion.createdAt) {
+        var daysWith = Math.floor((Date.now() - new Date(state.companion.createdAt).getTime()) / (24 * 60 * 60 * 1000));
+        if ([7, 14, 30, 60, 100].indexOf(daysWith) !== -1) {
+          candidates.push(pickOpener() + 'we\'ve been together ' + daysWith + ' days now.');
+        }
+      }
+
+      // Total decorations lifetime (excluding starter)
+      var totalDecs = (state.decorations || []).filter(function(d) { return !d.isStarter; }).length;
+      if ([5, 10, 20, 50].indexOf(totalDecs) !== -1) {
+        candidates.push(pickOpener() + 'your room has ' + totalDecs + ' decorations now. It really feels like yours.');
+      }
+
+      // Achievement count milestones
+      var achCount = Object.keys(state.achievements || {}).length;
+      if ([5, 10, 15, 20].indexOf(achCount) !== -1) {
+        candidates.push(pickOpener() + 'you have ' + achCount + ' achievements unlocked. Quietly proud.');
+      }
+
+      // Idle filler — fully species-flavored standalone lines (no
+      // synthetic concatenation) so grammar reads naturally for each.
+      var fillers = {
+        cat:    ['Hmm. A quiet moment.', 'The room looks nice today.', 'I\'ll just sit here a while.', 'Cozy.'],
+        fox:    ['What if you started a Pomodoro?', 'What if you wrote a reflection?', 'What about a new decoration?', 'A clever move would be a quiz session.'],
+        owl:    ['Considering... a quiet day is fine too.', 'Considering... what to study next.', 'The room is restful.', 'A pause is also a kind of progress.'],
+        turtle: ['Slow and steady today.', 'I\'m here when you\'re ready.', 'No rush — small steps work.', 'Patience.'],
+        dragon: ['Whoa! Ready when you are!', 'Whoa! What\'s next?', 'Adventure awaits!', 'Let\'s do something epic!']
+      };
+      (fillers[species] || fillers.cat).forEach(function(f) { candidates.push(f); });
+
+      // Pick first candidate that isn't the same as last (or first overall if all same)
+      for (var k = 0; k < candidates.length; k++) {
+        if (candidates[k] !== lastBubble) return candidates[k];
+      }
+      return candidates[0] || 'Hi.';
+    }
+
+    // Triggered on click OR auto-fired once on first render-with-companion
+    function refreshCompanionBubble() {
+      if (!state.companion || !state.companion.species) return;
+      var text = generateBubbleText(state, state.companion.species);
+      saveCompanion({
+        lastBubbleAt: new Date().toISOString(),
+        lastBubbleText: text
+      });
+    }
+
     // ── Story method (Phase 2e) ──
     // Stories are top-level artifacts: an ordered chain of ≥3 decorations
     // with per-step narrative text. Walking a completed story is retrieval
@@ -6173,6 +7817,217 @@
       addToast('Decoration removed.');
     }
 
+    // ── Companion ephemeral state (Phase 2p) ──
+    // blink state ticks every few seconds, click-react flag clears after
+    // 600ms, confetti list holds active level-up celebrations
+    var blinkTuple = useState(false);
+    var blinking = blinkTuple[0];
+    var setBlinking = blinkTuple[1];
+    var reactingTuple = useState(false);
+    var reacting = reactingTuple[0];
+    var setReacting = reactingTuple[1];
+    var confettiTuple = useState([]); // [{ id, kind: 'skillUp', label, ts }]
+    var confetti = confettiTuple[0];
+    var setConfetti = confettiTuple[1];
+    // Pupil tracking — cursor position relative to companion center,
+    // normalized to [-1, 1]. (0, 0) when not hovered.
+    var pupilOffsetTuple = useState({ x: 0, y: 0 });
+    var pupilOffset = pupilOffsetTuple[0];
+    var setPupilOffset = pupilOffsetTuple[1];
+    // Petting (Phase 2p.8) — mousedown timer + a "just fired" guard so the
+    // mouseup that follows a long-hold doesn\'t also fire a click bounce
+    var pettingTimerRef = useRef(null);
+    var pettingJustFiredRef = useRef(false);
+
+    // Random-cadence blink (4-7s between blinks, 120ms blink duration)
+    useEffect(function() {
+      if (!state.companion) return;
+      var nextBlink;
+      function scheduleBlink() {
+        var delay = 4000 + Math.random() * 3000;
+        nextBlink = setTimeout(function() {
+          setBlinking(true);
+          setTimeout(function() { setBlinking(false); }, 120);
+          scheduleBlink();
+        }, delay);
+      }
+      scheduleBlink();
+      return function() { if (nextBlink) clearTimeout(nextBlink); };
+      // eslint-disable-next-line
+    }, [state.companion ? state.companion.species : null]);
+
+    // Happiness decay (Phase 2p.8) — companion happiness slowly fades
+    // over time so petting feels meaningful. Once-per-mount: compute
+    // days since lastPettedAt and decrement happiness accordingly. No
+    // daily punishment vibe — happiness can only drop to 0, never below.
+    useEffect(function() {
+      var c = state.companion;
+      if (!c || !c.species) return;
+      if (!c.lastPettedAt || !(c.happiness > 0)) return;
+      var daysSince = Math.floor((Date.now() - new Date(c.lastPettedAt).getTime()) / (24 * 60 * 60 * 1000));
+      if (daysSince <= 0) return;
+      var decayed = Math.max(0, (c.happiness || 0) - daysSince);
+      if (decayed === c.happiness) return;
+      saveCompanion({ happiness: decayed });
+      // eslint-disable-next-line
+    }, []);
+
+    // First-visit bubble — fire once when companion exists + no recent bubble
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) return;
+      var lastBubbleMs = state.companion.lastBubbleAt
+        ? new Date(state.companion.lastBubbleAt).getTime() : 0;
+      // Refresh if last bubble is >6 hours old
+      if (Date.now() - lastBubbleMs > 6 * 60 * 60 * 1000) {
+        // Defer one tick so initial state hydration completes first
+        setTimeout(function() { refreshCompanionBubble(); }, 100);
+      }
+      // eslint-disable-next-line
+    }, [state.companion ? state.companion.species : null]);
+
+    // Decoration-arrival reaction (Phase 2p.2) — when a new decoration
+    // (non-starter) is placed, the companion does a happy bounce + emits
+    // a species-specific celebration bubble. Watches decorations.length
+    // and skips the initial mount via decorationCountRef.
+    var decorationCountRef = useRef(state.decorations.length);
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) {
+        decorationCountRef.current = state.decorations.length;
+        return;
+      }
+      var prev = decorationCountRef.current;
+      var now = state.decorations.length;
+      if (now > prev) {
+        // Newest decoration is the one just added (sorted by earnedAt desc)
+        var newest = state.decorations[state.decorations.length - 1];
+        if (newest && !newest.isStarter) {
+          var sp = state.companion.species;
+          var dLabel = newest.templateLabel || newest.template || 'item';
+          var celebs = {
+            cat:    'Hmm — the new ' + dLabel + ' suits the room.',
+            fox:    'Aha — a new ' + dLabel + '! Clever pick.',
+            owl:    'Observed: a new ' + dLabel + '. Well chosen.',
+            turtle: 'Slowly noticed: a beautiful ' + dLabel + '.',
+            dragon: 'Whoa! A new ' + dLabel + '! Let\'s see it!'
+          };
+          // Trigger the excited bounce + persist the bubble
+          setReacting(true);
+          setTimeout(function() { setReacting(false); }, 600);
+          saveCompanion({
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: celebs[sp] || celebs.cat
+          });
+        }
+      }
+      decorationCountRef.current = now;
+      // eslint-disable-next-line
+    }, [state.decorations.length]);
+
+    // First-visit tour auto-fire (Phase 2p.6) — once the welcome card
+    // is dismissed AND no other modal is up, kick off the tour. Only
+    // fires when state.tourSeen is false (one-shot per student).
+    useEffect(function() {
+      if (state.tourSeen) return;
+      if (!state.onboardingSeen) return; // wait for welcome card first
+      if (state.activeModal) return;     // wait for other modals to close
+      // Defer slightly so the welcome card animation completes
+      var t = setTimeout(function() {
+        if (!state.tourSeen && !state.activeModal && state.onboardingSeen) {
+          setStateField('activeModal', 'tour');
+        }
+      }, 400);
+      return function() { clearTimeout(t); };
+      // eslint-disable-next-line
+    }, [state.onboardingSeen, state.tourSeen, state.activeModal]);
+
+    // Achievement unlock detection (Phase 2p.5) — runs the catalog\'s
+    // check() functions against current state. Newly-passing achievements
+    // get an unlockedAt timestamp persisted + a companion celebration
+    // bubble (if companion exists) + a non-blocking toast. Existing
+    // unlocks are never re-fired, even if state regresses.
+    useEffect(function() {
+      var existing = state.achievements || {};
+      var newly = [];
+      ACHIEVEMENT_CATALOG.forEach(function(ach) {
+        if (existing[ach.id]) return;
+        try {
+          if (ach.check(state)) newly.push(ach);
+        } catch (err) { /* check failed silently — skip */ }
+      });
+      if (newly.length === 0) return;
+      var nowIso = new Date().toISOString();
+      var nextAchievements = Object.assign({}, existing);
+      newly.forEach(function(ach) {
+        nextAchievements[ach.id] = { unlockedAt: nowIso };
+      });
+      var stateUpdates = { achievements: nextAchievements };
+      // Companion celebration on the FIRST newly-unlocked (one bubble per
+      // batch — don\'t spam if many fire at once on a fresh-state import)
+      if (state.companion && state.companion.species) {
+        var first = newly[0];
+        stateUpdates.companion = Object.assign({}, state.companion, {
+          lastBubbleAt: nowIso,
+          lastBubbleText: first.emoji + ' ' + first.label + '! ' + first.desc
+        });
+      }
+      setStateMulti(stateUpdates);
+      setTimeout(function() {
+        if (newly.length === 1) {
+          addToast(newly[0].emoji + ' Achievement: ' + newly[0].label);
+        } else {
+          addToast('🏆 ' + newly.length + ' achievements unlocked!');
+        }
+      }, 60);
+      // eslint-disable-next-line
+    }, [
+      state.decorations.length,
+      state.journalEntries.length,
+      state.earnings.length,
+      (state.stories || []).length,
+      (state.goals || []).length,
+      state.companion ? state.companion.species : null
+    ]);
+
+    // Skill level-up detection — compare current level vs cached
+    // skillCelebrations[skillId] for each skill. If higher, fire confetti
+    // + bubble + persist new high-watermark.
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) return;
+      var cele = (state.companion.skillCelebrations) || { focus: 0, memory: 0, reflection: 0, storytelling: 0 };
+      var newCele = Object.assign({}, cele);
+      var newConfetti = [];
+      var leveledUp = [];
+      SKILL_DEFS.forEach(function(def) {
+        var count = countSkillEvents(state, def.id);
+        var prog = computeSkillLevel(count);
+        var lastLevel = cele[def.id] || 0;
+        if (prog.level > lastLevel) {
+          leveledUp.push({ def: def, level: prog.level });
+          newCele[def.id] = prog.level;
+          for (var k = 0; k < 6; k++) {
+            newConfetti.push({
+              id: def.id + '-' + Date.now() + '-' + k,
+              kind: 'skillUp',
+              label: def.emoji,
+              left: 30 + Math.random() * 40, // %
+              delay: k * 50 // ms stagger
+            });
+          }
+        }
+      });
+      if (leveledUp.length > 0) {
+        // Persist + show
+        saveCompanion({
+          skillCelebrations: newCele,
+          lastBubbleAt: new Date().toISOString(),
+          lastBubbleText: leveledUp[0].def.emoji + ' ' + leveledUp[0].def.label + ' level ' + leveledUp[0].level + '! ' + (getCompanionSpecies(state.companion.species) || {}).affirm
+        });
+        setConfetti(newConfetti);
+        setTimeout(function() { setConfetti([]); }, 1200);
+      }
+      // eslint-disable-next-line
+    }, [state.earnings.length, state.companion ? state.companion.species : null]);
+
     // ── Room expansion ──
     // When 90% of the current room slots are filled, advancing to the
     // next milestone unlocks 1 wall row + 1 floor row + 5 token bonus.
@@ -6248,7 +8103,7 @@
     // commits to the AI-generated image. Token already deducted at
     // generate time; this just records the placement + closes modal.
     // Optional reflection text attaches to the decoration's metadata.
-    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag) {
+    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       // Slight ±3° rotation, randomized once per item — "lived-in wobble"
       var rotation = (Math.random() * 6) - 3;
@@ -6265,7 +8120,8 @@
         earnedAt: new Date().toISOString(),
         tokensSpent: DECORATION_COST,
         studentReflection: (reflectionText || '').trim(),
-        mood: moodTag || null,  // Phase 2m — affective domain tag
+        mood: moodTag || null,                         // Phase 2m — affective tag
+        subjects: Array.isArray(subjectTags) ? subjectTags : [],  // Phase 2p.6 — academic tags
         linkedContent: null,    // v2+ memory palace
         sourceTool: null,       // v2+ cross-tool integration
         aiRationale: null       // v2+ AI summary of how earned
@@ -6283,6 +8139,17 @@
       var newDecs = state.decorations.map(function(d) {
         if (d.id !== decorationId) return d;
         return Object.assign({}, d, { mood: moodId || null });
+      });
+      setStateField('decorations', newDecs);
+    }
+
+    // Update subject tags on an existing decoration (Phase 2p.6).
+    // Pass an array of subject ids; pass [] to clear all.
+    function setDecorationSubjects(decorationId, subjectIds) {
+      var clean = Array.isArray(subjectIds) ? subjectIds : [];
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { subjects: clean });
       });
       setStateField('decorations', newDecs);
     }
@@ -6410,20 +8277,34 @@
         // Wall stays 4 cols (2 cols on narrow); floor stays 6 cols (3 cols on narrow)
         // Grid auto-rows handles overflow; we don't pin a row count
         // anymore so expansion past 8/12 slots renders correctly.
-        // Wall surface (with warm-light overlay)
+        // Wall surface (with warm-light overlay + time-of-day tint).
+        // Time-of-day (Phase 2p.3) — system-clock-driven gentle wash:
+        // dawn pink, dusk warm orange, night cool blue. Suppressed in
+        // high-contrast mode and at midday (no overlay).
         h('div', {
           role: 'region',
-          'aria-label': 'Wall — ' + wallCount + ' of ' + room.wallSlots + ' slots filled',
+          'aria-label': (function() {
+            var tod = !inherited.highContrast ? getTimeOfDayTint() : null;
+            return 'Wall — ' + wallCount + ' of ' + room.wallSlots + ' slots filled'
+              + (tod ? ', time-of-day: ' + tod.label : '');
+          })(),
           className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             position: 'relative',
             padding: '14px',
-            background: palette.wallpaper,
+            background: (function() {
+              var tod = !inherited.highContrast ? getTimeOfDayTint() : null;
+              if (tod && tod.color) {
+                return 'linear-gradient(180deg, ' + tod.color + ', transparent 70%), ' + palette.wallpaper;
+              }
+              return palette.wallpaper;
+            })(),
             borderRadius: '12px 12px 0 0',
             marginTop: '16px',
             border: '1px solid ' + palette.border,
             borderBottom: 'none',
-            boxShadow: 'inset 0 -8px 20px rgba(0,0,0,0.18)'
+            boxShadow: 'inset 0 -8px 20px rgba(0,0,0,0.18)',
+            transition: 'background 600ms ease'
           }
         },
           h('div', {
@@ -6436,18 +8317,33 @@
             }
           }, wallCells)
         ),
-        // Floor surface (with warm-light overlay)
+        // Floor surface (with warm-light overlay + mood tint + companion).
+        // Mood-driven tint (Phase 2p.2) — subtle radial overlay reflecting
+        // the dominant mood across recent decorations. Suppressed in high-
+        // contrast mode and when there's no clear signal.
         h('div', {
           role: 'region',
-          'aria-label': 'Floor — ' + floorCount + ' of ' + room.floorSlots + ' slots filled',
+          'aria-label': (function() {
+            var tint = !inherited.highContrast ? getDominantMoodTint(state) : null;
+            return 'Floor — ' + floorCount + ' of ' + room.floorSlots + ' slots filled'
+              + (tint ? ', mood: ' + tint.mood : '');
+          })(),
           className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             padding: '14px',
-            background: palette.floor,
+            background: (function() {
+              var tint = !inherited.highContrast ? getDominantMoodTint(state) : null;
+              if (tint && tint.color) {
+                return 'radial-gradient(ellipse at 50% 30%, ' + tint.color + ', transparent 70%), ' + palette.floor;
+              }
+              return palette.floor;
+            })(),
             borderRadius: '0 0 12px 12px',
             border: '1px solid ' + palette.border,
             borderTop: 'none',
-            boxShadow: 'inset 0 8px 20px rgba(0,0,0,0.22)'
+            boxShadow: 'inset 0 8px 20px rgba(0,0,0,0.22)',
+            position: 'relative',
+            transition: 'background 600ms ease'
           }
         },
           h('div', {
@@ -6458,8 +8354,11 @@
               gridAutoRows: '90px',
               gap: '10px'
             }
-          }, floorCells)
+          }, floorCells),
+          renderCompanionOverlay()
         ),
+        // Skills panel — only renders when companion exists + has activity
+        renderSkillsPanel(),
         // Action buttons (Phase 1a placeholders — Phase 1b/c/d wire these up)
         h('div', {
           style: {
@@ -6539,6 +8438,14 @@
               'aria-label': 'Goals' + (activeCount > 0 ? ', ' + activeCount + ' active' : ''),
               style: secondaryBtnStyle(palette)
             }, '🎯 Goals' + (activeCount > 0 ? ' · ' + activeCount : ''));
+          })(),
+          (function() {
+            var unlocked = Object.keys(state.achievements || {}).length;
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'achievements'); },
+              'aria-label': 'Achievements' + (unlocked > 0 ? ', ' + unlocked + ' of ' + ACHIEVEMENT_CATALOG.length + ' unlocked' : ''),
+              style: secondaryBtnStyle(palette)
+            }, '🏆 Achievements' + (unlocked > 0 ? ' · ' + unlocked + '/' + ACHIEVEMENT_CATALOG.length : ''));
           })(),
           h('button', {
             onClick: function() { setStateField('activeModal', 'settings'); },
@@ -6705,7 +8612,7 @@
           // Hover-revealed ✕ delete button (top-right corner). Suppressed
           // on the starter decoration — students shouldn't accidentally
           // delete the welcome gift; v2+ could allow it via Settings.
-          !decoration.isStarter ? h('button', {
+          !decoration.isStarter && state.roomMode !== 'live' ? h('button', {
             onClick: function(e) {
               e.stopPropagation();
               setStateMulti({ activeModal: 'delete-decoration', generateContext: { decorationId: decoration.id } });
@@ -6737,6 +8644,20 @@
             }
           }, '✕') : null
         );
+      }
+      // Live mode (Phase 2p.3): empty cells render as fully transparent
+      // non-interactive divs — no dotted outline, no click affordance.
+      // Build mode keeps the original interactive empty cell.
+      var liveMode = state.roomMode === 'live';
+      if (liveMode) {
+        return h('div', {
+          key: surface + '-cell-' + index,
+          'aria-hidden': 'true',
+          style: {
+            minHeight: surface === 'wall' ? '76px' : '86px',
+            pointerEvents: 'none'
+          }
+        });
       }
       return h('div', {
         key: surface + '-cell-' + index,
@@ -6784,7 +8705,33 @@
           h('span', { 'aria-hidden': 'true', style: { marginRight: '6px' } }, '🌿'),
           'AlloHaven'
         ),
-        h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } },
+        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+          // Build / Live toggle (Phase 2p.3) — Sims-y mode distinction.
+          // Build mode is editing; Live mode is rest. Persists in state.
+          (function() {
+            var liveMode = state.roomMode === 'live';
+            return h('button', {
+              onClick: function() {
+                setStateField('roomMode', liveMode ? 'build' : 'live');
+              },
+              'aria-pressed': liveMode ? 'true' : 'false',
+              'aria-label': liveMode ? 'Switch to build mode (placement UI visible)' : 'Switch to live mode (room rests)',
+              title: liveMode ? 'Currently in Live mode · click for Build' : 'Currently in Build mode · click for Live',
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '6px 12px',
+                background: liveMode ? palette.accent : palette.surface,
+                color: liveMode ? palette.onAccent : palette.textDim,
+                border: '1px solid ' + (liveMode ? palette.accent : palette.border),
+                borderRadius: '999px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'background 200ms ease, color 200ms ease'
+              }
+            }, liveMode ? '🛋 Live' : '🛠 Build');
+          })(),
           h('div', {
             role: 'status',
             'aria-label': 'You have ' + tokens + ' tokens',
@@ -6820,6 +8767,424 @@
             }
           }, '✕') : null
         )
+      );
+    }
+
+    // Companion overlay (Phase 2p) — bottom-right floating critter.
+    // Renders ONE of two states: empty-state ("+ Add a buddy") or
+    // active companion (SVG figure + bubble + skills panel).
+    // Always anchored to the floor surface region so placement of
+    // decorations doesn\'t shift its position.
+    function renderCompanionOverlay() {
+      var companion = state.companion;
+      // Empty-state: small button to open setup wizard
+      if (!companion || !companion.species) {
+        return h('button', {
+          onClick: function() { setStateField('activeModal', 'companion-setup'); },
+          'aria-label': 'Add a study buddy companion',
+          title: 'Pick a critter that lives in your room',
+          style: {
+            position: 'absolute',
+            bottom: '8px',
+            right: '8px',
+            padding: '8px 14px',
+            background: palette.bg + 'cc',
+            color: palette.accent,
+            border: '1.5px dashed ' + palette.accent,
+            borderRadius: '999px',
+            fontSize: '12px', fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            zIndex: 5
+          }
+        }, '+ Add a buddy');
+      }
+
+      var sp = getCompanionSpecies(companion.species);
+      var paletteColors = getCompanionPalette(companion.species, companion.colorVariant || 'warm');
+      var displayName = (companion.name || (sp ? sp.label : 'buddy')).trim();
+
+      // Bubble fade timing — show if lastBubbleAt within 8s OR no
+      // explicit close (we keep until next bubble auto-replaces)
+      var bubbleText = companion.lastBubbleText || '';
+      var bubbleAge = companion.lastBubbleAt
+        ? (Date.now() - new Date(companion.lastBubbleAt).getTime())
+        : Infinity;
+      var showBubble = bubbleText && bubbleAge < 12000;
+
+      function handleClick() {
+        // Suppressed if a long-hold petting just fired (set by handlePetEnd)
+        if (pettingJustFiredRef && pettingJustFiredRef.current) {
+          pettingJustFiredRef.current = false;
+          return;
+        }
+        setReacting(true);
+        setTimeout(function() { setReacting(false); }, 600);
+        refreshCompanionBubble();
+      }
+      function handleKey(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }
+      // Petting (Phase 2p.8) — mousedown for ≥1.5s fires a happy reaction
+      // distinct from click-bounce. Bumps companion.happiness (max 10);
+      // happiness slowly decays (in saveCompanion / scheduled tick).
+      function handlePetStart() {
+        if (pettingTimerRef.current) clearTimeout(pettingTimerRef.current);
+        pettingTimerRef.current = setTimeout(function() {
+          // Fire happy reaction
+          var c = state.companion || {};
+          var sp2 = getCompanionSpecies(c.species);
+          var nextHappiness = Math.min(10, (c.happiness || 0) + 1);
+          var happyLines = {
+            cat:    'Hmm. Pleasant.',
+            fox:    'Heh. That\'s nice.',
+            owl:    'Quietly content.',
+            turtle: 'Cozy.',
+            dragon: 'Whoa! That tickles!'
+          };
+          saveCompanion({
+            happiness: nextHappiness,
+            lastPettedAt: new Date().toISOString(),
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: (happyLines[c.species] || happyLines.cat) + ' (♥)'
+          });
+          setReacting(true);
+          setTimeout(function() { setReacting(false); }, 800);
+          pettingJustFiredRef.current = true;
+          pettingTimerRef.current = null;
+        }, 1500);
+      }
+      function handlePetEnd() {
+        if (pettingTimerRef.current) {
+          clearTimeout(pettingTimerRef.current);
+          pettingTimerRef.current = null;
+        }
+      }
+      function handleMove(e) {
+        // Compute cursor offset from companion center, normalized to [-1, 1].
+        // We use clientX/Y vs the bounding rect so layout shifts don\'t
+        // break the math.
+        var rect = e.currentTarget.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        // The "track radius" is roughly twice the companion size — so
+        // pupils max out when cursor is ~150px away
+        var trackRadius = 150;
+        var dx = (e.clientX - cx) / trackRadius;
+        var dy = (e.clientY - cy) / trackRadius;
+        setPupilOffset({
+          x: Math.max(-1, Math.min(1, dx)),
+          y: Math.max(-1, Math.min(1, dy))
+        });
+      }
+      function handleLeave() {
+        setPupilOffset({ x: 0, y: 0 });
+      }
+
+      return h('div', {
+        'data-species': companion.species,
+        style: {
+          position: 'absolute',
+          bottom: '8px',
+          right: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '6px',
+          zIndex: 5,
+          pointerEvents: 'none' // children re-enable
+        }
+      },
+        // Confetti pieces (level-up)
+        confetti.length > 0 ? h('div', {
+          'aria-hidden': 'true',
+          style: {
+            position: 'absolute', bottom: '40px', right: '20px',
+            width: '80px', height: '60px', pointerEvents: 'none'
+          }
+        },
+          confetti.map(function(c) {
+            return h('span', {
+              key: c.id,
+              className: 'ah-companion-confetti-piece',
+              style: {
+                position: 'absolute',
+                left: c.left + '%',
+                bottom: '0',
+                fontSize: '18px',
+                animationDelay: c.delay + 'ms',
+                pointerEvents: 'none'
+              }
+            }, c.label);
+          })
+        ) : null,
+        // Quiz prompt (Phase 2p.4) — replaces the regular thought bubble
+        // when a due deck exists + cooldown allows. The buddy literally
+        // asks the student if they want to review. Yes opens the deck\'s
+        // quiz; Later sets a 6h dismissal cooldown.
+        (function() {
+          if (!shouldOfferQuizPrompt()) return null;
+          var dueDec = pickDueDeckForCompanion();
+          if (!dueDec) return null;
+          var dLabel = dueDec.templateLabel || dueDec.template || 'deck';
+          var lc = dueDec.linkedContent;
+          var contentNoun = lc.type === 'flashcards' ? 'flashcards'
+                          : lc.type === 'acronym'    ? 'acronym'
+                          : lc.type === 'image-link' ? 'image link'
+                                                       : 'notes';
+          var promptText = (companion.name || (sp ? sp.label : 'I'))
+            + ': "Want to review the ' + dLabel + ' ' + contentNoun + '?"';
+          return h('div', {
+            className: 'ah-companion-bubble',
+            role: 'group',
+            'aria-label': 'Companion is offering a quiz on the ' + dLabel + ' ' + contentNoun,
+            style: {
+              maxWidth: '240px',
+              padding: '10px 12px',
+              background: palette.surface,
+              border: '1.5px solid ' + palette.accent,
+              borderRadius: '12px',
+              borderBottomRightRadius: '4px',
+              fontSize: '11.5px',
+              color: palette.text,
+              lineHeight: '1.45',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              pointerEvents: 'auto'
+            }
+          },
+            h('div', { style: { fontStyle: 'italic', marginBottom: '8px' } }, promptText),
+            h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: function() { dismissQuizPrompt(); },
+                'aria-label': 'Skip the quiz offer for now',
+                style: {
+                  background: 'transparent', color: palette.textMute,
+                  border: '1px solid ' + palette.border, borderRadius: '6px',
+                  padding: '3px 10px', fontSize: '11px', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit'
+                }
+              }, 'Later'),
+              h('button', {
+                onClick: function() { acceptQuizPrompt(dueDec); },
+                'aria-label': 'Start the quiz now',
+                style: {
+                  background: palette.accent, color: palette.onAccent,
+                  border: 'none', borderRadius: '6px',
+                  padding: '3px 12px', fontSize: '11px', fontWeight: 700,
+                  cursor: 'pointer', fontFamily: 'inherit'
+                }
+              }, '✓ Quiz me')
+            )
+          );
+        })(),
+        // Thought bubble (regular state-aware observation, only when NOT
+        // showing the quiz prompt above)
+        (showBubble && !shouldOfferQuizPrompt()) ? h('div', {
+          className: 'ah-companion-bubble',
+          role: 'status',
+          'aria-live': 'polite',
+          style: {
+            maxWidth: '220px',
+            padding: '8px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '12px',
+            borderBottomRightRadius: '4px',
+            fontSize: '11.5px',
+            color: palette.text,
+            lineHeight: '1.45',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            pointerEvents: 'auto'
+          }
+        }, bubbleText) : null,
+        // The companion itself — sleep pose in Live mode
+        (function() {
+          var sleeping = state.roomMode === 'live';
+          return h('div', {
+            className: 'ah-companion-root'
+              + (reacting ? ' ah-companion-react' : '')
+              + (sleeping ? ' ah-companion-sleeping' : ''),
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': displayName + ' (' + (sp ? sp.label : 'companion') + ')'
+              + (sleeping ? ' is resting in live mode' : '. Click to chat.')
+              + (bubbleText && !sleeping ? ' Says: ' + bubbleText : ''),
+            title: sleeping
+              ? displayName + ' is resting'
+              : displayName + ' · click for a thought',
+            onClick: function() { if (!sleeping) handleClick(); },
+            onKeyDown: function(e) { if (!sleeping) handleKey(e); },
+            onMouseMove: function(e) { if (!sleeping) handleMove(e); },
+            onMouseLeave: function(e) { if (!sleeping) { handleLeave(e); handlePetEnd(); } },
+            onMouseDown: function() { if (!sleeping) handlePetStart(); },
+            onMouseUp: function() { if (!sleeping) handlePetEnd(); },
+            onTouchStart: function() { if (!sleeping) handlePetStart(); },
+            onTouchEnd: function() { if (!sleeping) handlePetEnd(); },
+            style: {
+              position: 'relative',
+              width: '76px',
+              height: '76px',
+              background: palette.surface + 'aa',
+              border: '1px solid ' + palette.border,
+              borderRadius: '14px',
+              padding: '4px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              pointerEvents: 'auto'
+            }
+          },
+            getCompanionSvg(companion.species, paletteColors,
+              { blinking: blinking, pupilOffset: pupilOffset, sleeping: sleeping }),
+            // Floating "Z" when sleeping — gentle visual signal, not "needs sleep" coded
+            sleeping ? h('span', {
+              className: 'ah-companion-z',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: '6px',
+                right: '6px',
+                fontSize: '14px',
+                fontWeight: 800,
+                color: palette.accent,
+                opacity: 0.8,
+                pointerEvents: 'none'
+              }
+            }, 'z') : null,
+            // Due-deck indicator (Phase 2p.4) — small ❓ badge tells the
+            // student "my buddy has a question" before they even click.
+            // Only when NOT sleeping (Live mode) AND a due deck exists
+            // AND the prompt cooldown hasn\'t locked us out.
+            (!sleeping && shouldOfferQuizPrompt()) ? h('span', {
+              'aria-label': 'A deck is due for review',
+              title: 'Your buddy has a question for you',
+              style: {
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                fontSize: '11px',
+                fontWeight: 800,
+                color: palette.onAccent || '#000',
+                background: palette.accent,
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid ' + palette.bg,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                pointerEvents: 'none'
+              }
+            }, '?') : null,
+            // Happiness ❤ indicator (Phase 2p.8) — tiny pink heart in
+            // the corner when companion has been petted recently. Fades
+            // in/out as happiness rises/falls. Suppressed in sleep pose.
+            (!sleeping && (companion.happiness || 0) >= 5) ? h('span', {
+              'aria-label': 'Companion happiness: ' + companion.happiness + ' of 10',
+              title: 'Happy buddy (long-press to pet again)',
+              style: {
+                position: 'absolute',
+                bottom: '-4px',
+                left: '-4px',
+                fontSize: '11px',
+                color: '#ff6b9d',
+                background: palette.bg,
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid ' + palette.bg,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                pointerEvents: 'none'
+              }
+            }, '❤') : null
+          );
+        })(),
+        // Tiny name + edit affordance
+        h('div', {
+          style: {
+            display: 'flex', gap: '6px', alignItems: 'center',
+            background: palette.surface + 'cc',
+            padding: '2px 8px',
+            borderRadius: '999px',
+            border: '1px solid ' + palette.border,
+            pointerEvents: 'auto'
+          }
+        },
+          h('span', { style: { fontSize: '10px', fontWeight: 700, color: palette.text } }, displayName),
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'companion-setup'); },
+            'aria-label': 'Edit ' + displayName,
+            title: 'Change species, color, or name',
+            style: {
+              background: 'transparent', border: 'none',
+              color: palette.textMute, fontSize: '10px',
+              cursor: 'pointer', padding: '0 2px',
+              fontFamily: 'inherit'
+            }
+          }, '✎')
+        )
+      );
+    }
+
+    // Skill levels panel (Phase 2p) — 4 mini progress bars below the room
+    // when a companion exists. Computed from earnings; status not currency.
+    function renderSkillsPanel() {
+      if (!state.companion || !state.companion.species) return null;
+      var skills = SKILL_DEFS.map(function(def) {
+        var count = countSkillEvents(state, def.id);
+        var prog = computeSkillLevel(count);
+        return { def: def, prog: prog, count: count };
+      });
+      var hasAny = skills.some(function(s) { return s.count > 0; });
+      if (!hasAny) return null;
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Skill levels',
+        style: {
+          marginTop: '14px',
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '10px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '8px 14px'
+        }
+      },
+        skills.map(function(s) {
+          var label = s.def.emoji + ' ' + s.def.label;
+          var aria = s.def.label + ' level ' + s.prog.level
+            + (s.prog.atMax ? ' (max)' : ', ' + s.prog.current + ' of ' + s.prog.nextThreshold);
+          return h('div', {
+            key: 'sp-' + s.def.id,
+            'aria-label': aria,
+            title: s.def.hint
+              + (s.prog.atMax ? ' · level ' + s.prog.level + ' (max)' : ' · ' + s.prog.current + ' / ' + s.prog.nextThreshold + ' to next'),
+            style: { fontSize: '11px', color: palette.textDim }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontVariantNumeric: 'tabular-nums' } },
+              h('span', { style: { fontWeight: 700, color: palette.text } }, label),
+              h('span', { style: { fontSize: '10px' } }, 'L' + s.prog.level + (s.prog.atMax ? ' max' : ''))
+            ),
+            h('div', {
+              'aria-hidden': 'true',
+              style: { height: '4px', background: palette.bg, borderRadius: '2px', overflow: 'hidden' }
+            },
+              h('div', {
+                style: {
+                  width: s.prog.pct + '%', height: '100%',
+                  background: palette.accent,
+                  transition: 'width 320ms ease'
+                }
+              })
+            )
+          );
+        })
       );
     }
 
@@ -7248,7 +9613,77 @@
             style: { marginTop: '14px', fontSize: '11px', color: palette.textMute, fontStyle: 'italic' }
           }, phase === 'focus'
             ? 'Focus on whatever you want. Tokens will be waiting when the timer dings.'
-            : 'Take a real break. Stand up, stretch, drink water.')
+            : 'Take a real break. Stand up, stretch, drink water.'),
+          // Companion accompanies the Pomodoro (Phase 2p.2) — appears
+          // next to the timer with a phase-aware bubble so focus sessions
+          // feel less lonely. Blink + bob still active.
+          (function() {
+            var c = state.companion;
+            if (!c || !c.species) return null;
+            var sp = getCompanionSpecies(c.species);
+            var swatch = getCompanionPalette(c.species, c.colorVariant || 'warm');
+            var bubbleByPhase = {
+              focus: {
+                cat:    'I\'ll keep watch. You focus.',
+                fox:    'Locked in! I\'ll be quiet.',
+                owl:    'Steady focus. I approve.',
+                turtle: 'Slow and steady — I\'m right here.',
+                dragon: 'Focus mode! I\'ve got your back!'
+              },
+              'short-break': {
+                cat:    'A pause — that\'s good too.',
+                fox:    'Stretch! You earned it.',
+                owl:    'Rest the eyes for a bit.',
+                turtle: 'Slow breaths. I like this part.',
+                dragon: 'Quick breather! Then onward!'
+              },
+              'long-break': {
+                cat:    'A real rest. Cozy.',
+                fox:    'Long break — drink water!',
+                owl:    'Replenish. The mind needs it.',
+                turtle: 'A good long pause. Lovely.',
+                dragon: 'Big break — go celebrate!'
+              }
+            };
+            var bubble = (bubbleByPhase[phase] && bubbleByPhase[phase][c.species])
+                       || (bubbleByPhase[phase] && bubbleByPhase[phase].cat)
+                       || '';
+            return h('div', {
+              style: { marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }
+            },
+              h('div', {
+                'data-species': c.species,
+                style: {
+                  width: '72px', height: '72px', flexShrink: 0,
+                  padding: '4px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '14px'
+                }
+              },
+                h('div', { className: 'ah-companion-root' },
+                  h('div', null,
+                    getCompanionSvg(c.species, swatch, { blinking: blinking, pupilOffset: { x: 0, y: 0 } })
+                  )
+                )
+              ),
+              h('div', {
+                style: {
+                  maxWidth: '220px',
+                  padding: '8px 12px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '12px',
+                  borderBottomLeftRadius: '4px',
+                  fontSize: '11.5px',
+                  color: palette.text,
+                  lineHeight: '1.45',
+                  fontStyle: 'italic',
+                  textAlign: 'left'
+                }
+              }, '"' + (c.name || (sp ? sp.label : 'buddy')) + ': ' + bubble + '"')
+            );
+          })()
         )
       );
     }
@@ -7261,6 +9696,195 @@
     // Review button to jump straight into its quiz. Replaces the
     // "click each decoration to remember what's where" UX gap.
     // ─────────────────────────────────────────────────
+
+    // ── Activity heatmap (Phase 2p.8) ──
+    // 90-day calendar grid showing activity intensity per day. Colors
+    // scale from neutral (no activity) through accent shades (more
+    // activity). NO red / negative coloring on idle days — this is
+    // visibility, not punishment. Engagement evidence for IEP teams +
+    // visual reward for students. Renders only with ≥1 earning event.
+    function renderActivityHeatmap() {
+      var earnings = state.earnings || [];
+      var decorations = state.decorations || [];
+      var journals = state.journalEntries || [];
+      if (earnings.length === 0 && journals.length === 0 && decorations.length === 0) return null;
+
+      var DAYS = 91; // 13 weeks × 7 days
+      var msPerDay = 24 * 60 * 60 * 1000;
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var todayMs = today.getTime();
+      // Align grid so the LAST column is the current week (Sunday-start)
+      // Find the most recent Saturday (end of current week)
+      var dowToday = today.getDay(); // 0=Sun..6=Sat
+      var daysToSatEnd = (6 - dowToday); // days from today to upcoming Saturday
+      var endDay = new Date(todayMs + daysToSatEnd * msPerDay);
+      var startMs = endDay.getTime() - (DAYS - 1) * msPerDay;
+
+      // Per-day activity buckets: tokens earned + journals written + decorations placed
+      var perDay = {};
+      function bucketFor(dateLike) {
+        if (!dateLike) return null;
+        var t = new Date(dateLike).getTime();
+        if (isNaN(t)) return null;
+        if (t < startMs || t > endDay.getTime() + msPerDay) return null;
+        var dayKey = new Date(t); dayKey.setHours(0, 0, 0, 0);
+        var iso = dayKey.toISOString().slice(0, 10);
+        if (!perDay[iso]) perDay[iso] = { tokens: 0, pomodoros: 0, reflections: 0, decorations: 0, quizzes: 0 };
+        return perDay[iso];
+      }
+      earnings.forEach(function(e) {
+        var b = bucketFor(e.date);
+        if (!b) return;
+        b.tokens += e.tokens || 0;
+        if (e.source === 'pomodoro' || e.source === 'cycle-bonus') b.pomodoros += 1;
+        if (e.source === 'reflection') b.reflections += 1;
+        if (e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz') b.quizzes += 1;
+      });
+      decorations.forEach(function(d) {
+        if (d.isStarter) return;
+        var b = bucketFor(d.earnedAt);
+        if (b) b.decorations += 1;
+      });
+      journals.forEach(function(j) {
+        var b = bucketFor(j.date);
+        // Reflections already counted via earnings, but a journal edit may
+        // not earn — count any journal entry as activity even if no token
+        if (b && j.tokensEarned === 0) b.reflections += 1;
+      });
+
+      // Find max activity intensity for color scaling
+      var maxIntensity = 0;
+      Object.keys(perDay).forEach(function(k) {
+        var b = perDay[k];
+        var score = b.tokens + b.decorations * 2; // weight decorations a bit higher
+        if (score > maxIntensity) maxIntensity = score;
+      });
+      if (maxIntensity === 0) maxIntensity = 1;
+
+      function dayCellColor(b) {
+        if (!b) return palette.surface;
+        var score = b.tokens + b.decorations * 2;
+        if (score === 0) return palette.surface;
+        var intensity = Math.min(1, score / maxIntensity);
+        // Blend palette.surface → palette.accent based on intensity
+        // Use rgba with the accent at variable opacity over a base bg.
+        // 4 buckets for clear visual distinction (matches GitHub style).
+        if (intensity < 0.25) return 'rgba(96,165,250,0.18)';   // very light
+        if (intensity < 0.50) return 'rgba(96,165,250,0.40)';
+        if (intensity < 0.75) return 'rgba(96,165,250,0.65)';
+        return 'rgba(96,165,250,0.92)';
+      }
+      // ^ uses fixed accent rgba — for theme-correctness, prefer
+      // palette.accent. But CSS rgba() needs hex parsing. Cheaper:
+      // use opacity layered on a transparent background.
+      function dayCellStyle(b, dayOfWeek, isFuture) {
+        if (isFuture) {
+          return { background: 'transparent', opacity: 0.3 };
+        }
+        if (!b || (b.tokens + b.decorations * 2) === 0) {
+          return { background: palette.surface, opacity: 0.7 };
+        }
+        var score = b.tokens + b.decorations * 2;
+        var intensity = Math.min(1, score / maxIntensity);
+        var bucket = intensity < 0.25 ? 0.22 : intensity < 0.5 ? 0.45 : intensity < 0.75 ? 0.7 : 1;
+        return { background: palette.accent, opacity: bucket };
+      }
+
+      // Build the grid: 7 rows (days of week, Sun first), 13 columns (weeks)
+      var rows = [];
+      for (var dow = 0; dow < 7; dow++) {
+        var cells = [];
+        for (var col = 0; col < 13; col++) {
+          var dayMs = startMs + (col * 7 + dow) * msPerDay;
+          var cellDate = new Date(dayMs);
+          var iso = cellDate.toISOString().slice(0, 10);
+          var b = perDay[iso] || null;
+          var isFuture = dayMs > todayMs;
+          var label = cellDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          var summary = '';
+          if (b) {
+            var parts = [];
+            if (b.tokens) parts.push(b.tokens + ' token' + (b.tokens === 1 ? '' : 's'));
+            if (b.pomodoros) parts.push(b.pomodoros + ' Pomodoro' + (b.pomodoros === 1 ? '' : 's'));
+            if (b.reflections) parts.push(b.reflections + ' reflection' + (b.reflections === 1 ? '' : 's'));
+            if (b.quizzes) parts.push(b.quizzes + ' quiz' + (b.quizzes === 1 ? '' : 'zes'));
+            if (b.decorations) parts.push(b.decorations + ' decoration' + (b.decorations === 1 ? '' : 's'));
+            summary = parts.join(', ');
+          }
+          var cellTitle = label + (summary ? ' — ' + summary : isFuture ? ' (upcoming)' : ' (no activity)');
+          cells.push(h('div', {
+            key: 'hm-' + dow + '-' + col,
+            'aria-label': cellTitle,
+            title: cellTitle,
+            style: Object.assign({
+              width: '14px', height: '14px',
+              borderRadius: '3px',
+              border: '1px solid ' + palette.border,
+              flexShrink: 0
+            }, dayCellStyle(b, dow, isFuture))
+          }));
+        }
+        rows.push(h('div', {
+          key: 'hm-row-' + dow,
+          style: { display: 'flex', gap: '3px' }
+        }, cells));
+      }
+
+      // Stats summary
+      var totalDays = Object.keys(perDay).length;
+      var totalTokens = Object.values(perDay).reduce(function(s, b) { return s + b.tokens; }, 0);
+
+      return h('div', {
+        role: 'figure',
+        'aria-label': 'Activity heatmap, last 90 days. ' + totalDays + ' active days, ' + totalTokens + ' tokens earned.',
+        style: {
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px',
+          marginBottom: '14px'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }
+        },
+          h('span', {
+            style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+          }, '📅 Last 90 days'),
+          h('span', {
+            style: { fontSize: '11px', color: palette.textDim, fontVariantNumeric: 'tabular-nums' }
+          },
+            h('span', { style: { color: palette.text, fontWeight: 700 } }, totalDays),
+            ' active day' + (totalDays === 1 ? '' : 's') + ' · ',
+            h('span', { style: { color: palette.accent, fontWeight: 700 } }, totalTokens),
+            ' tokens'
+          )
+        ),
+        h('div', {
+          'aria-hidden': 'true',
+          style: { display: 'flex', flexDirection: 'column', gap: '3px', overflowX: 'auto' }
+        }, rows),
+        h('div', {
+          style: { display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end', marginTop: '8px', fontSize: '10px', color: palette.textMute }
+        },
+          h('span', null, 'Less'),
+          [0.7, 0.22, 0.45, 0.7, 1].map(function(op, i) {
+            return h('span', {
+              key: 'lg-' + i,
+              'aria-hidden': 'true',
+              style: {
+                width: '12px', height: '12px',
+                borderRadius: '3px',
+                border: '1px solid ' + palette.border,
+                background: i === 0 ? palette.surface : palette.accent,
+                opacity: op
+              }
+            });
+          }),
+          h('span', null, 'More')
+        )
+      );
+    }
 
     // ── Token trends (Phase 2l) ──
     // Compact 30-day SVG chart of cumulative earning vs spending. Renders
@@ -7469,7 +10093,27 @@
 
     function renderMemoryOverviewModal() {
       if (state.activeModal !== 'memory-overview') return null;
-      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      // Subject filter (Phase 2p.6) — student-selected subject narrows
+      // the visible decks. activeSubjectFilter lives in generateContext
+      // since it's modal-scoped and shouldn't persist beyond close.
+      var activeFilter = (state.generateContext && state.generateContext.subjectFilter) || null;
+      var allWithContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      var withContent = activeFilter
+        ? allWithContent.filter(function(d) {
+            return Array.isArray(d.subjects) && d.subjects.indexOf(activeFilter) !== -1;
+          })
+        : allWithContent;
+      // Compute which subjects are actually present (for filter row)
+      var subjectsPresent = {};
+      allWithContent.forEach(function(d) {
+        (d.subjects || []).forEach(function(s) { subjectsPresent[s] = (subjectsPresent[s] || 0) + 1; });
+      });
+      function setSubjectFilter(id) {
+        var nextCtx = Object.assign({}, state.generateContext || {}, {
+          subjectFilter: (activeFilter === id) ? null : id
+        });
+        setStateField('generateContext', nextCtx);
+      }
       // Partition into 3 buckets: due / due-soon / fresh
       var due = [];
       var dueSoon = [];
@@ -7565,7 +10209,13 @@
           },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
-            h('div', { style: { display: 'flex', gap: '6px' } },
+            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() { setStateField('activeModal', 'weekly-summary'); },
+                'aria-label': 'Show last 7 days summary',
+                title: 'Quick 7-day snapshot — what you did, how you felt, what you unlocked',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '🗓️ Last 7 days'),
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
                 onClick: function() { setStateField('activeModal', 'clinical-review'); },
                 'aria-label': 'Review packet on screen',
@@ -7597,20 +10247,45 @@
             style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
           }, 'Each decoration in your room can hold study aids — flashcards, acronyms, or notes. The room itself is a method-of-loci anchor: where you place a deck shapes how you remember it.'),
 
-          // Empty-state
-          totalDecks === 0 ? h('div', {
-            style: {
-              padding: '32px 20px',
-              background: palette.surface,
-              border: '1px dashed ' + palette.border,
-              borderRadius: '10px',
-              textAlign: 'center'
+          // Empty-state — distinguish "no content yet" vs "filter narrowed to zero"
+          totalDecks === 0 ? (function() {
+            var allCount = allWithContent.length;
+            var filteredOut = activeFilter && allCount > 0;
+            if (filteredOut) {
+              var filterLabel = (function() {
+                for (var fi = 0; fi < SUBJECT_TAGS.length; fi++) {
+                  if (SUBJECT_TAGS[fi].id === activeFilter) return SUBJECT_TAGS[fi].label;
+                }
+                return activeFilter;
+              })();
+              return h('div', {
+                role: 'status', 'aria-live': 'polite',
+                style: { padding: '24px 20px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center' }
+              },
+                h('div', { 'aria-hidden': 'true', style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'),
+                h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: '0 0 10px 0' } },
+                  'No decks tagged "' + filterLabel + '" yet. Tag a deck via its memory modal, or:'),
+                h('button', {
+                  onClick: function() { setSubjectFilter(activeFilter); },
+                  'aria-label': 'Clear subject filter',
+                  style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
+                }, 'Show all decks')
+              );
             }
-          },
-            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '📖'),
-            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
-              'No memory content yet. Click any decoration in your room to attach flashcards, an acronym, or notes — your decorations become the anchors for what you\'re learning.')
-          ) : null,
+            return h('div', {
+              style: {
+                padding: '32px 20px',
+                background: palette.surface,
+                border: '1px dashed ' + palette.border,
+                borderRadius: '10px',
+                textAlign: 'center'
+              }
+            },
+              h('div', { 'aria-hidden': 'true', style: { fontSize: '40px', marginBottom: '10px' } }, '📖'),
+              h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+                'No memory content yet. Click any decoration in your room to attach flashcards, an acronym, or notes — your decorations become the anchors for what you\'re learning.')
+            );
+          })() : null,
 
           // Stats row (only when there's content)
           (totalDecks > 0 || allStories.length > 0) ? h('div', {
@@ -7632,18 +10307,87 @@
           // 30-day token trend chart (Phase 2l) — only renders when there's data
           renderTrendsChart(),
 
+          // 90-day activity heatmap (Phase 2p.8) — calendar-grid view
+          // of cumulative engagement. Rendered below the trend chart so
+          // students see daily-level granularity (heatmap) + flow shape
+          // (trends) together.
+          renderActivityHeatmap(),
+
+          // Subject filter chips (Phase 2p.6) — appear when ≥1 deck has
+          // any subject tagged. Click to filter; click selected to clear.
+          Object.keys(subjectsPresent).length > 0 ? h('div', {
+            role: 'region',
+            'aria-label': 'Filter decks by subject',
+            style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px', alignItems: 'center' }
+          },
+            h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+              'Filter:'),
+            SUBJECT_TAGS.filter(function(s) { return !!subjectsPresent[s.id]; }).map(function(s) {
+              var active = activeFilter === s.id;
+              return h('button', {
+                key: 'sf-' + s.id,
+                onClick: function() { setSubjectFilter(s.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  background: active ? palette.accent : 'transparent',
+                  color: active ? palette.onAccent : palette.text,
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, s.emoji + ' ' + s.label + ' · ' + subjectsPresent[s.id]);
+            }),
+            activeFilter ? h('button', {
+              onClick: function() { setSubjectFilter(activeFilter); }, // toggle clears
+              'aria-label': 'Clear subject filter',
+              style: {
+                background: 'transparent',
+                color: palette.textMute,
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textDecoration: 'underline',
+                marginLeft: '4px'
+              }
+            }, 'Clear') : null
+          ) : null,
+
           // Due section
           due.length > 0 ? h('div', { style: { marginBottom: '14px' } },
-            h('div', {
-              style: {
-                fontSize: '11px',
-                color: palette.warn || palette.accent,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                marginBottom: '8px'
-              }
-            }, '⚡ Due for review · ' + due.length),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' } },
+              h('div', {
+                style: {
+                  fontSize: '11px',
+                  color: palette.warn || palette.accent,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em'
+                }
+              }, '⚡ Due for review · ' + due.length),
+              // Phase 2p.9 — sequential review-all queue
+              due.length >= 2 ? h('button', {
+                onClick: function() { startReviewQueue(); },
+                'aria-label': 'Review all ' + due.length + ' due decks in sequence',
+                title: 'Sequential quiz through every due deck. Stop any time.',
+                style: {
+                  background: palette.accent,
+                  color: palette.onAccent,
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '5px 12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, '↻ Review all ' + due.length) : null
+            ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               due.map(function(d) { return renderOverviewRow(d, palette, 'due'); })
             )
@@ -8005,11 +10749,22 @@
         setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
         return null;
       }
+      // Phase 2p.9 — queue info passed through when this modal is part
+      // of a review-queue traversal. MemoryModalInner uses it to render
+      // a "Next deck" button on the quiz result screen instead of "Done".
+      var queueInfo = null;
+      if (ctx.reviewQueue) {
+        queueInfo = {
+          current: ctx.reviewQueue.currentIdx + 1,
+          total: ctx.reviewQueue.decks.length
+        };
+      }
       return h(MemoryModalInner, {
         decoration: decoration,
         allDecorations: state.decorations,
         palette: palette,
         autoStartQuiz: !!ctx.autoStartQuiz,
+        queueInfo: queueInfo,
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
         },
@@ -8023,7 +10778,9 @@
         onQuizComplete: function(scorePct) {
           recordQuizSession(decorationId, scorePct);
         },
-        onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); }
+        onAdvanceQueue: ctx.reviewQueue ? function(scorePct) { advanceReviewQueue(scorePct); } : null,
+        onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); },
+        onSetSubjects: function(subjectIds) { setDecorationSubjects(decorationId, subjectIds); }
       });
     }
 
@@ -8191,8 +10948,8 @@
         onGenerate: function(template, slots, artStyleId, isRegenerate, isFreeRegenerate, callback) {
           generateDecoration(template, slots, artStyleId, isRegenerate, isFreeRegenerate, callback);
         },
-        onPlace: function(template, slots, artStyleId, imageBase64, reflectionText) {
-          placeDecoration(template, slots, artStyleId, imageBase64, reflectionText);
+        onPlace: function(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
+          placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags);
         },
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
@@ -8424,6 +11181,121 @@
     // ─────────────────────────────────────────────────
     // GOALS LIST MODAL (Phase 2n)
     // ─────────────────────────────────────────────────
+    // Achievements modal (Phase 2p.5) — list every achievement with
+    // unlock state. Unlocked first, then locked (silhouetted with desc
+    // visible so students know what to aim for, but value-neutral —
+    // these are markers, not requirements).
+    function renderAchievementsModal() {
+      if (state.activeModal !== 'achievements') return null;
+      var unlocked = state.achievements || {};
+      var unlockedItems = ACHIEVEMENT_CATALOG.filter(function(a) { return unlocked[a.id]; });
+      var lockedItems   = ACHIEVEMENT_CATALOG.filter(function(a) { return !unlocked[a.id]; });
+      // Unlocked sorted newest first
+      unlockedItems.sort(function(a, b) {
+        return (unlocked[b.id].unlockedAt || '').localeCompare(unlocked[a.id].unlockedAt || '');
+      });
+      function renderRow(ach, isUnlocked) {
+        var stamp = isUnlocked && unlocked[ach.id]
+          ? new Date(unlocked[ach.id].unlockedAt).toLocaleDateString()
+          : null;
+        return h('div', {
+          key: 'ach-' + ach.id,
+          role: 'group',
+          'aria-label': ach.label + (isUnlocked ? ', unlocked ' + stamp : ', not yet unlocked')
+            + ', ' + ach.desc,
+          style: {
+            display: 'flex', gap: '12px', alignItems: 'center',
+            padding: '10px 12px',
+            background: isUnlocked ? palette.surface : palette.bg,
+            border: '1px solid ' + (isUnlocked ? palette.accent : palette.border),
+            borderRadius: '8px'
+            // Phase 2p.7: removed `opacity: 0.55` on locked rows — the
+            // emoji greyscale is enough visual signal, and the opacity
+            // pushed text contrast below WCAG AA. Text colors below now
+            // use full-strength textMute / text for AA compliance.
+          }
+        },
+          h('div', {
+            'aria-hidden': 'true',
+            style: {
+              fontSize: '24px', flexShrink: 0,
+              filter: isUnlocked ? 'none' : 'grayscale(0.85)',
+              opacity: isUnlocked ? 1 : 0.6
+            }
+          }, ach.emoji),
+          h('div', { style: { flex: 1, minWidth: 0 } },
+            h('div', {
+              style: {
+                fontSize: '13px', fontWeight: 700,
+                // Locked state uses text (full strength) not textMute —
+                // textMute on bg is ~3:1 in some themes which fails AA.
+                color: palette.text,
+                marginBottom: '2px'
+              }
+            }, ach.label),
+            h('div', {
+              style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45' }
+            }, ach.desc)
+          ),
+          stamp ? h('div', {
+            style: { fontSize: '10px', color: palette.textDim, fontStyle: 'italic', flexShrink: 0 }
+          }, stamp) : null
+        );
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Achievements',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '600px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '🏆 Achievements · ' + unlockedItems.length + '/' + ACHIEVEMENT_CATALOG.length),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close achievements',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
+          }, 'Gentle markers, not requirements. They unlock as you do the things you were already doing — no streaks, no comparisons.'),
+
+          unlockedItems.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+              '✓ Unlocked · ' + unlockedItems.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              unlockedItems.map(function(a) { return renderRow(a, true); })
+            )
+          ) : null,
+          lockedItems.length > 0 ? h('div', { style: { paddingTop: unlockedItems.length > 0 ? '14px' : 0, borderTop: unlockedItems.length > 0 ? '1px solid ' + palette.border : 'none' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+              '○ Still ahead · ' + lockedItems.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              lockedItems.map(function(a) { return renderRow(a, false); })
+            )
+          ) : null
+        )
+      );
+    }
+
     function renderGoalsListModal() {
       if (state.activeModal !== 'goals') return null;
       var goals = (state.goals || []).slice();
@@ -8593,6 +11465,59 @@
           ) : null
         )
       );
+    }
+
+    function renderTourModal() {
+      if (state.activeModal !== 'tour') return null;
+      return h(TourModalInner, {
+        palette: palette,
+        onFinish: function() {
+          setStateMulti({ tourSeen: true, activeModal: null });
+        }
+      });
+    }
+
+    function renderCompanionSetupModal() {
+      if (state.activeModal !== 'companion-setup') return null;
+      return h(CompanionSetupInner, {
+        existing: state.companion,
+        palette: palette,
+        onSave: function(updates) {
+          // Preserve skillCelebrations + createdAt from existing if present
+          var prev = state.companion || {};
+          saveCompanion(Object.assign({
+            skillCelebrations: prev.skillCelebrations,
+            // Reset celebration baselines on first creation so existing
+            // earnings don\'t fire confetti on companion creation
+            // (companion exists FROM creation forward, not retroactively)
+          }, updates));
+          // Initialize celebration baselines if first creation
+          if (!prev.species) {
+            var baseline = {};
+            SKILL_DEFS.forEach(function(def) {
+              var count = countSkillEvents(state, def.id);
+              var prog = computeSkillLevel(count);
+              baseline[def.id] = prog.level;
+            });
+            // Schedule the baseline write after the create write settles
+            setTimeout(function() {
+              setState(function(prev2) {
+                if (!prev2.companion) return prev2;
+                return Object.assign({}, prev2, {
+                  companion: Object.assign({}, prev2.companion, { skillCelebrations: baseline })
+                });
+              });
+            }, 50);
+          }
+          setStateField('activeModal', null);
+          setTimeout(function() { addToast('🌿 ' + (updates.name || 'your buddy') + ' joined your room.'); }, 50);
+        },
+        onCancel: function() { setStateField('activeModal', null); },
+        onDelete: function() {
+          setStateMulti({ companion: null, activeModal: null });
+          addToast('Companion removed.');
+        }
+      });
     }
 
     function renderGoalBuilderModal() {
@@ -9035,7 +11960,17 @@
 
           h('div', {
             style: { fontSize: '11px', color: palette.textMute, marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, lineHeight: '1.5' }
-          }, 'Today: ' + (state.dailyState.pomodorosCompleted || 0) + ' Pomodoros completed · soft cap at 4/day (above which sessions still run but earn 0 tokens).')
+          }, 'Today: ' + (state.dailyState.pomodorosCompleted || 0) + ' Pomodoros completed · soft cap at 4/day (above which sessions still run but earn 0 tokens).'),
+          // Replay tour button (Phase 2p.6)
+          h('div', {
+            style: { marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, textAlign: 'center' }
+          },
+            h('button', {
+              onClick: function() { setStateMulti({ activeModal: 'tour' }); },
+              'aria-label': 'Replay the welcome tour',
+              style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 14px' })
+            }, '🎬 Replay tour')
+          )
         )
       );
     }
@@ -9047,6 +11982,289 @@
     // without printing. "Print this view" button at bottom triggers
     // the print packet flow.
     // ─────────────────────────────────────────────────
+    // Weekly summary modal (Phase 2p.9) — digestible 7-day snapshot
+    // with companion\'s reflection on the week. Different use case from
+    // the print packet (the comprehensive portfolio); weekly summary
+    // is the moment-in-time snapshot a parent / clinician would
+    // glance at on a Friday.
+    function renderWeeklySummaryModal() {
+      if (state.activeModal !== 'weekly-summary') return null;
+      var nowMs = Date.now();
+      var weekAgo = nowMs - 7 * 24 * 60 * 60 * 1000;
+      // Aggregate
+      var earningsThisWeek = (state.earnings || []).filter(function(e) {
+        return e.date && new Date(e.date).getTime() >= weekAgo;
+      });
+      var pomThisWeek = earningsThisWeek.filter(function(e) {
+        return e.source === 'pomodoro' || e.source === 'cycle-bonus';
+      }).length;
+      var reflThisWeek = (state.journalEntries || []).filter(function(e) {
+        return e.date && new Date(e.date).getTime() >= weekAgo;
+      }).length;
+      var quizThisWeek = earningsThisWeek.filter(function(e) {
+        return e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz';
+      }).length;
+      var walksThisWeek = earningsThisWeek.filter(function(e) {
+        return e.source === 'story-walk';
+      }).length;
+      var newDecsThisWeek = (state.decorations || []).filter(function(d) {
+        return !d.isStarter && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgo;
+      });
+      var tokensThisWeek = earningsThisWeek.reduce(function(s, e) { return s + (e.tokens || 0); }, 0);
+
+      // Days active this week
+      var daysActive = {};
+      earningsThisWeek.forEach(function(e) {
+        if (!e.date) return;
+        daysActive[e.date.slice(0, 10)] = true;
+      });
+      (state.journalEntries || []).forEach(function(j) {
+        if (!j.date) return;
+        var t = new Date(j.date).getTime();
+        if (t >= weekAgo) daysActive[j.date.slice(0, 10)] = true;
+      });
+      var daysActiveCount = Object.keys(daysActive).length;
+
+      // Top mood + subject from this week\'s decorations
+      var moodCounts = {}, subjCounts = {};
+      newDecsThisWeek.forEach(function(d) {
+        if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1;
+        (d.subjects || []).forEach(function(s) { subjCounts[s] = (subjCounts[s] || 0) + 1; });
+      });
+      function topKey(counts) {
+        var top = null, topN = 0;
+        Object.keys(counts).forEach(function(k) {
+          if (counts[k] > topN) { topN = counts[k]; top = k; }
+        });
+        return top;
+      }
+      var topMood = topKey(moodCounts);
+      var topSubj = topKey(subjCounts);
+
+      // Achievements unlocked this week
+      var ach = state.achievements || {};
+      var weeklyAchievements = ACHIEVEMENT_CATALOG.filter(function(a) {
+        if (!ach[a.id]) return false;
+        return new Date(ach[a.id].unlockedAt).getTime() >= weekAgo;
+      });
+
+      // Companion reflection — woven from facts available
+      var companion = state.companion;
+      var sp = companion && companion.species ? getCompanionSpecies(companion.species) : null;
+      var compName = (companion && companion.name) || (sp ? sp.label : 'Your buddy');
+      var reflectionLines = [];
+      if (daysActiveCount === 7) reflectionLines.push('You showed up every day this week — quietly proud.');
+      else if (daysActiveCount >= 4) reflectionLines.push('You showed up ' + daysActiveCount + ' days this week.');
+      else if (daysActiveCount >= 1) reflectionLines.push('You showed up ' + daysActiveCount + ' day' + (daysActiveCount === 1 ? '' : 's') + ' this week — that counts.');
+      else reflectionLines.push('A quiet week. Tomorrow is a fresh start.');
+      if (pomThisWeek > 0) reflectionLines.push('Focused ' + pomThisWeek + ' time' + (pomThisWeek === 1 ? '' : 's') + '.');
+      if (quizThisWeek > 0) reflectionLines.push('Passed ' + quizThisWeek + ' memory quiz' + (quizThisWeek === 1 ? '' : 'zes') + '.');
+      if (walksThisWeek > 0) reflectionLines.push('Walked ' + walksThisWeek + ' stor' + (walksThisWeek === 1 ? 'y' : 'ies') + '.');
+      if (newDecsThisWeek.length > 0) reflectionLines.push('Added ' + newDecsThisWeek.length + ' new decoration' + (newDecsThisWeek.length === 1 ? '' : 's') + ' to the room.');
+      if (topMood) {
+        var mo = getMoodOption(topMood);
+        if (mo) reflectionLines.push('Mood that showed up most: ' + mo.emoji + ' ' + mo.label + '.');
+      }
+      if (topSubj) {
+        for (var si = 0; si < SUBJECT_TAGS.length; si++) {
+          if (SUBJECT_TAGS[si].id === topSubj) {
+            reflectionLines.push('Subject that came up most: ' + SUBJECT_TAGS[si].emoji + ' ' + SUBJECT_TAGS[si].label + '.');
+            break;
+          }
+        }
+      }
+      if (weeklyAchievements.length > 0) {
+        reflectionLines.push(weeklyAchievements.length + ' achievement' + (weeklyAchievements.length === 1 ? '' : 's') + ' unlocked: '
+          + weeklyAchievements.map(function(a) { return a.label; }).join(', ') + '.');
+      }
+      var reflectionText = reflectionLines.join(' ');
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Weekly summary',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '560px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '🗓️ Last 7 days'),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close weekly summary',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          // Stats grid
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', marginBottom: '16px' } },
+            [
+              { label: 'Days active', value: daysActiveCount, max: 7 },
+              { label: 'Tokens earned', value: tokensThisWeek },
+              { label: 'Pomodoros', value: pomThisWeek },
+              { label: 'Reflections', value: reflThisWeek },
+              { label: 'Quizzes passed', value: quizThisWeek },
+              { label: 'Story walks', value: walksThisWeek },
+              { label: 'New decorations', value: newDecsThisWeek.length },
+              { label: 'Achievements', value: weeklyAchievements.length }
+            ].map(function(s, i) {
+              return h('div', {
+                key: 'ws-' + i,
+                style: { padding: '10px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', textAlign: 'center' }
+              },
+                h('div', { style: { fontSize: '20px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums', lineHeight: '1.0' } },
+                  s.value + (typeof s.max !== 'undefined' ? '/' + s.max : '')),
+                h('div', { style: { fontSize: '10px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '4px' } }, s.label)
+              );
+            })
+          ),
+          // Companion reflection
+          companion && companion.species ? h('div', {
+            role: 'region',
+            'aria-label': 'Companion reflection on the week',
+            style: { display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px 14px', background: palette.surface, border: '1.5px solid ' + palette.accent, borderRadius: '10px', marginBottom: '14px' }
+          },
+            h('div', { style: { width: '50px', height: '50px', flexShrink: 0 } },
+              getCompanionSvg(companion.species, getCompanionPalette(companion.species, companion.colorVariant), { blinking: false })
+            ),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } },
+                compName + ' reflects:'),
+              h('p', { style: { fontSize: '13px', color: palette.text, lineHeight: '1.55', margin: 0, fontStyle: 'italic' } },
+                '"' + reflectionText + '"')
+            )
+          ) : null,
+          // Quick "new goal" CTA when no active goals exist
+          (function() {
+            var activeCount = (state.goals || []).filter(function(g) {
+              if (g.completedAt) return false;
+              var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+              return endMs >= nowMs;
+            }).length;
+            if (activeCount > 0) return null;
+            return h('div', {
+              style: { padding: '10px 12px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '8px', textAlign: 'center' }
+            },
+              h('p', { style: { fontSize: '12px', color: palette.textDim, margin: '0 0 8px 0', lineHeight: '1.5' } },
+                'Want to set a goal for next week?'),
+              h('button', {
+                onClick: function() {
+                  setStateField('activeModal', null);
+                  setTimeout(createGoal, 80);
+                },
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
+              }, '🎯 Set a goal')
+            );
+          })()
+        )
+      );
+    }
+
+    // Review queue summary (Phase 2p.9) — fires after the last deck
+    // in the queue completes. Shows per-deck score breakdown + total
+    // cards correct / overall pct + companion congratulation bubble.
+    function renderReviewQueueSummaryModal() {
+      if (state.activeModal !== 'review-queue-summary') return null;
+      var ctx = state.generateContext || {};
+      var q = ctx.reviewQueue;
+      if (!q || !q.results) {
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      var totalDecks = q.results.length;
+      var avgPct = totalDecks > 0
+        ? Math.round(q.results.reduce(function(s, r) { return s + (r.scorePct || 0); }, 0) / totalDecks)
+        : 0;
+      var passedDecks = q.results.filter(function(r) { return (r.scorePct || 0) >= 80; }).length;
+      var emoji = avgPct >= 90 ? '🌟' : avgPct >= 80 ? '✨' : avgPct >= 50 ? '🌱' : '💪';
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Review queue summary',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateMulti({ activeModal: null, generateContext: null });
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '2px solid ' + palette.accent,
+            borderRadius: '14px', padding: '28px',
+            maxWidth: '500px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            textAlign: 'center'
+          }
+        },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: '56px', marginBottom: '8px' } }, emoji),
+          h('h3', { style: { margin: '0 0 14px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
+            'Review queue complete'),
+          h('div', {
+            style: { fontSize: '40px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums', lineHeight: '1.0' }
+          }, avgPct + '%'),
+          h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px', marginBottom: '20px' } },
+            'Average across ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's') + ' · ' + passedDecks + ' passed'),
+          // Per-deck breakdown
+          h('div', { style: { textAlign: 'left', marginBottom: '20px', padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' } },
+            q.results.map(function(r, i) {
+              var dec = state.decorations.filter(function(d) { return d.id === r.decorationId; })[0];
+              var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed)';
+              var pct = r.scorePct || 0;
+              var color = pct >= 80 ? (palette.success || palette.accent)
+                        : pct >= 50 ? palette.accent
+                        : (palette.warn || palette.textMute);
+              return h('div', {
+                key: 'qr-' + i,
+                style: {
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '6px 0',
+                  borderBottom: i < q.results.length - 1 ? '1px solid ' + palette.border : 'none'
+                }
+              },
+                h('div', null,
+                  dec && dec.imageBase64 ? h('img', {
+                    src: dec.imageBase64, alt: '', 'aria-hidden': 'true',
+                    style: { width: '24px', height: '24px', verticalAlign: 'middle', marginRight: '8px', borderRadius: '4px' }
+                  }) : null,
+                  h('span', { style: { fontSize: '13px', color: palette.text } }, dLabel)
+                ),
+                h('span', { style: { fontSize: '13px', fontWeight: 700, color: color, fontVariantNumeric: 'tabular-nums' } },
+                  pct + '%')
+              );
+            })
+          ),
+          h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '18px', lineHeight: '1.5', fontStyle: 'italic' } },
+            avgPct >= 80
+              ? 'Strong session. Memory shapes itself this way.'
+              : avgPct >= 50
+              ? 'Solid effort. The decks that wobbled will surface again later.'
+              : 'A start. Real retrieval reps add up — coming back is what matters.'),
+          h('button', {
+            onClick: function() { setStateMulti({ activeModal: null, generateContext: null }); },
+            style: Object.assign({}, primaryBtnStyle(palette), { padding: '10px 28px' })
+          }, '✓ Done')
+        )
+      );
+    }
+
     function renderClinicalReviewModal() {
       if (state.activeModal !== 'clinical-review') return null;
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
@@ -9235,6 +12453,85 @@
             ' · ', state.tokens, ' token' + (state.tokens === 1 ? '' : 's') + ' unspent',
             ' · ', (state.journalEntries || []).length + ' reflection' + ((state.journalEntries || []).length === 1 ? '' : 's')
           ),
+          // Companion + Skills (Phase 2p)
+          (function() {
+            var companion = state.companion;
+            if (!companion || !companion.species) return null;
+            var sp = getCompanionSpecies(companion.species);
+            var swatch = getCompanionPalette(companion.species, companion.colorVariant || 'warm');
+            var daysAgo = companion.createdAt
+              ? Math.floor((Date.now() - new Date(companion.createdAt).getTime()) / (24 * 60 * 60 * 1000))
+              : 0;
+            var skills = SKILL_DEFS.map(function(def) {
+              var c = countSkillEvents(state, def.id);
+              return { def: def, prog: computeSkillLevel(c), count: c };
+            });
+            var hasSkillData = skills.some(function(s) { return s.count > 0; });
+            return h('div', { style: sectionStyle },
+              h('h2', { style: sectionTitleStyle }, '🌿 Companion + Skills'),
+              h('div', { style: { padding: '14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' } },
+                h('div', { style: { display: 'flex', gap: '14px', alignItems: 'center', marginBottom: hasSkillData ? '12px' : 0 } },
+                  h('div', { style: { width: '64px', height: '64px', flexShrink: 0, padding: '4px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '10px' } },
+                    getCompanionSvg(companion.species, swatch, { blinking: false })
+                  ),
+                  h('div', null,
+                    h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text } },
+                      (companion.name || sp.label) + ' · ' + sp.label),
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+                      daysAgo === 0 ? 'Joined today' : daysAgo === 1 ? 'Joined yesterday' : 'Joined ' + daysAgo + ' days ago')
+                  )
+                ),
+                hasSkillData ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px 14px' } },
+                  skills.map(function(s) {
+                    return h('div', { key: 'cs-' + s.def.id, style: { fontSize: '11px', color: palette.textDim } },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '3px' } },
+                        h('span', { style: { fontWeight: 700, color: palette.text } }, s.def.emoji + ' ' + s.def.label),
+                        h('span', { style: { fontSize: '10px' } }, 'L' + s.prog.level + (s.prog.atMax ? ' max' : ''))
+                      ),
+                      h('div', { style: { height: '4px', background: palette.bg, borderRadius: '2px', overflow: 'hidden' } },
+                        h('div', { style: { width: s.prog.pct + '%', height: '100%', background: palette.accent } })
+                      )
+                    );
+                  })
+                ) : null
+              )
+            );
+          })(),
+          // Recent achievements (Phase 2p.5) — same spirit as the print
+          // packet section, palette-aware for on-screen review
+          (function() {
+            var ach = state.achievements || {};
+            var nowMs = Date.now();
+            var thirty = 30 * 24 * 60 * 60 * 1000;
+            var recent = ACHIEVEMENT_CATALOG.filter(function(a) {
+              if (!ach[a.id]) return false;
+              var t = new Date(ach[a.id].unlockedAt).getTime();
+              return (nowMs - t) <= thirty;
+            });
+            recent.sort(function(a, b) {
+              return (ach[b.id].unlockedAt || '').localeCompare(ach[a.id].unlockedAt || '');
+            });
+            if (recent.length === 0) return null;
+            var totalUnlocked = Object.keys(ach).length;
+            return h('div', { style: sectionStyle },
+              h('h2', { style: sectionTitleStyle }, '🏆 Recent Achievements · ' + recent.length + ' in last 30 days · ' + totalUnlocked + '/' + ACHIEVEMENT_CATALOG.length + ' total'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' } },
+                recent.map(function(a) {
+                  return h('div', {
+                    key: 'cra-' + a.id,
+                    style: { padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderLeft: '3px solid ' + palette.accent, borderRadius: '6px' }
+                  },
+                    h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+                      a.emoji + ' ' + a.label),
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45', marginBottom: '4px' } },
+                      a.desc),
+                    h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } },
+                      new Date(ach[a.id].unlockedAt).toLocaleDateString())
+                  );
+                })
+              )
+            );
+          })(),
           // Goals (Phase 2n)
           (function() {
             var goals = state.goals || [];
@@ -9475,6 +12772,82 @@
           ' · ', state.tokens, ' tokens earned and unspent',
           ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies')
         ),
+        // 90-day activity heatmap (Phase 2p.8) — paper-friendly grid
+        // showing engagement consistency for IEP / parent review.
+        (function() {
+          var earnings = state.earnings || [];
+          var decorations = state.decorations || [];
+          var journals = state.journalEntries || [];
+          if (earnings.length === 0 && journals.length === 0 && decorations.length === 0) return null;
+          var DAYS = 91;
+          var msPerDay = 24 * 60 * 60 * 1000;
+          var nowToday = new Date(); nowToday.setHours(0, 0, 0, 0);
+          var nowMs = nowToday.getTime();
+          var dowToday = nowToday.getDay();
+          var endDay = new Date(nowMs + (6 - dowToday) * msPerDay);
+          var startMs = endDay.getTime() - (DAYS - 1) * msPerDay;
+          var perDay = {};
+          function dayKey(d) {
+            var dk = new Date(d); dk.setHours(0, 0, 0, 0);
+            return dk.toISOString().slice(0, 10);
+          }
+          earnings.forEach(function(e) {
+            if (!e.date) return;
+            var t = new Date(e.date).getTime();
+            if (t < startMs || t > endDay.getTime()) return;
+            var k = dayKey(t);
+            if (!perDay[k]) perDay[k] = 0;
+            perDay[k] += (e.tokens || 0);
+          });
+          decorations.forEach(function(d) {
+            if (d.isStarter || !d.earnedAt) return;
+            var t = new Date(d.earnedAt).getTime();
+            if (t < startMs || t > endDay.getTime()) return;
+            var k = dayKey(t); perDay[k] = (perDay[k] || 0) + 2;
+          });
+          var maxV = 1;
+          Object.keys(perDay).forEach(function(k) { if (perDay[k] > maxV) maxV = perDay[k]; });
+          var rows = [];
+          for (var dow = 0; dow < 7; dow++) {
+            var cells = [];
+            for (var col = 0; col < 13; col++) {
+              var dayMs = startMs + (col * 7 + dow) * msPerDay;
+              var iso = new Date(dayMs).toISOString().slice(0, 10);
+              var v = perDay[iso] || 0;
+              var isFuture = dayMs > nowMs;
+              var fill;
+              if (isFuture) fill = '#fff';
+              else if (v === 0) fill = '#e9e9e9';
+              else {
+                var intensity = Math.min(1, v / maxV);
+                if (intensity < 0.25) fill = '#cfd8dc';
+                else if (intensity < 0.5) fill = '#90a4ae';
+                else if (intensity < 0.75) fill = '#546e7a';
+                else fill = '#263238';
+              }
+              cells.push(h('div', {
+                key: 'phm-' + dow + '-' + col,
+                style: {
+                  width: '10px', height: '10px',
+                  background: fill,
+                  border: '1px solid #999',
+                  borderRadius: '2px',
+                  display: 'inline-block',
+                  marginRight: '2px'
+                }
+              }));
+            }
+            rows.push(h('div', { key: 'phm-row-' + dow, style: { display: 'flex', marginBottom: '2px' } }, cells));
+          }
+          var activeDays = Object.keys(perDay).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '11px', color: '#000' } },
+              '📅 Activity heatmap · last 90 days · ' + activeDays + ' active day' + (activeDays === 1 ? '' : 's')),
+            h('div', null, rows),
+            h('div', { style: { fontSize: '9px', color: '#666', marginTop: '4px', fontStyle: 'italic' } },
+              'Each square = one day. Darker = more activity. Empty days are neutral, not negative.')
+          );
+        })(),
         // Mood distribution (Phase 2m) — affective-domain insight for
         // parents/clinicians: which moods does the student tag their
         // earnings with most? Shows only when ≥1 decoration has a mood.
@@ -9496,6 +12869,108 @@
                   key: 'pmd-' + m.id,
                   style: { fontSize: '11px', color: '#222' }
                 }, m.emoji + ' ' + m.label + ': ' + n);
+              })
+            )
+          );
+        })(),
+        // Subject distribution (Phase 2p.6) — academic-domain coverage
+        // for IEP review. Shows only when ≥1 decoration has a subject.
+        (function() {
+          var subjCounts = {};
+          state.decorations.forEach(function(d) {
+            (d.subjects || []).forEach(function(sid) {
+              subjCounts[sid] = (subjCounts[sid] || 0) + 1;
+            });
+          });
+          var subjTagged = Object.keys(subjCounts).length;
+          if (subjTagged === 0) return null;
+          var totalTaggedDecs = state.decorations.filter(function(d) {
+            return Array.isArray(d.subjects) && d.subjects.length > 0;
+          }).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px', color: '#222' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px' } },
+              '📚 Subject coverage · ' + totalTaggedDecs + ' tagged decoration' + (totalTaggedDecs === 1 ? '' : 's')),
+            h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap' } },
+              SUBJECT_TAGS.map(function(s) {
+                var n = subjCounts[s.id] || 0;
+                if (n === 0) return null;
+                return h('span', {
+                  key: 'psd-' + s.id,
+                  style: { fontSize: '11px', color: '#222' }
+                }, s.emoji + ' ' + s.label + ': ' + n);
+              })
+            )
+          );
+        })(),
+        // Companion + Skills (Phase 2p)
+        (function() {
+          var companion = state.companion;
+          if (!companion || !companion.species) return null;
+          var sp = getCompanionSpecies(companion.species);
+          var swatch = getCompanionPalette(companion.species, companion.colorVariant || 'warm');
+          var daysAgo = companion.createdAt
+            ? Math.floor((Date.now() - new Date(companion.createdAt).getTime()) / (24 * 60 * 60 * 1000))
+            : 0;
+          var skills = SKILL_DEFS.map(function(def) {
+            var c = countSkillEvents(state, def.id);
+            return { def: def, prog: computeSkillLevel(c), count: c };
+          });
+          var hasSkillData = skills.some(function(s) { return s.count > 0; });
+          return h('div', { style: { marginBottom: '20px', padding: '12px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', color: '#222' } },
+            h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: hasSkillData ? '10px' : 0 } },
+              h('div', { style: { width: '50px', height: '50px', flexShrink: 0 } },
+                getCompanionSvg(companion.species, swatch, { blinking: false })
+              ),
+              h('div', null,
+                h('div', { style: { fontWeight: 700, fontSize: '12px', color: '#000' } },
+                  '🌿 ' + (companion.name || sp.label) + ' · ' + sp.label),
+                h('div', { style: { fontSize: '10px', color: '#444' } },
+                  daysAgo === 0 ? 'Joined today' : daysAgo === 1 ? 'Joined yesterday' : 'Joined ' + daysAgo + ' days ago')
+              )
+            ),
+            hasSkillData ? h('div', null,
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#000', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Skill levels'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 14px' } },
+                skills.map(function(s) {
+                  return h('div', { key: 'pps-' + s.def.id, style: { fontSize: '10px', color: '#222' } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '2px' } },
+                      h('span', { style: { fontWeight: 700 } }, s.def.label),
+                      h('span', null, 'L' + s.prog.level + (s.prog.atMax ? ' max' : ' · ' + s.prog.current + '/' + s.prog.nextThreshold))
+                    ),
+                    h('div', { style: { height: '3px', background: '#ddd', border: '1px solid #999', borderRadius: '2px', overflow: 'hidden' } },
+                      h('div', { style: { width: s.prog.pct + '%', height: '100%', background: '#888' } })
+                    )
+                  );
+                })
+              )
+            ) : null
+          );
+        })(),
+        // Recent achievements (Phase 2p.5) — last 30 days, newest first
+        (function() {
+          var ach = state.achievements || {};
+          var nowMs = Date.now();
+          var thirty = 30 * 24 * 60 * 60 * 1000;
+          var recent = ACHIEVEMENT_CATALOG.filter(function(a) {
+            if (!ach[a.id]) return false;
+            var t = new Date(ach[a.id].unlockedAt).getTime();
+            return (nowMs - t) <= thirty;
+          });
+          recent.sort(function(a, b) {
+            return (ach[b.id].unlockedAt || '').localeCompare(ach[a.id].unlockedAt || '');
+          });
+          if (recent.length === 0) return null;
+          var totalUnlocked = Object.keys(ach).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', color: '#222' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '12px', color: '#000' } },
+              '🏆 Recent achievements · ' + recent.length + ' in last 30 days · ' + totalUnlocked + '/' + ACHIEVEMENT_CATALOG.length + ' total'),
+            h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+              recent.map(function(a) {
+                return h('li', { key: 'pa-' + a.id, style: { fontSize: '11px', color: '#222', marginBottom: '3px' } },
+                  a.emoji + ' ' + a.label,
+                  h('span', { style: { color: '#666', fontStyle: 'italic', marginLeft: '6px' } },
+                    '· ' + new Date(ach[a.id].unlockedAt).toLocaleDateString())
+                );
               })
             )
           );
@@ -9630,6 +13105,11 @@
       renderStoryWalkModal(),
       renderGoalsListModal(),
       renderGoalBuilderModal(),
+      renderAchievementsModal(),
+      renderCompanionSetupModal(),
+      renderTourModal(),
+      renderReviewQueueSummaryModal(),
+      renderWeeklySummaryModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderInsightsModal(),
