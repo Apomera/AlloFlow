@@ -5720,7 +5720,7 @@
           color: palette.text, textAlign: 'center'
         }
       },
-        h('div', { style: { fontSize: '48px', marginBottom: '10px' } }, current.emoji),
+        h('div', { 'aria-hidden': 'true', style: { fontSize: '48px', marginBottom: '10px' } }, current.emoji),
         h('h3', { style: { margin: '0 0 12px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
           current.title),
         h('p', { style: { margin: '0 0 20px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
@@ -6352,6 +6352,42 @@
       if (!Array.isArray(merged.stories))        merged.stories        = [];
       if (!Array.isArray(merged.goals))          merged.goals          = [];
       if (!merged.achievements || typeof merged.achievements !== 'object') merged.achievements = {};
+      // Phase 2p.7 defensive normalization: backfill new fields onto
+      // older saved state so post-update loads don\'t crash on undefined
+      // access. These hits run once per session.
+      merged.decorations = merged.decorations.map(function(d) {
+        if (!d) return d;
+        var patched = Object.assign({}, d);
+        if (!Array.isArray(patched.subjects)) patched.subjects = [];  // Phase 2p.6
+        if (typeof patched.mood === 'undefined') patched.mood = null; // Phase 2m
+        return patched;
+      });
+      // Companion: ensure skillCelebrations object + createdAt sane
+      if (merged.companion && typeof merged.companion === 'object') {
+        merged.companion = Object.assign({
+          skillCelebrations: { focus: 0, memory: 0, reflection: 0, storytelling: 0 },
+          lastBubbleAt: null,
+          lastBubbleText: null,
+          lastQuizPromptDeckId: null,
+          lastQuizPromptDismissedAt: null
+        }, merged.companion);
+        // Normalize skillCelebrations even if present-but-incomplete
+        merged.companion.skillCelebrations = Object.assign(
+          { focus: 0, memory: 0, reflection: 0, storytelling: 0 },
+          merged.companion.skillCelebrations || {}
+        );
+        // Repair createdAt if missing/invalid (treat as just-created)
+        if (!merged.companion.createdAt
+            || isNaN(new Date(merged.companion.createdAt).getTime())) {
+          merged.companion.createdAt = new Date().toISOString();
+        }
+      }
+      // Phase 2p.6 tour
+      if (typeof merged.tourSeen !== 'boolean') merged.tourSeen = false;
+      // Phase 2p.3 room mode
+      if (merged.roomMode !== 'live' && merged.roomMode !== 'build') {
+        merged.roomMode = 'build';
+      }
       return merged;
     });
     var state = stateTuple[0];
@@ -6562,17 +6598,30 @@
       addToast('🎉 Daily trifecta! +' + bonus + ' bonus tokens', 'success');
     }
 
-    // ── Esc to close ──
+    // ── Esc to close (Phase 2p.7 quality pass — WCAG 2.1.1 keyboard) ──
+    // Universal Escape handler: closes the active modal if one is open,
+    // otherwise closes AlloHaven itself. Active Pomodoro takes precedence
+    // — Esc during a focus session is too easy to hit accidentally; users
+    // must explicitly use the Cancel button.
     useEffect(function() {
       if (!props.isOpen) return;
       var handler = function(e) {
-        if (e.key === 'Escape' && !state.activeModal && !(!state.onboardingSeen)) {
-          if (props.onClose) props.onClose();
+        if (e.key !== 'Escape') return;
+        // Ignore Esc during active Pomodoro (accidental cancel guard)
+        if (state.pomodoroState && state.pomodoroState.active) return;
+        // Ignore until welcome card dismissed
+        if (!state.onboardingSeen) return;
+        if (state.activeModal) {
+          // Close the active modal. Some modals (memory/story-walk/goal-
+          // builder/etc.) clear generateContext too; do it universally.
+          setStateMulti({ activeModal: null, generateContext: null });
+          return;
         }
+        if (props.onClose) props.onClose();
       };
       window.addEventListener('keydown', handler);
       return function() { window.removeEventListener('keydown', handler); };
-    }, [props.isOpen, state.activeModal, state.onboardingSeen]);
+    }, [props.isOpen, state.activeModal, state.onboardingSeen, state.pomodoroState.active]);
 
     // ── Pomodoro tick interval (250ms) ──
     // Only runs while the timer is active. Re-renders the mm:ss display.
@@ -9837,20 +9886,45 @@
             style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
           }, 'Each decoration in your room can hold study aids — flashcards, acronyms, or notes. The room itself is a method-of-loci anchor: where you place a deck shapes how you remember it.'),
 
-          // Empty-state
-          totalDecks === 0 ? h('div', {
-            style: {
-              padding: '32px 20px',
-              background: palette.surface,
-              border: '1px dashed ' + palette.border,
-              borderRadius: '10px',
-              textAlign: 'center'
+          // Empty-state — distinguish "no content yet" vs "filter narrowed to zero"
+          totalDecks === 0 ? (function() {
+            var allCount = allWithContent.length;
+            var filteredOut = activeFilter && allCount > 0;
+            if (filteredOut) {
+              var filterLabel = (function() {
+                for (var fi = 0; fi < SUBJECT_TAGS.length; fi++) {
+                  if (SUBJECT_TAGS[fi].id === activeFilter) return SUBJECT_TAGS[fi].label;
+                }
+                return activeFilter;
+              })();
+              return h('div', {
+                role: 'status', 'aria-live': 'polite',
+                style: { padding: '24px 20px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center' }
+              },
+                h('div', { 'aria-hidden': 'true', style: { fontSize: '32px', marginBottom: '8px' } }, '🔍'),
+                h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: '0 0 10px 0' } },
+                  'No decks tagged "' + filterLabel + '" yet. Tag a deck via its memory modal, or:'),
+                h('button', {
+                  onClick: function() { setSubjectFilter(activeFilter); },
+                  'aria-label': 'Clear subject filter',
+                  style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
+                }, 'Show all decks')
+              );
             }
-          },
-            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '📖'),
-            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
-              'No memory content yet. Click any decoration in your room to attach flashcards, an acronym, or notes — your decorations become the anchors for what you\'re learning.')
-          ) : null,
+            return h('div', {
+              style: {
+                padding: '32px 20px',
+                background: palette.surface,
+                border: '1px dashed ' + palette.border,
+                borderRadius: '10px',
+                textAlign: 'center'
+              }
+            },
+              h('div', { 'aria-hidden': 'true', style: { fontSize: '40px', marginBottom: '10px' } }, '📖'),
+              h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+                'No memory content yet. Click any decoration in your room to attach flashcards, an acronym, or notes — your decorations become the anchors for what you\'re learning.')
+            );
+          })() : null,
 
           // Stats row (only when there's content)
           (totalDecks > 0 || allStories.length > 0) ? h('div', {
@@ -10737,22 +10811,28 @@
             padding: '10px 12px',
             background: isUnlocked ? palette.surface : palette.bg,
             border: '1px solid ' + (isUnlocked ? palette.accent : palette.border),
-            borderRadius: '8px',
-            opacity: isUnlocked ? 1 : 0.55
+            borderRadius: '8px'
+            // Phase 2p.7: removed `opacity: 0.55` on locked rows — the
+            // emoji greyscale is enough visual signal, and the opacity
+            // pushed text contrast below WCAG AA. Text colors below now
+            // use full-strength textMute / text for AA compliance.
           }
         },
           h('div', {
             'aria-hidden': 'true',
             style: {
               fontSize: '24px', flexShrink: 0,
-              filter: isUnlocked ? 'none' : 'grayscale(0.85) blur(0.5px)'
+              filter: isUnlocked ? 'none' : 'grayscale(0.85)',
+              opacity: isUnlocked ? 1 : 0.6
             }
           }, ach.emoji),
           h('div', { style: { flex: 1, minWidth: 0 } },
             h('div', {
               style: {
                 fontSize: '13px', fontWeight: 700,
-                color: isUnlocked ? palette.text : palette.textMute,
+                // Locked state uses text (full strength) not textMute —
+                // textMute on bg is ~3:1 in some themes which fails AA.
+                color: palette.text,
                 marginBottom: '2px'
               }
             }, ach.label),
@@ -10761,7 +10841,7 @@
             }, ach.desc)
           ),
           stamp ? h('div', {
-            style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', flexShrink: 0 }
+            style: { fontSize: '10px', color: palette.textDim, fontStyle: 'italic', flexShrink: 0 }
           }, stamp) : null
         );
       }
