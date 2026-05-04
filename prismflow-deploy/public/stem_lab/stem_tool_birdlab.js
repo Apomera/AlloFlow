@@ -4714,25 +4714,174 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 );   // close return h('div') overflow-hidden card
               })()
             ),
-            view === 'hotspots' && h('div', { className: 'space-y-3' },
-              h('p', { className: 'text-sm text-slate-700 italic' },
-                'Maine has dozens of birding hotspots; these are the most accessible + species-rich. Most are free to visit. Maine Audubon (maineaudubon.org) maintains the official Maine Birding Trail with detailed driving directions.'),
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-                MAINE_BIRDING_HOTSPOTS.map(function(spot) {
-                  return h('div', { key: spot.name, className: 'bg-white border-2 border-stone-300 rounded-xl shadow p-4' },
-                    h('div', { className: 'flex items-baseline justify-between gap-2 flex-wrap mb-1' },
-                      h('h3', { className: 'text-base font-black text-slate-800' }, spot.name),
-                      h('span', { className: 'text-xs font-mono text-stone-700' }, '📍 ' + spot.area)
+            view === 'hotspots' && (function() {
+              // Approximate map coords for each hotspot in a 200x300 Maine viewBox.
+              // Lat/lng → SVG: x = (lng + 71.08) / 4.13 * 200, y = (47.46 - lat) / 4.49 * 300
+              var mapPins = {
+                'Scarborough Marsh':            { x: 36, y: 261, region: 'south' },
+                'Eastern Egg Rock':             { x: 82, y: 240, region: 'midcoast' },
+                'Acadia National Park':         { x: 136, y: 208, region: 'mdi' },
+                'Monhegan Island':              { x: 85, y: 246, region: 'midcoast' },
+                'Bradbury Mountain Hawkwatch':  { x: 43, y: 237, region: 'south' },
+                'Petit Manan NWR':              { x: 153, y: 204, region: 'downeast' },
+                'Sebasticook Lake':             { x: 86, y: 174, region: 'central' },
+                'Baxter State Park':            { x: 105, y: 91,  region: 'north' },
+                'Moosehorn NWR':                { x: 180, y: 156, region: 'downeast' },
+                'Wells Reserve at Laudholm':    { x: 26, y: 275, region: 'south' },
+                'Project Puffin Visitor Center':{ x: 95, y: 225, region: 'midcoast' },
+                'Capisic Pond Park':            { x: 38, y: 253, region: 'south' }
+              };
+              return h('div', { className: 'space-y-3' },
+                h('p', { className: 'text-sm text-slate-700 italic' },
+                  'Maine has dozens of birding hotspots; these are the most accessible + species-rich. Most are free to visit. Maine Audubon (maineaudubon.org) maintains the official Maine Birding Trail with detailed driving directions.'),
+                // ── Maine map with pinned hotspots ──
+                h('div', { className: 'bg-gradient-to-br from-sky-50 via-emerald-50 to-amber-50 rounded-2xl border-2 border-stone-300 shadow p-4' },
+                  h('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-2' },
+                    h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-stone-700' }, '🗺 Maine birding hotspots map'),
+                    h('span', { className: 'text-[10px] text-stone-700 italic' }, '12 spots · Tap a pin or card to learn more')
+                  ),
+                  h('svg', { viewBox: '0 0 200 320', width: '100%', preserveAspectRatio: 'xMidYMid meet',
+                    style: { display: 'block', maxHeight: 460, margin: '0 auto', maxWidth: 320 },
+                    role: 'img', 'aria-label': 'Map of Maine with 12 birding hotspots pinned by region.'
+                  },
+                    h('defs', null,
+                      h('linearGradient', { id: 'maineLand', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                        h('stop', { offset: '0%', stopColor: '#d1fae5' }),
+                        h('stop', { offset: '60%', stopColor: '#bbf7d0' }),
+                        h('stop', { offset: '100%', stopColor: '#fde68a' })
+                      ),
+                      h('radialGradient', { id: 'pinGlow' },
+                        h('stop', { offset: '0%', stopColor: '#fbbf24', stopOpacity: '0.6' }),
+                        h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: '0' })
+                      )
                     ),
-                    h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, spot.highlight)
-                  );
-                })
-              ),
-              h('div', { className: 'p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-sm text-slate-800' },
-                h('strong', { className: 'text-blue-900' }, '🔗 Plan a trip: '),
-                'Visit ', h('span', { className: 'font-mono' }, 'maineaudubon.org'),
-                ' for the official Maine Birding Trail with directions, accessibility info, parking, and seasonal notes. Most hotspots have free Maine Audubon-led walks during peak migration.')
-            ),
+                    // Ocean / Atlantic
+                    h('rect', { x: 0, y: 0, width: 200, height: 320, fill: '#bfdbfe', opacity: 0.5 }),
+                    // Wave hint
+                    [{y: 290}, {y: 305}].map(function(w, i) {
+                      return h('path', { key: 'wv' + i,
+                        d: 'M 0 ' + w.y + ' Q 25 ' + (w.y - 2) + ' 50 ' + w.y + ' T 100 ' + w.y + ' T 150 ' + w.y + ' T 200 ' + w.y,
+                        fill: 'none', stroke: '#0ea5e9', strokeWidth: 0.6, opacity: 0.5 });
+                    }),
+                    // Maine outline (simplified, recognizable)
+                    h('path', {
+                      d: 'M 16 285 ' +
+                         'Q 12 250 18 200 ' +                  // SW border
+                         'L 22 130 ' +                          // up west
+                         'L 28 80 ' +                           // northwest
+                         'Q 32 55 50 42 ' +                     // top corner
+                         'L 80 30 ' +                           // top middle
+                         'L 110 18 ' +                          // top spike (Madawaska)
+                         'L 130 22 ' +                          // top east
+                         'Q 152 30 162 50 ' +                   // NE corner
+                         'L 170 75 ' +                          // NB border
+                         'L 165 100 ' +                         // notches
+                         'L 168 130 ' +                         // mid east
+                         'Q 185 145 192 175 ' +                 // east lobe
+                         'L 188 210 ' +                         // Down East
+                         'L 178 230 ' +                         // Bay
+                         'L 160 245 ' +                         // Lubec / Cobscook
+                         'Q 130 252 105 250 ' +                 // MDI to Penobscot
+                         'Q 80 252 65 262 ' +                   // Penobscot Bay
+                         'L 50 270 ' +                          // Casco
+                         'L 30 280 ' +                          // Saco
+                         'L 16 285 Z',
+                      fill: 'url(#maineLand)',
+                      stroke: '#78350f', strokeWidth: 1.5, strokeLinejoin: 'round'
+                    }),
+                    // Major rivers (decorative — Penobscot + Kennebec + Saco hint)
+                    h('path', { d: 'M 105 30 Q 100 80 95 130 Q 88 175 80 220 Q 72 245 65 262',
+                      fill: 'none', stroke: '#0ea5e9', strokeWidth: 0.8, opacity: 0.55 }),
+                    h('path', { d: 'M 78 30 Q 70 80 60 130 Q 52 180 48 230 Q 40 260 30 280',
+                      fill: 'none', stroke: '#0ea5e9', strokeWidth: 0.6, opacity: 0.4 }),
+                    // Forest texture (small tree triangles in north + west)
+                    [{x:60,y:65},{x:90,y:55},{x:120,y:60},{x:50,y:110},{x:90,y:100},{x:130,y:115},{x:65,y:155},{x:105,y:165},{x:140,y:170},{x:155,y:130}].map(function(t, i) {
+                      return h('path', { key: 'tr' + i,
+                        d: 'M ' + t.x + ' ' + t.y + ' L ' + (t.x - 3) + ' ' + (t.y + 6) + ' L ' + (t.x + 3) + ' ' + (t.y + 6) + ' Z',
+                        fill: '#15803d', opacity: 0.45 });
+                    }),
+                    // Region labels (very faint)
+                    h('text', { x: 82, y: 65, fontSize: 8, fill: '#15803d', fontWeight: 700, opacity: 0.55, textAnchor: 'middle', style: { fontStyle: 'italic' } }, 'NORTH WOODS'),
+                    h('text', { x: 165, y: 195, fontSize: 7, fill: '#92400e', fontWeight: 700, opacity: 0.65, textAnchor: 'middle', style: { fontStyle: 'italic' } }, 'DOWN EAST'),
+                    h('text', { x: 50, y: 230, fontSize: 7, fill: '#1e40af', fontWeight: 700, opacity: 0.55, transform: 'rotate(-12 50 230)', textAnchor: 'middle', style: { fontStyle: 'italic' } }, 'MID-COAST'),
+                    // Gulf of Maine label
+                    h('text', { x: 100, y: 308, fontSize: 9, fill: '#0c4a6e', fontWeight: 700, opacity: 0.7, textAnchor: 'middle', style: { fontStyle: 'italic', letterSpacing: '0.08em' } }, 'GULF OF MAINE'),
+                    // North arrow (top-left of map)
+                    h('g', { transform: 'translate(15, 18)' },
+                      h('circle', { cx: 0, cy: 0, r: 8, fill: '#ffffff', stroke: '#1e293b', strokeWidth: 0.8, opacity: 0.85 }),
+                      h('path', { d: 'M 0 -6 L 1.5 0 L 0 6 L -1.5 0 Z', fill: '#dc2626' }),
+                      h('text', { x: 0, y: -10, fontSize: 6, textAnchor: 'middle', fontWeight: 'bold', fill: '#1e293b' }, 'N')
+                    ),
+                    // Hotspot pins
+                    MAINE_BIRDING_HOTSPOTS.map(function(spot, i) {
+                      var p = mapPins[spot.name];
+                      if (!p) return null;
+                      return h('g', { key: 'pin-' + i, role: 'img', 'aria-label': spot.name + ' — ' + spot.area },
+                        h('title', null, spot.name + ' — ' + spot.area),
+                        // Glow
+                        h('circle', { cx: p.x, cy: p.y, r: 8, fill: 'url(#pinGlow)' }),
+                        // Pin pole
+                        h('path', { d: 'M ' + p.x + ' ' + (p.y - 2) + ' L ' + p.x + ' ' + (p.y + 4),
+                          stroke: '#1e293b', strokeWidth: 0.8, opacity: 0.5 }),
+                        // Pin body
+                        h('circle', { cx: p.x, cy: p.y, r: 4, fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 0.8 }),
+                        h('circle', { cx: p.x - 1, cy: p.y - 1, r: 1.4, fill: '#fef2f2', opacity: 0.7 }),
+                        // Number badge
+                        h('text', { x: p.x, y: p.y - 6, fontSize: 6.5, textAnchor: 'middle',
+                          fontWeight: 900, fill: '#1e293b',
+                          style: { fontFamily: 'system-ui, sans-serif', textShadow: '0 0 2px white' } }, String(i + 1))
+                      );
+                    })
+                  ),
+                  // Map legend
+                  h('div', { className: 'flex flex-wrap items-center gap-3 mt-3 text-[11px] text-slate-700' },
+                    h('span', { className: 'inline-flex items-center gap-1' },
+                      h('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 10, height: 10, borderRadius: '50%', background: '#dc2626', border: '1.5px solid #7f1d1d' } }),
+                      h('span', null, 'Birding hotspot (numbered)')
+                    ),
+                    h('span', { className: 'inline-flex items-center gap-1' },
+                      h('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 10, height: 10, background: '#bbf7d0', border: '1.5px solid #78350f' } }),
+                      h('span', null, 'Maine landmass')
+                    ),
+                    h('span', { className: 'inline-flex items-center gap-1' },
+                      h('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 14, height: 4, background: '#0ea5e9', opacity: 0.55 } }),
+                      h('span', null, 'Major rivers')
+                    )
+                  )
+                ),
+                // Cards grid (numbered to match map pins)
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                  MAINE_BIRDING_HOTSPOTS.map(function(spot, i) {
+                    return h('div', { key: spot.name, className: 'bg-white border-2 border-stone-300 rounded-xl shadow p-4 relative' },
+                      // Number bubble matching the map pin
+                      h('div', {
+                        'aria-hidden': 'true',
+                        style: {
+                          position: 'absolute', top: -10, left: 12,
+                          width: 26, height: 26, borderRadius: '50%',
+                          background: '#dc2626', color: '#ffffff',
+                          fontSize: 12, fontWeight: 900,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          border: '2px solid #ffffff',
+                          boxShadow: '0 2px 4px rgba(0,0,0,0.18)'
+                        }
+                      }, String(i + 1)),
+                      h('div', { className: 'pl-9 pt-1' },
+                        h('div', { className: 'flex items-baseline justify-between gap-2 flex-wrap mb-1' },
+                          h('h3', { className: 'text-base font-black text-slate-800' }, spot.name),
+                          h('span', { className: 'text-xs font-mono text-stone-700' }, '📍 ' + spot.area)
+                        ),
+                        h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, spot.highlight)
+                      )
+                    );
+                  })
+                ),
+                h('div', { className: 'p-4 bg-blue-50 border-2 border-blue-300 rounded-xl text-sm text-slate-800' },
+                  h('strong', { className: 'text-blue-900' }, '🔗 Plan a trip: '),
+                  'Visit ', h('span', { className: 'font-mono' }, 'maineaudubon.org'),
+                  ' for the official Maine Birding Trail with directions, accessibility info, parking, and seasonal notes. Most hotspots have free Maine Audubon-led walks during peak migration.')
+              );
+            })(),
             h(TeacherNotes, {
               standards: ['NGSS HS-LS2-2 (Ecosystem dynamics)', 'NGSS HS-LS2-7 (Reduce human impact)', 'NGSS MS-LS2-5 (Biodiversity + ecosystem services)', 'Maine Learning Results — Place-Based Education'],
               questions: [
