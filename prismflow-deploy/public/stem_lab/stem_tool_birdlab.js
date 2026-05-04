@@ -129,6 +129,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  outline: 3px solid #fbbf24;',
       '  outline-offset: 4px;',
       '  border-radius: 50%;',
+      '}',
+      // Map-pin focus indicator (SVG <g> elements with role=button + tabIndex=0)
+      '.birdlab-map-pin { outline: none; cursor: pointer; }',
+      '.birdlab-map-pin:focus { outline: none; }',
+      '.birdlab-map-pin:focus-visible {',
+      '  outline: 3px solid #fbbf24;',
+      '  outline-offset: 2px;',
+      '  border-radius: 50%;',
       '}'
     ].join('\n');
     document.head.appendChild(st);
@@ -2905,7 +2913,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       (isFound ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-300 hover:border-emerald-500')
                   },
                     h('div', { className: 'text-xs font-bold text-slate-800 flex items-center gap-1.5' },
-                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-400' }, '○'),
+                      isFound ? h('span', { className: 'text-emerald-700' }, '✓') : h('span', { className: 'text-slate-500' }, '○'),
                       sp.name
                     ),
                     h('div', { className: 'text-[10px] text-slate-700 mt-0.5 italic' }, b.hint)
@@ -3485,7 +3493,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   },
                     h('div', { className: 'flex items-center justify-center bg-slate-50 rounded-lg p-2 mb-2', style: { height: '60px' } },
                       f.svg ? h('svg', { viewBox: '0 0 40 40', style: { width: '60px', height: '52px' } }, f.svg(h))
-                            : h('span', { className: 'text-3xl text-slate-400', 'aria-hidden': true }, '🦶')
+                            : h('span', { className: 'text-3xl text-slate-500', 'aria-hidden': true }, '🦶')
                     ),
                     h('div', { className: 'text-xs font-bold text-slate-800' }, f.label)
                   );
@@ -4389,6 +4397,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         var picked = picked_state[0], setPicked = picked_state[1];
         var view_state = useState('species');
         var view = view_state[0], setLocalView = view_state[1];
+        // Hotspot focus — set by clicking a map pin OR a card. Drives scroll + highlight.
+        var pickedHotspot_state = useState(null);
+        var pickedHotspot = pickedHotspot_state[0], setPickedHotspot = pickedHotspot_state[1];
+        function focusHotspot(name) {
+          setPickedHotspot(name);
+          if (!name) return;
+          announce('Focused: ' + name);
+          // Smooth-scroll to the matching card after a tick (so the highlight class is applied)
+          setTimeout(function() {
+            var el = document.getElementById('hotspot-card-' + name.replace(/[^a-z0-9]/gi, '-').toLowerCase());
+            if (el && el.scrollIntoView) {
+              // Respect prefers-reduced-motion (WCAG 2.3.3)
+              var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+              el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
+            }
+          }, 50);
+        }
 
         // Filter buttons
         var STATUS_FILTERS = [
@@ -4812,26 +4837,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       h('path', { d: 'M 0 -6 L 1.5 0 L 0 6 L -1.5 0 Z', fill: '#dc2626' }),
                       h('text', { x: 0, y: -10, fontSize: 6, textAnchor: 'middle', fontWeight: 'bold', fill: '#1e293b' }, 'N')
                     ),
-                    // Hotspot pins
+                    // Hotspot pins (clickable — focus the matching card)
                     MAINE_BIRDING_HOTSPOTS.map(function(spot, i) {
                       var p = mapPins[spot.name];
                       if (!p) return null;
-                      return h('g', { key: 'pin-' + i, role: 'img', 'aria-label': spot.name + ' — ' + spot.area },
+                      var isFocused = pickedHotspot === spot.name;
+                      return h('g', { key: 'pin-' + i,
+                        className: 'birdlab-map-pin',
+                        onClick: function() { focusHotspot(spot.name); },
+                        role: 'button', tabIndex: 0,
+                        'aria-label': 'Pin ' + (i + 1) + ': ' + spot.name + ' — ' + spot.area + '. Click to view details.',
+                        onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); focusHotspot(spot.name); } }
+                      },
                         h('title', null, spot.name + ' — ' + spot.area),
-                        // Glow
-                        h('circle', { cx: p.x, cy: p.y, r: 8, fill: 'url(#pinGlow)' }),
+                        // Click-target hit zone (invisible, larger than pin)
+                        h('circle', { cx: p.x, cy: p.y, r: 10, fill: 'transparent', pointerEvents: 'all' }),
+                        // Glow (bigger when focused)
+                        h('circle', { cx: p.x, cy: p.y, r: isFocused ? 12 : 8, fill: 'url(#pinGlow)' }),
+                        // Pulse ring when focused
+                        isFocused && h('circle', { cx: p.x, cy: p.y, r: 8, fill: 'none', stroke: '#fbbf24', strokeWidth: 1.5, opacity: 0.85 }),
                         // Pin pole
                         h('path', { d: 'M ' + p.x + ' ' + (p.y - 2) + ' L ' + p.x + ' ' + (p.y + 4),
                           stroke: '#1e293b', strokeWidth: 0.8, opacity: 0.5 }),
-                        // Pin body
-                        h('circle', { cx: p.x, cy: p.y, r: 4, fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: 0.8 }),
+                        // Pin body (larger when focused)
+                        h('circle', { cx: p.x, cy: p.y, r: isFocused ? 5.5 : 4,
+                          fill: '#dc2626', stroke: '#7f1d1d', strokeWidth: isFocused ? 1.4 : 0.8 }),
                         h('circle', { cx: p.x - 1, cy: p.y - 1, r: 1.4, fill: '#fef2f2', opacity: 0.7 }),
-                        // Number badge
-                        h('text', { x: p.x, y: p.y - 6, fontSize: 6.5, textAnchor: 'middle',
+                        // Number badge (larger when focused)
+                        h('text', { x: p.x, y: isFocused ? (p.y - 8) : (p.y - 6), fontSize: isFocused ? 8 : 6.5, textAnchor: 'middle',
                           fontWeight: 900, fill: '#1e293b',
                           style: { fontFamily: 'system-ui, sans-serif', textShadow: '0 0 2px white' } }, String(i + 1))
                       );
                     })
+                  ),
+                  // Focused-pin info chip (above the legend)
+                  pickedHotspot && h('div', {
+                    className: 'mt-3 p-2 rounded-lg flex items-center gap-2',
+                    style: { background: '#fef3c7', border: '1.5px solid #d97706' },
+                    'aria-live': 'polite'
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, '📍'),
+                    h('span', { className: 'text-xs font-bold text-amber-900' }, 'Focused: '),
+                    h('span', { className: 'text-xs font-semibold text-slate-800' }, pickedHotspot),
+                    h('button', {
+                      onClick: function() { setPickedHotspot(null); },
+                      'aria-label': 'Clear focused pin',
+                      className: 'ml-auto text-xs font-bold text-amber-800 hover:text-amber-900',
+                      style: { background: 'transparent', border: 'none', cursor: 'pointer', padding: '2px 6px' }
+                    }, '✕ Clear')
                   ),
                   // Map legend
                   h('div', { className: 'flex flex-wrap items-center gap-3 mt-3 text-[11px] text-slate-700' },
@@ -4849,21 +4902,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     )
                   )
                 ),
-                // Cards grid (numbered to match map pins)
+                // Cards grid (numbered to match map pins; clickable to focus, highlighted when picked)
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
                   MAINE_BIRDING_HOTSPOTS.map(function(spot, i) {
-                    return h('div', { key: spot.name, className: 'bg-white border-2 border-stone-300 rounded-xl shadow p-4 relative' },
+                    var isFocused = pickedHotspot === spot.name;
+                    var cardId = 'hotspot-card-' + spot.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+                    return h('button', {
+                      key: spot.name,
+                      id: cardId,
+                      onClick: function() { focusHotspot(isFocused ? null : spot.name); },
+                      'aria-pressed': isFocused ? 'true' : 'false',
+                      className: 'text-left rounded-xl shadow p-4 relative transition focus:outline-none focus:ring-2 ring-amber-500/40 birdlab-card-lift',
+                      style: {
+                        background: isFocused ? '#fffbeb' : '#ffffff',
+                        border: isFocused ? '3px solid #d97706' : '2px solid #cbd5e1',
+                        boxShadow: isFocused ? '0 0 0 3px #fde68a, 0 6px 14px rgba(217,119,6,0.18)' : ''
+                      }
+                    },
                       // Number bubble matching the map pin
                       h('div', {
                         'aria-hidden': 'true',
                         style: {
                           position: 'absolute', top: -10, left: 12,
-                          width: 26, height: 26, borderRadius: '50%',
+                          width: isFocused ? 30 : 26, height: isFocused ? 30 : 26, borderRadius: '50%',
                           background: '#dc2626', color: '#ffffff',
-                          fontSize: 12, fontWeight: 900,
+                          fontSize: isFocused ? 14 : 12, fontWeight: 900,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           border: '2px solid #ffffff',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.18)'
+                          boxShadow: isFocused
+                            ? '0 0 0 3px #fbbf24, 0 4px 10px rgba(220,38,38,0.45)'
+                            : '0 2px 4px rgba(0,0,0,0.18)'
                         }
                       }, String(i + 1)),
                       h('div', { className: 'pl-9 pt-1' },
@@ -7078,12 +7146,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       (onTargetMs / 1000).toFixed(1) + 's'),
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'On target')
                   ),
-                  h('div', { className: 'text-3xl text-slate-400 font-light' }, '/'),
+                  h('div', { className: 'text-3xl text-slate-500 font-light' }, '/'),
                   h('div', { className: 'flex flex-col items-center px-4' },
                     h('div', { className: 'text-3xl font-black font-mono text-slate-700' }, (GOAL_MS / 1000) + 's'),
                     h('div', { className: 'text-[10px] uppercase tracking-wider text-slate-700 font-bold' }, 'Goal')
                   ),
-                  h('div', { className: 'text-3xl text-slate-400 font-light' }, '='),
+                  h('div', { className: 'text-3xl text-slate-500 font-light' }, '='),
                   h('div', { className: 'flex flex-col items-center px-4' },
                     h('div', { className: 'text-3xl font-black font-mono ' + (__pct >= 70 ? 'text-emerald-700' : __pct >= 40 ? 'text-amber-700' : 'text-rose-700') },
                       __pct + '%'),
