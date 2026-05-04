@@ -48,6 +48,40 @@
     document.body.appendChild(lr);
   })();
 
+  // ── Print stylesheet (Phase 2h) ──
+  // Memory-palace export: when student/parent triggers window.print(),
+  // hide everything except .ah-print-packet so the packet prints clean.
+  // Class-based display:none default, @media print rule reveals.
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('ah-print-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ah-print-css';
+    st.textContent = [
+      '.ah-print-packet { display: none; }',
+      '@media print {',
+      '  body * { visibility: hidden !important; }',
+      '  .ah-print-packet, .ah-print-packet * { visibility: visible !important; }',
+      '  .ah-print-packet {',
+      '    display: block !important;',
+      '    position: absolute !important;',
+      '    top: 0 !important; left: 0 !important;',
+      '    width: 100% !important;',
+      '    padding: 0.5in !important;',
+      '    background: white !important;',
+      '    color: black !important;',
+      '    font-family: Georgia, "Times New Roman", serif !important;',
+      '    line-height: 1.55 !important;',
+      '  }',
+      '  .ah-print-packet h1, .ah-print-packet h2, .ah-print-packet h3 { color: black !important; }',
+      '  .ah-print-section { page-break-inside: avoid !important; margin-bottom: 18px; }',
+      '  .ah-print-page-break { page-break-before: always !important; }',
+      '  @page { margin: 0.5in; }',
+      '}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(st);
+  })();
+
   // ─────────────────────────────────────────────────────────
   // SECTION 1: PERSISTENCE
   // ─────────────────────────────────────────────────────────
@@ -415,6 +449,110 @@
         }},
         { id: 'timeOfDay', label: 'Time of day', options: ['dawn', 'midday', 'golden hour', 'sunset', 'twilight', 'night'] },
         { id: 'weather',   label: 'Weather/mood', options: ['clear', 'gentle rain', 'snow', 'misty', 'cherry blossoms', 'autumn leaves'] }
+      ]
+    },
+    // ── Additive template expansion (Phase 2g content batch) ──
+    // Each new template follows the same data shape as the originals so
+    // the existing template-picker and slot-driven prompt builder pick
+    // them up automatically without code changes elsewhere. Placement
+    // surfaces (wall/floor/both) chosen so the room layout stays balanced
+    // — no single surface gets all the new options.
+    {
+      id: 'instruments',
+      label: 'Musical instruments',
+      icon: '🎸',
+      surface: 'both',
+      basePrompt: 'A {style} {instrument} in {color}, {pose}, {artStyle}, single object on white background, friendly cozy aesthetic, no text',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Family', options: ['String', 'Wind', 'Percussion', 'Keys'] },
+        { id: 'instrument', label: 'Instrument', dependsOn: 'category', optionsByCategory: {
+          'String':     ['acoustic guitar', 'electric guitar', 'violin', 'cello', 'ukulele', 'harp', 'banjo'],
+          'Wind':       ['flute', 'clarinet', 'saxophone', 'trumpet', 'french horn', 'recorder'],
+          'Percussion': ['snare drum', 'djembe', 'tambourine', 'xylophone', 'congas', 'cymbals'],
+          'Keys':       ['upright piano', 'grand piano', 'electric keyboard', 'accordion', 'organ']
+        }},
+        { id: 'color', label: 'Color', options: ['warm wood', 'cherry red', 'navy blue', 'gold accents', 'matte black', 'pastel mint'] },
+        { id: 'style', label: 'Style', options: ['vintage', 'modern', 'classical', 'whimsical', 'concert-ready'] },
+        { id: 'pose', label: 'Pose', options: ['displayed on a stand', 'leaning against a wall', 'resting on a velvet case', 'mounted decoratively'] }
+      ]
+    },
+    {
+      id: 'food',
+      label: 'Food & recipes',
+      icon: '🍰',
+      surface: 'both',
+      basePrompt: 'A {presentation} of {dish}, {garnish}, {artStyle}, single subject on white background, friendly cozy aesthetic, food photography from above, no text, no readable labels',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Course', options: ['Baked goods', 'Drinks & sips', 'Comfort food', 'World cuisines', 'Fresh & fruity'] },
+        { id: 'dish', label: 'Dish', dependsOn: 'category', optionsByCategory: {
+          'Baked goods':      ['layered cake', 'frosted cupcakes', 'fresh croissants', 'chocolate-chip cookies', 'fruit tart', 'cinnamon rolls', 'crusty bread loaf'],
+          'Drinks & sips':    ['hot cocoa with whipped cream', 'iced matcha latte', 'fruit smoothie', 'herbal tea in a teapot', 'lemonade pitcher', 'milkshake'],
+          'Comfort food':     ['steaming bowl of ramen', 'mac and cheese', 'tomato soup with grilled cheese', 'chicken pot pie', 'spaghetti and meatballs'],
+          'World cuisines':   ['sushi platter', 'taco trio', 'spread of dim sum', 'paella pan', 'biryani plate', 'pho bowl'],
+          'Fresh & fruity':   ['fruit bowl', 'berry parfait', 'sliced watermelon', 'farmers-market basket', 'caprese salad']
+        }},
+        { id: 'presentation', label: 'Presentation', options: ['rustic plate', 'fine china', 'wooden board', 'glass jar', 'ceramic bowl', 'cast iron skillet'] },
+        { id: 'garnish', label: 'Garnish', options: ['fresh herbs', 'edible flowers', 'powdered sugar dusting', 'sliced citrus', 'colorful sprinkles', 'minimal — just the dish'] }
+      ]
+    },
+    {
+      id: 'weather',
+      label: 'Weather scenes',
+      icon: '🌦',
+      surface: 'wall',
+      basePrompt: 'A {weather} scene over a {landscape}, {timeOfDay} light, {mood} mood, {artStyle}, framed cleanly, friendly cozy children\'s aesthetic, no text',
+      slots: [
+        { id: 'weather', label: 'Weather', options: ['gentle snowfall', 'thunderstorm with lightning', 'rainy day with puddles', 'foggy morning', 'rainbow after rain', 'starry clear night', 'cherry-blossom drift', 'autumn wind with leaves'] },
+        { id: 'landscape', label: 'Landscape', options: ['rolling hills', 'forest clearing', 'small town rooftops', 'lake shoreline', 'open meadow', 'snowy mountain range', 'desert dunes'] },
+        { id: 'timeOfDay', label: 'Time of day', options: ['dawn', 'midday', 'golden hour', 'sunset', 'twilight', 'deep night'] },
+        { id: 'mood', label: 'Mood', options: ['peaceful', 'dramatic', 'cheerful', 'mysterious', 'cozy and warm', 'crisp and fresh'] }
+      ]
+    },
+    {
+      id: 'sports',
+      label: 'Sports & gear',
+      icon: '⚾',
+      surface: 'both',
+      basePrompt: 'A {color} {item} for {sport}, {style}, {artStyle}, single object on white background, friendly cozy aesthetic, no readable text or logos',
+      hierarchical: true,
+      slots: [
+        { id: 'sport', label: 'Sport', options: ['baseball', 'basketball', 'soccer', 'tennis', 'skateboarding', 'climbing', 'swimming', 'cycling', 'martial arts', 'dance'] },
+        { id: 'item', label: 'Item', dependsOn: 'sport', optionsByCategory: {
+          'baseball':       ['glove and ball', 'wooden bat', 'team jersey on a hanger', 'cap on a peg'],
+          'basketball':     ['leather basketball', 'jersey on a hanger', 'sneakers on the floor', 'mini hoop'],
+          'soccer':         ['black and white soccer ball', 'pair of cleats', 'jersey', 'shin guards'],
+          'tennis':         ['racquet and ball', 'gym bag', 'tennis shoes', 'visor'],
+          'skateboarding':  ['skateboard with custom deck', 'helmet and pads', 'sneakers'],
+          'climbing':       ['climbing shoes', 'chalk bag', 'rope coil', 'carabiner set'],
+          'swimming':       ['goggles and cap', 'kickboard', 'medal on a ribbon', 'swimsuit on a hook'],
+          'cycling':        ['helmet on a peg', 'water bottle', 'cycling jersey', 'pair of cycling shoes'],
+          'martial arts':   ['neatly folded gi', 'belt collection on a rack', 'training mitts', 'wooden practice sword'],
+          'dance':          ['ballet slippers', 'pointe shoes', 'tap shoes', 'dance ribbon']
+        }},
+        { id: 'color', label: 'Color', options: ['team red', 'royal blue', 'forest green', 'sunshine yellow', 'classic white', 'matte black'] },
+        { id: 'style', label: 'Style', options: ['well-loved and broken in', 'brand new and crisp', 'vintage classic', 'modern minimalist'] }
+      ]
+    },
+    {
+      id: 'pets',
+      label: 'Pet portraits',
+      icon: '🐶',
+      surface: 'wall',
+      basePrompt: 'A framed portrait of {petType} with {fur} fur and {expression} expression, {pose}, {artStyle}, oval frame, friendly cozy aesthetic, no text',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Category', options: ['Furry friends', 'Feathered friends', 'Aquatic friends', 'Tiny friends'] },
+        { id: 'petType', label: 'Pet', dependsOn: 'category', optionsByCategory: {
+          'Furry friends':    ['golden retriever', 'tabby cat', 'rabbit', 'guinea pig', 'small mixed-breed dog', 'long-haired cat', 'fluffy puppy'],
+          'Feathered friends':['parakeet', 'cockatiel', 'parrot', 'finch', 'pet chicken'],
+          'Aquatic friends':  ['betta fish', 'goldfish in a bowl', 'pet turtle', 'small aquarium scene'],
+          'Tiny friends':     ['hamster', 'gerbil', 'leopard gecko', 'corn snake', 'hermit crab', 'butterfly in a jar']
+        }},
+        { id: 'fur', label: 'Coat / appearance', options: ['short-haired', 'long-haired', 'curly', 'spotted', 'striped', 'solid color', 'patchy'] },
+        { id: 'expression', label: 'Expression', options: ['curious', 'sleepy', 'playful', 'noble and dignified', 'happy with tongue out', 'wise and watchful'] },
+        { id: 'pose', label: 'Pose', options: ['head and shoulders', 'sitting full-body', 'in profile', 'looking up softly', 'resting comfortably'] }
       ]
     }
   ];
@@ -794,6 +932,12 @@
     var minChars = 20;
     var charCount = draft.trim().length;
     var canSubmit = charCount >= minChars;
+    // ✨ Polish state — when set, the button shows a spinner and the
+    // textarea is disabled. polishError holds a one-line message if
+    // Gemini didn't return clean text; cleared on next attempt.
+    var polishingTuple = useState(false);
+    var isPolishing = polishingTuple[0];
+    var setIsPolishing = polishingTuple[1];
 
     // When voice transcribes, append to draft
     function onTranscript(text) {
@@ -806,6 +950,57 @@
       } else {
         p.startVoice(onTranscript);
       }
+    }
+
+    // ✨ Polish: send the raw draft (typically voice-dictated, no
+    // capitalization or punctuation) to Gemini for cleanup and replace
+    // the draft with the polished version. Voice-to-text via Web Speech
+    // API returns a single lowercase run-on stream — this gives the
+    // student a one-tap way to make it readable without retyping. Falls
+    // back silently to the original draft if Gemini isn't wired or the
+    // call errors.
+    function handlePolishClick() {
+      if (isPolishing) return;
+      var raw = (draft || '').trim();
+      if (!raw) return;
+      var callGemini = p.callGemini;
+      if (typeof callGemini !== 'function') {
+        // No Gemini available — do a local-only minimal polish so the
+        // button still feels responsive. Capitalize sentences after ./?/!
+        // and Title-case the very first character.
+        var localPolish = raw
+          .replace(/\s+/g, ' ')
+          .replace(/(^|[.!?]\s+)([a-z])/g, function(_, sep, ch) { return sep + ch.toUpperCase(); });
+        if (localPolish && localPolish !== raw) setDraft(localPolish);
+        return;
+      }
+      setIsPolishing(true);
+      var polishPrompt =
+        'You are cleaning up a student\'s voice-dictated journal entry. ' +
+        'Add appropriate capitalization (sentence starts, "I", proper nouns) and ' +
+        'punctuation (periods, commas, question marks, apostrophes). ' +
+        'PRESERVE every word and the original meaning exactly. Do NOT add new content, ' +
+        'do NOT change vocabulary, do NOT correct grammar (this is the student\'s voice). ' +
+        'Return ONLY the cleaned text — no preamble, no quotes, no explanation.\n\n' +
+        'Raw text:\n"' + raw.replace(/"/g, '\\"') + '"';
+      Promise.resolve()
+        .then(function() { return callGemini(polishPrompt); })
+        .then(function(out) {
+          var polished = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip surrounding quotes if Gemini wrapped the response.
+          if ((polished.startsWith('"') && polished.endsWith('"')) || (polished.startsWith('“') && polished.endsWith('”'))) {
+            polished = polished.slice(1, -1).trim();
+          }
+          // Sanity: refuse to replace if the polish dropped >25% of words
+          // (signals Gemini summarized or refused). Better to keep raw.
+          var rawWords = raw.split(/\s+/).filter(Boolean).length;
+          var polWords = polished.split(/\s+/).filter(Boolean).length;
+          if (polished && polWords >= rawWords * 0.75) {
+            setDraft(polished);
+          }
+        })
+        .catch(function() { /* silent — student keeps raw text */ })
+        .then(function() { setIsPolishing(false); });
     }
 
     function handleSubmit() {
@@ -937,7 +1132,38 @@
               justifyContent: 'center',
               animation: p.isRecording ? 'ah-record-pulse 1.6s ease-in-out infinite' : 'none'
             }
-          }, p.isRecording ? '⏺' : '🎤') : null
+          }, p.isRecording ? '⏺' : '🎤') : null,
+          // ✨ Polish button — left of the mic. Sends the current draft
+          // to Gemini for capitalization + punctuation cleanup. Only
+          // shown when there's enough text to be worth polishing AND the
+          // user isn't currently recording (the mic button takes that
+          // visual slot). Uses position:absolute relative to the same
+          // textarea wrapper as the mic.
+          (charCount >= 8 && !p.isRecording) ? h('button', {
+            onClick: handlePolishClick,
+            disabled: isPolishing,
+            'aria-label': isPolishing ? 'Polishing text…' : 'Polish capitalization and punctuation',
+            title: isPolishing ? 'Polishing…' : 'Add capitalization and punctuation (helpful after voice dictation). Original wording preserved.',
+            style: {
+              position: 'absolute',
+              top: '8px',
+              right: p.speechSupported ? '52px' : '8px',
+              height: '36px',
+              padding: '0 10px',
+              borderRadius: '18px',
+              background: isPolishing ? palette.surface : palette.surface,
+              color: palette.text,
+              border: '1px solid ' + palette.border,
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: isPolishing ? 'wait' : 'pointer',
+              fontFamily: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              opacity: isPolishing ? 0.7 : 1
+            }
+          }, isPolishing ? '…' : '✨ Polish') : null
         ),
         // Character counter
         h('div', {
@@ -4006,6 +4232,10 @@
     var useRef = React.useRef;
 
     var addToast = props.addToast || function(msg) { console.log('[AlloHaven]', msg); };
+    // Optional Gemini hook — used by the ✨ Polish button on voice-dictated
+    // reflections and (future) the reflection-insights sidebar. Routes
+    // through props so the host controls API quotas and rate limiting.
+    var callGemini = props.callGemini;
 
     // ── State plumbing ──
     // Single useState holding the whole state object. setStateField helper
@@ -5534,6 +5764,30 @@
       }).length;
       var pctWeek = totalDecks > 0 ? Math.round((reviewedThisWeek / totalDecks) * 100) : 0;
 
+      // Stories partition (Phase 2g)
+      var allStories = state.stories || [];
+      var walkableStories = allStories.filter(function(s) {
+        var validSteps = (s.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        return validSteps.length >= 3 && (s.title || '').trim().length > 0;
+      });
+      var draftStories = allStories.filter(function(s) {
+        return walkableStories.indexOf(s) === -1;
+      });
+      // Sort walkable stories: never-walked first (encourage first walk),
+      // then oldest-walked first (rotation surfaces stale stories)
+      walkableStories.sort(function(a, b) {
+        var aR = a.lastReviewedAt || '';
+        var bR = b.lastReviewedAt || '';
+        if (!aR && bR) return -1;
+        if (aR && !bR) return 1;
+        return aR.localeCompare(bR); // oldest first
+      });
+      draftStories.sort(function(a, b) {
+        return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+      });
+
       return h('div', {
         role: 'dialog',
         'aria-modal': 'true',
@@ -5566,15 +5820,31 @@
           }
         },
           h('div', {
-            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px', flexWrap: 'wrap' }
           },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
-            h('button', {
-              onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close memory overview',
-              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
-            }, '✕')
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              (totalDecks > 0 || allStories.length > 0) ? h('button', {
+                onClick: function() {
+                  // Print delay so React paints the print packet before
+                  // the dialog grabs DOM. Browsers debounce print() but
+                  // a tiny rAF-style timeout is safer for slow tabs.
+                  setTimeout(function() {
+                    try { window.print(); }
+                    catch (err) { addToast('Print not available in this browser.'); }
+                  }, 60);
+                },
+                'aria-label': 'Print study packet',
+                title: 'Open print dialog with a study packet of all decks, stories, and content',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '🖨 Print packet') : null,
+              h('button', {
+                onClick: function() { setStateField('activeModal', null); },
+                'aria-label': 'Close memory overview',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            )
           ),
           h('p', {
             style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
@@ -5596,7 +5866,7 @@
           ) : null,
 
           // Stats row (only when there's content)
-          totalDecks > 0 ? h('div', {
+          (totalDecks > 0 || allStories.length > 0) ? h('div', {
             style: {
               display: 'flex',
               gap: '8px',
@@ -5604,9 +5874,10 @@
               flexWrap: 'wrap'
             }
           },
-            renderOverviewStat('Decks', totalDecks, palette),
+            totalDecks > 0 ? renderOverviewStat('Decks', totalDecks, palette) : null,
             totalCards > 0 ? renderOverviewStat('Flashcards', totalCards, palette) : null,
-            renderOverviewStat('Reviewed this week', pctWeek + '%', palette),
+            walkableStories.length > 0 ? renderOverviewStat('Stories', walkableStories.length, palette) : null,
+            totalDecks > 0 ? renderOverviewStat('Reviewed this week', pctWeek + '%', palette) : null,
             due.length > 0 ? renderOverviewStat('Due for review', due.length, palette, true) : null,
             due.length === 0 && dueSoon.length > 0 ? renderOverviewStat('Due soon', dueSoon.length, palette, false, '#d97706') : null
           ) : null,
@@ -5646,7 +5917,7 @@
           ) : null,
 
           // Fresh section
-          fresh.length > 0 ? h('div', null,
+          fresh.length > 0 ? h('div', { style: { marginBottom: walkableStories.length > 0 || draftStories.length > 0 ? '16px' : 0 } },
             h('div', {
               style: {
                 fontSize: '11px',
@@ -5660,8 +5931,124 @@
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               fresh.map(function(d) { return renderOverviewRow(d, palette, 'fresh'); })
             )
+          ) : null,
+
+          // Stories section (Phase 2g) — inline within the memory overview
+          // since stories ARE memory palace technique. Walkable first
+          // (rotation surfaces stalest), drafts last.
+          walkableStories.length > 0 ? h('div', { style: { marginBottom: draftStories.length > 0 ? '14px' : 0, paddingTop: fresh.length > 0 ? '14px' : 0, borderTop: fresh.length > 0 ? '1px solid ' + palette.border : 'none' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '📜 Story walks · ' + walkableStories.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              walkableStories.map(function(s) { return renderStoryOverviewRow(s, palette); })
+            )
+          ) : null,
+
+          draftStories.length > 0 ? h('div', { style: { paddingTop: (fresh.length > 0 || walkableStories.length > 0) ? '14px' : 0, borderTop: (fresh.length > 0 || walkableStories.length > 0) ? '1px solid ' + palette.border : 'none' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '📜 Story drafts · ' + draftStories.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              draftStories.map(function(s) { return renderStoryOverviewRow(s, palette); })
+            )
           ) : null
         )
+      );
+    }
+
+    // Story overview row — mirror of renderOverviewRow but for stories.
+    // Walkable: shows "↻ Walk" button. Draft: shows "Edit" button.
+    function renderStoryOverviewRow(story, palette) {
+      var validSteps = (story.steps || []).filter(function(st) {
+        return st.decorationId && (st.narrative || '').trim().length > 0;
+      });
+      var walkable = validSteps.length >= 3 && (story.title || '').trim().length > 0;
+      var stepCount = (story.steps || []).length;
+      var firstStep = (story.steps && story.steps[0]) || null;
+      var firstDec = firstStep ? state.decorations.filter(function(d) { return d.id === firstStep.decorationId; })[0] : null;
+      var reviewedLabel;
+      if (!story.lastReviewedAt) {
+        reviewedLabel = walkable ? 'Never walked' : 'Draft · needs ≥3 steps';
+      } else {
+        var daysAgo = Math.floor((Date.now() - new Date(story.lastReviewedAt).getTime()) / (24 * 60 * 60 * 1000));
+        if (daysAgo === 0) reviewedLabel = 'Walked today';
+        else if (daysAgo === 1) reviewedLabel = 'Walked yesterday';
+        else reviewedLabel = 'Walked ' + daysAgo + ' days ago';
+      }
+      return h('div', {
+        key: 'sov-' + story.id,
+        role: 'group',
+        'aria-label': (story.title || 'untitled story') + ', ' + stepCount + ' steps, ' + reviewedLabel,
+        style: {
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center',
+          padding: '10px 12px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px'
+        }
+      },
+        // Mini thumbnail of first decoration (gives the story a face)
+        firstDec && firstDec.imageBase64 ? h('img', {
+          src: firstDec.imageBase64, alt: '', 'aria-hidden': 'true',
+          style: { width: '48px', height: '48px', borderRadius: '6px', objectFit: 'contain', background: palette.bg, border: '1px solid ' + palette.border, flexShrink: 0 }
+        }) : h('div', {
+          'aria-hidden': 'true',
+          style: { width: '48px', height: '48px', borderRadius: '6px', background: palette.bg, border: '1px dashed ' + palette.border, display: 'flex', alignItems: 'center', justifyContent: 'center', color: palette.textMute, fontSize: '20px', flexShrink: 0 }
+        }, '📜'),
+        h('button', {
+          onClick: function() {
+            setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: story.id } });
+          },
+          style: {
+            flex: 1, background: 'transparent', border: 'none', padding: 0,
+            color: palette.text, textAlign: 'left', cursor: 'pointer',
+            fontFamily: 'inherit', minWidth: 0
+          }
+        },
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+            '📜 ' + (story.title || h('span', { style: { color: palette.textMute, fontStyle: 'italic' } }, '(untitled story)'))),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
+            stepCount + ' step' + (stepCount === 1 ? '' : 's')),
+          h('div', { style: { fontSize: '10px', color: palette.textMute } }, reviewedLabel)
+        ),
+        walkable ? h('button', {
+          onClick: function() {
+            setStateMulti({ activeModal: 'story-walk', generateContext: { storyId: story.id } });
+          },
+          style: {
+            background: palette.accent, color: palette.onAccent,
+            border: 'none', borderRadius: '8px', padding: '7px 14px',
+            fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+            fontFamily: 'inherit', flexShrink: 0
+          }
+        }, '↻ Walk') : h('button', {
+          onClick: function() {
+            setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: story.id } });
+          },
+          style: {
+            background: 'transparent', color: palette.textDim,
+            border: '1px solid ' + palette.border, borderRadius: '8px',
+            padding: '7px 14px', fontSize: '12px', fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0
+          }
+        }, 'Edit')
       );
     }
 
@@ -5932,6 +6319,10 @@
         startVoice: startVoiceCapture,
         stopVoice: stopVoiceCapture,
         isRecording: isRecording,
+        // Threaded so the ✨ Polish button can clean up voice-dictated
+        // text. Falls back to a local capitalize-after-period heuristic
+        // when callGemini isn't available.
+        callGemini: callGemini,
         onSubmit: function(text, promptId) { submitReflection(text, promptId); },
         onClose: function() {
           stopVoiceCapture();
@@ -6414,6 +6805,210 @@
       );
     }
 
+    // ─────────────────────────────────────────────────
+    // PRINT PACKET (Phase 2h) — exportable study artifact for
+    // parents, IEP teams, and clinicians. Always rendered into the
+    // DOM but display:none on screen; @media print CSS reveals it
+    // and hides everything else, so window.print() outputs only
+    // the packet. Class-based hide so the print rule overrides
+    // without !important on the inline display attribute.
+    // ─────────────────────────────────────────────────
+    function renderPrintPacket() {
+      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      var allStories = state.stories || [];
+      var dateStr = new Date().toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      // All-print-friendly base styles. Inline so they apply to the
+      // packet even before the print rule kicks in (lets us preview
+      // the packet by temporarily flipping the class display).
+      var sectionStyle = { marginBottom: '24px' };
+      var sectionTitleStyle = { fontSize: '14px', fontWeight: 700, marginBottom: '8px', borderBottom: '1.5px solid #333', paddingBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' };
+      var subTitleStyle = { fontSize: '13px', fontWeight: 700, marginBottom: '4px', color: '#000', marginTop: '14px' };
+      var bodyTextStyle = { fontSize: '11px', color: '#333', lineHeight: 1.5, margin: 0 };
+      var smallMetaStyle = { fontSize: '9px', color: '#666', fontStyle: 'italic' };
+      var thumbStyle = { width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px', border: '0.5px solid #999', verticalAlign: 'middle' };
+
+      function renderDeckPrint(decoration) {
+        var lc = decoration.linkedContent;
+        var label = decoration.templateLabel || decoration.template || 'item';
+        var typeLabel = lc.type === 'flashcards' ? 'Flashcards'
+                      : lc.type === 'acronym'    ? 'Acronym'
+                      : lc.type === 'image-link' ? 'Image link'
+                                                   : 'Notes';
+        var reviewedLabel;
+        if (!lc.lastReviewedAt) reviewedLabel = 'Never reviewed';
+        else {
+          var d2 = new Date(lc.lastReviewedAt);
+          reviewedLabel = 'Last reviewed ' + d2.toLocaleDateString();
+        }
+        var meta = typeLabel
+          + (lc.bestQuizScore ? ' · Best score ' + lc.bestQuizScore + '%' : '')
+          + ' · ' + (lc.reviewCount || 0) + ' review' + ((lc.reviewCount || 0) === 1 ? '' : 's')
+          + ' · ' + reviewedLabel;
+
+        var body = null;
+        if (lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+          body = h('ol', { style: { paddingLeft: '20px', margin: '4px 0' } },
+            lc.data.cards.map(function(card) {
+              var atts = (card.correctCount || 0) + (card.missCount || 0);
+              return h('li', { key: 'pc-' + card.id, style: { marginBottom: '4px', fontSize: '11px', color: '#222', lineHeight: 1.45 } },
+                h('span', { style: { fontWeight: 700 } }, card.front || ''),
+                h('span', { style: { color: '#444' } }, ' — ' + (card.back || '')),
+                atts > 0 ? h('span', { style: smallMetaStyle }, ' (' + (card.correctCount || 0) + '/' + atts + ')') : null
+              );
+            })
+          );
+        } else if (lc.type === 'acronym' && lc.data) {
+          var letters = (lc.data.letters || '').toUpperCase();
+          var meanings = lc.data.meanings || [];
+          body = h('div', null,
+            lc.data.context ? h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginBottom: '4px' }) }, lc.data.context) : null,
+            h('div', { style: { fontSize: '14px', fontWeight: 800, letterSpacing: '0.1em', color: '#000', marginBottom: '4px' } }, letters),
+            h('ul', { style: { listStyle: 'none', paddingLeft: 0, margin: '4px 0' } },
+              letters.split('').map(function(letter, i) {
+                return h('li', { key: 'pa-' + i, style: { fontSize: '11px', color: '#222', marginBottom: '2px' } },
+                  h('strong', null, letter), ' — ', meanings[i] || h('span', { style: { color: '#999' } }, '____________'));
+              })
+            )
+          );
+        } else if (lc.type === 'image-link' && lc.data) {
+          var tgt = state.decorations.filter(function(dec) { return dec.id === lc.data.targetDecorationId; })[0];
+          var tgtLabel = tgt ? (tgt.templateLabel || tgt.template || 'item') : '(removed item)';
+          body = h('div', null,
+            h('p', { style: bodyTextStyle },
+              h('strong', null, label), ' → ', h('strong', null, tgtLabel)),
+            h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginTop: '4px' }) },
+              '"' + (lc.data.association || '') + '"')
+          );
+        } else if (lc.type === 'notes' && lc.data) {
+          var text = (lc.data.text || '');
+          // Render cloze blanks as visible underlines
+          if (extractClozeAnswers(text).length > 0) {
+            var segments = buildClozeSegments(text);
+            body = h('div', { style: { fontSize: '11px', color: '#222', lineHeight: 1.5, margin: '4px 0', whiteSpace: 'pre-wrap' } },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'ps-' + i }, seg.value);
+                return h('span', {
+                  key: 'ps-' + i,
+                  style: { borderBottom: '1px solid #000', padding: '0 2px', minWidth: '60px', display: 'inline-block', textAlign: 'center', fontWeight: 700 }
+                }, seg.answer);
+              })
+            );
+          } else {
+            body = h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '4px 0' }) }, text);
+          }
+        }
+
+        return h('div', {
+          key: 'pd-' + decoration.id,
+          className: 'ah-print-section'
+        },
+          h('h3', { style: subTitleStyle },
+            decoration.imageBase64 ? h('img', { src: decoration.imageBase64, alt: '', style: thumbStyle }) : null,
+            h('span', { style: { marginLeft: '8px' } }, label)
+          ),
+          h('p', { style: smallMetaStyle }, meta),
+          body
+        );
+      }
+
+      function renderStoryPrint(story) {
+        var validSteps = (story.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        var walkable = validSteps.length >= 3 && (story.title || '').trim().length > 0;
+        var meta = (story.steps || []).length + ' step' + ((story.steps || []).length === 1 ? '' : 's')
+          + (story.reviewCount ? ' · Walked ' + story.reviewCount + ' time' + (story.reviewCount === 1 ? '' : 's') : '')
+          + (walkable ? '' : ' · Draft');
+        return h('div', {
+          key: 'ps-' + story.id,
+          className: 'ah-print-section'
+        },
+          h('h3', { style: subTitleStyle }, '📜 ' + (story.title || '(untitled story)')),
+          h('p', { style: smallMetaStyle }, meta),
+          h('ol', { style: { paddingLeft: '20px', margin: '6px 0' } },
+            (story.steps || []).map(function(step, idx) {
+              var dec = state.decorations.filter(function(d) { return d.id === step.decorationId; })[0];
+              var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed item)';
+              return h('li', { key: 'pst-' + idx, style: { marginBottom: '8px', fontSize: '11px', color: '#222', lineHeight: 1.5 } },
+                dec && dec.imageBase64 ? h('img', { src: dec.imageBase64, alt: '', style: thumbStyle }) : null,
+                h('span', { style: { marginLeft: '6px', fontWeight: 700 } }, dLabel),
+                h('div', { style: { fontStyle: 'italic', color: '#333', marginTop: '2px' } },
+                  '"' + (step.narrative || '') + '"')
+              );
+            })
+          )
+        );
+      }
+
+      // Recent journal entries (up to 5, newest first)
+      var recentJournals = (state.journalEntries || []).slice().sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      }).slice(0, 5);
+
+      return h('div', {
+        className: 'ah-print-packet',
+        'aria-hidden': 'true'
+      },
+        // Cover header
+        h('div', { style: { borderBottom: '3px double #000', paddingBottom: '12px', marginBottom: '20px' } },
+          h('h1', { style: { fontSize: '22px', margin: 0, fontWeight: 800, color: '#000' } }, '🌿 AlloHaven Study Packet'),
+          h('p', { style: { margin: '6px 0 0 0', fontSize: '11px', color: '#444' } },
+            'Generated ' + dateStr + ' · ' + state.decorations.length + ' decoration' + (state.decorations.length === 1 ? '' : 's')
+            + ' · ' + withContent.length + ' deck' + (withContent.length === 1 ? '' : 's')
+            + ' · ' + allStories.length + ' stor' + (allStories.length === 1 ? 'y' : 'ies'))
+        ),
+        // Student name line
+        h('div', { style: { marginBottom: '20px', display: 'flex', gap: '24px', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Student: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' ')),
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Reviewed by: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' '))
+        ),
+        // Stats summary
+        h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px', color: '#222' } },
+          h('strong', null, 'Activity summary: '),
+          (state.earnings || []).length + ' token-earning event' + ((state.earnings || []).length === 1 ? '' : 's'),
+          ' · ', state.tokens, ' tokens earned and unspent',
+          ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies')
+        ),
+        // Decks section
+        withContent.length > 0 ? h('div', { style: sectionStyle },
+          h('h2', { style: sectionTitleStyle }, '📖 Memory Decks'),
+          withContent.map(function(d) { return renderDeckPrint(d); })
+        ) : null,
+        // Stories section
+        allStories.length > 0 ? h('div', {
+          style: sectionStyle,
+          className: withContent.length > 5 ? 'ah-print-page-break' : ''
+        },
+          h('h2', { style: sectionTitleStyle }, '📜 Stories'),
+          allStories.map(function(s) { return renderStoryPrint(s); })
+        ) : null,
+        // Recent reflections
+        recentJournals.length > 0 ? h('div', { style: sectionStyle },
+          h('h2', { style: sectionTitleStyle }, '📝 Recent Reflections (last ' + recentJournals.length + ')'),
+          recentJournals.map(function(j) {
+            return h('div', { key: 'pj-' + j.id, className: 'ah-print-section', style: { marginBottom: '10px' } },
+              h('p', { style: smallMetaStyle },
+                (j.date ? new Date(j.date).toLocaleDateString() : 'Undated')
+                + (j.prompt ? ' · prompt: "' + j.prompt + '"' : '')),
+              h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '2px 0' }) },
+                '"' + (j.text || '') + '"')
+            );
+          })
+        ) : null,
+        // Footer
+        h('div', { style: { marginTop: '24px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
+          'AlloHaven · cozy-room learning portfolio · printed ' + dateStr,
+          h('br'),
+          'Earn tokens by focusing or reflecting; spend on decorations; attach memory content to grow a method-of-loci anchor.'
+        )
+      );
+    }
+
     // ── aria-live announcement for token deltas ──
     // Tracks token changes since last render and pushes them to a hidden
     // live region. Screen reader users hear "+2 tokens earned" etc.
@@ -6475,7 +7070,17 @@
       renderDeleteDecorationModal(),
       renderSettingsModal(),
       renderWelcomeBackdrop(),
-      renderWelcomeCard()
+      renderWelcomeCard(),
+      // Print packet — portaled to body so the @media print rule's
+      // "hide everything but .ah-print-packet" works regardless of the
+      // ah-root fixed overlay's positioning + overflow context.
+      (function() {
+        var ReactDOM = window.ReactDOM;
+        if (ReactDOM && ReactDOM.createPortal && typeof document !== 'undefined' && document.body) {
+          return ReactDOM.createPortal(renderPrintPacket(), document.body);
+        }
+        return renderPrintPacket();
+      })()
     );
   }
 
