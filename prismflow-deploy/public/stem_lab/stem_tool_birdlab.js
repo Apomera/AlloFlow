@@ -3387,16 +3387,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 'A bird\'s bill tells you what it eats. Its feet tell you where it lives. Look at any bird and you can read its lifestyle from those two parts alone — without ever seeing it eat or move. This module shows the eight common bill shapes and six common foot patterns, and which species in BirdLab\'s habitats use each.')
             ),
-            // Cross-link banner to EvoLab Beak Lab
-            h('div', { className: 'bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 flex items-start gap-3' },
-              h('span', { className: 'text-3xl flex-shrink-0', 'aria-hidden': true }, '🌋'),
-              h('div', null,
-                h('h3', { className: 'text-base font-black text-emerald-900 mb-1' }, 'See evolution change a beak: Galápagos finches'),
+            // ── Cross-link to EvoLab Galápagos Beak Lab ──
+            h('div', {
+              className: 'rounded-2xl overflow-hidden border-2 border-emerald-400 shadow flex items-stretch flex-wrap',
+              style: { background: 'linear-gradient(110deg, #ecfdf5 0%, #d1fae5 35%, #fed7aa 100%)' }
+            },
+              // Icon panel (Galápagos volcano / island theme)
+              h('div', {
+                className: 'flex-shrink-0 flex items-center justify-center relative',
+                style: {
+                  width: 96, padding: '16px 12px',
+                  background: 'linear-gradient(180deg, #bae6fd 0%, #fed7aa 60%, #fdba74 100%)'
+                }
+              },
+                // Mini volcano + island scene
+                h('svg', { width: 68, height: 68, viewBox: '0 0 68 68', 'aria-hidden': true, role: 'img' },
+                  // Sun
+                  h('circle', { cx: 56, cy: 12, r: 6, fill: '#fbbf24', opacity: 0.9 }),
+                  // Wave / ocean band
+                  h('path', { d: 'M 0 50 Q 17 47 34 50 T 68 50 L 68 68 L 0 68 Z',
+                    fill: '#0ea5e9', opacity: 0.6 }),
+                  // Volcanic island
+                  h('path', { d: 'M 8 50 L 20 24 L 30 32 L 38 18 L 50 30 L 60 50 Z',
+                    fill: '#475569', stroke: '#1e293b', strokeWidth: 0.8 }),
+                  // Crater
+                  h('path', { d: 'M 34 18 L 38 22 L 42 18', fill: 'none', stroke: '#dc2626', strokeWidth: 1.5, strokeLinecap: 'round' }),
+                  // Smoke wisps
+                  h('path', { d: 'M 36 14 Q 38 10 40 14 M 38 8 Q 40 4 42 8',
+                    fill: 'none', stroke: '#475569', strokeWidth: 1.2, strokeLinecap: 'round', opacity: 0.6 }),
+                  // Tiny finch silhouette
+                  h('path', { d: 'M 14 38 Q 18 34 22 38 Q 24 40 22 42 Q 18 41 14 42 Z',
+                    fill: '#1e293b', opacity: 0.9 }),
+                  h('circle', { cx: 16, cy: 38, r: 0.7, fill: '#fef3c7' }),
+                  h('path', { d: 'M 12 40 L 9 41 L 12 42 Z', fill: '#fbbf24' })
+                )
+              ),
+              // Body
+              h('div', { className: 'flex-1 p-4 min-w-0', style: { minWidth: 240 } },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[10px] font-bold uppercase tracking-widest text-emerald-700' }, '🔗 Cross-lab link'),
+                  h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300' }, 'EvoLab')
+                ),
+                h('h3', { className: 'text-base font-black text-emerald-900 mb-1', style: { lineHeight: 1.2 } }, 'See evolution change a beak: Galápagos finches'),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'Charles Darwin watched 13 finch species on the Galápagos Islands and realized they\'d all evolved from a single common ancestor — each one\'s beak shape matched a different food source. Peter and Rosemary Grant later watched these beaks ',
+                  'Darwin watched 13 finch species on the Galápagos and realized they\'d all evolved from a single ancestor — each beak matched a different food. Peter & Rosemary Grant later watched these beaks ',
                   h('em', null, 'continue evolving'),
-                  ' across droughts in real time. For the deep story: visit ',
-                  h('strong', { className: 'font-mono' }, 'EvoLab → Galápagos Beak Lab'),
+                  ' across droughts. For the deep story, open ',
+                  h('strong', { className: 'font-mono text-emerald-800' }, 'EvoLab → Galápagos Beak Lab'),
                   '.')
               )
             ),
@@ -5236,15 +5273,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 )
               );
             })(),
-            // CROSS-LINK to migration.js
-            h('div', { className: 'bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 flex items-start gap-3' },
-              h('span', { className: 'text-3xl flex-shrink-0', 'aria-hidden': true }, '✈️'),
-              h('div', null,
-                h('h3', { className: 'text-base font-black text-emerald-900 mb-1' }, 'For HOW birds fly: Migration & Wind Patterns Lab'),
+            // ── Cross-link to Migration & Wind Patterns Lab ──
+            h('div', {
+              className: 'rounded-2xl overflow-hidden border-2 border-orange-400 shadow flex items-stretch flex-wrap',
+              style: { background: 'linear-gradient(110deg, #fff7ed 0%, #fed7aa 35%, #bfdbfe 100%)' }
+            },
+              // Icon panel (sky / V-formation theme)
+              h('div', {
+                className: 'flex-shrink-0 flex items-center justify-center relative',
+                style: {
+                  width: 96, padding: '16px 12px',
+                  background: 'linear-gradient(180deg, #dbeafe 0%, #bfdbfe 60%, #fed7aa 100%)'
+                }
+              },
+                h('svg', { width: 68, height: 68, viewBox: '0 0 68 68', 'aria-hidden': true, role: 'img' },
+                  // Sun
+                  h('circle', { cx: 12, cy: 14, r: 7, fill: '#fbbf24', opacity: 0.95 }),
+                  // Cloud
+                  h('path', { d: 'M 38 18 Q 44 14 50 18 Q 56 16 56 22 Q 56 26 50 24 Q 44 26 38 24 Q 34 22 38 18 Z',
+                    fill: '#ffffff', opacity: 0.85 }),
+                  // V-formation flock (3 pairs of birds)
+                  h('g', { stroke: '#1e293b', strokeWidth: 2, fill: 'none', strokeLinecap: 'round' },
+                    h('path', { d: 'M 18 38 Q 22 32 26 38' }),
+                    h('path', { d: 'M 26 38 Q 30 32 34 38' }),
+                    h('path', { d: 'M 14 46 Q 18 42 22 46' }),
+                    h('path', { d: 'M 30 46 Q 34 42 38 46' }),
+                    h('path', { d: 'M 22 54 Q 26 50 30 54' }),
+                    h('path', { d: 'M 38 32 Q 42 28 46 32' }),
+                    h('path', { d: 'M 46 32 Q 50 28 54 32' })
+                  ),
+                  // Ground/horizon hint
+                  h('path', { d: 'M 0 60 Q 17 58 34 60 T 68 60 L 68 68 L 0 68 Z',
+                    fill: '#15803d', opacity: 0.45 })
+                )
+              ),
+              // Body
+              h('div', { className: 'flex-1 p-4 min-w-0', style: { minWidth: 240 } },
+                h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                  h('span', { className: 'text-[10px] font-bold uppercase tracking-widest text-orange-700' }, '🔗 Cross-lab link'),
+                  h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-orange-100 text-orange-900 border border-orange-300' }, 'Migration & Wind Patterns Lab')
+                ),
+                h('h3', { className: 'text-base font-black text-orange-900 mb-1', style: { lineHeight: 1.2 } }, 'For HOW birds fly: open the Migration & Wind Patterns Lab'),
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
-                  'BirdLab covers WHEN, WHERE, and WHY birds migrate. The dedicated ',
-                  h('strong', { className: 'font-mono' }, 'Migration & Wind Patterns Lab'),
-                  ' (separate STEM Lab tool) covers HOW: V-formation aerodynamics, wind currents, flight physics, energy efficiency calculations. Open it from the STEM Lab menu — search for "Migration."')
+                  'BirdLab covers ',
+                  h('strong', null, 'WHEN, WHERE,'),
+                  ' and ',
+                  h('strong', null, 'WHY '),
+                  'birds migrate. The dedicated ',
+                  h('strong', { className: 'font-mono text-orange-800' }, 'Migration & Wind Patterns Lab'),
+                  ' covers HOW: V-formation aerodynamics, wind currents, flight physics, energy-efficiency calculations. Open it from the STEM Lab menu — search for "Migration."')
               )
             ),
             h(TeacherNotes, {
