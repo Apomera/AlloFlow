@@ -245,6 +245,12 @@
       // }
     ],
 
+    // ── Achievements (Phase 2p.5) ──
+    // Map of achievement-id → { unlockedAt: ISO }. Once unlocked, stays
+    // unlocked. Computed transparently from existing state by the
+    // detection useEffect — no new tracked counters anywhere.
+    achievements: {},
+
     // ── Room mode (Phase 2p.3) ──
     // 'build' = default editing mode: empty cells show dotted outlines,
     // hover-✕ delete buttons appear, click-empty-to-add active.
@@ -1119,6 +1125,168 @@
     { id: 'pastel', label: 'Pastel' },
     { id: 'dark',   label: 'Dark' }
   ];
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4.6: ACHIEVEMENT MILESTONES (Phase 2p.5)
+  // ─────────────────────────────────────────────────────────
+  // Gentle progression markers — no streaks, no daily punishment, no
+  // comparisons. Unlocked transparently as students do the actions
+  // they were already doing. Each `check(state)` returns true when the
+  // achievement is currently earned. Once unlocked, persists in
+  // state.achievements[id] = { unlockedAt: ISO } and never re-locks.
+  var ACHIEVEMENT_CATALOG = [
+    // First-time markers (fire fast, encourage exploration)
+    { id: 'first-decoration', emoji: '🌱', label: 'First decoration',
+      desc: 'Placed your first decoration in the room.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !d.isStarter; }); } },
+    { id: 'first-reflection', emoji: '📝', label: 'First reflection',
+      desc: 'Wrote your first journal entry.',
+      check: function(s) { return (s.journalEntries || []).length >= 1; } },
+    { id: 'first-pomodoro', emoji: '🍅', label: 'First Pomodoro',
+      desc: 'Completed your first focus session.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'pomodoro' || e.source === 'cycle-bonus'; }); } },
+    { id: 'first-quiz-passed', emoji: '✓', label: 'First quiz passed',
+      desc: 'Scored ≥80% on a memory deck.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz'; }); } },
+    { id: 'first-story', emoji: '📜', label: 'First story',
+      desc: 'Created a story with at least 3 steps.',
+      check: function(s) {
+        return (s.stories || []).some(function(st) {
+          var v = (st.steps || []).filter(function(stp) { return stp.decorationId && (stp.narrative || '').trim().length > 0; });
+          return v.length >= 3 && (st.title || '').trim().length > 0;
+        });
+      } },
+    { id: 'first-walk', emoji: '🚶', label: 'First story walk',
+      desc: 'Walked through a complete story.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'story-walk'; }); } },
+    { id: 'first-image-link', emoji: '🔗', label: 'First image link',
+      desc: 'Linked two decorations with a personal association.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return d.linkedContent && d.linkedContent.type === 'image-link'; }); } },
+    { id: 'first-goal-completed', emoji: '🎯', label: 'First goal completed',
+      desc: 'Hit a target you set for yourself.',
+      check: function(s) { return (s.goals || []).some(function(g) { return !!g.completedAt; }); } },
+    { id: 'first-companion', emoji: '🌿', label: 'Met your buddy',
+      desc: 'Created your AlloHaven companion.',
+      check: function(s) { return s.companion && s.companion.species; } },
+    { id: 'first-mood-tag', emoji: '🎭', label: 'First mood tag',
+      desc: 'Tagged a decoration with how you felt.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!d.mood; }); } },
+
+    // Volume markers (slower-burn, signal sustained engagement)
+    { id: 'ten-decorations', emoji: '🌷', label: '10 decorations',
+      desc: 'Filled out a substantial part of your room.',
+      check: function(s) { return (s.decorations || []).filter(function(d) { return !d.isStarter; }).length >= 10; } },
+    { id: 'thirty-cards-quizzed', emoji: '🧠', label: '30 cards quizzed',
+      desc: 'Real retrieval reps add up.',
+      check: function(s) {
+        var total = 0;
+        (s.decorations || []).forEach(function(d) {
+          if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return;
+          var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+          cards.forEach(function(c) {
+            total += (c.correctCount || 0) + (c.missCount || 0);
+          });
+        });
+        return total >= 30;
+      } },
+    { id: 'hundred-cards-quizzed', emoji: '🦉', label: '100 cards quizzed',
+      desc: 'Triple-digit retrieval. Memory shapes itself this way.',
+      check: function(s) {
+        var total = 0;
+        (s.decorations || []).forEach(function(d) {
+          if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return;
+          var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+          cards.forEach(function(c) {
+            total += (c.correctCount || 0) + (c.missCount || 0);
+          });
+        });
+        return total >= 100;
+      } },
+    { id: 'five-walks', emoji: '👣', label: '5 story walks',
+      desc: 'Method of loci, repeated. The room is your mind.',
+      check: function(s) {
+        return (s.earnings || []).filter(function(e) { return e.source === 'story-walk'; }).length >= 5;
+      } },
+    { id: 'ten-reflections', emoji: '📓', label: '10 reflections',
+      desc: 'A real journal grows here.',
+      check: function(s) { return (s.journalEntries || []).length >= 10; } },
+    { id: 'pomodoro-cycle', emoji: '🍅', label: 'Full Pomodoro cycle',
+      desc: 'Completed all 4 focus sessions in a single cycle.',
+      check: function(s) { return (s.earnings || []).some(function(e) { return e.source === 'cycle-bonus'; }); } },
+
+    // Diversity markers (encourage exploring all parts of the tool)
+    { id: 'all-memory-types', emoji: '🌈', label: 'All memory types',
+      desc: 'Used flashcards, acronym, notes, AND image-link at least once.',
+      check: function(s) {
+        var types = {};
+        (s.decorations || []).forEach(function(d) {
+          if (d.linkedContent) types[d.linkedContent.type] = true;
+        });
+        return types.flashcards && types.acronym && types.notes && types['image-link'];
+      } },
+    { id: 'all-mood-tags', emoji: '🎨', label: 'All five moods',
+      desc: 'Tagged decorations with each of the 5 moods.',
+      check: function(s) {
+        var moods = {};
+        (s.decorations || []).forEach(function(d) {
+          if (d.mood) moods[d.mood] = true;
+        });
+        return Object.keys(moods).length >= 5;
+      } },
+    { id: 'cloze-author', emoji: '✏️', label: 'Cloze author',
+      desc: 'Created a fill-in-blank in notes, reflection, or story.',
+      check: function(s) {
+        var inNotes = (s.decorations || []).some(function(d) {
+          return d.linkedContent && d.linkedContent.type === 'notes' && hasClozeMarkers(d.linkedContent);
+        });
+        if (inNotes) return true;
+        var inJournal = (s.journalEntries || []).some(function(e) {
+          return extractClozeAnswers(e.text || '').length > 0;
+        });
+        if (inJournal) return true;
+        return (s.stories || []).some(function(st) {
+          return (st.steps || []).some(function(stp) {
+            return extractClozeAnswers(stp.narrative || '').length > 0;
+          });
+        });
+      } },
+    { id: 'memory-palace-builder', emoji: '🏛️', label: 'Memory palace builder',
+      desc: 'Attached memory content to 5 different decorations.',
+      check: function(s) {
+        return (s.decorations || []).filter(function(d) { return !!d.linkedContent; }).length >= 5;
+      } },
+
+    // Time-based markers (gentle, no streak punishment)
+    { id: 'companion-week', emoji: '🗓️', label: 'A week with your buddy',
+      desc: 'Your companion has been with you 7+ days.',
+      check: function(s) {
+        if (!s.companion || !s.companion.createdAt) return false;
+        var days = (Date.now() - new Date(s.companion.createdAt).getTime()) / (24 * 60 * 60 * 1000);
+        return days >= 7;
+      } },
+    { id: 'companion-month', emoji: '🌙', label: 'A month with your buddy',
+      desc: 'Your companion has been with you 30+ days.',
+      check: function(s) {
+        if (!s.companion || !s.companion.createdAt) return false;
+        var days = (Date.now() - new Date(s.companion.createdAt).getTime()) / (24 * 60 * 60 * 1000);
+        return days >= 30;
+      } },
+
+    // Skill-tier markers
+    { id: 'focus-l3', emoji: '🍅', label: 'Focus level 3',
+      desc: 'Built up real focus practice.',
+      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'focus')).level >= 3; } },
+    { id: 'memory-l3', emoji: '🧠', label: 'Memory level 3',
+      desc: 'Real retrieval reps logged.',
+      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'memory')).level >= 3; } }
+  ];
+
+  function getAchievement(id) {
+    for (var i = 0; i < ACHIEVEMENT_CATALOG.length; i++) {
+      if (ACHIEVEMENT_CATALOG[i].id === id) return ACHIEVEMENT_CATALOG[i];
+    }
+    return null;
+  }
 
   // ── Per-card mastery (Phase 2d) ──
   // Smart shuffle: weights cards by weakness so struggling ones come
@@ -5956,6 +6124,7 @@
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
       if (!Array.isArray(merged.stories))        merged.stories        = [];
       if (!Array.isArray(merged.goals))          merged.goals          = [];
+      if (!merged.achievements || typeof merged.achievements !== 'object') merged.achievements = {};
       return merged;
     });
     var state = stateTuple[0];
@@ -7061,6 +7230,64 @@
         candidates.push(pickOpener() + 'loved that story walk.');
       }
 
+      // ── Companion-remembers history facts (Phase 2p.5) ──
+      // Bubble lines that reference cumulative history. Triggers at
+      // round-number thresholds so the buddy "remembers" milestones
+      // without being annoyingly chatty about smaller numbers.
+
+      // Total Pomodoros this week
+      var weekAgoMs2 = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      var pomThisWeek = (state.earnings || []).filter(function(e) {
+        return (e.source === 'pomodoro' || e.source === 'cycle-bonus')
+          && e.date && new Date(e.date).getTime() >= weekAgoMs2;
+      }).length;
+      if (pomThisWeek >= 3) {
+        candidates.push(pickOpener() + 'that\'s ' + pomThisWeek + ' Pomodoros this week. Real focus practice.');
+      }
+
+      // Total cards quizzed (lifetime)
+      var totalCards = 0;
+      (state.decorations || []).forEach(function(d) {
+        if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return;
+        var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+        cards.forEach(function(c) {
+          totalCards += (c.correctCount || 0) + (c.missCount || 0);
+        });
+      });
+      // Round-number threshold: only mention at 25, 50, 100, 200, 500
+      var roundThresholds = [25, 50, 100, 200, 500];
+      if (roundThresholds.indexOf(totalCards) !== -1) {
+        candidates.push(pickOpener() + 'that\'s ' + totalCards + ' cards quizzed total. Memory shapes itself this way.');
+      }
+
+      // Story walks lifetime
+      var totalWalks = (state.earnings || []).filter(function(e) {
+        return e.source === 'story-walk';
+      }).length;
+      if (totalWalks >= 3 && [3, 5, 10, 25].indexOf(totalWalks) !== -1) {
+        candidates.push(pickOpener() + 'we\'ve walked ' + totalWalks + ' stories together now.');
+      }
+
+      // Companion days-old milestones
+      if (state.companion && state.companion.createdAt) {
+        var daysWith = Math.floor((Date.now() - new Date(state.companion.createdAt).getTime()) / (24 * 60 * 60 * 1000));
+        if ([7, 14, 30, 60, 100].indexOf(daysWith) !== -1) {
+          candidates.push(pickOpener() + 'we\'ve been together ' + daysWith + ' days now.');
+        }
+      }
+
+      // Total decorations lifetime (excluding starter)
+      var totalDecs = (state.decorations || []).filter(function(d) { return !d.isStarter; }).length;
+      if ([5, 10, 20, 50].indexOf(totalDecs) !== -1) {
+        candidates.push(pickOpener() + 'your room has ' + totalDecs + ' decorations now. It really feels like yours.');
+      }
+
+      // Achievement count milestones
+      var achCount = Object.keys(state.achievements || {}).length;
+      if ([5, 10, 15, 20].indexOf(achCount) !== -1) {
+        candidates.push(pickOpener() + 'you have ' + achCount + ' achievements unlocked. Quietly proud.');
+      }
+
       // Idle filler — fully species-flavored standalone lines (no
       // synthetic concatenation) so grammar reads naturally for each.
       var fillers = {
@@ -7321,6 +7548,54 @@
       decorationCountRef.current = now;
       // eslint-disable-next-line
     }, [state.decorations.length]);
+
+    // Achievement unlock detection (Phase 2p.5) — runs the catalog\'s
+    // check() functions against current state. Newly-passing achievements
+    // get an unlockedAt timestamp persisted + a companion celebration
+    // bubble (if companion exists) + a non-blocking toast. Existing
+    // unlocks are never re-fired, even if state regresses.
+    useEffect(function() {
+      var existing = state.achievements || {};
+      var newly = [];
+      ACHIEVEMENT_CATALOG.forEach(function(ach) {
+        if (existing[ach.id]) return;
+        try {
+          if (ach.check(state)) newly.push(ach);
+        } catch (err) { /* check failed silently — skip */ }
+      });
+      if (newly.length === 0) return;
+      var nowIso = new Date().toISOString();
+      var nextAchievements = Object.assign({}, existing);
+      newly.forEach(function(ach) {
+        nextAchievements[ach.id] = { unlockedAt: nowIso };
+      });
+      var stateUpdates = { achievements: nextAchievements };
+      // Companion celebration on the FIRST newly-unlocked (one bubble per
+      // batch — don\'t spam if many fire at once on a fresh-state import)
+      if (state.companion && state.companion.species) {
+        var first = newly[0];
+        stateUpdates.companion = Object.assign({}, state.companion, {
+          lastBubbleAt: nowIso,
+          lastBubbleText: first.emoji + ' ' + first.label + '! ' + first.desc
+        });
+      }
+      setStateMulti(stateUpdates);
+      setTimeout(function() {
+        if (newly.length === 1) {
+          addToast(newly[0].emoji + ' Achievement: ' + newly[0].label);
+        } else {
+          addToast('🏆 ' + newly.length + ' achievements unlocked!');
+        }
+      }, 60);
+      // eslint-disable-next-line
+    }, [
+      state.decorations.length,
+      state.journalEntries.length,
+      state.earnings.length,
+      (state.stories || []).length,
+      (state.goals || []).length,
+      state.companion ? state.companion.species : null
+    ]);
 
     // Skill level-up detection — compare current level vs cached
     // skillCelebrations[skillId] for each skill. If higher, fire confetti
@@ -7760,6 +8035,14 @@
               'aria-label': 'Goals' + (activeCount > 0 ? ', ' + activeCount + ' active' : ''),
               style: secondaryBtnStyle(palette)
             }, '🎯 Goals' + (activeCount > 0 ? ' · ' + activeCount : ''));
+          })(),
+          (function() {
+            var unlocked = Object.keys(state.achievements || {}).length;
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'achievements'); },
+              'aria-label': 'Achievements' + (unlocked > 0 ? ', ' + unlocked + ' of ' + ACHIEVEMENT_CATALOG.length + ' unlocked' : ''),
+              style: secondaryBtnStyle(palette)
+            }, '🏆 Achievements' + (unlocked > 0 ? ' · ' + unlocked + '/' + ACHIEVEMENT_CATALOG.length : ''));
           })(),
           h('button', {
             onClick: function() { setStateField('activeModal', 'settings'); },
@@ -10105,6 +10388,115 @@
     // ─────────────────────────────────────────────────
     // GOALS LIST MODAL (Phase 2n)
     // ─────────────────────────────────────────────────
+    // Achievements modal (Phase 2p.5) — list every achievement with
+    // unlock state. Unlocked first, then locked (silhouetted with desc
+    // visible so students know what to aim for, but value-neutral —
+    // these are markers, not requirements).
+    function renderAchievementsModal() {
+      if (state.activeModal !== 'achievements') return null;
+      var unlocked = state.achievements || {};
+      var unlockedItems = ACHIEVEMENT_CATALOG.filter(function(a) { return unlocked[a.id]; });
+      var lockedItems   = ACHIEVEMENT_CATALOG.filter(function(a) { return !unlocked[a.id]; });
+      // Unlocked sorted newest first
+      unlockedItems.sort(function(a, b) {
+        return (unlocked[b.id].unlockedAt || '').localeCompare(unlocked[a.id].unlockedAt || '');
+      });
+      function renderRow(ach, isUnlocked) {
+        var stamp = isUnlocked && unlocked[ach.id]
+          ? new Date(unlocked[ach.id].unlockedAt).toLocaleDateString()
+          : null;
+        return h('div', {
+          key: 'ach-' + ach.id,
+          role: 'group',
+          'aria-label': ach.label + (isUnlocked ? ', unlocked ' + stamp : ', not yet unlocked')
+            + ', ' + ach.desc,
+          style: {
+            display: 'flex', gap: '12px', alignItems: 'center',
+            padding: '10px 12px',
+            background: isUnlocked ? palette.surface : palette.bg,
+            border: '1px solid ' + (isUnlocked ? palette.accent : palette.border),
+            borderRadius: '8px',
+            opacity: isUnlocked ? 1 : 0.55
+          }
+        },
+          h('div', {
+            'aria-hidden': 'true',
+            style: {
+              fontSize: '24px', flexShrink: 0,
+              filter: isUnlocked ? 'none' : 'grayscale(0.85) blur(0.5px)'
+            }
+          }, ach.emoji),
+          h('div', { style: { flex: 1, minWidth: 0 } },
+            h('div', {
+              style: {
+                fontSize: '13px', fontWeight: 700,
+                color: isUnlocked ? palette.text : palette.textMute,
+                marginBottom: '2px'
+              }
+            }, ach.label),
+            h('div', {
+              style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45' }
+            }, ach.desc)
+          ),
+          stamp ? h('div', {
+            style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', flexShrink: 0 }
+          }, stamp) : null
+        );
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Achievements',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '600px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '🏆 Achievements · ' + unlockedItems.length + '/' + ACHIEVEMENT_CATALOG.length),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close achievements',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
+          }, 'Gentle markers, not requirements. They unlock as you do the things you were already doing — no streaks, no comparisons.'),
+
+          unlockedItems.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+              '✓ Unlocked · ' + unlockedItems.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              unlockedItems.map(function(a) { return renderRow(a, true); })
+            )
+          ) : null,
+          lockedItems.length > 0 ? h('div', { style: { paddingTop: unlockedItems.length > 0 ? '14px' : 0, borderTop: unlockedItems.length > 0 ? '1px solid ' + palette.border : 'none' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+              '○ Still ahead · ' + lockedItems.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              lockedItems.map(function(a) { return renderRow(a, false); })
+            )
+          ) : null
+        )
+      );
+    }
+
     function renderGoalsListModal() {
       if (state.activeModal !== 'goals') return null;
       var goals = (state.goals || []).slice();
@@ -11003,6 +11395,41 @@
               )
             );
           })(),
+          // Recent achievements (Phase 2p.5) — same spirit as the print
+          // packet section, palette-aware for on-screen review
+          (function() {
+            var ach = state.achievements || {};
+            var nowMs = Date.now();
+            var thirty = 30 * 24 * 60 * 60 * 1000;
+            var recent = ACHIEVEMENT_CATALOG.filter(function(a) {
+              if (!ach[a.id]) return false;
+              var t = new Date(ach[a.id].unlockedAt).getTime();
+              return (nowMs - t) <= thirty;
+            });
+            recent.sort(function(a, b) {
+              return (ach[b.id].unlockedAt || '').localeCompare(ach[a.id].unlockedAt || '');
+            });
+            if (recent.length === 0) return null;
+            var totalUnlocked = Object.keys(ach).length;
+            return h('div', { style: sectionStyle },
+              h('h2', { style: sectionTitleStyle }, '🏆 Recent Achievements · ' + recent.length + ' in last 30 days · ' + totalUnlocked + '/' + ACHIEVEMENT_CATALOG.length + ' total'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' } },
+                recent.map(function(a) {
+                  return h('div', {
+                    key: 'cra-' + a.id,
+                    style: { padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderLeft: '3px solid ' + palette.accent, borderRadius: '6px' }
+                  },
+                    h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+                      a.emoji + ' ' + a.label),
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45', marginBottom: '4px' } },
+                      a.desc),
+                    h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } },
+                      new Date(ach[a.id].unlockedAt).toLocaleDateString())
+                  );
+                })
+              )
+            );
+          })(),
           // Goals (Phase 2n)
           (function() {
             var goals = state.goals || [];
@@ -11312,6 +11739,35 @@
             ) : null
           );
         })(),
+        // Recent achievements (Phase 2p.5) — last 30 days, newest first
+        (function() {
+          var ach = state.achievements || {};
+          var nowMs = Date.now();
+          var thirty = 30 * 24 * 60 * 60 * 1000;
+          var recent = ACHIEVEMENT_CATALOG.filter(function(a) {
+            if (!ach[a.id]) return false;
+            var t = new Date(ach[a.id].unlockedAt).getTime();
+            return (nowMs - t) <= thirty;
+          });
+          recent.sort(function(a, b) {
+            return (ach[b.id].unlockedAt || '').localeCompare(ach[a.id].unlockedAt || '');
+          });
+          if (recent.length === 0) return null;
+          var totalUnlocked = Object.keys(ach).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', color: '#222' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '12px', color: '#000' } },
+              '🏆 Recent achievements · ' + recent.length + ' in last 30 days · ' + totalUnlocked + '/' + ACHIEVEMENT_CATALOG.length + ' total'),
+            h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+              recent.map(function(a) {
+                return h('li', { key: 'pa-' + a.id, style: { fontSize: '11px', color: '#222', marginBottom: '3px' } },
+                  a.emoji + ' ' + a.label,
+                  h('span', { style: { color: '#666', fontStyle: 'italic', marginLeft: '6px' } },
+                    '· ' + new Date(ach[a.id].unlockedAt).toLocaleDateString())
+                );
+              })
+            )
+          );
+        })(),
         // Goals section (Phase 2n) — active + recently-completed
         (function() {
           var goals = state.goals || [];
@@ -11442,6 +11898,7 @@
       renderStoryWalkModal(),
       renderGoalsListModal(),
       renderGoalBuilderModal(),
+      renderAchievementsModal(),
       renderCompanionSetupModal(),
       renderReflectionModal(),
       renderJournalModal(),
