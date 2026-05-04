@@ -1,0 +1,19 @@
+name = "alloflow-catalog-submit"
+main = "src/index.js"
+compatibility_date = "2026-04-01"
+
+# The GitHub repo this Worker writes to. Override per-deploy via wrangler vars
+# if you fork. Do NOT put any secret here. Secrets live in `wrangler secret put`.
+[vars]
+GITHUB_OWNER = "Apomera"
+GITHUB_REPO  = "AlloFlow"
+GITHUB_BRANCH = "main"
+
+# Limits applied at the Worker level. Submission max size is also enforced
+# inside the handler; this is a backstop.
+[limits]
+cpu_ms = 50
+
+# Local dev settings
+[dev]
+port = 8787
