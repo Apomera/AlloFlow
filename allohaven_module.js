@@ -245,6 +245,11 @@
       // }
     ],
 
+    // ── Tour (Phase 2p.6) ──
+    // First-visit guided walkthrough. tourSeen flips true when student
+    // dismisses or completes the tour. Replayable from settings.
+    tourSeen: false,
+
     // ── Achievements (Phase 2p.5) ──
     // Map of achievement-id → { unlockedAt: ISO }. Once unlocked, stays
     // unlocked. Computed transparently from existing state by the
@@ -884,6 +889,29 @@
     start.setHours(0, 0, 0, 0);
     var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000 - 1000);
     return { startDate: start.toISOString(), endDate: end.toISOString() };
+  }
+
+  // ── Subject tags (Phase 2p.6) ──
+  // Multi-select academic-domain tags. Sister to mood tags but where
+  // mood is single-select affective, subjects are multi-select cognitive
+  // (a single decoration can be both math AND science, for example).
+  // Maps directly to IEP goal areas so the print packet groups by
+  // subject for parent / IEP-team review.
+  var SUBJECT_TAGS = [
+    { id: 'math',        emoji: '🔢', label: 'Math',         hint: 'Numbers, shapes, logic, problem-solving' },
+    { id: 'reading',     emoji: '📚', label: 'Reading',      hint: 'Words, comprehension, vocabulary, literature' },
+    { id: 'writing',     emoji: '✍️', label: 'Writing',      hint: 'Composition, spelling, grammar' },
+    { id: 'science',     emoji: '🔬', label: 'Science',      hint: 'Biology, chemistry, physics, scientific thinking' },
+    { id: 'social',      emoji: '🌍', label: 'Social',       hint: 'History, geography, cultures, civics' },
+    { id: 'art',         emoji: '🎨', label: 'Art',          hint: 'Drawing, design, visual creativity' },
+    { id: 'music',       emoji: '🎵', label: 'Music',        hint: 'Notes, rhythm, instruments, songs' },
+    { id: 'life-skills', emoji: '🌱', label: 'Life skills',  hint: 'Self-care, social-emotional, life management' }
+  ];
+  function getSubjectTag(id) {
+    for (var i = 0; i < SUBJECT_TAGS.length; i++) {
+      if (SUBJECT_TAGS[i].id === id) return SUBJECT_TAGS[i];
+    }
+    return null;
   }
 
   // ── Mood tags (Phase 2m) ──
@@ -2622,6 +2650,16 @@
     var moodTag = moodTagTuple[0];
     var setMoodTag = moodTagTuple[1];
 
+    // Subject tags (Phase 2p.6) — multi-select. Empty array by default.
+    var subjectTagsTuple = useState([]);
+    var subjectTags = subjectTagsTuple[0];
+    var setSubjectTags = subjectTagsTuple[1];
+    function toggleSubject(id) {
+      var idx = subjectTags.indexOf(id);
+      if (idx === -1) setSubjectTags(subjectTags.concat([id]));
+      else setSubjectTags(subjectTags.filter(function(s) { return s !== id; }));
+    }
+
     function handlePickTemplate(t) {
       setTemplate(t);
       // Pre-fill first option for each slot for hierarchical templates
@@ -2676,11 +2714,11 @@
     }
 
     function handleSkipReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag);
+      p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag, subjectTags);
     }
 
     function handleSubmitReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag);
+      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag, subjectTags);
     }
 
     function handleClose() {
@@ -3009,6 +3047,33 @@
                 transition: 'border-color 140ms ease, background 140ms ease'
               }
             }, m.emoji + ' ' + m.label);
+          })
+        ),
+        // Subject tags (Phase 2p.6) — multi-select. Maps to IEP areas.
+        h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
+          'Subject? (multi-select, optional)'),
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '14px' } },
+          SUBJECT_TAGS.map(function(s) {
+            var active = subjectTags.indexOf(s.id) !== -1;
+            return h('button', {
+              key: 'subj-gen-' + s.id,
+              onClick: function() { toggleSubject(s.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': s.label + (active ? ' (selected, click to deselect)' : ''),
+              title: s.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'border-color 140ms ease, background 140ms ease'
+              }
+            }, s.emoji + ' ' + s.label);
           })
         ),
         h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
@@ -4932,6 +4997,40 @@
             }, m.emoji + ' ' + m.label);
           })
         ) : null,
+        // Subject pills (Phase 2p.6) — multi-select tags for academic
+        // domain. Click to toggle. Displayed below mood for symmetry.
+        typeof p.onSetSubjects === 'function' && !decoration.isStarter ? h('div', {
+          style: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }
+        },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600 } }, 'Subjects:'),
+          SUBJECT_TAGS.map(function(s) {
+            var current = Array.isArray(decoration.subjects) ? decoration.subjects : [];
+            var active = current.indexOf(s.id) !== -1;
+            return h('button', {
+              key: 'ms-' + s.id,
+              onClick: function() {
+                var next = active
+                  ? current.filter(function(x) { return x !== s.id; })
+                  : current.concat([s.id]);
+                p.onSetSubjects(next);
+              },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': s.label + (active ? ' (currently selected, click to clear)' : ''),
+              title: s.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, s.emoji + ' ' + s.label);
+          })
+        ) : null,
         renderTabs(),
         body
       )
@@ -5541,6 +5640,134 @@
   // Three-step flow: pick species → pick color variant → name your buddy.
   // Live SVG previews refresh as student selects. No token cost — this
   // is identity-curation, should feel free.
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6.7: ONBOARDING TOUR (Phase 2p.6)
+  // ─────────────────────────────────────────────────────────
+  // 6-step modal walkthrough introducing the major features.
+  // Skippable, replayable from settings. Tour fires once on first
+  // visit AFTER the welcome card is dismissed (via state.tourSeen).
+  function TourModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+
+    var stepTuple = useState(0);
+    var step = stepTuple[0];
+    var setStep = stepTuple[1];
+
+    var steps = [
+      {
+        emoji: '🌿',
+        title: 'Welcome to AlloHaven',
+        body: 'This is a cozy room you build by focusing and reflecting. The plant you see is a starter gift. Everything else is yours to grow.'
+      },
+      {
+        emoji: '🪙',
+        title: 'Earn tokens by being you',
+        body: 'Complete a Pomodoro focus session for 2 tokens, write a reflection for 1, pass a memory quiz for 1 (capped 2/day). Tokens spend on AI-generated decorations — 3 per item.'
+      },
+      {
+        emoji: '🌱',
+        title: 'Click any cell to add a decoration',
+        body: 'Empty wall + floor cells have dotted outlines in Build mode. Pick a template, customize the slots, and the AI generates a one-of-a-kind item for your room.'
+      },
+      {
+        emoji: '📖',
+        title: 'Click a decoration → memory palace',
+        body: 'Attach flashcards, an acronym, free notes (with {cloze} blanks!), or an image-link to ANY decoration. Where you place a deck shapes how you remember it. Method of loci, since 477 BC.'
+      },
+      {
+        emoji: '🐱',
+        title: 'Meet your buddy',
+        body: 'Pick a critter — cat, fox, owl, turtle, or baby dragon. Four color palettes, your name. They notice your activity, celebrate your wins, and gently prompt review when a deck is due.'
+      },
+      {
+        emoji: '🎯',
+        title: 'Set goals + track progress',
+        body: 'Time-boxed targets (5 Pomodoros this week, 2 quizzes passed, etc.) earn +3 tokens on completion. Goals + skill levels + achievements show up in the print packet for parents and IEP teams.'
+      },
+      {
+        emoji: '🛠 ↔ 🛋',
+        title: 'Build vs Live mode',
+        body: 'Build mode = editing. Live mode = the room rests, your buddy sleeps, lights soften. The toggle in the header swaps you between them whenever you want.'
+      }
+    ];
+
+    var current = steps[step];
+    var isLast = step === steps.length - 1;
+    function next() { if (isLast) p.onFinish(); else setStep(step + 1); }
+    function back() { if (step > 0) setStep(step - 1); }
+    function skip() { p.onFinish(); }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'AlloHaven tour, step ' + (step + 1) + ' of ' + steps.length,
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.65)', zIndex: 200,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '2px solid ' + palette.accent,
+          borderRadius: '16px', padding: '28px',
+          maxWidth: '480px', width: '100%',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.55)',
+          color: palette.text, textAlign: 'center'
+        }
+      },
+        h('div', { style: { fontSize: '48px', marginBottom: '10px' } }, current.emoji),
+        h('h3', { style: { margin: '0 0 12px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
+          current.title),
+        h('p', { style: { margin: '0 0 20px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
+          current.body),
+        // Progress dots
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '20px' } },
+          steps.map(function(_, i) {
+            return h('span', {
+              key: 'td-' + i,
+              'aria-hidden': 'true',
+              style: {
+                width: i === step ? '20px' : '8px',
+                height: '8px',
+                borderRadius: '999px',
+                background: i <= step ? palette.accent : palette.surface,
+                border: '1px solid ' + (i <= step ? palette.accent : palette.border),
+                transition: 'width 200ms'
+              }
+            });
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center' } },
+          h('button', {
+            onClick: skip,
+            'aria-label': 'Skip the tour',
+            style: { background: 'transparent', color: palette.textMute, border: 'none', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }
+          }, 'Skip'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            step > 0 ? h('button', {
+              onClick: back,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, '◀ Back') : null,
+            h('button', {
+              onClick: next,
+              style: {
+                background: palette.accent, color: palette.onAccent,
+                border: 'none', borderRadius: '8px', padding: '8px 22px',
+                fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, isLast ? '✨ Got it' : 'Next ▶')
+          )
+        )
+      )
+    );
+  }
+
   function CompanionSetupInner(p) {
     var React = window.React;
     var h = React.createElement;
@@ -7549,6 +7776,23 @@
       // eslint-disable-next-line
     }, [state.decorations.length]);
 
+    // First-visit tour auto-fire (Phase 2p.6) — once the welcome card
+    // is dismissed AND no other modal is up, kick off the tour. Only
+    // fires when state.tourSeen is false (one-shot per student).
+    useEffect(function() {
+      if (state.tourSeen) return;
+      if (!state.onboardingSeen) return; // wait for welcome card first
+      if (state.activeModal) return;     // wait for other modals to close
+      // Defer slightly so the welcome card animation completes
+      var t = setTimeout(function() {
+        if (!state.tourSeen && !state.activeModal && state.onboardingSeen) {
+          setStateField('activeModal', 'tour');
+        }
+      }, 400);
+      return function() { clearTimeout(t); };
+      // eslint-disable-next-line
+    }, [state.onboardingSeen, state.tourSeen, state.activeModal]);
+
     // Achievement unlock detection (Phase 2p.5) — runs the catalog\'s
     // check() functions against current state. Newly-passing achievements
     // get an unlockedAt timestamp persisted + a companion celebration
@@ -7712,7 +7956,7 @@
     // commits to the AI-generated image. Token already deducted at
     // generate time; this just records the placement + closes modal.
     // Optional reflection text attaches to the decoration's metadata.
-    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag) {
+    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       // Slight ±3° rotation, randomized once per item — "lived-in wobble"
       var rotation = (Math.random() * 6) - 3;
@@ -7729,7 +7973,8 @@
         earnedAt: new Date().toISOString(),
         tokensSpent: DECORATION_COST,
         studentReflection: (reflectionText || '').trim(),
-        mood: moodTag || null,  // Phase 2m — affective domain tag
+        mood: moodTag || null,                         // Phase 2m — affective tag
+        subjects: Array.isArray(subjectTags) ? subjectTags : [],  // Phase 2p.6 — academic tags
         linkedContent: null,    // v2+ memory palace
         sourceTool: null,       // v2+ cross-tool integration
         aiRationale: null       // v2+ AI summary of how earned
@@ -7747,6 +7992,17 @@
       var newDecs = state.decorations.map(function(d) {
         if (d.id !== decorationId) return d;
         return Object.assign({}, d, { mood: moodId || null });
+      });
+      setStateField('decorations', newDecs);
+    }
+
+    // Update subject tags on an existing decoration (Phase 2p.6).
+    // Pass an array of subject ids; pass [] to clear all.
+    function setDecorationSubjects(decorationId, subjectIds) {
+      var clean = Array.isArray(subjectIds) ? subjectIds : [];
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { subjects: clean });
       });
       setStateField('decorations', newDecs);
     }
@@ -9433,7 +9689,27 @@
 
     function renderMemoryOverviewModal() {
       if (state.activeModal !== 'memory-overview') return null;
-      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      // Subject filter (Phase 2p.6) — student-selected subject narrows
+      // the visible decks. activeSubjectFilter lives in generateContext
+      // since it's modal-scoped and shouldn't persist beyond close.
+      var activeFilter = (state.generateContext && state.generateContext.subjectFilter) || null;
+      var allWithContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      var withContent = activeFilter
+        ? allWithContent.filter(function(d) {
+            return Array.isArray(d.subjects) && d.subjects.indexOf(activeFilter) !== -1;
+          })
+        : allWithContent;
+      // Compute which subjects are actually present (for filter row)
+      var subjectsPresent = {};
+      allWithContent.forEach(function(d) {
+        (d.subjects || []).forEach(function(s) { subjectsPresent[s] = (subjectsPresent[s] || 0) + 1; });
+      });
+      function setSubjectFilter(id) {
+        var nextCtx = Object.assign({}, state.generateContext || {}, {
+          subjectFilter: (activeFilter === id) ? null : id
+        });
+        setStateField('generateContext', nextCtx);
+      }
       // Partition into 3 buckets: due / due-soon / fresh
       var due = [];
       var dueSoon = [];
@@ -9595,6 +9871,51 @@
 
           // 30-day token trend chart (Phase 2l) — only renders when there's data
           renderTrendsChart(),
+
+          // Subject filter chips (Phase 2p.6) — appear when ≥1 deck has
+          // any subject tagged. Click to filter; click selected to clear.
+          Object.keys(subjectsPresent).length > 0 ? h('div', {
+            role: 'region',
+            'aria-label': 'Filter decks by subject',
+            style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px', alignItems: 'center' }
+          },
+            h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+              'Filter:'),
+            SUBJECT_TAGS.filter(function(s) { return !!subjectsPresent[s.id]; }).map(function(s) {
+              var active = activeFilter === s.id;
+              return h('button', {
+                key: 'sf-' + s.id,
+                onClick: function() { setSubjectFilter(s.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  background: active ? palette.accent : 'transparent',
+                  color: active ? palette.onAccent : palette.text,
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, s.emoji + ' ' + s.label + ' · ' + subjectsPresent[s.id]);
+            }),
+            activeFilter ? h('button', {
+              onClick: function() { setSubjectFilter(activeFilter); }, // toggle clears
+              'aria-label': 'Clear subject filter',
+              style: {
+                background: 'transparent',
+                color: palette.textMute,
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textDecoration: 'underline',
+                marginLeft: '4px'
+              }
+            }, 'Clear') : null
+          ) : null,
 
           // Due section
           due.length > 0 ? h('div', { style: { marginBottom: '14px' } },
@@ -9987,7 +10308,8 @@
         onQuizComplete: function(scorePct) {
           recordQuizSession(decorationId, scorePct);
         },
-        onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); }
+        onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); },
+        onSetSubjects: function(subjectIds) { setDecorationSubjects(decorationId, subjectIds); }
       });
     }
 
@@ -10155,8 +10477,8 @@
         onGenerate: function(template, slots, artStyleId, isRegenerate, isFreeRegenerate, callback) {
           generateDecoration(template, slots, artStyleId, isRegenerate, isFreeRegenerate, callback);
         },
-        onPlace: function(template, slots, artStyleId, imageBase64, reflectionText) {
-          placeDecoration(template, slots, artStyleId, imageBase64, reflectionText);
+        onPlace: function(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
+          placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags);
         },
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
@@ -10668,6 +10990,16 @@
       );
     }
 
+    function renderTourModal() {
+      if (state.activeModal !== 'tour') return null;
+      return h(TourModalInner, {
+        palette: palette,
+        onFinish: function() {
+          setStateMulti({ tourSeen: true, activeModal: null });
+        }
+      });
+    }
+
     function renderCompanionSetupModal() {
       if (state.activeModal !== 'companion-setup') return null;
       return h(CompanionSetupInner, {
@@ -11151,7 +11483,17 @@
 
           h('div', {
             style: { fontSize: '11px', color: palette.textMute, marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, lineHeight: '1.5' }
-          }, 'Today: ' + (state.dailyState.pomodorosCompleted || 0) + ' Pomodoros completed · soft cap at 4/day (above which sessions still run but earn 0 tokens).')
+          }, 'Today: ' + (state.dailyState.pomodorosCompleted || 0) + ' Pomodoros completed · soft cap at 4/day (above which sessions still run but earn 0 tokens).'),
+          // Replay tour button (Phase 2p.6)
+          h('div', {
+            style: { marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, textAlign: 'center' }
+          },
+            h('button', {
+              onClick: function() { setStateMulti({ activeModal: 'tour' }); },
+              'aria-label': 'Replay the welcome tour',
+              style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 14px' })
+            }, '🎬 Replay tour')
+          )
         )
       );
     }
@@ -11695,6 +12037,35 @@
             )
           );
         })(),
+        // Subject distribution (Phase 2p.6) — academic-domain coverage
+        // for IEP review. Shows only when ≥1 decoration has a subject.
+        (function() {
+          var subjCounts = {};
+          state.decorations.forEach(function(d) {
+            (d.subjects || []).forEach(function(sid) {
+              subjCounts[sid] = (subjCounts[sid] || 0) + 1;
+            });
+          });
+          var subjTagged = Object.keys(subjCounts).length;
+          if (subjTagged === 0) return null;
+          var totalTaggedDecs = state.decorations.filter(function(d) {
+            return Array.isArray(d.subjects) && d.subjects.length > 0;
+          }).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px', color: '#222' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px' } },
+              '📚 Subject coverage · ' + totalTaggedDecs + ' tagged decoration' + (totalTaggedDecs === 1 ? '' : 's')),
+            h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap' } },
+              SUBJECT_TAGS.map(function(s) {
+                var n = subjCounts[s.id] || 0;
+                if (n === 0) return null;
+                return h('span', {
+                  key: 'psd-' + s.id,
+                  style: { fontSize: '11px', color: '#222' }
+                }, s.emoji + ' ' + s.label + ': ' + n);
+              })
+            )
+          );
+        })(),
         // Companion + Skills (Phase 2p)
         (function() {
           var companion = state.companion;
@@ -11900,6 +12271,7 @@
       renderGoalBuilderModal(),
       renderAchievementsModal(),
       renderCompanionSetupModal(),
+      renderTourModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderInsightsModal(),
