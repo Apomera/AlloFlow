@@ -5439,15 +5439,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   )
                 );
               })(),
-              h('div', { className: 'bg-amber-50 border-2 border-amber-400 rounded-2xl p-5' },
-                h('h3', { className: 'text-base font-black text-amber-900 mb-2' }, '🌡️ Climate change is the new pressure'),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                  'The Gulf of Maine is warming faster than 99% of the world\'s ocean (Gulf of Maine Research Institute). For Maine birds, this means:'),
-                h('ul', { className: 'list-disc list-inside space-y-1 text-sm text-slate-800' },
-                  h('li', null, 'Atlantic Puffin chicks struggling — warm water pushes preferred fish too deep + too warm to feed chicks'),
-                  h('li', null, 'Spring arrival shifting earlier — many warblers arrive 1-2 weeks earlier than the 1960s baseline'),
-                  h('li', null, 'Mismatched timing — caterpillar peaks (warbler chick food) shifted faster than warbler arrivals'),
-                  h('li', null, 'Range shifts northward — Northern Cardinals + Carolina Wrens have expanded into Maine since 1970')
+              // ── Climate change pressure: thermometer headline + 4 impact cards ──
+              h('div', { className: 'rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg bg-gradient-to-br from-rose-50 via-amber-50 to-yellow-50' },
+                // Hero band: thermometer + Gulf-of-Maine stat
+                h('div', { className: 'p-5 flex items-start gap-4 flex-wrap border-b-2 border-amber-300', style: { background: 'rgba(254,243,199,0.4)' } },
+                  // Thermometer SVG
+                  h('svg', { width: 48, height: 96, viewBox: '0 0 48 96', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+                    h('defs', null,
+                      h('linearGradient', { id: 'thermFill', x1: '0%', y1: '100%', x2: '0%', y2: '0%' },
+                        h('stop', { offset: '0%', stopColor: '#fbbf24' }),
+                        h('stop', { offset: '50%', stopColor: '#f97316' }),
+                        h('stop', { offset: '100%', stopColor: '#dc2626' })
+                      )
+                    ),
+                    // Outer tube
+                    h('rect', { x: 18, y: 8, width: 12, height: 60, rx: 6, fill: '#ffffff', stroke: '#475569', strokeWidth: 1.5 }),
+                    // Bulb
+                    h('circle', { cx: 24, cy: 76, r: 11, fill: '#ffffff', stroke: '#475569', strokeWidth: 1.5 }),
+                    // Mercury fill (high — 90%)
+                    h('rect', { x: 21, y: 14, width: 6, height: 54, rx: 3, fill: 'url(#thermFill)' }),
+                    h('circle', { cx: 24, cy: 76, r: 8, fill: '#dc2626' }),
+                    // Tick marks on side
+                    [16, 28, 40, 52].map(function(y, i) {
+                      return h('line', { key: 't' + i, x1: 30, y1: y, x2: 36, y2: y, stroke: '#475569', strokeWidth: 1 });
+                    }),
+                    // Heat lines rising
+                    h('path', { d: 'M 8 12 Q 6 8 8 4 M 14 8 Q 12 4 14 0', fill: 'none', stroke: '#dc2626', strokeWidth: 1.5, opacity: 0.7 }),
+                    h('path', { d: 'M 38 12 Q 40 8 38 4 M 32 8 Q 34 4 32 0', fill: 'none', stroke: '#dc2626', strokeWidth: 1.5, opacity: 0.7 })
+                  ),
+                  // Stat
+                  h('div', { className: 'flex-1 min-w-0' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700' }, '🌡 Climate change is the new pressure'),
+                    h('div', { className: 'flex items-baseline gap-1 mt-1 flex-wrap' },
+                      h('span', { style: { fontSize: 36, fontWeight: 900, color: '#dc2626', lineHeight: 1, letterSpacing: '-0.02em' } }, '99%'),
+                      h('span', { className: 'text-base font-bold text-rose-900' }, ' faster')
+                    ),
+                    h('p', { className: 'text-sm text-slate-800 leading-snug mt-1' },
+                      h('strong', null, 'The Gulf of Maine is warming faster than 99% of the world\'s ocean.'),
+                      ' Source: Gulf of Maine Research Institute.'
+                    )
+                  )
+                ),
+                // 4 impact cards in 2x2 grid
+                h('div', { className: 'p-4 grid grid-cols-1 md:grid-cols-2 gap-3' },
+                  // Card 1: Puffin chicks
+                  h('div', { className: 'p-3 bg-white rounded-xl border-2 border-rose-200 flex items-start gap-2.5' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-2xl flex-shrink-0' }, '🐦'),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-rose-800' }, 'Puffin chicks struggling'),
+                      h('p', { className: 'text-xs text-slate-800 leading-relaxed mt-0.5' },
+                        'Warm water pushes preferred forage fish too deep + too warm to feed chicks. Chick survival down.')
+                    )
+                  ),
+                  // Card 2: Spring arrival earlier
+                  h('div', { className: 'p-3 bg-white rounded-xl border-2 border-amber-200 flex items-start gap-2.5' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-2xl flex-shrink-0' }, '📅'),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, 'Spring is arriving 1–2 weeks earlier'),
+                      h('p', { className: 'text-xs text-slate-800 leading-relaxed mt-0.5' },
+                        'Many warblers + early migrants arrive in Maine 1–2 weeks earlier than the 1960s baseline.')
+                    )
+                  ),
+                  // Card 3: Mismatched timing
+                  h('div', { className: 'p-3 bg-white rounded-xl border-2 border-orange-200 flex items-start gap-2.5' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-2xl flex-shrink-0' }, '⏱'),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-800' }, 'Timing mismatch'),
+                      h('p', { className: 'text-xs text-slate-800 leading-relaxed mt-0.5' },
+                        'Caterpillar peaks (warbler chick food) shifted faster than warbler arrival times.')
+                    )
+                  ),
+                  // Card 4: Range shifts northward
+                  h('div', { className: 'p-3 bg-white rounded-xl border-2 border-yellow-300 flex items-start gap-2.5' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-2xl flex-shrink-0' }, '⬆️'),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-yellow-800' }, 'Ranges shifting northward'),
+                      h('p', { className: 'text-xs text-slate-800 leading-relaxed mt-0.5' },
+                        'Northern Cardinals + Carolina Wrens expanded into Maine since 1970. Maine\'s bird community is reshuffling in real time.')
+                    )
+                  )
                 )
               ),
               h(TeacherNotes, {
