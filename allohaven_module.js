@@ -245,8 +245,21 @@
       // }
     ],
 
+    // ── Companion (Phase 2p — Sims-y critter buddy) ──
+    // null until student creates one through the setup wizard. Once set,
+    // a small SVG figure lives in the bottom-right of the floor surface
+    // and emits state-aware thought bubbles. skillCelebrations[skillId]
+    // remembers the highest level we already congratulated for, so the
+    // confetti only fires on actual NEW level-ups (not on every re-render).
+    companion: null,
+    // {
+    //   species, colorVariant, name,
+    //   createdAt, lastBubbleAt, lastBubbleText,
+    //   skillCelebrations: { focus, memory, reflection, storytelling }
+    // }
+
     // ── Active modal (within AlloHaven; NOT the outer Open/Close state) ──
-    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | null
+    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | 'companion-setup' | null
     generateContext: null,           // { surface, cellIndex } when generate modal open
 
     // ── Reflection insights cache ──
@@ -880,6 +893,177 @@
     return null;
   }
 
+  // ─────────────────────────────────────────────────────────
+  // SECTION 4.5: COMPANION CRITTERS + SKILL LEVELS (Phase 2p)
+  // ─────────────────────────────────────────────────────────
+  // A personalizable critter (cat / fox / owl / turtle / dragon) with
+  // four color variants per species, free-text name, idle animations,
+  // click-to-react, and state-aware thought bubbles. Plus four
+  // skill-level tracks (Focus / Memory / Reflection / Storytelling)
+  // derived from the existing earnings ledger — no new counters.
+  //
+  // Design rules:
+  //   • Hand-built inline SVGs (not AI). Consistency, zero render cost.
+  //   • Bubbles are observational, never guilt-inducing. No "I'm sad".
+  //   • Skill levels are status, not currency: NO token bonus on level-up.
+  //   • Reduced-motion already wraps via the existing @media block —
+  //     all new keyframes auto-suppress.
+
+  // Threshold ladder for skill levels — logarithmic-ish so lower levels
+  // feel achievable, higher levels represent meaningful sustained
+  // engagement. Level N requires THRESHOLDS[N] total events.
+  var SKILL_THRESHOLDS = [0, 3, 8, 15, 25, 40, 60, 90, 130, 180];
+
+  // Skill definitions. Each one says how to count from state.earnings.
+  var SKILL_DEFS = [
+    {
+      id: 'focus',         emoji: '🍅',
+      label: 'Focus',
+      hint: 'Earn from completing Pomodoro sessions.',
+      sources: ['pomodoro', 'cycle-bonus']
+    },
+    {
+      id: 'memory',        emoji: '🧠',
+      label: 'Memory',
+      hint: 'Earn from quiz sessions you pass.',
+      sources: ['memory-quiz', 'reflection-cloze-quiz']
+    },
+    {
+      id: 'reflection',    emoji: '📝',
+      label: 'Reflection',
+      hint: 'Earn from journal entries.',
+      sources: ['reflection']
+    },
+    {
+      id: 'storytelling',  emoji: '📜',
+      label: 'Storytelling',
+      hint: 'Earn from creating + walking stories.',
+      sources: ['story-walk', 'story-created']
+    }
+  ];
+
+  function countSkillEvents(state, skillId) {
+    var def = null;
+    for (var i = 0; i < SKILL_DEFS.length; i++) {
+      if (SKILL_DEFS[i].id === skillId) { def = SKILL_DEFS[i]; break; }
+    }
+    if (!def) return 0;
+    var sources = def.sources;
+    return (state.earnings || []).filter(function(e) {
+      return sources.indexOf(e.source) !== -1;
+    }).length;
+  }
+
+  // Returns { level, current, nextThreshold, pct, atMax }.
+  // pct is progress toward the NEXT level (0–100).
+  function computeSkillLevel(count) {
+    var lvl = 0;
+    for (var i = 0; i < SKILL_THRESHOLDS.length; i++) {
+      if (count >= SKILL_THRESHOLDS[i]) lvl = i;
+    }
+    var atMax = lvl >= SKILL_THRESHOLDS.length - 1;
+    var floor = SKILL_THRESHOLDS[lvl];
+    var ceil = atMax ? floor : SKILL_THRESHOLDS[lvl + 1];
+    var span = atMax ? 1 : (ceil - floor);
+    var into = count - floor;
+    var pct = atMax ? 100 : Math.min(100, Math.round((into / span) * 100));
+    return {
+      level: lvl, current: count,
+      nextThreshold: atMax ? null : ceil,
+      pct: pct,
+      atMax: atMax
+    };
+  }
+
+  // Companion species metadata. Each species has a distinct voice prefix
+  // pattern that flavors the same observation.
+  var COMPANION_SPECIES = [
+    {
+      id: 'cat',     emoji: '🐱', label: 'Cat',
+      blurb: 'Calm and observant. Notices things others miss.',
+      voicePrefix: 'Hmm. ',
+      affirm: 'You did well.'
+    },
+    {
+      id: 'fox',     emoji: '🦊', label: 'Fox',
+      blurb: 'Curious and clever. Always asking what if.',
+      voicePrefix: 'What if you ',
+      affirm: 'Clever, very clever.'
+    },
+    {
+      id: 'owl',     emoji: '🦉', label: 'Owl',
+      blurb: 'Wise and deliberate. Likes steady study.',
+      voicePrefix: 'Considering... ',
+      affirm: 'Thoughtful work.'
+    },
+    {
+      id: 'turtle',  emoji: '🐢', label: 'Turtle',
+      blurb: 'Patient and gentle. Step by step is the way.',
+      voicePrefix: 'Step by step — ',
+      affirm: 'Slow is steady.'
+    },
+    {
+      id: 'dragon',  emoji: '🐉', label: 'Baby dragon',
+      blurb: 'Enthusiastic and imaginative. Adventures await.',
+      voicePrefix: 'Whoa! ',
+      affirm: 'Epic move!'
+    }
+  ];
+  function getCompanionSpecies(id) {
+    for (var i = 0; i < COMPANION_SPECIES.length; i++) {
+      if (COMPANION_SPECIES[i].id === id) return COMPANION_SPECIES[i];
+    }
+    return null;
+  }
+
+  // 4 color variants × 5 species = 20 hand-tuned trios. Each trio is
+  // { primary, secondary, accent } — primary = main body, secondary =
+  // belly/inner ear/wing, accent = stripes/eyes/tail-tip.
+  // Tuned to look acceptable across all 5 AlloHaven theme bases.
+  var COMPANION_PALETTES = {
+    cat: {
+      warm:   { primary: '#a86a3d', secondary: '#f4d4b0', accent: '#3d2418' },
+      cool:   { primary: '#6a8a9a', secondary: '#cfdde6', accent: '#2a3a4a' },
+      pastel: { primary: '#f4cdd6', secondary: '#fff0f4', accent: '#a36876' },
+      dark:   { primary: '#2a2a2a', secondary: '#5a5a5a', accent: '#fbbf24' }
+    },
+    fox: {
+      warm:   { primary: '#d4732a', secondary: '#fff5e6', accent: '#3d2418' },
+      cool:   { primary: '#7a9aaa', secondary: '#dfe9f0', accent: '#1a2a3a' },
+      pastel: { primary: '#f0a888', secondary: '#fff0e8', accent: '#8a4838' },
+      dark:   { primary: '#3a2418', secondary: '#7a5a3a', accent: '#f4d4b0' }
+    },
+    owl: {
+      warm:   { primary: '#8a5a3a', secondary: '#d4a878', accent: '#fbbf24' },
+      cool:   { primary: '#5a6a7a', secondary: '#a0b0c0', accent: '#e8c878' },
+      pastel: { primary: '#c8a098', secondary: '#f0d8d0', accent: '#f4b04a' },
+      dark:   { primary: '#1a1a2a', secondary: '#4a4a6a', accent: '#fbbf24' }
+    },
+    turtle: {
+      warm:   { primary: '#6a8a3a', secondary: '#a4c068', accent: '#8a5a2a' },
+      cool:   { primary: '#3a7a8a', secondary: '#7aa8b8', accent: '#1a4858' },
+      pastel: { primary: '#a8d4a8', secondary: '#d8eed8', accent: '#5a8a5a' },
+      dark:   { primary: '#1a3a2a', secondary: '#3a5a4a', accent: '#88c878' }
+    },
+    dragon: {
+      warm:   { primary: '#d4583a', secondary: '#f8c0a8', accent: '#3a1818' },
+      cool:   { primary: '#5a7aaa', secondary: '#a0c0e0', accent: '#1a2a4a' },
+      pastel: { primary: '#d8b8e8', secondary: '#f0e0f8', accent: '#7a4a8a' },
+      dark:   { primary: '#2a1a3a', secondary: '#5a3a6a', accent: '#fbbf24' }
+    }
+  };
+  function getCompanionPalette(speciesId, variantId) {
+    var sp = COMPANION_PALETTES[speciesId];
+    if (!sp) return { primary: '#888', secondary: '#ccc', accent: '#444' };
+    return sp[variantId] || sp.warm;
+  }
+  var COMPANION_VARIANTS = [
+    { id: 'warm',   label: 'Warm' },
+    { id: 'cool',   label: 'Cool' },
+    { id: 'pastel', label: 'Pastel' },
+    { id: 'dark',   label: 'Dark' }
+  ];
+
   // ── Per-card mastery (Phase 2d) ──
   // Smart shuffle: weights cards by weakness so struggling ones come
   // up first in the deck order, while still maintaining randomness.
@@ -1018,6 +1202,252 @@
     return 'data:image/svg+xml;base64,' + (typeof btoa !== 'undefined' ? btoa(STARTER_FERN_SVG) : '');
   }
 
+  // ── Companion SVG generators (Phase 2p) ──
+  // Each species returns a React element tree (NOT a data URI string)
+  // because we need DOM-targetable groups for animation:
+  //   .ah-companion-body   → breathes (gentle scale)
+  //   .ah-companion-eyelid → blinks  (random 4-7s)
+  //   .ah-companion-tail   → flicks (species-varied 4-9s)
+  //   .ah-companion-root   → bobs   (gentle 5.5s y-translate)
+  //   .ah-companion-react  → applied on click for 600ms (excited bounce)
+  //
+  // ViewBox 0 0 100 100. Built from <ellipse> / <circle> / <path>
+  // primitives so each part is independently fillable + groupable.
+  // Color palette via direct fill props so a theme switch is just a
+  // re-render (no CSS-variable indirection needed).
+  function getCompanionSvg(speciesId, palette, animState) {
+    var React = window.React;
+    var h = React.createElement;
+    var p = palette || { primary: '#888', secondary: '#ccc', accent: '#444' };
+    var blinking = animState && animState.blinking;
+    // Eyelid scale-y is the blink mechanism — when blinking, eyes "close"
+    // by overlaying eyelid shapes at full opacity.
+    var eyelidOpacity = blinking ? 1 : 0;
+    var commonRoot = {
+      viewBox: '0 0 100 100',
+      width: '100%', height: '100%',
+      style: { display: 'block', overflow: 'visible' },
+      'aria-hidden': 'true'
+    };
+
+    if (speciesId === 'cat') {
+      return h('svg', commonRoot,
+        // Tail (sitting curl) — pivots at base; transform-origin in CSS
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '74px 70px' } },
+          h('path', { d: 'M74 70 Q92 64 90 50 Q88 42 82 44', stroke: p.primary, strokeWidth: 9, fill: 'none', strokeLinecap: 'round' }),
+          h('circle', { cx: 82, cy: 44, r: 4, fill: p.accent })
+        ),
+        // Body (sitting cat oval)
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          h('ellipse', { cx: 50, cy: 70, rx: 22, ry: 24, fill: p.primary }),
+          h('ellipse', { cx: 50, cy: 76, rx: 14, ry: 16, fill: p.secondary }),
+          // Head
+          h('ellipse', { cx: 50, cy: 38, rx: 18, ry: 17, fill: p.primary }),
+          // Inner ears
+          h('path', { d: 'M36 26 L33 14 L44 22 Z', fill: p.primary }),
+          h('path', { d: 'M64 26 L67 14 L56 22 Z', fill: p.primary }),
+          h('path', { d: 'M37 24 L36 18 L42 22 Z', fill: p.secondary }),
+          h('path', { d: 'M63 24 L64 18 L58 22 Z', fill: p.secondary }),
+          // Cheeks (subtle)
+          h('ellipse', { cx: 40, cy: 44, rx: 4, ry: 2.5, fill: p.secondary, opacity: 0.5 }),
+          h('ellipse', { cx: 60, cy: 44, rx: 4, ry: 2.5, fill: p.secondary, opacity: 0.5 }),
+          // Eyes
+          h('ellipse', { cx: 42, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
+          h('ellipse', { cx: 58, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
+          // Eye highlights
+          h('circle', { cx: 43, cy: 37, r: 0.8, fill: '#fff' }),
+          h('circle', { cx: 59, cy: 37, r: 0.8, fill: '#fff' }),
+          // Nose
+          h('path', { d: 'M48 44 L52 44 L50 47 Z', fill: p.accent }),
+          // Mouth (subtle smile)
+          h('path', { d: 'M50 47 Q47 50 45 49 M50 47 Q53 50 55 49', stroke: p.accent, strokeWidth: 1, fill: 'none', strokeLinecap: 'round' }),
+          // Whiskers
+          h('path', { d: 'M30 44 L40 44 M30 47 L40 46 M70 44 L60 44 M70 47 L60 46', stroke: p.accent, strokeWidth: 0.6, opacity: 0.5 })
+        ),
+        // Eyelids (overlay when blinking)
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 3.5, fill: p.primary }),
+          h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 3.5, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'fox') {
+      return h('svg', commonRoot,
+        // Tail (big fluffy)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '74px 72px' } },
+          h('path', { d: 'M72 72 Q92 70 90 50 Q86 40 78 50', fill: p.primary }),
+          h('path', { d: 'M84 50 Q92 48 88 38', stroke: p.secondary, strokeWidth: 6, fill: 'none', strokeLinecap: 'round' })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Body
+          h('ellipse', { cx: 50, cy: 72, rx: 20, ry: 22, fill: p.primary }),
+          h('ellipse', { cx: 50, cy: 76, rx: 12, ry: 14, fill: p.secondary }),
+          // Head — pointier than cat
+          h('path', { d: 'M28 38 Q30 24 50 22 Q70 24 72 38 Q70 52 50 54 Q30 52 28 38 Z', fill: p.primary }),
+          // Snout
+          h('path', { d: 'M44 44 Q50 56 56 44 Q53 50 47 50 Z', fill: p.secondary }),
+          // Ears (tall triangles)
+          h('path', { d: 'M32 28 L28 12 L44 22 Z', fill: p.primary }),
+          h('path', { d: 'M68 28 L72 12 L56 22 Z', fill: p.primary }),
+          h('path', { d: 'M34 24 L32 16 L40 22 Z', fill: p.accent }),
+          h('path', { d: 'M66 24 L68 16 L60 22 Z', fill: p.accent }),
+          // Eyes (sly half-moon)
+          h('ellipse', { cx: 41, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
+          h('ellipse', { cx: 59, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
+          h('circle', { cx: 42, cy: 35, r: 0.7, fill: '#fff' }),
+          h('circle', { cx: 60, cy: 35, r: 0.7, fill: '#fff' }),
+          // Nose at the tip
+          h('ellipse', { cx: 50, cy: 48, rx: 2, ry: 1.5, fill: p.accent }),
+          // Tail-tip white
+          h('circle', { cx: 90, cy: 42, r: 4, fill: p.secondary })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('ellipse', { cx: 41, cy: 36, rx: 3, ry: 3, fill: p.primary }),
+          h('ellipse', { cx: 59, cy: 36, rx: 3, ry: 3, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'owl') {
+      return h('svg', commonRoot,
+        // Branch perch (tiny)
+        h('rect', { x: 28, cy: 84, y: 84, width: 44, height: 4, rx: 2, fill: p.accent, opacity: 0.6 }),
+        // Tail feathers (folded)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '50px 80px' } },
+          h('path', { d: 'M44 76 L40 88 L48 84 L50 88 L52 84 L60 88 L56 76 Z', fill: p.accent })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Body (round teardrop)
+          h('ellipse', { cx: 50, cy: 60, rx: 26, ry: 30, fill: p.primary }),
+          // Belly
+          h('ellipse', { cx: 50, cy: 64, rx: 16, ry: 20, fill: p.secondary }),
+          // Belly speckles
+          h('circle', { cx: 44, cy: 56, r: 1.5, fill: p.primary, opacity: 0.4 }),
+          h('circle', { cx: 56, cy: 60, r: 1.5, fill: p.primary, opacity: 0.4 }),
+          h('circle', { cx: 50, cy: 70, r: 1.5, fill: p.primary, opacity: 0.4 }),
+          // Wing tips
+          h('path', { d: 'M24 60 Q22 76 30 80 Q32 70 28 62 Z', fill: p.primary }),
+          h('path', { d: 'M76 60 Q78 76 70 80 Q68 70 72 62 Z', fill: p.primary }),
+          // Tufted ears
+          h('path', { d: 'M30 38 L26 28 L36 34 Z', fill: p.primary }),
+          h('path', { d: 'M70 38 L74 28 L64 34 Z', fill: p.primary }),
+          // Big round eye discs (face plates)
+          h('circle', { cx: 40, cy: 42, r: 9, fill: p.secondary }),
+          h('circle', { cx: 60, cy: 42, r: 9, fill: p.secondary }),
+          // Eyes (big yellow)
+          h('circle', { cx: 40, cy: 42, r: 5.5, fill: p.accent }),
+          h('circle', { cx: 60, cy: 42, r: 5.5, fill: p.accent }),
+          // Pupils
+          h('circle', { cx: 40, cy: 43, r: 2.5, fill: '#1a1a1a' }),
+          h('circle', { cx: 60, cy: 43, r: 2.5, fill: '#1a1a1a' }),
+          h('circle', { cx: 41, cy: 41, r: 0.9, fill: '#fff' }),
+          h('circle', { cx: 61, cy: 41, r: 0.9, fill: '#fff' }),
+          // Beak
+          h('path', { d: 'M48 50 L52 50 L50 56 Z', fill: p.accent })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('circle', { cx: 40, cy: 42, r: 6, fill: p.primary }),
+          h('circle', { cx: 60, cy: 42, r: 6, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'turtle') {
+      return h('svg', commonRoot,
+        // Tail (small triangle behind shell, animates)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '88px 64px' } },
+          h('path', { d: 'M86 60 L94 62 L86 68 Z', fill: p.primary })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Back legs
+          h('ellipse', { cx: 24, cy: 76, rx: 6, ry: 5, fill: p.primary }),
+          h('ellipse', { cx: 76, cy: 76, rx: 6, ry: 5, fill: p.primary }),
+          // Front legs
+          h('ellipse', { cx: 32, cy: 70, rx: 5, ry: 4, fill: p.primary }),
+          h('ellipse', { cx: 68, cy: 70, rx: 5, ry: 4, fill: p.primary }),
+          // Shell base
+          h('ellipse', { cx: 50, cy: 60, rx: 30, ry: 22, fill: p.accent }),
+          // Shell pattern (hexagons-ish)
+          h('path', { d: 'M50 44 L60 50 L60 64 L50 70 L40 64 L40 50 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1 }),
+          h('path', { d: 'M30 52 L40 50 L40 64 L30 66 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.85 }),
+          h('path', { d: 'M70 52 L60 50 L60 64 L70 66 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.85 }),
+          h('path', { d: 'M44 44 L40 50 L50 44 L60 50 L56 44 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.7 }),
+          h('path', { d: 'M44 76 L40 70 L50 74 L60 70 L56 76 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.7 }),
+          // Head
+          h('ellipse', { cx: 18, cy: 60, rx: 10, ry: 8, fill: p.primary }),
+          // Eyes
+          h('circle', { cx: 14, cy: 58, r: 1.5, fill: p.accent }),
+          h('circle', { cx: 14, cy: 58, r: 0.5, fill: '#fff' }),
+          // Cheek dot
+          h('circle', { cx: 17, cy: 64, r: 1.2, fill: p.secondary, opacity: 0.6 }),
+          // Smile
+          h('path', { d: 'M10 62 Q14 65 18 62', stroke: p.accent, strokeWidth: 1, fill: 'none', strokeLinecap: 'round' })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('circle', { cx: 14, cy: 58, r: 1.8, fill: p.primary })
+        )
+      );
+    }
+
+    if (speciesId === 'dragon') {
+      return h('svg', commonRoot,
+        // Tail (curly with spiked tip)
+        h('g', { className: 'ah-companion-tail', style: { transformOrigin: '74px 76px' } },
+          h('path', { d: 'M74 76 Q92 74 88 58 Q82 50 78 58', stroke: p.primary, strokeWidth: 8, fill: 'none', strokeLinecap: 'round' }),
+          h('path', { d: 'M78 58 L74 50 L82 52 Z', fill: p.accent })
+        ),
+        h('g', { className: 'ah-companion-body', style: { transformOrigin: '50px 60px' } },
+          // Body (chubby)
+          h('ellipse', { cx: 50, cy: 70, rx: 22, ry: 22, fill: p.primary }),
+          // Belly
+          h('ellipse', { cx: 50, cy: 76, rx: 13, ry: 14, fill: p.secondary }),
+          // Belly scales
+          h('path', { d: 'M40 70 Q44 74 48 70 Q52 74 56 70 Q60 74 60 70 M40 78 Q44 82 48 78 Q52 82 56 78', stroke: p.accent, strokeWidth: 0.7, fill: 'none', opacity: 0.5 }),
+          // Wings
+          h('path', { d: 'M28 50 Q14 40 18 60 Q24 58 32 56 Z', fill: p.accent, opacity: 0.85 }),
+          h('path', { d: 'M72 50 Q86 40 82 60 Q76 58 68 56 Z', fill: p.accent, opacity: 0.85 }),
+          // Wing membrane lines
+          h('path', { d: 'M28 50 L20 56 M28 50 L24 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 }),
+          h('path', { d: 'M72 50 L80 56 M72 50 L76 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 }),
+          // Head (rounder than fox, with snout)
+          h('ellipse', { cx: 50, cy: 38, rx: 18, ry: 16, fill: p.primary }),
+          // Snout
+          h('ellipse', { cx: 50, cy: 46, rx: 10, ry: 6, fill: p.secondary }),
+          // Horns
+          h('path', { d: 'M40 24 L36 14 L44 22 Z', fill: p.accent }),
+          h('path', { d: 'M60 24 L64 14 L56 22 Z', fill: p.accent }),
+          // Spikes along the back
+          h('path', { d: 'M48 22 L50 16 L52 22 Z', fill: p.accent }),
+          h('path', { d: 'M44 50 L46 44 L48 50 Z M52 50 L54 44 L56 50 Z M60 50 L62 44 L64 50 Z', fill: p.accent, opacity: 0.7 }),
+          // Eyes (big anime style)
+          h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
+          h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
+          h('circle', { cx: 43, cy: 37, r: 1, fill: '#fff' }),
+          h('circle', { cx: 59, cy: 37, r: 1, fill: '#fff' }),
+          // Nostrils
+          h('circle', { cx: 47, cy: 46, r: 0.8, fill: p.accent }),
+          h('circle', { cx: 53, cy: 46, r: 0.8, fill: p.accent }),
+          // Smile
+          h('path', { d: 'M44 50 Q50 53 56 50', stroke: p.accent, strokeWidth: 1, fill: 'none', strokeLinecap: 'round' }),
+          // Tiny tooth
+          h('path', { d: 'M52 50 L52 52 L53 50 Z', fill: '#fff' })
+        ),
+        h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
+          h('ellipse', { cx: 42, cy: 38, rx: 3.5, ry: 4, fill: p.primary }),
+          h('ellipse', { cx: 58, cy: 38, rx: 3.5, ry: 4, fill: p.primary })
+        )
+      );
+    }
+
+    // Fallback: simple round critter
+    return h('svg', commonRoot,
+      h('circle', { cx: 50, cy: 60, r: 26, fill: p.primary }),
+      h('circle', { cx: 42, cy: 56, r: 2, fill: p.accent }),
+      h('circle', { cx: 58, cy: 56, r: 2, fill: p.accent })
+    );
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 5: STYLE INJECTION
   // ─────────────────────────────────────────────────────────
@@ -1093,12 +1523,43 @@
       // non-animated cue).
       '@keyframes ah-memory-due-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,220,140,0.6); } 50% { box-shadow: 0 0 0 4px rgba(255,220,140,0); } }',
       '.ah-root .ah-memory-indicator.ah-memory-due { animation: ah-memory-due-pulse 2400ms ease-in-out infinite; }',
+      // Companion idle animations (Phase 2p) — gentle, sub-conscious
+      // signals of life. All scoped to .ah-companion-* so they don\'t
+      // bleed onto other room elements. Reduced-motion handler at bottom
+      // suppresses them all for sensory-sensitive students.
+      '@keyframes ah-companion-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
+      '@keyframes ah-companion-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }',
+      '@keyframes ah-companion-tail-cat { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-6deg); } }',
+      '@keyframes ah-companion-tail-fox { 0%, 100% { transform: rotate(2deg); } 50% { transform: rotate(-4deg); } }',
+      '@keyframes ah-companion-tail-owl { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(2deg); } }',
+      '@keyframes ah-companion-tail-turtle { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(2px); } }',
+      '@keyframes ah-companion-tail-dragon { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }',
+      '@keyframes ah-companion-react { 0% { transform: scale(1); } 30% { transform: scale(1.15); } 60% { transform: scale(0.92); } 100% { transform: scale(1); } }',
+      '@keyframes ah-companion-confetti { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-30px) scale(0.6); opacity: 0; } }',
+      '.ah-root .ah-companion-root { animation: ah-companion-bob 5500ms ease-in-out infinite; transition: transform 200ms ease; cursor: pointer; }',
+      '.ah-root .ah-companion-root.ah-companion-react { animation: ah-companion-react 600ms ease-out 1; }',
+      '.ah-root .ah-companion-body { animation: ah-companion-breathe 3500ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
+      '.ah-root .ah-companion-tail { transform-box: fill-box; transform-origin: center; }',
+      '.ah-root [data-species="cat"] .ah-companion-tail { animation: ah-companion-tail-cat 6000ms ease-in-out infinite; }',
+      '.ah-root [data-species="fox"] .ah-companion-tail { animation: ah-companion-tail-fox 4500ms ease-in-out infinite; }',
+      '.ah-root [data-species="owl"] .ah-companion-tail { animation: ah-companion-tail-owl 7000ms ease-in-out infinite; }',
+      '.ah-root [data-species="turtle"] .ah-companion-tail { animation: ah-companion-tail-turtle 8000ms ease-in-out infinite; }',
+      '.ah-root [data-species="dragon"] .ah-companion-tail { animation: ah-companion-tail-dragon 4000ms ease-in-out infinite; }',
+      '.ah-root .ah-companion-root:hover { transform: scale(1.05) translateY(-2px); }',
+      '.ah-root .ah-companion-bubble { animation: ah-fade-in 320ms ease-out 1; }',
+      '.ah-root .ah-companion-confetti-piece { animation: ah-companion-confetti 800ms ease-out 1 forwards; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
       '  .ah-root .ah-welcome,',
-      '  .ah-root .ah-memory-indicator.ah-memory-due { animation: none !important; }',
+      '  .ah-root .ah-memory-indicator.ah-memory-due,',
+      '  .ah-root .ah-companion-root,',
+      '  .ah-root .ah-companion-body,',
+      '  .ah-root .ah-companion-tail,',
+      '  .ah-root .ah-companion-bubble,',
+      '  .ah-root .ah-companion-confetti-piece { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
-      '  .ah-root .ah-decoration:focus-visible { transform: none !important; }',
+      '  .ah-root .ah-decoration:focus-visible,',
+      '  .ah-root .ah-companion-root:hover { transform: none !important; }',
       '  button { animation: none !important; }',
       '}'
     ].join('\n');
@@ -4815,6 +5276,288 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 6.55: COMPANION SETUP WIZARD (Phase 2p)
+  // ─────────────────────────────────────────────────────────
+  // Three-step flow: pick species → pick color variant → name your buddy.
+  // Live SVG previews refresh as student selects. No token cost — this
+  // is identity-curation, should feel free.
+  function CompanionSetupInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+    var existing = p.existing || null; // edit mode if non-null
+
+    // Three steps. If editing existing, jump to step 1 anyway (full flow).
+    var stepTuple = useState(1);
+    var step = stepTuple[0];
+    var setStep = stepTuple[1];
+
+    var draftTuple = useState(function() {
+      return {
+        species: existing ? existing.species : null,
+        colorVariant: existing ? existing.colorVariant : 'warm',
+        name: existing ? existing.name : ''
+      };
+    });
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    function setField(field, val) {
+      var next = Object.assign({}, draft);
+      next[field] = val;
+      setDraft(next);
+    }
+
+    function handleSave() {
+      p.onSave({
+        species: draft.species,
+        colorVariant: draft.colorVariant,
+        name: (draft.name || '').trim() || (getCompanionSpecies(draft.species) || {}).label || 'Buddy'
+      });
+    }
+
+    var canAdvanceFrom1 = !!draft.species;
+    var canAdvanceFrom2 = !!draft.colorVariant;
+    var canSave = !!draft.species && !!draft.colorVariant;
+
+    function renderSpeciesPicker() {
+      return h('div', null,
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Pick a critter to live in your room. They\'ll watch you focus, notice when you\'ve been studying, and offer the occasional thought. Friendly only — they never guilt-trip.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' } },
+          COMPANION_SPECIES.map(function(sp) {
+            var active = draft.species === sp.id;
+            var swatch = getCompanionPalette(sp.id, draft.colorVariant || 'warm');
+            return h('button', {
+              key: 'sp-' + sp.id,
+              onClick: function() { setField('species', sp.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': sp.label + ': ' + sp.blurb,
+              style: {
+                background: active ? palette.accent : palette.surface,
+                color: active ? palette.onAccent : palette.text,
+                border: '2px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '12px',
+                padding: '10px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px'
+              }
+            },
+              h('div', {
+                style: { width: '70px', height: '70px', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+              },
+                getCompanionSvg(sp.id, swatch, { blinking: false })
+              ),
+              h('div', { style: { fontWeight: 700, fontSize: '13px' } }, sp.emoji + ' ' + sp.label),
+              h('div', { style: { fontSize: '10px', opacity: 0.85, lineHeight: '1.35' } }, sp.blurb)
+            );
+          })
+        )
+      );
+    }
+
+    function renderColorPicker() {
+      var sp = getCompanionSpecies(draft.species) || COMPANION_SPECIES[0];
+      return h('div', null,
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Pick a color palette for your ' + sp.label.toLowerCase() + '.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '10px' } },
+          COMPANION_VARIANTS.map(function(v) {
+            var active = draft.colorVariant === v.id;
+            var swatch = getCompanionPalette(draft.species, v.id);
+            return h('button', {
+              key: 'cv-' + v.id,
+              onClick: function() { setField('colorVariant', v.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': v.label + ' palette',
+              style: {
+                background: active ? palette.accent : palette.surface,
+                color: active ? palette.onAccent : palette.text,
+                border: '2px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '12px',
+                padding: '10px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '6px'
+              }
+            },
+              h('div', { style: { width: '60px', height: '60px' } },
+                getCompanionSvg(draft.species, swatch, { blinking: false })
+              ),
+              h('div', { style: { fontWeight: 700, fontSize: '12px' } }, v.label),
+              // Color trio swatch
+              h('div', { style: { display: 'flex', gap: '3px', marginTop: '2px' } },
+                h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: swatch.primary, border: '1px solid rgba(0,0,0,0.2)' } }),
+                h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: swatch.secondary, border: '1px solid rgba(0,0,0,0.2)' } }),
+                h('span', { style: { width: '10px', height: '10px', borderRadius: '50%', background: swatch.accent, border: '1px solid rgba(0,0,0,0.2)' } })
+              )
+            );
+          })
+        )
+      );
+    }
+
+    function renderNamePicker() {
+      var sp = getCompanionSpecies(draft.species) || COMPANION_SPECIES[0];
+      var swatch = getCompanionPalette(draft.species, draft.colorVariant);
+      var nameSuggestions = ['Mochi', 'Echo', 'Sage', 'Pip', 'Juniper', 'Atlas', 'Willow', 'Pebble', 'Clover'];
+      return h('div', null,
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Give your ' + sp.label.toLowerCase() + ' a name. (Or leave it blank — they\'ll just be "' + sp.label + '".)'),
+        h('div', { style: { display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '14px' } },
+          h('div', {
+            style: { width: '90px', height: '90px', flexShrink: 0, padding: '6px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '12px' }
+          },
+            getCompanionSvg(draft.species, swatch, { blinking: false })
+          ),
+          h('div', { style: { flex: 1 } },
+            h('input', {
+              type: 'text',
+              value: draft.name,
+              onChange: function(e) { setField('name', e.target.value); },
+              placeholder: 'Type a name…',
+              maxLength: 24,
+              'aria-label': 'Companion name',
+              style: {
+                width: '100%',
+                padding: '10px 12px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                color: palette.text,
+                fontSize: '15px',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box'
+              }
+            }),
+            h('div', { style: { display: 'flex', gap: '4px', marginTop: '6px', flexWrap: 'wrap' } },
+              nameSuggestions.map(function(n) {
+                return h('button', {
+                  key: 'nm-' + n,
+                  onClick: function() { setField('name', n); },
+                  style: {
+                    background: 'transparent', color: palette.textMute,
+                    border: '1px solid ' + palette.border, borderRadius: '999px',
+                    padding: '2px 8px', fontSize: '10px',
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, n);
+              })
+            )
+          )
+        )
+      );
+    }
+
+    var stepBody = step === 1 ? renderSpeciesPicker()
+                 : step === 2 ? renderColorPicker()
+                 : renderNamePicker();
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': existing ? 'Edit companion' : 'Build a companion',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onCancel();
+      },
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)', zIndex: 175,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '1px solid ' + palette.border,
+          borderRadius: '14px', padding: '24px',
+          maxWidth: '640px', width: '100%', maxHeight: '88vh',
+          overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+            (existing ? 'Edit companion' : 'New companion') + ' · step ' + step + ' of 3'),
+          h('button', {
+            onClick: p.onCancel, 'aria-label': 'Close companion setup',
+            style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        // Progress dots
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '16px' } },
+          [1, 2, 3].map(function(s) {
+            return h('span', {
+              key: 'sd-' + s,
+              'aria-hidden': 'true',
+              style: {
+                width: s === step ? '20px' : '8px',
+                height: '8px', borderRadius: '999px',
+                background: s <= step ? palette.accent : palette.surface,
+                border: '1px solid ' + (s <= step ? palette.accent : palette.border),
+                transition: 'width 200ms'
+              }
+            });
+          })
+        ),
+        stepBody,
+        // Nav buttons
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '20px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
+          existing ? h('button', {
+            onClick: function() {
+              if (window.confirm && !window.confirm('Remove your companion?')) return;
+              if (p.onDelete) p.onDelete();
+            },
+            style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🗑 Remove') : h('span'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            step > 1 ? h('button', {
+              onClick: function() { setStep(step - 1); },
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, '◀ Back') : h('button', {
+              onClick: p.onCancel,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Cancel'),
+            step < 3 ? h('button', {
+              onClick: function() { setStep(step + 1); },
+              disabled: step === 1 ? !canAdvanceFrom1 : !canAdvanceFrom2,
+              style: {
+                background: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? palette.accent : palette.surface,
+                color: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? palette.onAccent : palette.textMute,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit',
+                opacity: ((step === 1 ? canAdvanceFrom1 : canAdvanceFrom2)) ? 1 : 0.6
+              }
+            }, 'Next ▶') : h('button', {
+              onClick: handleSave,
+              disabled: !canSave,
+              style: {
+                background: canSave ? palette.accent : palette.surface,
+                color: canSave ? palette.onAccent : palette.textMute,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: canSave ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit', opacity: canSave ? 1 : 0.6
+              }
+            }, existing ? 'Save changes' : '✨ Create companion')
+          )
+        )
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 6.6: GOAL BUILDER SUB-COMPONENT (Phase 2n)
   // ─────────────────────────────────────────────────────────
   function GoalBuilderInner(p) {
@@ -6026,6 +6769,151 @@
       }
     }
 
+    // ── Companion + skill levels (Phase 2p) ──
+    // Setup wizard creates state.companion. Once set, the overlay renders
+    // bottom-right of the floor surface. Click the companion to: (a) get a
+    // fresh thought bubble, (b) excited-bounce reaction. Settings access
+    // (re-pick species/color/rename) via the "edit" button on the companion
+    // tooltip menu — opens the same setup wizard.
+
+    function saveCompanion(updates) {
+      // Merge patch onto existing companion (or initialize from null)
+      var current = state.companion || {
+        species: null, colorVariant: 'warm', name: '',
+        createdAt: null, lastBubbleAt: null, lastBubbleText: null,
+        skillCelebrations: { focus: 0, memory: 0, reflection: 0, storytelling: 0 }
+      };
+      var next = Object.assign({}, current, updates);
+      if (!next.createdAt) next.createdAt = new Date().toISOString();
+      // Normalize skillCelebrations always present
+      next.skillCelebrations = Object.assign({ focus: 0, memory: 0, reflection: 0, storytelling: 0 }, next.skillCelebrations || {});
+      setStateField('companion', next);
+    }
+
+    // Generate a state-aware thought bubble — observational only, never
+    // guilt-inducing. Picks the first applicable rule, rotating among
+    // ties via lastBubbleText so the same line doesn't repeat back-to-back.
+    function generateBubbleText(state, species) {
+      var sp = getCompanionSpecies(species);
+      var prefix = sp ? sp.voicePrefix : '';
+      var todayStr = new Date().toISOString().slice(0, 10);
+      var lastBubble = (state.companion && state.companion.lastBubbleText) || '';
+      // Build candidate pool — first applicable wins, then rotation
+      var candidates = [];
+
+      // Recent decoration (last 24h)
+      var newDecs = (state.decorations || []).filter(function(d) {
+        if (d.isStarter || !d.earnedAt) return false;
+        return (Date.now() - new Date(d.earnedAt).getTime()) < 24 * 60 * 60 * 1000;
+      });
+      if (newDecs.length > 0) {
+        var deco = newDecs[newDecs.length - 1];
+        var dLabel = deco.templateLabel || deco.template || 'decoration';
+        candidates.push(prefix + 'I like the new ' + dLabel + '.');
+      }
+
+      // Pomodoro completed today
+      var pomToday = (state.dailyState && state.dailyState.pomodorosCompleted) || 0;
+      if (pomToday > 0) {
+        candidates.push(prefix + 'You\'ve focused ' + pomToday + ' time' + (pomToday === 1 ? '' : 's') + ' today.');
+      }
+
+      // Quiz cap hit
+      var quizToday = (state.dailyState && state.dailyState.quizTokensEarnedToday) || 0;
+      if (quizToday >= 2) {
+        candidates.push(prefix + 'You really studied today. ' + (sp ? sp.affirm : ''));
+      }
+
+      // Reflection streak — count consecutive days with at least one entry
+      var entries = (state.journalEntries || []).slice();
+      if (entries.length >= 2) {
+        var byDay = {};
+        entries.forEach(function(e) {
+          if (!e.date) return;
+          byDay[e.date.slice(0, 10)] = true;
+        });
+        var streakDays = 0;
+        for (var i = 0; i < 14; i++) {
+          var dayStr = new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+          if (byDay[dayStr]) streakDays++; else break;
+        }
+        if (streakDays >= 3) {
+          candidates.push(prefix + 'You\'ve been reflecting ' + streakDays + ' days in a row.');
+        }
+      }
+
+      // Goal nearing deadline
+      var goals = state.goals || [];
+      goals.forEach(function(g) {
+        if (g.completedAt) return;
+        if (!g.endDate) return;
+        var endMs = new Date(g.endDate).getTime();
+        var msLeft = endMs - Date.now();
+        if (msLeft < 0 || msLeft > 2 * 24 * 60 * 60 * 1000) return;
+        var prog = computeGoalProgress(g, state);
+        candidates.push(prefix + 'Your goal "' + g.title + '" ends soon — you\'re at ' + prog.current + '/' + prog.target + '.');
+      });
+
+      // Stale memory (5+ days no quiz on any deck)
+      var staleDecks = (state.decorations || []).filter(function(d) {
+        if (!d.linkedContent) return false;
+        var lc = d.linkedContent;
+        if (lc.type === 'notes' && !hasClozeMarkers(lc)) return false;
+        if (!lc.lastReviewedAt) return true;
+        return (Date.now() - new Date(lc.lastReviewedAt).getTime()) >= 5 * 24 * 60 * 60 * 1000;
+      });
+      if (staleDecks.length > 0) {
+        candidates.push(prefix + 'A few decks haven\'t been visited lately — ' + staleDecks.length + ' total.');
+      }
+
+      // Mood-cluster (last 7 days, struggle dominant)
+      var weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      var recentDecs = (state.decorations || []).filter(function(d) {
+        return d.mood && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgoMs;
+      });
+      if (recentDecs.length >= 3) {
+        var struggleCount = recentDecs.filter(function(d) { return d.mood === 'struggle'; }).length;
+        if (struggleCount / recentDecs.length >= 0.5) {
+          candidates.push(prefix + 'A tough week — proud of you for showing up.');
+        }
+      }
+
+      // Story walked recently
+      var recentWalk = (state.earnings || []).some(function(e) {
+        if (e.source !== 'story-walk') return false;
+        return (Date.now() - new Date(e.date).getTime()) < 24 * 60 * 60 * 1000;
+      });
+      if (recentWalk) {
+        candidates.push(prefix + 'Loved that story walk.');
+      }
+
+      // Idle filler (always available, lowest priority)
+      var fillers = {
+        cat:    ['Hmm. A quiet moment.', 'Hmm. The room looks nice today.', 'Hmm. I\'ll just sit here.'],
+        fox:    ['What if you generated a new decoration?', 'What if you started a Pomodoro?', 'What if you wrote a reflection?'],
+        owl:    ['Considering... a quiet day is fine too.', 'Considering... what to study next.', 'Considering... the room is restful.'],
+        turtle: ['Step by step — no rush today.', 'Step by step — I\'m here when you\'re ready.', 'Step by step — patience.'],
+        dragon: ['Whoa! Ready when you are!', 'Whoa! What\'s next?', 'Whoa! Adventure awaits!']
+      };
+      (fillers[species] || fillers.cat).forEach(function(f) { candidates.push(f); });
+
+      // Pick first candidate that isn't the same as last (or first overall if all same)
+      for (var k = 0; k < candidates.length; k++) {
+        if (candidates[k] !== lastBubble) return candidates[k];
+      }
+      return candidates[0] || (prefix + 'Hi.');
+    }
+
+    // Triggered on click OR auto-fired once on first render-with-companion
+    function refreshCompanionBubble() {
+      if (!state.companion || !state.companion.species) return;
+      var text = generateBubbleText(state, state.companion.species);
+      saveCompanion({
+        lastBubbleAt: new Date().toISOString(),
+        lastBubbleText: text
+      });
+    }
+
     // ── Story method (Phase 2e) ──
     // Stories are top-level artifacts: an ordered chain of ≥3 decorations
     // with per-step narrative text. Walking a completed story is retrieval
@@ -6172,6 +7060,89 @@
       });
       addToast('Decoration removed.');
     }
+
+    // ── Companion ephemeral state (Phase 2p) ──
+    // blink state ticks every few seconds, click-react flag clears after
+    // 600ms, confetti list holds active level-up celebrations
+    var blinkTuple = useState(false);
+    var blinking = blinkTuple[0];
+    var setBlinking = blinkTuple[1];
+    var reactingTuple = useState(false);
+    var reacting = reactingTuple[0];
+    var setReacting = reactingTuple[1];
+    var confettiTuple = useState([]); // [{ id, kind: 'skillUp', label, ts }]
+    var confetti = confettiTuple[0];
+    var setConfetti = confettiTuple[1];
+
+    // Random-cadence blink (4-7s between blinks, 120ms blink duration)
+    useEffect(function() {
+      if (!state.companion) return;
+      var nextBlink;
+      function scheduleBlink() {
+        var delay = 4000 + Math.random() * 3000;
+        nextBlink = setTimeout(function() {
+          setBlinking(true);
+          setTimeout(function() { setBlinking(false); }, 120);
+          scheduleBlink();
+        }, delay);
+      }
+      scheduleBlink();
+      return function() { if (nextBlink) clearTimeout(nextBlink); };
+      // eslint-disable-next-line
+    }, [state.companion ? state.companion.species : null]);
+
+    // First-visit bubble — fire once when companion exists + no recent bubble
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) return;
+      var lastBubbleMs = state.companion.lastBubbleAt
+        ? new Date(state.companion.lastBubbleAt).getTime() : 0;
+      // Refresh if last bubble is >6 hours old
+      if (Date.now() - lastBubbleMs > 6 * 60 * 60 * 1000) {
+        // Defer one tick so initial state hydration completes first
+        setTimeout(function() { refreshCompanionBubble(); }, 100);
+      }
+      // eslint-disable-next-line
+    }, [state.companion ? state.companion.species : null]);
+
+    // Skill level-up detection — compare current level vs cached
+    // skillCelebrations[skillId] for each skill. If higher, fire confetti
+    // + bubble + persist new high-watermark.
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) return;
+      var cele = (state.companion.skillCelebrations) || { focus: 0, memory: 0, reflection: 0, storytelling: 0 };
+      var newCele = Object.assign({}, cele);
+      var newConfetti = [];
+      var leveledUp = [];
+      SKILL_DEFS.forEach(function(def) {
+        var count = countSkillEvents(state, def.id);
+        var prog = computeSkillLevel(count);
+        var lastLevel = cele[def.id] || 0;
+        if (prog.level > lastLevel) {
+          leveledUp.push({ def: def, level: prog.level });
+          newCele[def.id] = prog.level;
+          for (var k = 0; k < 6; k++) {
+            newConfetti.push({
+              id: def.id + '-' + Date.now() + '-' + k,
+              kind: 'skillUp',
+              label: def.emoji,
+              left: 30 + Math.random() * 40, // %
+              delay: k * 50 // ms stagger
+            });
+          }
+        }
+      });
+      if (leveledUp.length > 0) {
+        // Persist + show
+        saveCompanion({
+          skillCelebrations: newCele,
+          lastBubbleAt: new Date().toISOString(),
+          lastBubbleText: leveledUp[0].def.emoji + ' ' + leveledUp[0].def.label + ' level ' + leveledUp[0].level + '! ' + (getCompanionSpecies(state.companion.species) || {}).affirm
+        });
+        setConfetti(newConfetti);
+        setTimeout(function() { setConfetti([]); }, 1200);
+      }
+      // eslint-disable-next-line
+    }, [state.earnings.length, state.companion ? state.companion.species : null]);
 
     // ── Room expansion ──
     // When 90% of the current room slots are filled, advancing to the
@@ -6436,7 +7407,7 @@
             }
           }, wallCells)
         ),
-        // Floor surface (with warm-light overlay)
+        // Floor surface (with warm-light overlay + companion overlay)
         h('div', {
           role: 'region',
           'aria-label': 'Floor — ' + floorCount + ' of ' + room.floorSlots + ' slots filled',
@@ -6447,7 +7418,8 @@
             borderRadius: '0 0 12px 12px',
             border: '1px solid ' + palette.border,
             borderTop: 'none',
-            boxShadow: 'inset 0 8px 20px rgba(0,0,0,0.22)'
+            boxShadow: 'inset 0 8px 20px rgba(0,0,0,0.22)',
+            position: 'relative'
           }
         },
           h('div', {
@@ -6458,8 +7430,11 @@
               gridAutoRows: '90px',
               gap: '10px'
             }
-          }, floorCells)
+          }, floorCells),
+          renderCompanionOverlay()
         ),
+        // Skills panel — only renders when companion exists + has activity
+        renderSkillsPanel(),
         // Action buttons (Phase 1a placeholders — Phase 1b/c/d wire these up)
         h('div', {
           style: {
@@ -6820,6 +7795,223 @@
             }
           }, '✕') : null
         )
+      );
+    }
+
+    // Companion overlay (Phase 2p) — bottom-right floating critter.
+    // Renders ONE of two states: empty-state ("+ Add a buddy") or
+    // active companion (SVG figure + bubble + skills panel).
+    // Always anchored to the floor surface region so placement of
+    // decorations doesn\'t shift its position.
+    function renderCompanionOverlay() {
+      var companion = state.companion;
+      // Empty-state: small button to open setup wizard
+      if (!companion || !companion.species) {
+        return h('button', {
+          onClick: function() { setStateField('activeModal', 'companion-setup'); },
+          'aria-label': 'Add a study buddy companion',
+          title: 'Pick a critter that lives in your room',
+          style: {
+            position: 'absolute',
+            bottom: '8px',
+            right: '8px',
+            padding: '8px 14px',
+            background: palette.bg + 'cc',
+            color: palette.accent,
+            border: '1.5px dashed ' + palette.accent,
+            borderRadius: '999px',
+            fontSize: '12px', fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            zIndex: 5
+          }
+        }, '+ Add a buddy');
+      }
+
+      var sp = getCompanionSpecies(companion.species);
+      var paletteColors = getCompanionPalette(companion.species, companion.colorVariant || 'warm');
+      var displayName = (companion.name || (sp ? sp.label : 'buddy')).trim();
+
+      // Bubble fade timing — show if lastBubbleAt within 8s OR no
+      // explicit close (we keep until next bubble auto-replaces)
+      var bubbleText = companion.lastBubbleText || '';
+      var bubbleAge = companion.lastBubbleAt
+        ? (Date.now() - new Date(companion.lastBubbleAt).getTime())
+        : Infinity;
+      var showBubble = bubbleText && bubbleAge < 12000;
+
+      function handleClick() {
+        setReacting(true);
+        setTimeout(function() { setReacting(false); }, 600);
+        refreshCompanionBubble();
+      }
+      function handleKey(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }
+
+      return h('div', {
+        'data-species': companion.species,
+        style: {
+          position: 'absolute',
+          bottom: '8px',
+          right: '12px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: '6px',
+          zIndex: 5,
+          pointerEvents: 'none' // children re-enable
+        }
+      },
+        // Confetti pieces (level-up)
+        confetti.length > 0 ? h('div', {
+          'aria-hidden': 'true',
+          style: {
+            position: 'absolute', bottom: '40px', right: '20px',
+            width: '80px', height: '60px', pointerEvents: 'none'
+          }
+        },
+          confetti.map(function(c) {
+            return h('span', {
+              key: c.id,
+              className: 'ah-companion-confetti-piece',
+              style: {
+                position: 'absolute',
+                left: c.left + '%',
+                bottom: '0',
+                fontSize: '18px',
+                animationDelay: c.delay + 'ms',
+                pointerEvents: 'none'
+              }
+            }, c.label);
+          })
+        ) : null,
+        // Thought bubble
+        showBubble ? h('div', {
+          className: 'ah-companion-bubble',
+          role: 'status',
+          'aria-live': 'polite',
+          style: {
+            maxWidth: '220px',
+            padding: '8px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '12px',
+            borderBottomRightRadius: '4px',
+            fontSize: '11.5px',
+            color: palette.text,
+            lineHeight: '1.45',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
+            pointerEvents: 'auto'
+          }
+        }, bubbleText) : null,
+        // The companion itself
+        h('div', {
+          className: 'ah-companion-root' + (reacting ? ' ah-companion-react' : ''),
+          role: 'button',
+          tabIndex: 0,
+          'aria-label': displayName + ' (' + (sp ? sp.label : 'companion') + '). Click to chat.'
+            + (bubbleText ? ' Says: ' + bubbleText : ''),
+          title: displayName + ' · click for a thought',
+          onClick: handleClick,
+          onKeyDown: handleKey,
+          style: {
+            width: '76px',
+            height: '76px',
+            background: palette.surface + 'aa',
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '4px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+            pointerEvents: 'auto'
+          }
+        },
+          getCompanionSvg(companion.species, paletteColors, { blinking: blinking })
+        ),
+        // Tiny name + edit affordance
+        h('div', {
+          style: {
+            display: 'flex', gap: '6px', alignItems: 'center',
+            background: palette.surface + 'cc',
+            padding: '2px 8px',
+            borderRadius: '999px',
+            border: '1px solid ' + palette.border,
+            pointerEvents: 'auto'
+          }
+        },
+          h('span', { style: { fontSize: '10px', fontWeight: 700, color: palette.text } }, displayName),
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'companion-setup'); },
+            'aria-label': 'Edit ' + displayName,
+            title: 'Change species, color, or name',
+            style: {
+              background: 'transparent', border: 'none',
+              color: palette.textMute, fontSize: '10px',
+              cursor: 'pointer', padding: '0 2px',
+              fontFamily: 'inherit'
+            }
+          }, '✎')
+        )
+      );
+    }
+
+    // Skill levels panel (Phase 2p) — 4 mini progress bars below the room
+    // when a companion exists. Computed from earnings; status not currency.
+    function renderSkillsPanel() {
+      if (!state.companion || !state.companion.species) return null;
+      var skills = SKILL_DEFS.map(function(def) {
+        var count = countSkillEvents(state, def.id);
+        var prog = computeSkillLevel(count);
+        return { def: def, prog: prog, count: count };
+      });
+      var hasAny = skills.some(function(s) { return s.count > 0; });
+      if (!hasAny) return null;
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Skill levels',
+        style: {
+          marginTop: '14px',
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '10px',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '8px 14px'
+        }
+      },
+        skills.map(function(s) {
+          var label = s.def.emoji + ' ' + s.def.label;
+          var aria = s.def.label + ' level ' + s.prog.level
+            + (s.prog.atMax ? ' (max)' : ', ' + s.prog.current + ' of ' + s.prog.nextThreshold);
+          return h('div', {
+            key: 'sp-' + s.def.id,
+            'aria-label': aria,
+            title: s.def.hint
+              + (s.prog.atMax ? ' · level ' + s.prog.level + ' (max)' : ' · ' + s.prog.current + ' / ' + s.prog.nextThreshold + ' to next'),
+            style: { fontSize: '11px', color: palette.textDim }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '3px', fontVariantNumeric: 'tabular-nums' } },
+              h('span', { style: { fontWeight: 700, color: palette.text } }, label),
+              h('span', { style: { fontSize: '10px' } }, 'L' + s.prog.level + (s.prog.atMax ? ' max' : ''))
+            ),
+            h('div', {
+              'aria-hidden': 'true',
+              style: { height: '4px', background: palette.bg, borderRadius: '2px', overflow: 'hidden' }
+            },
+              h('div', {
+                style: {
+                  width: s.prog.pct + '%', height: '100%',
+                  background: palette.accent,
+                  transition: 'width 320ms ease'
+                }
+              })
+            )
+          );
+        })
       );
     }
 
@@ -8595,6 +9787,49 @@
       );
     }
 
+    function renderCompanionSetupModal() {
+      if (state.activeModal !== 'companion-setup') return null;
+      return h(CompanionSetupInner, {
+        existing: state.companion,
+        palette: palette,
+        onSave: function(updates) {
+          // Preserve skillCelebrations + createdAt from existing if present
+          var prev = state.companion || {};
+          saveCompanion(Object.assign({
+            skillCelebrations: prev.skillCelebrations,
+            // Reset celebration baselines on first creation so existing
+            // earnings don\'t fire confetti on companion creation
+            // (companion exists FROM creation forward, not retroactively)
+          }, updates));
+          // Initialize celebration baselines if first creation
+          if (!prev.species) {
+            var baseline = {};
+            SKILL_DEFS.forEach(function(def) {
+              var count = countSkillEvents(state, def.id);
+              var prog = computeSkillLevel(count);
+              baseline[def.id] = prog.level;
+            });
+            // Schedule the baseline write after the create write settles
+            setTimeout(function() {
+              setState(function(prev2) {
+                if (!prev2.companion) return prev2;
+                return Object.assign({}, prev2, {
+                  companion: Object.assign({}, prev2.companion, { skillCelebrations: baseline })
+                });
+              });
+            }, 50);
+          }
+          setStateField('activeModal', null);
+          setTimeout(function() { addToast('🌿 ' + (updates.name || 'your buddy') + ' joined your room.'); }, 50);
+        },
+        onCancel: function() { setStateField('activeModal', null); },
+        onDelete: function() {
+          setStateMulti({ companion: null, activeModal: null });
+          addToast('Companion removed.');
+        }
+      });
+    }
+
     function renderGoalBuilderModal() {
       if (state.activeModal !== 'goal-builder') return null;
       var ctx = state.generateContext || {};
@@ -9235,6 +10470,50 @@
             ' · ', state.tokens, ' token' + (state.tokens === 1 ? '' : 's') + ' unspent',
             ' · ', (state.journalEntries || []).length + ' reflection' + ((state.journalEntries || []).length === 1 ? '' : 's')
           ),
+          // Companion + Skills (Phase 2p)
+          (function() {
+            var companion = state.companion;
+            if (!companion || !companion.species) return null;
+            var sp = getCompanionSpecies(companion.species);
+            var swatch = getCompanionPalette(companion.species, companion.colorVariant || 'warm');
+            var daysAgo = companion.createdAt
+              ? Math.floor((Date.now() - new Date(companion.createdAt).getTime()) / (24 * 60 * 60 * 1000))
+              : 0;
+            var skills = SKILL_DEFS.map(function(def) {
+              var c = countSkillEvents(state, def.id);
+              return { def: def, prog: computeSkillLevel(c), count: c };
+            });
+            var hasSkillData = skills.some(function(s) { return s.count > 0; });
+            return h('div', { style: sectionStyle },
+              h('h2', { style: sectionTitleStyle }, '🌿 Companion + Skills'),
+              h('div', { style: { padding: '14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' } },
+                h('div', { style: { display: 'flex', gap: '14px', alignItems: 'center', marginBottom: hasSkillData ? '12px' : 0 } },
+                  h('div', { style: { width: '64px', height: '64px', flexShrink: 0, padding: '4px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '10px' } },
+                    getCompanionSvg(companion.species, swatch, { blinking: false })
+                  ),
+                  h('div', null,
+                    h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text } },
+                      (companion.name || sp.label) + ' · ' + sp.label),
+                    h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+                      daysAgo === 0 ? 'Joined today' : daysAgo === 1 ? 'Joined yesterday' : 'Joined ' + daysAgo + ' days ago')
+                  )
+                ),
+                hasSkillData ? h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px 14px' } },
+                  skills.map(function(s) {
+                    return h('div', { key: 'cs-' + s.def.id, style: { fontSize: '11px', color: palette.textDim } },
+                      h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '3px' } },
+                        h('span', { style: { fontWeight: 700, color: palette.text } }, s.def.emoji + ' ' + s.def.label),
+                        h('span', { style: { fontSize: '10px' } }, 'L' + s.prog.level + (s.prog.atMax ? ' max' : ''))
+                      ),
+                      h('div', { style: { height: '4px', background: palette.bg, borderRadius: '2px', overflow: 'hidden' } },
+                        h('div', { style: { width: s.prog.pct + '%', height: '100%', background: palette.accent } })
+                      )
+                    );
+                  })
+                ) : null
+              )
+            );
+          })(),
           // Goals (Phase 2n)
           (function() {
             var goals = state.goals || [];
@@ -9500,6 +10779,50 @@
             )
           );
         })(),
+        // Companion + Skills (Phase 2p)
+        (function() {
+          var companion = state.companion;
+          if (!companion || !companion.species) return null;
+          var sp = getCompanionSpecies(companion.species);
+          var swatch = getCompanionPalette(companion.species, companion.colorVariant || 'warm');
+          var daysAgo = companion.createdAt
+            ? Math.floor((Date.now() - new Date(companion.createdAt).getTime()) / (24 * 60 * 60 * 1000))
+            : 0;
+          var skills = SKILL_DEFS.map(function(def) {
+            var c = countSkillEvents(state, def.id);
+            return { def: def, prog: computeSkillLevel(c), count: c };
+          });
+          var hasSkillData = skills.some(function(s) { return s.count > 0; });
+          return h('div', { style: { marginBottom: '20px', padding: '12px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', color: '#222' } },
+            h('div', { style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: hasSkillData ? '10px' : 0 } },
+              h('div', { style: { width: '50px', height: '50px', flexShrink: 0 } },
+                getCompanionSvg(companion.species, swatch, { blinking: false })
+              ),
+              h('div', null,
+                h('div', { style: { fontWeight: 700, fontSize: '12px', color: '#000' } },
+                  '🌿 ' + (companion.name || sp.label) + ' · ' + sp.label),
+                h('div', { style: { fontSize: '10px', color: '#444' } },
+                  daysAgo === 0 ? 'Joined today' : daysAgo === 1 ? 'Joined yesterday' : 'Joined ' + daysAgo + ' days ago')
+              )
+            ),
+            hasSkillData ? h('div', null,
+              h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#000', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Skill levels'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '6px 14px' } },
+                skills.map(function(s) {
+                  return h('div', { key: 'pps-' + s.def.id, style: { fontSize: '10px', color: '#222' } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: '2px' } },
+                      h('span', { style: { fontWeight: 700 } }, s.def.label),
+                      h('span', null, 'L' + s.prog.level + (s.prog.atMax ? ' max' : ' · ' + s.prog.current + '/' + s.prog.nextThreshold))
+                    ),
+                    h('div', { style: { height: '3px', background: '#ddd', border: '1px solid #999', borderRadius: '2px', overflow: 'hidden' } },
+                      h('div', { style: { width: s.prog.pct + '%', height: '100%', background: '#888' } })
+                    )
+                  );
+                })
+              )
+            ) : null
+          );
+        })(),
         // Goals section (Phase 2n) — active + recently-completed
         (function() {
           var goals = state.goals || [];
@@ -9630,6 +10953,7 @@
       renderStoryWalkModal(),
       renderGoalsListModal(),
       renderGoalBuilderModal(),
+      renderCompanionSetupModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderInsightsModal(),
