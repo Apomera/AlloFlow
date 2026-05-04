@@ -4859,84 +4859,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/firestore_sync_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/allohaven_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/story_stage_module.js');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('AlloHaven', './allohaven_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/view_adventure_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/export_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4947,7 +4947,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c8c1f14/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -36962,44 +36962,342 @@ Return ONLY the plain language summary in ${lang}.`, false);
                 </summary>
                 <div className="mt-1.5 space-y-1.5 bg-slate-50 rounded-lg p-2 border border-slate-400">
                   <div className="text-[11px] font-bold text-slate-600 uppercase">Insert Blocks</div>
-                  <div className="grid grid-cols-2 gap-1">
-                    {[
-                      { label: 'Info Box', icon: 'ℹ️', html: '<div style="background:#eff6ff;border-left:4px solid #3b82f6;padding:12px 16px;border-radius:8px;margin:12px 0"><strong style="color:#1e40af">Note:</strong> <span>Enter info here</span></div>' },
-                      { label: 'Warning', icon: '⚠️', html: '<div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px 16px;border-radius:8px;margin:12px 0"><strong style="color:#92400e">Important:</strong> <span>Enter warning here</span></div>' },
-                      { label: 'Success', icon: '✅', html: '<div style="background:#f0fdf4;border-left:4px solid #22c55e;padding:12px 16px;border-radius:8px;margin:12px 0"><strong style="color:#166534">Tip:</strong> <span>Enter tip here</span></div>' },
-                      { label: 'Quote', icon: '💬', html: '<blockquote style="border-left:4px solid #a78bfa;padding:12px 16px;margin:12px 0;background:#f5f3ff;border-radius:0 8px 8px 0;font-style:italic;color:#4c1d95">"Enter quote here"<br><cite style="font-size:0.85em;color:#7c3aed;font-style:normal">— Source</cite></blockquote>' },
-                      { label: '2 Columns', icon: '⬛⬛', html: '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0"><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Column 1 content</div><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Column 2 content</div></div>' },
-                      { label: '3 Columns', icon: '⬛⬛⬛', html: '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:12px 0"><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Col 1</div><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Col 2</div><div style="background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #e2e8f0">Col 3</div></div>' },
-                      { label: 'Divider', icon: '➖', html: '<hr style="border:none;border-top:2px solid #e2e8f0;margin:24px 0">' },
-                      { label: 'Page Break', icon: '📄', html: '<div style="page-break-before:always;border-top:2px dashed #cbd5e1;margin:24px 0;padding-top:8px;text-align:center"><span style="font-size:10px;color:#94a3b8;background:white;padding:0 8px">— Page Break —</span></div>' },
-                      { label: 'Checklist', icon: '☑️', html: '<ul role="list" style="list-style:none;padding:0;margin:12px 0" aria-label="Checklist"><li style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9"><input type="checkbox" aria-label="Task 1" style="width:18px;height:18px;accent-color:#6366f1"><span>Task item 1</span></li><li style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #f1f5f9"><input type="checkbox" aria-label="Task 2" style="width:18px;height:18px;accent-color:#6366f1"><span>Task item 2</span></li><li style="display:flex;align-items:center;gap:8px;padding:6px 0"><input type="checkbox" aria-label="Task 3" style="width:18px;height:18px;accent-color:#6366f1"><span>Task item 3</span></li></ul>' },
-                      { label: 'Data Table', icon: '📊', html: '<figure style="margin:16px 0"><table role="table" style="width:100%;border-collapse:collapse;font-size:14px" aria-label="Data table"><caption style="font-weight:700;font-size:13px;text-align:left;padding:8px 0;color:#374151">Table Title — Edit Me</caption><thead><tr style="background:#f1f5f9"><th scope="col" style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid #cbd5e1">Header 1</th><th scope="col" style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid #cbd5e1">Header 2</th><th scope="col" style="padding:10px 12px;text-align:left;font-weight:700;border-bottom:2px solid #cbd5e1">Header 3</th></tr></thead><tbody><tr><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td></tr><tr style="background:#f9fafb"><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td><td style="padding:10px 12px;border-bottom:1px solid #e5e7eb">Data</td></tr></tbody></table></figure>' },
-                      { label: 'Image + Alt', icon: '🖼️', html: '<figure style="margin:16px 0;text-align:center" role="figure" aria-label="Image with description"><div style="background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:12px;padding:40px 20px;color:#64748b;font-size:13px">📷 Click to replace with image URL<br><em style="font-size:11px">or paste an image</em></div><figcaption style="font-size:12px;color:#64748b;margin-top:8px;font-style:italic">Image description for screen readers — edit this caption</figcaption></figure>' },
-                      { label: 'Definition', icon: '📖', html: '<dl style="margin:12px 0;padding:16px;background:#faf5ff;border-left:4px solid #7c3aed;border-radius:0 8px 8px 0"><dt style="font-weight:800;color:#5b21b6;font-size:15px;margin-bottom:4px">Term</dt><dd style="color:#374151;font-size:14px;margin:0;line-height:1.6">Definition goes here. Students can reference this for key vocabulary.</dd></dl>' },
-                      { label: 'Numbered Steps', icon: '1️⃣', html: '<ol role="list" style="margin:12px 0;padding-left:0;counter-reset:steps;list-style:none" aria-label="Step-by-step instructions"><li style="display:flex;gap:12px;margin-bottom:12px;align-items:flex-start"><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">1</span><div style="flex:1;padding-top:3px">First step description</div></li><li style="display:flex;gap:12px;margin-bottom:12px;align-items:flex-start"><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">2</span><div style="flex:1;padding-top:3px">Second step description</div></li><li style="display:flex;gap:12px;align-items:flex-start"><span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;flex-shrink:0">3</span><div style="flex:1;padding-top:3px">Third step description</div></li></ol>' },
-                      { label: 'Accordion', icon: '📂', html: '<details style="margin:12px 0;border:1px solid #e2e8f0;border-radius:8px;overflow:hidden"><summary style="padding:12px 16px;font-weight:700;cursor:pointer;background:#f8fafc;color:#1e293b;font-size:14px;user-select:none">Click to expand section title</summary><div style="padding:16px;border-top:1px solid #e2e8f0;font-size:14px;line-height:1.6">Hidden content goes here. Great for differentiation — let students reveal content at their own pace.</div></details>' },
-                    ].map(block => (
-                      <button key={block.label} onClick={() => {
-                        const iframe = pdfPreviewRef.current; if (!iframe) return;
-                        const doc = iframe.contentDocument; if (!doc) return;
-                        iframe.contentWindow.focus();
-                        try { doc.designMode = 'on'; } catch(e) {}
-                        const sel = doc.getSelection();
-                        if (!sel || sel.rangeCount === 0) {
-                          const main = doc.querySelector('main') || doc.body;
-                          const range = doc.createRange();
-                          range.selectNodeContents(main);
-                          range.collapse(false); // collapse to end
-                          sel.removeAllRanges();
-                          sel.addRange(range);
+                  {(() => {
+                    // ── Stylesheet injected once into the iframe doc ──
+                    // Class-based (no inline color) so accessibility templates can override.
+                    const _ALLO_BLOCKS_CSS = `
+                      .allo-block { position: relative; margin: 12px 0; border-radius: 8px; }
+                      .allo-block:focus, .allo-block:focus-within { outline: 2px solid #6366f1; outline-offset: 2px; }
+                      .allo-block-info { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; }
+                      .allo-block-info > strong { color: #1e40af; }
+                      .allo-block-warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; }
+                      .allo-block-warning > strong { color: #92400e; }
+                      .allo-block-success { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; }
+                      .allo-block-success > strong { color: #166534; }
+                      .allo-block-quote { border-left: 4px solid #a78bfa; padding: 12px 16px; background: #f5f3ff; border-radius: 0 8px 8px 0; font-style: italic; color: #4c1d95; }
+                      .allo-block-quote cite { font-size: 0.85em; color: #6d28d9; font-style: normal; display: block; margin-top: 6px; }
+                      .allo-block-columns { display: grid; gap: 16px; }
+                      .allo-block-columns > .allo-col { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; min-width: 0; }
+                      .allo-block-divider hr { border: none; border-top: 2px solid #e2e8f0; margin: 0; }
+                      .allo-block-pagebreak { page-break-before: always; border-top: 2px dashed #cbd5e1; padding-top: 8px; text-align: center; }
+                      .allo-block-pagebreak .allo-pb-label { font-size: 10px; color: #94a3b8; background: white; padding: 0 8px; }
+                      .allo-block-checklist { list-style: none; padding: 0; margin: 0; }
+                      .allo-block-checklist li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
+                      .allo-block-checklist input[type='checkbox'] { width: 18px; height: 18px; accent-color: #6366f1; flex-shrink: 0; }
+                      .allo-block-checklist label { flex: 1; cursor: pointer; }
+                      .allo-block-table table, .allo-block-rubric table { width: 100%; border-collapse: collapse; font-size: 14px; }
+                      .allo-block-table caption, .allo-block-rubric caption { font-weight: 700; font-size: 13px; text-align: left; padding: 8px 0; color: #1e293b; }
+                      .allo-block-table th { padding: 10px 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #cbd5e1; background: #f1f5f9; color: #1e293b; }
+                      .allo-block-table td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
+                      .allo-block-table tbody tr:nth-child(even) td { background: #f9fafb; }
+                      .allo-block-image { margin: 16px 0; text-align: center; }
+                      .allo-block-image .allo-img-placeholder { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; color: #475569; font-size: 13px; }
+                      .allo-block-image figcaption { font-size: 12px; color: #475569; margin-top: 8px; font-style: italic; }
+                      .allo-block-image img { max-width: 100%; border-radius: 8px; }
+                      .allo-block-definition { padding: 16px; background: #faf5ff; border-left: 4px solid #7c3aed; border-radius: 0 8px 8px 0; }
+                      .allo-block-definition dt { font-weight: 800; color: #5b21b6; font-size: 15px; margin-bottom: 4px; }
+                      .allo-block-definition dd { color: #1f2937; font-size: 14px; margin: 0; line-height: 1.6; }
+                      .allo-block-steps { padding-left: 0; list-style: none; margin: 0; }
+                      .allo-block-steps li { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
+                      .allo-block-steps .allo-step-num { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+                      .allo-block-steps .allo-step-body { flex: 1; padding-top: 3px; }
+                      .allo-block-accordion { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; padding: 0; }
+                      .allo-block-accordion summary { padding: 12px 16px; font-weight: 700; cursor: pointer; background: #f8fafc; color: #1e293b; font-size: 14px; user-select: none; }
+                      .allo-block-accordion .allo-accordion-body { padding: 16px; border-top: 1px solid #e2e8f0; font-size: 14px; line-height: 1.6; }
+                      .allo-block-frame { padding: 14px 18px; background: #fefce8; border-left: 4px solid #ca8a04; border-radius: 0 8px 8px 0; font-size: 15px; line-height: 1.9; color: #422006; }
+                      .allo-block-frame .allo-frame-blank { display: inline-block; min-width: 90px; border-bottom: 2px solid #78350f; padding: 0 6px; color: #713f12; font-style: italic; }
+                      .allo-block-objective { background: linear-gradient(135deg, #ecfeff, #cffafe); border-left: 4px solid #0e7490; padding: 14px 18px; border-radius: 0 8px 8px 0; }
+                      .allo-block-objective .allo-obj-label { font-size: 11px; font-weight: 800; color: #155e75; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
+                      .allo-block-objective .allo-obj-text { color: #164e63; font-size: 15px; line-height: 1.6; }
+                      .allo-block-vocab { display: grid; grid-template-columns: 80px 1fr; gap: 14px; padding: 14px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; }
+                      .allo-block-vocab .allo-vocab-img { background: #fef3c7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #78350f; min-height: 80px; }
+                      .allo-block-vocab .allo-vocab-word { font-size: 18px; font-weight: 800; color: #78350f; margin: 0; }
+                      .allo-block-vocab .allo-vocab-pos { font-size: 11px; color: #a16207; font-style: italic; margin-left: 6px; font-weight: 600; }
+                      .allo-block-vocab .allo-vocab-def { font-size: 13px; color: #422006; margin: 4px 0; line-height: 1.5; }
+                      .allo-block-vocab .allo-vocab-example { font-size: 12px; color: #713f12; font-style: italic; margin: 4px 0 0; }
+                      .allo-block-math { padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 18px; color: #1e293b; font-family: 'Cambria Math', 'Latin Modern Math', Georgia, serif; }
+                      .allo-block-math .allo-math-latex { display: block; font-family: ui-monospace, monospace; font-size: 11px; color: #475569; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; }
+                      .allo-block-reflection { background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px; padding: 14px 18px; }
+                      .allo-block-reflection .allo-refl-prompt { font-weight: 700; color: #14532d; font-size: 14px; margin-bottom: 8px; }
+                      .allo-block-reflection .allo-refl-area { width: 100%; min-height: 80px; padding: 10px; border: 1px solid #86efac; border-radius: 8px; font-size: 14px; line-height: 1.6; background: white; resize: vertical; font-family: inherit; box-sizing: border-box; color: #1f2937; }
+                      .allo-block-rubric { overflow-x: auto; }
+                      .allo-block-rubric table { font-size: 13px; }
+                      .allo-block-rubric thead th { background: #1e293b; color: white; padding: 8px 10px; text-align: left; font-weight: 700; font-size: 12px; }
+                      .allo-block-rubric tbody th { background: #f1f5f9; color: #1e293b; vertical-align: top; padding: 10px; text-align: left; font-weight: 700; border: 1px solid #e2e8f0; }
+                      .allo-block-rubric tbody td { padding: 10px; border: 1px solid #e2e8f0; vertical-align: top; min-width: 120px; color: #1f2937; }
+                      .allo-block-audio { padding: 12px; background: #f5f3ff; border-radius: 12px; border: 1px solid #ddd6fe; }
+                      .allo-block-audio audio { width: 100%; }
+                      .allo-block-audio .allo-audio-label { font-size: 11px; font-weight: 700; color: #5b21b6; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+                      .allo-block-audio .allo-audio-transcript { margin-top: 8px; padding: 10px; background: white; border-radius: 8px; font-size: 13px; color: #1f2937; line-height: 1.6; max-height: 200px; overflow-y: auto; }
+                      .allo-block-code { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px; font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Consolas, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; }
+                      .allo-block-code pre { margin: 0; }
+                      .allo-block-code code { white-space: pre; color: inherit; background: transparent; }
+                      .allo-block-code .allo-code-lang { display: inline-block; font-size: 10px; font-weight: 700; background: #334155; color: #cbd5e1; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+                      .allo-block-remove { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; background: rgba(15, 23, 42, 0.78); color: white; border: none; border-radius: 50%; cursor: pointer; opacity: 0; transition: opacity 0.15s; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; z-index: 5; padding: 0; }
+                      .allo-block:hover > .allo-block-remove, .allo-block:focus-within > .allo-block-remove, .allo-block-remove:focus { opacity: 1; }
+                      .allo-block-remove:hover { background: #dc2626; }
+                      .allo-block-remove:focus { outline: 2px solid #6366f1; outline-offset: 2px; }
+                      .allo-block-controls { display: flex; gap: 4px; margin-top: 8px; padding: 6px; background: rgba(99, 102, 241, 0.08); border-radius: 6px; flex-wrap: wrap; align-items: center; }
+                      .allo-block-controls button { font-size: 11px; padding: 3px 8px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 600; color: #334155; font-family: inherit; }
+                      .allo-block-controls button:hover { background: #6366f1; color: white; border-color: #6366f1; }
+                      .allo-block-controls button:focus { outline: 2px solid #6366f1; outline-offset: 1px; }
+                      .allo-block-controls .allo-control-label { font-size: 10px; font-weight: 700; color: #4338ca; text-transform: uppercase; padding: 0 4px; letter-spacing: 0.05em; }
+                      .allo-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+                      @media print {
+                        .allo-block-remove, .allo-block-controls { display: none !important; }
+                        .allo-block { break-inside: avoid; }
+                      }
+                    `;
+
+                    // ── One-time per-iframe setup: inject stylesheet + click delegation ──
+                    const _ensureAlloBlocksReady = (doc) => {
+                      if (!doc.getElementById('allo-blocks-css')) {
+                        const s = doc.createElement('style');
+                        s.id = 'allo-blocks-css';
+                        s.textContent = _ALLO_BLOCKS_CSS;
+                        doc.head.appendChild(s);
+                      }
+                      // SR live region (announces inserted/removed blocks)
+                      if (!doc.getElementById('allo-blocks-live')) {
+                        const live = doc.createElement('div');
+                        live.id = 'allo-blocks-live';
+                        live.className = 'allo-sr-only';
+                        live.setAttribute('aria-live', 'polite');
+                        live.setAttribute('aria-atomic', 'true');
+                        live.setAttribute('contenteditable', 'false');
+                        doc.body && doc.body.appendChild(live);
+                      }
+                      if (doc.__alloBlocksDelegated) return;
+                      doc.__alloBlocksDelegated = true;
+                      doc.addEventListener('click', (ev) => {
+                        const t = ev.target;
+                        if (!t || !t.closest) return;
+                        const announce = (msg) => {
+                          try {
+                            const lr = doc.getElementById('allo-blocks-live');
+                            if (lr) { lr.textContent = ''; setTimeout(() => { lr.textContent = msg; }, 30); }
+                            if (typeof window.addToast === 'function') window.addToast(msg, 'info');
+                            if (typeof window.parent.addToast === 'function') window.parent.addToast(msg, 'info');
+                          } catch (_) {}
+                        };
+                        const persist = () => {
+                          try {
+                            if (typeof window.parent.__alloflowOnPdfPreviewMutated === 'function') window.parent.__alloflowOnPdfPreviewMutated();
+                          } catch (_) {}
+                        };
+                        // Remove block
+                        const removeBtn = t.closest('.allo-block-remove');
+                        if (removeBtn) {
+                          ev.preventDefault();
+                          const block = removeBtn.closest('[data-allo-block]');
+                          if (block) {
+                            const type = block.getAttribute('data-allo-block') || 'block';
+                            block.remove();
+                            announce('Removed ' + type + ' block');
+                            persist();
+                          }
+                          return;
                         }
-                        doc.execCommand('insertHTML', false, block.html);
-                      }} className="text-[11px] font-bold text-slate-600 px-1.5 py-1.5 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left"
-                        aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
-                        {block.icon} {block.label}
-                      </button>
-                    ))}
-                  </div>
+                        // Per-block controls (+/- row/col/item)
+                        const ctrlBtn = t.closest('.allo-block-controls button[data-action]');
+                        if (ctrlBtn) {
+                          ev.preventDefault();
+                          const action = ctrlBtn.getAttribute('data-action');
+                          const block = ctrlBtn.closest('[data-allo-block]');
+                          if (!block) return;
+                          const isRubric = block.classList.contains('allo-block-rubric');
+                          if (action === 'add-row') {
+                            const tbody = block.querySelector('tbody');
+                            const headerRow = block.querySelector('thead tr');
+                            if (tbody && headerRow) {
+                              const cols = headerRow.children.length;
+                              const tr = doc.createElement('tr');
+                              for (let i = 0; i < cols; i++) {
+                                if (isRubric && i === 0) {
+                                  const th = doc.createElement('th');
+                                  th.setAttribute('scope', 'row');
+                                  th.textContent = 'New criterion';
+                                  tr.appendChild(th);
+                                } else {
+                                  const td = doc.createElement('td');
+                                  td.textContent = isRubric ? 'Description' : 'Data';
+                                  tr.appendChild(td);
+                                }
+                              }
+                              tbody.appendChild(tr);
+                              announce('Row added');
+                            }
+                          } else if (action === 'remove-row') {
+                            const tbody = block.querySelector('tbody');
+                            if (tbody && tbody.children.length > 1) {
+                              tbody.lastElementChild.remove();
+                              announce('Row removed');
+                            }
+                          } else if (action === 'add-col') {
+                            const headerRow = block.querySelector('thead tr');
+                            const bodyRows = block.querySelectorAll('tbody tr');
+                            if (headerRow) {
+                              const newTh = doc.createElement('th');
+                              newTh.setAttribute('scope', 'col');
+                              newTh.textContent = isRubric ? 'New level' : 'New header';
+                              headerRow.appendChild(newTh);
+                            }
+                            bodyRows.forEach((row) => {
+                              const td = doc.createElement('td');
+                              td.textContent = isRubric ? 'Description' : 'Data';
+                              row.appendChild(td);
+                            });
+                            announce('Column added');
+                          } else if (action === 'remove-col') {
+                            const headerRow = block.querySelector('thead tr');
+                            const bodyRows = block.querySelectorAll('tbody tr');
+                            const minCols = isRubric ? 2 : 1;
+                            if (headerRow && headerRow.children.length > minCols) {
+                              headerRow.lastElementChild.remove();
+                              bodyRows.forEach((row) => { if (row.lastElementChild) row.lastElementChild.remove(); });
+                              announce('Column removed');
+                            }
+                          } else if (action === 'add-column-card') {
+                            const newCol = doc.createElement('div');
+                            newCol.className = 'allo-col';
+                            newCol.textContent = 'New column content';
+                            const ctrls = block.querySelector('.allo-block-controls');
+                            if (ctrls) block.insertBefore(newCol, ctrls); else block.appendChild(newCol);
+                            const count = block.querySelectorAll('.allo-col').length;
+                            block.style.gridTemplateColumns = 'repeat(' + count + ', minmax(0, 1fr))';
+                            announce('Column added');
+                          } else if (action === 'remove-column-card') {
+                            const cols = block.querySelectorAll('.allo-col');
+                            if (cols.length > 1) {
+                              cols[cols.length - 1].remove();
+                              const count = cols.length - 1;
+                              block.style.gridTemplateColumns = 'repeat(' + count + ', minmax(0, 1fr))';
+                              announce('Column removed');
+                            }
+                          } else if (action === 'add-checklist-item') {
+                            const list = block.querySelector('ul');
+                            if (list) {
+                              const id = 'cl-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                              const li = doc.createElement('li');
+                              const cb = doc.createElement('input');
+                              cb.type = 'checkbox'; cb.id = id;
+                              const lbl = doc.createElement('label');
+                              lbl.setAttribute('for', id); lbl.textContent = 'New task';
+                              li.appendChild(cb); li.appendChild(lbl);
+                              list.appendChild(li);
+                              announce('Checklist item added');
+                            }
+                          } else if (action === 'remove-checklist-item') {
+                            const list = block.querySelector('ul');
+                            if (list && list.children.length > 1) {
+                              list.lastElementChild.remove();
+                              announce('Checklist item removed');
+                            }
+                          } else if (action === 'add-step') {
+                            const ol = block.querySelector('ol');
+                            if (ol) {
+                              const num = ol.children.length + 1;
+                              const li = doc.createElement('li');
+                              const span = doc.createElement('span');
+                              span.className = 'allo-step-num';
+                              span.setAttribute('aria-hidden', 'true');
+                              span.textContent = String(num);
+                              const body = doc.createElement('div');
+                              body.className = 'allo-step-body';
+                              body.textContent = 'New step description';
+                              li.appendChild(span); li.appendChild(body);
+                              ol.appendChild(li);
+                              announce('Step ' + num + ' added');
+                            }
+                          } else if (action === 'remove-step') {
+                            const ol = block.querySelector('ol');
+                            if (ol && ol.children.length > 1) {
+                              ol.lastElementChild.remove();
+                              // Renumber visible step counts
+                              Array.from(ol.querySelectorAll('.allo-step-num')).forEach((s, i) => { s.textContent = String(i + 1); });
+                              announce('Step removed');
+                            }
+                          }
+                          persist();
+                        }
+                      }, true);
+                    };
+
+                    // ── Block library (21 blocks) ──
+                    const _uid = (p) => p + '-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
+                    const blocks = [
+                      { label: 'Info Box', icon: 'ℹ️', html: '<div class="allo-block allo-block-info" data-allo-block="info" tabindex="0" role="note" aria-label="Information note"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove information block" title="Remove">×</button><strong>Note:</strong> <span>Enter info here</span></div>' },
+                      { label: 'Warning', icon: '⚠️', html: '<div class="allo-block allo-block-warning" data-allo-block="warning" tabindex="0" role="note" aria-label="Warning"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove warning block" title="Remove">×</button><strong>Important:</strong> <span>Enter warning here</span></div>' },
+                      { label: 'Success', icon: '✅', html: '<div class="allo-block allo-block-success" data-allo-block="success" tabindex="0" role="note" aria-label="Tip"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove tip block" title="Remove">×</button><strong>Tip:</strong> <span>Enter tip here</span></div>' },
+                      { label: 'Quote', icon: '💬', html: '<blockquote class="allo-block allo-block-quote" data-allo-block="quote" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove quote block" title="Remove">×</button>"Enter quote here"<cite>— Source</cite></blockquote>' },
+                      { label: 'Columns', icon: '⬛⬛', html: '<div class="allo-block allo-block-columns" data-allo-block="columns" tabindex="0" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove columns block" title="Remove">×</button><div class="allo-col">Column 1 content</div><div class="allo-col">Column 2 content</div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Columns</span><button type="button" data-action="add-column-card" aria-label="Add column">+ Column</button><button type="button" data-action="remove-column-card" aria-label="Remove last column">− Column</button></div></div>' },
+                      { label: 'Divider', icon: '➖', html: '<div class="allo-block allo-block-divider" data-allo-block="divider" tabindex="0" role="separator" aria-label="Section divider"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove divider" title="Remove">×</button><hr /></div>' },
+                      { label: 'Page Break', icon: '📄', html: '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove page break" title="Remove">×</button><span class="allo-pb-label" aria-hidden="true">— Page Break —</span><span class="allo-sr-only">Page break</span></div>' },
+                      { label: 'Checklist', icon: '☑️', html: (() => { const a = _uid('cl'), b = _uid('cl'), c = _uid('cl'); return '<div class="allo-block" data-allo-block="checklist" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove checklist" title="Remove">×</button><ul class="allo-block-checklist" aria-label="Checklist"><li><input type="checkbox" id="' + a + '" /><label for="' + a + '">Task item 1</label></li><li><input type="checkbox" id="' + b + '" /><label for="' + b + '">Task item 2</label></li><li><input type="checkbox" id="' + c + '" /><label for="' + c + '">Task item 3</label></li></ul><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Items</span><button type="button" data-action="add-checklist-item" aria-label="Add task">+ Item</button><button type="button" data-action="remove-checklist-item" aria-label="Remove last task">− Item</button></div></div>'; }) },
+                      { label: 'Data Table', icon: '📊', html: '<div class="allo-block allo-block-table" data-allo-block="table" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove table" title="Remove">×</button><figure><table aria-label="Data table"><caption>Table Title — Edit Me</caption><thead><tr><th scope="col">Header 1</th><th scope="col">Header 2</th><th scope="col">Header 3</th></tr></thead><tbody><tr><td>Data</td><td>Data</td><td>Data</td></tr><tr><td>Data</td><td>Data</td><td>Data</td></tr></tbody></table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Table</span><button type="button" data-action="add-row" aria-label="Add row">+ Row</button><button type="button" data-action="remove-row" aria-label="Remove last row">− Row</button><button type="button" data-action="add-col" aria-label="Add column">+ Column</button><button type="button" data-action="remove-col" aria-label="Remove last column">− Column</button></div></div>' },
+                      { label: 'Image + Alt', icon: '🖼️', html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label="Image with description"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove image" title="Remove">×</button><div class="allo-img-placeholder"><span aria-hidden="true">🖼️</span><br/>Replace this placeholder with an actual image.<br/><em>Use the AI Image Generator panel above, or paste an image URL.</em></div><figcaption>Image description for screen readers — edit this caption</figcaption></figure>' },
+                      { label: 'Definition', icon: '📖', html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd></dl>' },
+                      { label: 'Numbered Steps', icon: '1️⃣', html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">×</button><ol class="allo-block-steps" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step" aria-label="Add step">+ Step</button><button type="button" data-action="remove-step" aria-label="Remove last step">− Step</button></div></div>' },
+                      { label: 'Accordion', icon: '📂', html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">×</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation — let students reveal content at their own pace. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em></div></details>' },
+                      { label: 'Sentence Frame', icon: '🪧', html: '<div class="allo-block allo-block-frame" data-allo-block="sentence-frame" tabindex="0" role="note" aria-label="Sentence frame"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove sentence frame" title="Remove">×</button>I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.</div>' },
+                      { label: 'Objective', icon: '🎯', html: '<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">×</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div></div>' },
+                      { label: 'Vocab Card', icon: '🃏', html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div></div>' },
+                      { label: 'Math Equation', icon: '➗', html: '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Mathematical equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">×</button><span aria-hidden="true">a² + b² = c²</span><span class="allo-sr-only">a squared plus b squared equals c squared</span><span class="allo-math-latex" contenteditable="false">LaTeX: a^2 + b^2 = c^2</span></div>' },
+                      { label: 'Reflection', icon: '✏️', html: '<div class="allo-block allo-block-reflection" data-allo-block="reflection" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">×</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here..."></textarea></div>' },
+                      { label: 'Rubric', icon: '📋', html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove rubric" title="Remove">×</button><table aria-label="Scoring rubric"><caption>Rubric Title — Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 — Exemplary</th><th scope="col">3 — Proficient</th><th scope="col">2 — Developing</th><th scope="col">1 — Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rubric</span><button type="button" data-action="add-row" aria-label="Add criterion row">+ Criterion</button><button type="button" data-action="remove-row" aria-label="Remove last criterion">− Criterion</button><button type="button" data-action="add-col" aria-label="Add level column">+ Level</button><button type="button" data-action="remove-col" aria-label="Remove last level">− Level</button></div></div>' },
+                      { label: 'Audio', icon: '🔊', html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">×</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"><source src="" type="audio/mpeg" />Your browser does not support audio playback.</audio><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>' },
+                      { label: 'Code Block', icon: '💻', html: '<div class="allo-block" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code block" title="Remove">×</button><div class="allo-block-code"><span class="allo-code-lang" aria-label="Programming language">Python</span><pre><code aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div></div>' },
+                    ];
+
+                    const _insertBlock = (block) => {
+                      const iframe = pdfPreviewRef.current; if (!iframe) return;
+                      const doc = iframe.contentDocument; if (!doc) return;
+                      try { iframe.contentWindow.focus(); } catch (e) {}
+                      try { doc.designMode = 'on'; } catch (e) {}
+                      _ensureAlloBlocksReady(doc);
+                      const sel = doc.getSelection();
+                      if (!sel || sel.rangeCount === 0) {
+                        const main = doc.querySelector('main') || doc.body;
+                        const range = doc.createRange();
+                        range.selectNodeContents(main);
+                        range.collapse(false);
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                      }
+                      const sentinelId = '__allo_ins_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+                      const sentinel = '<span id="' + sentinelId + '" data-allo-sentinel="1">​</span>';
+                      const html = (typeof block.html === 'function') ? block.html() : block.html;
+                      doc.execCommand('insertHTML', false, sentinel + html);
+                      const sent = doc.getElementById(sentinelId);
+                      const newBlock = sent && sent.nextElementSibling;
+                      if (sent) sent.remove();
+                      if (newBlock) {
+                        try { newBlock.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+                        if (newBlock.matches && newBlock.matches('[data-allo-block]')) {
+                          if (!newBlock.hasAttribute('tabindex')) newBlock.setAttribute('tabindex', '-1');
+                          setTimeout(() => { try { newBlock.focus({ preventScroll: false }); } catch (e) {} }, 60);
+                        }
+                      }
+                      try {
+                        const lr = doc.getElementById('allo-blocks-live');
+                        if (lr) { lr.textContent = ''; setTimeout(() => { lr.textContent = 'Inserted ' + block.label; }, 30); }
+                      } catch (_) {}
+                      try { if (typeof addToast === 'function') addToast('Inserted: ' + block.label, 'success'); } catch (_) {}
+                      try { if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
+                    };
+
+                    return (
+                      <div className="grid grid-cols-2 gap-1">
+                        {blocks.map(block => (
+                          <button key={block.label} onClick={() => _insertBlock(block)}
+                            className="text-[11px] font-bold text-slate-600 px-1.5 py-1.5 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left"
+                            aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
+                            {block.icon} {block.label}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
 
                   <div className="text-[11px] font-bold text-slate-600 uppercase mt-2">Spacing</div>
                   <div className="flex gap-1">

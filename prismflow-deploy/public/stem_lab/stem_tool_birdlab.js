@@ -2567,7 +2567,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             )
           ),
           // Season ribbon under hero
-          h('div', { className: 'mb-5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-50 via-emerald-50 to-sky-50 border border-emerald-200 flex items-center gap-2 text-sm', role: 'note' },
+          h('div', { className: 'mb-3 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-50 via-emerald-50 to-sky-50 border border-emerald-200 flex items-center gap-2 text-sm', role: 'note' },
             h('span', { 'aria-hidden': true, className: 'text-base' },
               (__month >= 2 && __month <= 4) ? '🌱' :
               (__month >= 5 && __month <= 7) ? '☀️' :
@@ -2579,6 +2579,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             ),
             h('span', { className: 'text-slate-700' }, '— ' + __seasonTag)
           ),
+          // ── Today's Bird: deterministic daily-rotating species spotlight ──
+          (function() {
+            if (!Array.isArray(MAINE_BIRDS) || !MAINE_BIRDS.length) return null;
+            // Day-of-year: stable across user, changes once per day
+            var __now = new Date();
+            var __startOfYear = new Date(__now.getFullYear(), 0, 0);
+            var __doy = Math.floor((__now - __startOfYear) / 86400000);
+            var __todaysBird = MAINE_BIRDS[__doy % MAINE_BIRDS.length];
+            var __sp = __todaysBird.speciesKey ? BIRDS[__todaysBird.speciesKey] : null;
+            var __dateLabel = __now.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            return h('button', {
+              onClick: function() {
+                upd('view', 'maineBirds');
+                announce('Opening Maine Birds Spotlight — featured: ' + __todaysBird.name);
+              },
+              'aria-label': 'Today\'s featured bird: ' + __todaysBird.name + '. Click to open Maine Birds Spotlight.',
+              className: 'w-full mb-5 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-lg text-left transition hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-4 ring-amber-500/40 birdlab-card-lift',
+              style: { background: 'linear-gradient(110deg, #fffbeb 0%, #fef3c7 30%, #fde68a 60%, #d1fae5 100%)' }
+            },
+              h('div', { className: 'p-4 flex items-center gap-4 flex-wrap' },
+                // Date strip + bird-of-the-day badge
+                h('div', { className: 'flex-shrink-0' },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-amber-800' }, '🪶 Today\'s bird'),
+                  h('div', { className: 'text-[11px] font-mono text-slate-700' }, __dateLabel)
+                ),
+                // Bird SVG in white circle
+                __sp && h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 64, height: 64, borderRadius: '50%',
+                    background: 'rgba(255,255,255,0.95)',
+                    border: '3px solid #d97706',
+                    boxShadow: '0 0 0 4px rgba(217,119,6,0.18), 0 4px 10px rgba(0,0,0,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0
+                  }
+                },
+                  h('svg', { viewBox: '0 0 30 30', style: { width: 50, height: 50 } },
+                    h('g', { transform: 'translate(2, 2)' }, __sp.svg(h))
+                  )
+                ),
+                // Name + status
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('h3', {
+                    style: {
+                      fontSize: '1.25rem', fontWeight: 900, color: '#1e293b',
+                      lineHeight: 1.15, marginBottom: 2,
+                      textShadow: '0 1px 0 rgba(255,255,255,0.85)'
+                    }
+                  }, __todaysBird.name),
+                  h('div', { className: 'text-xs italic text-slate-700 mb-1' }, __todaysBird.sciName),
+                  h('div', { className: 'flex flex-wrap gap-1.5' },
+                    h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300' },
+                      __todaysBird.mainStatus),
+                    __todaysBird.iconicStatus && h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300' },
+                      '⭐ ' + __todaysBird.iconicStatus)
+                  )
+                ),
+                // CTA arrow
+                h('span', {
+                  'aria-hidden': 'true',
+                  className: 'text-2xl text-amber-700 font-black flex-shrink-0',
+                  style: { textShadow: '0 1px 0 rgba(255,255,255,0.85)' }
+                }, '→')
+              ),
+              h('div', { className: 'px-4 py-2 bg-white/60 border-t border-amber-300 text-xs text-slate-800' },
+                h('strong', { className: 'text-amber-800' }, 'Where to look: '),
+                __todaysBird.seeWhere || __todaysBird.habitat
+              )
+            );
+          })(),
           // Framing banner
           h('div', { className: 'mb-6 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300' },
             h('div', { className: 'flex items-start gap-3' },
@@ -3985,9 +4056,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               !quizComplete && (function() {
                 var current = quizPool[quizIdx];
                 var picked = quizPicks[quizIdx];
+                var quizPlayId = 'quiz-' + quizIdx;
+                var isQuizPlaying = playingId === quizPlayId;
                 return h('div', { className: 'bg-white rounded-2xl border-2 border-violet-300 shadow p-5 space-y-4' },
                   h('div', { className: 'p-4 bg-slate-100 border-l-4 border-violet-500 rounded-lg' },
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700 mb-1' }, 'Match this call to the species'),
+                    h('div', { className: 'flex items-center justify-between gap-2 mb-1 flex-wrap' },
+                      h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-700' }, 'Match this call to the species'),
+                      h('button', {
+                        onClick: function() { toggleTonePlayback(quizPlayId, current.mnemonic); },
+                        'aria-pressed': isQuizPlaying ? 'true' : 'false',
+                        'aria-label': (isQuizPlaying ? 'Stop tone sketch' : 'Play tone sketch'),
+                        className: 'inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
+                          (isQuizPlaying
+                            ? 'bg-rose-600 text-white border-2 border-rose-700 hover:bg-rose-700'
+                            : 'bg-violet-600 text-white border-2 border-violet-700 hover:bg-violet-700'),
+                        title: 'Synthesized rhythm only — not a real recording.'
+                      },
+                        h('span', { 'aria-hidden': true }, isQuizPlaying ? '■' : '▶'),
+                        isQuizPlaying ? 'Stop' : 'Play tone'
+                      )
+                    ),
                     h('p', { className: 'text-base text-slate-800 italic mb-2' }, current.mnemonic),
                     // Rhythm strip — gives a second visual cue beyond just the words
                     h('div', { className: 'p-2 bg-white border border-violet-300 rounded-lg mb-2' },
