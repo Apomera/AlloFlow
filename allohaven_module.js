@@ -1220,6 +1220,12 @@
     var h = React.createElement;
     var p = palette || { primary: '#888', secondary: '#ccc', accent: '#444' };
     var blinking = animState && animState.blinking;
+    // Pupil offset (cursor tracking) — clamped to ±2 viewBox units so
+    // pupils move within the eye sclera. Caller passes { x: -1..1, y: -1..1 }
+    // representing normalized cursor offset from companion center.
+    var pupilOffset = (animState && animState.pupilOffset) || { x: 0, y: 0 };
+    var px = Math.max(-2, Math.min(2, (pupilOffset.x || 0) * 2));
+    var py = Math.max(-2, Math.min(2, (pupilOffset.y || 0) * 2));
     // Eyelid scale-y is the blink mechanism — when blinking, eyes "close"
     // by overlaying eyelid shapes at full opacity.
     var eyelidOpacity = blinking ? 1 : 0;
@@ -1229,6 +1235,9 @@
       style: { display: 'block', overflow: 'visible' },
       'aria-hidden': 'true'
     };
+    // Pupil-tracking transform applied to a wrapping <g> around eye details
+    var pupilTransform = 'translate(' + px.toFixed(2) + ' ' + py.toFixed(2) + ')';
+    var pupilStyle = { transform: pupilTransform, transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1)' };
 
     if (speciesId === 'cat') {
       return h('svg', commonRoot,
@@ -1251,12 +1260,13 @@
           // Cheeks (subtle)
           h('ellipse', { cx: 40, cy: 44, rx: 4, ry: 2.5, fill: p.secondary, opacity: 0.5 }),
           h('ellipse', { cx: 60, cy: 44, rx: 4, ry: 2.5, fill: p.secondary, opacity: 0.5 }),
-          // Eyes
-          h('ellipse', { cx: 42, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
-          h('ellipse', { cx: 58, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
-          // Eye highlights
-          h('circle', { cx: 43, cy: 37, r: 0.8, fill: '#fff' }),
-          h('circle', { cx: 59, cy: 37, r: 0.8, fill: '#fff' }),
+          // Eyes (pupils track cursor on hover via pupilStyle wrapper)
+          h('g', { style: pupilStyle },
+            h('ellipse', { cx: 42, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
+            h('ellipse', { cx: 58, cy: 38, rx: 2.5, ry: 3.5, fill: p.accent }),
+            h('circle', { cx: 43, cy: 37, r: 0.8, fill: '#fff' }),
+            h('circle', { cx: 59, cy: 37, r: 0.8, fill: '#fff' })
+          ),
           // Nose
           h('path', { d: 'M48 44 L52 44 L50 47 Z', fill: p.accent }),
           // Mouth (subtle smile)
@@ -1292,11 +1302,13 @@
           h('path', { d: 'M68 28 L72 12 L56 22 Z', fill: p.primary }),
           h('path', { d: 'M34 24 L32 16 L40 22 Z', fill: p.accent }),
           h('path', { d: 'M66 24 L68 16 L60 22 Z', fill: p.accent }),
-          // Eyes (sly half-moon)
-          h('ellipse', { cx: 41, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
-          h('ellipse', { cx: 59, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
-          h('circle', { cx: 42, cy: 35, r: 0.7, fill: '#fff' }),
-          h('circle', { cx: 60, cy: 35, r: 0.7, fill: '#fff' }),
+          // Eyes (sly half-moon, pupils track cursor)
+          h('g', { style: pupilStyle },
+            h('ellipse', { cx: 41, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
+            h('ellipse', { cx: 59, cy: 36, rx: 2.5, ry: 3, fill: p.accent }),
+            h('circle', { cx: 42, cy: 35, r: 0.7, fill: '#fff' }),
+            h('circle', { cx: 60, cy: 35, r: 0.7, fill: '#fff' })
+          ),
           // Nose at the tip
           h('ellipse', { cx: 50, cy: 48, rx: 2, ry: 1.5, fill: p.accent }),
           // Tail-tip white
@@ -1335,14 +1347,16 @@
           // Big round eye discs (face plates)
           h('circle', { cx: 40, cy: 42, r: 9, fill: p.secondary }),
           h('circle', { cx: 60, cy: 42, r: 9, fill: p.secondary }),
-          // Eyes (big yellow)
+          // Eyes (big yellow sclera — fixed position, pupils slide within)
           h('circle', { cx: 40, cy: 42, r: 5.5, fill: p.accent }),
           h('circle', { cx: 60, cy: 42, r: 5.5, fill: p.accent }),
-          // Pupils
-          h('circle', { cx: 40, cy: 43, r: 2.5, fill: '#1a1a1a' }),
-          h('circle', { cx: 60, cy: 43, r: 2.5, fill: '#1a1a1a' }),
-          h('circle', { cx: 41, cy: 41, r: 0.9, fill: '#fff' }),
-          h('circle', { cx: 61, cy: 41, r: 0.9, fill: '#fff' }),
+          // Pupils + highlights (track cursor)
+          h('g', { style: pupilStyle },
+            h('circle', { cx: 40, cy: 43, r: 2.5, fill: '#1a1a1a' }),
+            h('circle', { cx: 60, cy: 43, r: 2.5, fill: '#1a1a1a' }),
+            h('circle', { cx: 41, cy: 41, r: 0.9, fill: '#fff' }),
+            h('circle', { cx: 61, cy: 41, r: 0.9, fill: '#fff' })
+          ),
           // Beak
           h('path', { d: 'M48 50 L52 50 L50 56 Z', fill: p.accent })
         ),
@@ -1376,9 +1390,11 @@
           h('path', { d: 'M44 76 L40 70 L50 74 L60 70 L56 76 Z', fill: p.primary, stroke: p.accent, strokeWidth: 1, opacity: 0.7 }),
           // Head
           h('ellipse', { cx: 18, cy: 60, rx: 10, ry: 8, fill: p.primary }),
-          // Eyes
-          h('circle', { cx: 14, cy: 58, r: 1.5, fill: p.accent }),
-          h('circle', { cx: 14, cy: 58, r: 0.5, fill: '#fff' }),
+          // Eyes (single eye visible from this angle, pupils track)
+          h('g', { style: pupilStyle },
+            h('circle', { cx: 14, cy: 58, r: 1.5, fill: p.accent }),
+            h('circle', { cx: 14, cy: 58, r: 0.5, fill: '#fff' })
+          ),
           // Cheek dot
           h('circle', { cx: 17, cy: 64, r: 1.2, fill: p.secondary, opacity: 0.6 }),
           // Smile
@@ -1404,12 +1420,13 @@
           h('ellipse', { cx: 50, cy: 76, rx: 13, ry: 14, fill: p.secondary }),
           // Belly scales
           h('path', { d: 'M40 70 Q44 74 48 70 Q52 74 56 70 Q60 74 60 70 M40 78 Q44 82 48 78 Q52 82 56 78', stroke: p.accent, strokeWidth: 0.7, fill: 'none', opacity: 0.5 }),
-          // Wings
-          h('path', { d: 'M28 50 Q14 40 18 60 Q24 58 32 56 Z', fill: p.accent, opacity: 0.85 }),
-          h('path', { d: 'M72 50 Q86 40 82 60 Q76 58 68 56 Z', fill: p.accent, opacity: 0.85 }),
-          // Wing membrane lines
-          h('path', { d: 'M28 50 L20 56 M28 50 L24 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 }),
-          h('path', { d: 'M72 50 L80 56 M72 50 L76 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 }),
+          // Wings (animated as a group — flap independent of body breathe)
+          h('g', { className: 'ah-companion-wings', style: { transformOrigin: '50px 52px' } },
+            h('path', { d: 'M28 50 Q14 40 18 60 Q24 58 32 56 Z', fill: p.accent, opacity: 0.85 }),
+            h('path', { d: 'M72 50 Q86 40 82 60 Q76 58 68 56 Z', fill: p.accent, opacity: 0.85 }),
+            h('path', { d: 'M28 50 L20 56 M28 50 L24 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 }),
+            h('path', { d: 'M72 50 L80 56 M72 50 L76 60', stroke: p.primary, strokeWidth: 0.6, opacity: 0.6 })
+          ),
           // Head (rounder than fox, with snout)
           h('ellipse', { cx: 50, cy: 38, rx: 18, ry: 16, fill: p.primary }),
           // Snout
@@ -1420,11 +1437,13 @@
           // Spikes along the back
           h('path', { d: 'M48 22 L50 16 L52 22 Z', fill: p.accent }),
           h('path', { d: 'M44 50 L46 44 L48 50 Z M52 50 L54 44 L56 50 Z M60 50 L62 44 L64 50 Z', fill: p.accent, opacity: 0.7 }),
-          // Eyes (big anime style)
-          h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
-          h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
-          h('circle', { cx: 43, cy: 37, r: 1, fill: '#fff' }),
-          h('circle', { cx: 59, cy: 37, r: 1, fill: '#fff' }),
+          // Eyes (big anime style, pupils track cursor)
+          h('g', { style: pupilStyle },
+            h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
+            h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 4, fill: '#1a1a1a' }),
+            h('circle', { cx: 43, cy: 37, r: 1, fill: '#fff' }),
+            h('circle', { cx: 59, cy: 37, r: 1, fill: '#fff' })
+          ),
           // Nostrils
           h('circle', { cx: 47, cy: 46, r: 0.8, fill: p.accent }),
           h('circle', { cx: 53, cy: 46, r: 0.8, fill: p.accent }),
@@ -1536,17 +1555,23 @@
       '@keyframes ah-companion-tail-dragon { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }',
       '@keyframes ah-companion-react { 0% { transform: scale(1); } 30% { transform: scale(1.15); } 60% { transform: scale(0.92); } 100% { transform: scale(1); } }',
       '@keyframes ah-companion-confetti { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-30px) scale(0.6); opacity: 0; } }',
+      '@keyframes ah-companion-bubble-in { 0% { opacity: 0; transform: translateY(8px) scale(0.92); } 100% { opacity: 1; transform: translateY(0) scale(1); } }',
+      '@keyframes ah-companion-wing-flap { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }',
+      '.ah-root .ah-companion-wings { animation: ah-companion-wing-flap 1800ms ease-in-out infinite; }',
       '.ah-root .ah-companion-root { animation: ah-companion-bob 5500ms ease-in-out infinite; transition: transform 200ms ease; cursor: pointer; }',
       '.ah-root .ah-companion-root.ah-companion-react { animation: ah-companion-react 600ms ease-out 1; }',
-      '.ah-root .ah-companion-body { animation: ah-companion-breathe 3500ms ease-in-out infinite; transform-box: fill-box; transform-origin: center; }',
-      '.ah-root .ah-companion-tail { transform-box: fill-box; transform-origin: center; }',
+      // transform-origin set inline per-species in viewBox coordinates;
+      // SVG default transform-box (view-box) interprets that correctly.
+      // Don\'t set transform-box: fill-box here — that would re-anchor
+      // the origin to each group\'s bounding box, mis-locating the pivot.
+      '.ah-root .ah-companion-body { animation: ah-companion-breathe 3500ms ease-in-out infinite; }',
       '.ah-root [data-species="cat"] .ah-companion-tail { animation: ah-companion-tail-cat 6000ms ease-in-out infinite; }',
       '.ah-root [data-species="fox"] .ah-companion-tail { animation: ah-companion-tail-fox 4500ms ease-in-out infinite; }',
       '.ah-root [data-species="owl"] .ah-companion-tail { animation: ah-companion-tail-owl 7000ms ease-in-out infinite; }',
       '.ah-root [data-species="turtle"] .ah-companion-tail { animation: ah-companion-tail-turtle 8000ms ease-in-out infinite; }',
       '.ah-root [data-species="dragon"] .ah-companion-tail { animation: ah-companion-tail-dragon 4000ms ease-in-out infinite; }',
       '.ah-root .ah-companion-root:hover { transform: scale(1.05) translateY(-2px); }',
-      '.ah-root .ah-companion-bubble { animation: ah-fade-in 320ms ease-out 1; }',
+      '.ah-root .ah-companion-bubble { animation: ah-companion-bubble-in 280ms cubic-bezier(0.34, 1.6, 0.64, 1) 1; transform-origin: bottom right; }',
       '.ah-root .ah-companion-confetti-piece { animation: ah-companion-confetti 800ms ease-out 1 forwards; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
@@ -1556,6 +1581,7 @@
       '  .ah-root .ah-companion-body,',
       '  .ah-root .ah-companion-tail,',
       '  .ah-root .ah-companion-bubble,',
+      '  .ah-root .ah-companion-wings,',
       '  .ah-root .ah-companion-confetti-piece { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible,',
@@ -6791,14 +6817,27 @@
     }
 
     // Generate a state-aware thought bubble — observational only, never
-    // guilt-inducing. Picks the first applicable rule, rotating among
-    // ties via lastBubbleText so the same line doesn't repeat back-to-back.
+    // guilt-inducing. Picks the first applicable observation, falling
+    // back to a species-flavored idle line. Voice prefix is NOT prepended
+    // to observations (would produce broken grammar like "What if you I
+    // like the new plant"); voice character lives in the idle filler
+    // pool and the species-specific opener tags below.
     function generateBubbleText(state, species) {
       var sp = getCompanionSpecies(species);
-      var prefix = sp ? sp.voicePrefix : '';
-      var todayStr = new Date().toISOString().slice(0, 10);
       var lastBubble = (state.companion && state.companion.lastBubbleText) || '';
-      // Build candidate pool — first applicable wins, then rotation
+      // A short species-specific opener that reads as the critter's voice
+      // without grammatical agreement issues. Empty-string-safe.
+      var openers = {
+        cat:    ['Hmm. ', 'Quietly noticed: ', 'I see... '],
+        fox:    ['Sneakily clever: ', 'Spotted: ', 'Aha — '],
+        owl:    ['Observed: ', 'Worth noting: ', 'Hooo — '],
+        turtle: ['Slowly noticed: ', 'Quietly: ', 'Step by step: '],
+        dragon: ['Whoa! ', 'Big news: ', 'Yesss — ']
+      };
+      function pickOpener() {
+        var pool = openers[species] || openers.cat;
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
       var candidates = [];
 
       // Recent decoration (last 24h)
@@ -6809,19 +6848,19 @@
       if (newDecs.length > 0) {
         var deco = newDecs[newDecs.length - 1];
         var dLabel = deco.templateLabel || deco.template || 'decoration';
-        candidates.push(prefix + 'I like the new ' + dLabel + '.');
+        candidates.push(pickOpener() + 'the new ' + dLabel + ' looks nice.');
       }
 
       // Pomodoro completed today
       var pomToday = (state.dailyState && state.dailyState.pomodorosCompleted) || 0;
       if (pomToday > 0) {
-        candidates.push(prefix + 'You\'ve focused ' + pomToday + ' time' + (pomToday === 1 ? '' : 's') + ' today.');
+        candidates.push(pickOpener() + 'you\'ve focused ' + pomToday + ' time' + (pomToday === 1 ? '' : 's') + ' today.');
       }
 
       // Quiz cap hit
       var quizToday = (state.dailyState && state.dailyState.quizTokensEarnedToday) || 0;
       if (quizToday >= 2) {
-        candidates.push(prefix + 'You really studied today. ' + (sp ? sp.affirm : ''));
+        candidates.push(pickOpener() + 'you really studied today.' + (sp ? ' ' + sp.affirm : ''));
       }
 
       // Reflection streak — count consecutive days with at least one entry
@@ -6838,7 +6877,7 @@
           if (byDay[dayStr]) streakDays++; else break;
         }
         if (streakDays >= 3) {
-          candidates.push(prefix + 'You\'ve been reflecting ' + streakDays + ' days in a row.');
+          candidates.push(pickOpener() + 'you\'ve been reflecting ' + streakDays + ' days in a row.');
         }
       }
 
@@ -6851,7 +6890,7 @@
         var msLeft = endMs - Date.now();
         if (msLeft < 0 || msLeft > 2 * 24 * 60 * 60 * 1000) return;
         var prog = computeGoalProgress(g, state);
-        candidates.push(prefix + 'Your goal "' + g.title + '" ends soon — you\'re at ' + prog.current + '/' + prog.target + '.');
+        candidates.push(pickOpener() + 'your goal "' + g.title + '" ends soon — you\'re at ' + prog.current + '/' + prog.target + '.');
       });
 
       // Stale memory (5+ days no quiz on any deck)
@@ -6863,7 +6902,7 @@
         return (Date.now() - new Date(lc.lastReviewedAt).getTime()) >= 5 * 24 * 60 * 60 * 1000;
       });
       if (staleDecks.length > 0) {
-        candidates.push(prefix + 'A few decks haven\'t been visited lately — ' + staleDecks.length + ' total.');
+        candidates.push(pickOpener() + staleDecks.length + ' deck' + (staleDecks.length === 1 ? '' : 's') + ' haven\'t been visited lately.');
       }
 
       // Mood-cluster (last 7 days, struggle dominant)
@@ -6874,7 +6913,7 @@
       if (recentDecs.length >= 3) {
         var struggleCount = recentDecs.filter(function(d) { return d.mood === 'struggle'; }).length;
         if (struggleCount / recentDecs.length >= 0.5) {
-          candidates.push(prefix + 'A tough week — proud of you for showing up.');
+          candidates.push(pickOpener() + 'a tough week — proud of you for showing up.');
         }
       }
 
@@ -6884,16 +6923,17 @@
         return (Date.now() - new Date(e.date).getTime()) < 24 * 60 * 60 * 1000;
       });
       if (recentWalk) {
-        candidates.push(prefix + 'Loved that story walk.');
+        candidates.push(pickOpener() + 'loved that story walk.');
       }
 
-      // Idle filler (always available, lowest priority)
+      // Idle filler — fully species-flavored standalone lines (no
+      // synthetic concatenation) so grammar reads naturally for each.
       var fillers = {
-        cat:    ['Hmm. A quiet moment.', 'Hmm. The room looks nice today.', 'Hmm. I\'ll just sit here.'],
-        fox:    ['What if you generated a new decoration?', 'What if you started a Pomodoro?', 'What if you wrote a reflection?'],
-        owl:    ['Considering... a quiet day is fine too.', 'Considering... what to study next.', 'Considering... the room is restful.'],
-        turtle: ['Step by step — no rush today.', 'Step by step — I\'m here when you\'re ready.', 'Step by step — patience.'],
-        dragon: ['Whoa! Ready when you are!', 'Whoa! What\'s next?', 'Whoa! Adventure awaits!']
+        cat:    ['Hmm. A quiet moment.', 'The room looks nice today.', 'I\'ll just sit here a while.', 'Cozy.'],
+        fox:    ['What if you started a Pomodoro?', 'What if you wrote a reflection?', 'What about a new decoration?', 'A clever move would be a quiz session.'],
+        owl:    ['Considering... a quiet day is fine too.', 'Considering... what to study next.', 'The room is restful.', 'A pause is also a kind of progress.'],
+        turtle: ['Slow and steady today.', 'I\'m here when you\'re ready.', 'No rush — small steps work.', 'Patience.'],
+        dragon: ['Whoa! Ready when you are!', 'Whoa! What\'s next?', 'Adventure awaits!', 'Let\'s do something epic!']
       };
       (fillers[species] || fillers.cat).forEach(function(f) { candidates.push(f); });
 
@@ -6901,7 +6941,7 @@
       for (var k = 0; k < candidates.length; k++) {
         if (candidates[k] !== lastBubble) return candidates[k];
       }
-      return candidates[0] || (prefix + 'Hi.');
+      return candidates[0] || 'Hi.';
     }
 
     // Triggered on click OR auto-fired once on first render-with-companion
@@ -7073,6 +7113,11 @@
     var confettiTuple = useState([]); // [{ id, kind: 'skillUp', label, ts }]
     var confetti = confettiTuple[0];
     var setConfetti = confettiTuple[1];
+    // Pupil tracking — cursor position relative to companion center,
+    // normalized to [-1, 1]. (0, 0) when not hovered.
+    var pupilOffsetTuple = useState({ x: 0, y: 0 });
+    var pupilOffset = pupilOffsetTuple[0];
+    var setPupilOffset = pupilOffsetTuple[1];
 
     // Random-cadence blink (4-7s between blinks, 120ms blink duration)
     useEffect(function() {
@@ -7851,6 +7896,26 @@
           handleClick();
         }
       }
+      function handleMove(e) {
+        // Compute cursor offset from companion center, normalized to [-1, 1].
+        // We use clientX/Y vs the bounding rect so layout shifts don\'t
+        // break the math.
+        var rect = e.currentTarget.getBoundingClientRect();
+        var cx = rect.left + rect.width / 2;
+        var cy = rect.top + rect.height / 2;
+        // The "track radius" is roughly twice the companion size — so
+        // pupils max out when cursor is ~150px away
+        var trackRadius = 150;
+        var dx = (e.clientX - cx) / trackRadius;
+        var dy = (e.clientY - cy) / trackRadius;
+        setPupilOffset({
+          x: Math.max(-1, Math.min(1, dx)),
+          y: Math.max(-1, Math.min(1, dy))
+        });
+      }
+      function handleLeave() {
+        setPupilOffset({ x: 0, y: 0 });
+      }
 
       return h('div', {
         'data-species': companion.species,
@@ -7918,6 +7983,8 @@
           title: displayName + ' · click for a thought',
           onClick: handleClick,
           onKeyDown: handleKey,
+          onMouseMove: handleMove,
+          onMouseLeave: handleLeave,
           style: {
             width: '76px',
             height: '76px',
@@ -7929,7 +7996,7 @@
             pointerEvents: 'auto'
           }
         },
-          getCompanionSvg(companion.species, paletteColors, { blinking: blinking })
+          getCompanionSvg(companion.species, paletteColors, { blinking: blinking, pupilOffset: pupilOffset })
         ),
         // Tiny name + edit affordance
         h('div', {
