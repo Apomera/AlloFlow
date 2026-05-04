@@ -893,6 +893,41 @@
     return null;
   }
 
+  // ── Mood-driven room tint (Phase 2p.2) ──
+  // Maps the dominant mood across recent decorations to a subtle radial
+  // gradient overlay color. Returns null when there's no signal (under
+  // 3 mood-tagged decorations in the last 30 days, or no clear winner).
+  // The overlay is layered on the floor surface at low opacity so the
+  // room "feels" like the student's recent affective state without
+  // hijacking the existing warm-light gradient.
+  function getDominantMoodTint(state) {
+    var thirtyAgoMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    var recent = (state.decorations || []).filter(function(d) {
+      return d.mood && d.earnedAt && new Date(d.earnedAt).getTime() >= thirtyAgoMs;
+    });
+    if (recent.length < 3) return null;
+    var counts = {};
+    recent.forEach(function(d) {
+      counts[d.mood] = (counts[d.mood] || 0) + 1;
+    });
+    var top = null, topN = 0, runnerN = 0;
+    Object.keys(counts).forEach(function(k) {
+      if (counts[k] > topN) { runnerN = topN; topN = counts[k]; top = k; }
+      else if (counts[k] > runnerN) { runnerN = counts[k]; }
+    });
+    // Only return a tint if dominance is clear (top > 1.5x runner-up)
+    if (!top || topN < runnerN * 1.5) return null;
+    // Mood → tint color mapping (subtle, low-opacity radial)
+    var tints = {
+      joy:       'rgba(255,200,90,0.10)',   // warm yellow-orange
+      pride:     'rgba(255,170,80,0.10)',   // warm orange
+      curiosity: 'rgba(180,140,220,0.09)',  // soft purple
+      calm:      'rgba(120,180,200,0.09)',  // cool teal
+      struggle:  'rgba(200,150,170,0.08)'   // soft pink (gentle, not alarming)
+    };
+    return { mood: top, color: tints[top] || null, count: topN, total: recent.length };
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 4.5: COMPANION CRITTERS + SKILL LEVELS (Phase 2p)
   // ─────────────────────────────────────────────────────────
@@ -7149,6 +7184,44 @@
       // eslint-disable-next-line
     }, [state.companion ? state.companion.species : null]);
 
+    // Decoration-arrival reaction (Phase 2p.2) — when a new decoration
+    // (non-starter) is placed, the companion does a happy bounce + emits
+    // a species-specific celebration bubble. Watches decorations.length
+    // and skips the initial mount via decorationCountRef.
+    var decorationCountRef = useRef(state.decorations.length);
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) {
+        decorationCountRef.current = state.decorations.length;
+        return;
+      }
+      var prev = decorationCountRef.current;
+      var now = state.decorations.length;
+      if (now > prev) {
+        // Newest decoration is the one just added (sorted by earnedAt desc)
+        var newest = state.decorations[state.decorations.length - 1];
+        if (newest && !newest.isStarter) {
+          var sp = state.companion.species;
+          var dLabel = newest.templateLabel || newest.template || 'item';
+          var celebs = {
+            cat:    'Hmm — the new ' + dLabel + ' suits the room.',
+            fox:    'Aha — a new ' + dLabel + '! Clever pick.',
+            owl:    'Observed: a new ' + dLabel + '. Well chosen.',
+            turtle: 'Slowly noticed: a beautiful ' + dLabel + '.',
+            dragon: 'Whoa! A new ' + dLabel + '! Let\'s see it!'
+          };
+          // Trigger the excited bounce + persist the bubble
+          setReacting(true);
+          setTimeout(function() { setReacting(false); }, 600);
+          saveCompanion({
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: celebs[sp] || celebs.cat
+          });
+        }
+      }
+      decorationCountRef.current = now;
+      // eslint-disable-next-line
+    }, [state.decorations.length]);
+
     // Skill level-up detection — compare current level vs cached
     // skillCelebrations[skillId] for each skill. If higher, fire confetti
     // + bubble + persist new high-watermark.
@@ -7452,19 +7525,33 @@
             }
           }, wallCells)
         ),
-        // Floor surface (with warm-light overlay + companion overlay)
+        // Floor surface (with warm-light overlay + mood tint + companion).
+        // Mood-driven tint (Phase 2p.2) — subtle radial overlay reflecting
+        // the dominant mood across recent decorations. Suppressed in high-
+        // contrast mode and when there's no clear signal.
         h('div', {
           role: 'region',
-          'aria-label': 'Floor — ' + floorCount + ' of ' + room.floorSlots + ' slots filled',
+          'aria-label': (function() {
+            var tint = !inherited.highContrast ? getDominantMoodTint(state) : null;
+            return 'Floor — ' + floorCount + ' of ' + room.floorSlots + ' slots filled'
+              + (tint ? ', mood: ' + tint.mood : '');
+          })(),
           className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             padding: '14px',
-            background: palette.floor,
+            background: (function() {
+              var tint = !inherited.highContrast ? getDominantMoodTint(state) : null;
+              if (tint && tint.color) {
+                return 'radial-gradient(ellipse at 50% 30%, ' + tint.color + ', transparent 70%), ' + palette.floor;
+              }
+              return palette.floor;
+            })(),
             borderRadius: '0 0 12px 12px',
             border: '1px solid ' + palette.border,
             borderTop: 'none',
             boxShadow: 'inset 0 8px 20px rgba(0,0,0,0.22)',
-            position: 'relative'
+            position: 'relative',
+            transition: 'background 600ms ease'
           }
         },
           h('div', {
@@ -8507,7 +8594,77 @@
             style: { marginTop: '14px', fontSize: '11px', color: palette.textMute, fontStyle: 'italic' }
           }, phase === 'focus'
             ? 'Focus on whatever you want. Tokens will be waiting when the timer dings.'
-            : 'Take a real break. Stand up, stretch, drink water.')
+            : 'Take a real break. Stand up, stretch, drink water.'),
+          // Companion accompanies the Pomodoro (Phase 2p.2) — appears
+          // next to the timer with a phase-aware bubble so focus sessions
+          // feel less lonely. Blink + bob still active.
+          (function() {
+            var c = state.companion;
+            if (!c || !c.species) return null;
+            var sp = getCompanionSpecies(c.species);
+            var swatch = getCompanionPalette(c.species, c.colorVariant || 'warm');
+            var bubbleByPhase = {
+              focus: {
+                cat:    'I\'ll keep watch. You focus.',
+                fox:    'Locked in! I\'ll be quiet.',
+                owl:    'Steady focus. I approve.',
+                turtle: 'Slow and steady — I\'m right here.',
+                dragon: 'Focus mode! I\'ve got your back!'
+              },
+              'short-break': {
+                cat:    'A pause — that\'s good too.',
+                fox:    'Stretch! You earned it.',
+                owl:    'Rest the eyes for a bit.',
+                turtle: 'Slow breaths. I like this part.',
+                dragon: 'Quick breather! Then onward!'
+              },
+              'long-break': {
+                cat:    'A real rest. Cozy.',
+                fox:    'Long break — drink water!',
+                owl:    'Replenish. The mind needs it.',
+                turtle: 'A good long pause. Lovely.',
+                dragon: 'Big break — go celebrate!'
+              }
+            };
+            var bubble = (bubbleByPhase[phase] && bubbleByPhase[phase][c.species])
+                       || (bubbleByPhase[phase] && bubbleByPhase[phase].cat)
+                       || '';
+            return h('div', {
+              style: { marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }
+            },
+              h('div', {
+                'data-species': c.species,
+                style: {
+                  width: '72px', height: '72px', flexShrink: 0,
+                  padding: '4px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '14px'
+                }
+              },
+                h('div', { className: 'ah-companion-root' },
+                  h('div', null,
+                    getCompanionSvg(c.species, swatch, { blinking: blinking, pupilOffset: { x: 0, y: 0 } })
+                  )
+                )
+              ),
+              h('div', {
+                style: {
+                  maxWidth: '220px',
+                  padding: '8px 12px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '12px',
+                  borderBottomLeftRadius: '4px',
+                  fontSize: '11.5px',
+                  color: palette.text,
+                  lineHeight: '1.45',
+                  fontStyle: 'italic',
+                  textAlign: 'left'
+                }
+              }, '"' + (c.name || (sp ? sp.label : 'buddy')) + ': ' + bubble + '"')
+            );
+          })()
         )
       );
     }
