@@ -4400,6 +4400,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // Hotspot focus — set by clicking a map pin OR a card. Drives scroll + highlight.
         var pickedHotspot_state = useState(null);
         var pickedHotspot = pickedHotspot_state[0], setPickedHotspot = pickedHotspot_state[1];
+        // Text search filter
+        var searchQ_state = useState('');
+        var searchQ = searchQ_state[0], setSearchQ = searchQ_state[1];
         function focusHotspot(name) {
           setPickedHotspot(name);
           if (!name) return;
@@ -4424,7 +4427,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           { id: 'migrant',             label: 'Passage migrants',    match: function(b) { return /migrant/i.test(b.mainStatus) && !/breeder|year-round/i.test(b.mainStatus); } }
         ];
 
-        var visibleBirds = MAINE_BIRDS.filter(STATUS_FILTERS.filter(function(f) { return f.id === filter; })[0].match);
+        var statusFilter = STATUS_FILTERS.filter(function(f) { return f.id === filter; })[0];
+        var qNorm = (searchQ || '').trim().toLowerCase();
+        var visibleBirds = MAINE_BIRDS.filter(function(b) {
+          if (!statusFilter.match(b)) return false;
+          if (!qNorm) return true;
+          // Match on common name + scientific name + habitat + status text
+          var hay = (b.name + ' ' + (b.sciName || '') + ' ' + (b.habitat || '') + ' ' + (b.mainStatus || '') + ' ' + (b.iconicStatus || '')).toLowerCase();
+          return hay.indexOf(qNorm) !== -1;
+        });
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🌲', title: 'Maine Birds Spotlight' }),
@@ -4450,6 +4461,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               }, '📍 Maine Birding Hotspots (' + MAINE_BIRDING_HOTSPOTS.length + ')')
             ),
             view === 'species' && h('div', { className: 'space-y-4' },
+              // Search input
+              h('div', { className: 'relative' },
+                h('label', { htmlFor: 'mb-search', className: 'sr-only' }, 'Search Maine birds'),
+                h('span', { 'aria-hidden': true,
+                  style: {
+                    position: 'absolute', top: '50%', left: 12, transform: 'translateY(-50%)',
+                    fontSize: 16, pointerEvents: 'none', color: '#475569'
+                  }
+                }, '🔎'),
+                h('input', {
+                  id: 'mb-search', type: 'text',
+                  value: searchQ,
+                  placeholder: 'Search by name, habitat, status (e.g. "puffin", "marsh", "winter")',
+                  onChange: function(e) { setSearchQ(e.target.value); setPicked(null); },
+                  className: 'w-full pl-9 pr-10 py-2.5 rounded-xl border-2 border-slate-300 text-sm focus:outline-none focus:border-stone-500 focus:ring-2 ring-stone-500/30',
+                  'aria-label': 'Search Maine birds by name, habitat, or status'
+                }),
+                searchQ && h('button', {
+                  onClick: function() { setSearchQ(''); },
+                  'aria-label': 'Clear search',
+                  style: {
+                    position: 'absolute', top: '50%', right: 8, transform: 'translateY(-50%)',
+                    background: 'transparent', border: 'none', cursor: 'pointer',
+                    fontSize: 14, fontWeight: 700, color: '#64748b',
+                    padding: '4px 8px', borderRadius: 6
+                  },
+                  className: 'hover:bg-slate-100'
+                }, '✕')
+              ),
               // Status filter
               h('div', { 'role': 'radiogroup', 'aria-label': 'Filter by status', className: 'flex flex-wrap gap-2' },
                 STATUS_FILTERS.map(function(f) {
@@ -4463,10 +4503,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   }, f.label);
                 })
               ),
-              h('div', { className: 'text-xs text-slate-700 italic' },
-                'Showing ' + visibleBirds.length + ' species'),
+              h('div', { className: 'text-xs text-slate-700 italic flex items-center gap-2 flex-wrap' },
+                'Showing ' + visibleBirds.length + ' of ' + MAINE_BIRDS.length + ' species',
+                qNorm && h('span', null,
+                  ' matching ',
+                  h('strong', { className: 'text-stone-800', style: { fontStyle: 'normal' } }, '"' + searchQ + '"')
+                ),
+                filter !== 'all' && h('span', null,
+                  ' · filter: ',
+                  h('strong', { className: 'text-stone-800', style: { fontStyle: 'normal' } },
+                    (STATUS_FILTERS.filter(function(f) { return f.id === filter; })[0] || {}).label || filter
+                  )
+                )
+              ),
+              // No-results state
+              visibleBirds.length === 0 && h('div', {
+                className: 'p-6 bg-amber-50 border-2 border-dashed border-amber-300 rounded-2xl text-center',
+                'aria-live': 'polite'
+              },
+                h('div', { className: 'text-4xl mb-2', 'aria-hidden': true }, '🔎'),
+                h('h3', { className: 'text-base font-black text-amber-900 mb-1' }, 'No matches'),
+                h('p', { className: 'text-sm text-slate-800 mb-3' },
+                  'No species match ',
+                  qNorm && h('strong', null, '"' + searchQ + '"'),
+                  qNorm && filter !== 'all' && ' with the current filter.',
+                  !qNorm && filter !== 'all' && 'this filter.'
+                ),
+                h('div', { className: 'flex gap-2 flex-wrap justify-center' },
+                  qNorm && h('button', {
+                    onClick: function() { setSearchQ(''); },
+                    className: 'px-4 py-2 rounded-xl bg-amber-700 text-white text-sm font-bold hover:bg-amber-800 focus:outline-none focus:ring-4 ring-amber-500/40'
+                  }, '✕ Clear search'),
+                  filter !== 'all' && h('button', {
+                    onClick: function() { setFilter('all'); },
+                    className: 'px-4 py-2 rounded-xl bg-white text-amber-800 border-2 border-amber-400 text-sm font-bold hover:border-amber-600 focus:outline-none focus:ring-4 ring-amber-500/40'
+                  }, '↩ Show all 25 species')
+                )
+              ),
               // Card grid
-              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3' },
+              visibleBirds.length > 0 && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3' },
                 visibleBirds.map(function(b) {
                   var sel = picked && picked.name === b.name;
                   var sp = b.speciesKey ? BIRDS[b.speciesKey] : null;
