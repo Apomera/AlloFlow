@@ -245,6 +245,11 @@
       // }
     ],
 
+    // ── Visit log (Phase 2p.11) ──
+    // Array of YYYY-MM-DD strings. Auto-stamped on every AlloHaven open.
+    // Used for gentle streak celebration only — never punitive.
+    visits: [],
+
     // ── Tour (Phase 2p.6) ──
     // First-visit guided walkthrough. tourSeen flips true when student
     // dismisses or completes the tour. Replayable from settings.
@@ -955,6 +960,60 @@
   // The overlay is layered on the floor surface at low opacity so the
   // room "feels" like the student's recent affective state without
   // hijacking the existing warm-light gradient.
+  // ── Visit streaks (Phase 2p.11) ──
+  // Computes current consecutive-days-visited streak ending today, plus
+  // longest streak of all time. Designed for celebration only — never
+  // surfaces a broken streak, never punishes missing days.
+  function computeStreak(visits) {
+    if (!visits || visits.length === 0) return { current: 0, longest: 0 };
+    var unique = {};
+    visits.forEach(function(v) { if (v) unique[v] = true; });
+    var dates = Object.keys(unique).sort();
+    var msPerDay = 24 * 60 * 60 * 1000;
+    var todayStr = new Date().toISOString().slice(0, 10);
+    var current = 0;
+    if (unique[todayStr]) {
+      current = 1;
+      for (var i = 1; i < 365; i++) {
+        var prev = new Date(Date.now() - i * msPerDay).toISOString().slice(0, 10);
+        if (unique[prev]) current++;
+        else break;
+      }
+    }
+    var longest = 0, streak = 0;
+    for (var j = 0; j < dates.length; j++) {
+      if (j === 0) { streak = 1; }
+      else {
+        var prevD = new Date(dates[j - 1]).getTime();
+        var thisD = new Date(dates[j]).getTime();
+        if (Math.round((thisD - prevD) / msPerDay) === 1) streak++;
+        else streak = 1;
+      }
+      if (streak > longest) longest = streak;
+    }
+    if (current > longest) longest = current;
+    return { current: current, longest: longest };
+  }
+
+  // ── Seasonal context (Phase 2p.11) ──
+  // Returns the active "season label" for today, or null if it\'s an
+  // ordinary day. Used by the companion bubble pool to surface seasonal
+  // observations without changing visuals (intentional minimal-touch).
+  function getSeasonalContext() {
+    var now = new Date();
+    var month = now.getMonth(); // 0-11
+    var day = now.getDate();
+    // Specific days first (more specific wins)
+    if (month === 1 && day >= 11 && day <= 14) return { id: 'valentine', label: 'around Valentine\'s' };
+    if (month === 9 && day >= 24) return { id: 'spooky', label: 'spooky season' };
+    if (month === 11 || (month === 0 && day <= 6)) return { id: 'winter', label: 'winter holidays' };
+    // Generic seasons (Northern Hemisphere)
+    if (month >= 2 && month <= 4) return { id: 'spring', label: 'spring' };
+    if (month >= 5 && month <= 7) return { id: 'summer', label: 'summer' };
+    if (month >= 8 && month <= 10) return { id: 'fall', label: 'fall' };
+    return null;
+  }
+
   function getDominantMoodTint(state) {
     var thirtyAgoMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
     var recent = (state.decorations || []).filter(function(d) {
@@ -1306,7 +1365,20 @@
       check: function(s) { return computeSkillLevel(countSkillEvents(s, 'focus')).level >= 3; } },
     { id: 'memory-l3', emoji: '🧠', label: 'Memory level 3',
       desc: 'Real retrieval reps logged.',
-      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'memory')).level >= 3; } }
+      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'memory')).level >= 3; } },
+
+    // Streak markers — current OR longest based on the achievement\'s
+    // intent. "First N-day streak" achievements use longest so they
+    // remain unlocked once earned, never re-locking if a day is missed.
+    { id: 'streak-3', emoji: '🌿', label: '3 days in a row',
+      desc: 'Showed up three days running.',
+      check: function(s) { return computeStreak(s.visits || []).longest >= 3; } },
+    { id: 'streak-7', emoji: '🌳', label: 'A week in a row',
+      desc: 'Seven straight days. Habits build like this.',
+      check: function(s) { return computeStreak(s.visits || []).longest >= 7; } },
+    { id: 'streak-30', emoji: '🌲', label: 'Thirty days in a row',
+      desc: 'A month-long stretch. Rare and quietly remarkable.',
+      check: function(s) { return computeStreak(s.visits || []).longest >= 30; } }
   ];
 
   function getAchievement(id) {
@@ -6639,6 +6711,7 @@
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
       if (!Array.isArray(merged.stories))        merged.stories        = [];
       if (!Array.isArray(merged.goals))          merged.goals          = [];
+      if (!Array.isArray(merged.visits))         merged.visits         = [];
       if (!merged.achievements || typeof merged.achievements !== 'object') merged.achievements = {};
       // Phase 2p.7 defensive normalization: backfill new fields onto
       // older saved state so post-update loads don\'t crash on undefined
@@ -6739,6 +6812,19 @@
         aiRationale: null
       };
       setStateField('decorations', [starter]);
+      // eslint-disable-next-line
+    }, []);
+
+    // ── Visit log (Phase 2p.11) ──
+    // Stamp today\'s date once per session if not already there. The
+    // streak helpers compute current/longest from this list.
+    useEffect(function() {
+      var todayStr = new Date().toISOString().slice(0, 10);
+      if (!Array.isArray(state.visits)) {
+        setStateField('visits', [todayStr]);
+      } else if (state.visits.indexOf(todayStr) === -1) {
+        setStateField('visits', state.visits.concat([todayStr]));
+      }
       // eslint-disable-next-line
     }, []);
 
@@ -7921,6 +8007,28 @@
       var achCount = Object.keys(state.achievements || {}).length;
       if ([5, 10, 15, 20].indexOf(achCount) !== -1) {
         candidates.push(pickOpener() + 'you have ' + achCount + ' achievements unlocked. Quietly proud.');
+      }
+
+      // Seasonal context (Phase 2p.11) — date-aware lines surfaced
+      // before idle filler so they take priority on the right days
+      // without dominating every visit.
+      var season = getSeasonalContext();
+      if (season) {
+        var seasonLines = {
+          winter:    [pickOpener() + 'cozy in here, with the winter outside.', pickOpener() + 'something about winter that makes a quiet room feel right.'],
+          spring:    [pickOpener() + 'spring is stirring.', pickOpener() + 'the air is changing — spring.'],
+          summer:    [pickOpener() + 'long days now. Summer.', pickOpener() + 'summer light suits the room.'],
+          fall:      [pickOpener() + 'leaves are turning.', pickOpener() + 'fall — quietly my favorite season.'],
+          spooky:    [pickOpener() + 'something spooky in the air. Boo. (Just kidding.)', pickOpener() + 'spooky season — extra cozy.'],
+          valentine: [pickOpener() + 'I\'m glad we hang out.', pickOpener() + 'we make a good team, you and I.']
+        };
+        (seasonLines[season.id] || []).forEach(function(l) { candidates.push(l); });
+      }
+
+      // Streak celebration — fires on milestone visits (3, 7, 14, 30 day)
+      var streak = computeStreak(state.visits || []);
+      if ([3, 7, 14, 30, 60, 100].indexOf(streak.current) !== -1) {
+        candidates.push(pickOpener() + 'that\'s ' + streak.current + ' days in a row. Quietly proud.');
       }
 
       // Idle filler — fully species-flavored standalone lines (no
@@ -9664,6 +9772,27 @@
         quizTokens > 0 ? chip('✓', 'Quizzes passed', quizTokens, 2) : null,
         walkTokens > 0 ? chip('📜', 'Walks', walkTokens, 1) : null,
         decorationsToday > 0 ? chip('🌿', 'Decorations placed', decorationsToday) : null,
+        // Visit streak (Phase 2p.11) — only shown when ≥3 days. No
+        // counter when below threshold, no broken-streak shame.
+        (function() {
+          var streak = computeStreak(state.visits);
+          if (streak.current < 3) return null;
+          return h('span', {
+            'aria-label': 'Visit streak: ' + streak.current + ' days in a row',
+            title: 'Quietly proud of you for showing up.',
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: '4px',
+              padding: '4px 10px',
+              background: palette.surface,
+              border: '1px solid ' + (palette.success || palette.accent),
+              borderRadius: '999px',
+              fontSize: '11px',
+              color: palette.success || palette.accent,
+              fontWeight: 700,
+              fontVariantNumeric: 'tabular-nums'
+            }
+          }, h('span', { 'aria-hidden': 'true' }, '🔥'), streak.current + '-day streak');
+        })(),
         topGoal ? (function() {
           var prog = computeGoalProgress(topGoal, state);
           var endDate = topGoal.endDate ? new Date(topGoal.endDate) : null;
