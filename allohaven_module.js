@@ -5653,6 +5653,287 @@
   // 6-step modal walkthrough introducing the major features.
   // Skippable, replayable from settings. Tour fires once on first
   // visit AFTER the welcome card is dismissed (via state.tourSeen).
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6.8: SEARCH MODAL (Phase 2p.10)
+  // ─────────────────────────────────────────────────────────
+  // Text-based search across decoration labels, deck content
+  // (flashcards, acronym meanings, notes, image-link associations),
+  // story titles and step narratives, and journal entries. Case-
+  // insensitive substring match. Click a result to jump to the
+  // appropriate modal at the right spot.
+  function SearchModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+
+    var queryTuple = useState('');
+    var query = queryTuple[0];
+    var setQuery = queryTuple[1];
+
+    var q = (query || '').trim().toLowerCase();
+    var minLen = 2;
+    var results = q.length < minLen ? null : (function() {
+      var out = { decorations: [], stories: [], journals: [] };
+      // Decoration labels + deck content
+      (p.decorations || []).forEach(function(d) {
+        var label = (d.templateLabel || d.template || '').toLowerCase();
+        var labelHit = label.indexOf(q) !== -1;
+        var refl = (d.studentReflection || '').toLowerCase();
+        var reflHit = refl.indexOf(q) !== -1;
+        var contentHits = []; // matching content snippets
+        var lc = d.linkedContent;
+        if (lc && lc.data) {
+          if (lc.type === 'flashcards' && Array.isArray(lc.data.cards)) {
+            lc.data.cards.forEach(function(c) {
+              var f = (c.front || '').toLowerCase();
+              var b = (c.back || '').toLowerCase();
+              if (f.indexOf(q) !== -1 || b.indexOf(q) !== -1) {
+                contentHits.push((c.front || '') + ' — ' + (c.back || ''));
+              }
+            });
+          } else if (lc.type === 'acronym') {
+            var letters = (lc.data.letters || '').toLowerCase();
+            var meanings = (lc.data.meanings || []).join(' ').toLowerCase();
+            var ctx = (lc.data.context || '').toLowerCase();
+            if (letters.indexOf(q) !== -1 || meanings.indexOf(q) !== -1 || ctx.indexOf(q) !== -1) {
+              contentHits.push((lc.data.letters || '').toUpperCase() + ' — ' + (lc.data.context || ''));
+            }
+          } else if (lc.type === 'notes') {
+            var text = (lc.data.text || '').toLowerCase();
+            if (text.indexOf(q) !== -1) {
+              // Snippet around match
+              var idx = text.indexOf(q);
+              var rawText = lc.data.text || '';
+              var start = Math.max(0, idx - 30);
+              var end = Math.min(rawText.length, idx + q.length + 30);
+              contentHits.push((start > 0 ? '…' : '') + rawText.slice(start, end) + (end < rawText.length ? '…' : ''));
+            }
+          } else if (lc.type === 'image-link') {
+            var assoc = (lc.data.association || '').toLowerCase();
+            if (assoc.indexOf(q) !== -1) {
+              contentHits.push(lc.data.association || '');
+            }
+          }
+        }
+        if (labelHit || reflHit || contentHits.length > 0) {
+          out.decorations.push({
+            decoration: d,
+            labelHit: labelHit,
+            reflHit: reflHit,
+            contentHits: contentHits.slice(0, 3) // cap snippets
+          });
+        }
+      });
+      // Stories: title + step narratives
+      (p.stories || []).forEach(function(s) {
+        var titleHit = (s.title || '').toLowerCase().indexOf(q) !== -1;
+        var narrativeHits = (s.steps || []).filter(function(stp) {
+          return (stp.narrative || '').toLowerCase().indexOf(q) !== -1;
+        });
+        if (titleHit || narrativeHits.length > 0) {
+          out.stories.push({ story: s, titleHit: titleHit, narrativeHits: narrativeHits.slice(0, 2) });
+        }
+      });
+      // Journal entries
+      (p.journalEntries || []).forEach(function(e) {
+        var text = (e.text || '').toLowerCase();
+        if (text.indexOf(q) === -1) return;
+        var idx = text.indexOf(q);
+        var rawText = e.text || '';
+        var start = Math.max(0, idx - 30);
+        var end = Math.min(rawText.length, idx + q.length + 30);
+        out.journals.push({
+          entry: e,
+          snippet: (start > 0 ? '…' : '') + rawText.slice(start, end) + (end < rawText.length ? '…' : '')
+        });
+      });
+      return out;
+    })();
+
+    var totalCount = results
+      ? (results.decorations.length + results.stories.length + results.journals.length)
+      : 0;
+
+    function highlightSnippet(text, queryStr) {
+      // Simple highlight via splitting on lowercased index
+      if (!text || !queryStr) return text;
+      var lower = text.toLowerCase();
+      var qi = lower.indexOf(queryStr.toLowerCase());
+      if (qi === -1) return text;
+      var before = text.slice(0, qi);
+      var match = text.slice(qi, qi + queryStr.length);
+      var after = text.slice(qi + queryStr.length);
+      return [
+        h('span', null, before),
+        h('mark', { style: { background: palette.accent, color: palette.onAccent, padding: '0 2px', borderRadius: '2px' } }, match),
+        h('span', null, after)
+      ];
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Search across your decks, stories, and reflections',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onClose();
+      },
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)', zIndex: 175,
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        padding: '60px 20px 20px 20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '1px solid ' + palette.border,
+          borderRadius: '14px', padding: '20px',
+          maxWidth: '600px', width: '100%', maxHeight: '85vh',
+          overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+            '🔍 Search'),
+          h('button', {
+            onClick: p.onClose,
+            'aria-label': 'Close search',
+            style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        h('input', {
+          type: 'search',
+          value: query,
+          onChange: function(e) { setQuery(e.target.value); },
+          placeholder: 'Search decks, stories, reflections…',
+          'aria-label': 'Search query',
+          autoFocus: true,
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '15px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            marginBottom: '14px'
+          }
+        }),
+        // Empty / hint state
+        q.length < minLen ? h('p', {
+          style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', textAlign: 'center', padding: '20px', lineHeight: '1.5' }
+        }, q.length === 0
+          ? 'Type at least 2 characters to search across your decks, stories, and reflections.'
+          : 'Keep typing…'
+        ) : (totalCount === 0 ? h('div', {
+          role: 'status', 'aria-live': 'polite',
+          style: { padding: '24px 16px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '8px', textAlign: 'center' }
+        },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: '28px', marginBottom: '6px' } }, '🤷'),
+          h('p', { style: { color: palette.textDim, fontSize: '13px', margin: 0 } },
+            'No matches for "' + query.trim() + '"')
+        ) : h('div', {
+          role: 'region', 'aria-label': totalCount + ' result' + (totalCount === 1 ? '' : 's'),
+          style: { display: 'flex', flexDirection: 'column', gap: '10px' }
+        },
+          h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+            totalCount + ' result' + (totalCount === 1 ? '' : 's')),
+          // Decorations
+          results.decorations.length > 0 ? h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, marginBottom: '6px' } },
+              '🌿 Decorations · ' + results.decorations.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              results.decorations.map(function(r) {
+                var d = r.decoration;
+                var dLabel = d.templateLabel || d.template || 'item';
+                return h('button', {
+                  key: 'sr-d-' + d.id,
+                  onClick: function() { p.onClickDecoration(d.id); },
+                  'aria-label': 'Open ' + dLabel,
+                  style: {
+                    display: 'flex', gap: '10px', alignItems: 'center',
+                    padding: '8px 10px',
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '8px',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    textAlign: 'left', color: palette.text
+                  }
+                },
+                  d.imageBase64 ? h('img', { src: d.imageBase64, alt: '', 'aria-hidden': 'true', style: { width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 } }) : null,
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: '13px', fontWeight: 700 } }, highlightSnippet(dLabel, query)),
+                    r.contentHits.length > 0 ? h('div', {
+                      style: { fontSize: '11px', color: palette.textDim, marginTop: '2px', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis' }
+                    }, highlightSnippet(r.contentHits[0], query)) : (
+                      r.reflHit ? h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginTop: '2px' } },
+                        '"' + (d.studentReflection || '').slice(0, 100) + (d.studentReflection.length > 100 ? '…' : '') + '"') : null
+                    )
+                  )
+                );
+              })
+            )
+          ) : null,
+          // Stories
+          results.stories.length > 0 ? h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, marginBottom: '6px' } },
+              '📜 Stories · ' + results.stories.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              results.stories.map(function(r) {
+                return h('button', {
+                  key: 'sr-s-' + r.story.id,
+                  onClick: function() { p.onClickStory(r.story.id); },
+                  'aria-label': 'Open story ' + (r.story.title || 'untitled'),
+                  style: {
+                    display: 'block', width: '100%', padding: '8px 10px',
+                    background: palette.surface, border: '1px solid ' + palette.border,
+                    borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                    textAlign: 'left', color: palette.text
+                  }
+                },
+                  h('div', { style: { fontSize: '13px', fontWeight: 700 } },
+                    '📜 ' + (r.story.title ? '' : '') + ' ',
+                    highlightSnippet(r.story.title || '(untitled)', query)),
+                  r.narrativeHits.length > 0 ? h('div', {
+                    style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginTop: '3px', lineHeight: '1.4' }
+                  }, highlightSnippet('"' + r.narrativeHits[0].narrative + '"', query)) : null
+                );
+              })
+            )
+          ) : null,
+          // Journal entries
+          results.journals.length > 0 ? h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, marginBottom: '6px' } },
+              '📝 Reflections · ' + results.journals.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              results.journals.map(function(r) {
+                var dateStr = r.entry.date ? new Date(r.entry.date).toLocaleDateString() : '';
+                return h('button', {
+                  key: 'sr-j-' + r.entry.id,
+                  onClick: function() { p.onClickJournal(r.entry.id); },
+                  'aria-label': 'Open journal entry from ' + dateStr,
+                  style: {
+                    display: 'block', width: '100%', padding: '8px 10px',
+                    background: palette.surface, border: '1px solid ' + palette.border,
+                    borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                    textAlign: 'left', color: palette.text
+                  }
+                },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '3px' } }, dateStr),
+                  h('div', { style: { fontSize: '12px', color: palette.text, lineHeight: '1.4', fontStyle: 'italic' } },
+                    highlightSnippet('"' + r.snippet + '"', query))
+                );
+              })
+            )
+          ) : null
+        ))
+      )
+    );
+  }
+
   function TourModalInner(p) {
     var React = window.React;
     var h = React.createElement;
@@ -8103,6 +8384,45 @@
     // commits to the AI-generated image. Token already deducted at
     // generate time; this just records the placement + closes modal.
     // Optional reflection text attaches to the decoration's metadata.
+    // Move a decoration to a new cell (Phase 2p.10) — drag-to-rearrange.
+    // If the target cell is empty, simply moves the decoration.
+    // If target cell has another decoration, swaps placements.
+    // Cross-surface swaps (wall ↔ floor) are allowed — the SVG/image
+    // renders fine on either, and it gives students full freedom to
+    // rearrange. No-op for self-drop or if source is the starter (which
+    // students shouldn\'t inadvertently shuffle around without warning).
+    function moveDecorationToCell(decorationId, targetSurface, targetCellIndex) {
+      if (state.roomMode === 'live') return; // build mode only
+      var decs = state.decorations || [];
+      var srcIdx = -1, tgtIdx = -1;
+      for (var i = 0; i < decs.length; i++) {
+        if (decs[i].id === decorationId) srcIdx = i;
+        if (decs[i].placement
+            && decs[i].placement.surface === targetSurface
+            && decs[i].placement.cellIndex === targetCellIndex) tgtIdx = i;
+      }
+      if (srcIdx === -1) return;
+      if (srcIdx === tgtIdx) return; // self-drop = no-op
+
+      // Validate the target cell is within current room bounds for the surface
+      var room = state.rooms[0] || { wallSlots: 8, floorSlots: 12 };
+      var maxIdx = targetSurface === 'wall' ? room.wallSlots : room.floorSlots;
+      if (targetCellIndex < 0 || targetCellIndex >= maxIdx) return;
+
+      var src = decs[srcIdx];
+      var newDecs = decs.slice();
+      if (tgtIdx !== -1) {
+        // Swap: target decoration takes source\'s old placement
+        newDecs[tgtIdx] = Object.assign({}, decs[tgtIdx], {
+          placement: Object.assign({}, src.placement)
+        });
+      }
+      newDecs[srcIdx] = Object.assign({}, src, {
+        placement: { roomId: 'main', surface: targetSurface, cellIndex: targetCellIndex }
+      });
+      setStateField('decorations', newDecs);
+    }
+
     function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       // Slight ±3° rotation, randomized once per item — "lived-in wobble"
@@ -8517,6 +8837,31 @@
             + ' — click to add or review memory content',
           className: 'ah-decoration',
           title: hoverTitle,
+          // Drag-to-rearrange (Phase 2p.10) — only enabled in Build mode.
+          // Sets a drag image hint via dataTransfer; on drop in another
+          // cell, moveDecorationToCell handles the swap.
+          draggable: state.roomMode !== 'live',
+          onDragStart: function(e) {
+            if (state.roomMode === 'live') { e.preventDefault(); return; }
+            try {
+              e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/plain', decoration.id);
+            } catch (err) { /* IE/Safari quirks — fail silent */ }
+          },
+          onDragOver: function(e) {
+            if (state.roomMode === 'live') return;
+            // Allow drop onto another decoration (will swap placements)
+            e.preventDefault();
+            try { e.dataTransfer.dropEffect = 'move'; } catch (err) {}
+          },
+          onDrop: function(e) {
+            if (state.roomMode === 'live') return;
+            e.preventDefault();
+            var draggedId;
+            try { draggedId = e.dataTransfer.getData('text/plain'); } catch (err) { return; }
+            if (!draggedId || draggedId === decoration.id) return;
+            moveDecorationToCell(draggedId, surface, index);
+          },
           onClick: function() { openMemoryModal(decoration.id); },
           onKeyDown: function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -8534,7 +8879,7 @@
             justifyContent: 'center',
             position: 'relative',
             transform: 'rotate(' + rot + 'deg)',
-            cursor: 'pointer',
+            cursor: state.roomMode === 'live' ? 'pointer' : 'grab',
             boxShadow: surface === 'floor' ? '0 3px 8px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.2)'
           }
         },
@@ -8663,7 +9008,7 @@
         key: surface + '-cell-' + index,
         role: 'button',
         tabIndex: 0,
-        'aria-label': 'Empty ' + surface + ' slot ' + (index + 1) + ' — click to add a decoration',
+        'aria-label': 'Empty ' + surface + ' slot ' + (index + 1) + ' — click to add a decoration, or drop a decoration here to move it',
         className: 'ah-empty-cell',
         onClick: function() { handleEmptyCellClick(surface, index); },
         onKeyDown: function(e) {
@@ -8671,6 +9016,18 @@
             e.preventDefault();
             handleEmptyCellClick(surface, index);
           }
+        },
+        // Drop target for drag-to-rearrange (Phase 2p.10)
+        onDragOver: function(e) {
+          e.preventDefault();
+          try { e.dataTransfer.dropEffect = 'move'; } catch (err) {}
+        },
+        onDrop: function(e) {
+          e.preventDefault();
+          var draggedId;
+          try { draggedId = e.dataTransfer.getData('text/plain'); } catch (err) { return; }
+          if (!draggedId) return;
+          moveDecorationToCell(draggedId, surface, index);
         },
         style: {
           border: '1px dotted ' + palette.textMute,
@@ -8706,6 +9063,24 @@
           'AlloHaven'
         ),
         h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+          // Search (Phase 2p.10) — quick text search across decks,
+          // stories, decorations, reflections. Compact icon-only button.
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'search'); },
+            'aria-label': 'Search',
+            title: 'Search across decks, stories, and reflections',
+            style: {
+              display: 'inline-flex', alignItems: 'center',
+              padding: '6px 10px',
+              background: palette.surface,
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '999px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, '🔍'),
           // Build / Live toggle (Phase 2p.3) — Sims-y mode distinction.
           // Build mode is editing; Live mode is rest. Persists in state.
           (function() {
@@ -11467,6 +11842,35 @@
       );
     }
 
+    function renderSearchModal() {
+      if (state.activeModal !== 'search') return null;
+      return h(SearchModalInner, {
+        palette: palette,
+        decorations: state.decorations,
+        stories: state.stories,
+        journalEntries: state.journalEntries,
+        onClose: function() { setStateField('activeModal', null); },
+        onClickDecoration: function(id) {
+          openMemoryModal(id, false);
+        },
+        onClickStory: function(id) {
+          var story = (state.stories || []).filter(function(s) { return s.id === id; })[0];
+          var validSteps = story && (story.steps || []).filter(function(stp) {
+            return stp.decorationId && (stp.narrative || '').trim().length > 0;
+          });
+          var walkable = validSteps && validSteps.length >= 3 && (story.title || '').trim().length > 0;
+          setStateMulti({
+            activeModal: walkable ? 'story-walk' : 'story-builder',
+            generateContext: { storyId: id }
+          });
+        },
+        onClickJournal: function() {
+          // Journal entries don\'t have individual modal route; open journal list
+          setStateMulti({ activeModal: 'journal', generateContext: null });
+        }
+      });
+    }
+
     function renderTourModal() {
       if (state.activeModal !== 'tour') return null;
       return h(TourModalInner, {
@@ -13110,6 +13514,7 @@
       renderTourModal(),
       renderReviewQueueSummaryModal(),
       renderWeeklySummaryModal(),
+      renderSearchModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderInsightsModal(),

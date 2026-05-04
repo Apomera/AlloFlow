@@ -8172,15 +8172,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               lastDate: dates[dates.length - 1]
             };
           })();
+          // ── Export helpers ──
+          function csvEscape(v) {
+            if (v == null) return '';
+            var s = String(v);
+            if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+            return s;
+          }
+          function downloadNotebookCSV() {
+            if (!notebook.length) return;
+            var headers = ['Date','Time','Location','Species','Sci Name','Count','Behavior','Weather','Notes','Reflection'];
+            var rows = notebook.map(function(e) {
+              return [
+                e.date || '',
+                e.time || '',
+                e.location || '',
+                e.speciesName || '',
+                e.speciesSciName || '',
+                e.count || 1,
+                Array.isArray(e.behaviors) ? e.behaviors.join('; ') : '',
+                ((WEATHER.filter(function(w) { return w.id === e.weather; })[0] || {}).label || e.weather || '').replace(/^[^\s]+\s/, ''),
+                e.notes || '',
+                e.reflection || ''
+              ].map(csvEscape).join(',');
+            });
+            var csv = headers.join(',') + '\n' + rows.join('\n') + '\n';
+            try {
+              var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              var stamp = new Date().toISOString().slice(0, 10);
+              a.href = url;
+              a.download = 'birdlab-field-notebook-' + stamp + '.csv';
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(function() {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }, 100);
+              announce('Notebook exported as CSV — ' + notebook.length + ' entries');
+            } catch (err) {
+              announce('CSV export failed — try printing instead');
+            }
+          }
+          function downloadNotebookJSON() {
+            if (!notebook.length) return;
+            try {
+              var blob = new Blob([JSON.stringify(notebook, null, 2)], { type: 'application/json' });
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              var stamp = new Date().toISOString().slice(0, 10);
+              a.href = url;
+              a.download = 'birdlab-field-notebook-' + stamp + '.json';
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+              announce('Notebook exported as JSON');
+            } catch (err) {
+              announce('JSON export failed');
+            }
+          }
+          function printNotebook() {
+            try { window.print(); } catch (_) {}
+          }
           return h('div', { className: 'min-h-screen bg-slate-50' },
             h(BackBar, { icon: '📓', title: 'My Field Notebook' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
               h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
                 h('h2', { className: 'text-lg font-black text-slate-800' },
                   notebook.length + ' observation' + (notebook.length === 1 ? '' : 's')),
-                h('button', { onClick: startOver,
-                  className: 'px-4 py-2 rounded-xl bg-teal-700 text-white text-sm font-bold hover:bg-teal-800 focus:outline-none focus:ring-2 ring-teal-500/40'
-                }, '+ New observation')
+                h('div', { className: 'flex flex-wrap gap-2 birdlab-no-print' },
+                  notebook.length > 0 && h('button', {
+                    onClick: downloadNotebookCSV,
+                    'aria-label': 'Download notebook as CSV',
+                    title: 'Download as CSV (Excel-compatible)',
+                    className: 'px-3 py-2 rounded-xl bg-white text-emerald-800 border-2 border-emerald-400 text-sm font-bold hover:border-emerald-600 focus:outline-none focus:ring-2 ring-emerald-500/40'
+                  }, '⤓ CSV'),
+                  notebook.length > 0 && h('button', {
+                    onClick: downloadNotebookJSON,
+                    'aria-label': 'Download notebook as JSON',
+                    title: 'Download as JSON (developer-friendly)',
+                    className: 'px-3 py-2 rounded-xl bg-white text-violet-800 border-2 border-violet-400 text-sm font-bold hover:border-violet-600 focus:outline-none focus:ring-2 ring-violet-500/40'
+                  }, '{ } JSON'),
+                  notebook.length > 0 && h('button', {
+                    onClick: printNotebook,
+                    'aria-label': 'Print notebook',
+                    title: 'Print or save as PDF',
+                    className: 'px-3 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500 focus:outline-none focus:ring-2 ring-slate-400'
+                  }, '🖨 Print'),
+                  h('button', { onClick: startOver,
+                    className: 'px-4 py-2 rounded-xl bg-teal-700 text-white text-sm font-bold hover:bg-teal-800 focus:outline-none focus:ring-2 ring-teal-500/40'
+                  }, '+ New observation')
+                )
               ),
               // ── Stats summary (only if ≥ 2 entries, since with 1 entry nothing meaningful) ──
               nbStats && h('div', { className: 'bg-gradient-to-br from-teal-50 via-emerald-50 to-amber-50 rounded-2xl border-2 border-teal-300 shadow-lg overflow-hidden' },
