@@ -190,9 +190,14 @@
     },
 
     // ── Room + decorations ──
+    // Multi-room (Phase 2p.12). 'main' is the default bedroom, always
+    // unlocked. 'garden' unlocks at 10 decorations placed. Each room
+    // has its own grid + decorations are filtered by placement.roomId.
     rooms: [
-      { id: 'main', label: 'My Room', wallSlots: 8, floorSlots: 12 }
+      { id: 'main',   label: 'My Room', icon: '🏠', kind: 'bedroom', wallSlots: 8, floorSlots: 12, unlocked: true },
+      { id: 'garden', label: 'Garden',  icon: '🌳', kind: 'garden',  wallSlots: 6, floorSlots: 9,  unlocked: false, unlockCriteria: 'ten-decorations' }
     ],
+    activeRoomId: 'main',
     decorations: [
       // {
       //   id, template, slots, artStyle,
@@ -6706,6 +6711,19 @@
       merged.pomodoroState       = Object.assign({}, DEFAULT_STATE.pomodoroState, loaded.pomodoroState || {});
       merged.pomodoroPreferences = Object.assign({}, DEFAULT_STATE.pomodoroPreferences, loaded.pomodoroPreferences || {});
       if (!merged.rooms || !merged.rooms.length) merged.rooms = DEFAULT_STATE.rooms.slice();
+      // Phase 2p.12 — backfill the garden room if a saved state predates
+      // multi-room. Preserves existing main-room state intact.
+      if (!merged.rooms.some(function(r) { return r.id === 'garden'; })) {
+        merged.rooms = merged.rooms.concat([
+          DEFAULT_STATE.rooms.filter(function(r) { return r.id === 'garden'; })[0]
+        ]);
+      }
+      // Default activeRoomId
+      if (!merged.activeRoomId) merged.activeRoomId = 'main';
+      // Ensure activeRoomId points to a room that exists; fall back to main
+      if (!merged.rooms.some(function(r) { return r.id === merged.activeRoomId; })) {
+        merged.activeRoomId = 'main';
+      }
       if (!Array.isArray(merged.decorations))    merged.decorations    = [];
       if (!Array.isArray(merged.journalEntries)) merged.journalEntries = [];
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
@@ -6721,6 +6739,11 @@
         var patched = Object.assign({}, d);
         if (!Array.isArray(patched.subjects)) patched.subjects = [];  // Phase 2p.6
         if (typeof patched.mood === 'undefined') patched.mood = null; // Phase 2m
+        // Phase 2p.12 — ensure placement.roomId is set so multi-room
+        // filtering doesn\'t drop pre-existing decorations
+        if (patched.placement && !patched.placement.roomId) {
+          patched.placement = Object.assign({}, patched.placement, { roomId: 'main' });
+        }
         return patched;
       });
       // Companion: ensure skillCelebrations object + createdAt sane
@@ -8329,6 +8352,37 @@
       // eslint-disable-next-line
     }, [state.onboardingSeen, state.tourSeen, state.activeModal]);
 
+    // Garden unlock detection (Phase 2p.12) — when a student crosses
+    // 10 placed decorations (excluding starter), the Garden room
+    // becomes accessible. Companion celebrates the unlock with a
+    // species-flavored bubble. Once unlocked, never re-locks.
+    useEffect(function() {
+      var garden = (state.rooms || []).filter(function(r) { return r.id === 'garden'; })[0];
+      if (!garden || garden.unlocked) return;
+      var placedCount = (state.decorations || []).filter(function(d) { return !d.isStarter; }).length;
+      if (placedCount < 10) return;
+      var newRooms = state.rooms.map(function(r) {
+        if (r.id !== 'garden') return r;
+        return Object.assign({}, r, { unlocked: true });
+      });
+      var updates = { rooms: newRooms };
+      if (state.companion && state.companion.species) {
+        var sp = getCompanionSpecies(state.companion.species);
+        var openers = {
+          cat:    'Hmm. ', fox: 'Aha — ', owl: 'Observed: ',
+          turtle: 'Quietly: ', dragon: 'Whoa! '
+        };
+        var prefix = openers[state.companion.species] || 'Hmm. ';
+        updates.companion = Object.assign({}, state.companion, {
+          lastBubbleAt: new Date().toISOString(),
+          lastBubbleText: prefix + 'the Garden just opened up. Try the 🌳 tab.'
+        });
+      }
+      setStateMulti(updates);
+      setTimeout(function() { addToast('🌳 The Garden is now unlocked! Switch via the room tabs at the top.'); }, 60);
+      // eslint-disable-next-line
+    }, [state.decorations.length]);
+
     // Achievement unlock detection (Phase 2p.5) — runs the catalog\'s
     // check() functions against current state. Newly-passing achievements
     // get an unlockedAt timestamp persisted + a companion celebration
@@ -8424,10 +8478,15 @@
     // exactly when the threshold is crossed.
     var roomExpandedRef = useRef(false);
     useEffect(function() {
-      var room = state.rooms[0];
+      var room = state.rooms[0]; // expansion targets main bedroom only
       if (!room) return;
       var totalSlots = room.wallSlots + room.floorSlots;
-      var placedCount = state.decorations.length;
+      // Phase 2p.12: count only MAIN-room decorations toward expansion
+      // threshold so garden decorations don\'t prematurely trigger
+      // bedroom expansion.
+      var placedCount = state.decorations.filter(function(d) {
+        return d.placement && (d.placement.roomId || 'main') === 'main';
+      }).length;
       var thresholdHit = placedCount >= Math.floor(totalSlots * 0.9);
       // Cap expansion at 50 total slots (concept-doc decision; v2+ adds new rooms)
       if (!thresholdHit) {
@@ -8501,19 +8560,26 @@
     // students shouldn\'t inadvertently shuffle around without warning).
     function moveDecorationToCell(decorationId, targetSurface, targetCellIndex) {
       if (state.roomMode === 'live') return; // build mode only
+      var activeId = state.activeRoomId || 'main';
       var decs = state.decorations || [];
       var srcIdx = -1, tgtIdx = -1;
+      // Phase 2p.12 — target decoration must be in the SAME active room.
+      // Otherwise a drop on cell N of the garden could "swap" with a
+      // decoration in cell N of the bedroom (matching cellIndex but
+      // different room).
       for (var i = 0; i < decs.length; i++) {
         if (decs[i].id === decorationId) srcIdx = i;
         if (decs[i].placement
+            && (decs[i].placement.roomId || 'main') === activeId
             && decs[i].placement.surface === targetSurface
             && decs[i].placement.cellIndex === targetCellIndex) tgtIdx = i;
       }
       if (srcIdx === -1) return;
       if (srcIdx === tgtIdx) return; // self-drop = no-op
 
-      // Validate the target cell is within current room bounds for the surface
-      var room = state.rooms[0] || { wallSlots: 8, floorSlots: 12 };
+      // Validate the target cell is within ACTIVE room bounds for the surface
+      var room = (state.rooms || []).filter(function(r) { return r.id === activeId; })[0]
+              || state.rooms[0] || { wallSlots: 8, floorSlots: 12 };
       var maxIdx = targetSurface === 'wall' ? room.wallSlots : room.floorSlots;
       if (targetCellIndex < 0 || targetCellIndex >= maxIdx) return;
 
@@ -8526,7 +8592,7 @@
         });
       }
       newDecs[srcIdx] = Object.assign({}, src, {
-        placement: { roomId: 'main', surface: targetSurface, cellIndex: targetCellIndex }
+        placement: { roomId: state.activeRoomId || 'main', surface: targetSurface, cellIndex: targetCellIndex }
       });
       setStateField('decorations', newDecs);
     }
@@ -8543,7 +8609,7 @@
         artStyle: artStyleId,
         imageBase64: imageBase64,
         isStarter: false,
-        placement: { roomId: 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
+        placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
         rotation: rotation,
         earnedAt: new Date().toISOString(),
         tokensSpent: DECORATION_COST,
@@ -8666,11 +8732,24 @@
     // VIEW: ROOM (wall + floor grids, header, action buttons)
     // ─────────────────────────────────────────────────
     function renderRoom() {
-      var room = state.rooms[0];
+      // Multi-room (Phase 2p.12) — pick the active room based on
+      // state.activeRoomId, fallback to main if missing/unlocked-only.
+      var activeId = state.activeRoomId || 'main';
+      var room = (state.rooms || []).filter(function(r) { return r.id === activeId; })[0];
+      // Fallback: if active room locked or missing, snap back to main
+      if (!room || !room.unlocked) {
+        room = (state.rooms || []).filter(function(r) { return r.id === 'main'; })[0]
+            || { id: 'main', wallSlots: 8, floorSlots: 12, unlocked: true };
+      }
+      var roomKind = room.kind || 'bedroom';
+
       var wallByCell = {};
       var floorByCell = {};
+      // Filter decorations by active room
       state.decorations.forEach(function(d) {
         if (!d.placement) return;
+        var dRoomId = d.placement.roomId || 'main';
+        if (dRoomId !== room.id) return;
         if (d.placement.surface === 'wall')  wallByCell[d.placement.cellIndex] = d;
         if (d.placement.surface === 'floor') floorByCell[d.placement.cellIndex] = d;
       });
@@ -8687,6 +8766,15 @@
       var wallCount = Object.keys(wallByCell).length;
       var floorCount = Object.keys(floorByCell).length;
 
+      // Garden gets a green-tinted background overlay on wall + floor.
+      // Bedroom stays at the default palette.
+      var gardenWallTint = roomKind === 'garden'
+        ? 'linear-gradient(180deg, rgba(135,206,235,0.18) 0%, rgba(135,206,235,0.08) 100%), '
+        : '';
+      var gardenFloorTint = roomKind === 'garden'
+        ? 'linear-gradient(180deg, rgba(80,150,80,0.20) 0%, rgba(80,150,80,0.10) 100%), '
+        : '';
+
       return h('div', {
         style: {
           padding: '20px',
@@ -8699,6 +8787,41 @@
         }
       },
         renderHeader(palette, state.tokens, props.onClose),
+        // Room tabs (Phase 2p.12) — only render when ≥1 room beyond main
+        // is unlocked. Single-room state shows nothing here, keeping the
+        // pre-multi-room UX clean for new students.
+        (function() {
+          var unlockedRooms = (state.rooms || []).filter(function(r) { return r.unlocked; });
+          if (unlockedRooms.length < 2) return null;
+          return h('div', {
+            role: 'tablist',
+            'aria-label': 'Rooms',
+            style: { display: 'flex', gap: '6px', marginTop: '6px', marginBottom: '8px', flexWrap: 'wrap' }
+          },
+            unlockedRooms.map(function(r) {
+              var active = r.id === room.id;
+              return h('button', {
+                key: 'rt-' + r.id,
+                role: 'tab',
+                'aria-selected': active ? 'true' : 'false',
+                'aria-label': r.label + (active ? ' (currently viewing)' : ''),
+                onClick: function() { setStateField('activeRoomId', r.id); },
+                style: {
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 14px',
+                  background: active ? palette.accent : palette.surface,
+                  color: active ? palette.onAccent : palette.textDim,
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, (r.icon || '🏠') + ' ' + r.label);
+            })
+          );
+        })(),
         renderQuestPanel(),
         renderTodayCard(),
         // Compute responsive row count based on slot count + columns
@@ -8722,10 +8845,13 @@
             padding: '14px',
             background: (function() {
               var tod = !inherited.highContrast ? getTimeOfDayTint() : null;
+              var base = palette.wallpaper;
               if (tod && tod.color) {
-                return 'linear-gradient(180deg, ' + tod.color + ', transparent 70%), ' + palette.wallpaper;
+                base = 'linear-gradient(180deg, ' + tod.color + ', transparent 70%), ' + base;
               }
-              return palette.wallpaper;
+              // Garden room: layer a sky-blue tint on the wall (Phase 2p.12)
+              if (gardenWallTint) base = gardenWallTint + base;
+              return base;
             })(),
             borderRadius: '12px 12px 0 0',
             marginTop: '16px',
@@ -8761,10 +8887,13 @@
             padding: '14px',
             background: (function() {
               var tint = !inherited.highContrast ? getDominantMoodTint(state) : null;
+              var base = palette.floor;
               if (tint && tint.color) {
-                return 'radial-gradient(ellipse at 50% 30%, ' + tint.color + ', transparent 70%), ' + palette.floor;
+                base = 'radial-gradient(ellipse at 50% 30%, ' + tint.color + ', transparent 70%), ' + base;
               }
-              return palette.floor;
+              // Garden room: layer a grass-green tint on the floor
+              if (gardenFloorTint) base = gardenFloorTint + base;
+              return base;
             })(),
             borderRadius: '0 0 12px 12px',
             border: '1px solid ' + palette.border,
