@@ -48,6 +48,40 @@
     document.body.appendChild(lr);
   })();
 
+  // ── Print stylesheet (Phase 2h) ──
+  // Memory-palace export: when student/parent triggers window.print(),
+  // hide everything except .ah-print-packet so the packet prints clean.
+  // Class-based display:none default, @media print rule reveals.
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('ah-print-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ah-print-css';
+    st.textContent = [
+      '.ah-print-packet { display: none; }',
+      '@media print {',
+      '  body * { visibility: hidden !important; }',
+      '  .ah-print-packet, .ah-print-packet * { visibility: visible !important; }',
+      '  .ah-print-packet {',
+      '    display: block !important;',
+      '    position: absolute !important;',
+      '    top: 0 !important; left: 0 !important;',
+      '    width: 100% !important;',
+      '    padding: 0.5in !important;',
+      '    background: white !important;',
+      '    color: black !important;',
+      '    font-family: Georgia, "Times New Roman", serif !important;',
+      '    line-height: 1.55 !important;',
+      '  }',
+      '  .ah-print-packet h1, .ah-print-packet h2, .ah-print-packet h3 { color: black !important; }',
+      '  .ah-print-section { page-break-inside: avoid !important; margin-bottom: 18px; }',
+      '  .ah-print-page-break { page-break-before: always !important; }',
+      '  @page { margin: 0.5in; }',
+      '}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(st);
+  })();
+
   // ─────────────────────────────────────────────────────────
   // SECTION 1: PERSISTENCE
   // ─────────────────────────────────────────────────────────
@@ -128,7 +162,17 @@
       date: null,                    // 'YYYY-MM-DD' — null = uninitialized
       pomodorosCompleted: 0,
       reflectionsSubmitted: 0,
-      promptsForToday: []            // array of 3 prompt ids selected at first visit of day
+      promptsForToday: [],           // array of 3 prompt ids selected at first visit of day
+      quizTokensEarnedToday: 0,      // memory-palace quiz tokens (capped at 2/day)
+      storyWalkTokensEarnedToday: 0, // story-method walk tokens (capped at 1/day)
+      // ── Daily quests (Phase 2g) ──
+      // Three soft quests rotated daily. Completion is auto-detected
+      // from the other dailyState counters; the bonus is a single
+      // "trifecta" reward (+5 tokens) when all three are done. No
+      // streaks, no pressure to complete daily — just an additional
+      // gentle nudge that fits the no-guilt design language.
+      questIds: [],                  // 3 quest ids chosen for today
+      questsClaimed: false           // user clicked the trifecta-claim button
     },
 
     // ── Pomodoro ──
@@ -169,9 +213,36 @@
       // { id, date: ISO, prompt: string|null, text, topics: [], tokensEarned: 1 }
     ],
 
+    // ── Stories (method-of-loci chain mnemonic) ──
+    // Each story is an ordered sequence of decorations + per-step narrative
+    // text. Walking a completed story (≥3 steps) is a retrieval exercise:
+    // the student sees one step at a time, recalling how it connects to the
+    // next item. Stories are top-level artifacts, not per-decoration content.
+    stories: [
+      // {
+      //   id, title,
+      //   steps: [{ decorationId, narrative }],
+      //   createdAt, updatedAt,
+      //   lastReviewedAt: null|ISO,
+      //   reviewCount: 0
+      // }
+    ],
+
     // ── Active modal (within AlloHaven; NOT the outer Open/Close state) ──
-    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | null
-    generateContext: null            // { surface, cellIndex } when generate modal open
+    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | null
+    generateContext: null,           // { surface, cellIndex } when generate modal open
+
+    // ── Reflection insights cache ──
+    // Holds the last AI-generated summary of journal entries. Cleared on
+    // demand by clicking "Refresh" in the insights modal. Not persisted
+    // across reloads — purely an in-session cache so the user can flip
+    // between modals without re-billing the Gemini call.
+    insightsState: {
+      loading: false,                // true while a Gemini call is in flight
+      summary: null,                 // { moodSummary, themes:[], wordCount, entriesAnalyzed }
+      error: null,                   // user-friendly error string if analysis fails
+      generatedAt: null              // ISO timestamp of the cached summary
+    }
   };
 
   // ─────────────────────────────────────────────────────────
@@ -229,6 +300,53 @@
   function getThemeBase(themeName, highContrast) {
     if (highContrast) return HIGH_CONTRAST_BASE;
     return THEME_BASES[themeName] || THEME_BASES['default'];
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 3.4: DAILY QUEST POOL
+  // ─────────────────────────────────────────────────────────
+  // Three quests are picked at random on day rollover. Completion is
+  // auto-detected from dailyState counters; finishing all three unlocks
+  // a single "trifecta" bonus (+5 tokens) the user claims with one tap.
+  // No streaks, no daily pressure — just a gentle alternative path to a
+  // few extra tokens for students who already use multiple features.
+  var QUEST_POOL = [
+    { id: 'pomo1',     label: 'Complete a Pomodoro session',         icon: '⏱️', check: function(d, s) { return (d.pomodorosCompleted || 0) >= 1; } },
+    { id: 'pomo2',     label: 'Complete 2 Pomodoro sessions',         icon: '⏱️', check: function(d, s) { return (d.pomodorosCompleted || 0) >= 2; } },
+    { id: 'reflect',   label: 'Write a journal reflection',           icon: '📓', check: function(d, s) { return (d.reflectionsSubmitted || 0) >= 1; } },
+    { id: 'storyWalk', label: 'Walk through a memory story',          icon: '📖', check: function(d, s) { return (d.storyWalkTokensEarnedToday || 0) >= 1; } },
+    { id: 'quiz',      label: 'Review a memory-palace flashcard',     icon: '🧠', check: function(d, s) { return (d.quizTokensEarnedToday || 0) >= 1; } },
+    { id: 'decor3',    label: 'Have at least 3 decorations',          icon: '🎨', check: function(d, s) { return (s.decorations || []).filter(function(x){return !x.isStarter;}).length >= 3; } },
+    { id: 'tokens5',   label: 'Earn at least 5 tokens today',         icon: '🪙', check: function(d, s) {
+        if (!s.earnings) return false;
+        var todayStr = d.date;
+        var sum = 0;
+        for (var i = 0; i < s.earnings.length; i++) {
+            var e = s.earnings[i];
+            if (e && e.date && e.date.slice(0, 10) === todayStr && e.tokens > 0) sum += e.tokens;
+        }
+        return sum >= 5;
+    } }
+  ];
+  // Pick N random non-overlapping quest ids from the pool. Seeded by date
+  // so the quests are stable for that day (same set if the user reloads).
+  function pickQuestsForDate(dateStr, count) {
+    if (!dateStr) return [];
+    // Tiny seeded shuffle from the date string so the same day always
+    // picks the same quests (don't want them to change mid-day).
+    var seed = 0;
+    for (var i = 0; i < dateStr.length; i++) seed = (seed * 31 + dateStr.charCodeAt(i)) | 0;
+    var pool = QUEST_POOL.slice();
+    var picked = [];
+    var remaining = Math.min(count, pool.length);
+    while (remaining > 0 && pool.length > 0) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      var idx = seed % pool.length;
+      picked.push(pool[idx].id);
+      pool.splice(idx, 1);
+      remaining--;
+    }
+    return picked;
   }
 
   // ─────────────────────────────────────────────────────────
@@ -399,6 +517,110 @@
         { id: 'timeOfDay', label: 'Time of day', options: ['dawn', 'midday', 'golden hour', 'sunset', 'twilight', 'night'] },
         { id: 'weather',   label: 'Weather/mood', options: ['clear', 'gentle rain', 'snow', 'misty', 'cherry blossoms', 'autumn leaves'] }
       ]
+    },
+    // ── Additive template expansion (Phase 2g content batch) ──
+    // Each new template follows the same data shape as the originals so
+    // the existing template-picker and slot-driven prompt builder pick
+    // them up automatically without code changes elsewhere. Placement
+    // surfaces (wall/floor/both) chosen so the room layout stays balanced
+    // — no single surface gets all the new options.
+    {
+      id: 'instruments',
+      label: 'Musical instruments',
+      icon: '🎸',
+      surface: 'both',
+      basePrompt: 'A {style} {instrument} in {color}, {pose}, {artStyle}, single object on white background, friendly cozy aesthetic, no text',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Family', options: ['String', 'Wind', 'Percussion', 'Keys'] },
+        { id: 'instrument', label: 'Instrument', dependsOn: 'category', optionsByCategory: {
+          'String':     ['acoustic guitar', 'electric guitar', 'violin', 'cello', 'ukulele', 'harp', 'banjo'],
+          'Wind':       ['flute', 'clarinet', 'saxophone', 'trumpet', 'french horn', 'recorder'],
+          'Percussion': ['snare drum', 'djembe', 'tambourine', 'xylophone', 'congas', 'cymbals'],
+          'Keys':       ['upright piano', 'grand piano', 'electric keyboard', 'accordion', 'organ']
+        }},
+        { id: 'color', label: 'Color', options: ['warm wood', 'cherry red', 'navy blue', 'gold accents', 'matte black', 'pastel mint'] },
+        { id: 'style', label: 'Style', options: ['vintage', 'modern', 'classical', 'whimsical', 'concert-ready'] },
+        { id: 'pose', label: 'Pose', options: ['displayed on a stand', 'leaning against a wall', 'resting on a velvet case', 'mounted decoratively'] }
+      ]
+    },
+    {
+      id: 'food',
+      label: 'Food & recipes',
+      icon: '🍰',
+      surface: 'both',
+      basePrompt: 'A {presentation} of {dish}, {garnish}, {artStyle}, single subject on white background, friendly cozy aesthetic, food photography from above, no text, no readable labels',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Course', options: ['Baked goods', 'Drinks & sips', 'Comfort food', 'World cuisines', 'Fresh & fruity'] },
+        { id: 'dish', label: 'Dish', dependsOn: 'category', optionsByCategory: {
+          'Baked goods':      ['layered cake', 'frosted cupcakes', 'fresh croissants', 'chocolate-chip cookies', 'fruit tart', 'cinnamon rolls', 'crusty bread loaf'],
+          'Drinks & sips':    ['hot cocoa with whipped cream', 'iced matcha latte', 'fruit smoothie', 'herbal tea in a teapot', 'lemonade pitcher', 'milkshake'],
+          'Comfort food':     ['steaming bowl of ramen', 'mac and cheese', 'tomato soup with grilled cheese', 'chicken pot pie', 'spaghetti and meatballs'],
+          'World cuisines':   ['sushi platter', 'taco trio', 'spread of dim sum', 'paella pan', 'biryani plate', 'pho bowl'],
+          'Fresh & fruity':   ['fruit bowl', 'berry parfait', 'sliced watermelon', 'farmers-market basket', 'caprese salad']
+        }},
+        { id: 'presentation', label: 'Presentation', options: ['rustic plate', 'fine china', 'wooden board', 'glass jar', 'ceramic bowl', 'cast iron skillet'] },
+        { id: 'garnish', label: 'Garnish', options: ['fresh herbs', 'edible flowers', 'powdered sugar dusting', 'sliced citrus', 'colorful sprinkles', 'minimal — just the dish'] }
+      ]
+    },
+    {
+      id: 'weather',
+      label: 'Weather scenes',
+      icon: '🌦',
+      surface: 'wall',
+      basePrompt: 'A {weather} scene over a {landscape}, {timeOfDay} light, {mood} mood, {artStyle}, framed cleanly, friendly cozy children\'s aesthetic, no text',
+      slots: [
+        { id: 'weather', label: 'Weather', options: ['gentle snowfall', 'thunderstorm with lightning', 'rainy day with puddles', 'foggy morning', 'rainbow after rain', 'starry clear night', 'cherry-blossom drift', 'autumn wind with leaves'] },
+        { id: 'landscape', label: 'Landscape', options: ['rolling hills', 'forest clearing', 'small town rooftops', 'lake shoreline', 'open meadow', 'snowy mountain range', 'desert dunes'] },
+        { id: 'timeOfDay', label: 'Time of day', options: ['dawn', 'midday', 'golden hour', 'sunset', 'twilight', 'deep night'] },
+        { id: 'mood', label: 'Mood', options: ['peaceful', 'dramatic', 'cheerful', 'mysterious', 'cozy and warm', 'crisp and fresh'] }
+      ]
+    },
+    {
+      id: 'sports',
+      label: 'Sports & gear',
+      icon: '⚾',
+      surface: 'both',
+      basePrompt: 'A {color} {item} for {sport}, {style}, {artStyle}, single object on white background, friendly cozy aesthetic, no readable text or logos',
+      hierarchical: true,
+      slots: [
+        { id: 'sport', label: 'Sport', options: ['baseball', 'basketball', 'soccer', 'tennis', 'skateboarding', 'climbing', 'swimming', 'cycling', 'martial arts', 'dance'] },
+        { id: 'item', label: 'Item', dependsOn: 'sport', optionsByCategory: {
+          'baseball':       ['glove and ball', 'wooden bat', 'team jersey on a hanger', 'cap on a peg'],
+          'basketball':     ['leather basketball', 'jersey on a hanger', 'sneakers on the floor', 'mini hoop'],
+          'soccer':         ['black and white soccer ball', 'pair of cleats', 'jersey', 'shin guards'],
+          'tennis':         ['racquet and ball', 'gym bag', 'tennis shoes', 'visor'],
+          'skateboarding':  ['skateboard with custom deck', 'helmet and pads', 'sneakers'],
+          'climbing':       ['climbing shoes', 'chalk bag', 'rope coil', 'carabiner set'],
+          'swimming':       ['goggles and cap', 'kickboard', 'medal on a ribbon', 'swimsuit on a hook'],
+          'cycling':        ['helmet on a peg', 'water bottle', 'cycling jersey', 'pair of cycling shoes'],
+          'martial arts':   ['neatly folded gi', 'belt collection on a rack', 'training mitts', 'wooden practice sword'],
+          'dance':          ['ballet slippers', 'pointe shoes', 'tap shoes', 'dance ribbon']
+        }},
+        { id: 'color', label: 'Color', options: ['team red', 'royal blue', 'forest green', 'sunshine yellow', 'classic white', 'matte black'] },
+        { id: 'style', label: 'Style', options: ['well-loved and broken in', 'brand new and crisp', 'vintage classic', 'modern minimalist'] }
+      ]
+    },
+    {
+      id: 'pets',
+      label: 'Pet portraits',
+      icon: '🐶',
+      surface: 'wall',
+      basePrompt: 'A framed portrait of {petType} with {fur} fur and {expression} expression, {pose}, {artStyle}, oval frame, friendly cozy aesthetic, no text',
+      hierarchical: true,
+      slots: [
+        { id: 'category', label: 'Category', options: ['Furry friends', 'Feathered friends', 'Aquatic friends', 'Tiny friends'] },
+        { id: 'petType', label: 'Pet', dependsOn: 'category', optionsByCategory: {
+          'Furry friends':    ['golden retriever', 'tabby cat', 'rabbit', 'guinea pig', 'small mixed-breed dog', 'long-haired cat', 'fluffy puppy'],
+          'Feathered friends':['parakeet', 'cockatiel', 'parrot', 'finch', 'pet chicken'],
+          'Aquatic friends':  ['betta fish', 'goldfish in a bowl', 'pet turtle', 'small aquarium scene'],
+          'Tiny friends':     ['hamster', 'gerbil', 'leopard gecko', 'corn snake', 'hermit crab', 'butterfly in a jar']
+        }},
+        { id: 'fur', label: 'Coat / appearance', options: ['short-haired', 'long-haired', 'curly', 'spotted', 'striped', 'solid color', 'patchy'] },
+        { id: 'expression', label: 'Expression', options: ['curious', 'sleepy', 'playful', 'noble and dignified', 'happy with tongue out', 'wise and watchful'] },
+        { id: 'pose', label: 'Pose', options: ['head and shoulders', 'sitting full-body', 'in profile', 'looking up softly', 'resting comfortably'] }
+      ]
     }
   ];
 
@@ -446,6 +668,152 @@
   function pickRandom(arr) {
     if (!arr || !arr.length) return null;
     return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  // ── Cloze-deletion helpers (Phase 2c) ──
+  // Notes can include {curly-braced} words/phrases. Those get hidden
+  // during the cloze quiz and the student types them in. Forgiving
+  // substring match like the acronym quiz.
+  // Example:
+  //   "The mitochondria is the {powerhouse} of the {cell}."
+  // → quiz shows "The mitochondria is the ___ of the ___."
+  // → student fills 2 blanks, gets graded
+  var CLOZE_REGEX = /\{([^{}]+)\}/g;
+
+  function hasClozeMarkers(linkedContent) {
+    if (!linkedContent || linkedContent.type !== 'notes') return false;
+    var text = (linkedContent.data && linkedContent.data.text) || '';
+    return CLOZE_REGEX.test(text);
+  }
+
+  // Extract the cloze answers (in document order) from a notes string
+  function extractClozeAnswers(text) {
+    var answers = [];
+    var match;
+    var re = new RegExp(CLOZE_REGEX.source, 'g'); // fresh regex (lastIndex)
+    while ((match = re.exec(text)) !== null) {
+      answers.push(match[1].trim());
+    }
+    return answers;
+  }
+
+  // Replace {answer} markers with a placeholder so the rendered text
+  // can show ___ where the blanks are. Returns segments + indices for
+  // typed-input mapping.
+  function buildClozeSegments(text) {
+    var segments = [];
+    var lastIdx = 0;
+    var blankIdx = 0;
+    var match;
+    var re = new RegExp(CLOZE_REGEX.source, 'g');
+    while ((match = re.exec(text)) !== null) {
+      if (match.index > lastIdx) {
+        segments.push({ kind: 'text', value: text.slice(lastIdx, match.index) });
+      }
+      segments.push({ kind: 'blank', answer: match[1].trim(), blankIdx: blankIdx });
+      blankIdx++;
+      lastIdx = match.index + match[0].length;
+    }
+    if (lastIdx < text.length) {
+      segments.push({ kind: 'text', value: text.slice(lastIdx) });
+    }
+    return segments;
+  }
+
+  // Forgiving substring match — same logic as acronym quiz so behavior
+  // is consistent.
+  function clozeAnswerCorrect(truth, guess) {
+    var t = (truth || '').trim().toLowerCase();
+    var g = (guess || '').trim().toLowerCase();
+    if (!t || !g) return false;
+    return t === g || t.indexOf(g) === 0 || g.indexOf(t) === 0;
+  }
+
+  // ── Per-card mastery (Phase 2d) ──
+  // Smart shuffle: weights cards by weakness so struggling ones come
+  // up first in the deck order, while still maintaining randomness.
+  // Cards never quizzed get the average weight (so new cards mix
+  // naturally). Pure-random shuffle for fresh decks.
+  //
+  // Weakness score per card:
+  //   no attempts: 1.0 (treated as average — neither prioritized nor demoted)
+  //   has attempts: missCount / (correctCount + missCount), in [0, 1]
+  //
+  // Then we do a weighted Fisher-Yates: each draw picks proportional
+  // to (weakness + 0.3) — the +0.3 floor ensures every card gets a
+  // shot, even mastered ones, so re-quizzing a deck cleanly stays
+  // possible (no cards stuck behind weakness=0).
+  function cardWeaknessScore(card) {
+    var c = card.correctCount || 0;
+    var m = card.missCount || 0;
+    var total = c + m;
+    if (total === 0) return 1.0; // unseen cards = average
+    return m / total;
+  }
+
+  function smartShuffleCards(cards) {
+    if (!cards || cards.length <= 1) return cards.slice();
+    var pool = cards.slice();
+    var result = [];
+    while (pool.length > 0) {
+      // Compute weights with the +0.3 floor
+      var weights = pool.map(function(c) { return cardWeaknessScore(c) + 0.3; });
+      var totalWeight = weights.reduce(function(s, w) { return s + w; }, 0);
+      var roll = Math.random() * totalWeight;
+      var pickIdx = 0;
+      var cumulative = 0;
+      for (var i = 0; i < weights.length; i++) {
+        cumulative += weights[i];
+        if (roll <= cumulative) { pickIdx = i; break; }
+      }
+      result.push(pool[pickIdx]);
+      pool.splice(pickIdx, 1);
+    }
+    return result;
+  }
+
+  // Mastery bucket (display label + emoji) for a card based on its
+  // accumulated stats. Three buckets matching the broader system's
+  // mental model:
+  //   green:  ≥80% correct AND ≥3 attempts (locked in)
+  //   yellow: any data with <80% correct, OR <3 attempts (still developing)
+  //   red:    ≥3 attempts and <40% correct (struggling)
+  //   gray:   no attempts yet (unknown — neutral)
+  function cardMasteryBucket(card) {
+    var c = card.correctCount || 0;
+    var m = card.missCount || 0;
+    var total = c + m;
+    if (total === 0) return { id: 'gray', label: 'unseen', emoji: '⚪' };
+    var pct = c / total;
+    if (total >= 3 && pct < 0.4) return { id: 'red', label: 'needs work', emoji: '🔴' };
+    if (total >= 3 && pct >= 0.8) return { id: 'green', label: 'mastered', emoji: '🟢' };
+    return { id: 'yellow', label: 'wobbly', emoji: '🟡' };
+  }
+
+  // Days remaining until a decoration's content becomes due. Used
+  // for the "due-soon" warm-color indicator (1-2 days before due).
+  // Returns null if not quizzable / never-reviewed paths handled by
+  // isMemoryDue() instead.
+  function daysUntilDue(decoration) {
+    var lc = decoration.linkedContent;
+    if (!lc) return null;
+    if (lc.type === 'notes' && !hasClozeMarkers(lc)) return null;
+    if (!lc.lastReviewedAt) return null; // already due (handled separately)
+    var lastMs = new Date(lc.lastReviewedAt).getTime();
+    var ageMs = Date.now() - lastMs;
+    var bestScore = lc.bestQuizScore || 0;
+    var thresholdDays;
+    if (bestScore < 60)      thresholdDays = 2;
+    else if (bestScore < 90) thresholdDays = 5;
+    else                     thresholdDays = 10;
+    var thresholdMs = thresholdDays * 24 * 60 * 60 * 1000;
+    if (ageMs >= thresholdMs) return 0; // already due
+    return Math.ceil((thresholdMs - ageMs) / (24 * 60 * 60 * 1000));
+  }
+
+  function isMemoryDueSoon(decoration) {
+    var days = daysUntilDue(decoration);
+    return days !== null && days > 0 && days <= 2;
   }
 
   // Surprise me — returns a fully populated slots object for the given
@@ -523,17 +891,61 @@
       '.ah-root .ah-decoration:hover, .ah-root .ah-decoration:focus-visible { transform: translateY(-2px); filter: brightness(1.06); }',
       '.ah-root .ah-empty-cell { transition: background 140ms ease, border-color 140ms ease; cursor: pointer; }',
       '.ah-root .ah-empty-cell:hover, .ah-root .ah-empty-cell:focus-visible { background: rgba(255,255,255,0.06); }',
+      // Decoration delete (✕) button — fades in on hover/focus only.
+      // Two-tap deletion via the confirm modal below ensures students
+      // can\'t accidentally remove items.
+      '.ah-root .ah-decoration:hover .ah-decoration-delete,',
+      '.ah-root .ah-decoration:focus-within .ah-decoration-delete,',
+      '.ah-root .ah-decoration-delete:focus-visible { opacity: 1 !important; }',
+      // Image-error fallback — when an <img> fails (truncated base64,
+      // storage corruption), the parent gets data-img-failed=1 and we
+      // overlay a friendly question-mark. Doesn\'t block; cell still
+      // clickable for delete.
+      '.ah-root .ah-decoration[data-img-failed="1"]::after { content: "?"; color: rgba(255,255,255,0.55); font-size: 32px; font-weight: 700; }',
       '@keyframes ah-fade-in { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }',
       '.ah-root .ah-welcome { animation: ah-fade-in 320ms ease-out 1; }',
+      // Warm-light overlay — soft yellow radial from the upper-right corner
+      // of the room frame. Suppressed when high-contrast mode is on (an
+      // accessibility accommodation overrides the cozy aesthetic).
+      // Opacity is low enough that it doesn\'t fight decoration colors.
+      '.ah-root .ah-room-frame { position: relative; }',
+      '.ah-root .ah-room-frame::before {',
+      '  content: "";',
+      '  position: absolute;',
+      '  inset: 0;',
+      '  pointer-events: none;',
+      '  background: radial-gradient(ellipse at 85% 0%, rgba(255,220,140,0.08), transparent 60%);',
+      '  border-radius: inherit;',
+      '  z-index: 1;',
+      '}',
+      // Decorations + cells need to render ABOVE the warm-light overlay.
+      '.ah-root .ah-room-frame > * { position: relative; z-index: 2; }',
+      // Mobile/responsive — narrow viewports collapse the grids to fewer
+      // columns so cells stay tap-target sized. Below 480px: wall = 2
+      // cols, floor = 3 cols. The grid auto-rows expand so the same
+      // total cell count still fits, just on more rows.
+      '@media (max-width: 480px) {',
+      '  .ah-root .ah-wall-grid { grid-template-columns: repeat(2, 1fr) !important; }',
+      '  .ah-root .ah-floor-grid { grid-template-columns: repeat(3, 1fr) !important; }',
+      '}',
       // Voice-recording pulse — visual signal that the mic is hot. Slow + soft
       // so it doesn’t become alarm-like for sensory-sensitive students.
       '@keyframes ah-record-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(230,57,70,0.6); } 50% { box-shadow: 0 0 0 8px rgba(230,57,70,0); } }',
       // Loading-slide bar — used during AI image generation (~5-15s).
       // Indeterminate progress: a 40% bar slides left↔right.
       '@keyframes ah-loading-slide { 0% { left: -40%; } 100% { left: 100%; } }',
+      // Memory-content "due for review" pulse — soft yellow halo on the
+      // 📖 indicator when a decoration\'s linkedContent hasn\'t been
+      // reviewed in 5+ days. Subtle so it doesn\'t demand attention,
+      // just signals "this knowledge is fading". Suppressed under
+      // reduced-motion (the brighter background still serves as a
+      // non-animated cue).
+      '@keyframes ah-memory-due-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,220,140,0.6); } 50% { box-shadow: 0 0 0 4px rgba(255,220,140,0); } }',
+      '.ah-root .ah-memory-indicator.ah-memory-due { animation: ah-memory-due-pulse 2400ms ease-in-out infinite; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
-      '  .ah-root .ah-welcome { animation: none !important; }',
+      '  .ah-root .ah-welcome,',
+      '  .ah-root .ah-memory-indicator.ah-memory-due { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible { transform: none !important; }',
       '  button { animation: none !important; }',
@@ -587,6 +999,12 @@
     var minChars = 20;
     var charCount = draft.trim().length;
     var canSubmit = charCount >= minChars;
+    // ✨ Polish state — when set, the button shows a spinner and the
+    // textarea is disabled. polishError holds a one-line message if
+    // Gemini didn't return clean text; cleared on next attempt.
+    var polishingTuple = useState(false);
+    var isPolishing = polishingTuple[0];
+    var setIsPolishing = polishingTuple[1];
 
     // When voice transcribes, append to draft
     function onTranscript(text) {
@@ -599,6 +1017,57 @@
       } else {
         p.startVoice(onTranscript);
       }
+    }
+
+    // ✨ Polish: send the raw draft (typically voice-dictated, no
+    // capitalization or punctuation) to Gemini for cleanup and replace
+    // the draft with the polished version. Voice-to-text via Web Speech
+    // API returns a single lowercase run-on stream — this gives the
+    // student a one-tap way to make it readable without retyping. Falls
+    // back silently to the original draft if Gemini isn't wired or the
+    // call errors.
+    function handlePolishClick() {
+      if (isPolishing) return;
+      var raw = (draft || '').trim();
+      if (!raw) return;
+      var callGemini = p.callGemini;
+      if (typeof callGemini !== 'function') {
+        // No Gemini available — do a local-only minimal polish so the
+        // button still feels responsive. Capitalize sentences after ./?/!
+        // and Title-case the very first character.
+        var localPolish = raw
+          .replace(/\s+/g, ' ')
+          .replace(/(^|[.!?]\s+)([a-z])/g, function(_, sep, ch) { return sep + ch.toUpperCase(); });
+        if (localPolish && localPolish !== raw) setDraft(localPolish);
+        return;
+      }
+      setIsPolishing(true);
+      var polishPrompt =
+        'You are cleaning up a student\'s voice-dictated journal entry. ' +
+        'Add appropriate capitalization (sentence starts, "I", proper nouns) and ' +
+        'punctuation (periods, commas, question marks, apostrophes). ' +
+        'PRESERVE every word and the original meaning exactly. Do NOT add new content, ' +
+        'do NOT change vocabulary, do NOT correct grammar (this is the student\'s voice). ' +
+        'Return ONLY the cleaned text — no preamble, no quotes, no explanation.\n\n' +
+        'Raw text:\n"' + raw.replace(/"/g, '\\"') + '"';
+      Promise.resolve()
+        .then(function() { return callGemini(polishPrompt); })
+        .then(function(out) {
+          var polished = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip surrounding quotes if Gemini wrapped the response.
+          if ((polished.startsWith('"') && polished.endsWith('"')) || (polished.startsWith('“') && polished.endsWith('”'))) {
+            polished = polished.slice(1, -1).trim();
+          }
+          // Sanity: refuse to replace if the polish dropped >25% of words
+          // (signals Gemini summarized or refused). Better to keep raw.
+          var rawWords = raw.split(/\s+/).filter(Boolean).length;
+          var polWords = polished.split(/\s+/).filter(Boolean).length;
+          if (polished && polWords >= rawWords * 0.75) {
+            setDraft(polished);
+          }
+        })
+        .catch(function() { /* silent — student keeps raw text */ })
+        .then(function() { setIsPolishing(false); });
     }
 
     function handleSubmit() {
@@ -730,7 +1199,38 @@
               justifyContent: 'center',
               animation: p.isRecording ? 'ah-record-pulse 1.6s ease-in-out infinite' : 'none'
             }
-          }, p.isRecording ? '⏺' : '🎤') : null
+          }, p.isRecording ? '⏺' : '🎤') : null,
+          // ✨ Polish button — left of the mic. Sends the current draft
+          // to Gemini for capitalization + punctuation cleanup. Only
+          // shown when there's enough text to be worth polishing AND the
+          // user isn't currently recording (the mic button takes that
+          // visual slot). Uses position:absolute relative to the same
+          // textarea wrapper as the mic.
+          (charCount >= 8 && !p.isRecording) ? h('button', {
+            onClick: handlePolishClick,
+            disabled: isPolishing,
+            'aria-label': isPolishing ? 'Polishing text…' : 'Polish capitalization and punctuation',
+            title: isPolishing ? 'Polishing…' : 'Add capitalization and punctuation (helpful after voice dictation). Original wording preserved.',
+            style: {
+              position: 'absolute',
+              top: '8px',
+              right: p.speechSupported ? '52px' : '8px',
+              height: '36px',
+              padding: '0 10px',
+              borderRadius: '18px',
+              background: isPolishing ? palette.surface : palette.surface,
+              color: palette.text,
+              border: '1px solid ' + palette.border,
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: isPolishing ? 'wait' : 'pointer',
+              fontFamily: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              opacity: isPolishing ? 0.7 : 1
+            }
+          }, isPolishing ? '…' : '✨ Polish') : null
         ),
         // Character counter
         h('div', {
@@ -801,6 +1301,15 @@
     var draft = draftTuple[0];
     var setDraft = draftTuple[1];
 
+    // Cloze quiz state (Phase 2i) — when cloze markers exist in the entry,
+    // students can quiz themselves on their own writing. Active recall on
+    // your own words is a surprisingly strong consolidation move.
+    var clozeAnswers = extractClozeAnswers(entry.text || '');
+    var hasCloze = clozeAnswers.length > 0;
+    var quizTuple = useState(null); // null | { guesses, submitted, correctCount }
+    var quiz = quizTuple[0];
+    var setQuiz = quizTuple[1];
+
     var date = new Date(entry.date);
     var dateStr = date.toLocaleDateString() + ' · ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -810,6 +1319,32 @@
       p.onEdit(trimmed);
       setEditing(false);
     }
+
+    function startQuiz() {
+      setQuiz({
+        guesses: clozeAnswers.map(function() { return ''; }),
+        submitted: false,
+        correctCount: 0
+      });
+    }
+    function updateGuess(blankIdx, val) {
+      var newGuesses = quiz.guesses.slice();
+      newGuesses[blankIdx] = val;
+      setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+    }
+    function submitQuiz() {
+      var cc = 0;
+      for (var i = 0; i < clozeAnswers.length; i++) {
+        if (clozeAnswerCorrect(clozeAnswers[i], quiz.guesses[i])) cc++;
+      }
+      var pct = clozeAnswers.length > 0 ? Math.round((cc / clozeAnswers.length) * 100) : 0;
+      setQuiz(Object.assign({}, quiz, { submitted: true, correctCount: cc, scorePct: pct }));
+      // Token award via parent — same daily quiz cap as memory quiz
+      if (typeof p.onQuizComplete === 'function') {
+        p.onQuizComplete(entry.id, pct);
+      }
+    }
+    function exitQuiz() { setQuiz(null); }
 
     return h('div', {
       role: 'article',
@@ -844,6 +1379,7 @@
         value: draft,
         onChange: function(e) { setDraft(e.target.value); },
         rows: 4,
+        placeholder: 'Tip: wrap a {word} in curly braces to make it a fill-in-blank for self-quiz.',
         style: {
           width: '100%',
           padding: '8px 10px',
@@ -858,18 +1394,147 @@
           marginBottom: '8px',
           resize: 'vertical'
         }
-      }) : h('div', {
-        style: {
-          fontSize: '13px',
-          color: palette.text,
-          lineHeight: '1.55',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-          marginBottom: '8px'
-        }
-      }, entry.text),
-      h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
-        editing ? [
+      }) : (
+        // Quiz mode for cloze-bearing entries
+        quiz ? (function() {
+          var segments = buildClozeSegments(entry.text || '');
+          if (quiz.submitted) {
+            return h('div', { style: { marginBottom: '8px' } },
+              h('div', {
+                style: {
+                  fontSize: '13px',
+                  color: palette.text,
+                  lineHeight: '1.7',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  marginBottom: '10px'
+                }
+              },
+                segments.map(function(seg, i) {
+                  if (seg.kind === 'text') return h('span', { key: 'js-' + i }, seg.value);
+                  var guess = quiz.guesses[seg.blankIdx] || '';
+                  var correct = clozeAnswerCorrect(seg.answer, guess);
+                  return h('span', {
+                    key: 'js-' + i,
+                    style: {
+                      background: correct ? 'rgba(52,211,153,0.18)' : 'rgba(251,191,36,0.18)',
+                      color: palette.text,
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      fontWeight: 700,
+                      borderBottom: '2px solid ' + (correct ? (palette.success || palette.accent) : (palette.warn || palette.accent))
+                    }
+                  }, seg.answer + (correct ? '' : ' (you: "' + (guess || '—') + '")'));
+                })
+              ),
+              h('div', {
+                style: {
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  marginBottom: '8px',
+                  textAlign: 'center',
+                  fontWeight: 600
+                }
+              },
+                quiz.correctCount + ' / ' + clozeAnswers.length + ' correct · ' + quiz.scorePct + '%')
+            );
+          }
+          return h('div', { style: { marginBottom: '8px' } },
+            h('div', {
+              style: {
+                fontSize: '14px',
+                color: palette.text,
+                lineHeight: '2.0',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                marginBottom: '10px'
+              }
+            },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'jq-' + i }, seg.value);
+                return h('input', {
+                  key: 'jq-' + i,
+                  type: 'text',
+                  value: quiz.guesses[seg.blankIdx] || '',
+                  onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
+                  'aria-label': 'Blank ' + (seg.blankIdx + 1),
+                  placeholder: '___',
+                  style: {
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '4px',
+                    color: palette.text,
+                    padding: '2px 8px',
+                    fontSize: 'inherit',
+                    fontFamily: 'inherit',
+                    margin: '0 2px',
+                    minWidth: '70px'
+                  }
+                });
+              })
+            )
+          );
+        })() : h('div', {
+          style: {
+            fontSize: '13px',
+            color: palette.text,
+            lineHeight: hasCloze ? '1.85' : '1.55',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            marginBottom: '8px'
+          }
+        },
+          // Render cloze answers visually-highlighted (answer-key view)
+          // when the entry has them, plain text otherwise
+          hasCloze ? (function() {
+            var segments = buildClozeSegments(entry.text || '');
+            return segments.map(function(seg, i) {
+              if (seg.kind === 'text') return h('span', { key: 'js-v-' + i }, seg.value);
+              return h('span', {
+                key: 'js-v-' + i,
+                style: {
+                  background: palette.accent,
+                  color: palette.onAccent,
+                  padding: '1px 6px',
+                  borderRadius: '4px',
+                  fontWeight: 700
+                }
+              }, seg.answer);
+            });
+          })() : entry.text
+        )
+      ),
+      h('div', { style: { display: 'flex', gap: '8px', justifyContent: quiz ? 'space-between' : 'flex-end', alignItems: 'center' } },
+        // Quiz state UI dominates when active
+        quiz ? (quiz.submitted ? [
+          h('button', {
+            key: 'qtagain',
+            onClick: function() {
+              setQuiz({
+                guesses: clozeAnswers.map(function() { return ''; }),
+                submitted: false,
+                correctCount: 0
+              });
+            },
+            style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Quiz again'),
+          h('button', {
+            key: 'qdone',
+            onClick: exitQuiz,
+            style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Done')
+        ] : [
+          h('button', {
+            key: 'qcancel',
+            onClick: exitQuiz,
+            style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Cancel'),
+          h('button', {
+            key: 'qcheck',
+            onClick: submitQuiz,
+            style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Check answers')
+        ]) : (editing ? [
           h('button', {
             key: 'cancel',
             onClick: function() { setDraft(entry.text || ''); setEditing(false); },
@@ -901,6 +1566,24 @@
             }
           }, 'Save')
         ] : [
+          hasCloze ? h('button', {
+            key: 'quiz',
+            onClick: startQuiz,
+            'aria-label': 'Quiz yourself on this entry · ' + clozeAnswers.length + ' blanks',
+            title: 'Fill in the {braced} words from memory',
+            style: {
+              background: 'transparent',
+              color: palette.accent,
+              border: '1px solid ' + palette.accent,
+              borderRadius: '6px',
+              padding: '4px 12px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginRight: 'auto'
+            }
+          }, '📝 Quiz me · ' + clozeAnswers.length) : null,
           h('button', {
             key: 'edit',
             onClick: function() { setEditing(true); setDraft(entry.text || ''); },
@@ -933,7 +1616,7 @@
               fontFamily: 'inherit'
             }
           }, '🗑')
-        ]
+        ])
       )
     );
   }
@@ -1471,6 +2154,2307 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 6.6: MEMORY MODAL (Phase 2a)
+  // ─────────────────────────────────────────────────────────
+  // Self-authored memory palace. Each placed decoration can hold one
+  // of three content types: flashcards (Q/A), acronym (letters +
+  // meanings), or free notes (open text). The decoration's spatial
+  // location in the room provides the method-of-loci anchor.
+  // Mnemonic devices supported: active recall (flashcards),
+  // chunking (acronyms), and freeform (notes for rhymes / story
+  // chains / mind maps the student invents).
+  function MemoryModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+
+    var palette = p.palette;
+    var decoration = p.decoration;
+    var existing = decoration && decoration.linkedContent;
+    var hasContent = !!existing;
+
+    // ── Modal mode ──
+    // 'pick-type'   — empty state, choosing what kind of content to add
+    // 'view'        — read-only display of existing content
+    // 'edit'        — editing existing content
+    // 'quiz'        — interactive review (flashcards or acronym only)
+    var initialMode = hasContent ? 'view' : 'pick-type';
+    var modeTuple = useState(initialMode);
+    var mode = modeTuple[0];
+    var setMode = modeTuple[1];
+
+    // Draft content state — copied from existing on mount; saved back via p.onSave
+    var draftTuple = useState(function() {
+      if (existing) {
+        return JSON.parse(JSON.stringify(existing)); // deep copy
+      }
+      return null;
+    });
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    // Quiz session state (held outside content so it doesn't pollute saved data)
+    var quizTuple = useState(null);
+    var quiz = quizTuple[0];
+    var setQuiz = quizTuple[1];
+
+    // Confirm-remove flag
+    var confirmRemoveTuple = useState(false);
+    var confirmRemove = confirmRemoveTuple[0];
+    var setConfirmRemove = confirmRemoveTuple[1];
+
+    if (!decoration) {
+      return null;
+    }
+
+    var label = decoration.templateLabel || decoration.template || 'this decoration';
+
+    // Auto-start quiz on mount when caller requested it (used by the
+    // Memory overview modal's "Review" buttons). Only fires once,
+    // and only if quiz is actually available (notes have no quiz).
+    var autoQuizFiredTuple = useState(false);
+    var autoQuizFired = autoQuizFiredTuple[0];
+    var setAutoQuizFired = autoQuizFiredTuple[1];
+    useEffect(function() {
+      if (!p.autoStartQuiz) return;
+      if (autoQuizFired) return;
+      if (!hasContent) return;
+      if (!existing) return;
+      // Notes are only quizzable if they contain {cloze} markers
+      if (existing.type === 'notes' && !hasClozeMarkers(existing)) return;
+      setAutoQuizFired(true);
+      setTimeout(function() { startQuiz(); }, 30);
+      // eslint-disable-next-line
+    }, []);
+
+    // ── Helpers ──
+    function startEditEmpty(type) {
+      var initialDraft;
+      if (type === 'flashcards') {
+        initialDraft = {
+          type: 'flashcards',
+          data: { cards: [
+            { id: 'c-' + Date.now(), front: '', back: '', correctCount: 0, missCount: 0 }
+          ]}
+        };
+      } else if (type === 'acronym') {
+        initialDraft = {
+          type: 'acronym',
+          data: { letters: '', meanings: [], context: '' }
+        };
+      } else if (type === 'notes') {
+        initialDraft = { type: 'notes', data: { text: '' } };
+      } else if (type === 'image-link') {
+        initialDraft = {
+          type: 'image-link',
+          data: { targetDecorationId: null, association: '', correctCount: 0, missCount: 0 }
+        };
+      }
+      setDraft(initialDraft);
+      setMode('edit');
+    }
+
+    function commitDraft() {
+      if (!draft) return;
+      // Type-specific validation
+      if (draft.type === 'flashcards') {
+        // Drop empty cards
+        var nonEmpty = (draft.data.cards || []).filter(function(c) {
+          return (c.front || '').trim() && (c.back || '').trim();
+        });
+        if (nonEmpty.length === 0) {
+          alert('Add at least one card with both a front and back.');
+          return;
+        }
+        var cleaned = Object.assign({}, draft, { data: { cards: nonEmpty } });
+        p.onSave(cleaned);
+      } else if (draft.type === 'acronym') {
+        var letters = (draft.data.letters || '').trim();
+        if (!letters) {
+          alert('Type a word or letter sequence first.');
+          return;
+        }
+        var paddedMeanings = letters.split('').map(function(_, i) {
+          return (draft.data.meanings && draft.data.meanings[i]) || '';
+        });
+        var cleaned2 = Object.assign({}, draft, { data: { letters: letters, meanings: paddedMeanings, context: draft.data.context || '' } });
+        p.onSave(cleaned2);
+      } else if (draft.type === 'notes') {
+        var text = (draft.data.text || '').trim();
+        if (!text) {
+          alert('Write something first.');
+          return;
+        }
+        p.onSave(Object.assign({}, draft, { data: { text: text } }));
+      } else if (draft.type === 'image-link') {
+        var targetId = (draft.data && draft.data.targetDecorationId) || null;
+        var assoc = (draft.data && draft.data.association || '').trim();
+        if (!targetId) {
+          alert('Pick a decoration to link to first.');
+          return;
+        }
+        if (!assoc) {
+          alert('Write a short association — what does this remind you of?');
+          return;
+        }
+        var preserved = (existing && existing.type === 'image-link' && existing.data) || {};
+        var cleaned3 = Object.assign({}, draft, { data: {
+          targetDecorationId: targetId,
+          association: assoc,
+          correctCount: preserved.correctCount || 0,
+          missCount:    preserved.missCount    || 0
+        }});
+        p.onSave(cleaned3);
+      }
+      setMode('view');
+    }
+
+    function startQuiz() {
+      if (!existing || !existing.data) return;
+      if (existing.type === 'flashcards') {
+        var cards = (existing.data.cards || []).slice();
+        // Smart shuffle: cards with the highest miss rate surface first.
+        // Computes a "weakness score" per card, weighted random pick
+        // each step (Fisher-Yates with score-bias). Falls back to pure
+        // random for cards never quizzed before. Brand-new decks behave
+        // identically to a vanilla shuffle.
+        cards = smartShuffleCards(cards);
+        // Reverse mode persists per-deck (saved on linkedContent.data.reverseMode)
+        var reverseMode = !!(existing.data && existing.data.reverseMode);
+        setQuiz({
+          type: 'flashcards',
+          cards: cards,
+          currentIdx: 0,
+          flipped: false,
+          correct: 0,
+          missed: 0,
+          done: false,
+          reverseMode: reverseMode,
+          gradeLog: []
+        });
+        setMode('quiz');
+      } else if (existing.type === 'acronym') {
+        var letters = (existing.data.letters || '').toUpperCase();
+        var meanings = existing.data.meanings || [];
+        setQuiz({
+          type: 'acronym',
+          letters: letters,
+          truthMeanings: meanings,
+          currentIdx: 0,
+          guesses: meanings.map(function() { return ''; }),
+          done: false
+        });
+        setMode('quiz');
+      } else if (existing.type === 'notes' && hasClozeMarkers(existing)) {
+        var noteText = (existing.data && existing.data.text) || '';
+        var answers = extractClozeAnswers(noteText);
+        setQuiz({
+          type: 'cloze',
+          text: noteText,
+          truthAnswers: answers,
+          guesses: answers.map(function() { return ''; }),
+          submitted: false,
+          done: false
+        });
+        setMode('quiz');
+      } else if (existing.type === 'image-link') {
+        // Single-card retrieval. Student wrote the association themselves;
+        // quiz is "do you remember what you connected this to?"
+        setQuiz({
+          type: 'image-link',
+          truth: (existing.data && existing.data.association) || '',
+          guess: '',
+          revealed: false,
+          done: false
+        });
+        setMode('quiz');
+      }
+    }
+
+    function finishQuiz(correctCount, totalCount) {
+      var pct = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+      p.onQuizComplete(pct);
+      setQuiz({
+        finished: true,
+        scorePct: pct,
+        correctCount: correctCount,
+        totalCount: totalCount
+      });
+    }
+
+    // ── Tab navigation header (for non-empty states) ──
+    function renderTabs() {
+      if (!hasContent || mode === 'pick-type') return null;
+      var tabs = [
+        { id: 'view',  label: 'View' },
+        { id: 'edit',  label: 'Edit' }
+      ];
+      // Notes get a Quiz tab only when they contain {cloze} markers.
+      // Flashcards / acronyms / image-links always get one.
+      var notesQuizzable = existing.type === 'notes' && hasClozeMarkers(existing);
+      if (existing.type !== 'notes' || notesQuizzable) tabs.push({ id: 'quiz', label: 'Quiz' });
+      return h('div', {
+        role: 'tablist',
+        style: {
+          display: 'flex',
+          gap: '4px',
+          borderBottom: '1px solid ' + palette.border,
+          marginBottom: '14px',
+          paddingBottom: '0'
+        }
+      },
+        tabs.map(function(t) {
+          var active = mode === t.id;
+          return h('button', {
+            key: 't-' + t.id,
+            role: 'tab',
+            'aria-selected': active ? 'true' : 'false',
+            onClick: function() {
+              if (t.id === 'quiz' && mode !== 'quiz') {
+                startQuiz();
+              } else {
+                setMode(t.id);
+                setQuiz(null);
+                if (t.id === 'edit' && existing) {
+                  setDraft(JSON.parse(JSON.stringify(existing)));
+                }
+              }
+            },
+            style: {
+              background: active ? palette.surface : 'transparent',
+              border: 'none',
+              borderBottom: '3px solid ' + (active ? palette.accent : 'transparent'),
+              color: active ? palette.accent : palette.textDim,
+              fontFamily: 'inherit',
+              fontSize: '13px',
+              fontWeight: active ? 700 : 500,
+              padding: '8px 14px',
+              cursor: 'pointer'
+            }
+          }, t.label);
+        })
+      );
+    }
+
+    // ── Step bodies ──
+    var body;
+
+    if (mode === 'pick-type') {
+      body = renderPickType();
+    } else if (mode === 'view') {
+      body = renderViewTab();
+    } else if (mode === 'edit') {
+      body = renderEditTab();
+    } else if (mode === 'quiz') {
+      body = renderQuizMode();
+    }
+
+    function renderPickType() {
+      // Image-link is only offered when at least one OTHER decoration exists
+      // — there's no point linking to nothing.
+      var otherDecorations = (p.allDecorations || []).filter(function(d) {
+        return d.id !== decoration.id;
+      });
+      var canImageLink = otherDecorations.length > 0;
+      var pickerCards = [
+        { type: 'flashcards', icon: '📚', title: 'Flashcards', desc: 'Q&A pairs you study with. Best for vocab, definitions, formulas, key concepts.', mnemonic: 'active recall' },
+        { type: 'acronym',    icon: '🔤', title: 'Acronym / list', desc: 'A word where each letter stands for something. Like "ROY G BIV" for rainbow colors.', mnemonic: 'chunking' },
+        { type: 'notes',      icon: '📝', title: 'Free notes', desc: 'Plain text — for rhymes, story chains, mind maps, or anything that doesn\'t fit the others.', mnemonic: 'open expression' }
+      ];
+      if (canImageLink) {
+        pickerCards.push({
+          type: 'image-link', icon: '🔗',
+          title: 'Image link',
+          desc: 'Connect this decoration to another one with a personal association. Like "this dragon = mitosis" — pictures stick better than words.',
+          mnemonic: 'visual association'
+        });
+      }
+      return h('div', null,
+        h('p', { style: { fontSize: '13px', color: palette.textDim, lineHeight: '1.55', marginBottom: '14px' } },
+          'Attach memory content to your ' + label.toLowerCase() + '. Where you place this decoration in your room becomes a spatial anchor for what you\'re learning — that\'s the method of loci, a 2,400-year-old memory technique.'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          pickerCards.map(function(card) {
+            return h('button', {
+              key: 'pt-' + card.type,
+              onClick: function() { startEditEmpty(card.type); },
+              style: {
+                background: palette.surface,
+                border: '1.5px solid ' + palette.border,
+                borderRadius: '10px',
+                padding: '14px 16px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textAlign: 'left',
+                color: palette.text,
+                display: 'flex',
+                gap: '12px',
+                alignItems: 'flex-start',
+                transition: 'border-color 140ms ease'
+              }
+            },
+              h('span', { style: { fontSize: '28px', flexShrink: 0 } }, card.icon),
+              h('div', { style: { flex: 1 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' } },
+                  h('span', { style: { fontSize: '14px', fontWeight: 700 } }, card.title),
+                  h('span', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } }, card.mnemonic)
+                ),
+                h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5' } }, card.desc)
+              )
+            );
+          })
+        ),
+        h('p', {
+          style: { marginTop: '16px', fontSize: '11px', color: palette.textMute, fontStyle: 'italic', lineHeight: '1.5', textAlign: 'center' }
+        }, 'Adding memory content earns +1 token (one-time per decoration).')
+      );
+    }
+
+    function renderViewTab() {
+      var lc = existing;
+      if (!lc) return null;
+      if (lc.type === 'flashcards') {
+        var cards = (lc.data && lc.data.cards) || [];
+        // Mastery distribution summary — quick "how am I doing on this deck"
+        var buckets = { green: 0, yellow: 0, red: 0, gray: 0 };
+        cards.forEach(function(card) { buckets[cardMasteryBucket(card).id] += 1; });
+        var hasAnyAttempts = cards.some(function(c) { return (c.correctCount || 0) + (c.missCount || 0) > 0; });
+        return h('div', null,
+          h('div', {
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }
+          },
+            h('span', { style: { fontSize: '12px', color: palette.textMute } },
+              '📚 ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+            // Mastery distribution chips — only if any cards have been quizzed
+            hasAnyAttempts ? h('span', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+              buckets.green > 0 ? '🟢 ' + buckets.green + ' ' : '',
+              buckets.yellow > 0 ? '🟡 ' + buckets.yellow + ' ' : '',
+              buckets.red > 0 ? '🔴 ' + buckets.red + ' ' : '',
+              buckets.gray > 0 ? '⚪ ' + buckets.gray : ''
+            ) : null
+          ),
+          h('ol', { style: { paddingLeft: '20px', margin: 0, color: palette.text, fontSize: '13px', lineHeight: '1.6' } },
+            cards.map(function(card) {
+              var mastery = cardMasteryBucket(card);
+              var attempts = (card.correctCount || 0) + (card.missCount || 0);
+              return h('li', { key: card.id, style: { marginBottom: '10px' } },
+                h('div', {
+                  style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px' }
+                },
+                  h('div', { style: { fontWeight: 600, flex: 1 } }, card.front),
+                  // Per-card mastery indicator with attempt count
+                  attempts > 0 ? h('span', {
+                    'aria-label': mastery.label + ', ' + (card.correctCount || 0) + ' correct out of ' + attempts,
+                    title: mastery.label + ' · ' + (card.correctCount || 0) + ' / ' + attempts + ' correct',
+                    style: {
+                      fontSize: '10px',
+                      flexShrink: 0,
+                      color: palette.textMute,
+                      fontVariantNumeric: 'tabular-nums'
+                    }
+                  }, mastery.emoji + ' ' + (card.correctCount || 0) + '/' + attempts) : null
+                ),
+                h('div', { style: { color: palette.textDim, fontStyle: 'italic', fontSize: '12px' } }, card.back)
+              );
+            })
+          )
+        );
+      }
+      if (lc.type === 'acronym') {
+        var letters = (lc.data && lc.data.letters) || '';
+        var meanings = (lc.data && lc.data.meanings) || [];
+        return h('div', null,
+          lc.data && lc.data.context ? h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '10px', fontStyle: 'italic' }
+          }, lc.data.context) : null,
+          h('div', { style: { fontSize: '24px', fontWeight: 800, color: palette.accent, letterSpacing: '0.16em', marginBottom: '14px' } }, letters.toUpperCase()),
+          h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+            letters.split('').map(function(letter, i) {
+              return h('li', { key: 'al-' + i, style: { display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '6px' } },
+                h('span', {
+                  style: {
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    color: palette.accent,
+                    width: '28px',
+                    flexShrink: 0,
+                    textAlign: 'center'
+                  }
+                }, letter.toUpperCase()),
+                h('span', { style: { color: palette.text, fontSize: '13px' } }, meanings[i] || '—')
+              );
+            })
+          )
+        );
+      }
+      if (lc.type === 'image-link') {
+        var allDecs = p.allDecorations || [];
+        var targetId = (lc.data && lc.data.targetDecorationId) || null;
+        var target = allDecs.filter(function(d) { return d.id === targetId; })[0] || null;
+        var assoc = (lc.data && lc.data.association) || '';
+        var attempts = ((lc.data && lc.data.correctCount) || 0) + ((lc.data && lc.data.missCount) || 0);
+        var pctCorrect = attempts > 0 ? Math.round(((lc.data.correctCount || 0) / attempts) * 100) : null;
+        return h('div', null,
+          h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+            '🔗 Image link'),
+          // Side-by-side decoration preview with arrow between
+          h('div', {
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '12px', marginBottom: '14px',
+              padding: '14px', background: palette.surface,
+              border: '1px solid ' + palette.border, borderRadius: '10px'
+            }
+          },
+            h('div', { style: { textAlign: 'center', flex: '0 0 90px' } },
+              decoration.imageBase64 ? h('img', {
+                src: decoration.imageBase64, alt: '',
+                style: { width: '90px', height: '90px', objectFit: 'contain', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '8px' }
+              }) : null,
+              h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px' } },
+                decoration.templateLabel || decoration.template || 'this')
+            ),
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '20px', color: palette.accent, fontWeight: 800 } }, '→'),
+            h('div', { style: { textAlign: 'center', flex: '0 0 90px' } },
+              target ? h('img', {
+                src: target.imageBase64, alt: '',
+                style: { width: '90px', height: '90px', objectFit: 'contain', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '8px' }
+              }) : h('div', {
+                style: { width: '90px', height: '90px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.bg, border: '1px dashed ' + palette.border, borderRadius: '8px', color: palette.textMute, fontSize: '24px' }
+              }, '?'),
+              h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px' } },
+                target ? (target.templateLabel || target.template || 'linked item') : '(removed)')
+            )
+          ),
+          h('div', {
+            style: {
+              padding: '12px 14px',
+              background: palette.surface,
+              borderLeft: '3px solid ' + palette.accent,
+              borderRadius: '0 8px 8px 0',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              color: palette.text,
+              fontStyle: 'italic'
+            }
+          }, '"' + assoc + '"'),
+          attempts > 0 ? h('div', {
+            style: { marginTop: '10px', fontSize: '11px', color: palette.textMute, textAlign: 'center', fontVariantNumeric: 'tabular-nums' }
+          }, 'Recalled correctly ' + (lc.data.correctCount || 0) + ' / ' + attempts + ' times' + (pctCorrect !== null ? ' · ' + pctCorrect + '%' : '')) : null
+        );
+      }
+      if (lc.type === 'notes') {
+        var text = (lc.data && lc.data.text) || '';
+        var clozeCount = extractClozeAnswers(text).length;
+        // If cloze markers exist, render with the answers visually
+        // highlighted so the View tab serves as the "answer key" while
+        // the Quiz tab tests recall.
+        if (clozeCount > 0) {
+          var segments = buildClozeSegments(text);
+          return h('div', null,
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                marginBottom: '8px',
+                fontStyle: 'italic'
+              }
+            }, '📝 ' + clozeCount + ' fill-in answer' + (clozeCount === 1 ? '' : 's') + ' below (highlighted)'),
+            h('div', {
+              style: {
+                color: palette.text,
+                fontSize: '13px',
+                lineHeight: '1.7',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word'
+              }
+            },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'vs-' + i }, seg.value);
+                return h('span', {
+                  key: 'vs-' + i,
+                  style: {
+                    background: palette.accent,
+                    color: palette.onAccent,
+                    padding: '1px 6px',
+                    borderRadius: '4px',
+                    fontWeight: 700
+                  }
+                }, seg.answer);
+              })
+            )
+          );
+        }
+        return h('div', {
+          style: {
+            color: palette.text,
+            fontSize: '13px',
+            lineHeight: '1.65',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }
+        }, text);
+      }
+      return null;
+    }
+
+    function renderEditTab() {
+      if (!draft) return null;
+      var saveBar = h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px' } },
+        h('button', {
+          onClick: function() { setConfirmRemove(true); },
+          style: {
+            background: 'transparent',
+            color: palette.textMute,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            padding: '6px 12px',
+            fontSize: '11px',
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, '🗑 Remove memory'),
+        h('div', { style: { display: 'flex', gap: '8px' } },
+          h('button', {
+            onClick: function() {
+              if (hasContent) {
+                setMode('view');
+                setDraft(JSON.parse(JSON.stringify(existing)));
+              } else {
+                setMode('pick-type');
+                setDraft(null);
+              }
+            },
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, hasContent ? 'Cancel' : 'Back'),
+          h('button', {
+            onClick: commitDraft,
+            style: {
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 18px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Save')
+        )
+      );
+      // Hide remove button for never-saved drafts
+      if (!hasContent) {
+        saveBar = h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '14px' } },
+          h('button', {
+            onClick: function() { setMode('pick-type'); setDraft(null); },
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Back'),
+          h('button', {
+            onClick: commitDraft,
+            style: {
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 18px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Save')
+        );
+      }
+      // Confirm-remove inline panel
+      var removePanel = confirmRemove ? h('div', {
+        style: {
+          marginTop: '14px',
+          padding: '12px 14px',
+          background: 'rgba(220,38,38,0.08)',
+          border: '1px solid rgba(220,38,38,0.4)',
+          borderRadius: '8px'
+        }
+      },
+        h('p', { style: { margin: 0, fontSize: '13px', color: palette.text, marginBottom: '10px' } },
+          'Remove all memory content from this decoration? Tokens already earned won\'t be refunded.'),
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
+          h('button', {
+            onClick: function() { setConfirmRemove(false); },
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1px solid ' + palette.border, borderRadius: '6px',
+              padding: '4px 12px', fontSize: '11px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Keep it'),
+          h('button', {
+            onClick: function() {
+              p.onRemove();
+              setConfirmRemove(false);
+            },
+            style: {
+              background: '#dc2626', color: '#fff', border: 'none',
+              borderRadius: '6px', padding: '4px 12px',
+              fontSize: '11px', fontWeight: 700, cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Remove')
+        )
+      ) : null;
+
+      if (draft.type === 'flashcards') return h('div', null, renderFlashcardEditor(), removePanel, saveBar);
+      if (draft.type === 'acronym')    return h('div', null, renderAcronymEditor(),  removePanel, saveBar);
+      if (draft.type === 'notes')      return h('div', null, renderNotesEditor(),    removePanel, saveBar);
+      if (draft.type === 'image-link') return h('div', null, renderImageLinkEditor(), removePanel, saveBar);
+      return null;
+    }
+
+    function renderFlashcardEditor() {
+      var cards = (draft.data.cards) || [];
+      function updateCard(id, field, val) {
+        var newCards = cards.map(function(c) {
+          if (c.id !== id) return c;
+          var u = {}; u[field] = val;
+          return Object.assign({}, c, u);
+        });
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
+      function addCard() {
+        var newCards = cards.concat([{
+          id: 'c-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+          front: '', back: '', correctCount: 0, missCount: 0
+        }]);
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
+      function deleteCard(id) {
+        var newCards = cards.filter(function(c) { return c.id !== id; });
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '📚 Flashcard deck · ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          cards.map(function(card, idx) {
+            return h('div', {
+              key: card.id,
+              style: {
+                padding: '10px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px'
+              }
+            },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700 } }, 'Card ' + (idx + 1)),
+                cards.length > 1 ? h('button', {
+                  onClick: function() { deleteCard(card.id); },
+                  'aria-label': 'Delete card ' + (idx + 1),
+                  style: {
+                    background: 'transparent',
+                    color: palette.textMute,
+                    border: 'none',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    padding: '2px 4px'
+                  }
+                }, '✕') : null
+              ),
+              h('input', {
+                type: 'text',
+                value: card.front,
+                onChange: function(e) { updateCard(card.id, 'front', e.target.value); },
+                placeholder: 'Front (question or term)',
+                'aria-label': 'Card ' + (idx + 1) + ' front',
+                style: {
+                  width: '100%',
+                  padding: '6px 8px',
+                  marginBottom: '6px',
+                  background: palette.bg,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '6px',
+                  color: palette.text,
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box'
+                }
+              }),
+              h('input', {
+                type: 'text',
+                value: card.back,
+                onChange: function(e) { updateCard(card.id, 'back', e.target.value); },
+                placeholder: 'Back (answer or definition)',
+                'aria-label': 'Card ' + (idx + 1) + ' back',
+                style: {
+                  width: '100%',
+                  padding: '6px 8px',
+                  background: palette.bg,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '6px',
+                  color: palette.text,
+                  fontSize: '13px',
+                  fontFamily: 'inherit',
+                  boxSizing: 'border-box'
+                }
+              })
+            );
+          })
+        ),
+        h('button', {
+          onClick: addCard,
+          style: {
+            marginTop: '10px',
+            width: '100%',
+            background: 'transparent',
+            color: palette.accent,
+            border: '1px dashed ' + palette.accent,
+            borderRadius: '8px',
+            padding: '8px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, '+ Add card')
+      );
+    }
+
+    function renderAcronymEditor() {
+      var letters = (draft.data.letters || '');
+      var meanings = (draft.data.meanings || []);
+      var ctx = (draft.data.context || '');
+      function updateLetters(val) {
+        var clean = val.replace(/\s+/g, '').toUpperCase();
+        // Resize meanings array to match
+        var newMeanings = [];
+        for (var i = 0; i < clean.length; i++) {
+          newMeanings.push(meanings[i] || '');
+        }
+        setDraft(Object.assign({}, draft, { data: { letters: clean, meanings: newMeanings, context: ctx } }));
+      }
+      function updateMeaning(i, val) {
+        var newMeanings = meanings.slice();
+        newMeanings[i] = val;
+        setDraft(Object.assign({}, draft, { data: { letters: letters, meanings: newMeanings, context: ctx } }));
+      }
+      function updateContext(val) {
+        setDraft(Object.assign({}, draft, { data: { letters: letters, meanings: meanings, context: val } }));
+      }
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '🔤 Acronym / list'),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'The word or letters'),
+        h('input', {
+          type: 'text',
+          value: letters,
+          onChange: function(e) { updateLetters(e.target.value); },
+          placeholder: 'e.g. PEMDAS or ROY G BIV',
+          'aria-label': 'Acronym letters',
+          style: {
+            width: '100%',
+            padding: '8px 10px',
+            marginBottom: '12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '18px',
+            letterSpacing: '0.12em',
+            fontWeight: 700,
+            fontFamily: 'inherit',
+            boxSizing: 'border-box'
+          }
+        }),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'What it stands for (optional context)'),
+        h('input', {
+          type: 'text',
+          value: ctx,
+          onChange: function(e) { updateContext(e.target.value); },
+          placeholder: 'e.g. order of operations',
+          'aria-label': 'Acronym context',
+          style: {
+            width: '100%',
+            padding: '6px 10px',
+            marginBottom: '14px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '13px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box'
+          }
+        }),
+        letters.length > 0 ? h('div', null,
+          h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', fontWeight: 600 } }, 'Letter meanings'),
+          h('ul', { style: { listStyle: 'none', padding: 0, margin: 0 } },
+            letters.split('').map(function(letter, i) {
+              return h('li', { key: 'lt-' + i, style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' } },
+                h('span', {
+                  style: {
+                    fontSize: '18px',
+                    fontWeight: 800,
+                    color: palette.accent,
+                    width: '28px',
+                    flexShrink: 0,
+                    textAlign: 'center'
+                  }
+                }, letter),
+                h('input', {
+                  type: 'text',
+                  value: meanings[i] || '',
+                  onChange: function(e) { updateMeaning(i, e.target.value); },
+                  placeholder: 'meaning of ' + letter,
+                  'aria-label': 'Meaning of ' + letter,
+                  style: {
+                    flex: 1,
+                    padding: '6px 10px',
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '6px',
+                    color: palette.text,
+                    fontSize: '13px',
+                    fontFamily: 'inherit'
+                  }
+                })
+              );
+            })
+          )
+        ) : h('p', {
+          style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', lineHeight: '1.5', textAlign: 'center', padding: '12px' }
+        }, 'Type a word above to start filling in meanings.')
+      );
+    }
+
+    function renderNotesEditor() {
+      var text = (draft.data.text || '');
+      var clozeCount = extractClozeAnswers(text).length;
+      function updateText(val) {
+        setDraft(Object.assign({}, draft, { data: { text: val } }));
+      }
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '📝 Free notes'),
+        h('p', {
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' }
+        }, 'Whatever helps you remember. A rhyme. A story chain. A diagram in text. Lyrics. Whatever.'),
+        // Cloze-syntax hint card — teaches the {braces} mechanic in the
+        // editor itself. Subtle so it doesn\'t feel like a tutorial,
+        // but visible enough that students notice the feature exists.
+        h('div', {
+          style: {
+            fontSize: '11px',
+            color: palette.textDim,
+            background: palette.surface,
+            border: '1px dashed ' + palette.border,
+            borderRadius: '6px',
+            padding: '8px 10px',
+            marginBottom: '10px',
+            lineHeight: '1.5'
+          }
+        },
+          h('strong', { style: { color: palette.accent } }, '✨ Tip: '),
+          'Wrap any word in ',
+          h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' } }, '{curly braces}'),
+          ' to turn it into a fill-in-the-blank. e.g. ',
+          h('em', null, '"The mitochondria is the {powerhouse} of the {cell}."'),
+          ' adds a Quiz tab.'
+        ),
+        h('textarea', {
+          value: text,
+          onChange: function(e) { updateText(e.target.value); },
+          placeholder: 'Write your notes here. Use {braces} for fill-in-the-blank quiz mode.',
+          'aria-label': 'Free notes',
+          rows: 10,
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '14px',
+            fontFamily: 'inherit',
+            lineHeight: '1.5',
+            resize: 'vertical',
+            boxSizing: 'border-box'
+          }
+        }),
+        h('div', {
+          style: {
+            fontSize: '11px',
+            color: palette.textMute,
+            marginTop: '4px',
+            display: 'flex',
+            justifyContent: 'space-between'
+          }
+        },
+          h('span', null,
+            clozeCount > 0
+              ? h('span', { style: { color: palette.accent, fontWeight: 700 } },
+                  '✓ ' + clozeCount + ' blank' + (clozeCount === 1 ? '' : 's') + ' detected — Quiz tab will appear after save')
+              : 'No {braces} yet — Notes tab only, no quiz'
+          ),
+          h('span', null, text.length + ' character' + (text.length === 1 ? '' : 's'))
+        )
+      );
+    }
+
+    // Image-link editor — pick a target decoration via thumbnail grid, then
+    // type the personal association. Decorations grid excludes self
+    // (can\'t link to itself) and starter fern is fair game (good visual
+    // hook — most students see it every day).
+    function renderImageLinkEditor() {
+      var allDecs = (p.allDecorations || []).filter(function(d) { return d.id !== decoration.id; });
+      var data = (draft && draft.data) || {};
+      var targetId = data.targetDecorationId || null;
+      var assoc = data.association || '';
+
+      function pickTarget(id) {
+        setDraft(Object.assign({}, draft, { data: Object.assign({}, draft.data, { targetDecorationId: id }) }));
+      }
+      function updateAssoc(val) {
+        setDraft(Object.assign({}, draft, { data: Object.assign({}, draft.data, { association: val }) }));
+      }
+
+      if (allDecs.length === 0) {
+        return h('div', null,
+          h('p', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.55', textAlign: 'center', padding: '20px' } },
+            'You only have one decoration so far. Add another decoration to your room — then come back and link them.')
+        );
+      }
+      var selected = allDecs.filter(function(d) { return d.id === targetId; })[0] || null;
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          '🔗 Image link'),
+        h('p', {
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '10px', lineHeight: '1.5' }
+        }, 'Pictures stick better than words. Connect this decoration to another one with a personal association — the weirder, the better. "This dragon = mitosis because both split apart." That\'s how visual mnemonics work.'),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '6px', fontWeight: 600 } },
+          '1. Pick a decoration to link to'),
+        h('div', {
+          style: {
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: '8px',
+            padding: '10px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            marginBottom: '14px',
+            maxHeight: '180px',
+            overflowY: 'auto'
+          }
+        },
+          allDecs.map(function(d) {
+            var isSel = d.id === targetId;
+            var dLabel = d.templateLabel || d.template || 'item';
+            return h('button', {
+              key: 'tgt-' + d.id,
+              type: 'button',
+              onClick: function() { pickTarget(d.id); },
+              'aria-pressed': isSel,
+              'aria-label': 'Link to ' + dLabel + (isSel ? ' (selected)' : ''),
+              title: dLabel,
+              style: {
+                width: '64px',
+                height: '64px',
+                padding: 0,
+                background: palette.bg,
+                border: isSel ? ('2.5px solid ' + palette.accent) : ('1.5px solid ' + palette.border),
+                borderRadius: '8px',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                position: 'relative',
+                fontFamily: 'inherit'
+              }
+            },
+              d.imageBase64 ? h('img', {
+                src: d.imageBase64, alt: '',
+                style: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' }
+              }) : h('span', { style: { fontSize: '20px', color: palette.textMute } }, '?'),
+              isSel ? h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  position: 'absolute', top: 0, right: 0,
+                  background: palette.accent, color: palette.onAccent,
+                  fontSize: '10px', fontWeight: 800,
+                  padding: '1px 5px', borderRadius: '0 6px 0 6px',
+                  lineHeight: 1.2
+                }
+              }, '✓') : null
+            );
+          })
+        ),
+        // Live preview of the association once a target is selected
+        selected ? h('div', {
+          style: {
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '8px', marginBottom: '12px',
+            padding: '10px', background: palette.surface,
+            border: '1px dashed ' + palette.border, borderRadius: '8px'
+          }
+        },
+          h('div', { style: { textAlign: 'center', flex: '0 0 64px' } },
+            decoration.imageBase64 ? h('img', {
+              src: decoration.imageBase64, alt: '',
+              style: { width: '64px', height: '64px', objectFit: 'contain', borderRadius: '6px', background: palette.bg }
+            }) : null
+          ),
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '18px', color: palette.accent } }, '→'),
+          h('div', { style: { textAlign: 'center', flex: '0 0 64px' } },
+            selected.imageBase64 ? h('img', {
+              src: selected.imageBase64, alt: '',
+              style: { width: '64px', height: '64px', objectFit: 'contain', borderRadius: '6px', background: palette.bg }
+            }) : null
+          )
+        ) : null,
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '6px', fontWeight: 600 } },
+          '2. Write the association — what does this remind you of?'),
+        h('textarea', {
+          value: assoc,
+          onChange: function(e) { updateAssoc(e.target.value); },
+          placeholder: 'e.g. "the dragon = mitosis (both split apart and grow stronger)"',
+          'aria-label': 'Image-link association',
+          rows: 3,
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '13px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            resize: 'vertical',
+            lineHeight: '1.5'
+          }
+        }),
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '6px', fontStyle: 'italic' } },
+          'Quiz mode shows the first decoration and asks you to recall the association. Forgiving substring matching, like flashcards.')
+      );
+    }
+
+    function renderQuizMode() {
+      if (!quiz) return null;
+      if (quiz.finished) {
+        return renderQuizResult();
+      }
+      if (quiz.type === 'flashcards') return renderQuizFlashcards();
+      if (quiz.type === 'acronym')    return renderQuizAcronym();
+      if (quiz.type === 'cloze')      return renderQuizCloze();
+      if (quiz.type === 'image-link') return renderQuizImageLink();
+      return null;
+    }
+
+    // Cloze quiz — fill in the {braced} blanks from notes. All blanks
+    // shown at once with the surrounding context visible — students see
+    // the sentence shape, type the missing word(s), submit once for
+    // graded feedback. Forgiving substring match like the acronym quiz.
+    function renderQuizCloze() {
+      var segments = buildClozeSegments(quiz.text);
+      var totalBlanks = quiz.truthAnswers.length;
+      if (totalBlanks === 0) {
+        return h('p', { style: { color: palette.textMute, padding: '12px', textAlign: 'center' } },
+          'No {braced} answers found in this note. Add some {curly braces} around words to make a cloze quiz.');
+      }
+      function updateGuess(blankIdx, val) {
+        var newGuesses = quiz.guesses.slice();
+        newGuesses[blankIdx] = val;
+        setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+      }
+      function submit() {
+        var correctCount = 0;
+        for (var i = 0; i < totalBlanks; i++) {
+          if (clozeAnswerCorrect(quiz.truthAnswers[i], quiz.guesses[i])) correctCount++;
+        }
+        finishQuiz(correctCount, totalBlanks);
+      }
+
+      // Inline input style — matches the surrounding text size
+      var inputStyle = {
+        background: palette.surface,
+        border: '1px solid ' + palette.border,
+        borderRadius: '4px',
+        color: palette.text,
+        padding: '2px 8px',
+        fontSize: 'inherit',
+        fontFamily: 'inherit',
+        margin: '0 2px',
+        minWidth: '70px'
+      };
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
+          'Fill in the blanks · ' + totalBlanks + ' answer' + (totalBlanks === 1 ? '' : 's')),
+        h('div', {
+          style: {
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '10px',
+            padding: '16px 18px',
+            fontSize: '15px',
+            lineHeight: '2.0',
+            color: palette.text,
+            marginBottom: '14px',
+            wordBreak: 'break-word'
+          }
+        },
+          segments.map(function(seg, i) {
+            if (seg.kind === 'text') {
+              return h('span', { key: 'cs-' + i, style: { whiteSpace: 'pre-wrap' } }, seg.value);
+            }
+            // blank
+            return h('input', {
+              key: 'cs-' + i,
+              type: 'text',
+              value: quiz.guesses[seg.blankIdx] || '',
+              onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
+              'aria-label': 'Blank ' + (seg.blankIdx + 1) + ' of ' + totalBlanks,
+              placeholder: '___',
+              style: inputStyle
+            });
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: '10px' } },
+          h('button', {
+            onClick: function() { setMode('view'); setQuiz(null); },
+            style: {
+              flex: 1,
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Cancel'),
+          h('button', {
+            onClick: submit,
+            style: {
+              flex: 1,
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Check answers')
+        )
+      );
+    }
+
+    function renderQuizFlashcards() {
+      var cards = quiz.cards;
+      if (!cards || cards.length === 0) {
+        return h('p', { style: { color: palette.textMute, padding: '12px', textAlign: 'center' } }, 'No cards to quiz on.');
+      }
+      var card = cards[quiz.currentIdx];
+      var progress = (quiz.currentIdx + 1) + ' / ' + cards.length;
+
+      // Reverse mode swaps which side shows first. Bidirectional drilling
+      // is a known retention boost — students who only see Front→Back
+      // often can't go in the other direction.
+      var rev = !!quiz.reverseMode;
+      var firstSide  = rev ? card.back : card.front;
+      var secondSide = rev ? card.front : card.back;
+      var firstLabel  = rev ? 'Back (now shown first)' : 'Front';
+      var secondLabel = rev ? 'Front' : 'Back';
+
+      function flip() { setQuiz(Object.assign({}, quiz, { flipped: true })); }
+      function toggleReverse() {
+        // Persist per-deck: writes through to linkedContent.data.reverseMode
+        // so it sticks across sessions. Resets the in-progress quiz.
+        var newMode = !rev;
+        var newData = Object.assign({}, existing.data, { reverseMode: newMode });
+        p.onSave({ type: 'flashcards', data: newData });
+        // Restart quiz with the new direction (don't lose card list, just
+        // flip side semantics)
+        setQuiz(Object.assign({}, quiz, {
+          reverseMode: newMode,
+          flipped: false,
+          currentIdx: 0,
+          correct: 0,
+          missed: 0,
+          gradeLog: []
+        }));
+      }
+      function gradeAndAdvance(gotIt) {
+        var nextIdx = quiz.currentIdx + 1;
+        var newCorrect = quiz.correct + (gotIt ? 1 : 0);
+        var newMissed = quiz.missed + (gotIt ? 0 : 1);
+        // Track which card got which grade so we can persist stats at
+        // quiz finish. Quiz state holds the live shuffle; the persistent
+        // record (decoration.linkedContent.data.cards) gets updated once
+        // at the end so we don't write to localStorage every keystroke.
+        var newGradeLog = (quiz.gradeLog || []).concat([{ cardId: card.id, gotIt: gotIt }]);
+        if (nextIdx >= cards.length) {
+          // Persist per-card stats before scoring
+          persistCardStats(newGradeLog);
+          finishQuiz(newCorrect, cards.length);
+        } else {
+          setQuiz(Object.assign({}, quiz, {
+            currentIdx: nextIdx,
+            flipped: false,
+            correct: newCorrect,
+            missed: newMissed,
+            gradeLog: newGradeLog
+          }));
+        }
+      }
+
+      // Update correctCount / missCount on each card in the persistent
+      // deck. Aggregates the quiz-session grade log + writes through
+      // to linkedContent.data.cards. Preserves card order; doesn't
+      // touch reverseMode or other deck-level fields.
+      function persistCardStats(gradeLog) {
+        var existingCards = (existing.data && existing.data.cards) || [];
+        var statsById = {};
+        gradeLog.forEach(function(entry) {
+          if (!statsById[entry.cardId]) statsById[entry.cardId] = { c: 0, m: 0 };
+          if (entry.gotIt) statsById[entry.cardId].c += 1;
+          else             statsById[entry.cardId].m += 1;
+        });
+        var updatedCards = existingCards.map(function(c) {
+          var delta = statsById[c.id];
+          if (!delta) return c;
+          return Object.assign({}, c, {
+            correctCount: (c.correctCount || 0) + delta.c,
+            missCount:    (c.missCount    || 0) + delta.m
+          });
+        });
+        var newData = Object.assign({}, existing.data, { cards: updatedCards });
+        p.onSave({ type: 'flashcards', data: newData });
+      }
+
+      return h('div', null,
+        h('div', {
+          style: {
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '10px'
+          }
+        },
+          h('span', { style: { fontSize: '11px', color: palette.textMute } },
+            'Card ' + progress),
+          // Reverse-mode toggle — small chip; clearly labels current
+          // direction. Click to flip + restart the quiz from the start.
+          h('button', {
+            onClick: toggleReverse,
+            'aria-pressed': rev ? 'true' : 'false',
+            'aria-label': 'Toggle quiz direction · currently ' + (rev ? 'back to front' : 'front to back'),
+            title: 'Switch direction (Front↔Back)',
+            style: {
+              background: rev ? palette.accent : 'transparent',
+              color: rev ? palette.onAccent : palette.textDim,
+              border: '1px solid ' + (rev ? palette.accent : palette.border),
+              borderRadius: '999px',
+              padding: '3px 10px',
+              fontSize: '10px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              letterSpacing: '0.04em'
+            }
+          }, rev ? '↺ Back → Front' : '↻ Reverse direction')
+        ),
+        h('div', {
+          'aria-live': 'polite',
+          style: {
+            background: palette.surface,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '12px',
+            padding: '32px 20px',
+            minHeight: '120px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            marginBottom: '14px'
+          }
+        },
+          h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
+              quiz.flipped ? secondLabel : firstLabel),
+            h('div', { style: { fontSize: '17px', fontWeight: 700, color: palette.text, lineHeight: '1.4' } },
+              quiz.flipped ? secondSide : firstSide)
+          )
+        ),
+        !quiz.flipped ? h('button', {
+          onClick: flip,
+          autoFocus: true,
+          style: {
+            width: '100%',
+            background: palette.accent,
+            color: palette.onAccent,
+            border: 'none',
+            borderRadius: '8px',
+            padding: '10px',
+            fontSize: '14px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, 'Flip card') : h('div', { style: { display: 'flex', gap: '10px' } },
+          h('button', {
+            onClick: function() { gradeAndAdvance(false); },
+            style: {
+              flex: 1,
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Try again'),
+          h('button', {
+            onClick: function() { gradeAndAdvance(true); },
+            style: {
+              flex: 1,
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Got it')
+        )
+      );
+    }
+
+    function renderQuizAcronym() {
+      var idx = quiz.currentIdx;
+      var letter = quiz.letters[idx] || '';
+      var truth = (quiz.truthMeanings[idx] || '').trim().toLowerCase();
+      var guesses = quiz.guesses;
+      var currentGuess = guesses[idx] || '';
+
+      function updateGuess(val) {
+        var newGuesses = guesses.slice();
+        newGuesses[idx] = val;
+        setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+      }
+      function checkAndAdvance() {
+        var nextIdx = idx + 1;
+        if (nextIdx >= quiz.letters.length) {
+          // Compute correct count
+          var correctCount = 0;
+          for (var i = 0; i < quiz.letters.length; i++) {
+            var truthI = (quiz.truthMeanings[i] || '').trim().toLowerCase();
+            var guessI = (guesses[i] || '').trim().toLowerCase();
+            if (truthI && guessI && (truthI === guessI || truthI.indexOf(guessI) === 0 || guessI.indexOf(truthI) === 0)) {
+              correctCount++;
+            }
+          }
+          finishQuiz(correctCount, quiz.letters.length);
+        } else {
+          setQuiz(Object.assign({}, quiz, { currentIdx: nextIdx }));
+        }
+      }
+      function skip() {
+        var newGuesses = guesses.slice();
+        newGuesses[idx] = '';
+        setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+        checkAndAdvance();
+      }
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
+          'Letter ' + (idx + 1) + ' / ' + quiz.letters.length),
+        h('div', { style: { fontSize: '64px', fontWeight: 800, color: palette.accent, textAlign: 'center', marginBottom: '14px', letterSpacing: '0.04em' } },
+          letter),
+        h('input', {
+          type: 'text',
+          value: currentGuess,
+          onChange: function(e) { updateGuess(e.target.value); },
+          placeholder: 'What does ' + letter + ' stand for?',
+          'aria-label': 'Meaning of ' + letter,
+          autoFocus: true,
+          onKeyDown: function(e) {
+            if (e.key === 'Enter') { e.preventDefault(); checkAndAdvance(); }
+          },
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '15px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            marginBottom: '14px'
+          }
+        }),
+        h('div', { style: { display: 'flex', gap: '10px' } },
+          h('button', {
+            onClick: skip,
+            style: {
+              flex: 1,
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Skip'),
+          h('button', {
+            onClick: checkAndAdvance,
+            style: {
+              flex: 1,
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '10px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, idx + 1 >= quiz.letters.length ? 'Finish' : 'Next')
+        )
+      );
+    }
+
+    // Image-link quiz — show this decoration big, ask student to recall
+    // the association they wrote. Single-card retrieval. Reveal-and-grade
+    // pattern (no auto-grading by string match — the association is the
+    // student\'s own personal phrasing; substring match is informational
+    // only, the student self-grades like flashcards).
+    function renderQuizImageLink() {
+      var allDecs = p.allDecorations || [];
+      var lc = existing;
+      var data = (lc && lc.data) || {};
+      var target = allDecs.filter(function(d) { return d.id === data.targetDecorationId; })[0] || null;
+      var truth = quiz.truth || '';
+      var guess = quiz.guess || '';
+      var revealed = !!quiz.revealed;
+
+      function updateGuess(val) { setQuiz(Object.assign({}, quiz, { guess: val })); }
+      function reveal() { setQuiz(Object.assign({}, quiz, { revealed: true })); }
+      function grade(gotIt) {
+        // Persist correctCount/missCount on the linkedContent.data so the
+        // image-link tracks its own per-decoration accuracy.
+        var newCorrect = (data.correctCount || 0) + (gotIt ? 1 : 0);
+        var newMiss    = (data.missCount    || 0) + (gotIt ? 0 : 1);
+        var newData = Object.assign({}, data, { correctCount: newCorrect, missCount: newMiss });
+        p.onSave({ type: 'image-link', data: newData });
+        finishQuiz(gotIt ? 1 : 0, 1);
+      }
+
+      // Auto-substring hint (informational only — student self-grades)
+      var looksRight = guess.trim().length > 0 && clozeAnswerCorrect(truth, guess);
+
+      return h('div', null,
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '14px', textAlign: 'center' } },
+          'What did you connect this decoration to?'),
+        h('div', {
+          style: {
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            gap: '12px', marginBottom: '14px'
+          }
+        },
+          h('div', { style: { textAlign: 'center', flex: '0 0 110px' } },
+            decoration.imageBase64 ? h('img', {
+              src: decoration.imageBase64, alt: '',
+              style: { width: '110px', height: '110px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
+            }) : null
+          ),
+          h('div', { 'aria-hidden': 'true', style: { fontSize: '24px', color: palette.accent, fontWeight: 800 } }, '→'),
+          h('div', { style: { textAlign: 'center', flex: '0 0 110px' } },
+            revealed && target && target.imageBase64 ? h('img', {
+              src: target.imageBase64, alt: '',
+              style: { width: '110px', height: '110px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
+            }) : h('div', {
+              style: {
+                width: '110px', height: '110px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: palette.surface, border: '1px dashed ' + palette.border,
+                borderRadius: '10px', color: palette.textMute, fontSize: '36px'
+              }
+            }, '?')
+          )
+        ),
+        !revealed ? h('div', null,
+          h('input', {
+            type: 'text',
+            value: guess,
+            onChange: function(e) { updateGuess(e.target.value); },
+            placeholder: 'Type what this reminds you of…',
+            'aria-label': 'Your recall of the association',
+            autoFocus: true,
+            onKeyDown: function(e) {
+              if (e.key === 'Enter') { e.preventDefault(); reveal(); }
+            },
+            style: {
+              width: '100%',
+              padding: '10px 12px',
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              color: palette.text,
+              fontSize: '14px',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box',
+              marginBottom: '10px'
+            }
+          }),
+          h('div', { style: { display: 'flex', gap: '10px' } },
+            h('button', {
+              onClick: function() { setMode('view'); setQuiz(null); },
+              style: {
+                flex: 1,
+                background: 'transparent',
+                color: palette.textDim,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, 'Cancel'),
+            h('button', {
+              onClick: reveal,
+              style: {
+                flex: 1,
+                background: palette.accent,
+                color: palette.onAccent,
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, 'Reveal answer')
+          )
+        ) : h('div', null,
+          h('div', {
+            style: {
+              padding: '12px 14px',
+              background: palette.surface,
+              borderLeft: '3px solid ' + palette.accent,
+              borderRadius: '0 8px 8px 0',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              color: palette.text,
+              fontStyle: 'italic',
+              marginBottom: '8px'
+            }
+          }, '"' + truth + '"'),
+          guess.trim().length > 0 ? h('div', {
+            style: {
+              fontSize: '11px',
+              color: looksRight ? (palette.success || palette.accent) : palette.textMute,
+              marginBottom: '14px',
+              textAlign: 'center',
+              fontStyle: 'italic'
+            }
+          }, 'Your guess: "' + guess + '"' + (looksRight ? ' · close match!' : '')) : h('div', {
+            style: { fontSize: '11px', color: palette.textMute, marginBottom: '14px', textAlign: 'center', fontStyle: 'italic' }
+          }, '(no guess typed)'),
+          h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textAlign: 'center' } },
+            'Did you remember it?'),
+          h('div', { style: { display: 'flex', gap: '10px' } },
+            h('button', {
+              onClick: function() { grade(false); },
+              style: {
+                flex: 1,
+                background: 'transparent',
+                color: palette.textDim,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '✗ Not quite'),
+            h('button', {
+              onClick: function() { grade(true); },
+              style: {
+                flex: 1,
+                background: palette.accent,
+                color: palette.onAccent,
+                border: 'none',
+                borderRadius: '8px',
+                padding: '10px',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '✓ Got it')
+          )
+        )
+      );
+    }
+
+    function renderQuizResult() {
+      var pct = quiz.scorePct;
+      var emoji = pct >= 90 ? '🌟' : pct >= 80 ? '✨' : pct >= 50 ? '🌱' : '💪';
+      var msg = pct >= 80
+        ? 'Strong recall — you know this material.'
+        : pct >= 50
+        ? 'Solid effort. Try again later to lock it in.'
+        : 'A start. Coming back tomorrow is how memory works.';
+      return h('div', { style: { textAlign: 'center', padding: '20px 0' } },
+        h('div', { style: { fontSize: '56px', marginBottom: '10px' } }, emoji),
+        h('div', { style: { fontSize: '32px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums' } },
+          pct + '%'),
+        h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px' } },
+          quiz.correctCount + ' of ' + quiz.totalCount + ' correct'),
+        h('p', { style: { fontSize: '13px', color: palette.textDim, marginTop: '14px', lineHeight: '1.55' } }, msg),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '18px' } },
+          h('button', {
+            onClick: function() { setMode('view'); setQuiz(null); },
+            style: {
+              background: 'transparent',
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 18px',
+              fontSize: '13px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Done'),
+          h('button', {
+            onClick: startQuiz,
+            style: {
+              background: palette.accent,
+              color: palette.onAccent,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '8px 20px',
+              fontSize: '13px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, 'Quiz again')
+        )
+      );
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Memory content for ' + label,
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onClose();
+      },
+      style: {
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)',
+        zIndex: 175,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg,
+          border: '1px solid ' + palette.border,
+          borderRadius: '14px',
+          padding: '24px',
+          maxWidth: '540px',
+          width: '100%',
+          maxHeight: '90vh',
+          overflowY: 'auto',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        // Header — decoration preview + close button
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '10px' }
+        },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+            decoration.imageBase64 ? h('img', {
+              src: decoration.imageBase64,
+              alt: '',
+              'aria-hidden': 'true',
+              style: { width: '44px', height: '44px', borderRadius: '6px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border }
+            }) : null,
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '17px', fontWeight: 700 } },
+              hasContent ? 'Memory · ' + label : 'Add memory · ' + label)
+          ),
+          h('button', {
+            onClick: p.onClose,
+            'aria-label': 'Close memory modal',
+            style: {
+              background: 'transparent',
+              border: '1px solid ' + palette.border,
+              color: palette.textDim,
+              borderRadius: '8px',
+              padding: '4px 10px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, '✕')
+        ),
+        renderTabs(),
+        body
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6.5: STORY BUILDER + WALK SUB-COMPONENTS (Phase 2e)
+  // ─────────────────────────────────────────────────────────
+  // Story-method mnemonic: chain ≥3 decorations into a narrative
+  // sequence. Each step has a decoration + a sentence connecting it to
+  // the next item. Walking the story is retrieval practice — students
+  // recall not just facts but how facts hang together.
+
+  function StoryBuilderInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+    var allDecs = p.allDecorations || [];
+
+    // Local draft so abrupt close doesn\'t auto-persist half-typed work.
+    // Save button writes through to parent.
+    var draftTuple = useState(function() {
+      return {
+        title: (p.story && p.story.title) || '',
+        steps: ((p.story && p.story.steps) || []).slice()
+      };
+    });
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    // Picker open-state for "add step" — when an index is set we show
+    // the decoration grid for that step.
+    var pickerForTuple = useState(null); // null | step index (number, or 'append')
+    var pickerFor = pickerForTuple[0];
+    var setPickerFor = pickerForTuple[1];
+
+    function setTitle(val) { setDraft(Object.assign({}, draft, { title: val })); }
+
+    function setStepNarrative(idx, val) {
+      var newSteps = draft.steps.slice();
+      newSteps[idx] = Object.assign({}, newSteps[idx], { narrative: val });
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+    }
+    function setStepDecoration(idx, decorationId) {
+      var newSteps = draft.steps.slice();
+      if (idx === draft.steps.length || idx === 'append') {
+        newSteps.push({ decorationId: decorationId, narrative: '' });
+      } else {
+        newSteps[idx] = Object.assign({}, newSteps[idx], { decorationId: decorationId });
+      }
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+      setPickerFor(null);
+    }
+    function removeStep(idx) {
+      var newSteps = draft.steps.slice();
+      newSteps.splice(idx, 1);
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+    }
+    function moveStep(idx, dir) {
+      var newSteps = draft.steps.slice();
+      var swapWith = idx + dir;
+      if (swapWith < 0 || swapWith >= newSteps.length) return;
+      var tmp = newSteps[idx];
+      newSteps[idx] = newSteps[swapWith];
+      newSteps[swapWith] = tmp;
+      setDraft(Object.assign({}, draft, { steps: newSteps }));
+    }
+
+    function findDecoration(id) {
+      return allDecs.filter(function(d) { return d.id === id; })[0] || null;
+    }
+
+    function handleSave() {
+      var cleanedSteps = draft.steps.filter(function(st) { return !!st.decorationId; });
+      p.onSave({
+        title: (draft.title || '').trim(),
+        steps: cleanedSteps
+      });
+    }
+
+    var validSteps = draft.steps.filter(function(st) {
+      return st.decorationId && (st.narrative || '').trim().length > 0;
+    });
+    var titleOk = (draft.title || '').trim().length > 0;
+    var canSave = titleOk && validSteps.length >= 1; // save partial; only ≥3 unlocks walk
+    var canWalk = titleOk && validSteps.length >= 3;
+
+    // Decoration picker (modal-within-modal)
+    function renderPicker() {
+      if (pickerFor === null) return null;
+      // Suggest decorations not already in the story (still allowed —
+      // dim them to discourage repeats in the chain mnemonic).
+      var usedIds = {};
+      draft.steps.forEach(function(st) { if (st.decorationId) usedIds[st.decorationId] = true; });
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Pick a decoration for this step',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setPickerFor(null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '12px', padding: '20px',
+            maxWidth: '500px', width: '100%', maxHeight: '70vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
+            h('h4', { style: { margin: 0, color: palette.text, fontSize: '15px', fontWeight: 700 } },
+              'Pick a decoration · step ' + (typeof pickerFor === 'number' ? pickerFor + 1 : draft.steps.length + 1)),
+            h('button', {
+              onClick: function() { setPickerFor(null); },
+              'aria-label': 'Cancel decoration picker',
+              style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '6px', padding: '4px 10px', fontSize: '12px', cursor: 'pointer' }
+            }, '✕')
+          ),
+          allDecs.length === 0 ? h('p', {
+            style: { color: palette.textDim, fontSize: '13px', textAlign: 'center', padding: '20px', lineHeight: '1.55' }
+          }, 'You don\'t have any decorations yet. Add some to your room first, then come back to build a story.') : h('div', {
+            style: { display: 'flex', flexWrap: 'wrap', gap: '8px' }
+          },
+            allDecs.map(function(d) {
+              var inUse = !!usedIds[d.id];
+              var dLabel = d.templateLabel || d.template || 'item';
+              return h('button', {
+                key: 'pk-' + d.id,
+                onClick: function() { setStepDecoration(pickerFor, d.id); },
+                'aria-label': dLabel + (inUse ? ' (already in this story)' : ''),
+                title: dLabel + (inUse ? ' (already used)' : ''),
+                style: {
+                  width: '72px', height: '72px', padding: 0,
+                  background: palette.bg,
+                  border: '1.5px solid ' + palette.border,
+                  borderRadius: '8px', cursor: 'pointer',
+                  overflow: 'hidden', position: 'relative',
+                  opacity: inUse ? 0.45 : 1, fontFamily: 'inherit'
+                }
+              },
+                d.imageBase64 ? h('img', {
+                  src: d.imageBase64, alt: '',
+                  style: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' }
+                }) : null,
+                inUse ? h('span', {
+                  'aria-hidden': 'true',
+                  style: {
+                    position: 'absolute', top: 0, right: 0,
+                    background: palette.textMute, color: palette.bg,
+                    fontSize: '9px', fontWeight: 700, padding: '1px 4px',
+                    borderRadius: '0 6px 0 6px'
+                  }
+                }, 'used') : null
+              );
+            })
+          )
+        )
+      );
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': p.story && p.story.title ? 'Edit story · ' + p.story.title : 'Build a new story',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onCancel();
+      },
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)', zIndex: 175,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '1px solid ' + palette.border,
+          borderRadius: '14px', padding: '24px',
+          maxWidth: '620px', width: '100%', maxHeight: '88vh',
+          overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+            '📜 ' + (p.story && p.story.title ? 'Edit story' : 'Build a story')),
+          h('button', {
+            onClick: p.onCancel, 'aria-label': 'Close story builder',
+            style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        h('p', {
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '12px', lineHeight: '1.5' }
+        }, 'Chain ≥3 decorations into a narrative. Each step links to the next: "the dragon → the fern → the lamp". The story walk becomes retrieval practice for whatever you wove into it.'),
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'Title'),
+        h('input', {
+          type: 'text', value: draft.title,
+          onChange: function(e) { setTitle(e.target.value); },
+          placeholder: 'e.g. "The water cycle journey"',
+          'aria-label': 'Story title',
+          style: {
+            width: '100%', padding: '8px 10px',
+            background: palette.surface, border: '1px solid ' + palette.border,
+            borderRadius: '8px', color: palette.text,
+            fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box',
+            marginBottom: '14px'
+          }
+        }),
+        h('div', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', fontWeight: 600 } },
+          'Steps · ' + draft.steps.length + (canWalk ? ' ✓ ready to walk' : ' (need ≥3 with narrative)')),
+        // Step list
+        draft.steps.length === 0 ? h('p', {
+          style: { fontSize: '12px', color: palette.textMute, fontStyle: 'italic', textAlign: 'center', padding: '20px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '8px', marginBottom: '10px' }
+        }, 'No steps yet. Click "+ Add step" below to pick a decoration and start your chain.') : h('div', {
+          style: { display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '10px' }
+        },
+          draft.steps.map(function(step, idx) {
+            var dec = findDecoration(step.decorationId);
+            return h('div', {
+              key: 'step-' + idx,
+              style: {
+                display: 'flex', gap: '10px', alignItems: 'flex-start',
+                padding: '10px', background: palette.surface,
+                border: '1px solid ' + palette.border, borderRadius: '8px'
+              }
+            },
+              // Step number + reorder buttons
+              h('div', { style: { flex: '0 0 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' } },
+                h('button', {
+                  onClick: function() { moveStep(idx, -1); },
+                  disabled: idx === 0,
+                  'aria-label': 'Move step ' + (idx + 1) + ' up',
+                  style: { background: 'transparent', border: 'none', color: idx === 0 ? palette.textMute : palette.textDim, cursor: idx === 0 ? 'default' : 'pointer', fontSize: '12px', padding: '2px', opacity: idx === 0 ? 0.4 : 1 }
+                }, '▲'),
+                h('span', { style: { fontSize: '14px', fontWeight: 800, color: palette.accent } }, idx + 1),
+                h('button', {
+                  onClick: function() { moveStep(idx, 1); },
+                  disabled: idx === draft.steps.length - 1,
+                  'aria-label': 'Move step ' + (idx + 1) + ' down',
+                  style: { background: 'transparent', border: 'none', color: idx === draft.steps.length - 1 ? palette.textMute : palette.textDim, cursor: idx === draft.steps.length - 1 ? 'default' : 'pointer', fontSize: '12px', padding: '2px', opacity: idx === draft.steps.length - 1 ? 0.4 : 1 }
+                }, '▼')
+              ),
+              // Decoration thumbnail
+              h('button', {
+                onClick: function() { setPickerFor(idx); },
+                'aria-label': dec ? 'Change decoration for step ' + (idx + 1) : 'Pick decoration for step ' + (idx + 1),
+                title: dec ? 'Click to change decoration' : 'Pick a decoration',
+                style: {
+                  width: '64px', height: '64px', flexShrink: 0,
+                  padding: 0, background: palette.bg,
+                  border: dec ? ('1.5px solid ' + palette.border) : ('1.5px dashed ' + palette.textMute),
+                  borderRadius: '8px', cursor: 'pointer', overflow: 'hidden',
+                  fontFamily: 'inherit'
+                }
+              },
+                dec && dec.imageBase64 ? h('img', {
+                  src: dec.imageBase64, alt: '',
+                  style: { width: '100%', height: '100%', objectFit: 'contain', display: 'block' }
+                }) : h('span', { style: { fontSize: '20px', color: palette.textMute } }, '+')
+              ),
+              // Narrative textarea + delete
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('textarea', {
+                  value: step.narrative || '',
+                  onChange: function(e) { setStepNarrative(idx, e.target.value); },
+                  placeholder: idx === 0
+                    ? 'How does the story start with this item?'
+                    : 'How does the previous item lead to this one?',
+                  'aria-label': 'Narrative for step ' + (idx + 1),
+                  rows: 2,
+                  style: {
+                    width: '100%', padding: '6px 8px',
+                    background: palette.bg, border: '1px solid ' + palette.border,
+                    borderRadius: '6px', color: palette.text, fontSize: '12px',
+                    fontFamily: 'inherit', boxSizing: 'border-box',
+                    resize: 'vertical', lineHeight: '1.45'
+                  }
+                }),
+                h('button', {
+                  onClick: function() { removeStep(idx); },
+                  style: { marginTop: '4px', background: 'transparent', border: 'none', color: palette.textMute, fontSize: '10px', cursor: 'pointer', padding: '2px 4px', textDecoration: 'underline' }
+                }, 'Remove step')
+              )
+            );
+          })
+        ),
+        h('button', {
+          onClick: function() { setPickerFor('append'); },
+          style: {
+            display: 'block', width: '100%', padding: '10px',
+            background: 'transparent', color: palette.accent,
+            border: '1px dashed ' + palette.accent, borderRadius: '8px',
+            fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+            fontFamily: 'inherit', marginBottom: '14px'
+          }
+        }, '+ Add step'),
+        // Save / cancel
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
+          h('button', {
+            onClick: function() {
+              if (window.confirm && !window.confirm('Delete this story? This can\'t be undone.')) return;
+              if (p.onDelete) p.onDelete();
+            },
+            style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🗑 Delete story'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', {
+              onClick: p.onCancel,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: handleSave,
+              disabled: !canSave,
+              style: {
+                background: canSave ? palette.accent : palette.surface,
+                color: canSave ? palette.onAccent : palette.textMute,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: canSave ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit', opacity: canSave ? 1 : 0.6
+              }
+            }, 'Save')
+          )
+        ),
+        renderPicker()
+      )
+    );
+  }
+
+  // Walk inner — full-screen-ish step-through viewer for a completed story.
+  // Esc / Close exits without recording. Reaching the final step + clicking
+  // "Finish walk" calls onFinish which writes lastReviewedAt + tokens.
+  function StoryWalkInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
+    var palette = p.palette;
+    var story = p.story;
+    var steps = (story.steps || []);
+    var allDecs = p.allDecorations || [];
+
+    var idxTuple = useState(0);
+    var idx = idxTuple[0];
+    var setIdx = idxTuple[1];
+
+    function findDecoration(id) {
+      return allDecs.filter(function(d) { return d.id === id; })[0] || null;
+    }
+    var step = steps[idx] || null;
+    var dec = step ? findDecoration(step.decorationId) : null;
+    var atEnd = idx >= steps.length - 1;
+
+    // Esc closes (without recording)
+    useEffect(function() {
+      var handler = function(e) {
+        if (e.key === 'Escape') p.onClose();
+        if (e.key === 'ArrowRight' && idx < steps.length - 1) setIdx(idx + 1);
+        if (e.key === 'ArrowLeft' && idx > 0) setIdx(idx - 1);
+      };
+      window.addEventListener('keydown', handler);
+      return function() { window.removeEventListener('keydown', handler); };
+    }, [idx]);
+
+    if (!step || !dec) {
+      return h('div', {
+        role: 'dialog',
+        style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', zIndex: 175, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }
+      },
+        h('div', { style: { background: palette.bg, padding: '28px', borderRadius: '14px', textAlign: 'center', maxWidth: '420px' } },
+          h('h3', { style: { color: palette.text, marginBottom: '10px' } }, 'Story can\'t be walked'),
+          h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55' } },
+            'A decoration in this story is missing — it may have been removed from the room. Edit the story to fix or replace it.'),
+          h('button', {
+            onClick: p.onClose,
+            style: { marginTop: '14px', background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }
+          }, 'Close')
+        )
+      );
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Walking story · ' + (story.title || 'untitled'),
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.85)', zIndex: 180,
+        display: 'flex', flexDirection: 'column',
+        padding: '24px 16px', boxSizing: 'border-box',
+        color: palette.text
+      }
+    },
+      // Header — title + close
+      h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', maxWidth: '720px', width: '100%', margin: '0 auto', marginBottom: '14px' } },
+        h('h3', { style: { margin: 0, fontSize: '17px', color: palette.text, fontWeight: 700 } },
+          '📜 ' + (story.title || 'Untitled story')),
+        h('button', {
+          onClick: p.onClose, 'aria-label': 'Close story walk',
+          style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }
+        }, '✕')
+      ),
+      // Decoration big
+      h('div', {
+        style: {
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          maxWidth: '720px', width: '100%', margin: '0 auto'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.surface,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '14px',
+            padding: '20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            maxWidth: '480px',
+            marginBottom: '20px'
+          }
+        },
+          dec.imageBase64 ? h('img', {
+            src: dec.imageBase64, alt: dec.templateLabel || dec.template || 'step ' + (idx + 1),
+            style: { maxWidth: '100%', maxHeight: '320px', objectFit: 'contain', borderRadius: '8px' }
+          }) : null
+        ),
+        h('div', {
+          style: {
+            fontSize: '11px', color: palette.textMute, marginBottom: '10px',
+            letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700
+          }
+        }, 'Step ' + (idx + 1) + ' of ' + steps.length),
+        h('p', {
+          style: {
+            fontSize: '17px', color: palette.text, lineHeight: '1.6',
+            textAlign: 'center', maxWidth: '560px', margin: '0 0 24px 0',
+            fontStyle: 'italic'
+          }
+        }, '"' + (step.narrative || '') + '"')
+      ),
+      // Footer — nav buttons
+      h('div', {
+        style: {
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          maxWidth: '720px', width: '100%', margin: '0 auto', gap: '10px'
+        }
+      },
+        h('button', {
+          onClick: function() { if (idx > 0) setIdx(idx - 1); },
+          disabled: idx === 0,
+          'aria-label': 'Previous step',
+          style: {
+            background: 'transparent', color: idx === 0 ? palette.textMute : palette.textDim,
+            border: '1px solid ' + palette.border, borderRadius: '8px',
+            padding: '10px 18px', fontSize: '13px', fontWeight: 600,
+            cursor: idx === 0 ? 'default' : 'pointer',
+            opacity: idx === 0 ? 0.4 : 1, fontFamily: 'inherit'
+          }
+        }, '◀ Previous'),
+        // Progress dots
+        h('div', { style: { display: 'flex', gap: '4px' } },
+          steps.map(function(_, i) {
+            return h('span', {
+              key: 'wd-' + i,
+              'aria-hidden': 'true',
+              style: {
+                width: i === idx ? '14px' : '6px',
+                height: '6px', borderRadius: '999px',
+                background: i <= idx ? palette.accent : palette.surface,
+                border: '1px solid ' + (i <= idx ? palette.accent : palette.border),
+                transition: 'width 200ms'
+              }
+            });
+          })
+        ),
+        atEnd ? h('button', {
+          onClick: function() { p.onFinish(); },
+          'aria-label': 'Finish story walk',
+          style: {
+            background: palette.accent, color: palette.onAccent,
+            border: 'none', borderRadius: '8px',
+            padding: '10px 22px', fontSize: '13px', fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit'
+          }
+        }, '✓ Finish walk') : h('button', {
+          onClick: function() { setIdx(idx + 1); },
+          'aria-label': 'Next step',
+          style: {
+            background: palette.accent, color: palette.onAccent,
+            border: 'none', borderRadius: '8px',
+            padding: '10px 22px', fontSize: '13px', fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit'
+          }
+        }, 'Next ▶')
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 7: REACT COMPONENT
   // ─────────────────────────────────────────────────────────
   // Receives callback-only props from App.jsx (matches Symbol Studio pattern).
@@ -1498,6 +4482,10 @@
     var useRef = React.useRef;
 
     var addToast = props.addToast || function(msg) { console.log('[AlloHaven]', msg); };
+    // Optional Gemini hook — used by the ✨ Polish button on voice-dictated
+    // reflections and (future) the reflection-insights sidebar. Routes
+    // through props so the host controls API quotas and rate limiting.
+    var callGemini = props.callGemini;
 
     // ── State plumbing ──
     // Single useState holding the whole state object. setStateField helper
@@ -1514,6 +4502,7 @@
       if (!Array.isArray(merged.decorations))    merged.decorations    = [];
       if (!Array.isArray(merged.journalEntries)) merged.journalEntries = [];
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
+      if (!Array.isArray(merged.stories))        merged.stories        = [];
       return merged;
     });
     var state = stateTuple[0];
@@ -1586,11 +4575,143 @@
           date: todayStr,
           pomodorosCompleted: 0,
           reflectionsSubmitted: 0,
-          promptsForToday: []
+          promptsForToday: [],
+          quizTokensEarnedToday: 0,
+          storyWalkTokensEarnedToday: 0,
+          // Pick 3 quests for the new day, deterministic by date so the
+          // student sees the same trio if they reload mid-day.
+          questIds: pickQuestsForDate(todayStr, 3),
+          questsClaimed: false
         });
+      } else if (!Array.isArray(state.dailyState.questIds) || state.dailyState.questIds.length === 0) {
+        // Backfill — first session after the quest system shipped won't
+        // have questIds yet; populate them without resetting the rest of
+        // the day's progress.
+        setStateField('dailyState', Object.assign({}, state.dailyState, {
+          questIds: pickQuestsForDate(todayStr, 3),
+          questsClaimed: false
+        }));
       }
       // eslint-disable-next-line
     }, [state.dailyState.date]);
+
+    // ── Reflection insights analysis ──
+    // Sends the last 14 journal entries' text to Gemini for summarization
+    // of mood themes + recurring topics + a 1-sentence reflection. Result
+    // is cached in state.insightsState so flipping between modals doesn't
+    // re-bill the call. Refresh button bypasses cache. Falls back to a
+    // local word-count + prompt-frequency view if Gemini errors or isn't
+    // wired (still useful: tells the student how much they've written).
+    function runInsightsAnalysis() {
+      var entries = (state.journalEntries || []).slice().sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      }).slice(0, 14);
+      if (entries.length === 0) return;
+      // Compute local stats first — these always work, no AI required.
+      var totalWords = 0;
+      var promptCounts = {};
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        var words = (e.text || '').trim().split(/\s+/).filter(Boolean).length;
+        totalWords += words;
+        var pid = e.prompt || '(free write)';
+        promptCounts[pid] = (promptCounts[pid] || 0) + 1;
+      }
+      // Most-frequent prompt id → its full text (for display).
+      var topPromptId = null, topPromptCount = 0;
+      Object.keys(promptCounts).forEach(function(id) {
+        if (promptCounts[id] > topPromptCount) { topPromptId = id; topPromptCount = promptCounts[id]; }
+      });
+      var topPromptText = (PROMPT_BANK.find(function(p) { return p.id === topPromptId; }) || {}).text || topPromptId;
+      var localStats = {
+        entriesAnalyzed: entries.length,
+        wordCount: totalWords,
+        topPromptText: topPromptText,
+        topPromptCount: topPromptCount,
+        firstEntryDate: entries[entries.length - 1].date,
+        lastEntryDate: entries[0].date
+      };
+      if (typeof callGemini !== 'function') {
+        // No AI — show local stats only, no narrative summary.
+        setStateField('insightsState', {
+          loading: false,
+          summary: Object.assign({}, localStats, { moodSummary: null, themes: [] }),
+          error: null,
+          generatedAt: new Date().toISOString()
+        });
+        return;
+      }
+      setStateField('insightsState', { loading: true, summary: null, error: null, generatedAt: null });
+      // Build the prompt. Send entries newest-first so the model weights
+      // recency. Each entry: date + prompt + text. Cap each entry at 600
+      // chars to keep total prompt size manageable.
+      var entriesPayload = entries.map(function(e) {
+        var d = (e.date || '').slice(0, 10);
+        var promptText = e.prompt ? (PROMPT_BANK.find(function(p) { return p.id === e.prompt; }) || {}).text || '' : '';
+        var text = (e.text || '').slice(0, 600);
+        return '— ' + d + (promptText ? ' (' + promptText + ')' : '') + ': ' + text;
+      }).join('\n');
+      var insightsPrompt =
+        'You are reading a student\'s journal entries from the last 2 weeks (newest first). ' +
+        'Summarize gently and respectfully — this is private reflection, not data to evaluate. ' +
+        'Return STRICT JSON with these fields:\n' +
+        '  "moodSummary": one short sentence describing the overall emotional tone (e.g. "Mostly hopeful with a hard week mid-period"). Use first-person where natural ("you sound..."). NEVER diagnose.\n' +
+        '  "themes": array of 3-6 short noun phrases capturing recurring topics (e.g. "school pressure", "best friend", "sleep").\n' +
+        '  "encouragement": one short sentence of warm, non-prescriptive encouragement specific to what you read.\n' +
+        'Do NOT include any other fields. Do NOT add markdown fencing. Do NOT speculate beyond the text. If the entries are too short or sparse to summarize, return moodSummary as "Not enough yet" and themes:[].\n\n' +
+        'Entries:\n' + entriesPayload;
+      Promise.resolve()
+        .then(function() { return callGemini(insightsPrompt); })
+        .then(function(out) {
+          var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip code fences if Gemini wrapped them.
+          raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+          var parsed = null;
+          try { parsed = JSON.parse(raw); } catch (e) { /* fall through */ }
+          if (!parsed) throw new Error('Could not parse insights response');
+          setStateField('insightsState', {
+            loading: false,
+            summary: Object.assign({}, localStats, {
+              moodSummary: typeof parsed.moodSummary === 'string' ? parsed.moodSummary : null,
+              themes: Array.isArray(parsed.themes) ? parsed.themes.slice(0, 6) : [],
+              encouragement: typeof parsed.encouragement === 'string' ? parsed.encouragement : null
+            }),
+            error: null,
+            generatedAt: new Date().toISOString()
+          });
+        })
+        .catch(function(err) {
+          // Show local stats + error message — partial value beats nothing.
+          setStateField('insightsState', {
+            loading: false,
+            summary: Object.assign({}, localStats, { moodSummary: null, themes: [] }),
+            error: 'AI summary unavailable. Local stats shown below.',
+            generatedAt: new Date().toISOString()
+          });
+        });
+    }
+
+    // ── Quest claim ──
+    // Triggered when the user clicks the trifecta-claim button. Verifies
+    // all 3 quests are actually complete before granting the bonus, and
+    // marks dailyState.questsClaimed so it can't be claimed twice.
+    function claimQuestTrifecta() {
+      var ds = state.dailyState;
+      if (!ds || ds.questsClaimed) return;
+      var quests = (ds.questIds || []).map(function(id) {
+        return QUEST_POOL.find(function(q) { return q.id === id; });
+      }).filter(Boolean);
+      if (quests.length < 3) return;
+      var allDone = quests.every(function(q) { return q.check(ds, state); });
+      if (!allDone) return;
+      var bonus = 5;
+      setStateMulti({
+        tokens: state.tokens + bonus,
+        dailyState: Object.assign({}, ds, { questsClaimed: true }),
+        earnings: state.earnings.concat([{ source: 'quest-trifecta', tokens: bonus, date: new Date().toISOString() }])
+      });
+      addToast('🎉 Daily trifecta! +' + bonus + ' bonus tokens', 'success');
+    }
 
     // ── Esc to close ──
     useEffect(function() {
@@ -1891,6 +5012,345 @@
       setIsRecording(false);
     }
 
+    // ── Memory palace handlers ──
+    // Open the memory modal scoped to a specific decoration. The
+    // generateContext field doubles as the carrier (already used for
+    // empty-cell + delete confirmations); decorationId tells the modal
+    // which decoration's linkedContent to read/write.
+    // Optional autoStartQuiz=true jumps directly to the quiz tab — used
+    // by the Memory overview modal's "Review" buttons for one-click
+    // study sessions.
+    function openMemoryModal(decorationId, autoStartQuiz) {
+      setStateMulti({
+        activeModal: 'memory',
+        generateContext: { decorationId: decorationId, autoStartQuiz: !!autoStartQuiz }
+      });
+    }
+
+    // Save memory content (linkedContent) onto a decoration. Awards a
+    // first-time token if the decoration didn't already have content.
+    function saveMemoryContent(decorationId, contentObj) {
+      var decoration = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!decoration) return;
+      var hadContentBefore = !!decoration.linkedContent;
+      var nowIso = new Date().toISOString();
+      var newContent = Object.assign({}, decoration.linkedContent || {}, contentObj, {
+        updatedAt: nowIso,
+        createdAt: (decoration.linkedContent && decoration.linkedContent.createdAt) || nowIso
+      });
+      // Default review fields when first added
+      if (!hadContentBefore) {
+        newContent.lastReviewedAt = null;
+        newContent.reviewCount = 0;
+        newContent.bestQuizScore = 0;
+      }
+      var newDecorations = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { linkedContent: newContent });
+      });
+      var updates = { decorations: newDecorations };
+      if (!hadContentBefore) {
+        updates.tokens = state.tokens + 1;
+        updates.earnings = state.earnings.concat([{
+          source: 'memory-content-added',
+          tokens: 1,
+          date: nowIso,
+          metadata: { decorationId: decorationId, type: contentObj.type }
+        }]);
+        setTimeout(function() {
+          addToast('🪙 +1 token. Your decoration now holds a study aid.');
+        }, 50);
+      }
+      setStateMulti(updates);
+    }
+
+    // Remove memory content from a decoration entirely. Token NOT refunded
+    // (matches add-and-delete logic from existing decoration deletion).
+    function removeMemoryContent(decorationId) {
+      var newDecorations = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { linkedContent: null });
+      });
+      setStateField('decorations', newDecorations);
+      addToast('Memory content removed.');
+    }
+
+    // Award token for a quiz session if score ≥80% AND daily cap not hit.
+    // Updates lastReviewedAt + reviewCount + bestQuizScore on the linkedContent.
+    function recordQuizSession(decorationId, scorePct) {
+      var decoration = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!decoration || !decoration.linkedContent) return;
+      var nowIso = new Date().toISOString();
+      var capHit = (state.dailyState.quizTokensEarnedToday || 0) >= 2;
+      var qualifies = scorePct >= 80;
+      var earned = (qualifies && !capHit) ? 1 : 0;
+
+      var newContent = Object.assign({}, decoration.linkedContent, {
+        lastReviewedAt: nowIso,
+        reviewCount: (decoration.linkedContent.reviewCount || 0) + 1,
+        bestQuizScore: Math.max(decoration.linkedContent.bestQuizScore || 0, scorePct)
+      });
+      var newDecorations = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { linkedContent: newContent });
+      });
+
+      var updates = { decorations: newDecorations };
+      if (earned > 0) {
+        updates.tokens = state.tokens + earned;
+        updates.earnings = state.earnings.concat([{
+          source: 'memory-quiz',
+          tokens: earned,
+          date: nowIso,
+          metadata: { decorationId: decorationId, scorePct: scorePct }
+        }]);
+        updates.dailyState = Object.assign({}, state.dailyState, {
+          quizTokensEarnedToday: (state.dailyState.quizTokensEarnedToday || 0) + earned
+        });
+        setTimeout(function() {
+          addToast('🪙 +1 token. ' + Math.round(scorePct) + '% on review.');
+        }, 50);
+      } else if (qualifies && capHit) {
+        setTimeout(function() {
+          addToast(Math.round(scorePct) + '% — great work! (Daily quiz tokens already earned.)');
+        }, 50);
+      } else {
+        setTimeout(function() {
+          addToast(Math.round(scorePct) + '%. No tokens this round; review again whenever you want.');
+        }, 50);
+      }
+      setStateMulti(updates);
+    }
+
+    // ── Reflection cloze quiz (Phase 2i) ──
+    // Awards a token (capped 1/day, shared with the memory-quiz cap) when
+    // a student scores ≥80% quizzing themselves on cloze blanks in their
+    // own journal entry. Active recall on your own writing is a strong
+    // memory move and gentle metacognitive prompt.
+    function recordReflectionQuiz(entryId, scorePct) {
+      var nowIso = new Date().toISOString();
+      var capHit = (state.dailyState.quizTokensEarnedToday || 0) >= 2;
+      var qualifies = scorePct >= 80;
+      var earned = (qualifies && !capHit) ? 1 : 0;
+
+      var updates = {};
+      if (earned > 0) {
+        updates.tokens = state.tokens + earned;
+        updates.earnings = state.earnings.concat([{
+          source: 'reflection-cloze-quiz',
+          tokens: earned,
+          date: nowIso,
+          metadata: { entryId: entryId, scorePct: scorePct }
+        }]);
+        updates.dailyState = Object.assign({}, state.dailyState, {
+          quizTokensEarnedToday: (state.dailyState.quizTokensEarnedToday || 0) + earned
+        });
+        setTimeout(function() {
+          addToast('🪙 +1 token. ' + Math.round(scorePct) + '% on your own words.');
+        }, 50);
+        setStateMulti(updates);
+      } else if (qualifies && capHit) {
+        addToast(Math.round(scorePct) + '% — daily quiz tokens already earned.');
+      } else {
+        addToast(Math.round(scorePct) + '% on cloze recall.');
+      }
+    }
+
+    // ── Story method (Phase 2e) ──
+    // Stories are top-level artifacts: an ordered chain of ≥3 decorations
+    // with per-step narrative text. Walking a completed story is retrieval
+    // practice — the spatial mnemonic of the room compounds with the
+    // narrative chaining technique. Tokens: +1 one-time on first save of
+    // a ≥3-step story; +1 per walk completion (capped 1/day total across
+    // all stories — gentle, anti-grind).
+
+    function createStory() {
+      var newStory = {
+        id: 'story-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        title: '',
+        steps: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastReviewedAt: null,
+        reviewCount: 0,
+        firstSaveAwarded: false
+      };
+      setStateMulti({
+        stories: state.stories.concat([newStory]),
+        activeModal: 'story-builder',
+        generateContext: { storyId: newStory.id }
+      });
+    }
+
+    function updateStory(storyId, updates) {
+      // updates is { title?, steps? } — patch shape onto existing story.
+      // First-save token: when a story crosses ≥3 valid steps for the
+      // first time AND has a title, award +1.
+      var current = state.stories.filter(function(s) { return s.id === storyId; })[0];
+      if (!current) return;
+      var nowIso = new Date().toISOString();
+      var nextStory = Object.assign({}, current, updates, { updatedAt: nowIso });
+      var validSteps = (nextStory.steps || []).filter(function(st) {
+        return st.decorationId && (st.narrative || '').trim().length > 0;
+      });
+      var qualifies = validSteps.length >= 3 && (nextStory.title || '').trim().length > 0;
+      var awarded = false;
+      if (qualifies && !current.firstSaveAwarded) {
+        nextStory.firstSaveAwarded = true;
+        awarded = true;
+      }
+      var newStories = state.stories.map(function(s) {
+        return s.id === storyId ? nextStory : s;
+      });
+      var stateUpdates = { stories: newStories };
+      if (awarded) {
+        stateUpdates.tokens = state.tokens + 1;
+        stateUpdates.earnings = state.earnings.concat([{
+          source: 'story-created',
+          tokens: 1,
+          date: nowIso,
+          metadata: { storyId: storyId, stepCount: validSteps.length }
+        }]);
+        setTimeout(function() {
+          addToast('🪙 +1 token. Your story is ready to walk through.');
+        }, 50);
+      }
+      setStateMulti(stateUpdates);
+    }
+
+    function deleteStory(storyId) {
+      setStateField('stories', state.stories.filter(function(s) { return s.id !== storyId; }));
+      addToast('Story removed.');
+    }
+
+    // Award a token for completing a story walk (≥3 steps, walked through
+    // every step). Capped at 1/day across all stories.
+    function recordStoryWalk(storyId) {
+      var story = state.stories.filter(function(s) { return s.id === storyId; })[0];
+      if (!story) return;
+      var nowIso = new Date().toISOString();
+      var capHit = (state.dailyState.storyWalkTokensEarnedToday || 0) >= 1;
+      var earned = capHit ? 0 : 1;
+
+      var nextStory = Object.assign({}, story, {
+        lastReviewedAt: nowIso,
+        reviewCount: (story.reviewCount || 0) + 1
+      });
+      var newStories = state.stories.map(function(s) {
+        return s.id === storyId ? nextStory : s;
+      });
+      var updates = { stories: newStories };
+      if (earned > 0) {
+        updates.tokens = state.tokens + earned;
+        updates.earnings = state.earnings.concat([{
+          source: 'story-walk',
+          tokens: earned,
+          date: nowIso,
+          metadata: { storyId: storyId, stepCount: (story.steps || []).length }
+        }]);
+        updates.dailyState = Object.assign({}, state.dailyState, {
+          storyWalkTokensEarnedToday: (state.dailyState.storyWalkTokensEarnedToday || 0) + earned
+        });
+        setTimeout(function() {
+          addToast('🪙 +1 token. Story walked. Memory compounds.');
+        }, 50);
+      } else {
+        setTimeout(function() {
+          addToast('Walk recorded. (Daily story token already earned today — that\'s fine.)');
+        }, 50);
+      }
+      setStateMulti(updates);
+    }
+
+    // Helper: is a decoration's memory content "due for review"?
+    // Adaptive thresholds based on bestQuizScore — struggling decks
+    // resurface faster than mastered ones. (Lightweight Leitner-inspired:
+    // Anki uses an exponential ease curve; v2c uses 3 buckets for
+    // simplicity. v2d could refine.)
+    //
+    //   Score < 60%  →  due after 2 days  (still wobbly, drill it)
+    //   Score 60-89% →  due after 5 days  (default)
+    //   Score ≥ 90%  →  due after 10 days (locked in, low priority)
+    //
+    //   Never reviewed → always due (encourages first-pass review)
+    //   No quiz primitive (notes without cloze) → never auto-due
+    function isMemoryDue(decoration) {
+      var lc = decoration.linkedContent;
+      if (!lc) return false;
+      // Notes with no cloze markers can't be quizzed → don't auto-mark due
+      if (lc.type === 'notes' && !hasClozeMarkers(lc)) return false;
+      if (!lc.lastReviewedAt) return true;
+      var lastMs = new Date(lc.lastReviewedAt).getTime();
+      var ageMs = Date.now() - lastMs;
+      var bestScore = lc.bestQuizScore || 0;
+      var thresholdDays;
+      if (bestScore < 60)      thresholdDays = 2;
+      else if (bestScore < 90) thresholdDays = 5;
+      else                     thresholdDays = 10;
+      return ageMs >= thresholdDays * 24 * 60 * 60 * 1000;
+    }
+
+    // ── Decoration deletion handler ──
+    // Per concept doc: token NOT refunded on delete (prevents grinding
+    // by add-and-delete). Confirmation modal prevents accidents.
+    function deleteDecoration(decorationId) {
+      var newDecorations = state.decorations.filter(function(d) { return d.id !== decorationId; });
+      setStateMulti({
+        decorations: newDecorations,
+        activeModal: null,
+        generateContext: null
+      });
+      addToast('Decoration removed.');
+    }
+
+    // ── Room expansion ──
+    // When 90% of the current room slots are filled, advancing to the
+    // next milestone unlocks 1 wall row + 1 floor row + 5 token bonus.
+    // Triggered by useEffect watching decorations.length so it fires
+    // exactly when the threshold is crossed.
+    var roomExpandedRef = useRef(false);
+    useEffect(function() {
+      var room = state.rooms[0];
+      if (!room) return;
+      var totalSlots = room.wallSlots + room.floorSlots;
+      var placedCount = state.decorations.length;
+      var thresholdHit = placedCount >= Math.floor(totalSlots * 0.9);
+      // Cap expansion at 50 total slots (concept-doc decision; v2+ adds new rooms)
+      if (!thresholdHit) {
+        roomExpandedRef.current = false;
+        return;
+      }
+      if (totalSlots >= 50) return;
+      if (roomExpandedRef.current) return;
+      roomExpandedRef.current = true;
+
+      // Add 1 wall row (4 slots) + 1 floor row (6 slots) = 10 new slots
+      var expandedRoom = Object.assign({}, room, {
+        wallSlots: room.wallSlots + 4,
+        floorSlots: room.floorSlots + 6
+      });
+      var newRooms = state.rooms.slice();
+      newRooms[0] = expandedRoom;
+
+      var bonus = 5;
+      var earningsEntry = {
+        source: 'milestone',
+        tokens: bonus,
+        date: new Date().toISOString(),
+        metadata: { milestone: 'room-expansion', newSize: expandedRoom.wallSlots + expandedRoom.floorSlots }
+      };
+
+      setStateMulti({
+        rooms: newRooms,
+        tokens: state.tokens + bonus,
+        earnings: state.earnings.concat([earningsEntry])
+      });
+      setTimeout(function() {
+        addToast('🌱 Your room is growing! +' + bonus + ' bonus tokens. Two new rows unlocked.');
+      }, 50);
+      // eslint-disable-next-line
+    }, [state.decorations.length, state.rooms]);
+
     // ── Decoration generation handlers ──
     var DECORATION_COST = 3;
 
@@ -2064,10 +5524,16 @@
         }
       },
         renderHeader(palette, state.tokens, props.onClose),
-        // Wall surface
+        renderQuestPanel(),
+        // Compute responsive row count based on slot count + columns
+        // Wall stays 4 cols (2 cols on narrow); floor stays 6 cols (3 cols on narrow)
+        // Grid auto-rows handles overflow; we don't pin a row count
+        // anymore so expansion past 8/12 slots renders correctly.
+        // Wall surface (with warm-light overlay)
         h('div', {
           role: 'region',
           'aria-label': 'Wall — ' + wallCount + ' of ' + room.wallSlots + ' slots filled',
+          className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             position: 'relative',
             padding: '14px',
@@ -2080,18 +5546,20 @@
           }
         },
           h('div', {
+            className: 'ah-wall-grid',
             style: {
               display: 'grid',
               gridTemplateColumns: 'repeat(4, 1fr)',
-              gridTemplateRows: 'repeat(2, 80px)',
+              gridAutoRows: '80px',
               gap: '12px'
             }
           }, wallCells)
         ),
-        // Floor surface
+        // Floor surface (with warm-light overlay)
         h('div', {
           role: 'region',
           'aria-label': 'Floor — ' + floorCount + ' of ' + room.floorSlots + ' slots filled',
+          className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             padding: '14px',
             background: palette.floor,
@@ -2102,10 +5570,11 @@
           }
         },
           h('div', {
+            className: 'ah-floor-grid',
             style: {
               display: 'grid',
               gridTemplateColumns: 'repeat(6, 1fr)',
-              gridTemplateRows: 'repeat(2, 90px)',
+              gridAutoRows: '90px',
               gap: '10px'
             }
           }, floorCells)
@@ -2134,6 +5603,48 @@
             onClick: function() { setStateField('activeModal', 'journal'); },
             style: secondaryBtnStyle(palette)
           }, '📓 Journal' + (state.journalEntries.length > 0 ? ' · ' + state.journalEntries.length : '')),
+          (function() {
+            var deckCount = state.decorations.filter(function(d) { return !!d.linkedContent; }).length;
+            var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
+            var labelText = '📖 Memory' + (deckCount > 0 ? ' · ' + deckCount : '');
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'memory-overview'); },
+              'aria-label': 'Memory palace overview' + (deckCount > 0 ? ', ' + deckCount + ' decks' : '') + (dueCount > 0 ? ', ' + dueCount + ' due' : ''),
+              style: Object.assign({}, secondaryBtnStyle(palette),
+                dueCount > 0 ? {
+                  borderColor: palette.warn || palette.accent,
+                  color: palette.warn || palette.accent
+                } : {})
+            },
+              labelText,
+              dueCount > 0 ? h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  marginLeft: '6px',
+                  padding: '0 6px',
+                  borderRadius: '999px',
+                  background: palette.warn || palette.accent,
+                  color: palette.onAccent || '#000',
+                  fontSize: '10px',
+                  fontWeight: 800
+                }
+              }, dueCount + ' due') : null
+            );
+          })(),
+          (function() {
+            var storyCount = (state.stories || []).length;
+            var validStoryCount = (state.stories || []).filter(function(s) {
+              var validSteps = (s.steps || []).filter(function(st) {
+                return st.decorationId && (st.narrative || '').trim().length > 0;
+              });
+              return validSteps.length >= 3 && (s.title || '').trim().length > 0;
+            }).length;
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'stories'); },
+              'aria-label': 'Stories' + (storyCount > 0 ? ', ' + storyCount + ' total' + (validStoryCount > 0 ? ', ' + validStoryCount + ' walkable' : '') : ''),
+              style: secondaryBtnStyle(palette)
+            }, '📜 Stories' + (storyCount > 0 ? ' · ' + storyCount : ''));
+          })(),
           h('button', {
             onClick: function() { setStateField('activeModal', 'settings'); },
             style: secondaryBtnStyle(palette)
@@ -2161,13 +5672,56 @@
     function renderCell(index, surface, decoration, palette) {
       if (decoration) {
         var rot = decoration.rotation || 0;
+        var label = decoration.templateLabel || decoration.template || 'item';
+        var hasMemoryContent = !!decoration.linkedContent;
+        var memoryDue = isMemoryDue(decoration);
+        var memoryDueSoon = !memoryDue && isMemoryDueSoon(decoration);
+        var memoryDescription = '';
+        if (hasMemoryContent) {
+          var lc = decoration.linkedContent;
+          if (lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+            memoryDescription = 'flashcards · ' + lc.data.cards.length + ' card' + (lc.data.cards.length === 1 ? '' : 's');
+          } else if (lc.type === 'acronym') {
+            memoryDescription = 'acronym · ' + ((lc.data && lc.data.letters) || '');
+          } else if (lc.type === 'notes') {
+            var t = (lc.data && lc.data.text) || '';
+            var cn = extractClozeAnswers(t).length;
+            memoryDescription = cn > 0 ? ('notes · ' + cn + ' blank' + (cn === 1 ? '' : 's')) : 'notes';
+          } else if (lc.type === 'image-link') {
+            var tgtId = (lc.data && lc.data.targetDecorationId) || null;
+            var tgtDec = tgtId ? state.decorations.filter(function(d) { return d.id === tgtId; })[0] : null;
+            var tgtLabel = tgtDec ? (tgtDec.templateLabel || tgtDec.template || 'item') : 'removed item';
+            memoryDescription = 'image link → ' + tgtLabel;
+          } else {
+            memoryDescription = 'memory content';
+          }
+        }
+        var hoverTitle = decoration.studentReflection
+          ? '"' + decoration.studentReflection + '" · ' + label
+          : label;
+        if (hasMemoryContent) hoverTitle += ' · ' + memoryDescription
+          + (memoryDue ? ' (due for review)' : (memoryDueSoon ? ' (due soon)' : ''));
         return h('div', {
           key: surface + '-cell-' + index,
           role: 'button',
           tabIndex: 0,
-          'aria-label': 'Decoration: ' + (decoration.template || 'item'),
+          'aria-label': 'Decoration: ' + label
+            + (decoration.studentReflection ? ' (with reflection)' : '')
+            + (hasMemoryContent
+                ? ' (with ' + memoryDescription
+                  + (memoryDue ? ', due for review' : (memoryDueSoon ? ', due soon' : ''))
+                  + ')'
+                : '')
+            + ' — click to add or review memory content',
           className: 'ah-decoration',
-          title: decoration.studentReflection || decoration.template,
+          title: hoverTitle,
+          onClick: function() { openMemoryModal(decoration.id); },
+          onKeyDown: function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openMemoryModal(decoration.id);
+            }
+          },
           style: {
             background: palette.surface,
             border: '1px solid ' + palette.border,
@@ -2178,12 +5732,22 @@
             justifyContent: 'center',
             position: 'relative',
             transform: 'rotate(' + rot + 'deg)',
+            cursor: 'pointer',
             boxShadow: surface === 'floor' ? '0 3px 8px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.2)'
           }
         },
           decoration.imageBase64 ? h('img', {
             src: decoration.imageBase64,
-            alt: decoration.template || 'decoration',
+            alt: label,
+            // Image-error fallback: if base64 fails to render (corrupted /
+            // truncated by storage limits), swap to a visible placeholder
+            // so the cell isn't broken-icon-empty.
+            onError: function(e) {
+              try {
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement.setAttribute('data-img-failed', '1');
+              } catch (err) { /* ignore */ }
+            },
             style: { width: '100%', height: '100%', objectFit: 'contain' }
           }) : h('span', { style: { fontSize: '24px', color: palette.textMute } }, '?'),
           decoration.isStarter ? h('span', {
@@ -2199,7 +5763,68 @@
               borderRadius: '3px',
               letterSpacing: '0.04em'
             }
-          }, 'starter') : null
+          }, 'starter') : null,
+          // Memory-content indicator — small 📖 in bottom-left (away
+          // from the starter badge which lives bottom-right). Three
+          // visual tiers:
+          //   recently reviewed: dim, dark background (just visible)
+          //   due soon (1-2d):   warm orange (gentle "hey, soon")
+          //   due now:           bright yellow + pulse halo (fading
+          //                      knowledge needs attention)
+          hasMemoryContent ? h('span', {
+            'aria-hidden': 'true',
+            className: 'ah-memory-indicator' + (memoryDue ? ' ah-memory-due' : ''),
+            style: {
+              position: 'absolute',
+              bottom: '2px',
+              left: '4px',
+              fontSize: '11px',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              background: memoryDue
+                ? 'rgba(255,220,140,0.9)'
+                : memoryDueSoon
+                  ? 'rgba(255,170,80,0.85)'
+                  : 'rgba(0,0,0,0.45)',
+              color: (memoryDue || memoryDueSoon) ? '#1a1108' : '#fff',
+              opacity: memoryDue ? 1 : (memoryDueSoon ? 0.95 : 0.7),
+              lineHeight: 1
+            }
+          }, '📖') : null,
+          // Hover-revealed ✕ delete button (top-right corner). Suppressed
+          // on the starter decoration — students shouldn't accidentally
+          // delete the welcome gift; v2+ could allow it via Settings.
+          !decoration.isStarter ? h('button', {
+            onClick: function(e) {
+              e.stopPropagation();
+              setStateMulti({ activeModal: 'delete-decoration', generateContext: { decorationId: decoration.id } });
+            },
+            'aria-label': 'Delete this ' + label,
+            className: 'ah-decoration-delete',
+            title: 'Remove this decoration',
+            style: {
+              position: 'absolute',
+              top: '4px',
+              right: '4px',
+              width: '22px',
+              height: '22px',
+              padding: 0,
+              borderRadius: '50%',
+              background: 'rgba(0,0,0,0.65)',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.3)',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              opacity: 0,
+              transition: 'opacity 140ms ease',
+              fontFamily: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              lineHeight: 1
+            }
+          }, '✕') : null
         );
       }
       return h('div', {
@@ -2287,6 +5912,87 @@
       );
     }
 
+    // ── Daily-quests panel ──
+    // A compact 3-pill row showing today's randomly-picked quests with
+    // green checkmarks when complete. When all 3 are complete, a single
+    // "Claim trifecta · +5 🪙" button appears. Skipped after claim, and
+    // skipped quietly if questIds isn't populated yet (first session,
+    // backfill happens in the daily-rollover effect).
+    function renderQuestPanel() {
+      var ds = state.dailyState || {};
+      var ids = Array.isArray(ds.questIds) ? ds.questIds : [];
+      if (ids.length === 0) return null;
+      var quests = ids.map(function(id) {
+        return QUEST_POOL.find(function(q) { return q.id === id; });
+      }).filter(Boolean);
+      if (quests.length === 0) return null;
+      var completedCount = 0;
+      var questViews = quests.map(function(q) {
+        var done = q.check(ds, state);
+        if (done) completedCount++;
+        return h('div', {
+          key: q.id,
+          'aria-label': q.label + (done ? ' (complete)' : ' (in progress)'),
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '5px 10px',
+            background: done ? (palette.successSoft || palette.surface) : palette.surface,
+            border: '1px solid ' + (done ? palette.success : palette.border),
+            borderRadius: '999px',
+            fontSize: '12px',
+            color: done ? palette.success : palette.textDim,
+            fontWeight: 600,
+            opacity: done ? 1 : 0.85
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '13px' } }, done ? '✓' : (q.icon || '○')),
+          h('span', null, q.label)
+        );
+      });
+      var allDone = completedCount === quests.length;
+      var canClaim = allDone && !ds.questsClaimed;
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Today\'s gentle quests — optional bonus',
+        style: {
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 10px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '10px',
+          marginTop: '8px',
+          marginBottom: '8px'
+        }
+      },
+        h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase', marginRight: '4px' } },
+          'Today · ' + completedCount + '/' + quests.length),
+        questViews,
+        canClaim ? h('button', {
+          onClick: claimQuestTrifecta,
+          'aria-label': 'Claim daily trifecta bonus of 5 tokens',
+          style: {
+            marginLeft: 'auto',
+            padding: '6px 14px',
+            background: palette.accent,
+            color: palette.onAccent || '#fff',
+            border: 'none',
+            borderRadius: '999px',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, '🎉 Claim +5 🪙') : (ds.questsClaimed ? h('span', {
+          style: { marginLeft: 'auto', fontSize: '11px', color: palette.success, fontWeight: 700 }
+        }, '✓ Trifecta claimed') : null)
+      );
+    }
+
     // Welcome card — first-ever-visit only
     function renderWelcomeCard() {
       if (state.onboardingSeen) return null;
@@ -2324,7 +6030,7 @@
         }, 'Welcome to your AlloHaven'),
         h('p', { style: { margin: '0 0 12px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
           'This is your space. The plant is a starter gift.'),
-        h('p', { style: { margin: '0 0 20px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
+        h('p', { style: { margin: '0 0 12px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
           'Earn ',
           h('strong', { style: { color: palette.accent } }, '🪙 tokens'),
           ' by ',
@@ -2332,6 +6038,13 @@
           ' with the Pomodoro timer or ',
           h('strong', null, 'writing'),
           ' a reflection. Spend tokens on decorations to make the room yours.'
+        ),
+        h('p', {
+          style: { margin: '0 0 20px 0', fontSize: '13px', color: palette.textDim, lineHeight: '1.55', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
+        },
+          h('strong', null, '📖 New: '),
+          'Click any decoration to attach study aids — flashcards, acronyms, or notes. Where you place a decoration in your room becomes a spatial anchor for what you\'re learning. ',
+          h('em', null, 'method of loci, since 477 BC.')
         ),
         h('div', { style: { textAlign: 'center' } },
           h('button', {
@@ -2502,6 +6215,713 @@
     }
 
     // ─────────────────────────────────────────────────
+    // MEMORY OVERVIEW — list all decorations with linkedContent.
+    // Sorted due-first (lastReviewedAt > 5 days OR never reviewed),
+    // then by last-reviewed desc within each section. Click a row to
+    // open that decoration's memory modal at the view tab; click the
+    // Review button to jump straight into its quiz. Replaces the
+    // "click each decoration to remember what's where" UX gap.
+    // ─────────────────────────────────────────────────
+    function renderMemoryOverviewModal() {
+      if (state.activeModal !== 'memory-overview') return null;
+      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      // Partition into 3 buckets: due / due-soon / fresh
+      var due = [];
+      var dueSoon = [];
+      var fresh = [];
+      withContent.forEach(function(d) {
+        if (isMemoryDue(d))          due.push(d);
+        else if (isMemoryDueSoon(d)) dueSoon.push(d);
+        else                          fresh.push(d);
+      });
+      var byLastReviewedDesc = function(a, b) {
+        var aIso = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
+        var bIso = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
+        return bIso.localeCompare(aIso);
+      };
+      due.sort(byLastReviewedDesc);
+      dueSoon.sort(byLastReviewedDesc);
+      fresh.sort(byLastReviewedDesc);
+
+      // Stats
+      var totalDecks = withContent.length;
+      var totalCards = withContent.reduce(function(sum, d) {
+        var lc = d.linkedContent;
+        if (lc && lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+          return sum + lc.data.cards.length;
+        }
+        return sum;
+      }, 0);
+      var weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+      var reviewedThisWeek = withContent.filter(function(d) {
+        var lc = d.linkedContent;
+        if (!lc || !lc.lastReviewedAt) return false;
+        return new Date(lc.lastReviewedAt).getTime() >= weekAgoMs;
+      }).length;
+      var pctWeek = totalDecks > 0 ? Math.round((reviewedThisWeek / totalDecks) * 100) : 0;
+
+      // Stories partition (Phase 2g)
+      var allStories = state.stories || [];
+      var walkableStories = allStories.filter(function(s) {
+        var validSteps = (s.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        return validSteps.length >= 3 && (s.title || '').trim().length > 0;
+      });
+      var draftStories = allStories.filter(function(s) {
+        return walkableStories.indexOf(s) === -1;
+      });
+      // Sort walkable stories: never-walked first (encourage first walk),
+      // then oldest-walked first (rotation surfaces stale stories)
+      walkableStories.sort(function(a, b) {
+        var aR = a.lastReviewedAt || '';
+        var bR = b.lastReviewedAt || '';
+        if (!aR && bR) return -1;
+        if (aR && !bR) return 1;
+        return aR.localeCompare(bR); // oldest first
+      });
+      draftStories.sort(function(a, b) {
+        return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+      });
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Memory palace overview',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 175,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', {
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px', flexWrap: 'wrap' }
+          },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              (totalDecks > 0 || allStories.length > 0) ? h('button', {
+                onClick: function() {
+                  // Print delay so React paints the print packet before
+                  // the dialog grabs DOM. Browsers debounce print() but
+                  // a tiny rAF-style timeout is safer for slow tabs.
+                  setTimeout(function() {
+                    try { window.print(); }
+                    catch (err) { addToast('Print not available in this browser.'); }
+                  }, 60);
+                },
+                'aria-label': 'Print study packet',
+                title: 'Open print dialog with a study packet of all decks, stories, and content',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '🖨 Print packet') : null,
+              h('button', {
+                onClick: function() { setStateField('activeModal', null); },
+                'aria-label': 'Close memory overview',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            )
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
+          }, 'Each decoration in your room can hold study aids — flashcards, acronyms, or notes. The room itself is a method-of-loci anchor: where you place a deck shapes how you remember it.'),
+
+          // Empty-state
+          totalDecks === 0 ? h('div', {
+            style: {
+              padding: '32px 20px',
+              background: palette.surface,
+              border: '1px dashed ' + palette.border,
+              borderRadius: '10px',
+              textAlign: 'center'
+            }
+          },
+            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '📖'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              'No memory content yet. Click any decoration in your room to attach flashcards, an acronym, or notes — your decorations become the anchors for what you\'re learning.')
+          ) : null,
+
+          // Stats row (only when there's content)
+          (totalDecks > 0 || allStories.length > 0) ? h('div', {
+            style: {
+              display: 'flex',
+              gap: '8px',
+              marginBottom: '14px',
+              flexWrap: 'wrap'
+            }
+          },
+            totalDecks > 0 ? renderOverviewStat('Decks', totalDecks, palette) : null,
+            totalCards > 0 ? renderOverviewStat('Flashcards', totalCards, palette) : null,
+            walkableStories.length > 0 ? renderOverviewStat('Stories', walkableStories.length, palette) : null,
+            totalDecks > 0 ? renderOverviewStat('Reviewed this week', pctWeek + '%', palette) : null,
+            due.length > 0 ? renderOverviewStat('Due for review', due.length, palette, true) : null,
+            due.length === 0 && dueSoon.length > 0 ? renderOverviewStat('Due soon', dueSoon.length, palette, false, '#d97706') : null
+          ) : null,
+
+          // Due section
+          due.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.warn || palette.accent,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '⚡ Due for review · ' + due.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              due.map(function(d) { return renderOverviewRow(d, palette, 'due'); })
+            )
+          ) : null,
+
+          // Due-soon section — gentle 1-2-day-out warning
+          dueSoon.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: '#d97706',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '⏳ Due soon · ' + dueSoon.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              dueSoon.map(function(d) { return renderOverviewRow(d, palette, 'soon'); })
+            )
+          ) : null,
+
+          // Fresh section
+          fresh.length > 0 ? h('div', { style: { marginBottom: walkableStories.length > 0 || draftStories.length > 0 ? '16px' : 0 } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, (due.length + dueSoon.length > 0) ? 'Recently reviewed · ' + fresh.length : 'Your decks · ' + fresh.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              fresh.map(function(d) { return renderOverviewRow(d, palette, 'fresh'); })
+            )
+          ) : null,
+
+          // Stories section (Phase 2g) — inline within the memory overview
+          // since stories ARE memory palace technique. Walkable first
+          // (rotation surfaces stalest), drafts last.
+          walkableStories.length > 0 ? h('div', { style: { marginBottom: draftStories.length > 0 ? '14px' : 0, paddingTop: fresh.length > 0 ? '14px' : 0, borderTop: fresh.length > 0 ? '1px solid ' + palette.border : 'none' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '📜 Story walks · ' + walkableStories.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              walkableStories.map(function(s) { return renderStoryOverviewRow(s, palette); })
+            )
+          ) : null,
+
+          draftStories.length > 0 ? h('div', { style: { paddingTop: (fresh.length > 0 || walkableStories.length > 0) ? '14px' : 0, borderTop: (fresh.length > 0 || walkableStories.length > 0) ? '1px solid ' + palette.border : 'none' } },
+            h('div', {
+              style: {
+                fontSize: '11px',
+                color: palette.textMute,
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                letterSpacing: '0.06em',
+                marginBottom: '8px'
+              }
+            }, '📜 Story drafts · ' + draftStories.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              draftStories.map(function(s) { return renderStoryOverviewRow(s, palette); })
+            )
+          ) : null
+        )
+      );
+    }
+
+    // Story overview row — mirror of renderOverviewRow but for stories.
+    // Walkable: shows "↻ Walk" button. Draft: shows "Edit" button.
+    function renderStoryOverviewRow(story, palette) {
+      var validSteps = (story.steps || []).filter(function(st) {
+        return st.decorationId && (st.narrative || '').trim().length > 0;
+      });
+      var walkable = validSteps.length >= 3 && (story.title || '').trim().length > 0;
+      var stepCount = (story.steps || []).length;
+      var firstStep = (story.steps && story.steps[0]) || null;
+      var firstDec = firstStep ? state.decorations.filter(function(d) { return d.id === firstStep.decorationId; })[0] : null;
+      var reviewedLabel;
+      if (!story.lastReviewedAt) {
+        reviewedLabel = walkable ? 'Never walked' : 'Draft · needs ≥3 steps';
+      } else {
+        var daysAgo = Math.floor((Date.now() - new Date(story.lastReviewedAt).getTime()) / (24 * 60 * 60 * 1000));
+        if (daysAgo === 0) reviewedLabel = 'Walked today';
+        else if (daysAgo === 1) reviewedLabel = 'Walked yesterday';
+        else reviewedLabel = 'Walked ' + daysAgo + ' days ago';
+      }
+      return h('div', {
+        key: 'sov-' + story.id,
+        role: 'group',
+        'aria-label': (story.title || 'untitled story') + ', ' + stepCount + ' steps, ' + reviewedLabel,
+        style: {
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center',
+          padding: '10px 12px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px'
+        }
+      },
+        // Mini thumbnail of first decoration (gives the story a face)
+        firstDec && firstDec.imageBase64 ? h('img', {
+          src: firstDec.imageBase64, alt: '', 'aria-hidden': 'true',
+          style: { width: '48px', height: '48px', borderRadius: '6px', objectFit: 'contain', background: palette.bg, border: '1px solid ' + palette.border, flexShrink: 0 }
+        }) : h('div', {
+          'aria-hidden': 'true',
+          style: { width: '48px', height: '48px', borderRadius: '6px', background: palette.bg, border: '1px dashed ' + palette.border, display: 'flex', alignItems: 'center', justifyContent: 'center', color: palette.textMute, fontSize: '20px', flexShrink: 0 }
+        }, '📜'),
+        h('button', {
+          onClick: function() {
+            setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: story.id } });
+          },
+          style: {
+            flex: 1, background: 'transparent', border: 'none', padding: 0,
+            color: palette.text, textAlign: 'left', cursor: 'pointer',
+            fontFamily: 'inherit', minWidth: 0
+          }
+        },
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+            '📜 ' + (story.title || h('span', { style: { color: palette.textMute, fontStyle: 'italic' } }, '(untitled story)'))),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
+            stepCount + ' step' + (stepCount === 1 ? '' : 's')),
+          h('div', { style: { fontSize: '10px', color: palette.textMute } }, reviewedLabel)
+        ),
+        walkable ? h('button', {
+          onClick: function() {
+            setStateMulti({ activeModal: 'story-walk', generateContext: { storyId: story.id } });
+          },
+          style: {
+            background: palette.accent, color: palette.onAccent,
+            border: 'none', borderRadius: '8px', padding: '7px 14px',
+            fontSize: '12px', fontWeight: 700, cursor: 'pointer',
+            fontFamily: 'inherit', flexShrink: 0
+          }
+        }, '↻ Walk') : h('button', {
+          onClick: function() {
+            setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: story.id } });
+          },
+          style: {
+            background: 'transparent', color: palette.textDim,
+            border: '1px solid ' + palette.border, borderRadius: '8px',
+            padding: '7px 14px', fontSize: '12px', fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0
+          }
+        }, 'Edit')
+      );
+    }
+
+    // Single overview row — decoration thumbnail + content summary +
+    // Review button. Click anywhere on the row (except the button) opens
+    // the memory modal at view-tab; click Review jumps to quiz mode.
+    // tier: 'due' (warn-bordered) | 'soon' (orange-bordered) | 'fresh' (default border)
+    function renderOverviewRow(decoration, palette, tier) {
+      // Backward-compat: old callers may pass a boolean
+      if (tier === true) tier = 'due';
+      if (tier === false || tier == null) tier = 'fresh';
+      var isDue = tier === 'due';
+      var isSoon = tier === 'soon';
+      var lc = decoration.linkedContent;
+      var label = decoration.templateLabel || decoration.template || 'item';
+      var typeIcon = lc.type === 'flashcards' ? '📚'
+                   : lc.type === 'acronym'    ? '🔤'
+                   : lc.type === 'image-link' ? '🔗'
+                                                : '📝';
+      var summary = '';
+      if (lc.type === 'flashcards') {
+        var cardCount = (lc.data && lc.data.cards) ? lc.data.cards.length : 0;
+        summary = cardCount + ' card' + (cardCount === 1 ? '' : 's');
+      } else if (lc.type === 'acronym') {
+        summary = ((lc.data && lc.data.letters) || '').toUpperCase();
+      } else if (lc.type === 'image-link') {
+        var lTgtId = (lc.data && lc.data.targetDecorationId) || null;
+        var lTgt = lTgtId ? state.decorations.filter(function(d) { return d.id === lTgtId; })[0] : null;
+        summary = '→ ' + (lTgt ? (lTgt.templateLabel || lTgt.template || 'item') : '(removed item)');
+      } else if (lc.type === 'notes') {
+        var text = (lc.data && lc.data.text) || '';
+        var clozeCount = extractClozeAnswers(text).length;
+        if (clozeCount > 0) {
+          summary = clozeCount + ' blank' + (clozeCount === 1 ? '' : 's') + ' to fill in';
+        } else {
+          summary = text.length + ' character' + (text.length === 1 ? '' : 's');
+        }
+      }
+      // Notes are quizzable only when they contain {cloze} markers;
+      // flashcards / acronyms / image-links always quizzable.
+      var quizAvailable = lc.type !== 'notes' || hasClozeMarkers(lc);
+
+      var reviewedLabel;
+      if (!lc.lastReviewedAt) {
+        reviewedLabel = 'Never reviewed';
+      } else {
+        var daysAgo = Math.floor((Date.now() - new Date(lc.lastReviewedAt).getTime()) / (24 * 60 * 60 * 1000));
+        if (daysAgo === 0) reviewedLabel = 'Reviewed today';
+        else if (daysAgo === 1) reviewedLabel = 'Reviewed yesterday';
+        else reviewedLabel = 'Reviewed ' + daysAgo + ' days ago';
+      }
+
+      var borderColor = isDue
+        ? (palette.warn || palette.accent)
+        : (isSoon ? '#d97706' : palette.border);
+      var leftBorder = (isDue || isSoon)
+        ? ('3px solid ' + borderColor)
+        : ('1px solid ' + palette.border);
+      return h('div', {
+        key: 'mr-' + decoration.id,
+        role: 'group',
+        'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel
+          + (isSoon ? ', due soon' : ''),
+        style: {
+          display: 'flex',
+          gap: '10px',
+          alignItems: 'center',
+          padding: '10px 12px',
+          background: palette.surface,
+          border: '1px solid ' + borderColor,
+          borderLeft: leftBorder,
+          borderRadius: '8px'
+        }
+      },
+        // Thumbnail
+        decoration.imageBase64 ? h('img', {
+          src: decoration.imageBase64,
+          alt: '',
+          'aria-hidden': 'true',
+          style: {
+            width: '48px',
+            height: '48px',
+            borderRadius: '6px',
+            objectFit: 'contain',
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            flexShrink: 0
+          }
+        }) : null,
+        // Center: content summary
+        h('button', {
+          onClick: function() { openMemoryModal(decoration.id, false); },
+          style: {
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            padding: 0,
+            color: palette.text,
+            textAlign: 'left',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            minWidth: 0
+          }
+        },
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+            typeIcon + ' ' + label),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
+            summary),
+          h('div', {
+            style: {
+              fontSize: '10px',
+              color: isDue
+                ? (palette.warn || palette.accent)
+                : (isSoon ? '#d97706' : palette.textMute),
+              fontWeight: (isDue || isSoon) ? 700 : 400
+            }
+          },
+            isSoon ? (reviewedLabel + ' · due soon') : reviewedLabel)
+        ),
+        // Review action button (only for quizzable types)
+        quizAvailable ? h('button', {
+          onClick: function() { openMemoryModal(decoration.id, true); },
+          style: {
+            background: isDue
+              ? (palette.warn || palette.accent)
+              : (isSoon ? '#d97706' : palette.accent),
+            color: palette.onAccent,
+            border: 'none',
+            borderRadius: '8px',
+            padding: '7px 14px',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            flexShrink: 0
+          }
+        }, '↻ Review') : h('button', {
+          onClick: function() { openMemoryModal(decoration.id, false); },
+          style: {
+            background: 'transparent',
+            color: palette.textDim,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            padding: '7px 14px',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            flexShrink: 0
+          }
+        }, 'View')
+      );
+    }
+
+    function renderOverviewStat(label, value, palette, highlight, overrideColor) {
+      var accentColor = overrideColor || (highlight ? (palette.warn || palette.accent) : palette.accent);
+      var borderColor = overrideColor || (highlight ? (palette.warn || palette.accent) : palette.border);
+      var bgColor = (highlight || overrideColor) ? 'rgba(255,220,140,0.08)' : palette.surface;
+      return h('div', {
+        style: {
+          flex: '1 1 100px',
+          padding: '8px 12px',
+          background: bgColor,
+          border: '1px solid ' + borderColor,
+          borderRadius: '8px',
+          textAlign: 'center'
+        }
+      },
+        h('div', {
+          style: {
+            fontSize: '20px',
+            fontWeight: 800,
+            color: accentColor,
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1.1
+          }
+        }, value),
+        h('div', {
+          style: {
+            fontSize: '10px',
+            color: palette.textMute,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            fontWeight: 700,
+            marginTop: '4px'
+          }
+        }, label)
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // MEMORY MODAL — Phase 2a self-authored memory palace.
+    // Each placed decoration can hold one of three content types
+    // (flashcards / acronym / free notes). Spatial location in the
+    // room provides the method-of-loci anchor.
+    // ─────────────────────────────────────────────────
+    function renderMemoryModal() {
+      if (state.activeModal !== 'memory') return null;
+      var ctx = state.generateContext || {};
+      var decorationId = ctx.decorationId;
+      var decoration = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!decoration) {
+        // Decoration vanished — close silently
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      return h(MemoryModalInner, {
+        decoration: decoration,
+        allDecorations: state.decorations,
+        palette: palette,
+        autoStartQuiz: !!ctx.autoStartQuiz,
+        onClose: function() {
+          setStateMulti({ activeModal: null, generateContext: null });
+        },
+        onSave: function(contentObj) {
+          saveMemoryContent(decorationId, contentObj);
+        },
+        onRemove: function() {
+          removeMemoryContent(decorationId);
+          setStateMulti({ activeModal: null, generateContext: null });
+        },
+        onQuizComplete: function(scorePct) {
+          recordQuizSession(decorationId, scorePct);
+        }
+      });
+    }
+
+    // ─────────────────────────────────────────────────
+    // INSIGHTS MODAL — reflection summary (mood themes + topics).
+    // Triggered from the journal modal's 📊 Insights button. Auto-fires
+    // the analysis on first open (when summary is null and not loading).
+    // Uses local stats as a fallback when callGemini isn't available
+    // OR if the AI response isn't parseable.
+    // ─────────────────────────────────────────────────
+    function renderInsightsModal() {
+      if (state.activeModal !== 'insights') return null;
+      var ins = state.insightsState || {};
+      // Auto-fire analysis on first open if there's no cached result.
+      if (!ins.loading && !ins.summary && !ins.error) {
+        // Defer one tick to avoid setState-during-render. setTimeout 0
+        // is fine here — the modal already rendered with the loading
+        // skeleton from the next render pass.
+        setTimeout(function() { runInsightsAnalysis(); }, 0);
+      }
+      var s = ins.summary || {};
+      var entries = state.journalEntries || [];
+      var enoughText = !s.moodSummary || s.moodSummary === 'Not enough yet' ? false : true;
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Reflection insights',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', 'journal');
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 180,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '520px',
+            width: '100%',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            color: palette.text
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+              '📊 Reflection insights'),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('button', {
+                onClick: function() { runInsightsAnalysis(); },
+                'aria-label': 'Refresh insights',
+                disabled: ins.loading,
+                title: ins.loading ? 'Analyzing…' : 'Run a fresh analysis',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px', opacity: ins.loading ? 0.6 : 1 })
+              }, ins.loading ? '…' : '↻ Refresh'),
+              h('button', {
+                onClick: function() { setStateField('activeModal', 'journal'); },
+                'aria-label': 'Back to journal',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '← Back')
+            )
+          ),
+          // Loading state
+          ins.loading ? h('p', { style: { color: palette.textDim, fontSize: '13px', fontStyle: 'italic', padding: '24px 8px', textAlign: 'center' } },
+            'Reading your last ' + Math.min(entries.length, 14) + ' entries…') : null,
+          // AI summary card (only when present)
+          !ins.loading && s.moodSummary && enoughText ? h('div', {
+            style: {
+              background: palette.surface,
+              border: '1px solid ' + palette.accent,
+              borderRadius: '10px',
+              padding: '14px 16px',
+              marginBottom: '12px'
+            }
+          },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.accent, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' } }, 'Tone'),
+            h('p', { style: { margin: '0 0 12px 0', color: palette.text, lineHeight: '1.6', fontSize: '14px' } }, s.moodSummary),
+            (Array.isArray(s.themes) && s.themes.length > 0) ? h('div', null,
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.accent, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' } }, 'Themes'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' } },
+                s.themes.map(function(t, i) {
+                  return h('span', {
+                    key: i,
+                    style: {
+                      padding: '3px 10px',
+                      background: palette.bg,
+                      border: '1px solid ' + palette.border,
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      color: palette.textDim
+                    }
+                  }, t);
+                })
+              )
+            ) : null,
+            s.encouragement ? h('p', { style: { margin: '0', color: palette.textDim, lineHeight: '1.6', fontSize: '13px', fontStyle: 'italic' } }, s.encouragement) : null
+          ) : null,
+          // Not-enough message when AI says insufficient data
+          !ins.loading && s.moodSummary === 'Not enough yet' ? h('p', {
+            style: { color: palette.textDim, fontSize: '13px', padding: '12px 4px', lineHeight: '1.6' }
+          }, 'Your entries so far are short or recent — keep journaling and a richer view will surface here.') : null,
+          // AI error / fallback notice
+          ins.error ? h('p', {
+            style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic' }
+          }, ins.error) : null,
+          // Local stats card — always shown, even on AI failure
+          !ins.loading && (s.entriesAnalyzed > 0) ? h('div', {
+            style: {
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '10px',
+              padding: '14px 16px'
+            }
+          },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '10px' } }, 'Your stats'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
+              h('div', null,
+                h('div', { style: { fontSize: '24px', fontWeight: 800, color: palette.text } }, s.entriesAnalyzed),
+                h('div', { style: { fontSize: '11px', color: palette.textDim } }, s.entriesAnalyzed === 1 ? 'entry analyzed' : 'entries analyzed')
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: '24px', fontWeight: 800, color: palette.text } }, s.wordCount),
+                h('div', { style: { fontSize: '11px', color: palette.textDim } }, s.wordCount === 1 ? 'word written' : 'words written')
+              )
+            ),
+            s.topPromptText && s.topPromptCount > 1 ? h('p', {
+              style: { margin: '12px 0 0 0', fontSize: '12px', color: palette.textDim, lineHeight: '1.5' }
+            },
+              h('strong', null, 'Most-used prompt: '),
+              '"', s.topPromptText, '" (',
+              s.topPromptCount, ' time', s.topPromptCount === 1 ? '' : 's', ')'
+            ) : null
+          ) : null,
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, lineHeight: '1.5' }
+          }, 'Insights are reflective, not diagnostic. Your entries stay private — analysis runs once and the result is held in this session only.')
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
     // GENERATE MODAL — multi-step decoration creation.
     // Delegates to GenerateModalInner so its local state doesn't pollute
     // the outer component on close.
@@ -2544,6 +6964,10 @@
         startVoice: startVoiceCapture,
         stopVoice: stopVoiceCapture,
         isRecording: isRecording,
+        // Threaded so the ✨ Polish button can clean up voice-dictated
+        // text. Falls back to a local capitalize-after-period heuristic
+        // when callGemini isn't available.
+        callGemini: callGemini,
         onSubmit: function(text, promptId) { submitReflection(text, promptId); },
         onClose: function() {
           stopVoiceCapture();
@@ -2597,15 +7021,29 @@
           }
         },
           h('div', {
-            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px', flexWrap: 'wrap' }
           },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '📓 Your journal · ' + entries.length),
-            h('button', {
-              onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close journal',
-              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
-            }, '✕')
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              // 📊 Insights button — opens a Gemini-powered summary of
+              // recent journal entries (mood themes, recurring topics,
+              // word counts). Only renders when there's enough data to
+              // be worth analyzing AND the host wired callGemini.
+              entries.length >= 3 && typeof callGemini === 'function' ? h('button', {
+                onClick: function() {
+                  setStateMulti({ activeModal: 'insights', insightsState: { loading: false, summary: null, error: null, generatedAt: null } });
+                },
+                'aria-label': 'View reflection insights',
+                title: 'Analyze recent entries for mood themes and recurring topics',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px' })
+              }, '📊 Insights') : null,
+              h('button', {
+                onClick: function() { setStateField('activeModal', null); },
+                'aria-label': 'Close journal',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            )
           ),
           entries.length === 0 ? h('p', {
             style: { color: palette.textDim, textAlign: 'center', padding: '24px 12px', fontStyle: 'italic' }
@@ -2620,7 +7058,8 @@
                 onDelete: function() {
                   if (window.confirm && !window.confirm('Delete this entry? Tokens already earned will not be refunded.')) return;
                   deleteJournalEntry(entry.id);
-                }
+                },
+                onQuizComplete: function(eid, pct) { recordReflectionQuiz(eid, pct); }
               });
             })
           ),
@@ -2637,6 +7076,267 @@
           }, 'Your journal is private. Only you see this.')
         )
       );
+    }
+
+    // ─────────────────────────────────────────────────
+    // DELETE-DECORATION CONFIRMATION MODAL
+    // Two-tap deletion (per concept doc) — prevents accidental loss.
+    // Token NOT refunded; explicit messaging so students know.
+    // ─────────────────────────────────────────────────
+    function renderDeleteDecorationModal() {
+      if (state.activeModal !== 'delete-decoration') return null;
+      var decorationId = (state.generateContext || {}).decorationId;
+      var dec = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!dec) {
+        // Decoration vanished somehow — close the modal silently
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      var label = dec.templateLabel || dec.template || 'this decoration';
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Confirm delete',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateMulti({ activeModal: null, generateContext: null });
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 200,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '380px',
+            width: '100%',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            textAlign: 'center'
+          }
+        },
+          dec.imageBase64 ? h('img', {
+            src: dec.imageBase64,
+            alt: label,
+            style: {
+              maxWidth: '120px',
+              maxHeight: '120px',
+              borderRadius: '8px',
+              margin: '0 auto 14px',
+              display: 'block',
+              opacity: 0.9
+            }
+          }) : null,
+          h('h3', { style: { margin: '0 0 8px 0', color: palette.text, fontSize: '17px', fontWeight: 700 } },
+            'Remove ' + label.toLowerCase() + '?'),
+          h('p', {
+            style: { margin: '0 0 18px 0', fontSize: '13px', color: palette.textDim, lineHeight: '1.55' }
+          }, 'Tokens already spent on this decoration won\'t be refunded.'),
+          h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center' } },
+            h('button', {
+              onClick: function() { setStateMulti({ activeModal: null, generateContext: null }); },
+              autoFocus: true,
+              style: {
+                background: 'transparent', color: palette.textDim,
+                border: '1px solid ' + palette.border, borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Keep it'),
+            h('button', {
+              onClick: function() { deleteDecoration(decorationId); },
+              style: {
+                background: palette.warn || '#dc2626',
+                color: palette.onAccent || '#fff',
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Remove')
+          )
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // STORIES LIST MODAL (Phase 2e) — index of all stories with
+    // walk / edit / delete affordances per story.
+    // ─────────────────────────────────────────────────
+    function renderStoriesListModal() {
+      if (state.activeModal !== 'stories') return null;
+      var stories = state.stories || [];
+      var sortedStories = stories.slice().sort(function(a, b) {
+        return (b.updatedAt || b.createdAt || '').localeCompare(a.updatedAt || a.createdAt || '');
+      });
+
+      function isWalkable(s) {
+        var validSteps = (s.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        return validSteps.length >= 3 && (s.title || '').trim().length > 0;
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Stories',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '600px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '📜 Stories · ' + stories.length),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close stories list',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
+          }, 'The story method is the most powerful classical mnemonic — chain ≥3 decorations into a narrative sequence, then walk through it. Each step is a hook for what came before.'),
+          h('button', {
+            onClick: createStory,
+            style: Object.assign({}, primaryBtnStyle(palette), { width: '100%', marginBottom: '14px', padding: '10px' })
+          }, '+ New story'),
+
+          // Empty state
+          stories.length === 0 ? h('div', {
+            style: {
+              padding: '32px 20px', background: palette.surface,
+              border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center'
+            }
+          },
+            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '📜'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              'No stories yet. Click "+ New story" above to chain decorations into a narrative — the story method earns +1 token on first save and +1 per walk.')
+          ) : null,
+
+          // Stories list
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            sortedStories.map(function(s) {
+              var walkable = isWalkable(s);
+              var stepCount = (s.steps || []).length;
+              var validSteps = (s.steps || []).filter(function(st) {
+                return st.decorationId && (st.narrative || '').trim().length > 0;
+              }).length;
+              var lastReviewedLabel;
+              if (!s.lastReviewedAt) {
+                lastReviewedLabel = walkable ? 'Never walked' : 'Draft';
+              } else {
+                var days = Math.floor((Date.now() - new Date(s.lastReviewedAt).getTime()) / (24 * 60 * 60 * 1000));
+                if (days === 0) lastReviewedLabel = 'Walked today';
+                else if (days === 1) lastReviewedLabel = 'Walked yesterday';
+                else lastReviewedLabel = 'Walked ' + days + ' days ago';
+              }
+              return h('div', {
+                key: 'story-row-' + s.id,
+                style: {
+                  display: 'flex', gap: '10px', alignItems: 'center',
+                  padding: '12px', background: palette.surface,
+                  border: '1px solid ' + palette.border, borderRadius: '8px'
+                }
+              },
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text, marginBottom: '4px' } },
+                    s.title || h('span', { style: { color: palette.textMute, fontStyle: 'italic' } }, '(untitled story)')),
+                  h('div', { style: { fontSize: '11px', color: palette.textDim } },
+                    stepCount + ' step' + (stepCount === 1 ? '' : 's')
+                    + (validSteps !== stepCount ? ' · ' + validSteps + ' complete' : '')
+                    + ' · ' + lastReviewedLabel)
+                ),
+                walkable ? h('button', {
+                  onClick: function() {
+                    setStateMulti({ activeModal: 'story-walk', generateContext: { storyId: s.id } });
+                  },
+                  'aria-label': 'Walk story: ' + (s.title || 'untitled'),
+                  style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '7px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }
+                }, '↻ Walk') : h('span', {
+                  style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', flexShrink: 0 }
+                }, 'needs ≥3 steps'),
+                h('button', {
+                  onClick: function() {
+                    setStateMulti({ activeModal: 'story-builder', generateContext: { storyId: s.id } });
+                  },
+                  'aria-label': 'Edit story: ' + (s.title || 'untitled'),
+                  style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '7px 12px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }
+                }, 'Edit')
+              );
+            })
+          )
+        )
+      );
+    }
+
+    function renderStoryBuilderModal() {
+      if (state.activeModal !== 'story-builder') return null;
+      var ctx = state.generateContext || {};
+      var story = (state.stories || []).filter(function(s) { return s.id === ctx.storyId; })[0];
+      if (!story) {
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      return h(StoryBuilderInner, {
+        story: story,
+        allDecorations: state.decorations,
+        palette: palette,
+        onSave: function(updates) {
+          updateStory(story.id, updates);
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        },
+        onCancel: function() {
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        },
+        onDelete: function() {
+          deleteStory(story.id);
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        }
+      });
+    }
+
+    function renderStoryWalkModal() {
+      if (state.activeModal !== 'story-walk') return null;
+      var ctx = state.generateContext || {};
+      var story = (state.stories || []).filter(function(s) { return s.id === ctx.storyId; })[0];
+      if (!story) {
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      return h(StoryWalkInner, {
+        story: story,
+        allDecorations: state.decorations,
+        palette: palette,
+        onClose: function() {
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        },
+        onFinish: function() {
+          recordStoryWalk(story.id);
+          setStateMulti({ activeModal: 'stories', generateContext: null });
+        }
+      });
     }
 
     // ─────────────────────────────────────────────────
@@ -2765,6 +7465,230 @@
       );
     }
 
+    // ─────────────────────────────────────────────────
+    // PRINT PACKET (Phase 2h) — exportable study artifact for
+    // parents, IEP teams, and clinicians. Always rendered into the
+    // DOM but display:none on screen; @media print CSS reveals it
+    // and hides everything else, so window.print() outputs only
+    // the packet. Class-based hide so the print rule overrides
+    // without !important on the inline display attribute.
+    // ─────────────────────────────────────────────────
+    function renderPrintPacket() {
+      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      var allStories = state.stories || [];
+      var dateStr = new Date().toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+
+      // All-print-friendly base styles. Inline so they apply to the
+      // packet even before the print rule kicks in (lets us preview
+      // the packet by temporarily flipping the class display).
+      var sectionStyle = { marginBottom: '24px' };
+      var sectionTitleStyle = { fontSize: '14px', fontWeight: 700, marginBottom: '8px', borderBottom: '1.5px solid #333', paddingBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' };
+      var subTitleStyle = { fontSize: '13px', fontWeight: 700, marginBottom: '4px', color: '#000', marginTop: '14px' };
+      var bodyTextStyle = { fontSize: '11px', color: '#333', lineHeight: 1.5, margin: 0 };
+      var smallMetaStyle = { fontSize: '9px', color: '#666', fontStyle: 'italic' };
+      var thumbStyle = { width: '36px', height: '36px', objectFit: 'contain', borderRadius: '4px', border: '0.5px solid #999', verticalAlign: 'middle' };
+
+      function renderDeckPrint(decoration) {
+        var lc = decoration.linkedContent;
+        var label = decoration.templateLabel || decoration.template || 'item';
+        var typeLabel = lc.type === 'flashcards' ? 'Flashcards'
+                      : lc.type === 'acronym'    ? 'Acronym'
+                      : lc.type === 'image-link' ? 'Image link'
+                                                   : 'Notes';
+        var reviewedLabel;
+        if (!lc.lastReviewedAt) reviewedLabel = 'Never reviewed';
+        else {
+          var d2 = new Date(lc.lastReviewedAt);
+          reviewedLabel = 'Last reviewed ' + d2.toLocaleDateString();
+        }
+        var meta = typeLabel
+          + (lc.bestQuizScore ? ' · Best score ' + lc.bestQuizScore + '%' : '')
+          + ' · ' + (lc.reviewCount || 0) + ' review' + ((lc.reviewCount || 0) === 1 ? '' : 's')
+          + ' · ' + reviewedLabel;
+
+        var body = null;
+        if (lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+          body = h('ol', { style: { paddingLeft: '20px', margin: '4px 0' } },
+            lc.data.cards.map(function(card) {
+              var atts = (card.correctCount || 0) + (card.missCount || 0);
+              return h('li', { key: 'pc-' + card.id, style: { marginBottom: '4px', fontSize: '11px', color: '#222', lineHeight: 1.45 } },
+                h('span', { style: { fontWeight: 700 } }, card.front || ''),
+                h('span', { style: { color: '#444' } }, ' — ' + (card.back || '')),
+                atts > 0 ? h('span', { style: smallMetaStyle }, ' (' + (card.correctCount || 0) + '/' + atts + ')') : null
+              );
+            })
+          );
+        } else if (lc.type === 'acronym' && lc.data) {
+          var letters = (lc.data.letters || '').toUpperCase();
+          var meanings = lc.data.meanings || [];
+          body = h('div', null,
+            lc.data.context ? h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginBottom: '4px' }) }, lc.data.context) : null,
+            h('div', { style: { fontSize: '14px', fontWeight: 800, letterSpacing: '0.1em', color: '#000', marginBottom: '4px' } }, letters),
+            h('ul', { style: { listStyle: 'none', paddingLeft: 0, margin: '4px 0' } },
+              letters.split('').map(function(letter, i) {
+                return h('li', { key: 'pa-' + i, style: { fontSize: '11px', color: '#222', marginBottom: '2px' } },
+                  h('strong', null, letter), ' — ', meanings[i] || h('span', { style: { color: '#999' } }, '____________'));
+              })
+            )
+          );
+        } else if (lc.type === 'image-link' && lc.data) {
+          var tgt = state.decorations.filter(function(dec) { return dec.id === lc.data.targetDecorationId; })[0];
+          var tgtLabel = tgt ? (tgt.templateLabel || tgt.template || 'item') : '(removed item)';
+          body = h('div', null,
+            h('p', { style: bodyTextStyle },
+              h('strong', null, label), ' → ', h('strong', null, tgtLabel)),
+            h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginTop: '4px' }) },
+              '"' + (lc.data.association || '') + '"')
+          );
+        } else if (lc.type === 'notes' && lc.data) {
+          var text = (lc.data.text || '');
+          // Render cloze blanks as visible underlines
+          if (extractClozeAnswers(text).length > 0) {
+            var segments = buildClozeSegments(text);
+            body = h('div', { style: { fontSize: '11px', color: '#222', lineHeight: 1.5, margin: '4px 0', whiteSpace: 'pre-wrap' } },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'ps-' + i }, seg.value);
+                return h('span', {
+                  key: 'ps-' + i,
+                  style: { borderBottom: '1px solid #000', padding: '0 2px', minWidth: '60px', display: 'inline-block', textAlign: 'center', fontWeight: 700 }
+                }, seg.answer);
+              })
+            );
+          } else {
+            body = h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '4px 0' }) }, text);
+          }
+        }
+
+        return h('div', {
+          key: 'pd-' + decoration.id,
+          className: 'ah-print-section'
+        },
+          h('h3', { style: subTitleStyle },
+            decoration.imageBase64 ? h('img', { src: decoration.imageBase64, alt: '', style: thumbStyle }) : null,
+            h('span', { style: { marginLeft: '8px' } }, label)
+          ),
+          h('p', { style: smallMetaStyle }, meta),
+          body
+        );
+      }
+
+      function renderStoryPrint(story) {
+        var validSteps = (story.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        var walkable = validSteps.length >= 3 && (story.title || '').trim().length > 0;
+        var meta = (story.steps || []).length + ' step' + ((story.steps || []).length === 1 ? '' : 's')
+          + (story.reviewCount ? ' · Walked ' + story.reviewCount + ' time' + (story.reviewCount === 1 ? '' : 's') : '')
+          + (walkable ? '' : ' · Draft');
+        return h('div', {
+          key: 'ps-' + story.id,
+          className: 'ah-print-section'
+        },
+          h('h3', { style: subTitleStyle }, '📜 ' + (story.title || '(untitled story)')),
+          h('p', { style: smallMetaStyle }, meta),
+          h('ol', { style: { paddingLeft: '20px', margin: '6px 0' } },
+            (story.steps || []).map(function(step, idx) {
+              var dec = state.decorations.filter(function(d) { return d.id === step.decorationId; })[0];
+              var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed item)';
+              return h('li', { key: 'pst-' + idx, style: { marginBottom: '8px', fontSize: '11px', color: '#222', lineHeight: 1.5 } },
+                dec && dec.imageBase64 ? h('img', { src: dec.imageBase64, alt: '', style: thumbStyle }) : null,
+                h('span', { style: { marginLeft: '6px', fontWeight: 700 } }, dLabel),
+                h('div', { style: { fontStyle: 'italic', color: '#333', marginTop: '2px' } },
+                  '"' + (step.narrative || '') + '"')
+              );
+            })
+          )
+        );
+      }
+
+      // Recent journal entries (up to 5, newest first)
+      var recentJournals = (state.journalEntries || []).slice().sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      }).slice(0, 5);
+
+      return h('div', {
+        className: 'ah-print-packet',
+        'aria-hidden': 'true'
+      },
+        // Cover header
+        h('div', { style: { borderBottom: '3px double #000', paddingBottom: '12px', marginBottom: '20px' } },
+          h('h1', { style: { fontSize: '22px', margin: 0, fontWeight: 800, color: '#000' } }, '🌿 AlloHaven Study Packet'),
+          h('p', { style: { margin: '6px 0 0 0', fontSize: '11px', color: '#444' } },
+            'Generated ' + dateStr + ' · ' + state.decorations.length + ' decoration' + (state.decorations.length === 1 ? '' : 's')
+            + ' · ' + withContent.length + ' deck' + (withContent.length === 1 ? '' : 's')
+            + ' · ' + allStories.length + ' stor' + (allStories.length === 1 ? 'y' : 'ies'))
+        ),
+        // Student name line
+        h('div', { style: { marginBottom: '20px', display: 'flex', gap: '24px', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Student: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' ')),
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Reviewed by: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' '))
+        ),
+        // Stats summary
+        h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px', color: '#222' } },
+          h('strong', null, 'Activity summary: '),
+          (state.earnings || []).length + ' token-earning event' + ((state.earnings || []).length === 1 ? '' : 's'),
+          ' · ', state.tokens, ' tokens earned and unspent',
+          ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies')
+        ),
+        // Decks section
+        withContent.length > 0 ? h('div', { style: sectionStyle },
+          h('h2', { style: sectionTitleStyle }, '📖 Memory Decks'),
+          withContent.map(function(d) { return renderDeckPrint(d); })
+        ) : null,
+        // Stories section
+        allStories.length > 0 ? h('div', {
+          style: sectionStyle,
+          className: withContent.length > 5 ? 'ah-print-page-break' : ''
+        },
+          h('h2', { style: sectionTitleStyle }, '📜 Stories'),
+          allStories.map(function(s) { return renderStoryPrint(s); })
+        ) : null,
+        // Recent reflections
+        recentJournals.length > 0 ? h('div', { style: sectionStyle },
+          h('h2', { style: sectionTitleStyle }, '📝 Recent Reflections (last ' + recentJournals.length + ')'),
+          recentJournals.map(function(j) {
+            return h('div', { key: 'pj-' + j.id, className: 'ah-print-section', style: { marginBottom: '10px' } },
+              h('p', { style: smallMetaStyle },
+                (j.date ? new Date(j.date).toLocaleDateString() : 'Undated')
+                + (j.prompt ? ' · prompt: "' + j.prompt + '"' : '')),
+              h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '2px 0' }) },
+                '"' + (j.text || '') + '"')
+            );
+          })
+        ) : null,
+        // Footer
+        h('div', { style: { marginTop: '24px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
+          'AlloHaven · cozy-room learning portfolio · printed ' + dateStr,
+          h('br'),
+          'Earn tokens by focusing or reflecting; spend on decorations; attach memory content to grow a method-of-loci anchor.'
+        )
+      );
+    }
+
+    // ── aria-live announcement for token deltas ──
+    // Tracks token changes since last render and pushes them to a hidden
+    // live region. Screen reader users hear "+2 tokens earned" etc.
+    // without needing visual focus on the counter chip.
+    var prevTokensRef = useRef(state.tokens);
+    var lastAnnouncementTuple = useState('');
+    var lastAnnouncement = lastAnnouncementTuple[0];
+    var setLastAnnouncement = lastAnnouncementTuple[1];
+    useEffect(function() {
+      var prev = prevTokensRef.current;
+      if (prev !== state.tokens) {
+        var delta = state.tokens - prev;
+        var msg;
+        if (delta > 0) msg = 'Earned ' + delta + ' token' + (delta === 1 ? '' : 's') + '. Total ' + state.tokens + '.';
+        else if (delta < 0) msg = 'Spent ' + Math.abs(delta) + ' token' + (Math.abs(delta) === 1 ? '' : 's') + '. Total ' + state.tokens + '.';
+        if (msg) setLastAnnouncement(msg);
+        prevTokensRef.current = state.tokens;
+      }
+    }, [state.tokens]);
+
     // ── Render ──
     // Outer modal-style fixed overlay covering the viewport (matches Symbol
     // Studio pattern). Inner ah-root scopes all CSS animations.
@@ -2782,14 +7706,42 @@
         color: palette.text
       }
     },
+      // Visually-hidden aria-live region for token-delta announcements
+      h('div', {
+        role: 'status',
+        'aria-live': 'polite',
+        'aria-atomic': 'true',
+        style: {
+          position: 'absolute',
+          width: '1px', height: '1px', padding: 0, margin: '-1px',
+          overflow: 'hidden', clip: 'rect(0,0,0,0)', border: 0
+        }
+      }, lastAnnouncement),
       renderRoom(),
       renderPomodoroOverlay(),
       renderGenerateModal(),
+      renderMemoryModal(),
+      renderMemoryOverviewModal(),
+      renderStoriesListModal(),
+      renderStoryBuilderModal(),
+      renderStoryWalkModal(),
       renderReflectionModal(),
       renderJournalModal(),
+      renderInsightsModal(),
+      renderDeleteDecorationModal(),
       renderSettingsModal(),
       renderWelcomeBackdrop(),
-      renderWelcomeCard()
+      renderWelcomeCard(),
+      // Print packet — portaled to body so the @media print rule's
+      // "hide everything but .ah-print-packet" works regardless of the
+      // ah-root fixed overlay's positioning + overflow context.
+      (function() {
+        var ReactDOM = window.ReactDOM;
+        if (ReactDOM && ReactDOM.createPortal && typeof document !== 'undefined' && document.body) {
+          return ReactDOM.createPortal(renderPrintPacket(), document.body);
+        }
+        return renderPrintPacket();
+      })()
     );
   }
 

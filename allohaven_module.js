@@ -164,7 +164,15 @@
       reflectionsSubmitted: 0,
       promptsForToday: [],           // array of 3 prompt ids selected at first visit of day
       quizTokensEarnedToday: 0,      // memory-palace quiz tokens (capped at 2/day)
-      storyWalkTokensEarnedToday: 0  // story-method walk tokens (capped at 1/day)
+      storyWalkTokensEarnedToday: 0, // story-method walk tokens (capped at 1/day)
+      // ── Daily quests (Phase 2g) ──
+      // Three soft quests rotated daily. Completion is auto-detected
+      // from the other dailyState counters; the bonus is a single
+      // "trifecta" reward (+5 tokens) when all three are done. No
+      // streaks, no pressure to complete daily — just an additional
+      // gentle nudge that fits the no-guilt design language.
+      questIds: [],                  // 3 quest ids chosen for today
+      questsClaimed: false           // user clicked the trifecta-claim button
     },
 
     // ── Pomodoro ──
@@ -221,8 +229,20 @@
     ],
 
     // ── Active modal (within AlloHaven; NOT the outer Open/Close state) ──
-    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | null
-    generateContext: null            // { surface, cellIndex } when generate modal open
+    activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | null
+    generateContext: null,           // { surface, cellIndex } when generate modal open
+
+    // ── Reflection insights cache ──
+    // Holds the last AI-generated summary of journal entries. Cleared on
+    // demand by clicking "Refresh" in the insights modal. Not persisted
+    // across reloads — purely an in-session cache so the user can flip
+    // between modals without re-billing the Gemini call.
+    insightsState: {
+      loading: false,                // true while a Gemini call is in flight
+      summary: null,                 // { moodSummary, themes:[], wordCount, entriesAnalyzed }
+      error: null,                   // user-friendly error string if analysis fails
+      generatedAt: null              // ISO timestamp of the cached summary
+    }
   };
 
   // ─────────────────────────────────────────────────────────
@@ -280,6 +300,53 @@
   function getThemeBase(themeName, highContrast) {
     if (highContrast) return HIGH_CONTRAST_BASE;
     return THEME_BASES[themeName] || THEME_BASES['default'];
+  }
+
+  // ─────────────────────────────────────────────────────────
+  // SECTION 3.4: DAILY QUEST POOL
+  // ─────────────────────────────────────────────────────────
+  // Three quests are picked at random on day rollover. Completion is
+  // auto-detected from dailyState counters; finishing all three unlocks
+  // a single "trifecta" bonus (+5 tokens) the user claims with one tap.
+  // No streaks, no daily pressure — just a gentle alternative path to a
+  // few extra tokens for students who already use multiple features.
+  var QUEST_POOL = [
+    { id: 'pomo1',     label: 'Complete a Pomodoro session',         icon: '⏱️', check: function(d, s) { return (d.pomodorosCompleted || 0) >= 1; } },
+    { id: 'pomo2',     label: 'Complete 2 Pomodoro sessions',         icon: '⏱️', check: function(d, s) { return (d.pomodorosCompleted || 0) >= 2; } },
+    { id: 'reflect',   label: 'Write a journal reflection',           icon: '📓', check: function(d, s) { return (d.reflectionsSubmitted || 0) >= 1; } },
+    { id: 'storyWalk', label: 'Walk through a memory story',          icon: '📖', check: function(d, s) { return (d.storyWalkTokensEarnedToday || 0) >= 1; } },
+    { id: 'quiz',      label: 'Review a memory-palace flashcard',     icon: '🧠', check: function(d, s) { return (d.quizTokensEarnedToday || 0) >= 1; } },
+    { id: 'decor3',    label: 'Have at least 3 decorations',          icon: '🎨', check: function(d, s) { return (s.decorations || []).filter(function(x){return !x.isStarter;}).length >= 3; } },
+    { id: 'tokens5',   label: 'Earn at least 5 tokens today',         icon: '🪙', check: function(d, s) {
+        if (!s.earnings) return false;
+        var todayStr = d.date;
+        var sum = 0;
+        for (var i = 0; i < s.earnings.length; i++) {
+            var e = s.earnings[i];
+            if (e && e.date && e.date.slice(0, 10) === todayStr && e.tokens > 0) sum += e.tokens;
+        }
+        return sum >= 5;
+    } }
+  ];
+  // Pick N random non-overlapping quest ids from the pool. Seeded by date
+  // so the quests are stable for that day (same set if the user reloads).
+  function pickQuestsForDate(dateStr, count) {
+    if (!dateStr) return [];
+    // Tiny seeded shuffle from the date string so the same day always
+    // picks the same quests (don't want them to change mid-day).
+    var seed = 0;
+    for (var i = 0; i < dateStr.length; i++) seed = (seed * 31 + dateStr.charCodeAt(i)) | 0;
+    var pool = QUEST_POOL.slice();
+    var picked = [];
+    var remaining = Math.min(count, pool.length);
+    while (remaining > 0 && pool.length > 0) {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      var idx = seed % pool.length;
+      picked.push(pool[idx].id);
+      pool.splice(idx, 1);
+      remaining--;
+    }
+    return picked;
   }
 
   // ─────────────────────────────────────────────────────────
@@ -1091,7 +1158,7 @@
           h('textarea', {
             value: draft,
             onChange: function(e) { setDraft(e.target.value); },
-            placeholder: 'Take your time. Anything goes.',
+            placeholder: 'Take your time. Anything goes. Tip: wrap a {word} in braces to make it a fill-in-the-blank for self-quiz later.',
             'aria-label': 'Reflection text',
             rows: 6,
             style: {
@@ -1234,6 +1301,15 @@
     var draft = draftTuple[0];
     var setDraft = draftTuple[1];
 
+    // Cloze quiz state (Phase 2i) — when cloze markers exist in the entry,
+    // students can quiz themselves on their own writing. Active recall on
+    // your own words is a surprisingly strong consolidation move.
+    var clozeAnswers = extractClozeAnswers(entry.text || '');
+    var hasCloze = clozeAnswers.length > 0;
+    var quizTuple = useState(null); // null | { guesses, submitted, correctCount }
+    var quiz = quizTuple[0];
+    var setQuiz = quizTuple[1];
+
     var date = new Date(entry.date);
     var dateStr = date.toLocaleDateString() + ' · ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -1243,6 +1319,32 @@
       p.onEdit(trimmed);
       setEditing(false);
     }
+
+    function startQuiz() {
+      setQuiz({
+        guesses: clozeAnswers.map(function() { return ''; }),
+        submitted: false,
+        correctCount: 0
+      });
+    }
+    function updateGuess(blankIdx, val) {
+      var newGuesses = quiz.guesses.slice();
+      newGuesses[blankIdx] = val;
+      setQuiz(Object.assign({}, quiz, { guesses: newGuesses }));
+    }
+    function submitQuiz() {
+      var cc = 0;
+      for (var i = 0; i < clozeAnswers.length; i++) {
+        if (clozeAnswerCorrect(clozeAnswers[i], quiz.guesses[i])) cc++;
+      }
+      var pct = clozeAnswers.length > 0 ? Math.round((cc / clozeAnswers.length) * 100) : 0;
+      setQuiz(Object.assign({}, quiz, { submitted: true, correctCount: cc, scorePct: pct }));
+      // Token award via parent — same daily quiz cap as memory quiz
+      if (typeof p.onQuizComplete === 'function') {
+        p.onQuizComplete(entry.id, pct);
+      }
+    }
+    function exitQuiz() { setQuiz(null); }
 
     return h('div', {
       role: 'article',
@@ -1277,6 +1379,7 @@
         value: draft,
         onChange: function(e) { setDraft(e.target.value); },
         rows: 4,
+        placeholder: 'Tip: wrap a {word} in curly braces to make it a fill-in-blank for self-quiz.',
         style: {
           width: '100%',
           padding: '8px 10px',
@@ -1291,18 +1394,147 @@
           marginBottom: '8px',
           resize: 'vertical'
         }
-      }) : h('div', {
-        style: {
-          fontSize: '13px',
-          color: palette.text,
-          lineHeight: '1.55',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word',
-          marginBottom: '8px'
-        }
-      }, entry.text),
-      h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'flex-end' } },
-        editing ? [
+      }) : (
+        // Quiz mode for cloze-bearing entries
+        quiz ? (function() {
+          var segments = buildClozeSegments(entry.text || '');
+          if (quiz.submitted) {
+            return h('div', { style: { marginBottom: '8px' } },
+              h('div', {
+                style: {
+                  fontSize: '13px',
+                  color: palette.text,
+                  lineHeight: '1.7',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  marginBottom: '10px'
+                }
+              },
+                segments.map(function(seg, i) {
+                  if (seg.kind === 'text') return h('span', { key: 'js-' + i }, seg.value);
+                  var guess = quiz.guesses[seg.blankIdx] || '';
+                  var correct = clozeAnswerCorrect(seg.answer, guess);
+                  return h('span', {
+                    key: 'js-' + i,
+                    style: {
+                      background: correct ? 'rgba(52,211,153,0.18)' : 'rgba(251,191,36,0.18)',
+                      color: palette.text,
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      fontWeight: 700,
+                      borderBottom: '2px solid ' + (correct ? (palette.success || palette.accent) : (palette.warn || palette.accent))
+                    }
+                  }, seg.answer + (correct ? '' : ' (you: "' + (guess || '—') + '")'));
+                })
+              ),
+              h('div', {
+                style: {
+                  fontSize: '12px',
+                  color: palette.textDim,
+                  marginBottom: '8px',
+                  textAlign: 'center',
+                  fontWeight: 600
+                }
+              },
+                quiz.correctCount + ' / ' + clozeAnswers.length + ' correct · ' + quiz.scorePct + '%')
+            );
+          }
+          return h('div', { style: { marginBottom: '8px' } },
+            h('div', {
+              style: {
+                fontSize: '14px',
+                color: palette.text,
+                lineHeight: '2.0',
+                whiteSpace: 'pre-wrap',
+                wordBreak: 'break-word',
+                marginBottom: '10px'
+              }
+            },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'jq-' + i }, seg.value);
+                return h('input', {
+                  key: 'jq-' + i,
+                  type: 'text',
+                  value: quiz.guesses[seg.blankIdx] || '',
+                  onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
+                  'aria-label': 'Blank ' + (seg.blankIdx + 1),
+                  placeholder: '___',
+                  style: {
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '4px',
+                    color: palette.text,
+                    padding: '2px 8px',
+                    fontSize: 'inherit',
+                    fontFamily: 'inherit',
+                    margin: '0 2px',
+                    minWidth: '70px'
+                  }
+                });
+              })
+            )
+          );
+        })() : h('div', {
+          style: {
+            fontSize: '13px',
+            color: palette.text,
+            lineHeight: hasCloze ? '1.85' : '1.55',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            marginBottom: '8px'
+          }
+        },
+          // Render cloze answers visually-highlighted (answer-key view)
+          // when the entry has them, plain text otherwise
+          hasCloze ? (function() {
+            var segments = buildClozeSegments(entry.text || '');
+            return segments.map(function(seg, i) {
+              if (seg.kind === 'text') return h('span', { key: 'js-v-' + i }, seg.value);
+              return h('span', {
+                key: 'js-v-' + i,
+                style: {
+                  background: palette.accent,
+                  color: palette.onAccent,
+                  padding: '1px 6px',
+                  borderRadius: '4px',
+                  fontWeight: 700
+                }
+              }, seg.answer);
+            });
+          })() : entry.text
+        )
+      ),
+      h('div', { style: { display: 'flex', gap: '8px', justifyContent: quiz ? 'space-between' : 'flex-end', alignItems: 'center' } },
+        // Quiz state UI dominates when active
+        quiz ? (quiz.submitted ? [
+          h('button', {
+            key: 'qtagain',
+            onClick: function() {
+              setQuiz({
+                guesses: clozeAnswers.map(function() { return ''; }),
+                submitted: false,
+                correctCount: 0
+              });
+            },
+            style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Quiz again'),
+          h('button', {
+            key: 'qdone',
+            onClick: exitQuiz,
+            style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Done')
+        ] : [
+          h('button', {
+            key: 'qcancel',
+            onClick: exitQuiz,
+            style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Cancel'),
+          h('button', {
+            key: 'qcheck',
+            onClick: submitQuiz,
+            style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 14px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+          }, 'Check answers')
+        ]) : (editing ? [
           h('button', {
             key: 'cancel',
             onClick: function() { setDraft(entry.text || ''); setEditing(false); },
@@ -1334,6 +1566,24 @@
             }
           }, 'Save')
         ] : [
+          hasCloze ? h('button', {
+            key: 'quiz',
+            onClick: startQuiz,
+            'aria-label': 'Quiz yourself on this entry · ' + clozeAnswers.length + ' blanks',
+            title: 'Fill in the {braced} words from memory',
+            style: {
+              background: 'transparent',
+              color: palette.accent,
+              border: '1px solid ' + palette.accent,
+              borderRadius: '6px',
+              padding: '4px 12px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginRight: 'auto'
+            }
+          }, '📝 Quiz me · ' + clozeAnswers.length) : null,
           h('button', {
             key: 'edit',
             onClick: function() { setEditing(true); setDraft(entry.text || ''); },
@@ -1366,7 +1616,7 @@
               fontFamily: 'inherit'
             }
           }, '🗑')
-        ]
+        ])
       )
     );
   }
@@ -4327,11 +4577,141 @@
           reflectionsSubmitted: 0,
           promptsForToday: [],
           quizTokensEarnedToday: 0,
-          storyWalkTokensEarnedToday: 0
+          storyWalkTokensEarnedToday: 0,
+          // Pick 3 quests for the new day, deterministic by date so the
+          // student sees the same trio if they reload mid-day.
+          questIds: pickQuestsForDate(todayStr, 3),
+          questsClaimed: false
         });
+      } else if (!Array.isArray(state.dailyState.questIds) || state.dailyState.questIds.length === 0) {
+        // Backfill — first session after the quest system shipped won't
+        // have questIds yet; populate them without resetting the rest of
+        // the day's progress.
+        setStateField('dailyState', Object.assign({}, state.dailyState, {
+          questIds: pickQuestsForDate(todayStr, 3),
+          questsClaimed: false
+        }));
       }
       // eslint-disable-next-line
     }, [state.dailyState.date]);
+
+    // ── Reflection insights analysis ──
+    // Sends the last 14 journal entries' text to Gemini for summarization
+    // of mood themes + recurring topics + a 1-sentence reflection. Result
+    // is cached in state.insightsState so flipping between modals doesn't
+    // re-bill the call. Refresh button bypasses cache. Falls back to a
+    // local word-count + prompt-frequency view if Gemini errors or isn't
+    // wired (still useful: tells the student how much they've written).
+    function runInsightsAnalysis() {
+      var entries = (state.journalEntries || []).slice().sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      }).slice(0, 14);
+      if (entries.length === 0) return;
+      // Compute local stats first — these always work, no AI required.
+      var totalWords = 0;
+      var promptCounts = {};
+      for (var i = 0; i < entries.length; i++) {
+        var e = entries[i];
+        var words = (e.text || '').trim().split(/\s+/).filter(Boolean).length;
+        totalWords += words;
+        var pid = e.prompt || '(free write)';
+        promptCounts[pid] = (promptCounts[pid] || 0) + 1;
+      }
+      // Most-frequent prompt id → its full text (for display).
+      var topPromptId = null, topPromptCount = 0;
+      Object.keys(promptCounts).forEach(function(id) {
+        if (promptCounts[id] > topPromptCount) { topPromptId = id; topPromptCount = promptCounts[id]; }
+      });
+      var topPromptText = (PROMPT_BANK.find(function(p) { return p.id === topPromptId; }) || {}).text || topPromptId;
+      var localStats = {
+        entriesAnalyzed: entries.length,
+        wordCount: totalWords,
+        topPromptText: topPromptText,
+        topPromptCount: topPromptCount,
+        firstEntryDate: entries[entries.length - 1].date,
+        lastEntryDate: entries[0].date
+      };
+      if (typeof callGemini !== 'function') {
+        // No AI — show local stats only, no narrative summary.
+        setStateField('insightsState', {
+          loading: false,
+          summary: Object.assign({}, localStats, { moodSummary: null, themes: [] }),
+          error: null,
+          generatedAt: new Date().toISOString()
+        });
+        return;
+      }
+      setStateField('insightsState', { loading: true, summary: null, error: null, generatedAt: null });
+      // Build the prompt. Send entries newest-first so the model weights
+      // recency. Each entry: date + prompt + text. Cap each entry at 600
+      // chars to keep total prompt size manageable.
+      var entriesPayload = entries.map(function(e) {
+        var d = (e.date || '').slice(0, 10);
+        var promptText = e.prompt ? (PROMPT_BANK.find(function(p) { return p.id === e.prompt; }) || {}).text || '' : '';
+        var text = (e.text || '').slice(0, 600);
+        return '— ' + d + (promptText ? ' (' + promptText + ')' : '') + ': ' + text;
+      }).join('\n');
+      var insightsPrompt =
+        'You are reading a student\'s journal entries from the last 2 weeks (newest first). ' +
+        'Summarize gently and respectfully — this is private reflection, not data to evaluate. ' +
+        'Return STRICT JSON with these fields:\n' +
+        '  "moodSummary": one short sentence describing the overall emotional tone (e.g. "Mostly hopeful with a hard week mid-period"). Use first-person where natural ("you sound..."). NEVER diagnose.\n' +
+        '  "themes": array of 3-6 short noun phrases capturing recurring topics (e.g. "school pressure", "best friend", "sleep").\n' +
+        '  "encouragement": one short sentence of warm, non-prescriptive encouragement specific to what you read.\n' +
+        'Do NOT include any other fields. Do NOT add markdown fencing. Do NOT speculate beyond the text. If the entries are too short or sparse to summarize, return moodSummary as "Not enough yet" and themes:[].\n\n' +
+        'Entries:\n' + entriesPayload;
+      Promise.resolve()
+        .then(function() { return callGemini(insightsPrompt); })
+        .then(function(out) {
+          var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip code fences if Gemini wrapped them.
+          raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+          var parsed = null;
+          try { parsed = JSON.parse(raw); } catch (e) { /* fall through */ }
+          if (!parsed) throw new Error('Could not parse insights response');
+          setStateField('insightsState', {
+            loading: false,
+            summary: Object.assign({}, localStats, {
+              moodSummary: typeof parsed.moodSummary === 'string' ? parsed.moodSummary : null,
+              themes: Array.isArray(parsed.themes) ? parsed.themes.slice(0, 6) : [],
+              encouragement: typeof parsed.encouragement === 'string' ? parsed.encouragement : null
+            }),
+            error: null,
+            generatedAt: new Date().toISOString()
+          });
+        })
+        .catch(function(err) {
+          // Show local stats + error message — partial value beats nothing.
+          setStateField('insightsState', {
+            loading: false,
+            summary: Object.assign({}, localStats, { moodSummary: null, themes: [] }),
+            error: 'AI summary unavailable. Local stats shown below.',
+            generatedAt: new Date().toISOString()
+          });
+        });
+    }
+
+    // ── Quest claim ──
+    // Triggered when the user clicks the trifecta-claim button. Verifies
+    // all 3 quests are actually complete before granting the bonus, and
+    // marks dailyState.questsClaimed so it can't be claimed twice.
+    function claimQuestTrifecta() {
+      var ds = state.dailyState;
+      if (!ds || ds.questsClaimed) return;
+      var quests = (ds.questIds || []).map(function(id) {
+        return QUEST_POOL.find(function(q) { return q.id === id; });
+      }).filter(Boolean);
+      if (quests.length < 3) return;
+      var allDone = quests.every(function(q) { return q.check(ds, state); });
+      if (!allDone) return;
+      var bonus = 5;
+      setStateMulti({
+        tokens: state.tokens + bonus,
+        dailyState: Object.assign({}, ds, { questsClaimed: true }),
+        earnings: state.earnings.concat([{ source: 'quest-trifecta', tokens: bonus, date: new Date().toISOString() }])
+      });
+      addToast('🎉 Daily trifecta! +' + bonus + ' bonus tokens', 'success');
+    }
 
     // ── Esc to close ──
     useEffect(function() {
@@ -4742,6 +5122,40 @@
       setStateMulti(updates);
     }
 
+    // ── Reflection cloze quiz (Phase 2i) ──
+    // Awards a token (capped 1/day, shared with the memory-quiz cap) when
+    // a student scores ≥80% quizzing themselves on cloze blanks in their
+    // own journal entry. Active recall on your own writing is a strong
+    // memory move and gentle metacognitive prompt.
+    function recordReflectionQuiz(entryId, scorePct) {
+      var nowIso = new Date().toISOString();
+      var capHit = (state.dailyState.quizTokensEarnedToday || 0) >= 2;
+      var qualifies = scorePct >= 80;
+      var earned = (qualifies && !capHit) ? 1 : 0;
+
+      var updates = {};
+      if (earned > 0) {
+        updates.tokens = state.tokens + earned;
+        updates.earnings = state.earnings.concat([{
+          source: 'reflection-cloze-quiz',
+          tokens: earned,
+          date: nowIso,
+          metadata: { entryId: entryId, scorePct: scorePct }
+        }]);
+        updates.dailyState = Object.assign({}, state.dailyState, {
+          quizTokensEarnedToday: (state.dailyState.quizTokensEarnedToday || 0) + earned
+        });
+        setTimeout(function() {
+          addToast('🪙 +1 token. ' + Math.round(scorePct) + '% on your own words.');
+        }, 50);
+        setStateMulti(updates);
+      } else if (qualifies && capHit) {
+        addToast(Math.round(scorePct) + '% — daily quiz tokens already earned.');
+      } else {
+        addToast(Math.round(scorePct) + '% on cloze recall.');
+      }
+    }
+
     // ── Story method (Phase 2e) ──
     // Stories are top-level artifacts: an ordered chain of ≥3 decorations
     // with per-step narrative text. Walking a completed story is retrieval
@@ -5110,6 +5524,7 @@
         }
       },
         renderHeader(palette, state.tokens, props.onClose),
+        renderQuestPanel(),
         // Compute responsive row count based on slot count + columns
         // Wall stays 4 cols (2 cols on narrow); floor stays 6 cols (3 cols on narrow)
         // Grid auto-rows handles overflow; we don't pin a row count
@@ -5494,6 +5909,87 @@
             }
           }, '✕') : null
         )
+      );
+    }
+
+    // ── Daily-quests panel ──
+    // A compact 3-pill row showing today's randomly-picked quests with
+    // green checkmarks when complete. When all 3 are complete, a single
+    // "Claim trifecta · +5 🪙" button appears. Skipped after claim, and
+    // skipped quietly if questIds isn't populated yet (first session,
+    // backfill happens in the daily-rollover effect).
+    function renderQuestPanel() {
+      var ds = state.dailyState || {};
+      var ids = Array.isArray(ds.questIds) ? ds.questIds : [];
+      if (ids.length === 0) return null;
+      var quests = ids.map(function(id) {
+        return QUEST_POOL.find(function(q) { return q.id === id; });
+      }).filter(Boolean);
+      if (quests.length === 0) return null;
+      var completedCount = 0;
+      var questViews = quests.map(function(q) {
+        var done = q.check(ds, state);
+        if (done) completedCount++;
+        return h('div', {
+          key: q.id,
+          'aria-label': q.label + (done ? ' (complete)' : ' (in progress)'),
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '5px 10px',
+            background: done ? (palette.successSoft || palette.surface) : palette.surface,
+            border: '1px solid ' + (done ? palette.success : palette.border),
+            borderRadius: '999px',
+            fontSize: '12px',
+            color: done ? palette.success : palette.textDim,
+            fontWeight: 600,
+            opacity: done ? 1 : 0.85
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '13px' } }, done ? '✓' : (q.icon || '○')),
+          h('span', null, q.label)
+        );
+      });
+      var allDone = completedCount === quests.length;
+      var canClaim = allDone && !ds.questsClaimed;
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Today\'s gentle quests — optional bonus',
+        style: {
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 10px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '10px',
+          marginTop: '8px',
+          marginBottom: '8px'
+        }
+      },
+        h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase', marginRight: '4px' } },
+          'Today · ' + completedCount + '/' + quests.length),
+        questViews,
+        canClaim ? h('button', {
+          onClick: claimQuestTrifecta,
+          'aria-label': 'Claim daily trifecta bonus of 5 tokens',
+          style: {
+            marginLeft: 'auto',
+            padding: '6px 14px',
+            background: palette.accent,
+            color: palette.onAccent || '#fff',
+            border: 'none',
+            borderRadius: '999px',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit'
+          }
+        }, '🎉 Claim +5 🪙') : (ds.questsClaimed ? h('span', {
+          style: { marginLeft: 'auto', fontSize: '11px', color: palette.success, fontWeight: 700 }
+        }, '✓ Trifecta claimed') : null)
       );
     }
 
@@ -6277,6 +6773,155 @@
     }
 
     // ─────────────────────────────────────────────────
+    // INSIGHTS MODAL — reflection summary (mood themes + topics).
+    // Triggered from the journal modal's 📊 Insights button. Auto-fires
+    // the analysis on first open (when summary is null and not loading).
+    // Uses local stats as a fallback when callGemini isn't available
+    // OR if the AI response isn't parseable.
+    // ─────────────────────────────────────────────────
+    function renderInsightsModal() {
+      if (state.activeModal !== 'insights') return null;
+      var ins = state.insightsState || {};
+      // Auto-fire analysis on first open if there's no cached result.
+      if (!ins.loading && !ins.summary && !ins.error) {
+        // Defer one tick to avoid setState-during-render. setTimeout 0
+        // is fine here — the modal already rendered with the loading
+        // skeleton from the next render pass.
+        setTimeout(function() { runInsightsAnalysis(); }, 0);
+      }
+      var s = ins.summary || {};
+      var entries = state.journalEntries || [];
+      var enoughText = !s.moodSummary || s.moodSummary === 'Not enough yet' ? false : true;
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Reflection insights',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', 'journal');
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 180,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '520px',
+            width: '100%',
+            maxHeight: '85vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            color: palette.text
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+              '📊 Reflection insights'),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('button', {
+                onClick: function() { runInsightsAnalysis(); },
+                'aria-label': 'Refresh insights',
+                disabled: ins.loading,
+                title: ins.loading ? 'Analyzing…' : 'Run a fresh analysis',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px', opacity: ins.loading ? 0.6 : 1 })
+              }, ins.loading ? '…' : '↻ Refresh'),
+              h('button', {
+                onClick: function() { setStateField('activeModal', 'journal'); },
+                'aria-label': 'Back to journal',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '← Back')
+            )
+          ),
+          // Loading state
+          ins.loading ? h('p', { style: { color: palette.textDim, fontSize: '13px', fontStyle: 'italic', padding: '24px 8px', textAlign: 'center' } },
+            'Reading your last ' + Math.min(entries.length, 14) + ' entries…') : null,
+          // AI summary card (only when present)
+          !ins.loading && s.moodSummary && enoughText ? h('div', {
+            style: {
+              background: palette.surface,
+              border: '1px solid ' + palette.accent,
+              borderRadius: '10px',
+              padding: '14px 16px',
+              marginBottom: '12px'
+            }
+          },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.accent, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' } }, 'Tone'),
+            h('p', { style: { margin: '0 0 12px 0', color: palette.text, lineHeight: '1.6', fontSize: '14px' } }, s.moodSummary),
+            (Array.isArray(s.themes) && s.themes.length > 0) ? h('div', null,
+              h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.accent, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '8px' } }, 'Themes'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' } },
+                s.themes.map(function(t, i) {
+                  return h('span', {
+                    key: i,
+                    style: {
+                      padding: '3px 10px',
+                      background: palette.bg,
+                      border: '1px solid ' + palette.border,
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      color: palette.textDim
+                    }
+                  }, t);
+                })
+              )
+            ) : null,
+            s.encouragement ? h('p', { style: { margin: '0', color: palette.textDim, lineHeight: '1.6', fontSize: '13px', fontStyle: 'italic' } }, s.encouragement) : null
+          ) : null,
+          // Not-enough message when AI says insufficient data
+          !ins.loading && s.moodSummary === 'Not enough yet' ? h('p', {
+            style: { color: palette.textDim, fontSize: '13px', padding: '12px 4px', lineHeight: '1.6' }
+          }, 'Your entries so far are short or recent — keep journaling and a richer view will surface here.') : null,
+          // AI error / fallback notice
+          ins.error ? h('p', {
+            style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic' }
+          }, ins.error) : null,
+          // Local stats card — always shown, even on AI failure
+          !ins.loading && (s.entriesAnalyzed > 0) ? h('div', {
+            style: {
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '10px',
+              padding: '14px 16px'
+            }
+          },
+            h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '10px' } }, 'Your stats'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' } },
+              h('div', null,
+                h('div', { style: { fontSize: '24px', fontWeight: 800, color: palette.text } }, s.entriesAnalyzed),
+                h('div', { style: { fontSize: '11px', color: palette.textDim } }, s.entriesAnalyzed === 1 ? 'entry analyzed' : 'entries analyzed')
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: '24px', fontWeight: 800, color: palette.text } }, s.wordCount),
+                h('div', { style: { fontSize: '11px', color: palette.textDim } }, s.wordCount === 1 ? 'word written' : 'words written')
+              )
+            ),
+            s.topPromptText && s.topPromptCount > 1 ? h('p', {
+              style: { margin: '12px 0 0 0', fontSize: '12px', color: palette.textDim, lineHeight: '1.5' }
+            },
+              h('strong', null, 'Most-used prompt: '),
+              '"', s.topPromptText, '" (',
+              s.topPromptCount, ' time', s.topPromptCount === 1 ? '' : 's', ')'
+            ) : null
+          ) : null,
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, lineHeight: '1.5' }
+          }, 'Insights are reflective, not diagnostic. Your entries stay private — analysis runs once and the result is held in this session only.')
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
     // GENERATE MODAL — multi-step decoration creation.
     // Delegates to GenerateModalInner so its local state doesn't pollute
     // the outer component on close.
@@ -6376,15 +7021,29 @@
           }
         },
           h('div', {
-            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px', flexWrap: 'wrap' }
           },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '📓 Your journal · ' + entries.length),
-            h('button', {
-              onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close journal',
-              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
-            }, '✕')
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              // 📊 Insights button — opens a Gemini-powered summary of
+              // recent journal entries (mood themes, recurring topics,
+              // word counts). Only renders when there's enough data to
+              // be worth analyzing AND the host wired callGemini.
+              entries.length >= 3 && typeof callGemini === 'function' ? h('button', {
+                onClick: function() {
+                  setStateMulti({ activeModal: 'insights', insightsState: { loading: false, summary: null, error: null, generatedAt: null } });
+                },
+                'aria-label': 'View reflection insights',
+                title: 'Analyze recent entries for mood themes and recurring topics',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '12px' })
+              }, '📊 Insights') : null,
+              h('button', {
+                onClick: function() { setStateField('activeModal', null); },
+                'aria-label': 'Close journal',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            )
           ),
           entries.length === 0 ? h('p', {
             style: { color: palette.textDim, textAlign: 'center', padding: '24px 12px', fontStyle: 'italic' }
@@ -6399,7 +7058,8 @@
                 onDelete: function() {
                   if (window.confirm && !window.confirm('Delete this entry? Tokens already earned will not be refunded.')) return;
                   deleteJournalEntry(entry.id);
-                }
+                },
+                onQuizComplete: function(eid, pct) { recordReflectionQuiz(eid, pct); }
               });
             })
           ),
@@ -7067,6 +7727,7 @@
       renderStoryWalkModal(),
       renderReflectionModal(),
       renderJournalModal(),
+      renderInsightsModal(),
       renderDeleteDecorationModal(),
       renderSettingsModal(),
       renderWelcomeBackdrop(),
