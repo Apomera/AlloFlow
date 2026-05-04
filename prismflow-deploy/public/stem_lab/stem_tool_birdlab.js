@@ -3801,6 +3801,74 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // Currently-playing tone-sketch (one at a time across all cards)
         var playingId_state = useState(null);
         var playingId = playingId_state[0], setPlayingId = playingId_state[1];
+        // ── Listen-and-Identify mode state ──
+        // Picks a hidden call. Student plays tone, picks species blind.
+        var listenState_state = useState(function() {
+          // Random call + 4 distractors
+          var pool = FAMOUS_CALLS.slice();
+          for (var i = pool.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+          }
+          var target = pool[0];
+          var distractors = pool.slice(1, 4).map(function(c) { return c.species; });
+          var choices = distractors.concat([target.species]);
+          for (var k = choices.length - 1; k > 0; k--) {
+            var l = Math.floor(Math.random() * (k + 1));
+            var t2 = choices[k]; choices[k] = choices[l]; choices[l] = t2;
+          }
+          return { target: target, choices: choices, picked: null, score: 0, attempts: 0, streak: 0, bestStreak: 0 };
+        });
+        var listenState = listenState_state[0], setListenState = listenState_state[1];
+        function newListenRound(prev) {
+          var pool = FAMOUS_CALLS.slice();
+          // Avoid repeating the previous target
+          if (prev && prev.target) {
+            pool = pool.filter(function(c) { return c.species !== prev.target.species; });
+          }
+          for (var i = pool.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+          }
+          var target = pool[0];
+          var distractorPool = FAMOUS_CALLS.filter(function(c) { return c.species !== target.species; });
+          for (var i2 = distractorPool.length - 1; i2 > 0; i2--) {
+            var j2 = Math.floor(Math.random() * (i2 + 1));
+            var t3 = distractorPool[i2]; distractorPool[i2] = distractorPool[j2]; distractorPool[j2] = t3;
+          }
+          var distractors = distractorPool.slice(0, 3).map(function(c) { return c.species; });
+          var choices = distractors.concat([target.species]);
+          for (var k = choices.length - 1; k > 0; k--) {
+            var l = Math.floor(Math.random() * (k + 1));
+            var t4 = choices[k]; choices[k] = choices[l]; choices[l] = t4;
+          }
+          return {
+            target: target,
+            choices: choices,
+            picked: null,
+            score: prev ? prev.score : 0,
+            attempts: prev ? prev.attempts : 0,
+            streak: prev ? prev.streak : 0,
+            bestStreak: prev ? prev.bestStreak : 0
+          };
+        }
+        function pickListenAnswer(species) {
+          if (listenState.picked != null) return;
+          var correct = species === listenState.target.species;
+          var nextStreak = correct ? listenState.streak + 1 : 0;
+          var nextBest = Math.max(listenState.bestStreak, nextStreak);
+          setListenState(Object.assign({}, listenState, {
+            picked: species,
+            score: listenState.score + (correct ? 1 : 0),
+            attempts: listenState.attempts + 1,
+            streak: nextStreak,
+            bestStreak: nextBest
+          }));
+          announce(correct
+            ? ('Correct: ' + listenState.target.species + (nextStreak > 1 ? '. Streak ' + nextStreak : ''))
+            : ('Not quite — answer was ' + listenState.target.species)
+          );
+        }
         function toggleTonePlayback(id, mnemonic) {
           if (playingId === id) {
             // Stop
@@ -3995,7 +4063,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 onClick: function() { setMode('quiz'); announce('Match the song quiz mode'); },
                 className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
                   (mode === 'quiz' ? 'bg-violet-700 text-white border-violet-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-violet-500')
-              }, '🎯 Match the Song (' + quizPool.length + '-question quiz)')
+              }, '🎯 Match the Song (' + quizPool.length + '-question quiz)'),
+              h('button', {
+                role: 'tab', 'aria-selected': mode === 'listen' ? 'true' : 'false',
+                onClick: function() { setMode('listen'); announce('Listen and identify mode'); },
+                className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-violet-500/40 ' +
+                  (mode === 'listen' ? 'bg-violet-700 text-white border-violet-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-violet-500')
+              }, '🎧 Listen & Identify (audio-first)')
             ),
             // REFERENCE MODE
             mode === 'reference' && h('div', { className: 'space-y-3' },
@@ -4199,6 +4273,134 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 );
               })()
             ),
+            // ── LISTEN & IDENTIFY MODE ──
+            mode === 'listen' && (function() {
+              var listenPlayId = 'listen-' + listenState.attempts + '-' + (listenState.target ? listenState.target.id : '');
+              var isListenPlaying = playingId === listenPlayId;
+              var lt = listenState;
+              var revealed = lt.picked != null;
+              var correct = revealed && lt.picked === lt.target.species;
+              var pct = lt.attempts > 0 ? Math.round((lt.score / lt.attempts) * 100) : 0;
+              return h('div', { className: 'space-y-4' },
+                // Score header
+                h('div', { className: 'bg-white rounded-xl border-2 border-violet-300 shadow p-3 flex items-center justify-between gap-3 flex-wrap' },
+                  h('div', { className: 'flex items-baseline gap-3 flex-wrap text-sm' },
+                    h('div', null,
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Score'),
+                      h('span', { className: 'ml-1.5 font-mono font-bold text-violet-800' }, lt.score + ' / ' + lt.attempts)
+                    ),
+                    lt.attempts > 0 && h('div', null,
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Accuracy'),
+                      h('span', { className: 'ml-1.5 font-mono font-bold', style: { color: pct >= 70 ? '#059669' : pct >= 40 ? '#d97706' : '#dc2626' } }, pct + '%')
+                    ),
+                    lt.streak > 0 && h('div', { className: 'flex items-center gap-1' },
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Streak'),
+                      h('span', {
+                        className: 'ml-1.5 px-2 py-0.5 rounded-full text-xs font-bold',
+                        style: { background: lt.streak >= 5 ? '#fef3c7' : '#ede9fe', color: lt.streak >= 5 ? '#78350f' : '#5b21b6', border: '1.5px solid ' + (lt.streak >= 5 ? '#d97706' : '#8b5cf6') }
+                      }, '🔥 ' + lt.streak)
+                    ),
+                    lt.bestStreak > 1 && h('div', null,
+                      h('span', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, 'Best'),
+                      h('span', { className: 'ml-1.5 font-mono font-bold text-amber-700' }, lt.bestStreak)
+                    )
+                  ),
+                  h('button', {
+                    onClick: function() {
+                      // Reset score
+                      setListenState(newListenRound({ score: 0, attempts: 0, streak: 0, bestStreak: 0 }));
+                      announce('Reset');
+                    },
+                    className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 transition focus:outline-none focus:ring-2 ring-slate-400'
+                  }, '🔄 Reset score')
+                ),
+                // Listen prompt
+                h('div', { className: 'bg-white rounded-2xl border-2 border-violet-300 shadow p-5' },
+                  h('div', { className: 'text-center mb-4' },
+                    h('div', { className: 'text-xs font-bold uppercase tracking-widest text-violet-700 mb-2' }, '🎧 Listen and identify'),
+                    h('p', { className: 'text-sm text-slate-700 mb-4' },
+                      revealed
+                        ? 'Replay any number of times. Click ↻ Next call when ready.'
+                        : 'Press play to hear the synthesized rhythm. Pick the species you think it is.'),
+                    // Big play button
+                    h('button', {
+                      onClick: function() { toggleTonePlayback(listenPlayId, lt.target.mnemonic); },
+                      'aria-pressed': isListenPlaying ? 'true' : 'false',
+                      'aria-label': (isListenPlaying ? 'Stop tone sketch' : 'Play tone sketch') + ' for the hidden species',
+                      className: 'inline-flex items-center justify-center gap-2 rounded-full font-black transition focus:outline-none focus:ring-4 ring-violet-500/40 shadow-lg',
+                      style: {
+                        width: 88, height: 88, fontSize: 28,
+                        background: isListenPlaying ? 'linear-gradient(135deg, #be123c 0%, #f43f5e 100%)' : 'linear-gradient(135deg, #6d28d9 0%, #a78bfa 100%)',
+                        color: '#ffffff',
+                        border: isListenPlaying ? '3px solid #be123c' : '3px solid #5b21b6',
+                        boxShadow: isListenPlaying
+                          ? '0 0 0 6px rgba(244,63,94,0.18), 0 8px 18px rgba(190,18,60,0.35)'
+                          : '0 0 0 6px rgba(167,139,250,0.18), 0 8px 18px rgba(109,40,217,0.35)'
+                      }
+                    }, isListenPlaying ? '■' : '▶'),
+                    h('div', { className: 'text-[11px] mt-2 text-slate-700 italic' },
+                      isListenPlaying ? '🎶 Playing rhythm sketch…' : 'Synthesized rhythm only — open Merlin for the real call.')
+                  ),
+                  // Choices
+                  h('div', { className: 'space-y-2' },
+                    lt.choices.map(function(choice) {
+                      var sel = lt.picked === choice;
+                      var revealCorrect = revealed && choice === lt.target.species;
+                      var revealWrong = revealed && sel && !correct;
+                      var btnClass = 'w-full text-left p-3 rounded-lg border-2 text-sm transition focus:outline-none focus:ring-2 ring-violet-500/40 ';
+                      if (revealCorrect) btnClass += 'bg-emerald-100 border-emerald-500 text-emerald-900 font-semibold';
+                      else if (revealWrong) btnClass += 'bg-rose-100 border-rose-500 text-rose-900';
+                      else if (sel) btnClass += 'bg-violet-100 border-violet-500 text-violet-900';
+                      else btnClass += revealed ? 'bg-white border-slate-200 text-slate-600' : 'bg-white border-slate-300 hover:border-violet-400 text-slate-800';
+                      return h('button', {
+                        key: choice,
+                        onClick: function() { pickListenAnswer(choice); },
+                        role: 'radio', 'aria-checked': sel ? 'true' : 'false',
+                        'aria-disabled': revealed ? 'true' : 'false',
+                        className: btnClass
+                      },
+                        revealCorrect ? '✓ ' + choice : revealWrong ? '✗ ' + choice : choice
+                      );
+                    })
+                  ),
+                  // Reveal panel — show mnemonic + tip after answer
+                  revealed && h('div', {
+                    className: 'mt-4 p-4 rounded-xl border-2',
+                    style: correct
+                      ? { background: '#ecfdf5', borderColor: '#10b981' }
+                      : { background: '#fef3c7', borderColor: '#f59e0b' },
+                    'aria-live': 'polite'
+                  },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                      h('span', { 'aria-hidden': true, style: { fontSize: 22 } }, correct ? '✓' : '⚠'),
+                      h('span', { className: 'font-black', style: { color: correct ? '#065f46' : '#78350f' } },
+                        correct ? 'Correct!' : 'The answer was ' + lt.target.species + '.')
+                    ),
+                    h('p', { className: 'text-sm italic text-slate-800 mb-1' }, lt.target.mnemonic),
+                    h('p', { className: 'text-xs text-slate-700 leading-relaxed mb-1' },
+                      h('strong', null, 'What it sounds like: '), lt.target.description),
+                    h('p', { className: 'text-xs text-emerald-800 leading-relaxed' },
+                      h('strong', null, '💡 Tip: '), lt.target.tip)
+                  ),
+                  // Action buttons
+                  h('div', { className: 'mt-4 flex gap-2 flex-wrap justify-center' },
+                    revealed && h('button', {
+                      onClick: function() {
+                        setListenState(newListenRound(lt));
+                      },
+                      className: 'px-5 py-2 rounded-xl bg-violet-700 text-white font-bold text-sm hover:bg-violet-800 transition focus:outline-none focus:ring-4 ring-violet-500/40'
+                    }, '↻ Next call →')
+                  )
+                ),
+                // Coaching note
+                h('div', { className: 'p-4 bg-emerald-50 border-2 border-emerald-300 rounded-xl text-sm text-slate-800' },
+                  h('strong', { className: 'text-emerald-900' }, '🦻 Why audio-first matters: '),
+                  'In real birding you hear birds long before you see them. Most warblers in summer foliage are heard, not seen. Every birder you meet who can ID 50+ species by sound got there by repeated listen-and-guess practice. This drill is the same exercise — just with synthesized tones instead of recordings. For the real audio, ',
+                  h('strong', { className: 'font-mono' }, 'Merlin Bird ID'),
+                  ' (Cornell Lab) is free.'
+                )
+              );
+            })(),
             h(TeacherNotes, {
               standards: ['NGSS HS-LS4-2 (Adaptation evidence)', 'NGSS MS-LS1-4 (Behavioral roles in survival)', 'CTE Family & Consumer Sciences (observation skills)'],
               questions: [
