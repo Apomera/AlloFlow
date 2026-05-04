@@ -4868,42 +4868,47 @@
         : pct >= 50
         ? 'Solid effort. Try again later to lock it in.'
         : 'A start. Coming back tomorrow is how memory works.';
+      // Phase 2p.9 — when this quiz is part of a review queue, swap the
+      // bottom buttons for "Next deck" / "Stop queue" so the student
+      // moves through the queue naturally instead of returning to view.
+      var inQueue = !!(p.queueInfo && typeof p.onAdvanceQueue === 'function');
+      var queueLabel = inQueue
+        ? 'Deck ' + p.queueInfo.current + ' of ' + p.queueInfo.total + ' done'
+        : null;
       return h('div', { style: { textAlign: 'center', padding: '20px 0' } },
-        h('div', { style: { fontSize: '56px', marginBottom: '10px' } }, emoji),
+        inQueue ? h('div', {
+          style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }
+        }, queueLabel) : null,
+        h('div', { 'aria-hidden': 'true', style: { fontSize: '56px', marginBottom: '10px' } }, emoji),
         h('div', { style: { fontSize: '32px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums' } },
           pct + '%'),
         h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px' } },
           quiz.correctCount + ' of ' + quiz.totalCount + ' correct'),
         h('p', { style: { fontSize: '13px', color: palette.textDim, marginTop: '14px', lineHeight: '1.55' } }, msg),
         h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '18px' } },
-          h('button', {
-            onClick: function() { setMode('view'); setQuiz(null); },
-            style: {
-              background: 'transparent',
-              color: palette.textDim,
-              border: '1px solid ' + palette.border,
-              borderRadius: '8px',
-              padding: '8px 18px',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'inherit'
-            }
-          }, 'Done'),
-          h('button', {
-            onClick: startQuiz,
-            style: {
-              background: palette.accent,
-              color: palette.onAccent,
-              border: 'none',
-              borderRadius: '8px',
-              padding: '8px 20px',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit'
-            }
-          }, 'Quiz again')
+          inQueue ? [
+            h('button', {
+              key: 'q-stop',
+              onClick: p.onClose,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Stop queue'),
+            h('button', {
+              key: 'q-next',
+              onClick: function() { p.onAdvanceQueue(pct); },
+              style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, p.queueInfo.current >= p.queueInfo.total ? '✓ Finish queue' : 'Next deck ▶')
+          ] : [
+            h('button', {
+              key: 'done',
+              onClick: function() { setMode('view'); setQuiz(null); },
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Done'),
+            h('button', {
+              key: 'again',
+              onClick: startQuiz,
+              style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Quiz again')
+          ]
         )
       );
     }
@@ -4951,7 +4956,9 @@
               style: { width: '44px', height: '44px', borderRadius: '6px', objectFit: 'contain', background: palette.surface, border: '1px solid ' + palette.border }
             }) : null,
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '17px', fontWeight: 700 } },
-              hasContent ? 'Memory · ' + label : 'Add memory · ' + label)
+              p.queueInfo
+                ? 'Review queue · deck ' + p.queueInfo.current + ' of ' + p.queueInfo.total + ' · ' + label
+                : (hasContent ? 'Memory · ' + label : 'Add memory · ' + label))
           ),
           h('button', {
             onClick: p.onClose,
@@ -7127,6 +7134,75 @@
       });
       setStateField('decorations', newDecorations);
       addToast('Memory content removed.');
+    }
+
+    // ── Review queue (Phase 2p.9) ──
+    // Sequential auto-advance through all currently due decks. Queue
+    // is stored on state.generateContext.reviewQueue when an active
+    // memory modal is part of a queue traversal. advanceReviewQueue()
+    // either opens the next deck or shows the summary modal.
+
+    function startReviewQueue() {
+      var dueDecks = (state.decorations || []).filter(function(d) {
+        return d.linkedContent && isMemoryDue(d);
+      });
+      if (dueDecks.length === 0) {
+        addToast('No decks due for review right now.');
+        return;
+      }
+      // Sort due decks oldest-reviewed-first (same priority as companion picker)
+      dueDecks.sort(function(a, b) {
+        var aR = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
+        var bR = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
+        if (!aR && bR) return -1;
+        if (aR && !bR) return 1;
+        return aR.localeCompare(bR);
+      });
+      var queue = dueDecks.map(function(d) { return d.id; });
+      // Open first deck with queue context attached
+      setStateMulti({
+        activeModal: 'memory',
+        generateContext: {
+          decorationId: queue[0],
+          autoStartQuiz: true,
+          reviewQueue: { decks: queue, currentIdx: 0, results: [] }
+        }
+      });
+    }
+
+    // Called by MemoryModalInner via onAdvanceQueue prop after a deck\'s
+    // quiz finishes. Records the score in the queue results, then either
+    // opens the next deck or shows the summary.
+    function advanceReviewQueue(scorePct) {
+      var ctx = state.generateContext || {};
+      var q = ctx.reviewQueue;
+      if (!q) {
+        // No queue active — fall through to default (close memory modal)
+        setStateMulti({ activeModal: null, generateContext: null });
+        return;
+      }
+      var newResults = (q.results || []).concat([{
+        decorationId: q.decks[q.currentIdx],
+        scorePct: scorePct
+      }]);
+      var nextIdx = q.currentIdx + 1;
+      if (nextIdx >= q.decks.length) {
+        // Queue complete — show summary
+        setStateMulti({
+          activeModal: 'review-queue-summary',
+          generateContext: { reviewQueue: Object.assign({}, q, { results: newResults }) }
+        });
+      } else {
+        // Advance to next deck
+        setStateMulti({
+          activeModal: 'memory',
+          generateContext: {
+            decorationId: q.decks[nextIdx],
+            autoStartQuiz: true,
+            reviewQueue: Object.assign({}, q, { currentIdx: nextIdx, results: newResults })
+          }
+        });
+      }
     }
 
     // Award token for a quiz session if score ≥80% AND daily cap not hit.
@@ -10133,7 +10209,13 @@
           },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
-            h('div', { style: { display: 'flex', gap: '6px' } },
+            h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+              h('button', {
+                onClick: function() { setStateField('activeModal', 'weekly-summary'); },
+                'aria-label': 'Show last 7 days summary',
+                title: 'Quick 7-day snapshot — what you did, how you felt, what you unlocked',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '🗓️ Last 7 days'),
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
                 onClick: function() { setStateField('activeModal', 'clinical-review'); },
                 'aria-label': 'Review packet on screen',
@@ -10278,16 +10360,34 @@
 
           // Due section
           due.length > 0 ? h('div', { style: { marginBottom: '14px' } },
-            h('div', {
-              style: {
-                fontSize: '11px',
-                color: palette.warn || palette.accent,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                letterSpacing: '0.06em',
-                marginBottom: '8px'
-              }
-            }, '⚡ Due for review · ' + due.length),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' } },
+              h('div', {
+                style: {
+                  fontSize: '11px',
+                  color: palette.warn || palette.accent,
+                  fontWeight: 700,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em'
+                }
+              }, '⚡ Due for review · ' + due.length),
+              // Phase 2p.9 — sequential review-all queue
+              due.length >= 2 ? h('button', {
+                onClick: function() { startReviewQueue(); },
+                'aria-label': 'Review all ' + due.length + ' due decks in sequence',
+                title: 'Sequential quiz through every due deck. Stop any time.',
+                style: {
+                  background: palette.accent,
+                  color: palette.onAccent,
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '5px 12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, '↻ Review all ' + due.length) : null
+            ),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               due.map(function(d) { return renderOverviewRow(d, palette, 'due'); })
             )
@@ -10649,11 +10749,22 @@
         setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
         return null;
       }
+      // Phase 2p.9 — queue info passed through when this modal is part
+      // of a review-queue traversal. MemoryModalInner uses it to render
+      // a "Next deck" button on the quiz result screen instead of "Done".
+      var queueInfo = null;
+      if (ctx.reviewQueue) {
+        queueInfo = {
+          current: ctx.reviewQueue.currentIdx + 1,
+          total: ctx.reviewQueue.decks.length
+        };
+      }
       return h(MemoryModalInner, {
         decoration: decoration,
         allDecorations: state.decorations,
         palette: palette,
         autoStartQuiz: !!ctx.autoStartQuiz,
+        queueInfo: queueInfo,
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
         },
@@ -10667,6 +10778,7 @@
         onQuizComplete: function(scorePct) {
           recordQuizSession(decorationId, scorePct);
         },
+        onAdvanceQueue: ctx.reviewQueue ? function(scorePct) { advanceReviewQueue(scorePct); } : null,
         onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); },
         onSetSubjects: function(subjectIds) { setDecorationSubjects(decorationId, subjectIds); }
       });
@@ -11870,6 +11982,289 @@
     // without printing. "Print this view" button at bottom triggers
     // the print packet flow.
     // ─────────────────────────────────────────────────
+    // Weekly summary modal (Phase 2p.9) — digestible 7-day snapshot
+    // with companion\'s reflection on the week. Different use case from
+    // the print packet (the comprehensive portfolio); weekly summary
+    // is the moment-in-time snapshot a parent / clinician would
+    // glance at on a Friday.
+    function renderWeeklySummaryModal() {
+      if (state.activeModal !== 'weekly-summary') return null;
+      var nowMs = Date.now();
+      var weekAgo = nowMs - 7 * 24 * 60 * 60 * 1000;
+      // Aggregate
+      var earningsThisWeek = (state.earnings || []).filter(function(e) {
+        return e.date && new Date(e.date).getTime() >= weekAgo;
+      });
+      var pomThisWeek = earningsThisWeek.filter(function(e) {
+        return e.source === 'pomodoro' || e.source === 'cycle-bonus';
+      }).length;
+      var reflThisWeek = (state.journalEntries || []).filter(function(e) {
+        return e.date && new Date(e.date).getTime() >= weekAgo;
+      }).length;
+      var quizThisWeek = earningsThisWeek.filter(function(e) {
+        return e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz';
+      }).length;
+      var walksThisWeek = earningsThisWeek.filter(function(e) {
+        return e.source === 'story-walk';
+      }).length;
+      var newDecsThisWeek = (state.decorations || []).filter(function(d) {
+        return !d.isStarter && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgo;
+      });
+      var tokensThisWeek = earningsThisWeek.reduce(function(s, e) { return s + (e.tokens || 0); }, 0);
+
+      // Days active this week
+      var daysActive = {};
+      earningsThisWeek.forEach(function(e) {
+        if (!e.date) return;
+        daysActive[e.date.slice(0, 10)] = true;
+      });
+      (state.journalEntries || []).forEach(function(j) {
+        if (!j.date) return;
+        var t = new Date(j.date).getTime();
+        if (t >= weekAgo) daysActive[j.date.slice(0, 10)] = true;
+      });
+      var daysActiveCount = Object.keys(daysActive).length;
+
+      // Top mood + subject from this week\'s decorations
+      var moodCounts = {}, subjCounts = {};
+      newDecsThisWeek.forEach(function(d) {
+        if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1;
+        (d.subjects || []).forEach(function(s) { subjCounts[s] = (subjCounts[s] || 0) + 1; });
+      });
+      function topKey(counts) {
+        var top = null, topN = 0;
+        Object.keys(counts).forEach(function(k) {
+          if (counts[k] > topN) { topN = counts[k]; top = k; }
+        });
+        return top;
+      }
+      var topMood = topKey(moodCounts);
+      var topSubj = topKey(subjCounts);
+
+      // Achievements unlocked this week
+      var ach = state.achievements || {};
+      var weeklyAchievements = ACHIEVEMENT_CATALOG.filter(function(a) {
+        if (!ach[a.id]) return false;
+        return new Date(ach[a.id].unlockedAt).getTime() >= weekAgo;
+      });
+
+      // Companion reflection — woven from facts available
+      var companion = state.companion;
+      var sp = companion && companion.species ? getCompanionSpecies(companion.species) : null;
+      var compName = (companion && companion.name) || (sp ? sp.label : 'Your buddy');
+      var reflectionLines = [];
+      if (daysActiveCount === 7) reflectionLines.push('You showed up every day this week — quietly proud.');
+      else if (daysActiveCount >= 4) reflectionLines.push('You showed up ' + daysActiveCount + ' days this week.');
+      else if (daysActiveCount >= 1) reflectionLines.push('You showed up ' + daysActiveCount + ' day' + (daysActiveCount === 1 ? '' : 's') + ' this week — that counts.');
+      else reflectionLines.push('A quiet week. Tomorrow is a fresh start.');
+      if (pomThisWeek > 0) reflectionLines.push('Focused ' + pomThisWeek + ' time' + (pomThisWeek === 1 ? '' : 's') + '.');
+      if (quizThisWeek > 0) reflectionLines.push('Passed ' + quizThisWeek + ' memory quiz' + (quizThisWeek === 1 ? '' : 'zes') + '.');
+      if (walksThisWeek > 0) reflectionLines.push('Walked ' + walksThisWeek + ' stor' + (walksThisWeek === 1 ? 'y' : 'ies') + '.');
+      if (newDecsThisWeek.length > 0) reflectionLines.push('Added ' + newDecsThisWeek.length + ' new decoration' + (newDecsThisWeek.length === 1 ? '' : 's') + ' to the room.');
+      if (topMood) {
+        var mo = getMoodOption(topMood);
+        if (mo) reflectionLines.push('Mood that showed up most: ' + mo.emoji + ' ' + mo.label + '.');
+      }
+      if (topSubj) {
+        for (var si = 0; si < SUBJECT_TAGS.length; si++) {
+          if (SUBJECT_TAGS[si].id === topSubj) {
+            reflectionLines.push('Subject that came up most: ' + SUBJECT_TAGS[si].emoji + ' ' + SUBJECT_TAGS[si].label + '.');
+            break;
+          }
+        }
+      }
+      if (weeklyAchievements.length > 0) {
+        reflectionLines.push(weeklyAchievements.length + ' achievement' + (weeklyAchievements.length === 1 ? '' : 's') + ' unlocked: '
+          + weeklyAchievements.map(function(a) { return a.label; }).join(', ') + '.');
+      }
+      var reflectionText = reflectionLines.join(' ');
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Weekly summary',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '560px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '🗓️ Last 7 days'),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close weekly summary',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          // Stats grid
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: '8px', marginBottom: '16px' } },
+            [
+              { label: 'Days active', value: daysActiveCount, max: 7 },
+              { label: 'Tokens earned', value: tokensThisWeek },
+              { label: 'Pomodoros', value: pomThisWeek },
+              { label: 'Reflections', value: reflThisWeek },
+              { label: 'Quizzes passed', value: quizThisWeek },
+              { label: 'Story walks', value: walksThisWeek },
+              { label: 'New decorations', value: newDecsThisWeek.length },
+              { label: 'Achievements', value: weeklyAchievements.length }
+            ].map(function(s, i) {
+              return h('div', {
+                key: 'ws-' + i,
+                style: { padding: '10px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', textAlign: 'center' }
+              },
+                h('div', { style: { fontSize: '20px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums', lineHeight: '1.0' } },
+                  s.value + (typeof s.max !== 'undefined' ? '/' + s.max : '')),
+                h('div', { style: { fontSize: '10px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginTop: '4px' } }, s.label)
+              );
+            })
+          ),
+          // Companion reflection
+          companion && companion.species ? h('div', {
+            role: 'region',
+            'aria-label': 'Companion reflection on the week',
+            style: { display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '12px 14px', background: palette.surface, border: '1.5px solid ' + palette.accent, borderRadius: '10px', marginBottom: '14px' }
+          },
+            h('div', { style: { width: '50px', height: '50px', flexShrink: 0 } },
+              getCompanionSvg(companion.species, getCompanionPalette(companion.species, companion.colorVariant), { blinking: false })
+            ),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } },
+                compName + ' reflects:'),
+              h('p', { style: { fontSize: '13px', color: palette.text, lineHeight: '1.55', margin: 0, fontStyle: 'italic' } },
+                '"' + reflectionText + '"')
+            )
+          ) : null,
+          // Quick "new goal" CTA when no active goals exist
+          (function() {
+            var activeCount = (state.goals || []).filter(function(g) {
+              if (g.completedAt) return false;
+              var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+              return endMs >= nowMs;
+            }).length;
+            if (activeCount > 0) return null;
+            return h('div', {
+              style: { padding: '10px 12px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '8px', textAlign: 'center' }
+            },
+              h('p', { style: { fontSize: '12px', color: palette.textDim, margin: '0 0 8px 0', lineHeight: '1.5' } },
+                'Want to set a goal for next week?'),
+              h('button', {
+                onClick: function() {
+                  setStateField('activeModal', null);
+                  setTimeout(createGoal, 80);
+                },
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
+              }, '🎯 Set a goal')
+            );
+          })()
+        )
+      );
+    }
+
+    // Review queue summary (Phase 2p.9) — fires after the last deck
+    // in the queue completes. Shows per-deck score breakdown + total
+    // cards correct / overall pct + companion congratulation bubble.
+    function renderReviewQueueSummaryModal() {
+      if (state.activeModal !== 'review-queue-summary') return null;
+      var ctx = state.generateContext || {};
+      var q = ctx.reviewQueue;
+      if (!q || !q.results) {
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      var totalDecks = q.results.length;
+      var avgPct = totalDecks > 0
+        ? Math.round(q.results.reduce(function(s, r) { return s + (r.scorePct || 0); }, 0) / totalDecks)
+        : 0;
+      var passedDecks = q.results.filter(function(r) { return (r.scorePct || 0) >= 80; }).length;
+      var emoji = avgPct >= 90 ? '🌟' : avgPct >= 80 ? '✨' : avgPct >= 50 ? '🌱' : '💪';
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Review queue summary',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateMulti({ activeModal: null, generateContext: null });
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '2px solid ' + palette.accent,
+            borderRadius: '14px', padding: '28px',
+            maxWidth: '500px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            textAlign: 'center'
+          }
+        },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: '56px', marginBottom: '8px' } }, emoji),
+          h('h3', { style: { margin: '0 0 14px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
+            'Review queue complete'),
+          h('div', {
+            style: { fontSize: '40px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums', lineHeight: '1.0' }
+          }, avgPct + '%'),
+          h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px', marginBottom: '20px' } },
+            'Average across ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's') + ' · ' + passedDecks + ' passed'),
+          // Per-deck breakdown
+          h('div', { style: { textAlign: 'left', marginBottom: '20px', padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' } },
+            q.results.map(function(r, i) {
+              var dec = state.decorations.filter(function(d) { return d.id === r.decorationId; })[0];
+              var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed)';
+              var pct = r.scorePct || 0;
+              var color = pct >= 80 ? (palette.success || palette.accent)
+                        : pct >= 50 ? palette.accent
+                        : (palette.warn || palette.textMute);
+              return h('div', {
+                key: 'qr-' + i,
+                style: {
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  padding: '6px 0',
+                  borderBottom: i < q.results.length - 1 ? '1px solid ' + palette.border : 'none'
+                }
+              },
+                h('div', null,
+                  dec && dec.imageBase64 ? h('img', {
+                    src: dec.imageBase64, alt: '', 'aria-hidden': 'true',
+                    style: { width: '24px', height: '24px', verticalAlign: 'middle', marginRight: '8px', borderRadius: '4px' }
+                  }) : null,
+                  h('span', { style: { fontSize: '13px', color: palette.text } }, dLabel)
+                ),
+                h('span', { style: { fontSize: '13px', fontWeight: 700, color: color, fontVariantNumeric: 'tabular-nums' } },
+                  pct + '%')
+              );
+            })
+          ),
+          h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '18px', lineHeight: '1.5', fontStyle: 'italic' } },
+            avgPct >= 80
+              ? 'Strong session. Memory shapes itself this way.'
+              : avgPct >= 50
+              ? 'Solid effort. The decks that wobbled will surface again later.'
+              : 'A start. Real retrieval reps add up — coming back is what matters.'),
+          h('button', {
+            onClick: function() { setStateMulti({ activeModal: null, generateContext: null }); },
+            style: Object.assign({}, primaryBtnStyle(palette), { padding: '10px 28px' })
+          }, '✓ Done')
+        )
+      );
+    }
+
     function renderClinicalReviewModal() {
       if (state.activeModal !== 'clinical-review') return null;
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
@@ -12713,6 +13108,8 @@
       renderAchievementsModal(),
       renderCompanionSetupModal(),
       renderTourModal(),
+      renderReviewQueueSummaryModal(),
+      renderWeeklySummaryModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderInsightsModal(),
