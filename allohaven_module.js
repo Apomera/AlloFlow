@@ -6369,7 +6369,9 @@
           lastBubbleAt: null,
           lastBubbleText: null,
           lastQuizPromptDeckId: null,
-          lastQuizPromptDismissedAt: null
+          lastQuizPromptDismissedAt: null,
+          happiness: 0,             // Phase 2p.8 — petting builds this
+          lastPettedAt: null
         }, merged.companion);
         // Normalize skillCelebrations even if present-but-incomplete
         merged.companion.skillCelebrations = Object.assign(
@@ -7756,6 +7758,10 @@
     var pupilOffsetTuple = useState({ x: 0, y: 0 });
     var pupilOffset = pupilOffsetTuple[0];
     var setPupilOffset = pupilOffsetTuple[1];
+    // Petting (Phase 2p.8) — mousedown timer + a "just fired" guard so the
+    // mouseup that follows a long-hold doesn\'t also fire a click bounce
+    var pettingTimerRef = useRef(null);
+    var pettingJustFiredRef = useRef(false);
 
     // Random-cadence blink (4-7s between blinks, 120ms blink duration)
     useEffect(function() {
@@ -7773,6 +7779,22 @@
       return function() { if (nextBlink) clearTimeout(nextBlink); };
       // eslint-disable-next-line
     }, [state.companion ? state.companion.species : null]);
+
+    // Happiness decay (Phase 2p.8) — companion happiness slowly fades
+    // over time so petting feels meaningful. Once-per-mount: compute
+    // days since lastPettedAt and decrement happiness accordingly. No
+    // daily punishment vibe — happiness can only drop to 0, never below.
+    useEffect(function() {
+      var c = state.companion;
+      if (!c || !c.species) return;
+      if (!c.lastPettedAt || !(c.happiness > 0)) return;
+      var daysSince = Math.floor((Date.now() - new Date(c.lastPettedAt).getTime()) / (24 * 60 * 60 * 1000));
+      if (daysSince <= 0) return;
+      var decayed = Math.max(0, (c.happiness || 0) - daysSince);
+      if (decayed === c.happiness) return;
+      saveCompanion({ happiness: decayed });
+      // eslint-disable-next-line
+    }, []);
 
     // First-visit bubble — fire once when companion exists + no recent bubble
     useEffect(function() {
@@ -8715,6 +8737,11 @@
       var showBubble = bubbleText && bubbleAge < 12000;
 
       function handleClick() {
+        // Suppressed if a long-hold petting just fired (set by handlePetEnd)
+        if (pettingJustFiredRef && pettingJustFiredRef.current) {
+          pettingJustFiredRef.current = false;
+          return;
+        }
         setReacting(true);
         setTimeout(function() { setReacting(false); }, 600);
         refreshCompanionBubble();
@@ -8723,6 +8750,41 @@
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           handleClick();
+        }
+      }
+      // Petting (Phase 2p.8) — mousedown for ≥1.5s fires a happy reaction
+      // distinct from click-bounce. Bumps companion.happiness (max 10);
+      // happiness slowly decays (in saveCompanion / scheduled tick).
+      function handlePetStart() {
+        if (pettingTimerRef.current) clearTimeout(pettingTimerRef.current);
+        pettingTimerRef.current = setTimeout(function() {
+          // Fire happy reaction
+          var c = state.companion || {};
+          var sp2 = getCompanionSpecies(c.species);
+          var nextHappiness = Math.min(10, (c.happiness || 0) + 1);
+          var happyLines = {
+            cat:    'Hmm. Pleasant.',
+            fox:    'Heh. That\'s nice.',
+            owl:    'Quietly content.',
+            turtle: 'Cozy.',
+            dragon: 'Whoa! That tickles!'
+          };
+          saveCompanion({
+            happiness: nextHappiness,
+            lastPettedAt: new Date().toISOString(),
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: (happyLines[c.species] || happyLines.cat) + ' (♥)'
+          });
+          setReacting(true);
+          setTimeout(function() { setReacting(false); }, 800);
+          pettingJustFiredRef.current = true;
+          pettingTimerRef.current = null;
+        }, 1500);
+      }
+      function handlePetEnd() {
+        if (pettingTimerRef.current) {
+          clearTimeout(pettingTimerRef.current);
+          pettingTimerRef.current = null;
         }
       }
       function handleMove(e) {
@@ -8880,7 +8942,11 @@
             onClick: function() { if (!sleeping) handleClick(); },
             onKeyDown: function(e) { if (!sleeping) handleKey(e); },
             onMouseMove: function(e) { if (!sleeping) handleMove(e); },
-            onMouseLeave: function(e) { if (!sleeping) handleLeave(e); },
+            onMouseLeave: function(e) { if (!sleeping) { handleLeave(e); handlePetEnd(); } },
+            onMouseDown: function() { if (!sleeping) handlePetStart(); },
+            onMouseUp: function() { if (!sleeping) handlePetEnd(); },
+            onTouchStart: function() { if (!sleeping) handlePetStart(); },
+            onTouchEnd: function() { if (!sleeping) handlePetEnd(); },
             style: {
               position: 'relative',
               width: '76px',
@@ -8935,7 +9001,31 @@
                 boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
                 pointerEvents: 'none'
               }
-            }, '?') : null
+            }, '?') : null,
+            // Happiness ❤ indicator (Phase 2p.8) — tiny pink heart in
+            // the corner when companion has been petted recently. Fades
+            // in/out as happiness rises/falls. Suppressed in sleep pose.
+            (!sleeping && (companion.happiness || 0) >= 5) ? h('span', {
+              'aria-label': 'Companion happiness: ' + companion.happiness + ' of 10',
+              title: 'Happy buddy (long-press to pet again)',
+              style: {
+                position: 'absolute',
+                bottom: '-4px',
+                left: '-4px',
+                fontSize: '11px',
+                color: '#ff6b9d',
+                background: palette.bg,
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid ' + palette.bg,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                pointerEvents: 'none'
+              }
+            }, '❤') : null
           );
         })(),
         // Tiny name + edit affordance
@@ -9531,6 +9621,195 @@
     // "click each decoration to remember what's where" UX gap.
     // ─────────────────────────────────────────────────
 
+    // ── Activity heatmap (Phase 2p.8) ──
+    // 90-day calendar grid showing activity intensity per day. Colors
+    // scale from neutral (no activity) through accent shades (more
+    // activity). NO red / negative coloring on idle days — this is
+    // visibility, not punishment. Engagement evidence for IEP teams +
+    // visual reward for students. Renders only with ≥1 earning event.
+    function renderActivityHeatmap() {
+      var earnings = state.earnings || [];
+      var decorations = state.decorations || [];
+      var journals = state.journalEntries || [];
+      if (earnings.length === 0 && journals.length === 0 && decorations.length === 0) return null;
+
+      var DAYS = 91; // 13 weeks × 7 days
+      var msPerDay = 24 * 60 * 60 * 1000;
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var todayMs = today.getTime();
+      // Align grid so the LAST column is the current week (Sunday-start)
+      // Find the most recent Saturday (end of current week)
+      var dowToday = today.getDay(); // 0=Sun..6=Sat
+      var daysToSatEnd = (6 - dowToday); // days from today to upcoming Saturday
+      var endDay = new Date(todayMs + daysToSatEnd * msPerDay);
+      var startMs = endDay.getTime() - (DAYS - 1) * msPerDay;
+
+      // Per-day activity buckets: tokens earned + journals written + decorations placed
+      var perDay = {};
+      function bucketFor(dateLike) {
+        if (!dateLike) return null;
+        var t = new Date(dateLike).getTime();
+        if (isNaN(t)) return null;
+        if (t < startMs || t > endDay.getTime() + msPerDay) return null;
+        var dayKey = new Date(t); dayKey.setHours(0, 0, 0, 0);
+        var iso = dayKey.toISOString().slice(0, 10);
+        if (!perDay[iso]) perDay[iso] = { tokens: 0, pomodoros: 0, reflections: 0, decorations: 0, quizzes: 0 };
+        return perDay[iso];
+      }
+      earnings.forEach(function(e) {
+        var b = bucketFor(e.date);
+        if (!b) return;
+        b.tokens += e.tokens || 0;
+        if (e.source === 'pomodoro' || e.source === 'cycle-bonus') b.pomodoros += 1;
+        if (e.source === 'reflection') b.reflections += 1;
+        if (e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz') b.quizzes += 1;
+      });
+      decorations.forEach(function(d) {
+        if (d.isStarter) return;
+        var b = bucketFor(d.earnedAt);
+        if (b) b.decorations += 1;
+      });
+      journals.forEach(function(j) {
+        var b = bucketFor(j.date);
+        // Reflections already counted via earnings, but a journal edit may
+        // not earn — count any journal entry as activity even if no token
+        if (b && j.tokensEarned === 0) b.reflections += 1;
+      });
+
+      // Find max activity intensity for color scaling
+      var maxIntensity = 0;
+      Object.keys(perDay).forEach(function(k) {
+        var b = perDay[k];
+        var score = b.tokens + b.decorations * 2; // weight decorations a bit higher
+        if (score > maxIntensity) maxIntensity = score;
+      });
+      if (maxIntensity === 0) maxIntensity = 1;
+
+      function dayCellColor(b) {
+        if (!b) return palette.surface;
+        var score = b.tokens + b.decorations * 2;
+        if (score === 0) return palette.surface;
+        var intensity = Math.min(1, score / maxIntensity);
+        // Blend palette.surface → palette.accent based on intensity
+        // Use rgba with the accent at variable opacity over a base bg.
+        // 4 buckets for clear visual distinction (matches GitHub style).
+        if (intensity < 0.25) return 'rgba(96,165,250,0.18)';   // very light
+        if (intensity < 0.50) return 'rgba(96,165,250,0.40)';
+        if (intensity < 0.75) return 'rgba(96,165,250,0.65)';
+        return 'rgba(96,165,250,0.92)';
+      }
+      // ^ uses fixed accent rgba — for theme-correctness, prefer
+      // palette.accent. But CSS rgba() needs hex parsing. Cheaper:
+      // use opacity layered on a transparent background.
+      function dayCellStyle(b, dayOfWeek, isFuture) {
+        if (isFuture) {
+          return { background: 'transparent', opacity: 0.3 };
+        }
+        if (!b || (b.tokens + b.decorations * 2) === 0) {
+          return { background: palette.surface, opacity: 0.7 };
+        }
+        var score = b.tokens + b.decorations * 2;
+        var intensity = Math.min(1, score / maxIntensity);
+        var bucket = intensity < 0.25 ? 0.22 : intensity < 0.5 ? 0.45 : intensity < 0.75 ? 0.7 : 1;
+        return { background: palette.accent, opacity: bucket };
+      }
+
+      // Build the grid: 7 rows (days of week, Sun first), 13 columns (weeks)
+      var rows = [];
+      for (var dow = 0; dow < 7; dow++) {
+        var cells = [];
+        for (var col = 0; col < 13; col++) {
+          var dayMs = startMs + (col * 7 + dow) * msPerDay;
+          var cellDate = new Date(dayMs);
+          var iso = cellDate.toISOString().slice(0, 10);
+          var b = perDay[iso] || null;
+          var isFuture = dayMs > todayMs;
+          var label = cellDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          var summary = '';
+          if (b) {
+            var parts = [];
+            if (b.tokens) parts.push(b.tokens + ' token' + (b.tokens === 1 ? '' : 's'));
+            if (b.pomodoros) parts.push(b.pomodoros + ' Pomodoro' + (b.pomodoros === 1 ? '' : 's'));
+            if (b.reflections) parts.push(b.reflections + ' reflection' + (b.reflections === 1 ? '' : 's'));
+            if (b.quizzes) parts.push(b.quizzes + ' quiz' + (b.quizzes === 1 ? '' : 'zes'));
+            if (b.decorations) parts.push(b.decorations + ' decoration' + (b.decorations === 1 ? '' : 's'));
+            summary = parts.join(', ');
+          }
+          var cellTitle = label + (summary ? ' — ' + summary : isFuture ? ' (upcoming)' : ' (no activity)');
+          cells.push(h('div', {
+            key: 'hm-' + dow + '-' + col,
+            'aria-label': cellTitle,
+            title: cellTitle,
+            style: Object.assign({
+              width: '14px', height: '14px',
+              borderRadius: '3px',
+              border: '1px solid ' + palette.border,
+              flexShrink: 0
+            }, dayCellStyle(b, dow, isFuture))
+          }));
+        }
+        rows.push(h('div', {
+          key: 'hm-row-' + dow,
+          style: { display: 'flex', gap: '3px' }
+        }, cells));
+      }
+
+      // Stats summary
+      var totalDays = Object.keys(perDay).length;
+      var totalTokens = Object.values(perDay).reduce(function(s, b) { return s + b.tokens; }, 0);
+
+      return h('div', {
+        role: 'figure',
+        'aria-label': 'Activity heatmap, last 90 days. ' + totalDays + ' active days, ' + totalTokens + ' tokens earned.',
+        style: {
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px',
+          marginBottom: '14px'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }
+        },
+          h('span', {
+            style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+          }, '📅 Last 90 days'),
+          h('span', {
+            style: { fontSize: '11px', color: palette.textDim, fontVariantNumeric: 'tabular-nums' }
+          },
+            h('span', { style: { color: palette.text, fontWeight: 700 } }, totalDays),
+            ' active day' + (totalDays === 1 ? '' : 's') + ' · ',
+            h('span', { style: { color: palette.accent, fontWeight: 700 } }, totalTokens),
+            ' tokens'
+          )
+        ),
+        h('div', {
+          'aria-hidden': 'true',
+          style: { display: 'flex', flexDirection: 'column', gap: '3px', overflowX: 'auto' }
+        }, rows),
+        h('div', {
+          style: { display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'flex-end', marginTop: '8px', fontSize: '10px', color: palette.textMute }
+        },
+          h('span', null, 'Less'),
+          [0.7, 0.22, 0.45, 0.7, 1].map(function(op, i) {
+            return h('span', {
+              key: 'lg-' + i,
+              'aria-hidden': 'true',
+              style: {
+                width: '12px', height: '12px',
+                borderRadius: '3px',
+                border: '1px solid ' + palette.border,
+                background: i === 0 ? palette.surface : palette.accent,
+                opacity: op
+              }
+            });
+          }),
+          h('span', null, 'More')
+        )
+      );
+    }
+
     // ── Token trends (Phase 2l) ──
     // Compact 30-day SVG chart of cumulative earning vs spending. Renders
     // only when there's at least one earning event — silent when the
@@ -9945,6 +10224,12 @@
 
           // 30-day token trend chart (Phase 2l) — only renders when there's data
           renderTrendsChart(),
+
+          // 90-day activity heatmap (Phase 2p.8) — calendar-grid view
+          // of cumulative engagement. Rendered below the trend chart so
+          // students see daily-level granularity (heatmap) + flow shape
+          // (trends) together.
+          renderActivityHeatmap(),
 
           // Subject filter chips (Phase 2p.6) — appear when ≥1 deck has
           // any subject tagged. Click to filter; click selected to clear.
@@ -12092,6 +12377,82 @@
           ' · ', state.tokens, ' tokens earned and unspent',
           ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies')
         ),
+        // 90-day activity heatmap (Phase 2p.8) — paper-friendly grid
+        // showing engagement consistency for IEP / parent review.
+        (function() {
+          var earnings = state.earnings || [];
+          var decorations = state.decorations || [];
+          var journals = state.journalEntries || [];
+          if (earnings.length === 0 && journals.length === 0 && decorations.length === 0) return null;
+          var DAYS = 91;
+          var msPerDay = 24 * 60 * 60 * 1000;
+          var nowToday = new Date(); nowToday.setHours(0, 0, 0, 0);
+          var nowMs = nowToday.getTime();
+          var dowToday = nowToday.getDay();
+          var endDay = new Date(nowMs + (6 - dowToday) * msPerDay);
+          var startMs = endDay.getTime() - (DAYS - 1) * msPerDay;
+          var perDay = {};
+          function dayKey(d) {
+            var dk = new Date(d); dk.setHours(0, 0, 0, 0);
+            return dk.toISOString().slice(0, 10);
+          }
+          earnings.forEach(function(e) {
+            if (!e.date) return;
+            var t = new Date(e.date).getTime();
+            if (t < startMs || t > endDay.getTime()) return;
+            var k = dayKey(t);
+            if (!perDay[k]) perDay[k] = 0;
+            perDay[k] += (e.tokens || 0);
+          });
+          decorations.forEach(function(d) {
+            if (d.isStarter || !d.earnedAt) return;
+            var t = new Date(d.earnedAt).getTime();
+            if (t < startMs || t > endDay.getTime()) return;
+            var k = dayKey(t); perDay[k] = (perDay[k] || 0) + 2;
+          });
+          var maxV = 1;
+          Object.keys(perDay).forEach(function(k) { if (perDay[k] > maxV) maxV = perDay[k]; });
+          var rows = [];
+          for (var dow = 0; dow < 7; dow++) {
+            var cells = [];
+            for (var col = 0; col < 13; col++) {
+              var dayMs = startMs + (col * 7 + dow) * msPerDay;
+              var iso = new Date(dayMs).toISOString().slice(0, 10);
+              var v = perDay[iso] || 0;
+              var isFuture = dayMs > nowMs;
+              var fill;
+              if (isFuture) fill = '#fff';
+              else if (v === 0) fill = '#e9e9e9';
+              else {
+                var intensity = Math.min(1, v / maxV);
+                if (intensity < 0.25) fill = '#cfd8dc';
+                else if (intensity < 0.5) fill = '#90a4ae';
+                else if (intensity < 0.75) fill = '#546e7a';
+                else fill = '#263238';
+              }
+              cells.push(h('div', {
+                key: 'phm-' + dow + '-' + col,
+                style: {
+                  width: '10px', height: '10px',
+                  background: fill,
+                  border: '1px solid #999',
+                  borderRadius: '2px',
+                  display: 'inline-block',
+                  marginRight: '2px'
+                }
+              }));
+            }
+            rows.push(h('div', { key: 'phm-row-' + dow, style: { display: 'flex', marginBottom: '2px' } }, cells));
+          }
+          var activeDays = Object.keys(perDay).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '11px', color: '#000' } },
+              '📅 Activity heatmap · last 90 days · ' + activeDays + ' active day' + (activeDays === 1 ? '' : 's')),
+            h('div', null, rows),
+            h('div', { style: { fontSize: '9px', color: '#666', marginTop: '4px', fontStyle: 'italic' } },
+              'Each square = one day. Darker = more activity. Empty days are neutral, not negative.')
+          );
+        })(),
         // Mood distribution (Phase 2m) — affective-domain insight for
         // parents/clinicians: which moods does the student tag their
         // earnings with most? Shows only when ≥1 decoration has a mood.
