@@ -729,6 +729,26 @@
     return t === g || t.indexOf(g) === 0 || g.indexOf(t) === 0;
   }
 
+  // ── Mood tags (Phase 2m) ──
+  // Optional affective-domain tag students can attach to a decoration
+  // when they place it (or edit later). Surfaces in the print packet
+  // and clinical-review packet as a mood distribution chip — gives
+  // parents/clinicians a window into how the student felt while
+  // earning each item, without forcing them to journal it.
+  var MOOD_OPTIONS = [
+    { id: 'joy',       emoji: '🌟', label: 'Joy',       hint: 'felt great earning this' },
+    { id: 'pride',     emoji: '⚡', label: 'Pride',     hint: 'worked hard for this one' },
+    { id: 'curiosity', emoji: '🤔', label: 'Curiosity', hint: 'sparked something to explore' },
+    { id: 'calm',      emoji: '🦋', label: 'Calm',      hint: 'felt peaceful and steady' },
+    { id: 'struggle',  emoji: '💪', label: 'Struggle',  hint: 'pushed through something hard' }
+  ];
+  function getMoodOption(id) {
+    for (var i = 0; i < MOOD_OPTIONS.length; i++) {
+      if (MOOD_OPTIONS[i].id === id) return MOOD_OPTIONS[i];
+    }
+    return null;
+  }
+
   // ── Per-card mastery (Phase 2d) ──
   // Smart shuffle: weights cards by weakness so struggling ones come
   // up first in the deck order, while still maintaining randomness.
@@ -1691,6 +1711,12 @@
     var reflectionDraft = reflectionDraftTuple[0];
     var setReflectionDraft = reflectionDraftTuple[1];
 
+    // Mood tag (Phase 2m) — optional affective-domain marker for the
+    // decoration. Captured in the reflection step.
+    var moodTagTuple = useState(null);
+    var moodTag = moodTagTuple[0];
+    var setMoodTag = moodTagTuple[1];
+
     function handlePickTemplate(t) {
       setTemplate(t);
       // Pre-fill first option for each slot for hierarchical templates
@@ -1745,11 +1771,11 @@
     }
 
     function handleSkipReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, '');
+      p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag);
     }
 
     function handleSubmitReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft);
+      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag);
     }
 
     function handleClose() {
@@ -2053,6 +2079,33 @@
             margin: '0 auto 14px'
           }
         }),
+        // Mood picker (Phase 2m) — optional affective-domain tag
+        h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
+          'How did you feel earning this? (optional)'),
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '14px' } },
+          MOOD_OPTIONS.map(function(m) {
+            var active = moodTag === m.id;
+            return h('button', {
+              key: 'mood-' + m.id,
+              onClick: function() { setMoodTag(active ? null : m.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': m.label + (active ? ' (selected, click to deselect)' : ''),
+              title: m.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'border-color 140ms ease, background 140ms ease'
+              }
+            }, m.emoji + ' ' + m.label);
+          })
+        ),
         h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
           'Want to write something about this? (optional, no token)'),
         h('textarea', {
@@ -3945,6 +3998,35 @@
             }
           }, '✕')
         ),
+        // Mood pill (Phase 2m) — clickable, cycles through MOOD_OPTIONS
+        // and back to null. Displayed under the header so it's discoverable
+        // for students who want to retroactively tag a decoration's mood.
+        typeof p.onSetMood === 'function' && !decoration.isStarter ? h('div', {
+          style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }
+        },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600 } }, 'Mood:'),
+          MOOD_OPTIONS.map(function(m) {
+            var active = decoration.mood === m.id;
+            return h('button', {
+              key: 'mm-' + m.id,
+              onClick: function() { p.onSetMood(active ? null : m.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': m.label + (active ? ' (currently selected, click to clear)' : ''),
+              title: m.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, m.emoji + ' ' + m.label);
+          })
+        ) : null,
         renderTabs(),
         body
       )
@@ -4218,9 +4300,10 @@
                 h('textarea', {
                   value: step.narrative || '',
                   onChange: function(e) { setStepNarrative(idx, e.target.value); },
-                  placeholder: idx === 0
-                    ? 'How does the story start with this item?'
-                    : 'How does the previous item lead to this one?',
+                  placeholder: (idx === 0
+                    ? 'How does the story start with this item? '
+                    : 'How does the previous item lead to this one? ')
+                    + 'Wrap a {word} in braces to fill it in during walk.',
                   'aria-label': 'Narrative for step ' + (idx + 1),
                   rows: 2,
                   style: {
@@ -4299,12 +4382,38 @@
     var idx = idxTuple[0];
     var setIdx = idxTuple[1];
 
+    // Per-step cloze state (Phase 2j) — { stepIdx: { guesses, revealed } }.
+    // Cloze in step narratives turns walk-mode into active retrieval at
+    // each anchor, not just passive recall. Score isn\'t persisted (the
+    // walk completion award is the primary feedback); reveal is per-step.
+    var clozeStateTuple = useState({});
+    var clozeState = clozeStateTuple[0];
+    var setClozeState = clozeStateTuple[1];
+
     function findDecoration(id) {
       return allDecs.filter(function(d) { return d.id === id; })[0] || null;
     }
     var step = steps[idx] || null;
     var dec = step ? findDecoration(step.decorationId) : null;
     var atEnd = idx >= steps.length - 1;
+    var stepClozeAnswers = step ? extractClozeAnswers(step.narrative || '') : [];
+    var stepHasCloze = stepClozeAnswers.length > 0;
+    var stepClozeState = clozeState[idx] || { guesses: stepClozeAnswers.map(function() { return ''; }), revealed: false };
+
+    function updateStepGuess(blankIdx, val) {
+      var newGuesses = stepClozeState.guesses.slice();
+      newGuesses[blankIdx] = val;
+      var nextStepState = Object.assign({}, stepClozeState, { guesses: newGuesses });
+      var nextClozeState = Object.assign({}, clozeState);
+      nextClozeState[idx] = nextStepState;
+      setClozeState(nextClozeState);
+    }
+    function revealStep() {
+      var nextStepState = Object.assign({}, stepClozeState, { revealed: true });
+      var nextClozeState = Object.assign({}, clozeState);
+      nextClozeState[idx] = nextStepState;
+      setClozeState(nextClozeState);
+    }
 
     // Esc closes (without recording)
     useEffect(function() {
@@ -4387,14 +4496,81 @@
             fontSize: '11px', color: palette.textMute, marginBottom: '10px',
             letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700
           }
-        }, 'Step ' + (idx + 1) + ' of ' + steps.length),
-        h('p', {
+        }, 'Step ' + (idx + 1) + ' of ' + steps.length
+           + (stepHasCloze ? ' · ' + stepClozeAnswers.length + ' fill-in' + (stepClozeAnswers.length === 1 ? '' : 's') : '')),
+        // Narrative — cloze-bearing steps render as inline inputs; plain
+        // steps render as italic prose
+        stepHasCloze ? (function() {
+          var segments = buildClozeSegments(step.narrative || '');
+          return h('div', {
+            style: {
+              fontSize: '17px', color: palette.text, lineHeight: '2.2',
+              textAlign: 'center', maxWidth: '560px', margin: '0 0 14px 0'
+            }
+          },
+            segments.map(function(seg, i) {
+              if (seg.kind === 'text') return h('span', { key: 'wn-' + i }, seg.value);
+              if (stepClozeState.revealed) {
+                var guess = stepClozeState.guesses[seg.blankIdx] || '';
+                var correct = clozeAnswerCorrect(seg.answer, guess);
+                return h('span', {
+                  key: 'wn-' + i,
+                  style: {
+                    background: correct ? 'rgba(52,211,153,0.20)' : 'rgba(251,191,36,0.20)',
+                    color: palette.text,
+                    padding: '2px 8px', borderRadius: '4px',
+                    fontWeight: 700,
+                    borderBottom: '2px solid ' + (correct ? (palette.success || palette.accent) : (palette.warn || palette.accent))
+                  }
+                }, seg.answer);
+              }
+              return h('input', {
+                key: 'wn-' + i,
+                type: 'text',
+                value: stepClozeState.guesses[seg.blankIdx] || '',
+                onChange: function(e) { updateStepGuess(seg.blankIdx, e.target.value); },
+                'aria-label': 'Step ' + (idx + 1) + ' blank ' + (seg.blankIdx + 1),
+                placeholder: '___',
+                style: {
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '6px', color: palette.text,
+                  padding: '4px 10px', fontSize: 'inherit', fontFamily: 'inherit',
+                  margin: '0 4px', minWidth: '90px', textAlign: 'center'
+                }
+              });
+            })
+          );
+        })() : h('p', {
           style: {
             fontSize: '17px', color: palette.text, lineHeight: '1.6',
             textAlign: 'center', maxWidth: '560px', margin: '0 0 24px 0',
             fontStyle: 'italic'
           }
-        }, '"' + (step.narrative || '') + '"')
+        }, '"' + (step.narrative || '') + '"'),
+        // Reveal button for cloze-bearing steps (when not yet revealed)
+        stepHasCloze && !stepClozeState.revealed ? h('button', {
+          onClick: revealStep,
+          style: {
+            background: 'transparent', color: palette.accent,
+            border: '1px solid ' + palette.accent, borderRadius: '8px',
+            padding: '6px 16px', fontSize: '12px', fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit', marginBottom: '14px'
+          }
+        }, '👁 Reveal answers') : null,
+        stepHasCloze && stepClozeState.revealed ? (function() {
+          var cc = 0;
+          for (var i = 0; i < stepClozeAnswers.length; i++) {
+            if (clozeAnswerCorrect(stepClozeAnswers[i], stepClozeState.guesses[i])) cc++;
+          }
+          var pct = stepClozeAnswers.length > 0 ? Math.round((cc / stepClozeAnswers.length) * 100) : 0;
+          return h('div', {
+            style: {
+              fontSize: '12px', color: palette.textDim, marginBottom: '14px',
+              fontWeight: 600, letterSpacing: '0.03em'
+            }
+          }, cc + ' / ' + stepClozeAnswers.length + ' · ' + pct + '%');
+        })() : null
       ),
       // Footer — nav buttons
       h('div', {
@@ -5378,7 +5554,7 @@
     // commits to the AI-generated image. Token already deducted at
     // generate time; this just records the placement + closes modal.
     // Optional reflection text attaches to the decoration's metadata.
-    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText) {
+    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       // Slight ±3° rotation, randomized once per item — "lived-in wobble"
       var rotation = (Math.random() * 6) - 3;
@@ -5395,6 +5571,7 @@
         earnedAt: new Date().toISOString(),
         tokensSpent: DECORATION_COST,
         studentReflection: (reflectionText || '').trim(),
+        mood: moodTag || null,  // Phase 2m — affective domain tag
         linkedContent: null,    // v2+ memory palace
         sourceTool: null,       // v2+ cross-tool integration
         aiRationale: null       // v2+ AI summary of how earned
@@ -5405,6 +5582,15 @@
         generateContext: null
       });
       addToast('🌿 ' + template.label.toLowerCase() + ' placed in your room.');
+    }
+
+    // Update mood on an existing decoration (Phase 2m)
+    function setDecorationMood(decorationId, moodId) {
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { mood: moodId || null });
+      });
+      setStateField('decorations', newDecs);
     }
 
     // AI generation — calls props.callImagen with the constructed prompt.
@@ -5764,6 +5950,22 @@
               letterSpacing: '0.04em'
             }
           }, 'starter') : null,
+          // Mood tag overlay (Phase 2m) — small emoji top-left, away from
+          // delete ✕ (top-right) and memory 📖 (bottom-left)
+          decoration.mood && getMoodOption(decoration.mood) ? h('span', {
+            'aria-label': 'Mood: ' + getMoodOption(decoration.mood).label,
+            title: getMoodOption(decoration.mood).label + ' — ' + getMoodOption(decoration.mood).hint,
+            style: {
+              position: 'absolute',
+              top: '2px',
+              left: '4px',
+              fontSize: '11px',
+              padding: '1px 3px',
+              borderRadius: '3px',
+              background: 'rgba(0,0,0,0.45)',
+              lineHeight: 1
+            }
+          }, getMoodOption(decoration.mood).emoji) : null,
           // Memory-content indicator — small 📖 in bottom-left (away
           // from the starter badge which lives bottom-right). Three
           // visual tiers:
@@ -6222,6 +6424,212 @@
     // Review button to jump straight into its quiz. Replaces the
     // "click each decoration to remember what's where" UX gap.
     // ─────────────────────────────────────────────────
+
+    // ── Token trends (Phase 2l) ──
+    // Compact 30-day SVG chart of cumulative earning vs spending. Renders
+    // only when there's at least one earning event — silent when the
+    // student is brand-new. Two stacked bars per day: green for earned,
+    // dim for spent. A single horizontal balance line traces the running
+    // total across the period. Read aloud well: aria-label summarizes
+    // total earned + spent + current balance.
+    function renderTrendsChart() {
+      var earnings = state.earnings || [];
+      var decorations = state.decorations || [];
+      if (earnings.length === 0 && decorations.length === 0) return null;
+
+      var DAYS = 30;
+      var msPerDay = 24 * 60 * 60 * 1000;
+      var now = Date.now();
+      // Day-bucket start (midnight, today): floor to nearest day in local time
+      var today = new Date(); today.setHours(0,0,0,0);
+      var todayMs = today.getTime();
+      var startMs = todayMs - (DAYS - 1) * msPerDay;
+
+      // Initialize per-day buckets [0..29]
+      var earnedPerDay = new Array(DAYS).fill(0);
+      var spentPerDay  = new Array(DAYS).fill(0);
+
+      // Aggregate earnings into day buckets
+      earnings.forEach(function(e) {
+        if (!e.date || !e.tokens) return;
+        var t = new Date(e.date).getTime();
+        if (t < startMs || t > todayMs + msPerDay) return;
+        var idx = Math.floor((t - startMs) / msPerDay);
+        if (idx >= 0 && idx < DAYS) earnedPerDay[idx] += e.tokens;
+      });
+      // Aggregate decoration spending (tokensSpent at earnedAt date)
+      decorations.forEach(function(d) {
+        if (!d.tokensSpent || !d.earnedAt) return;
+        var t = new Date(d.earnedAt).getTime();
+        if (t < startMs || t > todayMs + msPerDay) return;
+        var idx = Math.floor((t - startMs) / msPerDay);
+        if (idx >= 0 && idx < DAYS) spentPerDay[idx] += d.tokensSpent;
+      });
+
+      var totalEarned = earnedPerDay.reduce(function(s, v) { return s + v; }, 0);
+      var totalSpent  = spentPerDay.reduce(function(s, v) { return s + v; }, 0);
+
+      if (totalEarned === 0 && totalSpent === 0) return null;
+
+      // Compute running balance per day (starts at state.tokens - totalNet for the period)
+      // Actually simpler: balance = earned-up-to-day - spent-up-to-day. We don't know
+      // pre-period balance from state alone, so we just track NET delta over the 30
+      // days. End-of-period delta = totalEarned - totalSpent.
+      var balanceLine = [];
+      var cumNet = 0;
+      for (var i = 0; i < DAYS; i++) {
+        cumNet += earnedPerDay[i] - spentPerDay[i];
+        balanceLine.push(cumNet);
+      }
+      var maxBar = Math.max(1, Math.max.apply(null, earnedPerDay), Math.max.apply(null, spentPerDay));
+      var minBalance = Math.min.apply(null, balanceLine);
+      var maxBalance = Math.max.apply(null, balanceLine);
+
+      // SVG dimensions
+      var W = 320; var H = 90;
+      var padL = 28, padR = 8, padT = 6, padB = 16;
+      var plotW = W - padL - padR;
+      var plotH = H - padT - padB;
+      var barW = plotW / DAYS;
+      var maxBarH = plotH * 0.7;
+
+      // Render bars + balance line
+      var bars = [];
+      var dots = [];
+      for (var j = 0; j < DAYS; j++) {
+        var earnedH = (earnedPerDay[j] / maxBar) * maxBarH;
+        var spentH = (spentPerDay[j] / maxBar) * maxBarH;
+        var x = padL + j * barW;
+        // Earned (green-ish) — bar grows up from middle
+        var midY = padT + plotH * 0.6;
+        if (earnedPerDay[j] > 0) {
+          bars.push(h('rect', {
+            key: 'be-' + j,
+            x: x + barW * 0.15, y: midY - earnedH,
+            width: Math.max(2, barW * 0.7), height: earnedH,
+            fill: palette.success || palette.accent,
+            opacity: 0.85
+          }));
+        }
+        if (spentPerDay[j] > 0) {
+          bars.push(h('rect', {
+            key: 'bs-' + j,
+            x: x + barW * 0.15, y: midY,
+            width: Math.max(2, barW * 0.7), height: spentH,
+            fill: palette.warn || palette.accentDim || palette.textMute,
+            opacity: 0.85
+          }));
+        }
+      }
+
+      // Balance line (running NET delta, scaled relative to balance range)
+      var balRange = Math.max(1, maxBalance - Math.min(0, minBalance));
+      var balanceY = function(v) {
+        // Higher value → smaller y. Bottom of plot = min(0, minBalance), top = maxBalance
+        var rangeMin = Math.min(0, minBalance);
+        var t = (v - rangeMin) / (maxBalance - rangeMin || 1);
+        return padT + plotH - t * plotH * 0.3 - plotH * 0.05;
+      };
+      var balancePath = balanceLine.map(function(v, i) {
+        var x = padL + i * barW + barW / 2;
+        var y = balanceY(v);
+        return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+      }).join(' ');
+      // Final balance dot
+      var lastX = padL + (DAYS - 1) * barW + barW / 2;
+      var lastY = balanceY(balanceLine[DAYS - 1]);
+      dots.push(h('circle', {
+        key: 'bd-last',
+        cx: lastX, cy: lastY, r: 3.5,
+        fill: palette.accent,
+        stroke: palette.bg,
+        strokeWidth: 1.5
+      }));
+
+      // X-axis labels (only show endpoints + middle for compactness)
+      var startDate = new Date(startMs);
+      var fmt = function(d) {
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      };
+      var midDate = new Date(startMs + 14 * msPerDay);
+
+      var ariaLabel = 'Token trends, last 30 days. ' + totalEarned + ' tokens earned, ' + totalSpent + ' spent. Net change: ' + (cumNet >= 0 ? '+' : '') + cumNet + '.';
+
+      return h('div', {
+        role: 'figure',
+        'aria-label': ariaLabel,
+        style: {
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px',
+          marginBottom: '14px'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }
+        },
+          h('span', {
+            style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+          }, '📊 Last 30 days'),
+          h('span', {
+            style: { fontSize: '11px', color: palette.textDim, fontVariantNumeric: 'tabular-nums' }
+          },
+            h('span', { style: { color: palette.success || palette.accent, fontWeight: 700 } }, '+' + totalEarned),
+            ' earned · ',
+            h('span', { style: { color: palette.warn || palette.textMute, fontWeight: 700 } }, '−' + totalSpent),
+            ' spent · net ',
+            h('span', { style: { color: cumNet >= 0 ? (palette.success || palette.accent) : (palette.warn || palette.accent), fontWeight: 700 } },
+              (cumNet >= 0 ? '+' : '') + cumNet)
+          )
+        ),
+        h('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          width: '100%',
+          height: H,
+          'aria-hidden': 'true',
+          style: { display: 'block' }
+        },
+          // Center divider line
+          h('line', {
+            x1: padL, x2: W - padR,
+            y1: padT + plotH * 0.6, y2: padT + plotH * 0.6,
+            stroke: palette.border, strokeWidth: 0.5,
+            strokeDasharray: '2,3'
+          }),
+          bars,
+          // Balance line
+          h('path', {
+            d: balancePath,
+            fill: 'none',
+            stroke: palette.accent,
+            strokeWidth: 1.5,
+            opacity: 0.9
+          }),
+          dots,
+          // X-axis labels
+          h('text', {
+            x: padL, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'start'
+          }, fmt(startDate)),
+          h('text', {
+            x: padL + plotW / 2, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'middle'
+          }, fmt(midDate)),
+          h('text', {
+            x: W - padR, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'end'
+          }, 'Today'),
+          // Y-axis legend
+          h('text', {
+            x: 4, y: padT + maxBarH * 0.5, fontSize: '8', fill: palette.success || palette.accent,
+            textAnchor: 'start'
+          }, '+' + maxBar),
+          h('text', {
+            x: 4, y: padT + plotH * 0.6 + maxBarH * 0.5, fontSize: '8', fill: palette.warn || palette.textMute,
+            textAnchor: 'start'
+          }, '−' + maxBar)
+        )
+      );
+    }
+
     function renderMemoryOverviewModal() {
       if (state.activeModal !== 'memory-overview') return null;
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
@@ -6322,6 +6730,12 @@
               '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
             h('div', { style: { display: 'flex', gap: '6px' } },
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
+                onClick: function() { setStateField('activeModal', 'clinical-review'); },
+                'aria-label': 'Review packet on screen',
+                title: 'Show all decks, stories, and reflections in a single scrollable view (for review with a parent, teacher, or clinician)',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '📋 Review packet') : null,
+              (totalDecks > 0 || allStories.length > 0) ? h('button', {
                 onClick: function() {
                   // Print delay so React paints the print packet before
                   // the dialog grabs DOM. Browsers debounce print() but
@@ -6334,7 +6748,7 @@
                 'aria-label': 'Print study packet',
                 title: 'Open print dialog with a study packet of all decks, stories, and content',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
-              }, '🖨 Print packet') : null,
+              }, '🖨 Print') : null,
               h('button', {
                 onClick: function() { setStateField('activeModal', null); },
                 'aria-label': 'Close memory overview',
@@ -6377,6 +6791,9 @@
             due.length > 0 ? renderOverviewStat('Due for review', due.length, palette, true) : null,
             due.length === 0 && dueSoon.length > 0 ? renderOverviewStat('Due soon', dueSoon.length, palette, false, '#d97706') : null
           ) : null,
+
+          // 30-day token trend chart (Phase 2l) — only renders when there's data
+          renderTrendsChart(),
 
           // Due section
           due.length > 0 ? h('div', { style: { marginBottom: '14px' } },
@@ -6768,7 +7185,8 @@
         },
         onQuizComplete: function(scorePct) {
           recordQuizSession(decorationId, scorePct);
-        }
+        },
+        onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); }
       });
     }
 
@@ -7466,6 +7884,231 @@
     }
 
     // ─────────────────────────────────────────────────
+    // CLINICAL REVIEW MODAL (Phase 2k) — same packet content as the
+    // print version but rendered on-screen with palette colors. For
+    // session-time review with a parent, teacher, or clinician
+    // without printing. "Print this view" button at bottom triggers
+    // the print packet flow.
+    // ─────────────────────────────────────────────────
+    function renderClinicalReviewModal() {
+      if (state.activeModal !== 'clinical-review') return null;
+      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      var allStories = state.stories || [];
+      var dateStr = new Date().toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+      var recentJournals = (state.journalEntries || []).slice().sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      }).slice(0, 5);
+
+      var sectionStyle = { marginBottom: '24px' };
+      var sectionTitleStyle = { fontSize: '13px', fontWeight: 700, marginBottom: '10px', borderBottom: '1.5px solid ' + palette.border, paddingBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em', color: palette.text };
+      var subTitleStyle = { fontSize: '14px', fontWeight: 700, marginBottom: '4px', color: palette.text, marginTop: '14px' };
+      var bodyTextStyle = { fontSize: '12px', color: palette.text, lineHeight: 1.55, margin: 0 };
+      var smallMetaStyle = { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' };
+      var thumbStyle = { width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', border: '1px solid ' + palette.border, verticalAlign: 'middle', background: palette.surface };
+
+      function renderDeckBlock(decoration) {
+        var lc = decoration.linkedContent;
+        var label = decoration.templateLabel || decoration.template || 'item';
+        var typeLabel = lc.type === 'flashcards' ? 'Flashcards'
+                      : lc.type === 'acronym'    ? 'Acronym'
+                      : lc.type === 'image-link' ? 'Image link'
+                                                   : 'Notes';
+        var reviewedLabel;
+        if (!lc.lastReviewedAt) reviewedLabel = 'Never reviewed';
+        else {
+          var d2 = new Date(lc.lastReviewedAt);
+          reviewedLabel = 'Last reviewed ' + d2.toLocaleDateString();
+        }
+        var meta = typeLabel
+          + (lc.bestQuizScore ? ' · Best ' + lc.bestQuizScore + '%' : '')
+          + ' · ' + (lc.reviewCount || 0) + ' review' + ((lc.reviewCount || 0) === 1 ? '' : 's')
+          + ' · ' + reviewedLabel;
+
+        var body = null;
+        if (lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+          body = h('ol', { style: { paddingLeft: '22px', margin: '4px 0' } },
+            lc.data.cards.map(function(card) {
+              var atts = (card.correctCount || 0) + (card.missCount || 0);
+              return h('li', { key: 'cl-' + card.id, style: { marginBottom: '4px', fontSize: '12px', color: palette.text, lineHeight: 1.55 } },
+                h('span', { style: { fontWeight: 700 } }, card.front || ''),
+                h('span', { style: { color: palette.textDim } }, ' — ' + (card.back || '')),
+                atts > 0 ? h('span', { style: smallMetaStyle }, ' (' + (card.correctCount || 0) + '/' + atts + ')') : null
+              );
+            })
+          );
+        } else if (lc.type === 'acronym' && lc.data) {
+          var letters = (lc.data.letters || '').toUpperCase();
+          var meanings = lc.data.meanings || [];
+          body = h('div', null,
+            lc.data.context ? h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginBottom: '4px' }) }, lc.data.context) : null,
+            h('div', { style: { fontSize: '16px', fontWeight: 800, letterSpacing: '0.1em', color: palette.accent, marginBottom: '4px' } }, letters),
+            h('ul', { style: { listStyle: 'none', paddingLeft: 0, margin: '4px 0' } },
+              letters.split('').map(function(letter, i) {
+                return h('li', { key: 'cla-' + i, style: { fontSize: '12px', color: palette.text, marginBottom: '2px' } },
+                  h('strong', null, letter), ' — ', meanings[i] || h('span', { style: { color: palette.textMute } }, '(blank)'));
+              })
+            )
+          );
+        } else if (lc.type === 'image-link' && lc.data) {
+          var tgt = state.decorations.filter(function(dec) { return dec.id === lc.data.targetDecorationId; })[0];
+          var tgtLabel = tgt ? (tgt.templateLabel || tgt.template || 'item') : '(removed item)';
+          body = h('div', null,
+            h('p', { style: bodyTextStyle },
+              h('strong', null, label), ' → ', h('strong', null, tgtLabel)),
+            h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginTop: '4px', color: palette.textDim }) },
+              '"' + (lc.data.association || '') + '"')
+          );
+        } else if (lc.type === 'notes' && lc.data) {
+          var text = (lc.data.text || '');
+          if (extractClozeAnswers(text).length > 0) {
+            var segments = buildClozeSegments(text);
+            body = h('div', { style: { fontSize: '12px', color: palette.text, lineHeight: 1.55, margin: '4px 0', whiteSpace: 'pre-wrap' } },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'cls-' + i }, seg.value);
+                return h('span', {
+                  key: 'cls-' + i,
+                  style: { background: palette.accent, color: palette.onAccent, padding: '1px 6px', borderRadius: '3px', fontWeight: 700 }
+                }, seg.answer);
+              })
+            );
+          } else {
+            body = h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '4px 0' }) }, text);
+          }
+        }
+
+        var clMoodOpt = decoration.mood ? getMoodOption(decoration.mood) : null;
+        return h('div', {
+          key: 'cd-' + decoration.id,
+          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '10px' }
+        },
+          h('h3', { style: subTitleStyle },
+            decoration.imageBase64 ? h('img', { src: decoration.imageBase64, alt: '', style: thumbStyle }) : null,
+            h('span', { style: { marginLeft: '8px' } }, label),
+            clMoodOpt ? h('span', { style: { fontSize: '12px', marginLeft: '8px', color: palette.textDim, fontWeight: 500 } },
+              ' · ' + clMoodOpt.emoji + ' ' + clMoodOpt.label) : null
+          ),
+          h('p', { style: smallMetaStyle }, meta),
+          body
+        );
+      }
+
+      function renderStoryBlock(story) {
+        var validSteps = (story.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        var walkable = validSteps.length >= 3 && (story.title || '').trim().length > 0;
+        var meta = (story.steps || []).length + ' step' + ((story.steps || []).length === 1 ? '' : 's')
+          + (story.reviewCount ? ' · Walked ' + story.reviewCount + 'x' : '')
+          + (walkable ? '' : ' · Draft');
+        return h('div', {
+          key: 'cs-' + story.id,
+          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '10px' }
+        },
+          h('h3', { style: subTitleStyle }, '📜 ' + (story.title || '(untitled story)')),
+          h('p', { style: smallMetaStyle }, meta),
+          h('ol', { style: { paddingLeft: '22px', margin: '6px 0' } },
+            (story.steps || []).map(function(step, sIdx) {
+              var dec = state.decorations.filter(function(d) { return d.id === step.decorationId; })[0];
+              var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed item)';
+              return h('li', { key: 'cst-' + sIdx, style: { marginBottom: '8px', fontSize: '12px', color: palette.text, lineHeight: 1.55 } },
+                dec && dec.imageBase64 ? h('img', { src: dec.imageBase64, alt: '', style: thumbStyle }) : null,
+                h('span', { style: { marginLeft: '8px', fontWeight: 700 } }, dLabel),
+                h('div', { style: { fontStyle: 'italic', color: palette.textDim, marginTop: '2px' } },
+                  '"' + (step.narrative || '') + '"')
+              );
+            })
+          )
+        );
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Clinical review packet',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', 'memory-overview');
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', zIndex: 178,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '760px', width: '100%', maxHeight: '92vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            color: palette.text
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', gap: '8px', flexWrap: 'wrap' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '📋 Review packet'),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('button', {
+                onClick: function() {
+                  setTimeout(function() {
+                    try { window.print(); }
+                    catch (err) { addToast('Print not available.'); }
+                  }, 60);
+                },
+                'aria-label': 'Print this packet',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '🖨 Print'),
+              h('button', {
+                onClick: function() { setStateField('activeModal', 'memory-overview'); },
+                'aria-label': 'Back to overview',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            )
+          ),
+          h('p', { style: { margin: '8px 0 16px 0', fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: 1.5 } },
+            'Generated ' + dateStr + '. This is the same content as Print Packet, on screen for review with a parent, teacher, or clinician without printing.'),
+          // Stats banner
+          h('div', { style: { padding: '10px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', fontSize: '12px', color: palette.text, marginBottom: '20px', lineHeight: 1.55 } },
+            h('strong', null, 'Activity summary: '),
+            state.decorations.length + ' decoration' + (state.decorations.length === 1 ? '' : 's'),
+            ' · ', withContent.length + ' deck' + (withContent.length === 1 ? '' : 's'),
+            ' · ', allStories.length + ' stor' + (allStories.length === 1 ? 'y' : 'ies'),
+            ' · ', (state.earnings || []).length + ' token-earning event' + ((state.earnings || []).length === 1 ? '' : 's'),
+            ' · ', state.tokens, ' token' + (state.tokens === 1 ? '' : 's') + ' unspent',
+            ' · ', (state.journalEntries || []).length + ' reflection' + ((state.journalEntries || []).length === 1 ? '' : 's')
+          ),
+          // Decks
+          withContent.length > 0 ? h('div', { style: sectionStyle },
+            h('h2', { style: sectionTitleStyle }, '📖 Memory Decks · ' + withContent.length),
+            withContent.map(function(d) { return renderDeckBlock(d); })
+          ) : null,
+          // Stories
+          allStories.length > 0 ? h('div', { style: sectionStyle },
+            h('h2', { style: sectionTitleStyle }, '📜 Stories · ' + allStories.length),
+            allStories.map(function(s) { return renderStoryBlock(s); })
+          ) : null,
+          // Recent reflections
+          recentJournals.length > 0 ? h('div', { style: sectionStyle },
+            h('h2', { style: sectionTitleStyle }, '📝 Recent Reflections · last ' + recentJournals.length),
+            recentJournals.map(function(j) {
+              return h('div', {
+                key: 'cj-' + j.id,
+                style: { padding: '10px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '8px' }
+              },
+                h('p', { style: smallMetaStyle },
+                  (j.date ? new Date(j.date).toLocaleDateString() : 'Undated')
+                  + (j.prompt ? ' · "' + j.prompt + '"' : '')),
+                h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '4px 0' }) },
+                  '"' + (j.text || '') + '"')
+              );
+            })
+          ) : null
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
     // PRINT PACKET (Phase 2h) — exportable study artifact for
     // parents, IEP teams, and clinicians. Always rendered into the
     // DOM but display:none on screen; @media print CSS reveals it
@@ -7561,13 +8204,16 @@
           }
         }
 
+        var moodOpt = decoration.mood ? getMoodOption(decoration.mood) : null;
         return h('div', {
           key: 'pd-' + decoration.id,
           className: 'ah-print-section'
         },
           h('h3', { style: subTitleStyle },
             decoration.imageBase64 ? h('img', { src: decoration.imageBase64, alt: '', style: thumbStyle }) : null,
-            h('span', { style: { marginLeft: '8px' } }, label)
+            h('span', { style: { marginLeft: '8px' } }, label),
+            moodOpt ? h('span', { style: { fontSize: '12px', marginLeft: '8px', color: '#444' } },
+              ' · ' + moodOpt.emoji + ' ' + moodOpt.label) : null
           ),
           h('p', { style: smallMetaStyle }, meta),
           body
@@ -7634,6 +8280,31 @@
           ' · ', state.tokens, ' tokens earned and unspent',
           ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies')
         ),
+        // Mood distribution (Phase 2m) — affective-domain insight for
+        // parents/clinicians: which moods does the student tag their
+        // earnings with most? Shows only when ≥1 decoration has a mood.
+        (function() {
+          var moodCounts = {};
+          state.decorations.forEach(function(d) {
+            if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1;
+          });
+          var moodTagged = Object.keys(moodCounts).length;
+          if (moodTagged === 0) return null;
+          var totalTagged = state.decorations.filter(function(d) { return !!d.mood; }).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px', color: '#222' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px' } }, '🎭 Mood distribution · ' + totalTagged + ' tagged decoration' + (totalTagged === 1 ? '' : 's')),
+            h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap' } },
+              MOOD_OPTIONS.map(function(m) {
+                var n = moodCounts[m.id] || 0;
+                if (n === 0) return null;
+                return h('span', {
+                  key: 'pmd-' + m.id,
+                  style: { fontSize: '11px', color: '#222' }
+                }, m.emoji + ' ' + m.label + ': ' + n);
+              })
+            )
+          );
+        })(),
         // Decks section
         withContent.length > 0 ? h('div', { style: sectionStyle },
           h('h2', { style: sectionTitleStyle }, '📖 Memory Decks'),
@@ -7722,6 +8393,7 @@
       renderGenerateModal(),
       renderMemoryModal(),
       renderMemoryOverviewModal(),
+      renderClinicalReviewModal(),
       renderStoriesListModal(),
       renderStoryBuilderModal(),
       renderStoryWalkModal(),
