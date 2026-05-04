@@ -6407,6 +6407,17 @@
           pomodoroState: newPomodoroState
         };
 
+        // Post-Pomodoro warm offer (Phase 2p.4) — clear the companion\'s
+        // quiz-prompt cooldown so a due deck can re-surface "while
+        // you\'re warm". The student just trained their focus muscle;
+        // retrieval practice is most effective on a recently-engaged
+        // brain. Sims-y "want to do this together while we\'re here?".
+        if (state.companion && state.companion.species) {
+          updates.companion = Object.assign({}, state.companion, {
+            lastQuizPromptDismissedAt: null
+          });
+        }
+
         // First-Pomodoro toast (one-time)
         if (!state.toastsSeen.firstPomodoro) {
           updates.toastsSeen = Object.assign({}, state.toastsSeen, { firstPomodoro: true });
@@ -6888,6 +6899,64 @@
     // to observations (would produce broken grammar like "What if you I
     // like the new plant"); voice character lives in the idle filler
     // pool and the species-specific opener tags below.
+    // Pick the single most-due deck for companion prompting (Phase 2p.4).
+    // Prefers never-reviewed first, then oldest-reviewed. Skips the deck
+    // the companion just prompted about (so we don\'t re-prompt the same
+    // one twice in a row). Returns null if nothing's due.
+    function pickDueDeckForCompanion() {
+      var allDue = (state.decorations || []).filter(function(d) {
+        return d.linkedContent && isMemoryDue(d);
+      });
+      if (allDue.length === 0) return null;
+      // De-prioritize the last-prompted deck so subsequent visits rotate
+      var lastPromptedId = state.companion && state.companion.lastQuizPromptDeckId;
+      var rotated = allDue.filter(function(d) { return d.id !== lastPromptedId; });
+      var pool = rotated.length > 0 ? rotated : allDue;
+      // Sort: never-reviewed first, then oldest-reviewed
+      pool.sort(function(a, b) {
+        var aR = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
+        var bR = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
+        if (!aR && bR) return -1;
+        if (aR && !bR) return 1;
+        return aR.localeCompare(bR);
+      });
+      return pool[0];
+    }
+
+    // Should the companion offer a quiz on this visit?
+    // Rules:
+    //   • A due deck must exist
+    //   • Student hasn\'t dismissed a prompt in the last 6 hours (cooldown)
+    //   • Live mode is OFF (don\'t pester during rest)
+    //   • Daily quiz cap not yet hit
+    function shouldOfferQuizPrompt() {
+      if (state.roomMode === 'live') return false;
+      if (!state.companion || !state.companion.species) return false;
+      var capHit = (state.dailyState && state.dailyState.quizTokensEarnedToday) >= 2;
+      if (capHit) return false;
+      var lastDismissAt = state.companion.lastQuizPromptDismissedAt;
+      if (lastDismissAt) {
+        var ageMs = Date.now() - new Date(lastDismissAt).getTime();
+        if (ageMs < 6 * 60 * 60 * 1000) return false;
+      }
+      return !!pickDueDeckForCompanion();
+    }
+
+    function dismissQuizPrompt() {
+      saveCompanion({
+        lastQuizPromptDismissedAt: new Date().toISOString()
+      });
+    }
+    function acceptQuizPrompt(decoration) {
+      // Stamp this deck as the last-prompted so rotation works
+      saveCompanion({
+        lastQuizPromptDeckId: decoration.id,
+        lastQuizPromptDismissedAt: new Date().toISOString()
+      });
+      // Open the memory modal in quiz auto-start mode
+      openMemoryModal(decoration.id, true);
+    }
+
     function generateBubbleText(state, species) {
       var sp = getCompanionSpecies(species);
       var lastBubble = (state.companion && state.companion.lastBubbleText) || '';
@@ -8126,8 +8195,68 @@
             }, c.label);
           })
         ) : null,
-        // Thought bubble
-        showBubble ? h('div', {
+        // Quiz prompt (Phase 2p.4) — replaces the regular thought bubble
+        // when a due deck exists + cooldown allows. The buddy literally
+        // asks the student if they want to review. Yes opens the deck\'s
+        // quiz; Later sets a 6h dismissal cooldown.
+        (function() {
+          if (!shouldOfferQuizPrompt()) return null;
+          var dueDec = pickDueDeckForCompanion();
+          if (!dueDec) return null;
+          var dLabel = dueDec.templateLabel || dueDec.template || 'deck';
+          var lc = dueDec.linkedContent;
+          var contentNoun = lc.type === 'flashcards' ? 'flashcards'
+                          : lc.type === 'acronym'    ? 'acronym'
+                          : lc.type === 'image-link' ? 'image link'
+                                                       : 'notes';
+          var promptText = (companion.name || (sp ? sp.label : 'I'))
+            + ': "Want to review the ' + dLabel + ' ' + contentNoun + '?"';
+          return h('div', {
+            className: 'ah-companion-bubble',
+            role: 'group',
+            'aria-label': 'Companion is offering a quiz on the ' + dLabel + ' ' + contentNoun,
+            style: {
+              maxWidth: '240px',
+              padding: '10px 12px',
+              background: palette.surface,
+              border: '1.5px solid ' + palette.accent,
+              borderRadius: '12px',
+              borderBottomRightRadius: '4px',
+              fontSize: '11.5px',
+              color: palette.text,
+              lineHeight: '1.45',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              pointerEvents: 'auto'
+            }
+          },
+            h('div', { style: { fontStyle: 'italic', marginBottom: '8px' } }, promptText),
+            h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'flex-end' } },
+              h('button', {
+                onClick: function() { dismissQuizPrompt(); },
+                'aria-label': 'Skip the quiz offer for now',
+                style: {
+                  background: 'transparent', color: palette.textMute,
+                  border: '1px solid ' + palette.border, borderRadius: '6px',
+                  padding: '3px 10px', fontSize: '11px', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit'
+                }
+              }, 'Later'),
+              h('button', {
+                onClick: function() { acceptQuizPrompt(dueDec); },
+                'aria-label': 'Start the quiz now',
+                style: {
+                  background: palette.accent, color: palette.onAccent,
+                  border: 'none', borderRadius: '6px',
+                  padding: '3px 12px', fontSize: '11px', fontWeight: 700,
+                  cursor: 'pointer', fontFamily: 'inherit'
+                }
+              }, '✓ Quiz me')
+            )
+          );
+        })(),
+        // Thought bubble (regular state-aware observation, only when NOT
+        // showing the quiz prompt above)
+        (showBubble && !shouldOfferQuizPrompt()) ? h('div', {
           className: 'ah-companion-bubble',
           role: 'status',
           'aria-live': 'polite',
@@ -8192,7 +8321,33 @@
                 opacity: 0.8,
                 pointerEvents: 'none'
               }
-            }, 'z') : null
+            }, 'z') : null,
+            // Due-deck indicator (Phase 2p.4) — small ❓ badge tells the
+            // student "my buddy has a question" before they even click.
+            // Only when NOT sleeping (Live mode) AND a due deck exists
+            // AND the prompt cooldown hasn\'t locked us out.
+            (!sleeping && shouldOfferQuizPrompt()) ? h('span', {
+              'aria-label': 'A deck is due for review',
+              title: 'Your buddy has a question for you',
+              style: {
+                position: 'absolute',
+                top: '-4px',
+                right: '-4px',
+                fontSize: '11px',
+                fontWeight: 800,
+                color: palette.onAccent || '#000',
+                background: palette.accent,
+                width: '18px',
+                height: '18px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '2px solid ' + palette.bg,
+                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                pointerEvents: 'none'
+              }
+            }, '?') : null
           );
         })(),
         // Tiny name + edit affordance
