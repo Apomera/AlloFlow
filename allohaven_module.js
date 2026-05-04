@@ -245,6 +245,13 @@
       // }
     ],
 
+    // ── Room mode (Phase 2p.3) ──
+    // 'build' = default editing mode: empty cells show dotted outlines,
+    // hover-✕ delete buttons appear, click-empty-to-add active.
+    // 'live'  = rest mode: placement UI hidden, subtle darkening,
+    // companion enters sleep pose. Sims-style mode distinction.
+    roomMode: 'build',
+
     // ── Companion (Phase 2p — Sims-y critter buddy) ──
     // null until student creates one through the setup wizard. Once set,
     // a small SVG figure lives in the bottom-right of the floor surface
@@ -893,6 +900,20 @@
     return null;
   }
 
+  // ── Time-of-day room lighting (Phase 2p.3) ──
+  // Reads system clock and returns a subtle wallpaper tint matching the
+  // hour. Returns null at midday (no overlay), so daytime sessions read
+  // neutral and the tint only appears morning/evening/night. Strong
+  // enough to signal time-of-day, soft enough not to compete with
+  // decoration colors. Suppressed in high-contrast mode by the caller.
+  function getTimeOfDayTint() {
+    var hour = new Date().getHours();
+    if (hour >= 5 && hour < 9)   return { color: 'rgba(255,180,170,0.10)', label: 'dawn' };
+    if (hour >= 17 && hour < 20) return { color: 'rgba(255,150,80,0.13)',  label: 'dusk' };
+    if (hour >= 20 || hour < 5)  return { color: 'rgba(60,80,140,0.18)',   label: 'night' };
+    return null;
+  }
+
   // ── Mood-driven room tint (Phase 2p.2) ──
   // Maps the dominant mood across recent decorations to a subtle radial
   // gradient overlay color. Returns null when there's no signal (under
@@ -1255,15 +1276,16 @@
     var h = React.createElement;
     var p = palette || { primary: '#888', secondary: '#ccc', accent: '#444' };
     var blinking = animState && animState.blinking;
+    var sleeping = animState && animState.sleeping;
     // Pupil offset (cursor tracking) — clamped to ±2 viewBox units so
     // pupils move within the eye sclera. Caller passes { x: -1..1, y: -1..1 }
     // representing normalized cursor offset from companion center.
+    // When sleeping, pupil tracking is forced to zero (eyes are closed).
     var pupilOffset = (animState && animState.pupilOffset) || { x: 0, y: 0 };
-    var px = Math.max(-2, Math.min(2, (pupilOffset.x || 0) * 2));
-    var py = Math.max(-2, Math.min(2, (pupilOffset.y || 0) * 2));
-    // Eyelid scale-y is the blink mechanism — when blinking, eyes "close"
-    // by overlaying eyelid shapes at full opacity.
-    var eyelidOpacity = blinking ? 1 : 0;
+    var px = sleeping ? 0 : Math.max(-2, Math.min(2, (pupilOffset.x || 0) * 2));
+    var py = sleeping ? 0 : Math.max(-2, Math.min(2, (pupilOffset.y || 0) * 2));
+    // Eyelid is shut continuously when sleeping; otherwise toggled by blink.
+    var eyelidOpacity = (sleeping || blinking) ? 1 : 0;
     var commonRoot = {
       viewBox: '0 0 100 100',
       width: '100%', height: '100%',
@@ -1607,6 +1629,14 @@
       '.ah-root [data-species="dragon"] .ah-companion-tail { animation: ah-companion-tail-dragon 4000ms ease-in-out infinite; }',
       '.ah-root .ah-companion-root:hover { transform: scale(1.05) translateY(-2px); }',
       '.ah-root .ah-companion-bubble { animation: ah-companion-bubble-in 280ms cubic-bezier(0.34, 1.6, 0.64, 1) 1; transform-origin: bottom right; }',
+      // Sleeping companion (Live mode) — slow the breathe, stop the bob,
+      // freeze the tail. Eyelids are shut via the SVG eyelid group.
+      '.ah-root .ah-companion-root.ah-companion-sleeping { animation: none; transform: translateY(0); cursor: pointer; }',
+      '.ah-root .ah-companion-sleeping .ah-companion-body { animation: ah-companion-breathe 6500ms ease-in-out infinite; }',
+      '.ah-root .ah-companion-sleeping .ah-companion-tail { animation: none !important; }',
+      '.ah-root .ah-companion-sleeping .ah-companion-wings { animation: none !important; }',
+      '@keyframes ah-companion-z { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(8px, -16px) scale(1.1); } }',
+      '.ah-root .ah-companion-z { animation: ah-companion-z 2400ms ease-in-out infinite; }',
       '.ah-root .ah-companion-confetti-piece { animation: ah-companion-confetti 800ms ease-out 1 forwards; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
@@ -1617,6 +1647,7 @@
       '  .ah-root .ah-companion-tail,',
       '  .ah-root .ah-companion-bubble,',
       '  .ah-root .ah-companion-wings,',
+      '  .ah-root .ah-companion-z,',
       '  .ah-root .ah-companion-confetti-piece { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible,',
@@ -7499,20 +7530,34 @@
         // Wall stays 4 cols (2 cols on narrow); floor stays 6 cols (3 cols on narrow)
         // Grid auto-rows handles overflow; we don't pin a row count
         // anymore so expansion past 8/12 slots renders correctly.
-        // Wall surface (with warm-light overlay)
+        // Wall surface (with warm-light overlay + time-of-day tint).
+        // Time-of-day (Phase 2p.3) — system-clock-driven gentle wash:
+        // dawn pink, dusk warm orange, night cool blue. Suppressed in
+        // high-contrast mode and at midday (no overlay).
         h('div', {
           role: 'region',
-          'aria-label': 'Wall — ' + wallCount + ' of ' + room.wallSlots + ' slots filled',
+          'aria-label': (function() {
+            var tod = !inherited.highContrast ? getTimeOfDayTint() : null;
+            return 'Wall — ' + wallCount + ' of ' + room.wallSlots + ' slots filled'
+              + (tod ? ', time-of-day: ' + tod.label : '');
+          })(),
           className: !inherited.highContrast ? 'ah-room-frame' : '',
           style: {
             position: 'relative',
             padding: '14px',
-            background: palette.wallpaper,
+            background: (function() {
+              var tod = !inherited.highContrast ? getTimeOfDayTint() : null;
+              if (tod && tod.color) {
+                return 'linear-gradient(180deg, ' + tod.color + ', transparent 70%), ' + palette.wallpaper;
+              }
+              return palette.wallpaper;
+            })(),
             borderRadius: '12px 12px 0 0',
             marginTop: '16px',
             border: '1px solid ' + palette.border,
             borderBottom: 'none',
-            boxShadow: 'inset 0 -8px 20px rgba(0,0,0,0.18)'
+            boxShadow: 'inset 0 -8px 20px rgba(0,0,0,0.18)',
+            transition: 'background 600ms ease'
           }
         },
           h('div', {
@@ -7812,7 +7857,7 @@
           // Hover-revealed ✕ delete button (top-right corner). Suppressed
           // on the starter decoration — students shouldn't accidentally
           // delete the welcome gift; v2+ could allow it via Settings.
-          !decoration.isStarter ? h('button', {
+          !decoration.isStarter && state.roomMode !== 'live' ? h('button', {
             onClick: function(e) {
               e.stopPropagation();
               setStateMulti({ activeModal: 'delete-decoration', generateContext: { decorationId: decoration.id } });
@@ -7844,6 +7889,20 @@
             }
           }, '✕') : null
         );
+      }
+      // Live mode (Phase 2p.3): empty cells render as fully transparent
+      // non-interactive divs — no dotted outline, no click affordance.
+      // Build mode keeps the original interactive empty cell.
+      var liveMode = state.roomMode === 'live';
+      if (liveMode) {
+        return h('div', {
+          key: surface + '-cell-' + index,
+          'aria-hidden': 'true',
+          style: {
+            minHeight: surface === 'wall' ? '76px' : '86px',
+            pointerEvents: 'none'
+          }
+        });
       }
       return h('div', {
         key: surface + '-cell-' + index,
@@ -7891,7 +7950,33 @@
           h('span', { 'aria-hidden': 'true', style: { marginRight: '6px' } }, '🌿'),
           'AlloHaven'
         ),
-        h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } },
+        h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+          // Build / Live toggle (Phase 2p.3) — Sims-y mode distinction.
+          // Build mode is editing; Live mode is rest. Persists in state.
+          (function() {
+            var liveMode = state.roomMode === 'live';
+            return h('button', {
+              onClick: function() {
+                setStateField('roomMode', liveMode ? 'build' : 'live');
+              },
+              'aria-pressed': liveMode ? 'true' : 'false',
+              'aria-label': liveMode ? 'Switch to build mode (placement UI visible)' : 'Switch to live mode (room rests)',
+              title: liveMode ? 'Currently in Live mode · click for Build' : 'Currently in Build mode · click for Live',
+              style: {
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '6px 12px',
+                background: liveMode ? palette.accent : palette.surface,
+                color: liveMode ? palette.onAccent : palette.textDim,
+                border: '1px solid ' + (liveMode ? palette.accent : palette.border),
+                borderRadius: '999px',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'background 200ms ease, color 200ms ease'
+              }
+            }, liveMode ? '🛋 Live' : '🛠 Build');
+          })(),
           h('div', {
             role: 'status',
             'aria-label': 'You have ' + tokens + ' tokens',
@@ -8060,31 +8145,56 @@
             pointerEvents: 'auto'
           }
         }, bubbleText) : null,
-        // The companion itself
-        h('div', {
-          className: 'ah-companion-root' + (reacting ? ' ah-companion-react' : ''),
-          role: 'button',
-          tabIndex: 0,
-          'aria-label': displayName + ' (' + (sp ? sp.label : 'companion') + '). Click to chat.'
-            + (bubbleText ? ' Says: ' + bubbleText : ''),
-          title: displayName + ' · click for a thought',
-          onClick: handleClick,
-          onKeyDown: handleKey,
-          onMouseMove: handleMove,
-          onMouseLeave: handleLeave,
-          style: {
-            width: '76px',
-            height: '76px',
-            background: palette.surface + 'aa',
-            border: '1px solid ' + palette.border,
-            borderRadius: '14px',
-            padding: '4px',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            pointerEvents: 'auto'
-          }
-        },
-          getCompanionSvg(companion.species, paletteColors, { blinking: blinking, pupilOffset: pupilOffset })
-        ),
+        // The companion itself — sleep pose in Live mode
+        (function() {
+          var sleeping = state.roomMode === 'live';
+          return h('div', {
+            className: 'ah-companion-root'
+              + (reacting ? ' ah-companion-react' : '')
+              + (sleeping ? ' ah-companion-sleeping' : ''),
+            role: 'button',
+            tabIndex: 0,
+            'aria-label': displayName + ' (' + (sp ? sp.label : 'companion') + ')'
+              + (sleeping ? ' is resting in live mode' : '. Click to chat.')
+              + (bubbleText && !sleeping ? ' Says: ' + bubbleText : ''),
+            title: sleeping
+              ? displayName + ' is resting'
+              : displayName + ' · click for a thought',
+            onClick: function() { if (!sleeping) handleClick(); },
+            onKeyDown: function(e) { if (!sleeping) handleKey(e); },
+            onMouseMove: function(e) { if (!sleeping) handleMove(e); },
+            onMouseLeave: function(e) { if (!sleeping) handleLeave(e); },
+            style: {
+              position: 'relative',
+              width: '76px',
+              height: '76px',
+              background: palette.surface + 'aa',
+              border: '1px solid ' + palette.border,
+              borderRadius: '14px',
+              padding: '4px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+              pointerEvents: 'auto'
+            }
+          },
+            getCompanionSvg(companion.species, paletteColors,
+              { blinking: blinking, pupilOffset: pupilOffset, sleeping: sleeping }),
+            // Floating "Z" when sleeping — gentle visual signal, not "needs sleep" coded
+            sleeping ? h('span', {
+              className: 'ah-companion-z',
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                top: '6px',
+                right: '6px',
+                fontSize: '14px',
+                fontWeight: 800,
+                color: palette.accent,
+                opacity: 0.8,
+                pointerEvents: 'none'
+              }
+            }, 'z') : null
+          );
+        })(),
         // Tiny name + edit affordance
         h('div', {
           style: {
