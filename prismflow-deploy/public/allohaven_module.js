@@ -213,6 +213,23 @@
       // { id, date: ISO, prompt: string|null, text, topics: [], tokensEarned: 1 }
     ],
 
+    // ── Goals (Phase 2n — IEP-style targets) ──
+    // Time-boxed targets with measurable metrics. Designed for the
+    // student/clinician IEP review loop: set a target ("review 10 cards
+    // by Friday"), watch the progress bar fill, capture completion in
+    // the print packet for parent/team review.
+    goals: [
+      // {
+      //   id, title (free text),
+      //   metric: 'pomodoros' | 'reflections' | 'quizzes-passed' |
+      //           'walks' | 'tokens-earned' | 'decorations-placed',
+      //   targetCount: number,
+      //   startDate: ISO, endDate: ISO,
+      //   completedAt: ISO | null,
+      //   notes: string
+      // }
+    ],
+
     // ── Stories (method-of-loci chain mnemonic) ──
     // Each story is an ordered sequence of decorations + per-step narrative
     // text. Walking a completed story (≥3 steps) is a retrieval exercise:
@@ -242,7 +259,16 @@
       summary: null,                 // { moodSummary, themes:[], wordCount, entriesAnalyzed }
       error: null,                   // user-friendly error string if analysis fails
       generatedAt: null              // ISO timestamp of the cached summary
-    }
+    },
+
+    // ── Ambient soundscape (Phase 2g) ──
+    // Procedural Web Audio noise looped during Pomodoro focus phases.
+    // 'off' | 'rain' | 'fireplace' | 'wind'. No external audio assets —
+    // each is generated in real time from a noise buffer through a low-
+    // pass filter chain. Persisted so the student's preference survives
+    // reloads. Volume is held quiet (~15% gain) by design — this is
+    // background, not foreground.
+    soundscape: 'off'
   };
 
   // ─────────────────────────────────────────────────────────
@@ -729,6 +755,131 @@
     return t === g || t.indexOf(g) === 0 || g.indexOf(t) === 0;
   }
 
+  // ── Goal metrics (Phase 2n) ──
+  // Each metric = how to measure progress toward a goal. The COUNTING
+  // function takes (state, startMs, endMs) and returns the count of
+  // qualifying events in that window. Designed to read the same state
+  // surfaces the rest of the tool already writes — no new tracking
+  // infrastructure needed.
+  var GOAL_METRICS = [
+    {
+      id: 'pomodoros', emoji: '🍅', label: 'Pomodoros completed',
+      hint: 'Each finished focus session counts as one.',
+      count: function(st, startMs, endMs) {
+        return (st.earnings || []).filter(function(e) {
+          if (!e.date) return false;
+          var t = new Date(e.date).getTime();
+          if (t < startMs || t > endMs) return false;
+          return e.source === 'pomodoro' || e.source === 'cycle-bonus';
+        }).length;
+      }
+    },
+    {
+      id: 'reflections', emoji: '📝', label: 'Reflections written',
+      hint: 'Journal entries that earned a token.',
+      count: function(st, startMs, endMs) {
+        return (st.journalEntries || []).filter(function(e) {
+          if (!e.date) return false;
+          var t = new Date(e.date).getTime();
+          return t >= startMs && t <= endMs;
+        }).length;
+      }
+    },
+    {
+      id: 'quizzes-passed', emoji: '✓', label: 'Memory quizzes passed',
+      hint: 'Counts quiz sessions where you scored ≥80%.',
+      count: function(st, startMs, endMs) {
+        return (st.earnings || []).filter(function(e) {
+          if (!e.date) return false;
+          var t = new Date(e.date).getTime();
+          if (t < startMs || t > endMs) return false;
+          return e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz';
+        }).length;
+      }
+    },
+    {
+      id: 'walks', emoji: '📜', label: 'Story walks',
+      hint: 'Each completed story walk counts.',
+      count: function(st, startMs, endMs) {
+        return (st.earnings || []).filter(function(e) {
+          if (!e.date) return false;
+          var t = new Date(e.date).getTime();
+          if (t < startMs || t > endMs) return false;
+          return e.source === 'story-walk';
+        }).length;
+      }
+    },
+    {
+      id: 'decorations-placed', emoji: '🌿', label: 'Decorations placed',
+      hint: 'New decorations added to the room.',
+      count: function(st, startMs, endMs) {
+        return (st.decorations || []).filter(function(d) {
+          if (d.isStarter) return false;
+          if (!d.earnedAt) return false;
+          var t = new Date(d.earnedAt).getTime();
+          return t >= startMs && t <= endMs;
+        }).length;
+      }
+    },
+    {
+      id: 'tokens-earned', emoji: '🪙', label: 'Tokens earned',
+      hint: 'All token-earning events combined.',
+      count: function(st, startMs, endMs) {
+        return (st.earnings || []).reduce(function(sum, e) {
+          if (!e.date) return sum;
+          var t = new Date(e.date).getTime();
+          if (t < startMs || t > endMs) return sum;
+          return sum + (e.tokens || 0);
+        }, 0);
+      }
+    }
+  ];
+  function getGoalMetric(id) {
+    for (var i = 0; i < GOAL_METRICS.length; i++) {
+      if (GOAL_METRICS[i].id === id) return GOAL_METRICS[i];
+    }
+    return null;
+  }
+  // Compute progress for a goal — returns { current, target, pct, isDone }
+  function computeGoalProgress(goal, state) {
+    var metric = getGoalMetric(goal.metric);
+    if (!metric) return { current: 0, target: goal.targetCount || 1, pct: 0, isDone: false };
+    var startMs = goal.startDate ? new Date(goal.startDate).getTime() : 0;
+    var endMs = goal.endDate ? new Date(goal.endDate).getTime() : Date.now();
+    var current = metric.count(state, startMs, endMs);
+    var target = goal.targetCount || 1;
+    var pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
+    var isDone = current >= target;
+    return { current: current, target: target, pct: pct, isDone: isDone };
+  }
+  // Default 7-day window starting today at midnight
+  function defaultGoalDateRange() {
+    var start = new Date();
+    start.setHours(0, 0, 0, 0);
+    var end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000 - 1000);
+    return { startDate: start.toISOString(), endDate: end.toISOString() };
+  }
+
+  // ── Mood tags (Phase 2m) ──
+  // Optional affective-domain tag students can attach to a decoration
+  // when they place it (or edit later). Surfaces in the print packet
+  // and clinical-review packet as a mood distribution chip — gives
+  // parents/clinicians a window into how the student felt while
+  // earning each item, without forcing them to journal it.
+  var MOOD_OPTIONS = [
+    { id: 'joy',       emoji: '🌟', label: 'Joy',       hint: 'felt great earning this' },
+    { id: 'pride',     emoji: '⚡', label: 'Pride',     hint: 'worked hard for this one' },
+    { id: 'curiosity', emoji: '🤔', label: 'Curiosity', hint: 'sparked something to explore' },
+    { id: 'calm',      emoji: '🦋', label: 'Calm',      hint: 'felt peaceful and steady' },
+    { id: 'struggle',  emoji: '💪', label: 'Struggle',  hint: 'pushed through something hard' }
+  ];
+  function getMoodOption(id) {
+    for (var i = 0; i < MOOD_OPTIONS.length; i++) {
+      if (MOOD_OPTIONS[i].id === id) return MOOD_OPTIONS[i];
+    }
+    return null;
+  }
+
   // ── Per-card mastery (Phase 2d) ──
   // Smart shuffle: weights cards by weakness so struggling ones come
   // up first in the deck order, while still maintaining randomness.
@@ -995,6 +1146,13 @@
     var pickedPromptId = pickedTuple[0];
     var setPickedPromptId = pickedTuple[1];
 
+    // Mood quick-tap (Phase 2g) — optional. Tags the journal entry with
+    // a single emoji + label so insights can group entries by mood without
+    // requiring text analysis. Tap-to-toggle: tap again to clear.
+    var moodTuple = useState(null);
+    var pickedMood = moodTuple[0];
+    var setPickedMood = moodTuple[1];
+
     var palette = p.palette;
     var minChars = 20;
     var charCount = draft.trim().length;
@@ -1073,7 +1231,7 @@
     function handleSubmit() {
       if (!canSubmit) return;
       p.stopVoice();
-      p.onSubmit(draft, pickedPromptId);
+      p.onSubmit(draft, pickedPromptId, pickedMood);
     }
 
     return h('div', {
@@ -1126,6 +1284,46 @@
             }
           }, '✕')
         ),
+        // Mood quick-tap (optional). Tap an emoji to tag this entry; tap
+        // again to clear. Saved with the journal entry for later grouping.
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+          'How are you · optional'),
+        h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' } },
+          [
+            { id: 'good',    emoji: '😊', label: 'Good' },
+            { id: 'meh',     emoji: '😐', label: 'Meh' },
+            { id: 'down',    emoji: '😔', label: 'Down' },
+            { id: 'tired',   emoji: '😴', label: 'Tired' },
+            { id: 'frust',   emoji: '😤', label: 'Frustrated' },
+            { id: 'great',   emoji: '✨', label: 'Great' }
+          ].map(function(m) {
+            var active = pickedMood === m.id;
+            return h('button', {
+              key: 'mood-' + m.id,
+              onClick: function() { setPickedMood(active ? null : m.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': m.label + (active ? ' (selected)' : ''),
+              title: m.label,
+              style: {
+                background: active ? palette.surface : 'transparent',
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '8px',
+                padding: '6px 10px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: '18px',
+                lineHeight: '1',
+                color: palette.text,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }
+            },
+              h('span', { 'aria-hidden': 'true' }, m.emoji),
+              h('span', { style: { fontSize: '11px', fontWeight: active ? 700 : 500, color: palette.textDim } }, m.label)
+            );
+          })
+        ),
         // Prompt picker
         h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
           "Today's prompts · pick one or write your own"),
@@ -1158,7 +1356,7 @@
           h('textarea', {
             value: draft,
             onChange: function(e) { setDraft(e.target.value); },
-            placeholder: 'Take your time. Anything goes.',
+            placeholder: 'Take your time. Anything goes. Tip: wrap a {word} in braces to make it a fill-in-the-blank for self-quiz later.',
             'aria-label': 'Reflection text',
             rows: 6,
             style: {
@@ -1361,7 +1559,13 @@
       },
         h('span', {
           style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, letterSpacing: '0.02em' }
-        }, dateStr + (entry.editedAt ? ' · edited' : '')),
+        },
+          (function() {
+            var moodMap = { good: '😊', meh: '😐', down: '😔', tired: '😴', frust: '😤', great: '✨' };
+            var moodEmoji = entry.mood && moodMap[entry.mood] ? moodMap[entry.mood] + ' ' : '';
+            return moodEmoji + dateStr + (entry.editedAt ? ' · edited' : '');
+          })()
+        ),
         h('span', {
           style: { fontSize: '11px', color: entry.tokensEarned > 0 ? palette.accent : palette.textMute, fontWeight: 700 }
         }, entry.tokensEarned > 0 ? '🪙 +' + entry.tokensEarned : '·')
@@ -1691,6 +1895,12 @@
     var reflectionDraft = reflectionDraftTuple[0];
     var setReflectionDraft = reflectionDraftTuple[1];
 
+    // Mood tag (Phase 2m) — optional affective-domain marker for the
+    // decoration. Captured in the reflection step.
+    var moodTagTuple = useState(null);
+    var moodTag = moodTagTuple[0];
+    var setMoodTag = moodTagTuple[1];
+
     function handlePickTemplate(t) {
       setTemplate(t);
       // Pre-fill first option for each slot for hierarchical templates
@@ -1745,11 +1955,11 @@
     }
 
     function handleSkipReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, '');
+      p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag);
     }
 
     function handleSubmitReflection() {
-      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft);
+      p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag);
     }
 
     function handleClose() {
@@ -2053,6 +2263,33 @@
             margin: '0 auto 14px'
           }
         }),
+        // Mood picker (Phase 2m) — optional affective-domain tag
+        h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
+          'How did you feel earning this? (optional)'),
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '14px' } },
+          MOOD_OPTIONS.map(function(m) {
+            var active = moodTag === m.id;
+            return h('button', {
+              key: 'mood-' + m.id,
+              onClick: function() { setMoodTag(active ? null : m.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': m.label + (active ? ' (selected, click to deselect)' : ''),
+              title: m.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                transition: 'border-color 140ms ease, background 140ms ease'
+              }
+            }, m.emoji + ' ' + m.label);
+          })
+        ),
         h('div', { style: { fontSize: '12px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', textAlign: 'center' } },
           'Want to write something about this? (optional, no token)'),
         h('textarea', {
@@ -3945,6 +4182,35 @@
             }
           }, '✕')
         ),
+        // Mood pill (Phase 2m) — clickable, cycles through MOOD_OPTIONS
+        // and back to null. Displayed under the header so it's discoverable
+        // for students who want to retroactively tag a decoration's mood.
+        typeof p.onSetMood === 'function' && !decoration.isStarter ? h('div', {
+          style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }
+        },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600 } }, 'Mood:'),
+          MOOD_OPTIONS.map(function(m) {
+            var active = decoration.mood === m.id;
+            return h('button', {
+              key: 'mm-' + m.id,
+              onClick: function() { p.onSetMood(active ? null : m.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': m.label + (active ? ' (currently selected, click to clear)' : ''),
+              title: m.hint,
+              style: {
+                background: active ? palette.accent : 'transparent',
+                color: active ? palette.onAccent : palette.text,
+                border: '1px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '2px 8px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, m.emoji + ' ' + m.label);
+          })
+        ) : null,
         renderTabs(),
         body
       )
@@ -4218,9 +4484,10 @@
                 h('textarea', {
                   value: step.narrative || '',
                   onChange: function(e) { setStepNarrative(idx, e.target.value); },
-                  placeholder: idx === 0
-                    ? 'How does the story start with this item?'
-                    : 'How does the previous item lead to this one?',
+                  placeholder: (idx === 0
+                    ? 'How does the story start with this item? '
+                    : 'How does the previous item lead to this one? ')
+                    + 'Wrap a {word} in braces to fill it in during walk.',
                   'aria-label': 'Narrative for step ' + (idx + 1),
                   rows: 2,
                   style: {
@@ -4299,12 +4566,38 @@
     var idx = idxTuple[0];
     var setIdx = idxTuple[1];
 
+    // Per-step cloze state (Phase 2j) — { stepIdx: { guesses, revealed } }.
+    // Cloze in step narratives turns walk-mode into active retrieval at
+    // each anchor, not just passive recall. Score isn\'t persisted (the
+    // walk completion award is the primary feedback); reveal is per-step.
+    var clozeStateTuple = useState({});
+    var clozeState = clozeStateTuple[0];
+    var setClozeState = clozeStateTuple[1];
+
     function findDecoration(id) {
       return allDecs.filter(function(d) { return d.id === id; })[0] || null;
     }
     var step = steps[idx] || null;
     var dec = step ? findDecoration(step.decorationId) : null;
     var atEnd = idx >= steps.length - 1;
+    var stepClozeAnswers = step ? extractClozeAnswers(step.narrative || '') : [];
+    var stepHasCloze = stepClozeAnswers.length > 0;
+    var stepClozeState = clozeState[idx] || { guesses: stepClozeAnswers.map(function() { return ''; }), revealed: false };
+
+    function updateStepGuess(blankIdx, val) {
+      var newGuesses = stepClozeState.guesses.slice();
+      newGuesses[blankIdx] = val;
+      var nextStepState = Object.assign({}, stepClozeState, { guesses: newGuesses });
+      var nextClozeState = Object.assign({}, clozeState);
+      nextClozeState[idx] = nextStepState;
+      setClozeState(nextClozeState);
+    }
+    function revealStep() {
+      var nextStepState = Object.assign({}, stepClozeState, { revealed: true });
+      var nextClozeState = Object.assign({}, clozeState);
+      nextClozeState[idx] = nextStepState;
+      setClozeState(nextClozeState);
+    }
 
     // Esc closes (without recording)
     useEffect(function() {
@@ -4387,14 +4680,81 @@
             fontSize: '11px', color: palette.textMute, marginBottom: '10px',
             letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700
           }
-        }, 'Step ' + (idx + 1) + ' of ' + steps.length),
-        h('p', {
+        }, 'Step ' + (idx + 1) + ' of ' + steps.length
+           + (stepHasCloze ? ' · ' + stepClozeAnswers.length + ' fill-in' + (stepClozeAnswers.length === 1 ? '' : 's') : '')),
+        // Narrative — cloze-bearing steps render as inline inputs; plain
+        // steps render as italic prose
+        stepHasCloze ? (function() {
+          var segments = buildClozeSegments(step.narrative || '');
+          return h('div', {
+            style: {
+              fontSize: '17px', color: palette.text, lineHeight: '2.2',
+              textAlign: 'center', maxWidth: '560px', margin: '0 0 14px 0'
+            }
+          },
+            segments.map(function(seg, i) {
+              if (seg.kind === 'text') return h('span', { key: 'wn-' + i }, seg.value);
+              if (stepClozeState.revealed) {
+                var guess = stepClozeState.guesses[seg.blankIdx] || '';
+                var correct = clozeAnswerCorrect(seg.answer, guess);
+                return h('span', {
+                  key: 'wn-' + i,
+                  style: {
+                    background: correct ? 'rgba(52,211,153,0.20)' : 'rgba(251,191,36,0.20)',
+                    color: palette.text,
+                    padding: '2px 8px', borderRadius: '4px',
+                    fontWeight: 700,
+                    borderBottom: '2px solid ' + (correct ? (palette.success || palette.accent) : (palette.warn || palette.accent))
+                  }
+                }, seg.answer);
+              }
+              return h('input', {
+                key: 'wn-' + i,
+                type: 'text',
+                value: stepClozeState.guesses[seg.blankIdx] || '',
+                onChange: function(e) { updateStepGuess(seg.blankIdx, e.target.value); },
+                'aria-label': 'Step ' + (idx + 1) + ' blank ' + (seg.blankIdx + 1),
+                placeholder: '___',
+                style: {
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '6px', color: palette.text,
+                  padding: '4px 10px', fontSize: 'inherit', fontFamily: 'inherit',
+                  margin: '0 4px', minWidth: '90px', textAlign: 'center'
+                }
+              });
+            })
+          );
+        })() : h('p', {
           style: {
             fontSize: '17px', color: palette.text, lineHeight: '1.6',
             textAlign: 'center', maxWidth: '560px', margin: '0 0 24px 0',
             fontStyle: 'italic'
           }
-        }, '"' + (step.narrative || '') + '"')
+        }, '"' + (step.narrative || '') + '"'),
+        // Reveal button for cloze-bearing steps (when not yet revealed)
+        stepHasCloze && !stepClozeState.revealed ? h('button', {
+          onClick: revealStep,
+          style: {
+            background: 'transparent', color: palette.accent,
+            border: '1px solid ' + palette.accent, borderRadius: '8px',
+            padding: '6px 16px', fontSize: '12px', fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'inherit', marginBottom: '14px'
+          }
+        }, '👁 Reveal answers') : null,
+        stepHasCloze && stepClozeState.revealed ? (function() {
+          var cc = 0;
+          for (var i = 0; i < stepClozeAnswers.length; i++) {
+            if (clozeAnswerCorrect(stepClozeAnswers[i], stepClozeState.guesses[i])) cc++;
+          }
+          var pct = stepClozeAnswers.length > 0 ? Math.round((cc / stepClozeAnswers.length) * 100) : 0;
+          return h('div', {
+            style: {
+              fontSize: '12px', color: palette.textDim, marginBottom: '14px',
+              fontWeight: 600, letterSpacing: '0.03em'
+            }
+          }, cc + ' / ' + stepClozeAnswers.length + ' · ' + pct + '%');
+        })() : null
       ),
       // Footer — nav buttons
       h('div', {
@@ -4455,6 +4815,263 @@
   }
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 6.6: GOAL BUILDER SUB-COMPONENT (Phase 2n)
+  // ─────────────────────────────────────────────────────────
+  function GoalBuilderInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+
+    var draftTuple = useState(function() {
+      return {
+        title: (p.goal && p.goal.title) || '',
+        metric: (p.goal && p.goal.metric) || 'pomodoros',
+        targetCount: (p.goal && p.goal.targetCount) || 5,
+        startDate: (p.goal && p.goal.startDate) || defaultGoalDateRange().startDate,
+        endDate: (p.goal && p.goal.endDate) || defaultGoalDateRange().endDate,
+        notes: (p.goal && p.goal.notes) || ''
+      };
+    });
+    var draft = draftTuple[0];
+    var setDraft = draftTuple[1];
+
+    function setField(field, val) {
+      var next = Object.assign({}, draft);
+      next[field] = val;
+      setDraft(next);
+    }
+
+    function isoToDateInput(iso) {
+      if (!iso) return '';
+      try {
+        var d = new Date(iso);
+        var yyyy = d.getFullYear();
+        var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+        var dd = ('0' + d.getDate()).slice(-2);
+        return yyyy + '-' + mm + '-' + dd;
+      } catch (e) { return ''; }
+    }
+    function dateInputToIso(s, isEnd) {
+      if (!s) return null;
+      var d = new Date(s + (isEnd ? 'T23:59:59' : 'T00:00:00'));
+      return d.toISOString();
+    }
+
+    var titleOk = (draft.title || '').trim().length > 0;
+    var targetOk = draft.targetCount > 0;
+    var dateOk = draft.startDate && draft.endDate
+      && new Date(draft.startDate).getTime() < new Date(draft.endDate).getTime();
+    var canSave = titleOk && targetOk && dateOk;
+
+    function handleSave() {
+      p.onSave({
+        title: (draft.title || '').trim(),
+        metric: draft.metric,
+        targetCount: parseInt(draft.targetCount, 10) || 1,
+        startDate: draft.startDate,
+        endDate: draft.endDate,
+        notes: (draft.notes || '').trim()
+      });
+    }
+
+    var metric = getGoalMetric(draft.metric) || GOAL_METRICS[0];
+
+    function applyPreset(preset) {
+      setDraft(Object.assign({}, draft, preset));
+    }
+    var presets = [
+      { label: '5 Pomodoros this week', metric: 'pomodoros', targetCount: 5, title: '5 Pomodoros this week' },
+      { label: '3 reflections this week', metric: 'reflections', targetCount: 3, title: '3 reflections this week' },
+      { label: '2 quizzes passed', metric: 'quizzes-passed', targetCount: 2, title: '2 quizzes passed' },
+      { label: '1 story walk', metric: 'walks', targetCount: 1, title: '1 story walk' }
+    ];
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': p.goal && p.goal.title ? 'Edit goal' : 'Build a new goal',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onCancel();
+      },
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)', zIndex: 175,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '1px solid ' + palette.border,
+          borderRadius: '14px', padding: '24px',
+          maxWidth: '540px', width: '100%', maxHeight: '88vh',
+          overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+            '🎯 ' + (p.goal && p.goal.title ? 'Edit goal' : 'Set a goal')),
+          h('button', {
+            onClick: p.onCancel, 'aria-label': 'Close goal builder',
+            style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        h('p', {
+          style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' }
+        }, 'Pick something measurable for a defined window of time. Goals appear in your memory overview, the print packet, and earn +3 bonus tokens on completion.'),
+
+        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '6px', fontWeight: 600 } }, 'Quick start:'),
+        h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' } },
+          presets.map(function(pr, i) {
+            return h('button', {
+              key: 'gp-' + i,
+              onClick: function() { applyPreset(pr); },
+              style: {
+                background: 'transparent', color: palette.textDim,
+                border: '1px solid ' + palette.border, borderRadius: '999px',
+                padding: '4px 10px', fontSize: '11px', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, pr.label);
+          })
+        ),
+
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'Goal title'),
+        h('input', {
+          type: 'text', value: draft.title,
+          onChange: function(e) { setField('title', e.target.value); },
+          placeholder: 'e.g. "5 Pomodoros this week" or "Master the spelling deck"',
+          'aria-label': 'Goal title',
+          style: {
+            width: '100%', padding: '8px 10px',
+            background: palette.surface, border: '1px solid ' + palette.border,
+            borderRadius: '8px', color: palette.text,
+            fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box',
+            marginBottom: '12px'
+          }
+        }),
+
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'What to count'),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' } },
+          GOAL_METRICS.map(function(m) {
+            var active = draft.metric === m.id;
+            return h('button', {
+              key: 'gm-' + m.id,
+              onClick: function() { setField('metric', m.id); },
+              'aria-pressed': active ? 'true' : 'false',
+              style: {
+                background: active ? palette.accent : palette.surface,
+                color: active ? palette.onAccent : palette.text,
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '8px', padding: '8px 12px',
+                fontSize: '13px', cursor: 'pointer', fontFamily: 'inherit',
+                textAlign: 'left'
+              }
+            },
+              h('div', { style: { fontWeight: 700 } }, m.emoji + ' ' + m.label),
+              h('div', { style: { fontSize: '11px', opacity: 0.8, marginTop: '2px' } }, m.hint)
+            );
+          })
+        ),
+
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'Target count · ' + metric.label),
+        h('input', {
+          type: 'number',
+          min: 1, max: 999,
+          value: draft.targetCount,
+          onChange: function(e) { setField('targetCount', parseInt(e.target.value, 10) || 1); },
+          'aria-label': 'Target count',
+          style: {
+            width: '100%', padding: '8px 10px',
+            background: palette.surface, border: '1px solid ' + palette.border,
+            borderRadius: '8px', color: palette.text,
+            fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box',
+            marginBottom: '12px'
+          }
+        }),
+
+        h('div', { style: { display: 'flex', gap: '10px', marginBottom: '12px' } },
+          h('div', { style: { flex: 1 } },
+            h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'Start'),
+            h('input', {
+              type: 'date',
+              value: isoToDateInput(draft.startDate),
+              onChange: function(e) { setField('startDate', dateInputToIso(e.target.value, false)); },
+              'aria-label': 'Start date',
+              style: {
+                width: '100%', padding: '8px 10px',
+                background: palette.surface, border: '1px solid ' + palette.border,
+                borderRadius: '8px', color: palette.text,
+                fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box'
+              }
+            })
+          ),
+          h('div', { style: { flex: 1 } },
+            h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'End'),
+            h('input', {
+              type: 'date',
+              value: isoToDateInput(draft.endDate),
+              onChange: function(e) { setField('endDate', dateInputToIso(e.target.value, true)); },
+              'aria-label': 'End date',
+              style: {
+                width: '100%', padding: '8px 10px',
+                background: palette.surface, border: '1px solid ' + palette.border,
+                borderRadius: '8px', color: palette.text,
+                fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box'
+              }
+            })
+          )
+        ),
+
+        h('label', { style: { display: 'block', fontSize: '12px', color: palette.textDim, marginBottom: '4px', fontWeight: 600 } }, 'Notes (optional)'),
+        h('textarea', {
+          value: draft.notes,
+          onChange: function(e) { setField('notes', e.target.value); },
+          placeholder: 'Why this goal? Anything to remember about it?',
+          'aria-label': 'Goal notes',
+          rows: 2,
+          style: {
+            width: '100%', padding: '8px 10px',
+            background: palette.surface, border: '1px solid ' + palette.border,
+            borderRadius: '8px', color: palette.text,
+            fontSize: '13px', fontFamily: 'inherit', boxSizing: 'border-box',
+            marginBottom: '14px', resize: 'vertical', lineHeight: '1.45'
+          }
+        }),
+
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '14px', paddingTop: '14px', borderTop: '1px solid ' + palette.border } },
+          p.goal ? h('button', {
+            onClick: function() {
+              if (window.confirm && !window.confirm('Delete this goal?')) return;
+              if (p.onDelete) p.onDelete();
+            },
+            style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '8px', padding: '6px 12px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🗑 Delete') : h('span'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', {
+              onClick: p.onCancel,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '8px', padding: '8px 14px', fontSize: '12px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: handleSave,
+              disabled: !canSave,
+              style: {
+                background: canSave ? palette.accent : palette.surface,
+                color: canSave ? palette.onAccent : palette.textMute,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: canSave ? 'pointer' : 'not-allowed',
+                fontFamily: 'inherit', opacity: canSave ? 1 : 0.6
+              }
+            }, 'Save goal')
+          )
+        )
+      )
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 7: REACT COMPONENT
   // ─────────────────────────────────────────────────────────
   // Receives callback-only props from App.jsx (matches Symbol Studio pattern).
@@ -4503,6 +5120,7 @@
       if (!Array.isArray(merged.journalEntries)) merged.journalEntries = [];
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
       if (!Array.isArray(merged.stories))        merged.stories        = [];
+      if (!Array.isArray(merged.goals))          merged.goals          = [];
       return merged;
     });
     var state = stateTuple[0];
@@ -4735,6 +5353,148 @@
       // eslint-disable-next-line
     }, [state.pomodoroState.active]);
 
+    // ── Ambient soundscape (Phase 2g) ──
+    // Procedural Web Audio noise — no external assets. A 5-second buffer
+    // of white noise is generated once and looped through a low-pass
+    // filter chain whose params define the timbre:
+    //   rain      : pink-ish low-pass at 1200 Hz with subtle tremolo
+    //   fireplace : brown noise (heavier low-pass at 400 Hz) + crackles
+    //   wind      : narrow band-pass at 600 Hz with slow LFO modulation
+    // Quiet by design (peak gain 0.15) — this is background, not music.
+    // Auto-fades in during focus phase, fades out on break / stop.
+    var audioRef = useRef(null);
+    useEffect(function() {
+      // Tear-down on every change so each sound (or 'off') gets a clean
+      // graph. The new graph is built only if we should currently be
+      // playing.
+      var ar = audioRef.current;
+      if (ar && ar.gainNode && ar.ctx) {
+        try {
+          ar.gainNode.gain.cancelScheduledValues(ar.ctx.currentTime);
+          ar.gainNode.gain.setTargetAtTime(0, ar.ctx.currentTime, 0.4);
+        } catch (e) {}
+        try {
+          setTimeout(function() {
+            try {
+              if (ar.source && typeof ar.source.stop === 'function') ar.source.stop();
+              if (ar.crackleTimer) clearInterval(ar.crackleTimer);
+              if (ar.lfoSource && typeof ar.lfoSource.stop === 'function') ar.lfoSource.stop();
+              if (ar.ctx && typeof ar.ctx.close === 'function') ar.ctx.close();
+            } catch (e2) {}
+          }, 600);
+        } catch (e) {}
+        audioRef.current = null;
+      }
+      var soundscape = state.soundscape || 'off';
+      var pomActive = state.pomodoroState && state.pomodoroState.active;
+      var phase = state.pomodoroState && state.pomodoroState.phase;
+      // Play during the focus phase only — not breaks. (Most users find
+      // ambient sound during a break unwelcome — they want quiet between
+      // focus blocks.)
+      if (soundscape === 'off' || !pomActive || phase !== 'focus') return;
+      try {
+        var Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return;
+        var ctx = new Ctx();
+        // Generate 5s of white noise — looped, this is enough to mask
+        // any seam clicking while keeping memory tiny (~2MB at 48 kHz).
+        var bufferSize = ctx.sampleRate * 5;
+        var noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+        var data = noiseBuffer.getChannelData(0);
+        if (soundscape === 'fireplace') {
+          // Brown noise — integrate white over time. Heavy bass for that
+          // crackling-fireplace warmth. We then layer crackles on top.
+          var lastOut = 0;
+          for (var i = 0; i < bufferSize; i++) {
+            var w = Math.random() * 2 - 1;
+            lastOut = (lastOut + (0.02 * w)) / 1.02;
+            data[i] = lastOut * 3.5;
+          }
+        } else {
+          // Pink-ish noise — Voss-McCartney approximation. Plenty close
+          // for ambient use; a true Voss would loop multiple octave
+          // generators which isn't worth the complexity here.
+          var b0 = 0, b1 = 0, b2 = 0;
+          for (var j = 0; j < bufferSize; j++) {
+            var w2 = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + w2 * 0.0555179;
+            b1 = 0.99332 * b1 + w2 * 0.0750759;
+            b2 = 0.96900 * b2 + w2 * 0.1538520;
+            data[j] = (b0 + b1 + b2 + w2 * 0.1848) * 0.11;
+          }
+        }
+        var src = ctx.createBufferSource();
+        src.buffer = noiseBuffer;
+        src.loop = true;
+        var lp = ctx.createBiquadFilter();
+        lp.type = (soundscape === 'wind') ? 'bandpass' : 'lowpass';
+        lp.frequency.value = soundscape === 'rain' ? 1200 : soundscape === 'fireplace' ? 400 : soundscape === 'wind' ? 600 : 1200;
+        lp.Q.value = soundscape === 'wind' ? 1.5 : 0.7;
+        var gain = ctx.createGain();
+        gain.gain.value = 0; // start silent and fade in
+        src.connect(lp); lp.connect(gain); gain.connect(ctx.destination);
+        src.start();
+        // Smooth fade-in over 1.5 seconds.
+        var peak = 0.15;
+        gain.gain.cancelScheduledValues(ctx.currentTime);
+        gain.gain.setTargetAtTime(peak, ctx.currentTime, 0.6);
+        // Fireplace crackles — random short pops layered over the brown
+        // noise. Each crackle is a tiny burst of high-frequency noise
+        // that quickly decays, evoking wood snapping.
+        var crackleTimer = null;
+        if (soundscape === 'fireplace') {
+          var spawnCrackle = function() {
+            try {
+              var dur = 0.05 + Math.random() * 0.08;
+              var crackleBuf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+              var cd = crackleBuf.getChannelData(0);
+              for (var k = 0; k < cd.length; k++) {
+                cd[k] = (Math.random() * 2 - 1) * Math.pow(1 - k / cd.length, 2.4);
+              }
+              var cs = ctx.createBufferSource();
+              cs.buffer = crackleBuf;
+              var cg = ctx.createGain();
+              cg.gain.value = 0.04 + Math.random() * 0.06;
+              cs.connect(cg); cg.connect(ctx.destination);
+              cs.start();
+            } catch (eC) {}
+          };
+          crackleTimer = setInterval(function() {
+            if (Math.random() < 0.7) spawnCrackle();
+          }, 400 + Math.floor(Math.random() * 600));
+        }
+        // Wind LFO — slow gain modulation so the bandpass swells in/out.
+        var lfoSource = null;
+        if (soundscape === 'wind') {
+          lfoSource = ctx.createOscillator();
+          lfoSource.frequency.value = 0.15;
+          var lfoGain = ctx.createGain();
+          lfoGain.gain.value = 0.08;
+          lfoSource.connect(lfoGain);
+          lfoGain.connect(gain.gain);
+          lfoSource.start();
+        }
+        audioRef.current = { ctx: ctx, source: src, gainNode: gain, crackleTimer: crackleTimer, lfoSource: lfoSource };
+      } catch (audioErr) {
+        // Audio unavailable / autoplay-blocked — silent fail. The setting
+        // stays as-is and will retry next time the focus phase starts
+        // after a user gesture.
+      }
+      // eslint-disable-next-line
+    }, [state.soundscape, state.pomodoroState.active, state.pomodoroState.phase]);
+    // Hard-stop on unmount to release the AudioContext.
+    useEffect(function() {
+      return function() {
+        var ar = audioRef.current;
+        if (!ar) return;
+        try { if (ar.source && typeof ar.source.stop === 'function') ar.source.stop(); } catch (e) {}
+        try { if (ar.crackleTimer) clearInterval(ar.crackleTimer); } catch (e) {}
+        try { if (ar.lfoSource && typeof ar.lfoSource.stop === 'function') ar.lfoSource.stop(); } catch (e) {}
+        try { if (ar.ctx && typeof ar.ctx.close === 'function') ar.ctx.close(); } catch (e) {}
+        audioRef.current = null;
+      };
+    }, []);
+
     // ── Completion detection ──
     // Fires once per Pomodoro when elapsed crosses duration. Date.now()-based
     // so it's robust against browser tab throttling: even if the student
@@ -4894,7 +5654,7 @@
     // is currently 0; otherwise saves the entry but earns 0 (1/day cap).
     // Length gate is enforced at the UI level (button disabled <20 chars);
     // this handler trusts the input.
-    function submitReflection(text, promptId) {
+    function submitReflection(text, promptId, mood) {
       var trimmed = (text || '').trim();
       if (!trimmed) return;
       var alreadyEarned = (state.dailyState.reflectionsSubmitted || 0) >= 1;
@@ -4905,6 +5665,7 @@
         prompt: promptId ? getPromptText(promptId) : null,
         promptId: promptId || null,
         text: trimmed,
+        mood: mood || null,
         topics: [], // v1: empty; v2+ keyword extraction
         tokensEarned: tokensEarned
       };
@@ -5121,6 +5882,115 @@
       }
       setStateMulti(updates);
     }
+
+    // ── Goals (Phase 2n) ──
+    // Time-boxed targets with completion celebration. Designed for the
+    // student/clinician progress-monitoring loop. Token bonus on
+    // completion (+3) is meaningful but not large enough to motivate
+    // gaming the system.
+
+    function createGoal() {
+      var range = defaultGoalDateRange();
+      var newGoal = {
+        id: 'g-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        title: '',
+        metric: 'pomodoros',
+        targetCount: 5,
+        startDate: range.startDate,
+        endDate: range.endDate,
+        completedAt: null,
+        notes: ''
+      };
+      setStateMulti({
+        goals: state.goals.concat([newGoal]),
+        activeModal: 'goal-builder',
+        generateContext: { goalId: newGoal.id }
+      });
+    }
+
+    function updateGoal(goalId, updates) {
+      var newGoals = state.goals.map(function(g) {
+        if (g.id !== goalId) return g;
+        return Object.assign({}, g, updates);
+      });
+      setStateField('goals', newGoals);
+    }
+
+    function deleteGoal(goalId) {
+      setStateField('goals', state.goals.filter(function(g) { return g.id !== goalId; }));
+      addToast('Goal removed.');
+    }
+
+    // Mark a goal completed manually OR auto-detect on every state
+    // change. Auto-detect runs in a useEffect below; this manual
+    // version is for "I did this on paper" style edge cases.
+    function markGoalCompleted(goalId) {
+      var nowIso = new Date().toISOString();
+      var goal = state.goals.filter(function(g) { return g.id === goalId; })[0];
+      if (!goal || goal.completedAt) return;
+      var bonus = 3;
+      var newGoals = state.goals.map(function(g) {
+        if (g.id !== goalId) return g;
+        return Object.assign({}, g, { completedAt: nowIso });
+      });
+      setStateMulti({
+        goals: newGoals,
+        tokens: state.tokens + bonus,
+        earnings: state.earnings.concat([{
+          source: 'goal-completed',
+          tokens: bonus,
+          date: nowIso,
+          metadata: { goalId: goalId, metric: goal.metric, target: goal.targetCount }
+        }])
+      });
+      setTimeout(function() {
+        addToast('🎯 Goal complete! +' + bonus + ' bonus tokens.');
+      }, 50);
+    }
+
+    // Auto-detect goal completion: any open goal that's now ≥ target
+    // gets completedAt stamped + bonus awarded once.
+    useEffect(function() {
+      var open = (state.goals || []).filter(function(g) { return !g.completedAt; });
+      if (open.length === 0) return;
+      var newlyComplete = [];
+      open.forEach(function(g) {
+        var prog = computeGoalProgress(g, state);
+        if (prog.isDone) newlyComplete.push(g);
+      });
+      if (newlyComplete.length === 0) return;
+      var nowIso = new Date().toISOString();
+      var bonus = 3;
+      var newGoals = state.goals.map(function(g) {
+        if (newlyComplete.indexOf(g) === -1) return g;
+        return Object.assign({}, g, { completedAt: nowIso });
+      });
+      var newEarnings = state.earnings.concat(newlyComplete.map(function(g) {
+        return {
+          source: 'goal-completed',
+          tokens: bonus,
+          date: nowIso,
+          metadata: { goalId: g.id, metric: g.metric, target: g.targetCount }
+        };
+      }));
+      setStateMulti({
+        goals: newGoals,
+        tokens: state.tokens + bonus * newlyComplete.length,
+        earnings: newEarnings
+      });
+      setTimeout(function() {
+        if (newlyComplete.length === 1) {
+          addToast('🎯 Goal complete! +' + bonus + ' bonus tokens.');
+        } else {
+          addToast('🎯 ' + newlyComplete.length + ' goals complete! +' + (bonus * newlyComplete.length) + ' bonus tokens.');
+        }
+      }, 50);
+      // eslint-disable-next-line
+    }, [
+      state.tokens, state.decorations.length, state.journalEntries.length,
+      (state.dailyState || {}).pomodorosCompleted,
+      (state.stories || []).length, state.goals.length
+    ]);
 
     // ── Reflection cloze quiz (Phase 2i) ──
     // Awards a token (capped 1/day, shared with the memory-quiz cap) when
@@ -5378,7 +6248,7 @@
     // commits to the AI-generated image. Token already deducted at
     // generate time; this just records the placement + closes modal.
     // Optional reflection text attaches to the decoration's metadata.
-    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText) {
+    function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       // Slight ±3° rotation, randomized once per item — "lived-in wobble"
       var rotation = (Math.random() * 6) - 3;
@@ -5395,6 +6265,7 @@
         earnedAt: new Date().toISOString(),
         tokensSpent: DECORATION_COST,
         studentReflection: (reflectionText || '').trim(),
+        mood: moodTag || null,  // Phase 2m — affective domain tag
         linkedContent: null,    // v2+ memory palace
         sourceTool: null,       // v2+ cross-tool integration
         aiRationale: null       // v2+ AI summary of how earned
@@ -5405,6 +6276,15 @@
         generateContext: null
       });
       addToast('🌿 ' + template.label.toLowerCase() + ' placed in your room.');
+    }
+
+    // Update mood on an existing decoration (Phase 2m)
+    function setDecorationMood(decorationId, moodId) {
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { mood: moodId || null });
+      });
+      setStateField('decorations', newDecs);
     }
 
     // AI generation — calls props.callImagen with the constructed prompt.
@@ -5525,6 +6405,7 @@
       },
         renderHeader(palette, state.tokens, props.onClose),
         renderQuestPanel(),
+        renderTodayCard(),
         // Compute responsive row count based on slot count + columns
         // Wall stays 4 cols (2 cols on narrow); floor stays 6 cols (3 cols on narrow)
         // Grid auto-rows handles overflow; we don't pin a row count
@@ -5645,6 +6526,20 @@
               style: secondaryBtnStyle(palette)
             }, '📜 Stories' + (storyCount > 0 ? ' · ' + storyCount : ''));
           })(),
+          (function() {
+            var goals = state.goals || [];
+            var nowMs = Date.now();
+            var activeCount = goals.filter(function(g) {
+              if (g.completedAt) return false;
+              var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+              return endMs >= nowMs;
+            }).length;
+            return h('button', {
+              onClick: function() { setStateField('activeModal', 'goals'); },
+              'aria-label': 'Goals' + (activeCount > 0 ? ', ' + activeCount + ' active' : ''),
+              style: secondaryBtnStyle(palette)
+            }, '🎯 Goals' + (activeCount > 0 ? ' · ' + activeCount : ''));
+          })(),
           h('button', {
             onClick: function() { setStateField('activeModal', 'settings'); },
             style: secondaryBtnStyle(palette)
@@ -5764,6 +6659,22 @@
               letterSpacing: '0.04em'
             }
           }, 'starter') : null,
+          // Mood tag overlay (Phase 2m) — small emoji top-left, away from
+          // delete ✕ (top-right) and memory 📖 (bottom-left)
+          decoration.mood && getMoodOption(decoration.mood) ? h('span', {
+            'aria-label': 'Mood: ' + getMoodOption(decoration.mood).label,
+            title: getMoodOption(decoration.mood).label + ' — ' + getMoodOption(decoration.mood).hint,
+            style: {
+              position: 'absolute',
+              top: '2px',
+              left: '4px',
+              fontSize: '11px',
+              padding: '1px 3px',
+              borderRadius: '3px',
+              background: 'rgba(0,0,0,0.45)',
+              lineHeight: 1
+            }
+          }, getMoodOption(decoration.mood).emoji) : null,
           // Memory-content indicator — small 📖 in bottom-left (away
           // from the starter badge which lives bottom-right). Three
           // visual tiers:
@@ -5909,6 +6820,134 @@
             }
           }, '✕') : null
         )
+      );
+    }
+
+    // Today summary card (Phase 2o) — daily-arc complement to the
+    // quest panel. Quests = "what to try today"; today card = "what
+    // you've done + how close to your daily caps". Keeps daily-arc
+    // visibility without forcing students to compute it themselves.
+    // Hidden on first visit of a fresh day (no activity yet) so it
+    // doesn't add visual noise to a clean slate.
+    function renderTodayCard() {
+      var ds = state.dailyState || {};
+      var todayStr = new Date().toISOString().slice(0, 10);
+      var tokensToday = (state.earnings || []).reduce(function(sum, e) {
+        if (!e.date) return sum;
+        if (e.date.slice(0, 10) !== todayStr) return sum;
+        return sum + (e.tokens || 0);
+      }, 0);
+      var decorationsToday = (state.decorations || []).filter(function(d) {
+        if (d.isStarter) return false;
+        if (!d.earnedAt) return false;
+        return d.earnedAt.slice(0, 10) === todayStr;
+      }).length;
+
+      var pomodoros = ds.pomodorosCompleted || 0;
+      var reflections = ds.reflectionsSubmitted || 0;
+      var quizTokens = ds.quizTokensEarnedToday || 0;
+      var walkTokens = ds.storyWalkTokensEarnedToday || 0;
+
+      var anyActivity = tokensToday > 0 || pomodoros > 0 || reflections > 0
+        || quizTokens > 0 || walkTokens > 0 || decorationsToday > 0;
+      if (!anyActivity) return null;
+
+      function chip(emoji, label, current, cap, color) {
+        var capLabel = cap ? (current + '/' + cap) : current;
+        var atCap = cap && current >= cap;
+        return h('span', {
+          'aria-label': label + ': ' + current + (cap ? ' of ' + cap : '') + (atCap ? ' (cap reached)' : ''),
+          style: {
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            padding: '4px 10px',
+            background: palette.surface,
+            border: '1px solid ' + (atCap ? (color || palette.success || palette.accent) : palette.border),
+            borderRadius: '999px',
+            fontSize: '11px',
+            color: atCap ? (color || palette.success || palette.accent) : palette.textDim,
+            fontWeight: 700,
+            fontVariantNumeric: 'tabular-nums'
+          }
+        },
+          h('span', { 'aria-hidden': 'true' }, emoji),
+          h('span', null, capLabel)
+        );
+      }
+
+      var activeGoals = (state.goals || []).filter(function(g) {
+        if (g.completedAt) return false;
+        var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+        return endMs >= Date.now();
+      });
+      var topGoal = null;
+      if (activeGoals.length > 0) {
+        activeGoals.sort(function(a, b) {
+          return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+        });
+        topGoal = activeGoals[0];
+      }
+
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Today summary',
+        style: {
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '8px 10px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '10px',
+          marginTop: '6px',
+          marginBottom: '8px'
+        }
+      },
+        h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textDim, letterSpacing: '0.02em', textTransform: 'uppercase', marginRight: '4px' } },
+          'Today'),
+        tokensToday > 0 ? h('span', {
+          'aria-label': 'Tokens earned today: ' + tokensToday,
+          style: {
+            display: 'inline-flex', alignItems: 'center', gap: '4px',
+            padding: '4px 10px',
+            background: palette.surface,
+            border: '1px solid ' + palette.accent,
+            borderRadius: '999px',
+            fontSize: '11px', color: palette.accent, fontWeight: 700,
+            fontVariantNumeric: 'tabular-nums'
+          }
+        }, h('span', { 'aria-hidden': 'true' }, '🪙'), '+' + tokensToday) : null,
+        pomodoros > 0 ? chip('🍅', 'Pomodoros', pomodoros, 4) : null,
+        reflections > 0 ? chip('📝', 'Reflections', reflections, 1) : null,
+        quizTokens > 0 ? chip('✓', 'Quizzes passed', quizTokens, 2) : null,
+        walkTokens > 0 ? chip('📜', 'Walks', walkTokens, 1) : null,
+        decorationsToday > 0 ? chip('🌿', 'Decorations placed', decorationsToday) : null,
+        topGoal ? (function() {
+          var prog = computeGoalProgress(topGoal, state);
+          var endDate = topGoal.endDate ? new Date(topGoal.endDate) : null;
+          var daysLeft = endDate ? Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))) : 0;
+          return h('button', {
+            onClick: function() { setStateField('activeModal', 'goals'); },
+            'aria-label': 'Active goal: ' + topGoal.title + ', ' + prog.current + ' of ' + prog.target + ', ' + daysLeft + ' days left',
+            title: topGoal.title + ' · ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's') + ' left',
+            style: {
+              marginLeft: 'auto',
+              display: 'inline-flex', alignItems: 'center', gap: '6px',
+              padding: '4px 10px',
+              background: 'transparent',
+              border: '1px solid ' + palette.border,
+              borderRadius: '999px',
+              fontSize: '11px', color: palette.textDim, fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          },
+            h('span', { 'aria-hidden': 'true' }, '🎯'),
+            h('span', { style: { fontWeight: 700, color: palette.text } }, prog.current + '/' + prog.target),
+            h('span', null, '· ' + (daysLeft === 0 ? 'today' : daysLeft + 'd'))
+          );
+        })() : null
       );
     }
 
@@ -6222,6 +7261,212 @@
     // Review button to jump straight into its quiz. Replaces the
     // "click each decoration to remember what's where" UX gap.
     // ─────────────────────────────────────────────────
+
+    // ── Token trends (Phase 2l) ──
+    // Compact 30-day SVG chart of cumulative earning vs spending. Renders
+    // only when there's at least one earning event — silent when the
+    // student is brand-new. Two stacked bars per day: green for earned,
+    // dim for spent. A single horizontal balance line traces the running
+    // total across the period. Read aloud well: aria-label summarizes
+    // total earned + spent + current balance.
+    function renderTrendsChart() {
+      var earnings = state.earnings || [];
+      var decorations = state.decorations || [];
+      if (earnings.length === 0 && decorations.length === 0) return null;
+
+      var DAYS = 30;
+      var msPerDay = 24 * 60 * 60 * 1000;
+      var now = Date.now();
+      // Day-bucket start (midnight, today): floor to nearest day in local time
+      var today = new Date(); today.setHours(0,0,0,0);
+      var todayMs = today.getTime();
+      var startMs = todayMs - (DAYS - 1) * msPerDay;
+
+      // Initialize per-day buckets [0..29]
+      var earnedPerDay = new Array(DAYS).fill(0);
+      var spentPerDay  = new Array(DAYS).fill(0);
+
+      // Aggregate earnings into day buckets
+      earnings.forEach(function(e) {
+        if (!e.date || !e.tokens) return;
+        var t = new Date(e.date).getTime();
+        if (t < startMs || t > todayMs + msPerDay) return;
+        var idx = Math.floor((t - startMs) / msPerDay);
+        if (idx >= 0 && idx < DAYS) earnedPerDay[idx] += e.tokens;
+      });
+      // Aggregate decoration spending (tokensSpent at earnedAt date)
+      decorations.forEach(function(d) {
+        if (!d.tokensSpent || !d.earnedAt) return;
+        var t = new Date(d.earnedAt).getTime();
+        if (t < startMs || t > todayMs + msPerDay) return;
+        var idx = Math.floor((t - startMs) / msPerDay);
+        if (idx >= 0 && idx < DAYS) spentPerDay[idx] += d.tokensSpent;
+      });
+
+      var totalEarned = earnedPerDay.reduce(function(s, v) { return s + v; }, 0);
+      var totalSpent  = spentPerDay.reduce(function(s, v) { return s + v; }, 0);
+
+      if (totalEarned === 0 && totalSpent === 0) return null;
+
+      // Compute running balance per day (starts at state.tokens - totalNet for the period)
+      // Actually simpler: balance = earned-up-to-day - spent-up-to-day. We don't know
+      // pre-period balance from state alone, so we just track NET delta over the 30
+      // days. End-of-period delta = totalEarned - totalSpent.
+      var balanceLine = [];
+      var cumNet = 0;
+      for (var i = 0; i < DAYS; i++) {
+        cumNet += earnedPerDay[i] - spentPerDay[i];
+        balanceLine.push(cumNet);
+      }
+      var maxBar = Math.max(1, Math.max.apply(null, earnedPerDay), Math.max.apply(null, spentPerDay));
+      var minBalance = Math.min.apply(null, balanceLine);
+      var maxBalance = Math.max.apply(null, balanceLine);
+
+      // SVG dimensions
+      var W = 320; var H = 90;
+      var padL = 28, padR = 8, padT = 6, padB = 16;
+      var plotW = W - padL - padR;
+      var plotH = H - padT - padB;
+      var barW = plotW / DAYS;
+      var maxBarH = plotH * 0.7;
+
+      // Render bars + balance line
+      var bars = [];
+      var dots = [];
+      for (var j = 0; j < DAYS; j++) {
+        var earnedH = (earnedPerDay[j] / maxBar) * maxBarH;
+        var spentH = (spentPerDay[j] / maxBar) * maxBarH;
+        var x = padL + j * barW;
+        // Earned (green-ish) — bar grows up from middle
+        var midY = padT + plotH * 0.6;
+        if (earnedPerDay[j] > 0) {
+          bars.push(h('rect', {
+            key: 'be-' + j,
+            x: x + barW * 0.15, y: midY - earnedH,
+            width: Math.max(2, barW * 0.7), height: earnedH,
+            fill: palette.success || palette.accent,
+            opacity: 0.85
+          }));
+        }
+        if (spentPerDay[j] > 0) {
+          bars.push(h('rect', {
+            key: 'bs-' + j,
+            x: x + barW * 0.15, y: midY,
+            width: Math.max(2, barW * 0.7), height: spentH,
+            fill: palette.warn || palette.accentDim || palette.textMute,
+            opacity: 0.85
+          }));
+        }
+      }
+
+      // Balance line (running NET delta, scaled relative to balance range)
+      var balRange = Math.max(1, maxBalance - Math.min(0, minBalance));
+      var balanceY = function(v) {
+        // Higher value → smaller y. Bottom of plot = min(0, minBalance), top = maxBalance
+        var rangeMin = Math.min(0, minBalance);
+        var t = (v - rangeMin) / (maxBalance - rangeMin || 1);
+        return padT + plotH - t * plotH * 0.3 - plotH * 0.05;
+      };
+      var balancePath = balanceLine.map(function(v, i) {
+        var x = padL + i * barW + barW / 2;
+        var y = balanceY(v);
+        return (i === 0 ? 'M' : 'L') + x.toFixed(1) + ',' + y.toFixed(1);
+      }).join(' ');
+      // Final balance dot
+      var lastX = padL + (DAYS - 1) * barW + barW / 2;
+      var lastY = balanceY(balanceLine[DAYS - 1]);
+      dots.push(h('circle', {
+        key: 'bd-last',
+        cx: lastX, cy: lastY, r: 3.5,
+        fill: palette.accent,
+        stroke: palette.bg,
+        strokeWidth: 1.5
+      }));
+
+      // X-axis labels (only show endpoints + middle for compactness)
+      var startDate = new Date(startMs);
+      var fmt = function(d) {
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      };
+      var midDate = new Date(startMs + 14 * msPerDay);
+
+      var ariaLabel = 'Token trends, last 30 days. ' + totalEarned + ' tokens earned, ' + totalSpent + ' spent. Net change: ' + (cumNet >= 0 ? '+' : '') + cumNet + '.';
+
+      return h('div', {
+        role: 'figure',
+        'aria-label': ariaLabel,
+        style: {
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px',
+          marginBottom: '14px'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px', flexWrap: 'wrap', gap: '8px' }
+        },
+          h('span', {
+            style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+          }, '📊 Last 30 days'),
+          h('span', {
+            style: { fontSize: '11px', color: palette.textDim, fontVariantNumeric: 'tabular-nums' }
+          },
+            h('span', { style: { color: palette.success || palette.accent, fontWeight: 700 } }, '+' + totalEarned),
+            ' earned · ',
+            h('span', { style: { color: palette.warn || palette.textMute, fontWeight: 700 } }, '−' + totalSpent),
+            ' spent · net ',
+            h('span', { style: { color: cumNet >= 0 ? (palette.success || palette.accent) : (palette.warn || palette.accent), fontWeight: 700 } },
+              (cumNet >= 0 ? '+' : '') + cumNet)
+          )
+        ),
+        h('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          width: '100%',
+          height: H,
+          'aria-hidden': 'true',
+          style: { display: 'block' }
+        },
+          // Center divider line
+          h('line', {
+            x1: padL, x2: W - padR,
+            y1: padT + plotH * 0.6, y2: padT + plotH * 0.6,
+            stroke: palette.border, strokeWidth: 0.5,
+            strokeDasharray: '2,3'
+          }),
+          bars,
+          // Balance line
+          h('path', {
+            d: balancePath,
+            fill: 'none',
+            stroke: palette.accent,
+            strokeWidth: 1.5,
+            opacity: 0.9
+          }),
+          dots,
+          // X-axis labels
+          h('text', {
+            x: padL, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'start'
+          }, fmt(startDate)),
+          h('text', {
+            x: padL + plotW / 2, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'middle'
+          }, fmt(midDate)),
+          h('text', {
+            x: W - padR, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'end'
+          }, 'Today'),
+          // Y-axis legend
+          h('text', {
+            x: 4, y: padT + maxBarH * 0.5, fontSize: '8', fill: palette.success || palette.accent,
+            textAnchor: 'start'
+          }, '+' + maxBar),
+          h('text', {
+            x: 4, y: padT + plotH * 0.6 + maxBarH * 0.5, fontSize: '8', fill: palette.warn || palette.textMute,
+            textAnchor: 'start'
+          }, '−' + maxBar)
+        )
+      );
+    }
+
     function renderMemoryOverviewModal() {
       if (state.activeModal !== 'memory-overview') return null;
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
@@ -6322,6 +7567,12 @@
               '📖 Memory palace · ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's')),
             h('div', { style: { display: 'flex', gap: '6px' } },
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
+                onClick: function() { setStateField('activeModal', 'clinical-review'); },
+                'aria-label': 'Review packet on screen',
+                title: 'Show all decks, stories, and reflections in a single scrollable view (for review with a parent, teacher, or clinician)',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '📋 Review packet') : null,
+              (totalDecks > 0 || allStories.length > 0) ? h('button', {
                 onClick: function() {
                   // Print delay so React paints the print packet before
                   // the dialog grabs DOM. Browsers debounce print() but
@@ -6334,7 +7585,7 @@
                 'aria-label': 'Print study packet',
                 title: 'Open print dialog with a study packet of all decks, stories, and content',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
-              }, '🖨 Print packet') : null,
+              }, '🖨 Print') : null,
               h('button', {
                 onClick: function() { setStateField('activeModal', null); },
                 'aria-label': 'Close memory overview',
@@ -6377,6 +7628,9 @@
             due.length > 0 ? renderOverviewStat('Due for review', due.length, palette, true) : null,
             due.length === 0 && dueSoon.length > 0 ? renderOverviewStat('Due soon', dueSoon.length, palette, false, '#d97706') : null
           ) : null,
+
+          // 30-day token trend chart (Phase 2l) — only renders when there's data
+          renderTrendsChart(),
 
           // Due section
           due.length > 0 ? h('div', { style: { marginBottom: '14px' } },
@@ -6768,7 +8022,8 @@
         },
         onQuizComplete: function(scorePct) {
           recordQuizSession(decorationId, scorePct);
-        }
+        },
+        onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); }
       });
     }
 
@@ -6968,7 +8223,7 @@
         // text. Falls back to a local capitalize-after-period heuristic
         // when callGemini isn't available.
         callGemini: callGemini,
-        onSubmit: function(text, promptId) { submitReflection(text, promptId); },
+        onSubmit: function(text, promptId, mood) { submitReflection(text, promptId, mood); },
         onClose: function() {
           stopVoiceCapture();
           setStateField('activeModal', null);
@@ -7164,6 +8419,205 @@
           )
         )
       );
+    }
+
+    // ─────────────────────────────────────────────────
+    // GOALS LIST MODAL (Phase 2n)
+    // ─────────────────────────────────────────────────
+    function renderGoalsListModal() {
+      if (state.activeModal !== 'goals') return null;
+      var goals = (state.goals || []).slice();
+      // Active first (incomplete + within window), then completed, then expired
+      var nowMs = Date.now();
+      function classify(g) {
+        if (g.completedAt) return 'done';
+        var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+        if (endMs < nowMs) return 'expired';
+        return 'active';
+      }
+      var active = goals.filter(function(g) { return classify(g) === 'active'; });
+      var done = goals.filter(function(g) { return classify(g) === 'done'; });
+      var expired = goals.filter(function(g) { return classify(g) === 'expired'; });
+      // Sort active by end-soonest
+      active.sort(function(a, b) {
+        return (new Date(a.endDate).getTime()) - (new Date(b.endDate).getTime());
+      });
+      done.sort(function(a, b) {
+        return (b.completedAt || '').localeCompare(a.completedAt || '');
+      });
+      expired.sort(function(a, b) {
+        return (new Date(b.endDate).getTime()) - (new Date(a.endDate).getTime());
+      });
+
+      function renderGoalRow(g, status) {
+        var prog = computeGoalProgress(g, state);
+        var metric = getGoalMetric(g.metric);
+        var endDate = g.endDate ? new Date(g.endDate) : null;
+        var dateLabel;
+        if (status === 'done') {
+          dateLabel = 'Completed ' + new Date(g.completedAt).toLocaleDateString();
+        } else if (status === 'expired') {
+          dateLabel = 'Ended ' + (endDate ? endDate.toLocaleDateString() : '?');
+        } else {
+          var daysLeft = endDate ? Math.max(0, Math.ceil((endDate.getTime() - nowMs) / (24 * 60 * 60 * 1000))) : 0;
+          dateLabel = daysLeft === 0 ? 'Due today' : daysLeft === 1 ? '1 day left' : daysLeft + ' days left';
+        }
+        var barColor = status === 'done' ? (palette.success || palette.accent)
+                     : status === 'expired' ? (palette.warn || palette.accent)
+                     : palette.accent;
+        return h('div', {
+          key: 'gr-' + g.id,
+          role: 'group',
+          'aria-label': g.title + ', ' + prog.current + ' of ' + prog.target + ', ' + dateLabel,
+          style: {
+            padding: '12px 14px', background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderLeft: '3px solid ' + barColor,
+            borderRadius: '8px'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: '8px', marginBottom: '6px' } },
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+                (status === 'done' ? '✓ ' : '🎯 ') + g.title),
+              h('div', { style: { fontSize: '11px', color: palette.textDim } },
+                (metric ? metric.emoji + ' ' + metric.label : g.metric) + ' · ' + dateLabel)
+            ),
+            h('span', {
+              style: { fontSize: '13px', fontWeight: 800, color: barColor, fontVariantNumeric: 'tabular-nums' }
+            }, prog.current + '/' + prog.target)
+          ),
+          // Progress bar
+          h('div', {
+            'aria-hidden': 'true',
+            style: { height: '6px', background: palette.bg, borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }
+          },
+            h('div', {
+              style: {
+                width: prog.pct + '%', height: '100%',
+                background: barColor, transition: 'width 300ms ease',
+                borderRadius: '3px'
+              }
+            })
+          ),
+          g.notes ? h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginBottom: '6px' } },
+            '"' + g.notes + '"') : null,
+          h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'flex-end' } },
+            status === 'active' && !prog.isDone ? h('button', {
+              onClick: function() { markGoalCompleted(g.id); },
+              'aria-label': 'Mark this goal complete manually',
+              title: 'Mark complete (in case progress tracked outside the app)',
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Mark done') : null,
+            h('button', {
+              onClick: function() {
+                setStateMulti({ activeModal: 'goal-builder', generateContext: { goalId: g.id } });
+              },
+              'aria-label': 'Edit goal: ' + g.title,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Edit')
+          )
+        );
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Goals',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '600px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '🎯 Goals · ' + goals.length),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close goals list',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
+          }, 'Time-boxed targets you can review with a parent, teacher, or clinician. Pomodoros, reflections, quizzes, walks, decorations, or tokens — pick one. Completing a goal earns +3 bonus tokens.'),
+          h('button', {
+            onClick: createGoal,
+            style: Object.assign({}, primaryBtnStyle(palette), { width: '100%', marginBottom: '14px', padding: '10px' })
+          }, '+ New goal'),
+
+          goals.length === 0 ? h('div', {
+            style: {
+              padding: '32px 20px', background: palette.surface,
+              border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center'
+            }
+          },
+            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '🎯'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              'No goals yet. Goals turn AlloHaven into an IEP-friendly progress-monitoring tool — pick a measurable target with a deadline.')
+          ) : null,
+
+          active.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+              '⚡ Active · ' + active.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              active.map(function(g) { return renderGoalRow(g, 'active'); })
+            )
+          ) : null,
+          done.length > 0 ? h('div', { style: { marginBottom: '14px', paddingTop: active.length > 0 ? '14px' : 0, borderTop: active.length > 0 ? '1px solid ' + palette.border : 'none' } },
+            h('div', { style: { fontSize: '11px', color: palette.success || palette.accent, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+              '✓ Completed · ' + done.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              done.map(function(g) { return renderGoalRow(g, 'done'); })
+            )
+          ) : null,
+          expired.length > 0 ? h('div', { style: { paddingTop: (active.length > 0 || done.length > 0) ? '14px' : 0, borderTop: (active.length > 0 || done.length > 0) ? '1px solid ' + palette.border : 'none' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+              '⏳ Expired · ' + expired.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              expired.map(function(g) { return renderGoalRow(g, 'expired'); })
+            )
+          ) : null
+        )
+      );
+    }
+
+    function renderGoalBuilderModal() {
+      if (state.activeModal !== 'goal-builder') return null;
+      var ctx = state.generateContext || {};
+      var goal = (state.goals || []).filter(function(g) { return g.id === ctx.goalId; })[0];
+      if (!goal) {
+        setTimeout(function() { setStateMulti({ activeModal: null, generateContext: null }); }, 0);
+        return null;
+      }
+      return h(GoalBuilderInner, {
+        goal: goal,
+        palette: palette,
+        onSave: function(updates) {
+          updateGoal(goal.id, updates);
+          setStateMulti({ activeModal: 'goals', generateContext: null });
+        },
+        onCancel: function() {
+          setStateMulti({ activeModal: 'goals', generateContext: null });
+        },
+        onDelete: function() {
+          deleteGoal(goal.id);
+          setStateMulti({ activeModal: 'goals', generateContext: null });
+        }
+      });
     }
 
     // ─────────────────────────────────────────────────
@@ -7458,9 +8912,393 @@
               marginBottom: '12px'
             }
           }, 'Custom durations · ' + prefs.focusMinutes + '/' + prefs.shortBreakMinutes + '/' + prefs.longBreakMinutes + ' min. Pick a preset above to switch.') : null,
+
+          // ── Ambient soundscape picker (Phase 2g) ──
+          // Procedural Web Audio noise that plays only during focus phases.
+          // Off by default; persisted in state and torn down on phase change.
+          h('div', {
+            style: { fontSize: '13px', color: palette.textDim, marginTop: '18px', marginBottom: '6px', fontWeight: 600 }
+          }, 'Ambient soundscape'),
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, marginTop: 0, marginBottom: '10px', lineHeight: '1.5' }
+          }, 'Optional background noise during focus phases. Stops on breaks. Generated on-device — no streaming.'),
+          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' } },
+            [
+              { id: 'off',       label: 'Off',        emoji: '🔕' },
+              { id: 'rain',      label: 'Rain',       emoji: '🌧' },
+              { id: 'fireplace', label: 'Fireplace',  emoji: '🔥' },
+              { id: 'wind',      label: 'Wind',       emoji: '🌬' }
+            ].map(function(opt) {
+              var active = (state.soundscape || 'off') === opt.id;
+              return h('button', {
+                key: 'snd-' + opt.id,
+                onClick: function() { setStateField('soundscape', opt.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  flex: '1 1 calc(50% - 4px)',
+                  background: active ? palette.surface : 'transparent',
+                  border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '8px',
+                  padding: '8px 10px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '13px',
+                  fontWeight: active ? 700 : 500,
+                  color: palette.text,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  justifyContent: 'flex-start'
+                }
+              },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '16px' } }, opt.emoji),
+                h('span', null, opt.label)
+              );
+            })
+          ),
+
+          // ── Backup / Restore (Phase 2g) ──
+          // Export full state as a JSON file, or restore from a prior export.
+          // Restore prompts for confirmation since it overwrites everything.
+          h('div', {
+            style: { fontSize: '13px', color: palette.textDim, marginTop: '18px', marginBottom: '6px', fontWeight: 600 }
+          }, 'Backup & restore'),
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, marginTop: 0, marginBottom: '10px', lineHeight: '1.5' }
+          }, 'Download your data as JSON, or restore from a prior backup. Useful when switching browsers or devices.'),
+          h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+            h('button', {
+              onClick: function() {
+                try {
+                  var raw = JSON.stringify(state, null, 2);
+                  var blob = new Blob([raw], { type: 'application/json' });
+                  var url = URL.createObjectURL(blob);
+                  var a = document.createElement('a');
+                  var stamp = new Date().toISOString().slice(0, 10);
+                  a.href = url;
+                  a.download = 'allohaven-backup-' + stamp + '.json';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+                  addToast('💾 Backup downloaded.');
+                } catch (err) {
+                  addToast('Backup failed. Try again.');
+                }
+              },
+              style: Object.assign({}, secondaryBtnStyle(palette), {
+                flex: '1 1 calc(50% - 4px)',
+                padding: '10px 12px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              })
+            }, '⬇️ Download backup'),
+            h('button', {
+              onClick: function() {
+                var input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'application/json,.json';
+                input.onchange = function(ev) {
+                  var file = ev.target && ev.target.files && ev.target.files[0];
+                  if (!file) return;
+                  var reader = new FileReader();
+                  reader.onload = function(e) {
+                    try {
+                      var parsed = JSON.parse(e.target.result);
+                      if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.decorations)) {
+                        addToast('Not a valid AlloHaven backup file.');
+                        return;
+                      }
+                      var ok = window.confirm('Restore from this backup? This replaces ALL current data — decorations, journal, tokens, stories, settings. Cannot be undone.');
+                      if (!ok) return;
+                      var merged = Object.assign({}, DEFAULT_STATE, parsed);
+                      setStateMulti(merged);
+                      addToast('✅ Backup restored.');
+                    } catch (err) {
+                      addToast('Could not read that file. Is it a JSON backup?');
+                    }
+                  };
+                  reader.readAsText(file);
+                };
+                input.click();
+              },
+              style: Object.assign({}, secondaryBtnStyle(palette), {
+                flex: '1 1 calc(50% - 4px)',
+                padding: '10px 12px',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              })
+            }, '⬆️ Restore from file')
+          ),
+
           h('div', {
             style: { fontSize: '11px', color: palette.textMute, marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, lineHeight: '1.5' }
           }, 'Today: ' + (state.dailyState.pomodorosCompleted || 0) + ' Pomodoros completed · soft cap at 4/day (above which sessions still run but earn 0 tokens).')
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // CLINICAL REVIEW MODAL (Phase 2k) — same packet content as the
+    // print version but rendered on-screen with palette colors. For
+    // session-time review with a parent, teacher, or clinician
+    // without printing. "Print this view" button at bottom triggers
+    // the print packet flow.
+    // ─────────────────────────────────────────────────
+    function renderClinicalReviewModal() {
+      if (state.activeModal !== 'clinical-review') return null;
+      var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
+      var allStories = state.stories || [];
+      var dateStr = new Date().toLocaleDateString(undefined, {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+      var recentJournals = (state.journalEntries || []).slice().sort(function(a, b) {
+        return (b.date || '').localeCompare(a.date || '');
+      }).slice(0, 5);
+
+      var sectionStyle = { marginBottom: '24px' };
+      var sectionTitleStyle = { fontSize: '13px', fontWeight: 700, marginBottom: '10px', borderBottom: '1.5px solid ' + palette.border, paddingBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em', color: palette.text };
+      var subTitleStyle = { fontSize: '14px', fontWeight: 700, marginBottom: '4px', color: palette.text, marginTop: '14px' };
+      var bodyTextStyle = { fontSize: '12px', color: palette.text, lineHeight: 1.55, margin: 0 };
+      var smallMetaStyle = { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' };
+      var thumbStyle = { width: '40px', height: '40px', objectFit: 'contain', borderRadius: '6px', border: '1px solid ' + palette.border, verticalAlign: 'middle', background: palette.surface };
+
+      function renderDeckBlock(decoration) {
+        var lc = decoration.linkedContent;
+        var label = decoration.templateLabel || decoration.template || 'item';
+        var typeLabel = lc.type === 'flashcards' ? 'Flashcards'
+                      : lc.type === 'acronym'    ? 'Acronym'
+                      : lc.type === 'image-link' ? 'Image link'
+                                                   : 'Notes';
+        var reviewedLabel;
+        if (!lc.lastReviewedAt) reviewedLabel = 'Never reviewed';
+        else {
+          var d2 = new Date(lc.lastReviewedAt);
+          reviewedLabel = 'Last reviewed ' + d2.toLocaleDateString();
+        }
+        var meta = typeLabel
+          + (lc.bestQuizScore ? ' · Best ' + lc.bestQuizScore + '%' : '')
+          + ' · ' + (lc.reviewCount || 0) + ' review' + ((lc.reviewCount || 0) === 1 ? '' : 's')
+          + ' · ' + reviewedLabel;
+
+        var body = null;
+        if (lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+          body = h('ol', { style: { paddingLeft: '22px', margin: '4px 0' } },
+            lc.data.cards.map(function(card) {
+              var atts = (card.correctCount || 0) + (card.missCount || 0);
+              return h('li', { key: 'cl-' + card.id, style: { marginBottom: '4px', fontSize: '12px', color: palette.text, lineHeight: 1.55 } },
+                h('span', { style: { fontWeight: 700 } }, card.front || ''),
+                h('span', { style: { color: palette.textDim } }, ' — ' + (card.back || '')),
+                atts > 0 ? h('span', { style: smallMetaStyle }, ' (' + (card.correctCount || 0) + '/' + atts + ')') : null
+              );
+            })
+          );
+        } else if (lc.type === 'acronym' && lc.data) {
+          var letters = (lc.data.letters || '').toUpperCase();
+          var meanings = lc.data.meanings || [];
+          body = h('div', null,
+            lc.data.context ? h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginBottom: '4px' }) }, lc.data.context) : null,
+            h('div', { style: { fontSize: '16px', fontWeight: 800, letterSpacing: '0.1em', color: palette.accent, marginBottom: '4px' } }, letters),
+            h('ul', { style: { listStyle: 'none', paddingLeft: 0, margin: '4px 0' } },
+              letters.split('').map(function(letter, i) {
+                return h('li', { key: 'cla-' + i, style: { fontSize: '12px', color: palette.text, marginBottom: '2px' } },
+                  h('strong', null, letter), ' — ', meanings[i] || h('span', { style: { color: palette.textMute } }, '(blank)'));
+              })
+            )
+          );
+        } else if (lc.type === 'image-link' && lc.data) {
+          var tgt = state.decorations.filter(function(dec) { return dec.id === lc.data.targetDecorationId; })[0];
+          var tgtLabel = tgt ? (tgt.templateLabel || tgt.template || 'item') : '(removed item)';
+          body = h('div', null,
+            h('p', { style: bodyTextStyle },
+              h('strong', null, label), ' → ', h('strong', null, tgtLabel)),
+            h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginTop: '4px', color: palette.textDim }) },
+              '"' + (lc.data.association || '') + '"')
+          );
+        } else if (lc.type === 'notes' && lc.data) {
+          var text = (lc.data.text || '');
+          if (extractClozeAnswers(text).length > 0) {
+            var segments = buildClozeSegments(text);
+            body = h('div', { style: { fontSize: '12px', color: palette.text, lineHeight: 1.55, margin: '4px 0', whiteSpace: 'pre-wrap' } },
+              segments.map(function(seg, i) {
+                if (seg.kind === 'text') return h('span', { key: 'cls-' + i }, seg.value);
+                return h('span', {
+                  key: 'cls-' + i,
+                  style: { background: palette.accent, color: palette.onAccent, padding: '1px 6px', borderRadius: '3px', fontWeight: 700 }
+                }, seg.answer);
+              })
+            );
+          } else {
+            body = h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '4px 0' }) }, text);
+          }
+        }
+
+        var clMoodOpt = decoration.mood ? getMoodOption(decoration.mood) : null;
+        return h('div', {
+          key: 'cd-' + decoration.id,
+          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '10px' }
+        },
+          h('h3', { style: subTitleStyle },
+            decoration.imageBase64 ? h('img', { src: decoration.imageBase64, alt: '', style: thumbStyle }) : null,
+            h('span', { style: { marginLeft: '8px' } }, label),
+            clMoodOpt ? h('span', { style: { fontSize: '12px', marginLeft: '8px', color: palette.textDim, fontWeight: 500 } },
+              ' · ' + clMoodOpt.emoji + ' ' + clMoodOpt.label) : null
+          ),
+          h('p', { style: smallMetaStyle }, meta),
+          body
+        );
+      }
+
+      function renderStoryBlock(story) {
+        var validSteps = (story.steps || []).filter(function(st) {
+          return st.decorationId && (st.narrative || '').trim().length > 0;
+        });
+        var walkable = validSteps.length >= 3 && (story.title || '').trim().length > 0;
+        var meta = (story.steps || []).length + ' step' + ((story.steps || []).length === 1 ? '' : 's')
+          + (story.reviewCount ? ' · Walked ' + story.reviewCount + 'x' : '')
+          + (walkable ? '' : ' · Draft');
+        return h('div', {
+          key: 'cs-' + story.id,
+          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '10px' }
+        },
+          h('h3', { style: subTitleStyle }, '📜 ' + (story.title || '(untitled story)')),
+          h('p', { style: smallMetaStyle }, meta),
+          h('ol', { style: { paddingLeft: '22px', margin: '6px 0' } },
+            (story.steps || []).map(function(step, sIdx) {
+              var dec = state.decorations.filter(function(d) { return d.id === step.decorationId; })[0];
+              var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed item)';
+              return h('li', { key: 'cst-' + sIdx, style: { marginBottom: '8px', fontSize: '12px', color: palette.text, lineHeight: 1.55 } },
+                dec && dec.imageBase64 ? h('img', { src: dec.imageBase64, alt: '', style: thumbStyle }) : null,
+                h('span', { style: { marginLeft: '8px', fontWeight: 700 } }, dLabel),
+                h('div', { style: { fontStyle: 'italic', color: palette.textDim, marginTop: '2px' } },
+                  '"' + (step.narrative || '') + '"')
+              );
+            })
+          )
+        );
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Clinical review packet',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', 'memory-overview');
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.6)', zIndex: 178,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '760px', width: '100%', maxHeight: '92vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            color: palette.text
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', gap: '8px', flexWrap: 'wrap' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } }, '📋 Review packet'),
+            h('div', { style: { display: 'flex', gap: '6px' } },
+              h('button', {
+                onClick: function() {
+                  setTimeout(function() {
+                    try { window.print(); }
+                    catch (err) { addToast('Print not available.'); }
+                  }, 60);
+                },
+                'aria-label': 'Print this packet',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+              }, '🖨 Print'),
+              h('button', {
+                onClick: function() { setStateField('activeModal', 'memory-overview'); },
+                'aria-label': 'Back to overview',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            )
+          ),
+          h('p', { style: { margin: '8px 0 16px 0', fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: 1.5 } },
+            'Generated ' + dateStr + '. This is the same content as Print Packet, on screen for review with a parent, teacher, or clinician without printing.'),
+          // Stats banner
+          h('div', { style: { padding: '10px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', fontSize: '12px', color: palette.text, marginBottom: '20px', lineHeight: 1.55 } },
+            h('strong', null, 'Activity summary: '),
+            state.decorations.length + ' decoration' + (state.decorations.length === 1 ? '' : 's'),
+            ' · ', withContent.length + ' deck' + (withContent.length === 1 ? '' : 's'),
+            ' · ', allStories.length + ' stor' + (allStories.length === 1 ? 'y' : 'ies'),
+            ' · ', (state.earnings || []).length + ' token-earning event' + ((state.earnings || []).length === 1 ? '' : 's'),
+            ' · ', state.tokens, ' token' + (state.tokens === 1 ? '' : 's') + ' unspent',
+            ' · ', (state.journalEntries || []).length + ' reflection' + ((state.journalEntries || []).length === 1 ? '' : 's')
+          ),
+          // Goals (Phase 2n)
+          (function() {
+            var goals = state.goals || [];
+            var nowMs = Date.now();
+            var visible = goals.filter(function(g) {
+              if (g.completedAt) {
+                return new Date(g.completedAt).getTime() >= nowMs - 30 * 24 * 60 * 60 * 1000;
+              }
+              var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+              return endMs >= nowMs;
+            });
+            if (visible.length === 0) return null;
+            return h('div', { style: sectionStyle },
+              h('h2', { style: sectionTitleStyle }, '🎯 Goals · ' + visible.length),
+              visible.map(function(g) {
+                var prog = computeGoalProgress(g, state);
+                var metric = getGoalMetric(g.metric);
+                var endLabel = g.endDate ? new Date(g.endDate).toLocaleDateString() : '?';
+                var barColor = g.completedAt ? (palette.success || palette.accent) : palette.accent;
+                return h('div', {
+                  key: 'cg-' + g.id,
+                  style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderLeft: '3px solid ' + barColor, borderRadius: '8px', marginBottom: '10px' }
+                },
+                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+                    (g.completedAt ? '✓ ' : '🎯 ') + g.title),
+                  h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '6px' } },
+                    (metric ? metric.label : g.metric) + ' · target ' + g.targetCount
+                    + ' · ' + (g.completedAt ? 'Completed ' + new Date(g.completedAt).toLocaleDateString() : 'Due ' + endLabel)),
+                  h('div', { style: { height: '6px', background: palette.bg, borderRadius: '3px', overflow: 'hidden', marginBottom: '4px' } },
+                    h('div', { style: { width: prog.pct + '%', height: '100%', background: barColor } })
+                  ),
+                  h('div', { style: { fontSize: '11px', color: palette.textDim, fontVariantNumeric: 'tabular-nums' } },
+                    prog.current + ' / ' + prog.target + ' · ' + prog.pct + '%'),
+                  g.notes ? h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginTop: '4px' } }, '"' + g.notes + '"') : null
+                );
+              })
+            );
+          })(),
+          // Decks
+          withContent.length > 0 ? h('div', { style: sectionStyle },
+            h('h2', { style: sectionTitleStyle }, '📖 Memory Decks · ' + withContent.length),
+            withContent.map(function(d) { return renderDeckBlock(d); })
+          ) : null,
+          // Stories
+          allStories.length > 0 ? h('div', { style: sectionStyle },
+            h('h2', { style: sectionTitleStyle }, '📜 Stories · ' + allStories.length),
+            allStories.map(function(s) { return renderStoryBlock(s); })
+          ) : null,
+          // Recent reflections
+          recentJournals.length > 0 ? h('div', { style: sectionStyle },
+            h('h2', { style: sectionTitleStyle }, '📝 Recent Reflections · last ' + recentJournals.length),
+            recentJournals.map(function(j) {
+              return h('div', {
+                key: 'cj-' + j.id,
+                style: { padding: '10px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '8px' }
+              },
+                h('p', { style: smallMetaStyle },
+                  (j.date ? new Date(j.date).toLocaleDateString() : 'Undated')
+                  + (j.prompt ? ' · "' + j.prompt + '"' : '')),
+                h('p', { style: Object.assign({}, bodyTextStyle, { whiteSpace: 'pre-wrap', margin: '4px 0' }) },
+                  '"' + (j.text || '') + '"')
+              );
+            })
+          ) : null
         )
       );
     }
@@ -7561,13 +9399,16 @@
           }
         }
 
+        var moodOpt = decoration.mood ? getMoodOption(decoration.mood) : null;
         return h('div', {
           key: 'pd-' + decoration.id,
           className: 'ah-print-section'
         },
           h('h3', { style: subTitleStyle },
             decoration.imageBase64 ? h('img', { src: decoration.imageBase64, alt: '', style: thumbStyle }) : null,
-            h('span', { style: { marginLeft: '8px' } }, label)
+            h('span', { style: { marginLeft: '8px' } }, label),
+            moodOpt ? h('span', { style: { fontSize: '12px', marginLeft: '8px', color: '#444' } },
+              ' · ' + moodOpt.emoji + ' ' + moodOpt.label) : null
           ),
           h('p', { style: smallMetaStyle }, meta),
           body
@@ -7634,6 +9475,67 @@
           ' · ', state.tokens, ' tokens earned and unspent',
           ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies')
         ),
+        // Mood distribution (Phase 2m) — affective-domain insight for
+        // parents/clinicians: which moods does the student tag their
+        // earnings with most? Shows only when ≥1 decoration has a mood.
+        (function() {
+          var moodCounts = {};
+          state.decorations.forEach(function(d) {
+            if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1;
+          });
+          var moodTagged = Object.keys(moodCounts).length;
+          if (moodTagged === 0) return null;
+          var totalTagged = state.decorations.filter(function(d) { return !!d.mood; }).length;
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px', color: '#222' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px' } }, '🎭 Mood distribution · ' + totalTagged + ' tagged decoration' + (totalTagged === 1 ? '' : 's')),
+            h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap' } },
+              MOOD_OPTIONS.map(function(m) {
+                var n = moodCounts[m.id] || 0;
+                if (n === 0) return null;
+                return h('span', {
+                  key: 'pmd-' + m.id,
+                  style: { fontSize: '11px', color: '#222' }
+                }, m.emoji + ' ' + m.label + ': ' + n);
+              })
+            )
+          );
+        })(),
+        // Goals section (Phase 2n) — active + recently-completed
+        (function() {
+          var goals = state.goals || [];
+          var nowMs = Date.now();
+          var activeOrCompleted = goals.filter(function(g) {
+            if (g.completedAt) {
+              return new Date(g.completedAt).getTime() >= nowMs - 30 * 24 * 60 * 60 * 1000;
+            }
+            var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+            return endMs >= nowMs;
+          });
+          if (activeOrCompleted.length === 0) return null;
+          return h('div', { style: sectionStyle, className: 'ah-print-section' },
+            h('h2', { style: sectionTitleStyle }, '🎯 Goals · ' + activeOrCompleted.length),
+            activeOrCompleted.map(function(g) {
+              var prog = computeGoalProgress(g, state);
+              var metric = getGoalMetric(g.metric);
+              var endLabel = g.endDate ? new Date(g.endDate).toLocaleDateString() : '?';
+              var doneLabel = g.completedAt ? '✓ Completed ' + new Date(g.completedAt).toLocaleDateString() : '';
+              return h('div', { key: 'pg-' + g.id, style: { marginBottom: '12px', padding: '8px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+                h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#000', marginBottom: '2px' } },
+                  (g.completedAt ? '✓ ' : '🎯 ') + g.title),
+                h('div', { style: { fontSize: '10px', color: '#444', marginBottom: '4px' } },
+                  (metric ? metric.label : g.metric) + ' · target ' + g.targetCount
+                  + ' · ' + (g.completedAt ? doneLabel : 'due ' + endLabel)),
+                // Progress bar (paper-friendly)
+                h('div', { style: { height: '6px', background: '#e5e5e5', border: '1px solid #999', borderRadius: '2px', overflow: 'hidden', marginBottom: '4px' } },
+                  h('div', { style: { width: prog.pct + '%', height: '100%', background: g.completedAt ? '#16a34a' : '#888' } })
+                ),
+                h('div', { style: { fontSize: '10px', color: '#444', fontVariantNumeric: 'tabular-nums' } },
+                  prog.current + ' / ' + prog.target + ' · ' + prog.pct + '%'),
+                g.notes ? h('div', { style: { fontSize: '10px', color: '#444', fontStyle: 'italic', marginTop: '4px' } }, '"' + g.notes + '"') : null
+              );
+            })
+          );
+        })(),
         // Decks section
         withContent.length > 0 ? h('div', { style: sectionStyle },
           h('h2', { style: sectionTitleStyle }, '📖 Memory Decks'),
@@ -7722,9 +9624,12 @@
       renderGenerateModal(),
       renderMemoryModal(),
       renderMemoryOverviewModal(),
+      renderClinicalReviewModal(),
       renderStoriesListModal(),
       renderStoryBuilderModal(),
       renderStoryWalkModal(),
+      renderGoalsListModal(),
+      renderGoalBuilderModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderInsightsModal(),

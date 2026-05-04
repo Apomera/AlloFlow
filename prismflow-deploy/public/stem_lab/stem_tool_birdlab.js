@@ -3653,13 +3653,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('div', { className: 'p-6 max-w-5xl mx-auto space-y-5' },
             h('div', { className: 'bg-violet-50 border-2 border-violet-300 rounded-2xl p-5' },
               h('h2', { className: 'text-lg font-black text-violet-900 mb-2' }, 'Songs in plain English'),
-              h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
-                'Real birders identify 80%+ of birds by SOUND — visual ID is for confirming. The trick is mnemonic phrases that match the bird\'s rhythm: "drink-your-tea" for towhee, "who-cooks-for-you" for Barred Owl. Once you hear it as those words, you can never un-hear it.'),
-              h('div', { className: 'p-3 bg-white border border-violet-300 rounded-lg text-sm text-slate-800 mt-2' },
-                h('strong', { className: 'text-violet-900' }, '🎵 For actual audio, '),
-                'download Cornell Lab\'s free ',
-                h('span', { className: 'font-mono font-bold' }, 'Merlin Bird ID'),
-                ' app (iOS / Android). Search any species — they have professional recordings of every common North American bird. Pair each mnemonic below with the actual recording.')
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                'Real birders identify 80%+ of birds by SOUND — visual ID is for confirming. The trick is mnemonic phrases that match the bird\'s rhythm: "drink-your-tea" for towhee, "who-cooks-for-you" for Barred Owl. Once you hear it as those words, you can never un-hear it.')
+            ),
+            // ── Merlin Bird ID call-to-action card ──
+            h('div', { className: 'rounded-2xl overflow-hidden shadow-lg border-2 border-emerald-400 bg-gradient-to-br from-emerald-50 via-teal-50 to-amber-50' },
+              h('div', { className: 'p-4 flex items-start gap-4 flex-wrap' },
+                // Phone mockup with sound-wave + bird icon
+                h('svg', { width: 80, height: 130, viewBox: '0 0 80 130', 'aria-hidden': 'true', style: { flexShrink: 0 } },
+                  h('defs', null,
+                    h('linearGradient', { id: 'merlinScreen', x1: '0%', y1: '0%', x2: '0%', y2: '100%' },
+                      h('stop', { offset: '0%', stopColor: '#059669' }),
+                      h('stop', { offset: '100%', stopColor: '#0891b2' })
+                    )
+                  ),
+                  // Phone body
+                  h('rect', { x: 4, y: 4, width: 72, height: 122, rx: 10, fill: '#1e293b', stroke: '#0f172a', strokeWidth: 1.5 }),
+                  // Camera notch
+                  h('rect', { x: 30, y: 7, width: 20, height: 4, rx: 2, fill: '#0f172a' }),
+                  // Screen
+                  h('rect', { x: 8, y: 18, width: 64, height: 100, rx: 4, fill: 'url(#merlinScreen)' }),
+                  // Merlin app top bar (white "MERLIN" header)
+                  h('rect', { x: 8, y: 18, width: 64, height: 14, rx: 4, fill: '#ffffff' }),
+                  h('text', { x: 40, y: 28, textAnchor: 'middle', fontSize: 8, fontWeight: 900, fill: '#059669',
+                    style: { fontFamily: 'system-ui, sans-serif', letterSpacing: '0.05em' } }, 'MERLIN'),
+                  // Bird-feather icon center
+                  h('g', { transform: 'translate(40, 60)' },
+                    h('circle', { cx: 0, cy: 0, r: 14, fill: '#ffffff', opacity: 0.95 }),
+                    // Mini bird silhouette
+                    h('path', { d: 'M -7 2 Q -3 -6 4 -2 Q 9 0 8 4 Q 4 6 0 5 Q -4 8 -7 2 Z',
+                      fill: '#059669' }),
+                    h('circle', { cx: -3, cy: -1, r: 0.8, fill: '#ffffff' }),
+                    h('path', { d: 'M -10 1 L -13 2 L -10 3 Z', fill: '#fbbf24' })
+                  ),
+                  // Sound-wave concentric rings
+                  [22, 30, 38, 46].map(function(r, i) {
+                    return h('circle', { key: 'sw' + i,
+                      cx: 40, cy: 60, r: r,
+                      fill: 'none', stroke: '#a7f3d0', strokeWidth: 1.2,
+                      opacity: 0.6 - i * 0.12
+                    });
+                  }),
+                  // Sound ID button
+                  h('rect', { x: 16, y: 92, width: 48, height: 18, rx: 9, fill: '#ffffff', opacity: 0.95 }),
+                  h('text', { x: 40, y: 104, textAnchor: 'middle', fontSize: 7, fontWeight: 800, fill: '#059669',
+                    style: { fontFamily: 'system-ui, sans-serif' } }, '🎤 Sound ID')
+                ),
+                // CTA copy
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'flex items-baseline gap-2 mb-1 flex-wrap' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-widest text-emerald-700' }, 'For actual audio'),
+                    h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300' }, '✓ Free · Cornell Lab')
+                  ),
+                  h('h3', { className: 'text-xl md:text-2xl font-black text-slate-800', style: { lineHeight: 1.1 } }, 'Get Merlin Bird ID'),
+                  h('p', { className: 'text-sm text-slate-800 leading-snug mt-1 mb-3' },
+                    'Cornell Lab\'s free app has professional recordings of every common North American bird, plus real-time ',
+                    h('strong', { className: 'text-emerald-800' }, 'Sound ID'),
+                    ' that identifies what\'s singing right now from your phone\'s microphone.'),
+                  // App store buttons
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    h('a', {
+                      href: 'https://apps.apple.com/us/app/merlin-bird-id-by-cornell-lab/id773457673',
+                      target: '_blank', rel: 'noopener noreferrer',
+                      className: 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40',
+                      style: { textDecoration: 'none' }
+                    },
+                      h('span', { 'aria-hidden': true, style: { fontSize: 18 } }, '🍎'),
+                      h('span', null, h('span', { className: 'block text-[8px] uppercase tracking-wider opacity-80' }, 'Download on the'), h('span', { className: 'block' }, 'App Store'))
+                    ),
+                    h('a', {
+                      href: 'https://play.google.com/store/apps/details?id=com.labs.merlinbirdid.app',
+                      target: '_blank', rel: 'noopener noreferrer',
+                      className: 'inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition focus:outline-none focus:ring-4 ring-emerald-500/40',
+                      style: { textDecoration: 'none' }
+                    },
+                      h('span', { 'aria-hidden': true, style: { fontSize: 18 } }, '▶'),
+                      h('span', null, h('span', { className: 'block text-[8px] uppercase tracking-wider opacity-80' }, 'Get it on'), h('span', { className: 'block' }, 'Google Play'))
+                    ),
+                    h('a', {
+                      href: 'https://merlin.allaboutbirds.org/',
+                      target: '_blank', rel: 'noopener noreferrer',
+                      className: 'inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-white text-emerald-800 text-xs font-bold border-2 border-emerald-400 hover:border-emerald-600 transition focus:outline-none focus:ring-4 ring-emerald-500/40',
+                      style: { textDecoration: 'none' }
+                    },
+                      h('span', { 'aria-hidden': true }, '🌐'),
+                      h('span', null, 'merlin.allaboutbirds.org ↗')
+                    )
+                  )
+                )
+              ),
+              h('div', { className: 'px-4 py-2 bg-white border-t-2 border-emerald-300 text-xs text-slate-700 italic' },
+                'Pair each mnemonic below with the actual recording in Merlin — the words make the rhythm memorable; the recording locks it in.'
+              )
             ),
             // Mode picker
             h('div', { 'role': 'tablist', 'aria-label': 'Bird Call Trainer modes', className: 'flex flex-wrap gap-2' },
