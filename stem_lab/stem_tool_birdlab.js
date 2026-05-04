@@ -5311,20 +5311,159 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                   h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, '📊 Methodology'),
                   h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, ROSENBERG_2019.methodology)
                 ),
+                // ── Key findings: divergent bar chart ──
                 h('div', { className: 'bg-white border-2 border-slate-300 rounded-2xl shadow p-5' },
-                  h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, '🔍 Key findings'),
-                  h('ul', { className: 'space-y-1 text-sm text-slate-800' },
-                    ROSENBERG_2019.findings.map(function(f, i) {
-                      return h('li', { key: i, className: 'flex items-start gap-2' },
-                        h('span', { className: 'text-rose-600 font-bold flex-shrink-0' }, '•'),
-                        h('span', null, f));
-                    })
-                  )
+                  h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-3' }, '🔍 Key findings — population change since 1970'),
+                  // Hand-curated from ROSENBERG_2019.findings to enable visualization
+                  (function() {
+                    var groups = [
+                      { label: 'Grassland birds',     pct: -53, note: '~720M lost', tier: 'top-decline' },
+                      { label: 'Shorebirds',          pct: -37, note: 'wetland loss + coastal pressure' },
+                      { label: 'Boreal specialists',  pct: -33, note: 'logging + climate' },
+                      { label: 'Eastern forest birds', pct: -17, note: 'fragmentation + windows' },
+                      { label: 'Waterfowl',           pct: +56, note: 'Duck Stamp habitat funding', tier: 'recovery' },
+                      { label: 'Raptors',             pct: +200, note: 'post-DDT recovery', tier: 'top-recovery' }
+                    ];
+                    var maxAbs = 200; // pin scale to raptor recovery
+                    return h('div', { className: 'space-y-2' },
+                      // Mini-axis at top (zero centered)
+                      h('div', { className: 'relative h-3 mb-1' },
+                        h('div', { className: 'absolute top-1/2 left-0 right-0 h-px bg-slate-200', style: { transform: 'translateY(-0.5px)' } }),
+                        h('div', { className: 'absolute top-0 bottom-0 bg-slate-400', style: { left: '50%', width: 1.5, transform: 'translateX(-0.75px)' } }),
+                        h('div', { className: 'absolute -top-1 left-0 text-[9px] font-bold text-rose-700' }, '−' + maxAbs + '%'),
+                        h('div', { className: 'absolute -top-1 left-1/2 text-[9px] font-bold text-slate-700', style: { transform: 'translateX(-50%)' } }, '0'),
+                        h('div', { className: 'absolute -top-1 right-0 text-[9px] font-bold text-emerald-700' }, '+' + maxAbs + '%')
+                      ),
+                      groups.map(function(g) {
+                        var isGain = g.pct > 0;
+                        var fillPct = Math.min(50, (Math.abs(g.pct) / maxAbs) * 50); // half-axis width
+                        var barColor = g.tier === 'top-recovery' ? '#059669' :
+                                       g.tier === 'top-decline' ? '#9f1239' :
+                                       isGain ? '#10b981' : '#f43f5e';
+                        var labelColor = isGain ? '#047857' : '#9f1239';
+                        return h('div', { key: g.label, className: 'flex items-center gap-2 text-xs' },
+                          // Group label
+                          h('div', {
+                            style: {
+                              width: 110, flexShrink: 0, fontWeight: 700, color: '#1e293b',
+                              textAlign: 'right', paddingRight: 4
+                            }
+                          }, g.label),
+                          // Bar track (centered on 0)
+                          h('div', { className: 'relative flex-1 h-5 bg-slate-50 rounded border border-slate-200 overflow-hidden', style: { minWidth: 100 } },
+                            // Zero line
+                            h('div', { 'aria-hidden': true,
+                              style: { position: 'absolute', top: 0, bottom: 0, left: '50%', width: 1, background: '#94a3b8' } }),
+                            // Bar (left for negative, right for positive)
+                            h('div', { 'aria-hidden': true,
+                              style: {
+                                position: 'absolute', top: 2, bottom: 2,
+                                left: isGain ? '50%' : (50 - fillPct) + '%',
+                                width: fillPct + '%',
+                                background: barColor,
+                                borderRadius: isGain ? '0 4px 4px 0' : '4px 0 0 4px',
+                                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25)'
+                              }
+                            }),
+                            // Numeric label
+                            h('div', {
+                              style: {
+                                position: 'absolute', top: 0, bottom: 0,
+                                left: isGain ? (50 + fillPct + 1) + '%' : (50 - fillPct - 1) + '%',
+                                transform: isGain ? 'none' : 'translateX(-100%)',
+                                display: 'flex', alignItems: 'center',
+                                fontSize: 11, fontWeight: 800, fontFamily: 'monospace',
+                                color: labelColor,
+                                paddingLeft: isGain ? 4 : 0,
+                                paddingRight: isGain ? 0 : 4
+                              }
+                            }, (isGain ? '+' : '−') + Math.abs(g.pct) + '%')
+                          )
+                        );
+                      }),
+                      // Notes column
+                      h('div', { className: 'mt-3 pt-2 border-t border-slate-200 space-y-0.5' },
+                        groups.map(function(g) {
+                          var isGain = g.pct > 0;
+                          return h('div', { key: g.label + 'n', className: 'text-[11px] text-slate-700 flex items-baseline gap-1.5' },
+                            h('span', {
+                              style: {
+                                fontSize: 9, fontWeight: 800, fontFamily: 'monospace',
+                                color: isGain ? '#047857' : '#9f1239',
+                                width: 38, flexShrink: 0
+                              }
+                            }, (isGain ? '+' : '−') + Math.abs(g.pct) + '%'),
+                            h('span', { className: 'font-semibold text-slate-800' }, g.label + ':'),
+                            h('span', null, g.note)
+                          );
+                        })
+                      )
+                    );
+                  })()
                 )
               ),
-              h('div', { className: 'bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-5' },
-                h('h3', { className: 'text-base font-black text-emerald-900 mb-2' }, '💡 The takeaway is hopeful, not grim'),
-                h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, ROSENBERG_2019.takeaway)
+              // ── Hopeful takeaway: split-card "what works vs what doesn't" ──
+              h('div', { className: 'rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-lg' },
+                h('div', { className: 'p-5 bg-gradient-to-br from-emerald-50 to-amber-50 border-b-2 border-emerald-300 flex items-start gap-3' },
+                  h('span', { 'aria-hidden': true, style: { fontSize: 36, lineHeight: 1, flexShrink: 0 } }, '💡'),
+                  h('div', { className: 'flex-1' },
+                    h('h3', { className: 'text-lg font-black text-emerald-900' }, 'The takeaway is hopeful, not grim'),
+                    h('p', { className: 'text-sm text-slate-800 leading-relaxed mt-1' },
+                      h('strong', null, 'The losses are NOT evenly distributed.'),
+                      ' This is a roadmap for what works.')
+                  )
+                ),
+                // Two-column "works vs doesn't"
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-px', style: { background: '#cbd5e1' } },
+                  // Works
+                  h('div', { className: 'p-4', style: { background: '#ecfdf5' } },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                      h('span', { 'aria-hidden': true, style: { fontSize: 22 } }, '✓'),
+                      h('h4', { className: 'text-base font-black text-emerald-900' }, 'Where investment happened')
+                    ),
+                    h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
+                      'Conservation funding + habitat protection produced',
+                      h('strong', { className: 'text-emerald-700' }, ' rebounds.')),
+                    h('ul', { className: 'space-y-1 text-xs text-slate-800' },
+                      h('li', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-emerald-600 font-bold flex-shrink-0' }, '↗'),
+                        h('span', null, h('strong', null, 'Raptors '), 'recovered (DDT ban → eagles, peregrines)')
+                      ),
+                      h('li', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-emerald-600 font-bold flex-shrink-0' }, '↗'),
+                        h('span', null, h('strong', null, 'Waterfowl '), 'recovered (Duck Stamp habitat funding)')
+                      ),
+                      h('li', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-emerald-600 font-bold flex-shrink-0' }, '↗'),
+                        h('span', null, h('strong', null, 'Atlantic Puffins '), 'recovered (Project Puffin restoration)')
+                      )
+                    )
+                  ),
+                  // Doesn't work
+                  h('div', { className: 'p-4', style: { background: '#fef2f2' } },
+                    h('div', { className: 'flex items-center gap-2 mb-2' },
+                      h('span', { 'aria-hidden': true, style: { fontSize: 22 } }, '⚠'),
+                      h('h4', { className: 'text-base font-black text-rose-900' }, 'Where it didn\'t')
+                    ),
+                    h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
+                      'Without targeted conservation, losses',
+                      h('strong', { className: 'text-rose-700' }, ' accelerated.')),
+                    h('ul', { className: 'space-y-1 text-xs text-slate-800' },
+                      h('li', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-rose-600 font-bold flex-shrink-0' }, '↘'),
+                        h('span', null, h('strong', null, 'Grassland birds '), '−53% — habitat converted to industrial agriculture')
+                      ),
+                      h('li', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-rose-600 font-bold flex-shrink-0' }, '↘'),
+                        h('span', null, h('strong', null, 'Shorebirds '), '−37% — wetland drainage + coastal disturbance')
+                      ),
+                      h('li', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-rose-600 font-bold flex-shrink-0' }, '↘'),
+                        h('span', null, h('strong', null, 'Wood Thrush '), 'declining — dual breeding/wintering pressure')
+                      )
+                    )
+                  )
+                )
               ),
               h('h2', { className: 'text-base font-black text-slate-800 mt-6' }, 'Four Maine-relevant species: 2 in trouble, 2 recovered'),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
