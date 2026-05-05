@@ -621,16 +621,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             if (qs.score >= 4) awardBadge('recognizer', 'Recognizer (4+/5 on Recognize quiz)');
             if (qs.score === RECOGNIZE_QUIZ.length) awardBadge('recognizer_perfect', 'Sharp Eyes (perfect score)');
           }
+          // Tier message scaling — uses the existing pct >= 80 threshold but offers
+          // more granular feedback at the in-between band.
+          var tier = qs.score === RECOGNIZE_QUIZ.length ? 'perfect'
+                     : pct >= 80 ? 'strong'
+                     : pct >= 50 ? 'learning'
+                     : 'review';
+          var tierColor = tier === 'perfect' ? '#fbbf24'
+                          : tier === 'strong' ? T.ok
+                          : tier === 'learning' ? '#f59e0b'
+                          : T.danger;
+          var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎉' : tier === 'learning' ? '📚' : '📖';
+          var tierTitle = tier === 'perfect' ? 'Sharp Eyes — perfect score!'
+                          : tier === 'strong' ? 'Solid recognition'
+                          : tier === 'learning' ? 'Building the eye'
+                          : 'Review the cards';
+          var tierMsg = tier === 'perfect'
+                        ? 'You can recognize every emergency in the deck. Move on to action modules — CPR + AED, Stop the Bleed, Choking.'
+                        : tier === 'strong'
+                          ? 'You have solid recognition. Move on to the action modules — Call, CPR + AED, Stop the Bleed.'
+                          : tier === 'learning'
+                            ? 'Halfway there. Re-read the cards for the emergencies that tripped you up — recognition is the gate to response.'
+                            : 'Recognition is the most important step — you can’t respond to what you don’t see. Review the cards and try again.';
+          var rad = 36, circ = 2 * Math.PI * rad;
+          var dashOff = circ - (pct / 100) * circ;
           return h('div', { role: 'region', 'aria-label': 'Quiz results',
-            style: { padding: 18, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
-            h('div', { style: { fontSize: 36, marginBottom: 8 } }, pct >= 80 ? '🎉' : '📚'),
-            h('h3', { style: { margin: '0 0 8px', fontSize: 22, color: T.text } },
-              qs.score, ' / ', RECOGNIZE_QUIZ.length, ' correct'),
-            h('p', { style: { margin: '0 0 16px', color: T.muted, fontSize: 13, lineHeight: 1.5 } },
-              pct >= 80
-                ? 'You have solid recognition. Move on to the action modules — Call, CPR + AED, Stop the Bleed.'
-                : 'Recognition is the most important step — you can’t respond to what you don’t see. Review the cards and try again.'),
-            h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
+            style: { padding: 0, borderRadius: 14, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: T.card } },
+            h('div', {
+              style: {
+                padding: 18,
+                background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)',
+                display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap'
+              }
+            },
+              // Score donut
+              h('div', { style: { position: 'relative', width: 96, height: 96, flexShrink: 0 } },
+                h('svg', { viewBox: '0 0 100 100', width: 96, height: 96,
+                  'aria-label': 'Score: ' + qs.score + ' out of ' + RECOGNIZE_QUIZ.length
+                },
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                    strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                ),
+                h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                  h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted } }, qs.score + ' / ' + RECOGNIZE_QUIZ.length)
+                )
+              ),
+              // Tier headline + message
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('div', { style: { fontSize: 30, marginBottom: 4 }, 'aria-hidden': 'true' }, tierIcon),
+                h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, tierMsg)
+              )
+            ),
+            h('div', { style: { padding: 14, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap', borderTop: '1px solid ' + T.border } },
               h('button', { 'data-fr-focusable': true,
                 'aria-label': 'Retake the recognition quiz',
                 onClick: function() {
