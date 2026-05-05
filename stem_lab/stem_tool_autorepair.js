@@ -6081,17 +6081,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           });
           var pct = Math.round((score / total) * 100);
           if (pct >= 80) awardBadge('damage-id-ace', 'Damage ID Ace');
+          var tier = pct >= 90 ? 'ace' : pct >= 80 ? 'strong' : pct >= 60 ? 'baseline' : 'review';
+          var tierColor = tier === 'ace' ? '#fbbf24' : tier === 'strong' ? T.good : tier === 'baseline' ? T.warn : T.bad;
+          var tierIcon = tier === 'ace' ? '🏆' : tier === 'strong' ? '🎓' : tier === 'baseline' ? '🚧' : '📚';
+          var tierTitle = tier === 'ace' ? 'Visual diagnostic ace'
+                          : tier === 'strong' ? 'Strong pattern recognition'
+                          : tier === 'baseline' ? 'Solid baseline'
+                          : 'Worth another pass';
+          var tierMsg = tier === 'ace'
+                        ? 'You are seeing what techs see. Most volunteers miss severity calls before they miss part ID — you got both.'
+                        : tier === 'strong'
+                          ? 'Strong overall. The misses are usually severity (cosmetic vs. structural) — worth re-reading the borderline cases.'
+                          : tier === 'baseline'
+                            ? 'Good first pass. Re-read the cases you missed to fix the patterns. Damage ID is muscle memory, not memorization.'
+                            : 'Re-read the original cases for context. Damage ID requires seeing many examples; one pass is not enough.';
+          var rad = 38, circ = 2 * Math.PI * rad;
+          var dashOff = circ - (pct / 100) * circ;
+          // Build per-question correctness array (3 questions per case × N cases).
+          var perQ = [];
+          DAMAGE_CASES.forEach(function(c) {
+            ['part', 'cause', 'sev'].forEach(function(k) {
+              perQ.push({ caseId: c.id, kind: k, correct: answers[c.id + '_' + k] === c[k].correct });
+            });
+          });
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🔬 Damage ID — complete'),
-            h('div', { style: { padding: 18, borderRadius: 10, background: T.card, border: '2px solid ' + (pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad) } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 18, color: T.accentHi } }, '🔬 Damage ID complete'),
-              h('div', { style: { fontSize: 36, fontWeight: 800, color: pct >= 80 ? T.good : pct >= 60 ? T.warn : T.bad, marginBottom: 8 } }, score + ' / ' + total + ' (' + pct + '%)'),
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.55 } },
-                pct >= 90 ? '🏆 Visual diagnostic ace — you\'re seeing what techs see.' :
-                pct >= 80 ? '🎓 Strong pattern recognition. A few details to refine.' :
-                pct >= 60 ? '🚧 Good baseline. Re-read the cases to fix the misses.' :
-                '📚 Worth another pass with the original cases for context.'),
-              h('button', { 'data-ar-focusable': true, onClick: function() { updMulti({ damageIdx: 0, damageAnswers: {} }); }, style: btnPrimary() }, '🔄 Restart')
+            h('div', { style: { borderRadius: 14, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: T.card } },
+              h('div', { style: { padding: 18, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
+                // Score donut
+                h('div', { style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
+                  h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
+                    'aria-label': 'Score: ' + score + ' out of ' + total
+                  },
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                      strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                  ),
+                  h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted } }, score + ' / ' + total)
+                  )
+                ),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('div', { style: { fontSize: 30, marginBottom: 4 }, 'aria-hidden': 'true' }, tierIcon),
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                  h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, tierMsg)
+                )
+              ),
+              // Per-question result strip (3 chips per case: part / cause / severity)
+              h('div', { style: { padding: '0 18px 8px' } },
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, 'Per-question results (part · cause · severity)'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                  perQ.map(function(q, qi) {
+                    return h('div', { key: qi,
+                      title: q.caseId + ' — ' + q.kind + (q.correct ? ' ✓' : ' ✗'),
+                      style: {
+                        width: 14, height: 14, borderRadius: 3,
+                        background: q.correct ? T.good : T.bad,
+                        border: '1.5px solid ' + (q.correct ? '#15803d' : '#7f1d1d'),
+                        boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                      },
+                      'aria-label': q.caseId + ' ' + q.kind + (q.correct ? ' correct' : ' incorrect')
+                    });
+                  })
+                )
+              ),
+              pct >= 80 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.good, fontWeight: 700, borderTop: '1px solid ' + T.border } }, '🏅 Badge earned: Damage ID Ace'),
+              h('div', { style: { padding: '12px 18px', borderTop: '1px solid ' + T.border } },
+                h('button', { 'data-ar-focusable': true, onClick: function() { updMulti({ damageIdx: 0, damageAnswers: {} }); }, style: btnPrimary() }, '🔄 Restart')
+              )
             ),
             disclaimerFooter()
           );
