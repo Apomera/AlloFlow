@@ -239,7 +239,8 @@
       setIsProcessing(true);
       setGenerationStep(t('process.fixing_grammar') || 'Fixing grammar errors...');
       try {
-        const errorsToFix = rawGrammarNotes.filter((_, i) => selectedGrammarErrors.has(i) && !isInvalidGrammarNote(rawGrammarNotes[i]));
+        const isFixable = (g) => typeof g === 'string' && !isInvalidGrammarNote(g) && !g.startsWith('✓ FIXED:');
+        const errorsToFix = rawGrammarNotes.filter((g, i) => selectedGrammarErrors.has(i) && isFixable(g));
         const originalText = generatedContent?.data.originalText;
         if (errorsToFix.length === 0) {
           addToast(t('process.grammar_fix_failed') || 'No errors selected to fix.', 'warning');
@@ -297,7 +298,7 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
           data: {
             ...prev.data,
             originalText: cleaned,
-            grammar: prev.data.grammar.map((g, i) => selectedGrammarErrors.has(i) ? `✓ FIXED: ${g}` : g)
+            grammar: prev.data.grammar.map((g, i) => (selectedGrammarErrors.has(i) && isFixable(g)) ? `✓ FIXED: ${g}` : g)
           }
         }));
         setInputText(cleaned);

@@ -37018,6 +37018,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       .allo-block-definition dt { font-weight: 800; color: #5b21b6; font-size: 15px; margin-bottom: 4px; }
                       .allo-block-definition .allo-def-pron { font-size: 12px; color: #7c3aed; font-style: italic; font-weight: 500; margin-left: 8px; }
                       .allo-block-definition dd { color: #1f2937; font-size: 14px; margin: 0; line-height: 1.6; }
+                      .allo-block-definition .allo-def-audio { margin-top: 8px; }
+                      .allo-block-definition .allo-def-audio audio { width: 100%; max-width: 280px; height: 32px; }
                       .allo-block-steps { padding-left: 0; list-style: none; margin: 0; }
                       .allo-block-steps li { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
                       .allo-block-steps .allo-step-num { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
@@ -37142,7 +37144,22 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       };
                       doc.head.appendChild(script);
                     };
-                    const _ensurePrism = (doc, language) => {
+                    const _markPrismFailure = (doc, msg) => {
+                      doc.querySelectorAll('.allo-block-code-wrap').forEach((b) => {
+                        if (b.querySelector('.allo-prism-status')) return;
+                        const header = b.querySelector('.allo-code-header');
+                        if (!header) return;
+                        const s = doc.createElement('span');
+                        s.className = 'allo-prism-status';
+                        s.setAttribute('contenteditable', 'false');
+                        s.style.cssText = 'color:#fca5a5;font-size:10px;margin-left:8px;';
+                        s.textContent = '⚠ ' + msg;
+                        header.appendChild(s);
+                      });
+                    };
+                    // _ensurePrism / _loadPrismLang accept an optional `targetEl` so
+                    // a single language change only highlights that one block, not all.
+                    const _ensurePrism = (doc, language, targetEl) => {
                       if (!doc.getElementById('allo-prism-css')) {
                         const link = doc.createElement('link');
                         link.id = 'allo-prism-css';
@@ -37154,24 +37171,30 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const script = doc.createElement('script');
                         script.id = 'allo-prism-js';
                         script.src = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js';
-                        script.onload = () => { _loadPrismLang(doc, language || 'python'); };
+                        script.onload = () => { _loadPrismLang(doc, language || 'python', targetEl); };
+                        script.onerror = () => { _markPrismFailure(doc, 'Highlighting offline'); };
                         doc.head.appendChild(script);
                       } else {
-                        _loadPrismLang(doc, language || 'python');
+                        _loadPrismLang(doc, language || 'python', targetEl);
                       }
                     };
-                    const _loadPrismLang = (doc, language) => {
-                      if (!language || language === 'plaintext') return;
+                    const _loadPrismLang = (doc, language, targetEl) => {
+                      const win = doc.defaultView;
+                      const highlight = () => {
+                        try {
+                          if (!win || !win.Prism) return;
+                          if (targetEl && win.Prism.highlightElement) win.Prism.highlightElement(targetEl);
+                          else win.Prism.highlightAll();
+                        } catch (_) {}
+                      };
+                      if (!language || language === 'plaintext') { highlight(); return; }
                       const id = 'allo-prism-lang-' + language;
-                      if (doc.getElementById(id)) {
-                        try { doc.defaultView.Prism && doc.defaultView.Prism.highlightAll(); } catch (_) {}
-                        return;
-                      }
+                      if (doc.getElementById(id)) { highlight(); return; }
                       const script = doc.createElement('script');
                       script.id = id;
                       script.src = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-' + language + '.min.js';
-                      script.onload = () => { try { doc.defaultView.Prism && doc.defaultView.Prism.highlightAll(); } catch (_) {} };
-                      script.onerror = () => {};
+                      script.onload = highlight;
+                      script.onerror = () => { _markPrismFailure(doc, 'Language ' + language + ' unavailable'); };
                       doc.head.appendChild(script);
                     };
 
@@ -37271,6 +37294,56 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             announce('Removed ' + type + ' block');
                             persist();
                           }
+                          return;
+                        }
+                        // Vocab Card TTS-from-word
+                        const vocabTtsBtn = t.closest('.allo-vocab-tts-btn');
+                        if (vocabTtsBtn) {
+                          ev.preventDefault();
+                          const block = vocabTtsBtn.closest('.allo-block-vocab'); if (!block) return;
+                          const wordEl = block.querySelector('.allo-vocab-word');
+                          // Strip any nested .allo-vocab-pos text from the spoken word
+                          let wordText = '';
+                          if (wordEl) {
+                            const clone = wordEl.cloneNode(true);
+                            clone.querySelectorAll('.allo-vocab-pos').forEach((n) => n.remove());
+                            wordText = (clone.textContent || '').trim();
+                          }
+                          if (!wordText) { announce('Edit the word first, then click TTS'); return; }
+                          const win = doc.defaultView;
+                          const parentCallTTS = (win && win.parent && win.parent.callTTS) ? win.parent.callTTS : null;
+                          if (typeof parentCallTTS !== 'function') { announce('TTS unavailable in this build'); return; }
+                          const orig = vocabTtsBtn.textContent;
+                          vocabTtsBtn.textContent = '⏳'; vocabTtsBtn.disabled = true;
+                          announce('Generating pronunciation for ' + wordText);
+                          Promise.resolve(parentCallTTS(wordText)).then((url) => {
+                            const audio = block.querySelector('.allo-vocab-audio audio');
+                            if (audio && url) { audio.src = url; announce('Pronunciation generated for ' + wordText); persist(); }
+                            else announce('TTS returned no audio');
+                          }).catch((err) => announce('TTS failed: ' + (err && err.message || 'unknown')))
+                            .finally(() => { try { vocabTtsBtn.textContent = orig; vocabTtsBtn.disabled = false; } catch (_) {} });
+                          return;
+                        }
+                        // Definition TTS-from-term
+                        const defTtsBtn = t.closest('.allo-def-tts-btn');
+                        if (defTtsBtn) {
+                          ev.preventDefault();
+                          const block = defTtsBtn.closest('.allo-block-definition'); if (!block) return;
+                          const termEl = block.querySelector('dt > span[lang]');
+                          const termText = (termEl && termEl.textContent || '').trim();
+                          if (!termText) { announce('Edit the term first, then click TTS'); return; }
+                          const win = doc.defaultView;
+                          const parentCallTTS = (win && win.parent && win.parent.callTTS) ? win.parent.callTTS : null;
+                          if (typeof parentCallTTS !== 'function') { announce('TTS unavailable in this build'); return; }
+                          const orig = defTtsBtn.textContent;
+                          defTtsBtn.textContent = '⏳'; defTtsBtn.disabled = true;
+                          announce('Generating pronunciation for ' + termText);
+                          Promise.resolve(parentCallTTS(termText)).then((url) => {
+                            const audio = block.querySelector('.allo-def-audio audio');
+                            if (audio && url) { audio.src = url; announce('Pronunciation generated for ' + termText); persist(); }
+                            else announce('TTS returned no audio');
+                          }).catch((err) => announce('TTS failed: ' + (err && err.message || 'unknown')))
+                            .finally(() => { try { defTtsBtn.textContent = orig; defTtsBtn.disabled = false; } catch (_) {} });
                           return;
                         }
                         // Audio TTS-from-transcript
@@ -37723,6 +37796,28 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           };
                           reader.readAsDataURL(file);
                         }
+                        // Vocab card audio upload
+                        if (t.classList && t.classList.contains('allo-vocab-audio-input')) {
+                          const file = t.files && t.files[0]; if (!file) return;
+                          const block = t.closest('.allo-block-vocab'); if (!block) return;
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const audio = block.querySelector('.allo-vocab-audio audio');
+                            if (audio) { audio.src = String(e.target.result || ''); announce('Pronunciation audio uploaded'); persist(); }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                        // Definition audio upload
+                        if (t.classList && t.classList.contains('allo-def-audio-input')) {
+                          const file = t.files && t.files[0]; if (!file) return;
+                          const block = t.closest('.allo-block-definition'); if (!block) return;
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const audio = block.querySelector('.allo-def-audio audio');
+                            if (audio) { audio.src = String(e.target.result || ''); announce('Pronunciation audio uploaded'); persist(); }
+                          };
+                          reader.readAsDataURL(file);
+                        }
                         // Vocab card image upload
                         if (t.classList && t.classList.contains('allo-vocab-img-input')) {
                           const file = t.files && t.files[0]; if (!file) return;
@@ -37739,14 +37834,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           };
                           reader.readAsDataURL(file);
                         }
-                        // Code language change
+                        // Code language change — highlight ONLY this block, not all blocks
                         if (t.classList && t.classList.contains('allo-code-lang-select')) {
                           const block = t.closest('.allo-block-code-wrap'); if (!block) return;
                           const codeEl = block.querySelector('code');
                           if (codeEl) {
                             const newLang = t.value || 'plaintext';
+                            // Strip Prism's per-token classes so re-highlighting works cleanly
+                            const txt = codeEl.textContent || '';
+                            codeEl.innerHTML = '';
+                            codeEl.textContent = txt;
                             codeEl.className = 'language-' + newLang;
-                            _ensurePrism(doc, newLang);
+                            _ensurePrism(doc, newLang, codeEl);
                             announce('Code language: ' + newLang);
                             persist();
                           }
@@ -37835,8 +37934,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">×</button><ol class="allo-block-steps" data-num-style="numeric" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step">+ Step</button><button type="button" data-action="remove-step">− Step</button><span class="allo-control-label">Numbering</span><button type="button" data-action="num-style-numeric" aria-pressed="true">1, 2, 3</button><button type="button" data-action="num-style-alpha" aria-pressed="false">A, B, C</button><button type="button" data-action="num-style-roman" aria-pressed="false">I, II, III</button></div></div>' },
                       { label: 'Accordion', icon: '📂', category: 'content', keywords: 'accordion collapsible expand toggle disclosure',
                         html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">×</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Default</span><button type="button" data-action="accordion-default-open" aria-pressed="false">Open by default</button></div></div></details>' },
+                      { label: 'Q & A', icon: '❓', category: 'content', keywords: 'qa question answer faq study',
+                        html: '<div class="allo-block allo-block-qa" data-allo-block="qa" tabindex="0" role="group" aria-label="Question and answer pair"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove Q and A" title="Remove">×</button><div class="allo-qa-question"><strong>Q:</strong> Type the question here.</div><div class="allo-qa-answer"><strong>A:</strong> Type the answer here.</div></div>' },
                       { label: 'Definition', icon: '📖', category: 'content', keywords: 'definition term vocabulary glossary',
-                        html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span><span class="allo-def-pron">/prə-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="zh">中文</option><option value="ar">العربية</option><option value="la">Latin</option><option value="grc">Greek</option></select></div></dl>' },
+                        html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span><span class="allo-def-pron">/prə-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-def-audio"><audio controls aria-label="Pronunciation audio"></audio></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="zh">中文</option><option value="ar">العربية</option><option value="la">Latin</option><option value="grc">Greek</option></select><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-def-audio-input" style="display:none" /></label><button type="button" class="allo-def-tts-btn" aria-label="Generate pronunciation audio from the term using AI text-to-speech" title="Generate pronunciation from the term">🎤 TTS</button></div></dl>' },
 
                       // ── Educational ──
                       { label: 'Sentence Frame', icon: '🪧', category: 'educational', keywords: 'sentence frame stem scaffold ell esl',
@@ -37844,7 +37945,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       { label: 'Objective', icon: '🎯', category: 'educational', keywords: 'learning objective goal standard outcome',
                         html: '<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">×</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div><div class="allo-obj-meta"><span>Standard: <em>edit me</em></span><span>Bloom\'s: <em>Apply</em></span></div></div>' },
                       { label: 'Vocab Card', icon: '🃏', category: 'educational', keywords: 'vocabulary card word term definition',
-                        html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/wərd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn" style="font-size:11px;padding:4px 9px;background:#7c3aed;color:white;border-radius:4px;cursor:pointer;font-weight:600;">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">− Example</button></div></div>' },
+                        html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/wərd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-vocab-audio-input" style="display:none" /></label><button type="button" class="allo-vocab-tts-btn" aria-label="Generate pronunciation audio from the word using AI text-to-speech" title="Generate pronunciation from the word">🎤 TTS</button><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">− Example</button></div></div>' },
                       { label: 'Reflection', icon: '✏️', category: 'educational', keywords: 'reflection journal response writing prompt',
                         html: '<div class="allo-block allo-block-reflection" data-allo-block="reflection" data-length="medium" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">×</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><div class="allo-refl-stems">Try starting with: "I learned..." • "I\'m wondering..." • "This connects to..."</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here..."></textarea><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Length</span><button type="button" data-action="refl-length-short" aria-pressed="false">Short</button><button type="button" data-action="refl-length-medium" aria-pressed="true">Medium</button><button type="button" data-action="refl-length-long" aria-pressed="false">Long</button></div></div>' },
                       { label: 'Rubric', icon: '📋', category: 'educational', keywords: 'rubric grading criteria scoring assessment',
@@ -37935,7 +38036,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           };
                           setTimeout(_kxTry, 100);
                         } else if (blockType === 'code') {
-                          _ensurePrism(doc, 'python');
+                          const codeEl = newBlock.querySelector('code');
+                          _ensurePrism(doc, 'python', codeEl || undefined);
                         }
                       }
                       try {

@@ -4859,84 +4859,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/firestore_sync_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/allohaven_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/story_stage_module.js');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('AlloHaven', './allohaven_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/view_adventure_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/export_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4947,7 +4947,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@07e9a12/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -37018,6 +37018,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       .allo-block-definition dt { font-weight: 800; color: #5b21b6; font-size: 15px; margin-bottom: 4px; }
                       .allo-block-definition .allo-def-pron { font-size: 12px; color: #7c3aed; font-style: italic; font-weight: 500; margin-left: 8px; }
                       .allo-block-definition dd { color: #1f2937; font-size: 14px; margin: 0; line-height: 1.6; }
+                      .allo-block-definition .allo-def-audio { margin-top: 8px; }
+                      .allo-block-definition .allo-def-audio audio { width: 100%; max-width: 280px; height: 32px; }
                       .allo-block-steps { padding-left: 0; list-style: none; margin: 0; }
                       .allo-block-steps li { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
                       .allo-block-steps .allo-step-num { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
@@ -37058,6 +37060,20 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       .allo-block-reflection[data-length='short'] .allo-refl-area { min-height: 60px; }
                       .allo-block-reflection[data-length='medium'] .allo-refl-area { min-height: 120px; }
                       .allo-block-reflection[data-length='long'] .allo-refl-area { min-height: 200px; }
+                      .allo-block-lesson { padding: 20px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; }
+                      .allo-block-lesson h2.allo-lesson-title { margin: 0 0 6px; color: #1e3a5f; font-size: 20px; border-bottom: 2px solid #1e3a5f; padding-bottom: 6px; }
+                      .allo-block-lesson .allo-lesson-meta { font-size: 12px; color: #475569; margin-bottom: 14px; }
+                      .allo-block-lesson .allo-lesson-section { background: white; border-left: 4px solid #6366f1; padding: 10px 14px; border-radius: 0 8px 8px 0; margin: 10px 0; }
+                      .allo-block-lesson .allo-lesson-section h3 { margin: 0 0 6px; color: #4338ca; font-size: 14px; font-weight: 700; }
+                      .allo-block-lesson .allo-lesson-section p { margin: 0 0 4px; font-size: 13px; line-height: 1.6; color: #1f2937; }
+                      .allo-block-lesson .allo-lesson-section ul { margin: 4px 0 0 18px; padding: 0; font-size: 13px; line-height: 1.6; color: #1f2937; }
+                      .allo-block-lesson .allo-lesson-time { font-size: 11px; color: #6366f1; font-weight: 500; margin-left: 4px; }
+                      .allo-block-lesson .allo-lesson-udl { border-left-color: #ec4899; }
+                      .allo-block-lesson .allo-lesson-udl h3 { color: #be185d; }
+                      .allo-block-qa { padding: 14px 18px; background: #ecfeff; border-left: 4px solid #0e7490; border-radius: 0 8px 8px 0; }
+                      .allo-block-qa .allo-qa-question { font-weight: 600; color: #155e75; margin-bottom: 8px; line-height: 1.5; font-size: 15px; }
+                      .allo-block-qa .allo-qa-answer { color: #1e293b; padding-left: 18px; line-height: 1.6; font-size: 14px; }
+                      .allo-block-qa .allo-qa-question::before, .allo-block-qa .allo-qa-answer::before { font-weight: 800; margin-right: 6px; }
                       .allo-block-rubric { overflow-x: auto; }
                       .allo-block-rubric table { font-size: 13px; }
                       .allo-block-rubric thead th { background: #1e293b; color: white; padding: 8px 10px; text-align: left; font-weight: 700; font-size: 12px; }
@@ -37128,7 +37144,22 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       };
                       doc.head.appendChild(script);
                     };
-                    const _ensurePrism = (doc, language) => {
+                    const _markPrismFailure = (doc, msg) => {
+                      doc.querySelectorAll('.allo-block-code-wrap').forEach((b) => {
+                        if (b.querySelector('.allo-prism-status')) return;
+                        const header = b.querySelector('.allo-code-header');
+                        if (!header) return;
+                        const s = doc.createElement('span');
+                        s.className = 'allo-prism-status';
+                        s.setAttribute('contenteditable', 'false');
+                        s.style.cssText = 'color:#fca5a5;font-size:10px;margin-left:8px;';
+                        s.textContent = '⚠ ' + msg;
+                        header.appendChild(s);
+                      });
+                    };
+                    // _ensurePrism / _loadPrismLang accept an optional `targetEl` so
+                    // a single language change only highlights that one block, not all.
+                    const _ensurePrism = (doc, language, targetEl) => {
                       if (!doc.getElementById('allo-prism-css')) {
                         const link = doc.createElement('link');
                         link.id = 'allo-prism-css';
@@ -37140,24 +37171,30 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const script = doc.createElement('script');
                         script.id = 'allo-prism-js';
                         script.src = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js';
-                        script.onload = () => { _loadPrismLang(doc, language || 'python'); };
+                        script.onload = () => { _loadPrismLang(doc, language || 'python', targetEl); };
+                        script.onerror = () => { _markPrismFailure(doc, 'Highlighting offline'); };
                         doc.head.appendChild(script);
                       } else {
-                        _loadPrismLang(doc, language || 'python');
+                        _loadPrismLang(doc, language || 'python', targetEl);
                       }
                     };
-                    const _loadPrismLang = (doc, language) => {
-                      if (!language || language === 'plaintext') return;
+                    const _loadPrismLang = (doc, language, targetEl) => {
+                      const win = doc.defaultView;
+                      const highlight = () => {
+                        try {
+                          if (!win || !win.Prism) return;
+                          if (targetEl && win.Prism.highlightElement) win.Prism.highlightElement(targetEl);
+                          else win.Prism.highlightAll();
+                        } catch (_) {}
+                      };
+                      if (!language || language === 'plaintext') { highlight(); return; }
                       const id = 'allo-prism-lang-' + language;
-                      if (doc.getElementById(id)) {
-                        try { doc.defaultView.Prism && doc.defaultView.Prism.highlightAll(); } catch (_) {}
-                        return;
-                      }
+                      if (doc.getElementById(id)) { highlight(); return; }
                       const script = doc.createElement('script');
                       script.id = id;
                       script.src = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-' + language + '.min.js';
-                      script.onload = () => { try { doc.defaultView.Prism && doc.defaultView.Prism.highlightAll(); } catch (_) {} };
-                      script.onerror = () => {};
+                      script.onload = highlight;
+                      script.onerror = () => { _markPrismFailure(doc, 'Language ' + language + ' unavailable'); };
                       doc.head.appendChild(script);
                     };
 
@@ -37257,6 +37294,56 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             announce('Removed ' + type + ' block');
                             persist();
                           }
+                          return;
+                        }
+                        // Vocab Card TTS-from-word
+                        const vocabTtsBtn = t.closest('.allo-vocab-tts-btn');
+                        if (vocabTtsBtn) {
+                          ev.preventDefault();
+                          const block = vocabTtsBtn.closest('.allo-block-vocab'); if (!block) return;
+                          const wordEl = block.querySelector('.allo-vocab-word');
+                          // Strip any nested .allo-vocab-pos text from the spoken word
+                          let wordText = '';
+                          if (wordEl) {
+                            const clone = wordEl.cloneNode(true);
+                            clone.querySelectorAll('.allo-vocab-pos').forEach((n) => n.remove());
+                            wordText = (clone.textContent || '').trim();
+                          }
+                          if (!wordText) { announce('Edit the word first, then click TTS'); return; }
+                          const win = doc.defaultView;
+                          const parentCallTTS = (win && win.parent && win.parent.callTTS) ? win.parent.callTTS : null;
+                          if (typeof parentCallTTS !== 'function') { announce('TTS unavailable in this build'); return; }
+                          const orig = vocabTtsBtn.textContent;
+                          vocabTtsBtn.textContent = '⏳'; vocabTtsBtn.disabled = true;
+                          announce('Generating pronunciation for ' + wordText);
+                          Promise.resolve(parentCallTTS(wordText)).then((url) => {
+                            const audio = block.querySelector('.allo-vocab-audio audio');
+                            if (audio && url) { audio.src = url; announce('Pronunciation generated for ' + wordText); persist(); }
+                            else announce('TTS returned no audio');
+                          }).catch((err) => announce('TTS failed: ' + (err && err.message || 'unknown')))
+                            .finally(() => { try { vocabTtsBtn.textContent = orig; vocabTtsBtn.disabled = false; } catch (_) {} });
+                          return;
+                        }
+                        // Definition TTS-from-term
+                        const defTtsBtn = t.closest('.allo-def-tts-btn');
+                        if (defTtsBtn) {
+                          ev.preventDefault();
+                          const block = defTtsBtn.closest('.allo-block-definition'); if (!block) return;
+                          const termEl = block.querySelector('dt > span[lang]');
+                          const termText = (termEl && termEl.textContent || '').trim();
+                          if (!termText) { announce('Edit the term first, then click TTS'); return; }
+                          const win = doc.defaultView;
+                          const parentCallTTS = (win && win.parent && win.parent.callTTS) ? win.parent.callTTS : null;
+                          if (typeof parentCallTTS !== 'function') { announce('TTS unavailable in this build'); return; }
+                          const orig = defTtsBtn.textContent;
+                          defTtsBtn.textContent = '⏳'; defTtsBtn.disabled = true;
+                          announce('Generating pronunciation for ' + termText);
+                          Promise.resolve(parentCallTTS(termText)).then((url) => {
+                            const audio = block.querySelector('.allo-def-audio audio');
+                            if (audio && url) { audio.src = url; announce('Pronunciation generated for ' + termText); persist(); }
+                            else announce('TTS returned no audio');
+                          }).catch((err) => announce('TTS failed: ' + (err && err.message || 'unknown')))
+                            .finally(() => { try { defTtsBtn.textContent = orig; defTtsBtn.disabled = false; } catch (_) {} });
                           return;
                         }
                         // Audio TTS-from-transcript
@@ -37709,6 +37796,28 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           };
                           reader.readAsDataURL(file);
                         }
+                        // Vocab card audio upload
+                        if (t.classList && t.classList.contains('allo-vocab-audio-input')) {
+                          const file = t.files && t.files[0]; if (!file) return;
+                          const block = t.closest('.allo-block-vocab'); if (!block) return;
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const audio = block.querySelector('.allo-vocab-audio audio');
+                            if (audio) { audio.src = String(e.target.result || ''); announce('Pronunciation audio uploaded'); persist(); }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                        // Definition audio upload
+                        if (t.classList && t.classList.contains('allo-def-audio-input')) {
+                          const file = t.files && t.files[0]; if (!file) return;
+                          const block = t.closest('.allo-block-definition'); if (!block) return;
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const audio = block.querySelector('.allo-def-audio audio');
+                            if (audio) { audio.src = String(e.target.result || ''); announce('Pronunciation audio uploaded'); persist(); }
+                          };
+                          reader.readAsDataURL(file);
+                        }
                         // Vocab card image upload
                         if (t.classList && t.classList.contains('allo-vocab-img-input')) {
                           const file = t.files && t.files[0]; if (!file) return;
@@ -37725,14 +37834,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           };
                           reader.readAsDataURL(file);
                         }
-                        // Code language change
+                        // Code language change — highlight ONLY this block, not all blocks
                         if (t.classList && t.classList.contains('allo-code-lang-select')) {
                           const block = t.closest('.allo-block-code-wrap'); if (!block) return;
                           const codeEl = block.querySelector('code');
                           if (codeEl) {
                             const newLang = t.value || 'plaintext';
+                            // Strip Prism's per-token classes so re-highlighting works cleanly
+                            const txt = codeEl.textContent || '';
+                            codeEl.innerHTML = '';
+                            codeEl.textContent = txt;
                             codeEl.className = 'language-' + newLang;
-                            _ensurePrism(doc, newLang);
+                            _ensurePrism(doc, newLang, codeEl);
                             announce('Code language: ' + newLang);
                             persist();
                           }
@@ -37821,8 +37934,10 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">×</button><ol class="allo-block-steps" data-num-style="numeric" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step">+ Step</button><button type="button" data-action="remove-step">− Step</button><span class="allo-control-label">Numbering</span><button type="button" data-action="num-style-numeric" aria-pressed="true">1, 2, 3</button><button type="button" data-action="num-style-alpha" aria-pressed="false">A, B, C</button><button type="button" data-action="num-style-roman" aria-pressed="false">I, II, III</button></div></div>' },
                       { label: 'Accordion', icon: '📂', category: 'content', keywords: 'accordion collapsible expand toggle disclosure',
                         html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">×</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Default</span><button type="button" data-action="accordion-default-open" aria-pressed="false">Open by default</button></div></div></details>' },
+                      { label: 'Q & A', icon: '❓', category: 'content', keywords: 'qa question answer faq study',
+                        html: '<div class="allo-block allo-block-qa" data-allo-block="qa" tabindex="0" role="group" aria-label="Question and answer pair"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove Q and A" title="Remove">×</button><div class="allo-qa-question"><strong>Q:</strong> Type the question here.</div><div class="allo-qa-answer"><strong>A:</strong> Type the answer here.</div></div>' },
                       { label: 'Definition', icon: '📖', category: 'content', keywords: 'definition term vocabulary glossary',
-                        html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span><span class="allo-def-pron">/prə-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="zh">中文</option><option value="ar">العربية</option><option value="la">Latin</option><option value="grc">Greek</option></select></div></dl>' },
+                        html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span><span class="allo-def-pron">/prə-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-def-audio"><audio controls aria-label="Pronunciation audio"></audio></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="zh">中文</option><option value="ar">العربية</option><option value="la">Latin</option><option value="grc">Greek</option></select><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-def-audio-input" style="display:none" /></label><button type="button" class="allo-def-tts-btn" aria-label="Generate pronunciation audio from the term using AI text-to-speech" title="Generate pronunciation from the term">🎤 TTS</button></div></dl>' },
 
                       // ── Educational ──
                       { label: 'Sentence Frame', icon: '🪧', category: 'educational', keywords: 'sentence frame stem scaffold ell esl',
@@ -37830,11 +37945,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       { label: 'Objective', icon: '🎯', category: 'educational', keywords: 'learning objective goal standard outcome',
                         html: '<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">×</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div><div class="allo-obj-meta"><span>Standard: <em>edit me</em></span><span>Bloom\'s: <em>Apply</em></span></div></div>' },
                       { label: 'Vocab Card', icon: '🃏', category: 'educational', keywords: 'vocabulary card word term definition',
-                        html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/wərd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn" style="font-size:11px;padding:4px 9px;background:#7c3aed;color:white;border-radius:4px;cursor:pointer;font-weight:600;">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">− Example</button></div></div>' },
+                        html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/wərd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Audio</span><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-vocab-audio-input" style="display:none" /></label><button type="button" class="allo-vocab-tts-btn" aria-label="Generate pronunciation audio from the word using AI text-to-speech" title="Generate pronunciation from the word">🎤 TTS</button><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">− Example</button></div></div>' },
                       { label: 'Reflection', icon: '✏️', category: 'educational', keywords: 'reflection journal response writing prompt',
                         html: '<div class="allo-block allo-block-reflection" data-allo-block="reflection" data-length="medium" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">×</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><div class="allo-refl-stems">Try starting with: "I learned..." • "I\'m wondering..." • "This connects to..."</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here..."></textarea><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Length</span><button type="button" data-action="refl-length-short" aria-pressed="false">Short</button><button type="button" data-action="refl-length-medium" aria-pressed="true">Medium</button><button type="button" data-action="refl-length-long" aria-pressed="false">Long</button></div></div>' },
                       { label: 'Rubric', icon: '📋', category: 'educational', keywords: 'rubric grading criteria scoring assessment',
                         html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove rubric" title="Remove">×</button><table aria-label="Scoring rubric"><caption>Rubric Title — Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 — Exemplary</th><th scope="col">3 — Proficient</th><th scope="col">2 — Developing</th><th scope="col">1 — Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Scale</span><button type="button" data-action="rubric-scale-3pt">3-pt</button><button type="button" data-action="rubric-scale-4pt" aria-pressed="true">4-pt</button><button type="button" data-action="rubric-scale-5pt">5-pt</button><button type="button" data-action="rubric-scale-standards">Standards</button><button type="button" data-action="rubric-scale-ungraded">Glow/Grow</button><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Criterion</button><button type="button" data-action="remove-row">− Criterion</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Level</button><button type="button" data-action="remove-col">− Level</button></div></div>' },
+                      { label: 'Lesson Plan', icon: '📘', category: 'educational', keywords: 'lesson plan template udl objective standards materials assessment',
+                        html: '<section class="allo-block allo-block-lesson" data-allo-block="lesson-plan" tabindex="0" aria-label="Lesson plan template"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove lesson plan" title="Remove">×</button><h2 class="allo-lesson-title">Lesson Plan: <em>Click to edit title</em></h2><div class="allo-lesson-meta">Grade: <em>3</em> · Subject: <em>Math</em> · Duration: <em>50 min</em> · Date: <em>edit</em></div><div class="allo-lesson-section"><h3>🎯 Learning Objective</h3><p>By the end of this lesson, students will be able to <em>(use measurable verb: explain, identify, solve, create…)</em>.</p></div><div class="allo-lesson-section"><h3>📚 Standards</h3><ul><li>CCSS / NGSS / state standard reference here</li></ul></div><div class="allo-lesson-section"><h3>📦 Materials</h3><ul><li>Material 1</li><li>Material 2</li></ul></div><div class="allo-lesson-section"><h3>📖 Direct Instruction <em class="allo-lesson-time">(10 min)</em></h3><p>Teacher modeling, key vocabulary introduction, anchor chart…</p></div><div class="allo-lesson-section"><h3>👥 Guided Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Partner or small-group work with teacher checking in…</p></div><div class="allo-lesson-section"><h3>✏️ Independent Practice <em class="allo-lesson-time">(15 min)</em></h3><p>Individual application of the skill…</p></div><div class="allo-lesson-section"><h3>📊 Assessment</h3><p>How will you know students met the objective? (exit ticket, rubric, observation…)</p></div><div class="allo-lesson-section"><h3>💭 Closure / Reflection <em class="allo-lesson-time">(5 min)</em></h3><p>Quick reflection prompt or share-out…</p></div><div class="allo-lesson-section allo-lesson-udl"><h3>🌈 UDL Considerations</h3><ul><li><strong>Multiple means of representation:</strong> visual + verbal + hands-on</li><li><strong>Multiple means of action / expression:</strong> students can show learning by writing, speaking, drawing, or building</li><li><strong>Multiple means of engagement:</strong> choice in topic / partner / format</li></ul></div></section>' },
 
                       // ── Interactive ──
                       { label: 'Data Table', icon: '📊', category: 'interactive', keywords: 'table data grid spreadsheet',
@@ -37919,7 +38036,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           };
                           setTimeout(_kxTry, 100);
                         } else if (blockType === 'code') {
-                          _ensurePrism(doc, 'python');
+                          const codeEl = newBlock.querySelector('code');
+                          _ensurePrism(doc, 'python', codeEl || undefined);
                         }
                       }
                       try {

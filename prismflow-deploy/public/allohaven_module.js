@@ -293,6 +293,13 @@
     // ── Active modal (within AlloHaven; NOT the outer Open/Close state) ──
     activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | 'companion-setup' | null
     generateContext: null,           // { surface, cellIndex } when generate modal open
+    // Phase 2p.17 — print scope. null = full packet via existing print
+    // button; { type: 'card', decorationId } = single-decoration card.
+    printScope: null,
+    // Phase 2p.18 — cached companion letters keyed by ISO week start
+    // (YYYY-MM-DD of the most recent Sunday). One letter per week,
+    // regeneratable via the Refresh button. Saves Gemini quota.
+    companionLetters: {},
 
     // ── Reflection insights cache ──
     // Holds the last AI-generated summary of journal entries. Cleared on
@@ -480,6 +487,127 @@
       pool.splice(idx, 1);
     }
     return picked;
+  }
+
+  // Adaptive reflection prompts (Phase 2p.17) — returns ONE context-aware
+  // prompt object based on what\'s happened in the student\'s last day or
+  // two. Picks first applicable trigger. Returns null when no clear
+  // contextual hook exists; the modal then just shows the static 3.
+  // Triggers (priority order):
+  //   1. Story walk in last 4h         → "what part will you remember?"
+  //   2. New decoration in last 24h    → "what does the {label} mean?"
+  //   3. Quiz passed (≥80%) in last 4h → "what do you finally know?"
+  //   4. Struggle moods ≥50% last 7d   → "what\'s been tough — what helped?"
+  //   5. Streak ≥5 days                → "what brings you back?"
+  //   6. First Pomodoro of today done  → "what do you want to focus on?"
+  //   7. No reflection in 5+ days      → "where has your attention been?"
+  function computeAdaptivePrompt(state) {
+    var now = Date.now();
+    var fourHr = 4 * 60 * 60 * 1000;
+    var oneDay = 24 * 60 * 60 * 1000;
+
+    // 1. Recent story walk
+    var recentWalk = (state.earnings || []).filter(function(e) {
+      return e.source === 'story-walk' && e.date && (now - new Date(e.date).getTime()) < fourHr;
+    }).pop();
+    if (recentWalk && recentWalk.metadata && recentWalk.metadata.storyId) {
+      var storyMatch = (state.stories || []).filter(function(s) { return s.id === recentWalk.metadata.storyId; })[0];
+      if (storyMatch && storyMatch.title) {
+        return {
+          id: 'adaptive',
+          text: 'You just walked "' + storyMatch.title + '" — what part will you remember?',
+          hint: 'sparked by your recent story walk'
+        };
+      }
+    }
+
+    // 2. New decoration in last 24h
+    var newDec = (state.decorations || []).filter(function(d) {
+      return !d.isStarter && d.earnedAt && (now - new Date(d.earnedAt).getTime()) < oneDay;
+    }).pop();
+    if (newDec) {
+      var dLabel = newDec.templateLabel || newDec.template || 'new decoration';
+      return {
+        id: 'adaptive',
+        text: 'What does the ' + dLabel + ' mean to you right now?',
+        hint: 'sparked by your new decoration'
+      };
+    }
+
+    // 3. Recent quiz pass
+    var recentQuiz = (state.earnings || []).filter(function(e) {
+      var ok = e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz';
+      return ok && e.date && (now - new Date(e.date).getTime()) < fourHr;
+    }).pop();
+    if (recentQuiz && recentQuiz.metadata && recentQuiz.metadata.decorationId) {
+      var quizDec = (state.decorations || []).filter(function(d) { return d.id === recentQuiz.metadata.decorationId; })[0];
+      if (quizDec) {
+        var qLabel = quizDec.templateLabel || quizDec.template || 'that deck';
+        return {
+          id: 'adaptive',
+          text: "What's something you finally know about " + qLabel + '?',
+          hint: 'sparked by your recent quiz pass'
+        };
+      }
+    }
+
+    // 4. Struggle moods clustered in last 7d
+    var weekAgo = now - 7 * oneDay;
+    var recentMoods = (state.decorations || []).filter(function(d) {
+      return d.mood && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgo;
+    });
+    if (recentMoods.length >= 3) {
+      var struggleN = recentMoods.filter(function(d) { return d.mood === 'struggle'; }).length;
+      if (struggleN / recentMoods.length >= 0.5) {
+        return {
+          id: 'adaptive',
+          text: "What's been tough this week — and what's helped, even a little?",
+          hint: 'sparked by your recent moods'
+        };
+      }
+    }
+
+    // 5. Streak ≥5
+    var streak = computeStreak(state.visits || []);
+    if (streak.current >= 5) {
+      return {
+        id: 'adaptive',
+        text: "You've been here " + streak.current + ' days running. What brings you back?',
+        hint: 'sparked by your visit streak'
+      };
+    }
+
+    // 6. First Pomodoro of today
+    var todayStr = new Date().toISOString().slice(0, 10);
+    var todayPoms = (state.earnings || []).filter(function(e) {
+      return (e.source === 'pomodoro' || e.source === 'cycle-bonus') && e.date && e.date.slice(0, 10) === todayStr;
+    });
+    if (todayPoms.length === 1) {
+      return {
+        id: 'adaptive',
+        text: "You just finished a focus session. What's one thing you want to focus on next?",
+        hint: 'sparked by your first Pomodoro today'
+      };
+    }
+
+    // 7. No reflection in 5+ days
+    var entries = (state.journalEntries || []);
+    if (entries.length === 0) {
+      return null; // Don\'t prompt re-engagement on the very first reflection
+    }
+    var lastEntry = entries[entries.length - 1];
+    if (lastEntry && lastEntry.date) {
+      var daysSince = (now - new Date(lastEntry.date).getTime()) / oneDay;
+      if (daysSince >= 5) {
+        return {
+          id: 'adaptive',
+          text: 'Where has your attention been lately?',
+          hint: 'gentle re-entry — your last reflection was a while ago'
+        };
+      }
+    }
+
+    return null;
   }
 
   function getPromptText(promptId) {
@@ -1004,6 +1132,156 @@
     return { current: current, longest: longest };
   }
 
+  // ── Companion letter (Phase 2p.18) ──
+  // Generates a personalized "letter from your buddy" — short prose
+  // summarizing the week, in the active species\'s voice. Two paths:
+  //   AI path: callGemini(prompt) → returns letter text
+  //   Fallback: template-based letter from same data, no AI required
+  // Both paths use the SAME aggregation, so behavior is consistent
+  // when AI is unavailable (quota / network / browser config).
+
+  function getWeekKey() {
+    // Most recent Sunday in YYYY-MM-DD format. One letter per week.
+    var now = new Date();
+    var dow = now.getDay();
+    var sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+    return sunday.toISOString().slice(0, 10);
+  }
+
+  function aggregateWeekData(state) {
+    var nowMs = Date.now();
+    var weekAgo = nowMs - 7 * 24 * 60 * 60 * 1000;
+    var earnings = (state.earnings || []).filter(function(e) {
+      return e.date && new Date(e.date).getTime() >= weekAgo;
+    });
+    var poms = earnings.filter(function(e) { return e.source === 'pomodoro' || e.source === 'cycle-bonus'; }).length;
+    var quizzes = earnings.filter(function(e) { return e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz'; }).length;
+    var walks = earnings.filter(function(e) { return e.source === 'story-walk'; }).length;
+    var refls = (state.journalEntries || []).filter(function(e) {
+      return e.date && new Date(e.date).getTime() >= weekAgo;
+    });
+    var newDecs = (state.decorations || []).filter(function(d) {
+      return !d.isStarter && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgo;
+    });
+    // Days active this week (deduped)
+    var dayMap = {};
+    earnings.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
+    refls.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
+    var daysActive = Object.keys(dayMap).length;
+    // Mood + subject patterns
+    var moodCounts = {}, subjCounts = {};
+    newDecs.forEach(function(d) {
+      if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1;
+      (d.subjects || []).forEach(function(s) { subjCounts[s] = (subjCounts[s] || 0) + 1; });
+    });
+    function topKey(c) {
+      var top = null, n = 0;
+      Object.keys(c).forEach(function(k) { if (c[k] > n) { n = c[k]; top = k; } });
+      return top;
+    }
+    // Top reflection (most recent if any)
+    var lastRefl = refls.length > 0 ? refls[refls.length - 1] : null;
+    // Decoration name list (shorter list for AI prompts)
+    var decLabels = newDecs.map(function(d) { return d.templateLabel || d.template || 'item'; });
+    return {
+      daysActive: daysActive,
+      poms: poms, quizzes: quizzes, walks: walks,
+      reflections: refls.length,
+      newDecorations: newDecs.length,
+      decLabels: decLabels,
+      topMood: topKey(moodCounts),
+      topSubject: topKey(subjCounts),
+      lastReflectionText: lastRefl ? lastRefl.text : null
+    };
+  }
+
+  function composeFallbackLetter(state, agg, species, name) {
+    var sp = getCompanionSpecies(species);
+    var greetings = {
+      cat:    'Hey friend,',
+      fox:    'Hi you,',
+      owl:    'Dear student,',
+      turtle: 'Hello,',
+      dragon: 'HEY!! Best friend!!'
+    };
+    var signoffs = {
+      cat:    '— curled up in the room,\n  ' + (name || 'your buddy'),
+      fox:    '— sneakily proud,\n  ' + (name || 'your buddy'),
+      owl:    '— with quiet appreciation,\n  ' + (name || 'your buddy'),
+      turtle: '— slowly and surely,\n  ' + (name || 'your buddy'),
+      dragon: '— roaring with you,\n  ' + (name || 'your buddy')
+    };
+    var lines = [];
+    lines.push(greetings[species] || 'Hey,');
+    lines.push('');
+    if (agg.daysActive >= 5) lines.push('You showed up ' + agg.daysActive + ' days this week. That\'s a lot.');
+    else if (agg.daysActive >= 1) lines.push('You came by ' + agg.daysActive + ' day' + (agg.daysActive === 1 ? '' : 's') + ' this week.');
+    if (agg.poms > 0) lines.push('We focused ' + agg.poms + ' time' + (agg.poms === 1 ? '' : 's') + ' together.');
+    if (agg.quizzes > 0) lines.push('You passed ' + agg.quizzes + ' memory quiz' + (agg.quizzes === 1 ? '' : 'zes') + '. Real reps.');
+    if (agg.walks > 0) lines.push('We walked ' + agg.walks + ' stor' + (agg.walks === 1 ? 'y' : 'ies') + '. I liked them.');
+    if (agg.newDecorations > 0) {
+      var listed = agg.decLabels.slice(0, 3).join(', ');
+      lines.push('You added ' + agg.newDecorations + ' new decoration' + (agg.newDecorations === 1 ? '' : 's') + (listed ? ' (' + listed + ')' : '') + '.');
+    }
+    if (agg.topMood) {
+      var mo = getMoodOption(agg.topMood);
+      if (mo) lines.push('The mood that showed up most was ' + mo.label.toLowerCase() + '.');
+    }
+    if (agg.topSubject) {
+      for (var si = 0; si < SUBJECT_TAGS.length; si++) {
+        if (SUBJECT_TAGS[si].id === agg.topSubject) {
+          lines.push('We spent extra time on ' + SUBJECT_TAGS[si].label.toLowerCase() + '.');
+          break;
+        }
+      }
+    }
+    if (agg.daysActive === 0) lines.push('Quiet week. That\'s OK too. I\'ll be here.');
+    lines.push('');
+    var closingLines = {
+      cat:    'Quietly proud of you. Keep it gentle.',
+      fox:    'You\'re cleverer than you let on. Onward.',
+      owl:    'Steady work makes deep memory. I see it.',
+      turtle: 'Step by step. Always works.',
+      dragon: 'YOU. ARE. AMAZING. Let\'s do another week!'
+    };
+    lines.push(closingLines[species] || 'Proud of you.');
+    lines.push('');
+    lines.push(signoffs[species] || '— your buddy');
+    return lines.join('\n');
+  }
+
+  function buildLetterPrompt(agg, species, name) {
+    var sp = getCompanionSpecies(species);
+    var voiceHints = {
+      cat:    'Calm, observant, dry. Short sentences. "Hmm." okay.',
+      fox:    'Curious, clever, slightly sly. Suggests with "what if".',
+      owl:    'Wise, deliberate, slow-paced. Considered observations.',
+      turtle: 'Patient, gentle, steady. "Step by step" fits.',
+      dragon: 'Enthusiastic, big-energy, playful. Some exclamation points.'
+    };
+    var voice = voiceHints[species] || 'Friendly, gentle, observational.';
+    var stats = [];
+    stats.push('Days active this week: ' + agg.daysActive);
+    if (agg.poms > 0) stats.push('Pomodoros: ' + agg.poms);
+    if (agg.quizzes > 0) stats.push('Quizzes passed: ' + agg.quizzes);
+    if (agg.walks > 0) stats.push('Story walks: ' + agg.walks);
+    if (agg.reflections > 0) stats.push('Reflections written: ' + agg.reflections);
+    if (agg.newDecorations > 0) stats.push('New decorations placed: ' + agg.newDecorations + (agg.decLabels.length > 0 ? ' (e.g., ' + agg.decLabels.slice(0, 3).join(', ') + ')' : ''));
+    if (agg.topMood) stats.push('Most-tagged mood: ' + agg.topMood);
+    if (agg.topSubject) stats.push('Most-tagged subject: ' + agg.topSubject);
+    return [
+      'You are ' + (name || sp.label) + ', a ' + sp.label.toLowerCase() + ' companion who lives in a student\'s cozy learning room (AlloHaven).',
+      'Voice: ' + voice,
+      'Write a short personal letter (90-160 words) from you to the student, summarizing this past week. Be specific about what they did. Be warm but not gushing. NEVER guilt-trip about missed days. NEVER use streak punishment language. Use plain text — no markdown.',
+      '',
+      'This week\'s data:',
+      stats.join('\n'),
+      agg.lastReflectionText ? '\nA recent reflection they wrote: "' + agg.lastReflectionText.slice(0, 200) + '"' : '',
+      '',
+      'Open with a greeting in your voice. Sign off with your name. Keep it under 160 words. Return ONLY the letter text — no preamble, no JSON, no quotes around it.'
+    ].join('\n');
+  }
+
   // ── Seasonal context (Phase 2p.11) ──
   // Returns the active "season label" for today, or null if it\'s an
   // ordinary day. Used by the companion bubble pool to surface seasonal
@@ -1398,6 +1676,9 @@
     { id: 'first-treat', emoji: '🍪', label: 'First treat',
       desc: 'Gave your buddy a treat. Daily care goes a long way.',
       check: function(s) { return !!(s.companion && s.companion.lastTreatAt); } },
+    { id: 'first-custom-upload', emoji: '📎', label: 'First custom upload',
+      desc: 'Uploaded your own image — your work, your room.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomUpload; }); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -1560,6 +1841,52 @@
     '<ellipse cx="36" cy="64" rx="3" ry="6" fill="rgba(255,255,255,0.18)"/>',
     '</svg>'
   ].join('');
+
+  // ── Custom upload compression (Phase 2p.19) ──
+  // Reads a File via FileReader, downscales to a max edge of 256px on
+  // a canvas, returns a JPEG data URI ~50-80KB. Keeps localStorage
+  // budget reasonable across many uploads. Returns a Promise.
+  function compressUploadedImage(file, maxEdge, qualityArg) {
+    var maxE = maxEdge || 256;
+    var quality = qualityArg || 0.82;
+    return new Promise(function(resolve, reject) {
+      if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+        return reject(new Error('Not an image file'));
+      }
+      var reader = new FileReader();
+      reader.onerror = function() { reject(new Error('Could not read file')); };
+      reader.onload = function() {
+        var img = new Image();
+        img.onerror = function() { reject(new Error('Could not decode image')); };
+        img.onload = function() {
+          try {
+            var w = img.naturalWidth, hh = img.naturalHeight;
+            if (!w || !hh) return reject(new Error('Invalid image dimensions'));
+            // Scale to max edge, preserving aspect ratio
+            var scale = Math.min(1, maxE / Math.max(w, hh));
+            var dw = Math.round(w * scale);
+            var dh = Math.round(hh * scale);
+            var canvas = document.createElement('canvas');
+            canvas.width = dw;
+            canvas.height = dh;
+            var ctx = canvas.getContext('2d');
+            // White background helps JPEG compression on transparent PNGs
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, dw, dh);
+            ctx.drawImage(img, 0, 0, dw, dh);
+            var dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve({
+              base64: dataUrl,
+              width: dw, height: dh,
+              originalWidth: w, originalHeight: hh
+            });
+          } catch (e) { reject(e); }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   function getStarterFernDataUri() {
     return 'data:image/svg+xml;base64,' + (typeof btoa !== 'undefined' ? btoa(STARTER_FERN_SVG) : '');
@@ -2108,7 +2435,8 @@
     function handleSubmit() {
       if (!canSubmit) return;
       p.stopVoice();
-      p.onSubmit(draft, pickedPromptId, pickedMood);
+      var override = (pickedPromptId === 'adaptive' && p.adaptivePrompt) ? p.adaptivePrompt.text : null;
+      p.onSubmit(draft, pickedPromptId, pickedMood, override);
     }
 
     return h('div', {
@@ -2226,7 +2554,40 @@
                 lineHeight: '1.4'
               }
             }, text);
-          })
+          }),
+          // Adaptive prompt (Phase 2p.17) — context-aware, only shown
+          // when current state offers a meaningful hook. Distinguished
+          // visually with an accent border + ✨ "just for today" hint.
+          p.adaptivePrompt ? (function() {
+            var ap = p.adaptivePrompt;
+            var active = pickedPromptId === 'adaptive';
+            return h('button', {
+              key: 'pp-adaptive',
+              onClick: function() { setPickedPromptId('adaptive'); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': 'Adaptive prompt — ' + ap.text + '. ' + ap.hint,
+              style: {
+                background: active ? palette.surface : 'transparent',
+                border: '1.5px solid ' + palette.accent,
+                borderRadius: '8px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: '13px',
+                color: palette.text,
+                textAlign: 'left',
+                lineHeight: '1.4',
+                position: 'relative'
+              }
+            },
+              h('span', {
+                'aria-hidden': 'true',
+                style: { fontSize: '10px', color: palette.accent, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }
+              }, '✨ Just for today'),
+              h('span', { style: { display: 'block' } }, ap.text),
+              h('span', { style: { display: 'block', fontSize: '11px', color: palette.textMute, fontStyle: 'italic', marginTop: '4px' } }, ap.hint)
+            );
+          })() : null
         ),
         // Text area + voice button
         h('div', { style: { position: 'relative', marginBottom: '8px' } },
@@ -2794,6 +3155,38 @@
       else setSubjectTags(subjectTags.filter(function(s) { return s !== id; }));
     }
 
+    // Custom upload (Phase 2p.19) — student-uploaded image as alternative
+    // to AI generation. Stored locally until placed; charged 3 tokens
+    // on confirmation; goes through the same reflect-step flow.
+    var uploadDataTuple = useState(null); // { base64, width, height }
+    var uploadData = uploadDataTuple[0];
+    var setUploadData = uploadDataTuple[1];
+    var uploadErrorTuple = useState(null);
+    var uploadError = uploadErrorTuple[0];
+    var setUploadError = uploadErrorTuple[1];
+    var uploadingTuple = useState(false);
+    var uploading = uploadingTuple[0];
+    var setUploading = uploadingTuple[1];
+    var isCustomUploadFlowTuple = useState(false);
+    var isCustomUploadFlow = isCustomUploadFlowTuple[0];
+    var setIsCustomUploadFlow = isCustomUploadFlowTuple[1];
+    function handleFileChosen(file) {
+      setUploadError(null);
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('That file is bigger than 5MB. Try a smaller image.');
+        return;
+      }
+      setUploading(true);
+      compressUploadedImage(file, 256, 0.82).then(function(result) {
+        setUploadData(result);
+        setUploading(false);
+      }).catch(function(err) {
+        setUploadError((err && err.message) || 'Could not load that image.');
+        setUploading(false);
+      });
+    }
+
     function handlePickTemplate(t) {
       setTemplate(t);
       // Pre-fill first option for each slot for hierarchical templates
@@ -2848,10 +3241,21 @@
     }
 
     function handleSkipReflection() {
+      // Phase 2p.19 — custom-upload flow places via dedicated handler so
+      // template synthesis happens in the parent rather than passing a
+      // synthetic template through the same path.
+      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, '', moodTag, subjectTags);
+        return;
+      }
       p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag, subjectTags);
     }
 
     function handleSubmitReflection() {
+      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, reflectionDraft, moodTag, subjectTags);
+        return;
+      }
       p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag, subjectTags);
     }
 
@@ -2935,6 +3339,35 @@
       stepBody = h('div', null,
         h('p', { style: { fontSize: '13px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
           'Pick a category. Each cell on the ' + ctx.surface + ' supports specific kinds of decorations.'),
+        // Upload your own (Phase 2p.19) — alternative to AI generation
+        typeof p.onPlaceCustomUpload === 'function' ? h('button', {
+          onClick: function() {
+            setIsCustomUploadFlow(true);
+            setUploadData(null);
+            setUploadError(null);
+            setStep('upload');
+          },
+          style: {
+            display: 'flex', gap: '12px', alignItems: 'center',
+            width: '100%',
+            padding: '12px 14px',
+            background: 'transparent',
+            border: '1.5px dashed ' + palette.accent,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            color: palette.text,
+            textAlign: 'left',
+            marginBottom: '14px'
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '📎'),
+          h('span', { style: { flex: 1 } },
+            h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Upload your own image'),
+            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+              'A drawing you made, a photo, a diagram — your image, your room. ' + DECORATION_COST + ' 🪙')
+          )
+        ) : null,
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' } },
           availableTemplates.map(function(t) {
             return h('div', {
@@ -3140,6 +3573,96 @@
             }
           }, 'Place this here ✨')
         )
+      );
+    } else if (step === 'upload') {
+      // Custom upload step (Phase 2p.19) — file picker, preview, "use this image"
+      // proceeds to the same reflect step the AI flow uses (mood + subject + reflection text).
+      stepBody = h('div', null,
+        h('button', {
+          onClick: function() { setStep('pick-template'); setUploadData(null); setUploadError(null); setIsCustomUploadFlow(false); },
+          style: {
+            background: 'transparent', color: palette.textDim, border: 'none',
+            padding: '4px 0', fontSize: '12px', cursor: 'pointer',
+            marginBottom: '10px', fontFamily: 'inherit'
+          }
+        }, '← Back to categories'),
+        h('h4', { style: { margin: '0 0 8px 0', fontSize: '17px', fontWeight: 700, color: palette.text } },
+          '📎 Upload your own image'),
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Pick an image from your device — JPEG, PNG, or WebP, under 5MB. It\'ll be resized to fit the room. Costs ' + DECORATION_COST + ' 🪙 tokens like AI generation.'),
+        // File input (label-wrapped for keyboard accessibility)
+        !uploadData ? h('label', {
+          style: {
+            display: 'flex', gap: '12px', alignItems: 'center',
+            padding: '20px', background: palette.surface,
+            border: '1.5px dashed ' + palette.accent, borderRadius: '10px',
+            cursor: uploading ? 'wait' : 'pointer',
+            color: palette.text,
+            fontFamily: 'inherit'
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '32px' } }, uploading ? '⏳' : '📂'),
+          h('span', { style: { flex: 1 } },
+            h('div', { style: { fontSize: '13px', fontWeight: 700, marginBottom: '2px' } },
+              uploading ? 'Resizing your image…' : 'Click to choose an image'),
+            h('div', { style: { fontSize: '11px', color: palette.textDim } },
+              'Drawings, photos, diagrams — your choice')
+          ),
+          h('input', {
+            type: 'file',
+            accept: 'image/jpeg,image/png,image/webp',
+            disabled: uploading,
+            onChange: function(e) {
+              var f = e.target.files && e.target.files[0];
+              if (f) handleFileChosen(f);
+            },
+            style: { display: 'none' },
+            'aria-label': 'Choose an image to upload'
+          })
+        ) : null,
+        // Preview when data ready
+        uploadData ? h('div', null,
+          h('div', { style: { padding: '14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px', textAlign: 'center', marginBottom: '14px' } },
+            h('img', {
+              src: uploadData.base64,
+              alt: 'Uploaded image preview',
+              style: { maxWidth: '100%', maxHeight: '240px', borderRadius: '6px' }
+            }),
+            h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '8px' } },
+              uploadData.width + ' × ' + uploadData.height + ' (resized from ' + uploadData.originalWidth + ' × ' + uploadData.originalHeight + ')')
+          ),
+          h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
+            h('button', {
+              onClick: function() { setUploadData(null); setUploadError(null); },
+              style: {
+                background: 'transparent', color: palette.textDim,
+                border: '1px solid ' + palette.border, borderRadius: '8px',
+                padding: '8px 14px', fontSize: '12px', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Pick a different image'),
+            h('button', {
+              onClick: function() {
+                if (typeof p.onChargeForUpload !== 'function') return;
+                if (!p.onChargeForUpload()) return; // insufficient tokens
+                // Set imageBase64 to the upload, jump to the reflect step
+                setImageBase64(uploadData.base64);
+                setHasGenerated(true);
+                setStep('reflect');
+              },
+              style: {
+                background: palette.accent, color: palette.onAccent,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Use this image · ' + DECORATION_COST + ' 🪙')
+          )
+        ) : null,
+        uploadError ? h('p', {
+          role: 'alert',
+          style: { fontSize: '12px', color: '#dc2626', fontStyle: 'italic', marginTop: '12px' }
+        }, uploadError) : null
       );
     } else if (step === 'reflect') {
       stepBody = h('div', null,
@@ -5353,6 +5876,23 @@
                 fontFamily: 'inherit'
               }
             }, '🔄 Similar') : null,
+            // Print this card (Phase 2p.17) — single-decoration printable
+            typeof p.onPrintCard === 'function' && !decoration.isStarter ? h('button', {
+              onClick: p.onPrintCard,
+              'aria-label': 'Print this decoration as a single-page card',
+              title: 'Print one-page card with image + reflection + memory content',
+              style: {
+                background: 'transparent',
+                border: '1px solid ' + palette.border,
+                color: palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '🖨 Print') : null,
             // Voice note (Phase 2p.15)
             typeof p.onSaveVoiceNote === 'function' ? h('button', {
               onClick: function() { setVoicePanelOpen(!voicePanelOpen); },
@@ -7682,15 +8222,19 @@
     // is currently 0; otherwise saves the entry but earns 0 (1/day cap).
     // Length gate is enforced at the UI level (button disabled <20 chars);
     // this handler trusts the input.
-    function submitReflection(text, promptId, mood) {
+    function submitReflection(text, promptId, mood, promptTextOverride) {
       var trimmed = (text || '').trim();
       if (!trimmed) return;
       var alreadyEarned = (state.dailyState.reflectionsSubmitted || 0) >= 1;
       var tokensEarned = alreadyEarned ? 0 : 1;
+      // Phase 2p.17 — adaptive prompts pass their text directly via
+      // promptTextOverride (since the text is computed from current state
+      // and isn\'t in the static PROMPT_BANK).
+      var promptText = promptTextOverride || (promptId ? getPromptText(promptId) : null);
       var entry = {
         id: 'j-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
         date: new Date().toISOString(),
-        prompt: promptId ? getPromptText(promptId) : null,
+        prompt: promptText,
         promptId: promptId || null,
         text: trimmed,
         mood: mood || null,
@@ -8144,6 +8688,64 @@
       setStateField('companion', next);
     }
 
+    // Companion letter generation (Phase 2p.18)
+    // Idempotent per ISO week — calling multiple times in a week
+    // returns the cached letter unless `force` is true. Uses Gemini
+    // when available, otherwise falls back to the template builder.
+    function generateCompanionLetter(force, onDone) {
+      var c = state.companion;
+      if (!c || !c.species) {
+        if (onDone) onDone({ error: 'no-companion' });
+        return;
+      }
+      var weekKey = getWeekKey();
+      var cached = (state.companionLetters || {})[weekKey];
+      if (cached && cached.text && !force) {
+        if (onDone) onDone({ text: cached.text, fromCache: true });
+        return;
+      }
+      var agg = aggregateWeekData(state);
+      var name = c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy';
+      var fallback = composeFallbackLetter(state, agg, c.species, name);
+      var callGeminiFn = props.callGemini;
+      if (typeof callGeminiFn !== 'function') {
+        // No AI available — use fallback directly
+        var fbLetter = { text: fallback, generatedAt: new Date().toISOString(), source: 'template' };
+        var newLetters = Object.assign({}, state.companionLetters || {});
+        newLetters[weekKey] = fbLetter;
+        setStateField('companionLetters', newLetters);
+        if (onDone) onDone({ text: fallback, source: 'template' });
+        return;
+      }
+      var prompt = buildLetterPrompt(agg, c.species, name);
+      Promise.resolve()
+        .then(function() { return callGeminiFn(prompt); })
+        .then(function(out) {
+          var text = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip surrounding quotes if Gemini wrapped the response
+          if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith('“') && text.endsWith('”'))) {
+            text = text.slice(1, -1).trim();
+          }
+          // Sanity check — reject too-short or empty AI responses
+          if (!text || text.length < 30) {
+            text = fallback;
+          }
+          var letter = { text: text, generatedAt: new Date().toISOString(), source: 'ai' };
+          var newLetters = Object.assign({}, state.companionLetters || {});
+          newLetters[weekKey] = letter;
+          setStateField('companionLetters', newLetters);
+          if (onDone) onDone({ text: text, source: 'ai' });
+        })
+        .catch(function() {
+          // AI failed — fall back to template
+          var fbLetter = { text: fallback, generatedAt: new Date().toISOString(), source: 'template-fallback' };
+          var newLetters = Object.assign({}, state.companionLetters || {});
+          newLetters[weekKey] = fbLetter;
+          setStateField('companionLetters', newLetters);
+          if (onDone) onDone({ text: fallback, source: 'template-fallback' });
+        });
+    }
+
     // Daily treat (Phase 2p.16) — once per calendar day, students can
     // give the companion a treat. Bumps happiness by 2 (capped at 10),
     // fires excited bounce + species-flavored gratitude bubble. Sims-y
@@ -8485,6 +9087,82 @@
       });
     }
 
+    // Companion dreams (Phase 2p.18) — when the companion is sleeping
+    // (Live mode), rotate through dream-fragment bubbles every ~10s.
+    // References recent decorations so dreams feel personal. Cycles
+    // suspended outside Live mode so it doesn\'t pollute Build-mode bubbles.
+    function pickDreamFragment() {
+      var c = state.companion;
+      if (!c || !c.species) return null;
+      var sp = getCompanionSpecies(c.species);
+      var pool = [];
+      // Recent decoration mentions (most personal)
+      var recentDecs = (state.decorations || []).filter(function(d) {
+        return !d.isStarter && d.earnedAt;
+      }).slice(-5);
+      recentDecs.forEach(function(d) {
+        var dl = d.templateLabel || d.template || 'something';
+        pool.push('💭 dreaming of the ' + dl + '...');
+      });
+      // Story walks
+      var walkable = (state.stories || []).filter(function(s) {
+        var v = (s.steps || []).filter(function(stp) { return stp.decorationId && (stp.narrative || '').trim().length > 0; });
+        return v.length >= 3 && (s.title || '').trim().length > 0;
+      });
+      if (walkable.length > 0) {
+        var s = walkable[Math.floor(Math.random() * walkable.length)];
+        pool.push('💭 walking through "' + s.title + '" in a dream...');
+      }
+      // Generic dreams
+      var generic = {
+        cat:    ['💭 dreaming of warm spots and quiet hours...', '💭 a soft snore...', '💭 dreaming of the room from above...'],
+        fox:    ['💭 dreaming of clever things...', '💭 chasing a thought through tall grass...', '💭 a quick foxy snore...'],
+        owl:    ['💭 dreaming of moonlight on books...', '💭 a long quiet hoot in sleep...', '💭 dreaming of stars...'],
+        turtle: ['💭 dreaming of slow rivers...', '💭 a contented sigh...', '💭 dreaming of warm rocks...'],
+        dragon: ['💭 dreaming of GIANT adventures!', '💭 a tiny puff of dream-smoke...', '💭 dreaming of treasure (stories count as treasure)...']
+      };
+      (generic[c.species] || generic.cat).forEach(function(g) { pool.push(g); });
+      if (pool.length === 0) return null;
+      // Avoid repeating the immediately-previous bubble
+      var prev = c.lastBubbleText || '';
+      for (var i = 0; i < pool.length; i++) {
+        var pick = pool[Math.floor(Math.random() * pool.length)];
+        if (pick !== prev) return pick;
+      }
+      return pool[0];
+    }
+
+    // Tick interval — only active while sleeping, rotates the bubble
+    // every 10 seconds so the buddy feels dream-like rather than frozen.
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) return;
+      if (state.roomMode !== 'live') return;
+      // Set a first dream now if no recent bubble
+      var nowMs = Date.now();
+      var lastMs = state.companion.lastBubbleAt
+        ? new Date(state.companion.lastBubbleAt).getTime() : 0;
+      if (nowMs - lastMs > 6000) {
+        var first = pickDreamFragment();
+        if (first) {
+          saveCompanion({
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: first
+          });
+        }
+      }
+      var iv = setInterval(function() {
+        var next = pickDreamFragment();
+        if (next) {
+          saveCompanion({
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: next
+          });
+        }
+      }, 10000);
+      return function() { clearInterval(iv); };
+      // eslint-disable-next-line
+    }, [state.roomMode, state.companion ? state.companion.species : null]);
+
     // ── Story method (Phase 2e) ──
     // Stories are top-level artifacts: an ordered chain of ≥3 decorations
     // with per-step narrative text. Walking a completed story is retrieval
@@ -8638,6 +9316,13 @@
     var blinkTuple = useState(false);
     var blinking = blinkTuple[0];
     var setBlinking = blinkTuple[1];
+    // Phase 2p.18 — letter generation loading state, lifted here so the
+    // weekly-summary modal can reflect it without breaking React\'s
+    // rules-of-hooks (hooks can\'t live inside conditionally-rendered
+    // modal renderers).
+    var letterLoadingTuple = useState(false);
+    var letterLoading = letterLoadingTuple[0];
+    var setLetterLoading = letterLoadingTuple[1];
     var reactingTuple = useState(false);
     var reacting = reactingTuple[0];
     var setReacting = reactingTuple[1];
@@ -9189,6 +9874,53 @@
           preArtStyle: src.artStyle || null
         }
       });
+    }
+
+    // Custom upload (Phase 2p.19) — student-uploaded image becomes a
+    // decoration. Charges DECORATION_COST tokens up front (matches AI
+    // path); on success returns true, otherwise false. Placement is
+    // separate so the student can still see + confirm the upload before
+    // it commits to the room.
+    function chargeForCustomUpload() {
+      if (state.tokens < DECORATION_COST) {
+        addToast('Need ' + DECORATION_COST + ' 🪙 tokens. Currently you have ' + state.tokens + '.');
+        return false;
+      }
+      setStateField('tokens', state.tokens - DECORATION_COST);
+      return true;
+    }
+
+    // Place a custom-upload decoration. Reuses the existing decoration
+    // shape; template = 'custom-upload', slots empty, artStyle 'custom'.
+    function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags) {
+      var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
+      var rotation = (Math.random() * 6) - 3;
+      var entry = {
+        id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        template: 'custom-upload',
+        templateLabel: 'Custom upload',
+        slots: {},
+        artStyle: 'custom',
+        imageBase64: imageBase64,
+        isStarter: false,
+        isCustomUpload: true, // distinguishes from AI-generated for badges
+        placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
+        rotation: rotation,
+        earnedAt: new Date().toISOString(),
+        tokensSpent: DECORATION_COST,
+        studentReflection: (reflectionText || '').trim(),
+        mood: moodTag || null,
+        subjects: Array.isArray(subjectTags) ? subjectTags : [],
+        linkedContent: null,
+        sourceTool: null,
+        aiRationale: null
+      };
+      setStateMulti({
+        decorations: state.decorations.concat([entry]),
+        activeModal: null,
+        generateContext: null
+      });
+      addToast('🌿 Your image is in the room.');
     }
 
     // AI generation — calls props.callImagen with the constructed prompt.
@@ -12044,7 +12776,18 @@
         onToggleFavorite: function() { toggleDecorationFavorite(decorationId); },
         onMakeSimilar: function() { makeSimilarTo(decorationId); },
         onSaveVoiceNote: function(base64, durationMs) { setDecorationVoiceNote(decorationId, base64, durationMs); },
-        onClearVoiceNote: function() { clearDecorationVoiceNote(decorationId); }
+        onClearVoiceNote: function() { clearDecorationVoiceNote(decorationId); },
+        onPrintCard: function() {
+          // Phase 2p.17 — set printScope to the decoration, paint, fire
+          // window.print(), then reset printScope after the dialog closes.
+          setStateField('printScope', { type: 'card', decorationId: decorationId });
+          setTimeout(function() {
+            try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+            // Reset shortly after — the print dialog blocks until closed
+            // (modern browsers); a tiny delay handles weird timing edge cases.
+            setTimeout(function() { setStateField('printScope', null); }, 200);
+          }, 60);
+        }
       });
     }
 
@@ -12215,6 +12958,10 @@
         onPlace: function(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
           placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags);
         },
+        onChargeForUpload: function() { return chargeForCustomUpload(); },
+        onPlaceCustomUpload: function(imageBase64, reflectionText, moodTag, subjectTags) {
+          placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags);
+        },
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
         }
@@ -12235,6 +12982,10 @@
       // we manage drafts via a stable inner component.
       return h(ReflectionModalInner, {
         promptIds: promptIds,
+        // Adaptive prompt (Phase 2p.17) — context-aware single prompt
+        // based on student\'s recent activity. May be null when no
+        // contextual hook applies; modal handles either case.
+        adaptivePrompt: computeAdaptivePrompt(state),
         palette: palette,
         speechSupported: speechSupported,
         startVoice: startVoiceCapture,
@@ -12244,7 +12995,9 @@
         // text. Falls back to a local capitalize-after-period heuristic
         // when callGemini isn't available.
         callGemini: callGemini,
-        onSubmit: function(text, promptId, mood) { submitReflection(text, promptId, mood); },
+        onSubmit: function(text, promptId, mood, promptTextOverride) {
+          submitReflection(text, promptId, mood, promptTextOverride);
+        },
         onClose: function() {
           stopVoiceCapture();
           setStateField('activeModal', null);
@@ -13441,6 +14194,51 @@
                 '"' + reflectionText + '"')
             )
           ) : null,
+          // AI letter from the buddy (Phase 2p.18) — generated once per
+          // ISO week and cached in state.companionLetters[weekKey].
+          // Falls back to a template-built letter when AI is unavailable.
+          companion && companion.species ? (function() {
+            var weekKey = getWeekKey();
+            var letter = (state.companionLetters || {})[weekKey];
+            var loading = letterLoading;
+            function handleGenerate(force) {
+              setLetterLoading(true);
+              generateCompanionLetter(force, function() {
+                setLetterLoading(false);
+              });
+            }
+            return h('div', {
+              role: 'region',
+              'aria-label': 'Letter from your buddy',
+              style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px', marginBottom: '14px' }
+            },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' } },
+                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                  '✨ Letter from ' + compName),
+                letter ? h('button', {
+                  onClick: function() { handleGenerate(true); },
+                  disabled: loading,
+                  'aria-label': 'Regenerate the letter',
+                  title: 'Refresh — generates a new letter for this week',
+                  style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', opacity: loading ? 0.6 : 1 })
+                }, loading ? '…' : '↻ Refresh') : null
+              ),
+              !letter ? h('div', null,
+                h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' } },
+                  compName + ' can write you a personalized letter about your week — short, warm, in their voice.'),
+                h('button', {
+                  onClick: function() { handleGenerate(false); },
+                  disabled: loading,
+                  style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
+                }, loading ? 'Writing…' : '✨ Write a letter')
+              ) : h('div', null,
+                h('p', { style: { fontSize: '13px', color: palette.text, lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, "Times New Roman", serif' } }, letter.text),
+                h('p', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', margin: '8px 0 0 0' } },
+                  letter.source === 'ai' ? 'Composed with AI · ' : 'Template-built · ',
+                  'cached for this week — refresh anytime')
+              )
+            );
+          })() : null,
           // Quick "new goal" CTA when no active goals exist
           (function() {
             var activeCount = (state.goals || []).filter(function(g) {
@@ -13901,7 +14699,132 @@
     // the packet. Class-based hide so the print rule overrides
     // without !important on the inline display attribute.
     // ─────────────────────────────────────────────────
+    // Per-decoration print card (Phase 2p.17) — single decoration\'s
+    // full info on one printable page. Rendered when state.printScope
+    // points at a specific decoration id. Useful for IEP review packets,
+    // parent meetings, "send home" scenarios.
+    function renderPrintCard(decorationId) {
+      var d = (state.decorations || []).filter(function(x) { return x.id === decorationId; })[0];
+      if (!d) return null;
+      var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var label = d.templateLabel || d.template || 'decoration';
+      var earnedStr = d.earnedAt ? new Date(d.earnedAt).toLocaleDateString() : '?';
+      var moodOpt = d.mood ? getMoodOption(d.mood) : null;
+      var lc = d.linkedContent;
+      var subjectLabels = (d.subjects || []).map(function(sid) {
+        for (var i = 0; i < SUBJECT_TAGS.length; i++) {
+          if (SUBJECT_TAGS[i].id === sid) return SUBJECT_TAGS[i].emoji + ' ' + SUBJECT_TAGS[i].label;
+        }
+        return sid;
+      });
+      // Memory content body
+      var contentBody = null;
+      if (lc && lc.data) {
+        if (lc.type === 'flashcards' && Array.isArray(lc.data.cards)) {
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } },
+              '📚 Flashcards · ' + lc.data.cards.length + ' card' + (lc.data.cards.length === 1 ? '' : 's')),
+            h('ol', { style: { paddingLeft: '24px', margin: '6px 0' } },
+              lc.data.cards.map(function(c) {
+                var atts = (c.correctCount || 0) + (c.missCount || 0);
+                return h('li', { key: 'pcc-' + c.id, style: { marginBottom: '5px', fontSize: '12px', color: '#222', lineHeight: 1.5 } },
+                  h('strong', null, c.front || ''),
+                  h('span', null, ' — ' + (c.back || '')),
+                  atts > 0 ? h('span', { style: { fontSize: '10px', color: '#666', fontStyle: 'italic' } },
+                    ' (' + (c.correctCount || 0) + '/' + atts + ')') : null
+                );
+              })
+            )
+          );
+        } else if (lc.type === 'acronym') {
+          var letters = (lc.data.letters || '').toUpperCase();
+          var meanings = lc.data.meanings || [];
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } },
+              '🔤 Acronym' + (lc.data.context ? ' · ' + lc.data.context : '')),
+            h('div', { style: { fontSize: '20px', fontWeight: 800, letterSpacing: '0.12em', color: '#000', marginBottom: '6px' } }, letters),
+            h('ul', { style: { listStyle: 'none', paddingLeft: 0, margin: '4px 0' } },
+              letters.split('').map(function(letter, i) {
+                return h('li', { key: 'pcl-' + i, style: { fontSize: '12px', color: '#222', marginBottom: '3px' } },
+                  h('strong', null, letter), ' — ', meanings[i] || '(blank)');
+              })
+            )
+          );
+        } else if (lc.type === 'image-link') {
+          var tgt = state.decorations.filter(function(x) { return x.id === lc.data.targetDecorationId; })[0];
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } }, '🔗 Image link'),
+            h('p', { style: { fontSize: '12px', color: '#222' } },
+              h('strong', null, label), ' → ', h('strong', null, tgt ? (tgt.templateLabel || tgt.template) : '(removed item)')),
+            h('p', { style: { fontSize: '12px', color: '#333', fontStyle: 'italic', marginTop: '4px' } },
+              '"' + (lc.data.association || '') + '"')
+          );
+        } else if (lc.type === 'notes') {
+          var text = (lc.data.text || '');
+          var clozeCount = extractClozeAnswers(text).length;
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } },
+              '📝 Notes' + (clozeCount > 0 ? ' · ' + clozeCount + ' fill-in blank' + (clozeCount === 1 ? '' : 's') : '')),
+            clozeCount > 0 ? (function() {
+              var segments = buildClozeSegments(text);
+              return h('div', { style: { fontSize: '12px', color: '#222', lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
+                segments.map(function(seg, i) {
+                  if (seg.kind === 'text') return h('span', { key: 'pn-' + i }, seg.value);
+                  return h('span', {
+                    key: 'pn-' + i,
+                    style: { borderBottom: '1px solid #000', padding: '0 4px', minWidth: '60px', display: 'inline-block', textAlign: 'center', fontWeight: 700 }
+                  }, seg.answer);
+                })
+              );
+            })() : h('p', { style: { fontSize: '12px', color: '#222', whiteSpace: 'pre-wrap', lineHeight: 1.55, margin: '4px 0' } }, text)
+          );
+        }
+      }
+      return h('div', {
+        className: 'ah-print-packet',
+        'aria-hidden': 'true'
+      },
+        h('div', { style: { borderBottom: '3px double #000', paddingBottom: '12px', marginBottom: '20px' } },
+          h('h1', { style: { fontSize: '22px', margin: 0, fontWeight: 800, color: '#000' } },
+            '🌿 AlloHaven · ' + label),
+          h('p', { style: { margin: '6px 0 0 0', fontSize: '11px', color: '#444' } },
+            'Earned ' + earnedStr + ' · printed ' + dateStr)
+        ),
+        h('div', { style: { marginBottom: '16px', display: 'flex', gap: '14px' } },
+          d.imageBase64 ? h('img', {
+            src: d.imageBase64, alt: label,
+            style: { width: '180px', height: '180px', objectFit: 'contain', border: '1px solid #999', borderRadius: '6px', flexShrink: 0 }
+          }) : null,
+          h('div', { style: { flex: 1, fontSize: '12px', color: '#222', lineHeight: 1.6 } },
+            moodOpt ? h('p', { style: { margin: '0 0 6px 0' } },
+              h('strong', null, 'Mood: '), moodOpt.emoji + ' ' + moodOpt.label) : null,
+            subjectLabels.length > 0 ? h('p', { style: { margin: '0 0 6px 0' } },
+              h('strong', null, 'Subject' + (subjectLabels.length === 1 ? '' : 's') + ': '),
+              subjectLabels.join(' · ')) : null,
+            d.studentReflection ? h('p', { style: { margin: '0 0 6px 0', fontStyle: 'italic' } },
+              '"' + d.studentReflection + '"') : null,
+            d.voiceNote ? h('p', { style: { margin: '0 0 6px 0', fontSize: '11px', color: '#666' } },
+              '🎤 Voice note attached (' + Math.round((d.voiceNote.durationMs || 0) / 1000) + 's, audio not printable)') : null
+          )
+        ),
+        contentBody ? h('div', { style: { padding: '12px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '20px' } }, contentBody) : null,
+        // Signature lines
+        h('div', { style: { marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Reviewed with: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' ')),
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Date: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '120px', padding: '0 4px' } }, ' '))
+        ),
+        h('div', { style: { marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
+          'AlloHaven · single decoration card · printed ' + dateStr)
+      );
+    }
+
     function renderPrintPacket() {
+      // Phase 2p.17 — when printScope is a card, render that instead
+      if (state.printScope && state.printScope.type === 'card' && state.printScope.decorationId) {
+        return renderPrintCard(state.printScope.decorationId);
+      }
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
       var allStories = state.stories || [];
       var dateStr = new Date().toLocaleDateString(undefined, {

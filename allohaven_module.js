@@ -1676,6 +1676,9 @@
     { id: 'first-treat', emoji: '🍪', label: 'First treat',
       desc: 'Gave your buddy a treat. Daily care goes a long way.',
       check: function(s) { return !!(s.companion && s.companion.lastTreatAt); } },
+    { id: 'first-custom-upload', emoji: '📎', label: 'First custom upload',
+      desc: 'Uploaded your own image — your work, your room.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomUpload; }); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -1838,6 +1841,52 @@
     '<ellipse cx="36" cy="64" rx="3" ry="6" fill="rgba(255,255,255,0.18)"/>',
     '</svg>'
   ].join('');
+
+  // ── Custom upload compression (Phase 2p.19) ──
+  // Reads a File via FileReader, downscales to a max edge of 256px on
+  // a canvas, returns a JPEG data URI ~50-80KB. Keeps localStorage
+  // budget reasonable across many uploads. Returns a Promise.
+  function compressUploadedImage(file, maxEdge, qualityArg) {
+    var maxE = maxEdge || 256;
+    var quality = qualityArg || 0.82;
+    return new Promise(function(resolve, reject) {
+      if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+        return reject(new Error('Not an image file'));
+      }
+      var reader = new FileReader();
+      reader.onerror = function() { reject(new Error('Could not read file')); };
+      reader.onload = function() {
+        var img = new Image();
+        img.onerror = function() { reject(new Error('Could not decode image')); };
+        img.onload = function() {
+          try {
+            var w = img.naturalWidth, hh = img.naturalHeight;
+            if (!w || !hh) return reject(new Error('Invalid image dimensions'));
+            // Scale to max edge, preserving aspect ratio
+            var scale = Math.min(1, maxE / Math.max(w, hh));
+            var dw = Math.round(w * scale);
+            var dh = Math.round(hh * scale);
+            var canvas = document.createElement('canvas');
+            canvas.width = dw;
+            canvas.height = dh;
+            var ctx = canvas.getContext('2d');
+            // White background helps JPEG compression on transparent PNGs
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, dw, dh);
+            ctx.drawImage(img, 0, 0, dw, dh);
+            var dataUrl = canvas.toDataURL('image/jpeg', quality);
+            resolve({
+              base64: dataUrl,
+              width: dw, height: dh,
+              originalWidth: w, originalHeight: hh
+            });
+          } catch (e) { reject(e); }
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
 
   function getStarterFernDataUri() {
     return 'data:image/svg+xml;base64,' + (typeof btoa !== 'undefined' ? btoa(STARTER_FERN_SVG) : '');
@@ -3106,6 +3155,38 @@
       else setSubjectTags(subjectTags.filter(function(s) { return s !== id; }));
     }
 
+    // Custom upload (Phase 2p.19) — student-uploaded image as alternative
+    // to AI generation. Stored locally until placed; charged 3 tokens
+    // on confirmation; goes through the same reflect-step flow.
+    var uploadDataTuple = useState(null); // { base64, width, height }
+    var uploadData = uploadDataTuple[0];
+    var setUploadData = uploadDataTuple[1];
+    var uploadErrorTuple = useState(null);
+    var uploadError = uploadErrorTuple[0];
+    var setUploadError = uploadErrorTuple[1];
+    var uploadingTuple = useState(false);
+    var uploading = uploadingTuple[0];
+    var setUploading = uploadingTuple[1];
+    var isCustomUploadFlowTuple = useState(false);
+    var isCustomUploadFlow = isCustomUploadFlowTuple[0];
+    var setIsCustomUploadFlow = isCustomUploadFlowTuple[1];
+    function handleFileChosen(file) {
+      setUploadError(null);
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError('That file is bigger than 5MB. Try a smaller image.');
+        return;
+      }
+      setUploading(true);
+      compressUploadedImage(file, 256, 0.82).then(function(result) {
+        setUploadData(result);
+        setUploading(false);
+      }).catch(function(err) {
+        setUploadError((err && err.message) || 'Could not load that image.');
+        setUploading(false);
+      });
+    }
+
     function handlePickTemplate(t) {
       setTemplate(t);
       // Pre-fill first option for each slot for hierarchical templates
@@ -3160,10 +3241,21 @@
     }
 
     function handleSkipReflection() {
+      // Phase 2p.19 — custom-upload flow places via dedicated handler so
+      // template synthesis happens in the parent rather than passing a
+      // synthetic template through the same path.
+      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, '', moodTag, subjectTags);
+        return;
+      }
       p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag, subjectTags);
     }
 
     function handleSubmitReflection() {
+      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, reflectionDraft, moodTag, subjectTags);
+        return;
+      }
       p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag, subjectTags);
     }
 
@@ -3247,6 +3339,35 @@
       stepBody = h('div', null,
         h('p', { style: { fontSize: '13px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
           'Pick a category. Each cell on the ' + ctx.surface + ' supports specific kinds of decorations.'),
+        // Upload your own (Phase 2p.19) — alternative to AI generation
+        typeof p.onPlaceCustomUpload === 'function' ? h('button', {
+          onClick: function() {
+            setIsCustomUploadFlow(true);
+            setUploadData(null);
+            setUploadError(null);
+            setStep('upload');
+          },
+          style: {
+            display: 'flex', gap: '12px', alignItems: 'center',
+            width: '100%',
+            padding: '12px 14px',
+            background: 'transparent',
+            border: '1.5px dashed ' + palette.accent,
+            borderRadius: '10px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            color: palette.text,
+            textAlign: 'left',
+            marginBottom: '14px'
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '📎'),
+          h('span', { style: { flex: 1 } },
+            h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Upload your own image'),
+            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+              'A drawing you made, a photo, a diagram — your image, your room. ' + DECORATION_COST + ' 🪙')
+          )
+        ) : null,
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' } },
           availableTemplates.map(function(t) {
             return h('div', {
@@ -3452,6 +3573,96 @@
             }
           }, 'Place this here ✨')
         )
+      );
+    } else if (step === 'upload') {
+      // Custom upload step (Phase 2p.19) — file picker, preview, "use this image"
+      // proceeds to the same reflect step the AI flow uses (mood + subject + reflection text).
+      stepBody = h('div', null,
+        h('button', {
+          onClick: function() { setStep('pick-template'); setUploadData(null); setUploadError(null); setIsCustomUploadFlow(false); },
+          style: {
+            background: 'transparent', color: palette.textDim, border: 'none',
+            padding: '4px 0', fontSize: '12px', cursor: 'pointer',
+            marginBottom: '10px', fontFamily: 'inherit'
+          }
+        }, '← Back to categories'),
+        h('h4', { style: { margin: '0 0 8px 0', fontSize: '17px', fontWeight: 700, color: palette.text } },
+          '📎 Upload your own image'),
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
+          'Pick an image from your device — JPEG, PNG, or WebP, under 5MB. It\'ll be resized to fit the room. Costs ' + DECORATION_COST + ' 🪙 tokens like AI generation.'),
+        // File input (label-wrapped for keyboard accessibility)
+        !uploadData ? h('label', {
+          style: {
+            display: 'flex', gap: '12px', alignItems: 'center',
+            padding: '20px', background: palette.surface,
+            border: '1.5px dashed ' + palette.accent, borderRadius: '10px',
+            cursor: uploading ? 'wait' : 'pointer',
+            color: palette.text,
+            fontFamily: 'inherit'
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '32px' } }, uploading ? '⏳' : '📂'),
+          h('span', { style: { flex: 1 } },
+            h('div', { style: { fontSize: '13px', fontWeight: 700, marginBottom: '2px' } },
+              uploading ? 'Resizing your image…' : 'Click to choose an image'),
+            h('div', { style: { fontSize: '11px', color: palette.textDim } },
+              'Drawings, photos, diagrams — your choice')
+          ),
+          h('input', {
+            type: 'file',
+            accept: 'image/jpeg,image/png,image/webp',
+            disabled: uploading,
+            onChange: function(e) {
+              var f = e.target.files && e.target.files[0];
+              if (f) handleFileChosen(f);
+            },
+            style: { display: 'none' },
+            'aria-label': 'Choose an image to upload'
+          })
+        ) : null,
+        // Preview when data ready
+        uploadData ? h('div', null,
+          h('div', { style: { padding: '14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px', textAlign: 'center', marginBottom: '14px' } },
+            h('img', {
+              src: uploadData.base64,
+              alt: 'Uploaded image preview',
+              style: { maxWidth: '100%', maxHeight: '240px', borderRadius: '6px' }
+            }),
+            h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '8px' } },
+              uploadData.width + ' × ' + uploadData.height + ' (resized from ' + uploadData.originalWidth + ' × ' + uploadData.originalHeight + ')')
+          ),
+          h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end' } },
+            h('button', {
+              onClick: function() { setUploadData(null); setUploadError(null); },
+              style: {
+                background: 'transparent', color: palette.textDim,
+                border: '1px solid ' + palette.border, borderRadius: '8px',
+                padding: '8px 14px', fontSize: '12px', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Pick a different image'),
+            h('button', {
+              onClick: function() {
+                if (typeof p.onChargeForUpload !== 'function') return;
+                if (!p.onChargeForUpload()) return; // insufficient tokens
+                // Set imageBase64 to the upload, jump to the reflect step
+                setImageBase64(uploadData.base64);
+                setHasGenerated(true);
+                setStep('reflect');
+              },
+              style: {
+                background: palette.accent, color: palette.onAccent,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Use this image · ' + DECORATION_COST + ' 🪙')
+          )
+        ) : null,
+        uploadError ? h('p', {
+          role: 'alert',
+          style: { fontSize: '12px', color: '#dc2626', fontStyle: 'italic', marginTop: '12px' }
+        }, uploadError) : null
       );
     } else if (step === 'reflect') {
       stepBody = h('div', null,
@@ -9665,6 +9876,53 @@
       });
     }
 
+    // Custom upload (Phase 2p.19) — student-uploaded image becomes a
+    // decoration. Charges DECORATION_COST tokens up front (matches AI
+    // path); on success returns true, otherwise false. Placement is
+    // separate so the student can still see + confirm the upload before
+    // it commits to the room.
+    function chargeForCustomUpload() {
+      if (state.tokens < DECORATION_COST) {
+        addToast('Need ' + DECORATION_COST + ' 🪙 tokens. Currently you have ' + state.tokens + '.');
+        return false;
+      }
+      setStateField('tokens', state.tokens - DECORATION_COST);
+      return true;
+    }
+
+    // Place a custom-upload decoration. Reuses the existing decoration
+    // shape; template = 'custom-upload', slots empty, artStyle 'custom'.
+    function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags) {
+      var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
+      var rotation = (Math.random() * 6) - 3;
+      var entry = {
+        id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        template: 'custom-upload',
+        templateLabel: 'Custom upload',
+        slots: {},
+        artStyle: 'custom',
+        imageBase64: imageBase64,
+        isStarter: false,
+        isCustomUpload: true, // distinguishes from AI-generated for badges
+        placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
+        rotation: rotation,
+        earnedAt: new Date().toISOString(),
+        tokensSpent: DECORATION_COST,
+        studentReflection: (reflectionText || '').trim(),
+        mood: moodTag || null,
+        subjects: Array.isArray(subjectTags) ? subjectTags : [],
+        linkedContent: null,
+        sourceTool: null,
+        aiRationale: null
+      };
+      setStateMulti({
+        decorations: state.decorations.concat([entry]),
+        activeModal: null,
+        generateContext: null
+      });
+      addToast('🌿 Your image is in the room.');
+    }
+
     // AI generation — calls props.callImagen with the constructed prompt.
     // Token deduction happens HERE (3 tokens), before the call. If the
     // generation fails, the token IS refunded (separate path from
@@ -10193,6 +10451,23 @@
               letterSpacing: '0.04em'
             }
           }, 'starter') : null,
+          // Custom-upload badge (Phase 2p.19) — distinguishes student-
+          // uploaded images from AI-generated ones. Bottom-center, soft.
+          decoration.isCustomUpload ? h('span', {
+            'aria-label': 'Custom uploaded image',
+            title: 'Your image',
+            style: {
+              position: 'absolute',
+              bottom: '2px',
+              right: decoration.isStarter ? '38px' : '4px',
+              fontSize: '8px',
+              color: palette.textMute,
+              background: 'rgba(0,0,0,0.4)',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              letterSpacing: '0.04em'
+            }
+          }, '📎') : null,
           // Favorite ⭐ overlay (Phase 2p.14) — small star top-right
           // (above the hover-revealed delete ✕). Stays visible always.
           decoration.isFavorite ? h('span', {
@@ -12699,6 +12974,10 @@
         },
         onPlace: function(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
           placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags);
+        },
+        onChargeForUpload: function() { return chargeForCustomUpload(); },
+        onPlaceCustomUpload: function(imageBase64, reflectionText, moodTag, subjectTags) {
+          placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags);
         },
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
