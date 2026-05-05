@@ -1706,6 +1706,9 @@
     { id: 'first-custom-upload', emoji: '📎', label: 'First custom upload',
       desc: 'Uploaded your own image — your work, your room.',
       check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomUpload; }); } },
+    { id: 'first-drawing', emoji: '🎨', label: 'First drawing',
+      desc: 'Drew your own decoration on the canvas — pure you.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomDrawing; }); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -3398,6 +3401,18 @@
       // eslint-disable-next-line
     }, [step, freeUntil]);
 
+    // Initialize the drawing canvas when entering the 'draw' step. Runs
+    // once per entry so re-entering after a back-out clears any prior stroke.
+    useEffect(function() {
+      if (step !== 'draw') return;
+      // Defer one tick so the canvas DOM node is mounted.
+      var raf = (typeof requestAnimationFrame === 'function') ? requestAnimationFrame : function(cb) { return setTimeout(cb, 16); };
+      var caf = (typeof cancelAnimationFrame === 'function') ? cancelAnimationFrame : clearTimeout;
+      var id = raf(function() { initDrawCanvas(); });
+      return function() { caf(id); };
+      // eslint-disable-next-line
+    }, [step]);
+
     var reflectionDraftTuple = useState('');
     var reflectionDraft = reflectionDraftTuple[0];
     var setReflectionDraft = reflectionDraftTuple[1];
@@ -3433,6 +3448,32 @@
     var isCustomUploadFlowTuple = useState(false);
     var isCustomUploadFlow = isCustomUploadFlowTuple[0];
     var setIsCustomUploadFlow = isCustomUploadFlowTuple[1];
+
+    // Drawing canvas (Phase 2p.26) — student draws their own decoration
+    // directly on a canvas. Reuses the custom-upload pathway, with a
+    // distinct isCustomDrawing flag so the badge differs (✏️ vs 📎).
+    var useRef = React.useRef;
+    var drawCanvasRef = useRef(null);
+    var drawCtxRef = useRef(null);
+    var drawIsDownRef = useRef(false);
+    var drawLastPointRef = useRef(null);
+    var drawHistoryRef = useRef([]);  // ImageData snapshots for undo
+    var drawColorTuple = useState('#222222');
+    var drawColor = drawColorTuple[0];
+    var setDrawColor = drawColorTuple[1];
+    var drawSizeTuple = useState(4);
+    var drawSize = drawSizeTuple[0];
+    var setDrawSize = drawSizeTuple[1];
+    var drawToolTuple = useState('brush'); // 'brush' | 'eraser'
+    var drawTool = drawToolTuple[0];
+    var setDrawTool = drawToolTuple[1];
+    var isCustomDrawingFlowTuple = useState(false);
+    var isCustomDrawingFlow = isCustomDrawingFlowTuple[0];
+    var setIsCustomDrawingFlow = isCustomDrawingFlowTuple[1];
+    var drawDirtyTuple = useState(false); // whether anything has been drawn yet
+    var drawDirty = drawDirtyTuple[0];
+    var setDrawDirty = drawDirtyTuple[1];
+
     function handleFileChosen(file) {
       setUploadError(null);
       if (!file) return;
@@ -3448,6 +3489,122 @@
         setUploadError((err && err.message) || 'Could not load that image.');
         setUploading(false);
       });
+    }
+
+    // Drawing canvas helpers (Phase 2p.26) — initializes the 2D context,
+    // pushes/pops history snapshots for undo, and converts the canvas to
+    // a base64 PNG when the student is done.
+    var DRAW_W = 400;
+    var DRAW_H = 300;
+    var DRAW_PALETTE = [
+      '#222222', '#ffffff', '#dc2626', '#f59e0b',
+      '#fbbf24', '#16a34a', '#06b6d4', '#3b82f6',
+      '#7c3aed', '#db2777', '#92400e', '#94a3b8'
+    ];
+    function initDrawCanvas() {
+      var canvas = drawCanvasRef.current;
+      if (!canvas) return;
+      // Honor device pixel ratio for crisp lines on hi-dpi screens.
+      var ratio = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+      canvas.width = DRAW_W * ratio;
+      canvas.height = DRAW_H * ratio;
+      canvas.style.width = DRAW_W + 'px';
+      canvas.style.height = DRAW_H + 'px';
+      var c = canvas.getContext('2d');
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.scale(ratio, ratio);
+      c.fillStyle = '#ffffff';
+      c.fillRect(0, 0, DRAW_W, DRAW_H);
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      drawCtxRef.current = c;
+      drawHistoryRef.current = [];
+      pushDrawHistory();
+      setDrawDirty(false);
+    }
+    function pushDrawHistory() {
+      var canvas = drawCanvasRef.current;
+      var c = drawCtxRef.current;
+      if (!canvas || !c) return;
+      try {
+        var snap = c.getImageData(0, 0, canvas.width, canvas.height);
+        drawHistoryRef.current.push(snap);
+        // Keep at most 20 snapshots to bound memory.
+        if (drawHistoryRef.current.length > 20) drawHistoryRef.current.shift();
+      } catch (err) { /* ignore — taint or memory pressure */ }
+    }
+    function undoDraw() {
+      var hist = drawHistoryRef.current;
+      var canvas = drawCanvasRef.current;
+      var c = drawCtxRef.current;
+      if (!canvas || !c || hist.length < 2) return;
+      hist.pop();
+      var prev = hist[hist.length - 1];
+      try { c.putImageData(prev, 0, 0); } catch (err) {}
+      // If we're back to the initial blank, clear dirty flag.
+      if (hist.length <= 1) setDrawDirty(false);
+    }
+    function clearDraw() {
+      var c = drawCtxRef.current;
+      if (!c) return;
+      c.fillStyle = '#ffffff';
+      c.fillRect(0, 0, DRAW_W, DRAW_H);
+      drawHistoryRef.current = [];
+      pushDrawHistory();
+      setDrawDirty(false);
+    }
+    function drawPointerPos(evt) {
+      var canvas = drawCanvasRef.current;
+      if (!canvas) return { x: 0, y: 0 };
+      var rect = canvas.getBoundingClientRect();
+      var clientX = evt.clientX != null ? evt.clientX : (evt.touches && evt.touches[0] ? evt.touches[0].clientX : 0);
+      var clientY = evt.clientY != null ? evt.clientY : (evt.touches && evt.touches[0] ? evt.touches[0].clientY : 0);
+      return {
+        x: (clientX - rect.left) * (DRAW_W / rect.width),
+        y: (clientY - rect.top) * (DRAW_H / rect.height)
+      };
+    }
+    function drawStroke(from, to) {
+      var c = drawCtxRef.current;
+      if (!c) return;
+      c.strokeStyle = drawTool === 'eraser' ? '#ffffff' : drawColor;
+      c.lineWidth = drawTool === 'eraser' ? Math.max(drawSize * 2, 8) : drawSize;
+      c.beginPath();
+      c.moveTo(from.x, from.y);
+      c.lineTo(to.x, to.y);
+      c.stroke();
+    }
+    function handleDrawDown(evt) {
+      evt.preventDefault();
+      var canvas = drawCanvasRef.current;
+      if (canvas && canvas.setPointerCapture && evt.pointerId != null) {
+        try { canvas.setPointerCapture(evt.pointerId); } catch (err) {}
+      }
+      drawIsDownRef.current = true;
+      var p1 = drawPointerPos(evt);
+      drawLastPointRef.current = p1;
+      // Single dot for tap-and-release.
+      drawStroke(p1, { x: p1.x + 0.01, y: p1.y + 0.01 });
+      setDrawDirty(true);
+    }
+    function handleDrawMove(evt) {
+      if (!drawIsDownRef.current) return;
+      evt.preventDefault();
+      var p = drawPointerPos(evt);
+      var last = drawLastPointRef.current;
+      if (last) drawStroke(last, p);
+      drawLastPointRef.current = p;
+    }
+    function handleDrawUp(evt) {
+      if (!drawIsDownRef.current) return;
+      drawIsDownRef.current = false;
+      drawLastPointRef.current = null;
+      pushDrawHistory();
+    }
+    function exportDrawAsBase64() {
+      var canvas = drawCanvasRef.current;
+      if (!canvas) return null;
+      try { return canvas.toDataURL('image/png'); } catch (err) { return null; }
     }
 
     function handlePickTemplate(t) {
@@ -3507,16 +3664,18 @@
       // Phase 2p.19 — custom-upload flow places via dedicated handler so
       // template synthesis happens in the parent rather than passing a
       // synthetic template through the same path.
-      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
-        p.onPlaceCustomUpload(imageBase64, '', moodTag, subjectTags);
+      // Phase 2p.26 — custom-drawing flow shares the same dedicated handler;
+      // the isCustomDrawingFlow flag is forwarded so the badge differs.
+      if ((isCustomUploadFlow || isCustomDrawingFlow) && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, '', moodTag, subjectTags, !!isCustomDrawingFlow);
         return;
       }
       p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag, subjectTags);
     }
 
     function handleSubmitReflection() {
-      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
-        p.onPlaceCustomUpload(imageBase64, reflectionDraft, moodTag, subjectTags);
+      if ((isCustomUploadFlow || isCustomDrawingFlow) && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, reflectionDraft, moodTag, subjectTags, !!isCustomDrawingFlow);
         return;
       }
       p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag, subjectTags);
@@ -3603,32 +3762,61 @@
         h('p', { style: { fontSize: '13px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
           'Pick a category. Each cell on the ' + ctx.surface + ' supports specific kinds of decorations.'),
         // Upload your own (Phase 2p.19) — alternative to AI generation
-        typeof p.onPlaceCustomUpload === 'function' ? h('button', {
-          onClick: function() {
-            setIsCustomUploadFlow(true);
-            setUploadData(null);
-            setUploadError(null);
-            setStep('upload');
+        typeof p.onPlaceCustomUpload === 'function' ? h('div', { style: { display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() {
+              setIsCustomUploadFlow(true);
+              setIsCustomDrawingFlow(false);
+              setUploadData(null);
+              setUploadError(null);
+              setStep('upload');
+            },
+            style: {
+              flex: '1 1 220px',
+              display: 'flex', gap: '12px', alignItems: 'center',
+              padding: '12px 14px',
+              background: 'transparent',
+              border: '1.5px dashed ' + palette.accent,
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: palette.text,
+              textAlign: 'left'
+            }
           },
-          style: {
-            display: 'flex', gap: '12px', alignItems: 'center',
-            width: '100%',
-            padding: '12px 14px',
-            background: 'transparent',
-            border: '1.5px dashed ' + palette.accent,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            color: palette.text,
-            textAlign: 'left',
-            marginBottom: '14px'
-          }
-        },
-          h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '📎'),
-          h('span', { style: { flex: 1 } },
-            h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Upload your own image'),
-            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
-              'A drawing you made, a photo, a diagram — your image, your room. ' + DECORATION_COST + ' 🪙')
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '📎'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Upload your own image'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+                'A drawing, photo, or diagram. ' + DECORATION_COST + ' 🪙')
+            )
+          ),
+          // Draw your own (Phase 2p.26) — canvas drawing alternative
+          h('button', {
+            onClick: function() {
+              setIsCustomDrawingFlow(true);
+              setIsCustomUploadFlow(false);
+              setStep('draw');
+            },
+            style: {
+              flex: '1 1 220px',
+              display: 'flex', gap: '12px', alignItems: 'center',
+              padding: '12px 14px',
+              background: 'transparent',
+              border: '1.5px dashed ' + palette.accent,
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: palette.text,
+              textAlign: 'left'
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '✏️'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Draw your own'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+                'Sketch a decoration right here. ' + DECORATION_COST + ' 🪙')
+            )
           )
         ) : null,
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' } },
@@ -3835,6 +4023,190 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, 'Place this here ✨')
+        )
+      );
+    } else if (step === 'draw') {
+      // Drawing canvas step (Phase 2p.26) — student draws on a 400×300
+      // canvas. Brush + eraser + 12 colors + 3 sizes + undo/clear. On
+      // confirm, the canvas is exported to PNG, charged 3 tokens, and
+      // routed through the same reflect step (mood / subject / words).
+      stepBody = h('div', null,
+        h('button', {
+          onClick: function() { setStep('pick-template'); setIsCustomDrawingFlow(false); },
+          style: {
+            background: 'transparent', color: palette.textDim, border: 'none',
+            padding: '4px 0', fontSize: '12px', cursor: 'pointer',
+            marginBottom: '10px', fontFamily: 'inherit'
+          }
+        }, '← Back to categories'),
+        h('h4', { style: { margin: '0 0 8px 0', fontSize: '17px', fontWeight: 700, color: palette.text } },
+          '✏️ Draw your own'),
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '12px', lineHeight: '1.5' } },
+          'Sketch anything — a plant, a creature, a logo, a feeling. Costs ' + DECORATION_COST + ' 🪙 tokens like generation.'),
+        // Canvas
+        h('div', {
+          style: {
+            display: 'flex', justifyContent: 'center',
+            background: palette.surface, borderRadius: '10px',
+            border: '1px solid ' + palette.border, padding: '8px',
+            marginBottom: '10px'
+          }
+        },
+          h('canvas', {
+            ref: drawCanvasRef,
+            'aria-label': 'Drawing canvas. Use a mouse, finger, or stylus to draw.',
+            role: 'img',
+            onPointerDown: handleDrawDown,
+            onPointerMove: handleDrawMove,
+            onPointerUp: handleDrawUp,
+            onPointerCancel: handleDrawUp,
+            onPointerLeave: handleDrawUp,
+            style: {
+              cursor: drawTool === 'eraser' ? 'cell' : 'crosshair',
+              touchAction: 'none',
+              borderRadius: '6px',
+              maxWidth: '100%',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+            }
+          })
+        ),
+        // Tool row: brush / eraser
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '8px', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() { setDrawTool('brush'); },
+            'aria-pressed': drawTool === 'brush' ? 'true' : 'false',
+            style: {
+              background: drawTool === 'brush' ? palette.accent : 'transparent',
+              color: drawTool === 'brush' ? palette.onAccent : palette.text,
+              border: '1.5px solid ' + (drawTool === 'brush' ? palette.accent : palette.border),
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '✏️ Brush'),
+          h('button', {
+            onClick: function() { setDrawTool('eraser'); },
+            'aria-pressed': drawTool === 'eraser' ? 'true' : 'false',
+            style: {
+              background: drawTool === 'eraser' ? palette.accent : 'transparent',
+              color: drawTool === 'eraser' ? palette.onAccent : palette.text,
+              border: '1.5px solid ' + (drawTool === 'eraser' ? palette.accent : palette.border),
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '🩹 Eraser'),
+          h('button', {
+            onClick: undoDraw,
+            disabled: drawHistoryRef.current.length < 2,
+            style: {
+              background: 'transparent', color: palette.text,
+              border: '1.5px solid ' + palette.border,
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: drawHistoryRef.current.length < 2 ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+              opacity: drawHistoryRef.current.length < 2 ? 0.5 : 1
+            }
+          }, '↶ Undo'),
+          h('button', {
+            onClick: clearDraw,
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1.5px solid ' + palette.border,
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '✕ Clear')
+        ),
+        // Brush-size row
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', marginBottom: '8px' } },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: '4px' } }, 'Size'),
+          [2, 4, 8, 14].map(function(sz) {
+            var active = drawSize === sz;
+            return h('button', {
+              key: 'sz-' + sz,
+              onClick: function() { setDrawSize(sz); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': 'Brush size ' + sz,
+              style: {
+                width: '34px', height: '34px',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: active ? palette.surface : 'transparent',
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '8px',
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            },
+              h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  display: 'inline-block',
+                  width: Math.min(sz * 1.6, 22) + 'px',
+                  height: Math.min(sz * 1.6, 22) + 'px',
+                  borderRadius: '50%',
+                  background: drawTool === 'eraser' ? palette.textMute : drawColor
+                }
+              })
+            );
+          })
+        ),
+        // Color palette
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap' } },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: '4px' } }, 'Color'),
+          DRAW_PALETTE.map(function(c) {
+            var active = drawColor === c && drawTool === 'brush';
+            return h('button', {
+              key: 'col-' + c,
+              onClick: function() { setDrawColor(c); setDrawTool('brush'); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': 'Color ' + c,
+              title: c,
+              style: {
+                width: '24px', height: '24px',
+                background: c,
+                border: active ? '2.5px solid ' + palette.accent : '1.5px solid ' + palette.border,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                padding: 0,
+                boxShadow: active ? '0 0 0 2px ' + palette.bg + ' inset' : 'none'
+              }
+            });
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() { setStep('pick-template'); setIsCustomDrawingFlow(false); },
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1px solid ' + palette.border, borderRadius: '8px',
+              padding: '8px 14px', fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Cancel'),
+          h('button', {
+            onClick: function() {
+              if (!drawDirty) return;
+              if (typeof p.onChargeForUpload !== 'function') return;
+              if (!p.onChargeForUpload()) return;
+              var dataUrl = exportDrawAsBase64();
+              if (!dataUrl) return;
+              setImageBase64(dataUrl);
+              setHasGenerated(true);
+              setStep('reflect');
+            },
+            disabled: !drawDirty || p.tokens < DECORATION_COST,
+            style: {
+              background: (drawDirty && p.tokens >= DECORATION_COST) ? palette.accent : palette.surface,
+              color: (drawDirty && p.tokens >= DECORATION_COST) ? palette.onAccent : palette.textMute,
+              border: 'none', borderRadius: '8px',
+              padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+              cursor: (drawDirty && p.tokens >= DECORATION_COST) ? 'pointer' : 'not-allowed',
+              fontFamily: 'inherit',
+              opacity: (drawDirty && p.tokens >= DECORATION_COST) ? 1 : 0.6
+            }
+          }, p.tokens < DECORATION_COST ? 'Need ' + DECORATION_COST + ' 🪙' : (drawDirty ? 'Use this drawing · ' + DECORATION_COST + ' 🪙' : 'Draw something first'))
         )
       );
     } else if (step === 'upload') {
@@ -10498,19 +10870,22 @@
     }
 
     // Place a custom-upload decoration. Reuses the existing decoration
-    // shape; template = 'custom-upload', slots empty, artStyle 'custom'.
-    function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags) {
+    // shape; template = 'custom-upload' (or 'custom-drawing' for canvas).
+    // Phase 2p.26: isDrawing flag distinguishes student-drawn from
+    // student-uploaded so the badge + achievement differ.
+    function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags, isDrawing) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       var rotation = (Math.random() * 6) - 3;
       var entry = {
         id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-        template: 'custom-upload',
-        templateLabel: 'Custom upload',
+        template: isDrawing ? 'custom-drawing' : 'custom-upload',
+        templateLabel: isDrawing ? 'Custom drawing' : 'Custom upload',
         slots: {},
         artStyle: 'custom',
         imageBase64: imageBase64,
         isStarter: false,
-        isCustomUpload: true, // distinguishes from AI-generated for badges
+        isCustomUpload: !isDrawing, // legacy badge
+        isCustomDrawing: !!isDrawing, // distinguishes drawn from uploaded
         placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
         rotation: rotation,
         earnedAt: new Date().toISOString(),
@@ -10527,7 +10902,7 @@
         activeModal: null,
         generateContext: null
       });
-      addToast('🌿 Your image is in the room.');
+      addToast(isDrawing ? '🎨 Your drawing is in the room.' : '🌿 Your image is in the room.');
     }
 
     // AI generation — calls props.callImagen with the constructed prompt.
@@ -11075,6 +11450,23 @@
               letterSpacing: '0.04em'
             }
           }, '📎') : null,
+          // Custom-drawing badge (Phase 2p.26) — distinguishes student-
+          // drawn-on-canvas decorations from AI/upload.
+          decoration.isCustomDrawing ? h('span', {
+            'aria-label': 'Hand-drawn',
+            title: 'Your drawing',
+            style: {
+              position: 'absolute',
+              bottom: '2px',
+              right: decoration.isStarter ? '38px' : '4px',
+              fontSize: '8px',
+              color: palette.textMute,
+              background: 'rgba(0,0,0,0.4)',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              letterSpacing: '0.04em'
+            }
+          }, '✏️') : null,
           // Favorite ⭐ overlay (Phase 2p.14) — small star top-right
           // (above the hover-revealed delete ✕). Stays visible always.
           decoration.isFavorite ? h('span', {
@@ -13830,8 +14222,8 @@
           placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags);
         },
         onChargeForUpload: function() { return chargeForCustomUpload(); },
-        onPlaceCustomUpload: function(imageBase64, reflectionText, moodTag, subjectTags) {
-          placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags);
+        onPlaceCustomUpload: function(imageBase64, reflectionText, moodTag, subjectTags, isDrawing) {
+          placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags, isDrawing);
         },
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
