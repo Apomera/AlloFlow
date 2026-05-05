@@ -3219,6 +3219,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (category) last.byCategory[category] = now;
         callTTS(text, null, 1.0, { force: true }).catch(function() {});
       };
+      // Centralized achievement-unlock announcer. Combines the visible toast
+      // with a screen-reader live-region call so a11y users hear the unlock at
+      // the same moment sighted users see it. Pass the bare name (no
+      // '🏅 Achievement:' prefix); trailing emoji like '🗽' / '🫎' are fine.
+      var unlockBadge = function(name) {
+        addToast('🏅 Achievement: ' + name);
+        if (typeof rrAnnounce === 'function') rrAnnounce('Achievement unlocked: ' + name + '.');
+      };
       // Photo Mode: composite the WebGL 3D canvas + 2D HUD onto an offscreen canvas,
       // then trigger a PNG download. Requires preserveDrawingBuffer on the WebGLRenderer.
       // Guarded with a 1.5 s cooldown so a held K key doesn't spam downloads.
@@ -4372,9 +4380,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           // Logbook achievements.
           var lBadges = Object.assign({}, d.badges || {});
           var lAwarded = false;
-          if (logbookNext.length >= 5 && !lBadges.logbook_starter) { lBadges.logbook_starter = true; lAwarded = true; addToast('🏅 Achievement: Logbook Started'); }
+          if (logbookNext.length >= 5 && !lBadges.logbook_starter) { lBadges.logbook_starter = true; lAwarded = true; unlockBadge('Logbook Started'); }
           var totalHrs = logbookNext.reduce(function(sec, j) { return sec + (j.durationSec || 0); }, 0) / 3600;
-          if (totalHrs >= 10 && !lBadges.logbook_ten_hr) { lBadges.logbook_ten_hr = true; lAwarded = true; addToast('🏅 Achievement: 10 Hours Logged'); }
+          if (totalHrs >= 10 && !lBadges.logbook_ten_hr) { lBadges.logbook_ten_hr = true; lAwarded = true; unlockBadge('10 Hours Logged'); }
           if (lAwarded) upd('badges', lBadges);
           // Track bestSafety per scenario for Lesson Path unlock gating.
           var drivenNext = Object.assign({}, d.scenariosDriven || {});
@@ -4974,13 +4982,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     // Check achievement triggers live (in addition to end-of-drive check)
                     var liveBadges = Object.assign({}, (d.badges || {}));
                     var awarded = false;
-                    if (!liveBadges.first_landmark) { liveBadges.first_landmark = true; addToast('🏅 Achievement: First Destination'); awarded = true; }
-                    if (uniqueVisits >= 5 && !liveBadges.five_landmarks) { liveBadges.five_landmarks = true; addToast('🏅 Achievement: Local Navigator (5 landmarks)'); awarded = true; }
-                    if (totalVisits >= 10 && !liveBadges.ten_landmarks) { liveBadges.ten_landmarks = true; addToast('🏅 Achievement: Town Tourist (10 visits)'); awarded = true; }
-                    if (q.name === 'Lighthouse' && !liveBadges.maine_explorer) { liveBadges.maine_explorer = true; addToast('🏅 Achievement: Maine Explorer 🗽'); awarded = true; }
+                    if (!liveBadges.first_landmark) { liveBadges.first_landmark = true; unlockBadge('First Destination'); awarded = true; }
+                    if (uniqueVisits >= 5 && !liveBadges.five_landmarks) { liveBadges.five_landmarks = true; unlockBadge('Local Navigator (5 landmarks)'); awarded = true; }
+                    if (totalVisits >= 10 && !liveBadges.ten_landmarks) { liveBadges.ten_landmarks = true; unlockBadge('Town Tourist (10 visits)'); awarded = true; }
+                    if (q.name === 'Lighthouse' && !liveBadges.maine_explorer) { liveBadges.maine_explorer = true; unlockBadge('Maine Explorer 🗽'); awarded = true; }
                     var hasCivic = statsRef.current.landmarkVisits['Elementary School'] && statsRef.current.landmarkVisits['Public Library'] && statsRef.current.landmarkVisits['Post Office'];
-                    if (hasCivic && !liveBadges.civic_scholar) { liveBadges.civic_scholar = true; addToast('🏅 Achievement: Civic Scholar 🎓'); awarded = true; }
-                    if (totalVisits >= 3 && statsRef.current.crashes === 0 && !liveBadges.safe_return) { liveBadges.safe_return = true; addToast('🏅 Achievement: Safe Return 🏠'); awarded = true; }
+                    if (hasCivic && !liveBadges.civic_scholar) { liveBadges.civic_scholar = true; unlockBadge('Civic Scholar 🎓'); awarded = true; }
+                    if (totalVisits >= 3 && statsRef.current.crashes === 0 && !liveBadges.safe_return) { liveBadges.safe_return = true; unlockBadge('Safe Return 🏠'); awarded = true; }
                     if (awarded) upd('badges', liveBadges);
                   }
                   // ── Road Trip goal advancement ──
@@ -5145,7 +5153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var btBadges = Object.assign({}, d.badges || {});
                       btBadges.biome_tourist = true;
                       upd('badges', btBadges);
-                      addToast('🏅 Achievement: Biome Tourist 🌎');
+                      unlockBadge('Biome Tourist 🌎');
                     }
                   } else {
                     ch.biomesVisited[currentBiome] = true;
@@ -5186,8 +5194,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   ch.completedCount++;
                   var chBadges = Object.assign({}, d.badges || {});
                   var chAwarded = false;
-                  if (!chBadges.first_challenge) { chBadges.first_challenge = true; addToast('🏅 Achievement: Challenge Accepted 🎯'); chAwarded = true; }
-                  if (ch.completedCount >= 5 && !chBadges.five_challenges) { chBadges.five_challenges = true; addToast('🏅 Achievement: Challenger 🎖️'); chAwarded = true; }
+                  if (!chBadges.first_challenge) { chBadges.first_challenge = true; unlockBadge('Challenge Accepted 🎯'); chAwarded = true; }
+                  if (ch.completedCount >= 5 && !chBadges.five_challenges) { chBadges.five_challenges = true; unlockBadge('Challenger 🎖️'); chAwarded = true; }
                   if (chAwarded) upd('badges', chBadges);
                   ch.active = null;
                   ch.nextOfferAt = curT + 60; // cooldown before next offer
@@ -5883,7 +5891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var schoolBadges = Object.assign({}, (d.badges || {}));
                     if (!schoolBadges.school_hero) {
                       schoolBadges.school_hero = true;
-                      addToast('🏅 Achievement: School Zone Hero 🏫');
+                      unlockBadge('School Zone Hero 🏫');
                       upd('badges', schoolBadges);
                     }
                   }
@@ -7274,7 +7282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var busBadges = Object.assign({}, (d.badges || {}));
                 if (!busBadges.bus_respect) {
                   busBadges.bus_respect = true;
-                  addToast('🏅 Achievement: Bus Respect 🚌');
+                  unlockBadge('Bus Respect 🚌');
                   upd('badges', busBadges);
                 }
               }
@@ -7311,7 +7319,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   if (!mBadges.moose_avoided) {
                     mBadges.moose_avoided = true;
                     upd('badges', mBadges);
-                    addToast('🏅 Achievement: Moose-Safe in the Field 🫎');
+                    unlockBadge('Moose-Safe in the Field 🫎');
                   }
                 } else if (swerveRad >= 0.25) {
                   // Player swerved — didn't hit it (maybe luck), but not what the drill teaches.
@@ -7527,7 +7535,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var erBadges = Object.assign({}, (d.badges || {}));
                 if (!erBadges.emergency_response) {
                   erBadges.emergency_response = true;
-                  addToast('🏅 Achievement: Emergency Responder 🚒');
+                  unlockBadge('Emergency Responder 🚒');
                   upd('badges', erBadges);
                 }
               }
@@ -20595,6 +20603,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var permitTotal = (permitState.questions && permitState.questions.length) || 20;
           var permitPassThreshold = Math.ceil(permitTotal * 0.8);
           var passed = permitState.score >= permitPassThreshold;
+          // Build the list of missed questions for the review panel. Each entry
+          // pairs the original question (q) with what the student picked (chosen).
+          // Filter on `correct === false` — questions left unanswered when the
+          // student finishes early have answers[i] === null and don't show.
+          var missedReviews = [];
+          (permitState.questions || []).forEach(function(qReview, qrIdx) {
+            var ans = permitState.answers[qrIdx];
+            if (ans && ans.correct === false) missedReviews.push({ q: qReview, chosen: ans.chosen, idx: qrIdx });
+          });
           return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
             h('div', { style: { background: 'linear-gradient(135deg, ' + (passed ? '#14532d' : '#7f1d1d') + ', #0f172a)', borderRadius: '14px', padding: '28px', textAlign: 'center', border: '2px solid ' + (passed ? '#4ade80' : '#ef4444') } },
               h('div', { style: { fontSize: '64px' } }, passed ? '🎉' : '📋'),
@@ -20606,6 +20623,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#fbbf24', color: '#78350f', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, '🔁 Retake'),
                 h('button', { onClick: function() { upd('view', 'menu'); },
                   style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #64748b', background: 'transparent', color: '#cbd5e1', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '🏠 Menu')
+              )
+            ),
+            // Missed-question review panel — only shown when there are misses.
+            // Native <details> element so it's collapsible without extra state, and
+            // it's keyboard- and screen-reader-accessible by default.
+            missedReviews.length > 0 && h('details', {
+              open: !passed,  // auto-expand on fail (most useful then); collapsed on pass
+              style: { marginTop: '14px', background: '#0f172a', borderRadius: '12px', border: '1px solid #334155', padding: '14px' }
+            },
+              h('summary', {
+                style: { cursor: 'pointer', fontSize: '13px', fontWeight: 800, color: '#fbbf24', userSelect: 'none', listStyle: 'none', padding: '4px 0' }
+              }, '📖 Review your missed questions (' + missedReviews.length + ')'),
+              h('div', { style: { marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '12px' } },
+                missedReviews.map(function(mr) {
+                  var qm = mr.q;
+                  return h('div', { key: mr.idx, style: { padding: '12px', borderRadius: '10px', background: '#1e293b', border: '1px solid #334155' } },
+                    h('div', { style: { fontSize: '11px', color: '#94a3b8', marginBottom: '4px' } }, 'Question ' + (mr.idx + 1)),
+                    h('div', { style: { fontSize: '13px', fontWeight: 700, lineHeight: '1.5', marginBottom: '10px' } }, qm.q),
+                    h('div', { style: { fontSize: '11px', color: '#fca5a5', marginBottom: '4px', lineHeight: '1.5' } },
+                      h('span', { style: { fontWeight: 700 } }, '✗ Your answer: '),
+                      String.fromCharCode(65 + mr.chosen) + '. ' + (qm.a[mr.chosen] || '')
+                    ),
+                    h('div', { style: { fontSize: '11px', color: '#86efac', marginBottom: '8px', lineHeight: '1.5' } },
+                      h('span', { style: { fontWeight: 700 } }, '✓ Correct answer: '),
+                      String.fromCharCode(65 + qm.correct) + '. ' + (qm.a[qm.correct] || '')
+                    ),
+                    h('div', { style: { fontSize: '11px', color: '#cbd5e1', lineHeight: '1.55', padding: '8px 10px', background: 'rgba(251,191,36,0.08)', borderLeft: '3px solid #fbbf24', borderRadius: '4px' } },
+                      h('span', { style: { fontWeight: 700, color: '#fbbf24' } }, 'Why: '), qm.exp
+                    )
+                  );
+                })
               )
             )
           );
@@ -21500,7 +21548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (cfg.badgeId && !dBadges[cfg.badgeId]) {
                 dBadges[cfg.badgeId] = true;
                 upd('badges', dBadges);
-                addToast('🏅 Achievement: ' + cfg.badgeName);
+                unlockBadge(cfg.badgeName);
               }
             }
           } else {
@@ -21796,7 +21844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
                         if (passedNew >= 5) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.defensive_drill) { dBadges.defensive_drill = true; upd('badges', dBadges); addToast('🏅 Achievement: Defensive Driver'); }
+                          if (!dBadges.defensive_drill) { dBadges.defensive_drill = true; upd('badges', dBadges); unlockBadge('Defensive Driver'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -21976,7 +22024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
                         if (passedNew === MOOSE_SCENARIOS.length) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.moose_safe) { dBadges.moose_safe = true; upd('badges', dBadges); addToast('🏅 Achievement: Moose-Safe Mainer'); }
+                          if (!dBadges.moose_safe) { dBadges.moose_safe = true; upd('badges', dBadges); unlockBadge('Moose-Safe Mainer'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -22149,7 +22197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
                         if (passedNew === EMG_SCENARIOS.length) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.emg_ready) { dBadges.emg_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Emergency-Ready'); }
+                          if (!dBadges.emg_ready) { dBadges.emg_ready = true; upd('badges', dBadges); unlockBadge('Emergency-Ready'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -22308,7 +22356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
                         if (passedNew === BUS_SCENARIOS.length) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.bus_safe) { dBadges.bus_safe = true; upd('badges', dBadges); addToast('🏅 Achievement: Bus-Safe'); }
+                          if (!dBadges.bus_safe) { dBadges.bus_safe = true; upd('badges', dBadges); unlockBadge('Bus-Safe'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -22481,7 +22529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
                         if (passedNew === RR_SCENARIOS.length) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.rail_ready) { dBadges.rail_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Rail-Ready'); }
+                          if (!dBadges.rail_ready) { dBadges.rail_ready = true; upd('badges', dBadges); unlockBadge('Rail-Ready'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -22656,7 +22704,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
                         if (passedNew === WINTER_SCENARIOS.length) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.winter_ready) { dBadges.winter_ready = true; upd('badges', dBadges); addToast('🏅 Achievement: Winter-Ready'); }
+                          if (!dBadges.winter_ready) { dBadges.winter_ready = true; upd('badges', dBadges); unlockBadge('Winter-Ready'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -22829,7 +22877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
                         if (passedNew === CONSTR_SCENARIOS.length) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.zone_wise) { dBadges.zone_wise = true; upd('badges', dBadges); addToast('🏅 Achievement: Work-Zone Wise'); }
+                          if (!dBadges.zone_wise) { dBadges.zone_wise = true; upd('badges', dBadges); unlockBadge('Work-Zone Wise'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -23002,7 +23050,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var passedNew = Object.keys(ns).filter(function(k){return ns[k] && ns[k].correct;}).length;
                         if (passedNew === GDL_SCENARIOS.length) {
                           var dBadges = Object.assign({}, d.badges || {});
-                          if (!dBadges.gdl_scholar) { dBadges.gdl_scholar = true; upd('badges', dBadges); addToast('🏅 Achievement: GDL Scholar'); }
+                          if (!dBadges.gdl_scholar) { dBadges.gdl_scholar = true; upd('badges', dBadges); unlockBadge('GDL Scholar'); }
                         }
                       } else {
                         addToast('Not quite — see explanation');
@@ -23235,7 +23283,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                         var newCorrect = Object.keys(ns).filter(function(k){return ns[k].correct;}).length;
                         if (newCorrect >= 8) {
                           var mBadges = Object.assign({}, d.badges || {});
-                          if (!mBadges.maintenance_master) { mBadges.maintenance_master = true; upd('badges', mBadges); addToast('🏅 Achievement: Maintenance Master'); }
+                          if (!mBadges.maintenance_master) { mBadges.maintenance_master = true; upd('badges', mBadges); unlockBadge('Maintenance Master'); }
                         }
                       }
                     },
@@ -24851,7 +24899,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var ppBadges = Object.assign({}, d.badges || {});
                 ppBadges.peer_pro = true;
                 upd('badges', ppBadges);
-                addToast('🏅 Achievement: Peer Pressure Pro');
+                unlockBadge('Peer Pressure Pro');
               }
             },
             style: { width: '100%', marginTop: '10px', padding: '12px', borderRadius: '8px', border: 'none', background: '#f472b6', color: '#0f172a', fontSize: '13px', fontWeight: 800, cursor: 'pointer' }
@@ -25811,7 +25859,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (!pBadges.pretrip_pro) {
                   pBadges.pretrip_pro = true;
                   upd('badges', pBadges);
-                  addToast('🏅 Achievement: Pre-Trip Pro');
+                  unlockBadge('Pre-Trip Pro');
                 }
                 addToast('✅ Pre-trip inspection complete!');
                 if (fromRoadTest) {
@@ -26096,7 +26144,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var pkBadges = Object.assign({}, d.badges || {});
               pkBadges.park_master = true;
               upd('badges', pkBadges);
-              addToast('🏅 Achievement: Park Master');
+              unlockBadge('Park Master');
             }
           }
         });
@@ -26111,7 +26159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var tpBadges = Object.assign({}, d.badges || {});
               tpBadges.three_point = true;
               upd('badges', tpBadges);
-              addToast('🏅 Achievement: K-Turn Pro');
+              unlockBadge('K-Turn Pro');
             }
           }
         });
