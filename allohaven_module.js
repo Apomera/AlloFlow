@@ -2574,6 +2574,13 @@
       // Sparkles — tiny twinkles that fade in/out at random spots without falling.
       '@keyframes ah-sparkle-twinkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 0.85; transform: scale(1.1); } }',
       '.ah-root .ah-sparkle { position: absolute; width: 6px; height: 6px; background: radial-gradient(circle at center, #fff, transparent 70%); border-radius: 50%; opacity: 0; animation: ah-sparkle-twinkle ease-in-out infinite; }',
+      // Breathing pacer (Phase 2p.28) — gentle box-breathing circle.
+      // The .ah-breathe-orb element gets a state class (-in, -hold-in,
+      // -out, -hold-out) toggled from React; the keyframes drive the
+      // scale + glow per phase. Reduced motion swaps to a static cue.
+      '.ah-root .ah-breathe-orb { width: 160px; height: 160px; border-radius: 50%; transition: transform 4000ms ease-in-out, box-shadow 4000ms ease-in-out, opacity 600ms ease; will-change: transform, box-shadow; }',
+      '.ah-root .ah-breathe-orb-in { transform: scale(1); box-shadow: 0 0 36px 8px rgba(255,220,140,0.55); }',
+      '.ah-root .ah-breathe-orb-out { transform: scale(0.55); box-shadow: 0 0 14px 2px rgba(255,220,140,0.25); }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
       '  .ah-root .ah-welcome,',
@@ -10303,6 +10310,22 @@
     var letterLoadingTuple = useState(false);
     var letterLoading = letterLoadingTuple[0];
     var setLetterLoading = letterLoadingTuple[1];
+
+    // Phase 2p.28 — breathing pacer state, lifted here for the same
+    // rules-of-hooks reason. The phase advance interval ONLY runs when
+    // state.activeModal === 'breathe'.
+    var breathePhaseTuple = useState('inhale');
+    var breathePhase = breathePhaseTuple[0];
+    var setBreathePhase = breathePhaseTuple[1];
+    var breatheCyclesTuple = useState(0);
+    var breatheCycles = breatheCyclesTuple[0];
+    var setBreatheCycles = breatheCyclesTuple[1];
+    var breatheVoiceOnTuple = useState(true);
+    var breatheVoiceOn = breatheVoiceOnTuple[0];
+    var setBreatheVoiceOn = breatheVoiceOnTuple[1];
+    var breatheStartedAtTuple = useState(0);
+    var breatheStartedAt = breatheStartedAtTuple[0];
+    var setBreatheStartedAt = breatheStartedAtTuple[1];
     var reactingTuple = useState(false);
     var reacting = reactingTuple[0];
     var setReacting = reactingTuple[1];
@@ -11235,6 +11258,13 @@
             onClick: function() { setStateField('activeModal', 'journal'); },
             style: secondaryBtnStyle(palette)
           }, '📓 Journal' + (state.journalEntries.length > 0 ? ' · ' + state.journalEntries.length : '')),
+          // Breathe (Phase 2p.28) — on-demand box-breathing pacer.
+          // No tokens, no streak, no judgment. Always available.
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'breathe'); },
+            'aria-label': 'Open breathing pacer for self-care',
+            style: secondaryBtnStyle(palette)
+          }, '🫁 Breathe'),
           (function() {
             var deckCount = state.decorations.filter(function(d) { return !!d.linkedContent; }).length;
             var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
@@ -12697,6 +12727,13 @@
           h('div', {
             style: { marginTop: '24px', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }
           },
+            // Breathe button — break phases only. Opens the breathing
+            // pacer modal as an opt-in self-care option.
+            (phase === 'short-break' || phase === 'long-break') ? h('button', {
+              onClick: function() { setStateField('activeModal', 'breathe'); },
+              style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
+              'aria-label': 'Open breathing pacer'
+            }, '🫁 Breathe') : null,
             h('button', {
               onClick: cancelPomodoro,
               style: Object.assign({}, secondaryBtnStyle(palette), {
@@ -12781,6 +12818,173 @@
               }, '"' + (c.name || (sp ? sp.label : 'buddy')) + ': ' + bubble + '"')
             );
           })()
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // BREATHING PACER (Phase 2p.28) — box-breathing 4-4-4-4 with the
+    // companion bobbing alongside. Available on-demand via the room
+    // toolbar, and surfaced as an opt-in button during Pomodoro
+    // breaks. No tokens, no streak, no judgment — pure self-care.
+    // Closeable any time. Voice cue is on by default but mute-able.
+    // ─────────────────────────────────────────────────
+    // Constants for the box-breathing pacer (Phase 2p.28). Module-scope
+    // would also work but inline keeps them close to their consumers.
+    var BREATHE_PHASE_MS = 4000;
+    var BREATHE_ORDER = ['inhale', 'hold-in', 'exhale', 'hold-out'];
+    var BREATHE_LABELS = {
+      'inhale':   'Breathe in',
+      'hold-in':  'Hold',
+      'exhale':   'Breathe out',
+      'hold-out': 'Rest'
+    };
+    var BREATHE_HINTS = {
+      'inhale':   'Through the nose. Soft, slow.',
+      'hold-in':  'Hold gently. No strain.',
+      'exhale':   'Through the mouth. Let it go.',
+      'hold-out': 'Empty. Pause. You\'re here.'
+    };
+    function renderBreathingModal() {
+      if (state.activeModal !== 'breathe') return null;
+      var phase = breathePhase;
+      var cycles = breatheCycles;
+      var voiceOn = breatheVoiceOn;
+      var startedAt = breatheStartedAt;
+
+      var elapsedSec = startedAt > 0 ? Math.floor((Date.now() - startedAt) / 1000) : 0;
+      var elapsedMin = Math.floor(elapsedSec / 60);
+      var elapsedRemSec = elapsedSec % 60;
+      var elapsedStr = elapsedMin + ':' + (elapsedRemSec < 10 ? '0' : '') + elapsedRemSec;
+
+      // Companion accompaniment
+      var c = state.companion;
+      var sp = c && c.species ? getCompanionSpecies(c.species) : null;
+      var swatch = c && c.species ? getCompanionPalette(c.species, c.colorVariant || 'warm') : null;
+
+      var orbClass = (phase === 'inhale' || phase === 'hold-in') ? 'ah-breathe-orb ah-breathe-orb-in' : 'ah-breathe-orb ah-breathe-orb-out';
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Breathing pacer',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.78)',
+          zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg,
+            border: '2px solid ' + palette.accent,
+            borderRadius: '20px',
+            padding: '32px 28px',
+            maxWidth: '420px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.55)'
+          }
+        },
+          h('div', {
+            style: {
+              fontSize: '12px',
+              color: palette.textMute,
+              textTransform: 'uppercase',
+              letterSpacing: '0.14em',
+              fontWeight: 700,
+              marginBottom: '4px'
+            }
+          }, '🫁 Box breathing'),
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', margin: '0 0 18px 0' }
+          }, 'Match your breath to the orb. Stop any time.'),
+          // Breathing orb
+          h('div', {
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              minHeight: '180px', marginBottom: '14px'
+            }
+          },
+            h('div', {
+              className: orbClass,
+              'aria-hidden': 'true',
+              style: {
+                background: 'radial-gradient(circle at 35% 30%, ' + palette.accent + ', ' + palette.accentDim + ')'
+              }
+            })
+          ),
+          // Phase label
+          h('div', {
+            'aria-live': 'polite',
+            style: {
+              fontSize: '22px', fontWeight: 800, color: palette.text,
+              marginBottom: '4px', letterSpacing: '0.02em'
+            }
+          }, BREATHE_LABELS[phase]),
+          h('div', {
+            style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', marginBottom: '14px', minHeight: '16px' }
+          }, BREATHE_HINTS[phase]),
+          // Cycle + time stats
+          h('div', {
+            style: {
+              display: 'flex', justifyContent: 'center', gap: '20px',
+              fontSize: '11px', color: palette.textMute,
+              fontVariantNumeric: 'tabular-nums', marginBottom: '14px'
+            }
+          },
+            h('div', null, 'Cycles · ' + cycles),
+            h('div', null, 'Time · ' + elapsedStr)
+          ),
+          // Optional companion accompaniment
+          (c && sp) ? h('div', {
+            style: {
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '10px', marginBottom: '14px'
+            }
+          },
+            h('div', {
+              'data-species': c.species,
+              style: {
+                width: '48px', height: '48px',
+                padding: '4px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '12px'
+              }
+            },
+              h('div', { className: 'ah-companion-root' },
+                getCompanionSvg(c.species, swatch, { blinking: blinking, pupilOffset: { x: 0, y: 0 } })
+              )
+            ),
+            h('div', {
+              style: {
+                fontSize: '11px', fontStyle: 'italic',
+                color: palette.textDim, lineHeight: '1.4'
+              }
+            }, c.name + ' is here.')
+          ) : null,
+          // Action row
+          h('div', {
+            style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }
+          },
+            h('button', {
+              onClick: function() { setVoiceOn(!voiceOn); },
+              'aria-pressed': voiceOn ? 'true' : 'false',
+              'aria-label': voiceOn ? 'Mute voice cues' : 'Unmute voice cues',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
+            }, voiceOn ? '🔊 Voice' : '🔇 Voice'),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close breathing pacer',
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+            }, 'Done')
+          )
         )
       );
     }
@@ -16869,6 +17073,7 @@
       renderInsightsModal(),
       renderDeleteDecorationModal(),
       renderSettingsModal(),
+      renderBreathingModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard(),
       // Print packet — portaled to body so the @media print rule's
