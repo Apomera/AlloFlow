@@ -1679,6 +1679,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { id: 'systems',      label: '2. Three Energy Systems' },
           { id: 'distribution', label: '3. Where Energy Goes' }
         ];
+        // Topic-accent hero metadata — keys off tab id so each section feels distinct.
+        var TAB_META = {
+          atp:          { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '⚡', title: 'ATP — your cellular energy currency', hint: 'Every cell holds ~50g of ATP and recycles it ~1,000× per day.' },
+          systems:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '🔥', title: 'Three energy systems run side by side', hint: 'PCr · glycolysis · oxidative — each peaks at a different duration.' },
+          distribution: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '🧠', title: 'Where your energy actually goes at rest', hint: 'Brain ≈ 20% of resting energy at only ~2% of body weight.' }
+        };
 
         // Resting energy distribution (approximate, healthy adult average)
         // Source: Brody, Nutritional Biochemistry (1999); Wang et al., 2010
@@ -1723,6 +1729,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 }, t.label);
               })
             ),
+            // Topic-accent hero band (swaps with the active tab)
+            (function() {
+              var meta = TAB_META[tab] || TAB_META.atp;
+              return h('div', {
+                style: {
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                  display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
             tab === 'atp' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
                 h('h2', { className: 'text-xl font-black text-slate-800 mb-3' }, 'ATP — your cellular energy currency'),
@@ -3016,6 +3042,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { id: 'school',   label: 'School meals + SNAP' },
           { id: 'local',    label: 'Local food + Wabanaki' }
         ];
+        var TAB_META = {
+          seasons:   { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',  icon: '☀️',  title: 'Maine winters are a vitamin D problem', hint: 'At 43–47°N, Oct–Mar sun is too low for skin to make D — no matter how long you’re outside.' },
+          fisheries: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '🐟',   title: 'Cold-water fisheries → omega-3 powerhouse', hint: 'Maine lobster, herring, and farm-raised salmon are world-class EPA/DHA sources.' },
+          access:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🚗',   title: 'Rural distance + seasonal employment = real food-access issues', hint: 'Aroostook and Washington counties have documented food deserts and long drive times.' },
+          school:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '🍱',   title: 'Free school meals + SNAP basics', hint: 'Maine is the second state to permanently fund free meals for all K-12 kids (2022).' },
+          local:     { accent: '#a16207', soft: 'rgba(161,98,7,0.10)',   icon: '🌾',   title: 'Local food systems + Wabanaki food sovereignty', hint: 'CSAs, farmers markets, and tribal food-sovereignty efforts shape what’s actually on Maine plates.' }
+        };
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🌲', title: 'Maine Food Reality' }),
@@ -3038,6 +3071,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 }, t.label);
               })
             ),
+            // Topic-accent hero band per tab
+            (function() {
+              var meta = TAB_META[tab] || TAB_META.seasons;
+              return h('div', {
+                style: {
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                  display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
             tab === 'seasons' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, 'Maine winters are a vitamin D problem'),
