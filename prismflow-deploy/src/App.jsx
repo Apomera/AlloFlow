@@ -4859,84 +4859,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/firestore_sync_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/allohaven_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/story_stage_module.js');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('AlloHaven', './allohaven_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/view_adventure_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/export_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4947,7 +4947,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d823ba9/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -37167,6 +37167,38 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       'add-on': 'I want to add to what <span class="allo-frame-blank">_______________</span> said. I think <span class="allo-frame-blank">_______________</span>.',
                     };
 
+                    // ── Math formula library (K-12 grouped) ──
+                    const _MATH_FORMULAS = {
+                      'pythagoras': { label: 'Pythagorean theorem', latex: 'a^2 + b^2 = c^2', group: 'Geometry' },
+                      'quadratic': { label: 'Quadratic formula', latex: 'x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}', group: 'Algebra' },
+                      'slope': { label: 'Slope', latex: 'm = \\frac{y_2 - y_1}{x_2 - x_1}', group: 'Algebra' },
+                      'distance': { label: 'Distance formula', latex: 'd = \\sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}', group: 'Geometry' },
+                      'linear': { label: 'Slope-intercept form', latex: 'y = mx + b', group: 'Algebra' },
+                      'point-slope': { label: 'Point-slope form', latex: 'y - y_1 = m(x - x_1)', group: 'Algebra' },
+                      'area-circle': { label: 'Area of circle', latex: 'A = \\pi r^2', group: 'Geometry' },
+                      'circumference': { label: 'Circumference', latex: 'C = 2\\pi r', group: 'Geometry' },
+                      'area-triangle': { label: 'Area of triangle', latex: 'A = \\tfrac{1}{2} b h', group: 'Geometry' },
+                      'area-rect': { label: 'Area of rectangle', latex: 'A = l \\cdot w', group: 'Geometry' },
+                      'area-trap': { label: 'Area of trapezoid', latex: 'A = \\tfrac{1}{2}(b_1 + b_2)h', group: 'Geometry' },
+                      'volume-sphere': { label: 'Volume of sphere', latex: 'V = \\tfrac{4}{3}\\pi r^3', group: 'Geometry' },
+                      'volume-cylinder': { label: 'Volume of cylinder', latex: 'V = \\pi r^2 h', group: 'Geometry' },
+                      'volume-cone': { label: 'Volume of cone', latex: 'V = \\tfrac{1}{3}\\pi r^2 h', group: 'Geometry' },
+                      'sa-sphere': { label: 'Surface area of sphere', latex: 'SA = 4\\pi r^2', group: 'Geometry' },
+                      'mean': { label: 'Mean (average)', latex: '\\bar{x} = \\frac{\\sum_{i=1}^{n} x_i}{n}', group: 'Statistics' },
+                      'std-dev': { label: 'Standard deviation', latex: '\\sigma = \\sqrt{\\frac{\\sum (x_i - \\bar{x})^2}{n}}', group: 'Statistics' },
+                      'sum-series': { label: 'Sum of 1 to n', latex: '\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}', group: 'Algebra' },
+                      'exponential': { label: 'Exponential function', latex: 'y = a \\cdot b^x', group: 'Algebra' },
+                      'log-base': { label: 'Change of base', latex: '\\log_b a = \\frac{\\ln a}{\\ln b}', group: 'Algebra' },
+                      'sin-cos-tan': { label: 'SOH CAH TOA', latex: '\\sin\\theta = \\tfrac{\\text{opp}}{\\text{hyp}},\\; \\cos\\theta = \\tfrac{\\text{adj}}{\\text{hyp}},\\; \\tan\\theta = \\tfrac{\\text{opp}}{\\text{adj}}', group: 'Trigonometry' },
+                      'pythag-trig': { label: 'Pythagorean identity', latex: '\\sin^2\\theta + \\cos^2\\theta = 1', group: 'Trigonometry' },
+                      'newton-2': { label: "Newton's second law", latex: 'F = ma', group: 'Physics' },
+                      'kinetic': { label: 'Kinetic energy', latex: 'KE = \\tfrac{1}{2}mv^2', group: 'Physics' },
+                      'potential': { label: 'Potential energy', latex: 'PE = mgh', group: 'Physics' },
+                      'ohms': { label: "Ohm's law", latex: 'V = IR', group: 'Physics' },
+                      'energy-mass': { label: 'Mass-energy equivalence', latex: 'E = mc^2', group: 'Physics' },
+                      'free-fall': { label: 'Free fall (no air)', latex: 'd = \\tfrac{1}{2}gt^2', group: 'Physics' },
+                    };
+
                     // ── Rubric scale presets ──
                     const _RUBRIC_SCALES = {
                       '4pt': ['4 — Exemplary', '3 — Proficient', '2 — Developing', '1 — Beginning'],
@@ -37219,6 +37251,80 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             announce('Removed ' + type + ' block');
                             persist();
                           }
+                          return;
+                        }
+                        // Audio TTS-from-transcript
+                        const ttsBtn = t.closest('.allo-audio-tts-btn');
+                        if (ttsBtn) {
+                          ev.preventDefault();
+                          const block = ttsBtn.closest('.allo-block-audio'); if (!block) return;
+                          const transcriptEl = block.querySelector('.allo-audio-transcript');
+                          if (!transcriptEl) return;
+                          // Strip the leading "Transcript:" label heuristically
+                          let txt = (transcriptEl.textContent || '').trim();
+                          if (txt.toLowerCase().startsWith('transcript:')) txt = txt.substring(11).trim();
+                          if (!txt || txt.length < 3) {
+                            announce('Add transcript text first, then click TTS');
+                            return;
+                          }
+                          const win = doc.defaultView;
+                          const parentCallTTS = (win && win.parent && win.parent.callTTS) ? win.parent.callTTS : null;
+                          if (typeof parentCallTTS !== 'function') {
+                            announce('TTS unavailable in this build');
+                            return;
+                          }
+                          const origLabel = ttsBtn.textContent;
+                          ttsBtn.textContent = '⏳ Generating…';
+                          ttsBtn.disabled = true;
+                          announce('Generating audio from transcript');
+                          Promise.resolve(parentCallTTS(txt)).then((url) => {
+                            const audioEl = block.querySelector('audio');
+                            if (audioEl && url) {
+                              audioEl.src = url;
+                              announce('Audio generated from transcript');
+                              persist();
+                            } else {
+                              announce('TTS returned no audio');
+                            }
+                          }).catch((err) => {
+                            announce('TTS failed: ' + (err && err.message || 'unknown error'));
+                          }).finally(() => {
+                            try { ttsBtn.textContent = origLabel; ttsBtn.disabled = false; } catch (_) {}
+                          });
+                          return;
+                        }
+                        // Code copy button
+                        const copyBtn = t.closest('.allo-code-copy-btn');
+                        if (copyBtn) {
+                          ev.preventDefault();
+                          const block = copyBtn.closest('.allo-block-code-wrap');
+                          const codeEl = block && block.querySelector('code');
+                          if (!codeEl) return;
+                          const txt = codeEl.textContent || '';
+                          let copied = false;
+                          try {
+                            const win = doc.defaultView;
+                            if (win && win.navigator && win.navigator.clipboard && win.navigator.clipboard.writeText) {
+                              win.navigator.clipboard.writeText(txt);
+                              copied = true;
+                            }
+                          } catch (_) {}
+                          if (!copied) {
+                            // Fallback: select-and-execCommand
+                            try {
+                              const range = doc.createRange();
+                              range.selectNodeContents(codeEl);
+                              const sel = doc.getSelection();
+                              sel.removeAllRanges(); sel.addRange(range);
+                              copied = doc.execCommand('copy');
+                              sel.removeAllRanges();
+                            } catch (_) {}
+                          }
+                          announce(copied ? 'Code copied to clipboard' : 'Copy failed');
+                          // Brief visual feedback
+                          const orig = copyBtn.textContent;
+                          copyBtn.textContent = copied ? '✓ Copied' : '✗ Failed';
+                          setTimeout(() => { try { copyBtn.textContent = orig; } catch (_) {} }, 1500);
                           return;
                         }
                         const ctrlBtn = t.closest('.allo-block-controls button[data-action]');
@@ -37500,6 +37606,18 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         if (t.classList && t.classList.contains('allo-img-file-input')) {
                           const file = t.files && t.files[0]; if (!file) return;
                           const block = t.closest('.allo-block-image'); if (!block) return;
+                          // Warn for large uploads (>1MB embedded as data URL = ~33% bloat)
+                          const sizeMB = file.size / (1024 * 1024);
+                          if (sizeMB > 1) {
+                            const win = doc.defaultView;
+                            const msg = 'This image is ' + sizeMB.toFixed(1) + ' MB. Embedding it inline will add about ' + (sizeMB * 1.33).toFixed(1) + ' MB to your document. Continue, or cancel and paste a URL instead?';
+                            const proceed = (win && typeof win.confirm === 'function') ? win.confirm(msg) : true;
+                            if (!proceed) {
+                              t.value = '';  // clear file input so re-pick of same file fires change again
+                              announce('Image upload cancelled');
+                              return;
+                            }
+                          }
                           const reader = new FileReader();
                           reader.onload = (e) => {
                             const placeholder = block.querySelector('.allo-img-placeholder');
@@ -37559,19 +37677,59 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         if (t.classList && t.classList.contains('allo-frame-template-select')) {
                           const block = t.closest('.allo-block-frame'); if (!block) return;
                           const tpl = _SENTENCE_FRAMES[t.value];
-                          if (tpl) {
-                            const removeBtn = block.querySelector(':scope > .allo-block-remove');
-                            const picker = block.querySelector(':scope > .allo-frame-template-picker');
-                            block.innerHTML = (removeBtn ? removeBtn.outerHTML : '') + tpl + (picker ? picker.outerHTML : '');
-                            announce('Sentence frame: ' + t.value);
-                            persist();
+                          if (!tpl) return;
+                          // Heuristic: detect if user has typed substantive text into any blank.
+                          // Skip pure underscores/whitespace; flag blanks with 4+ "real" chars.
+                          const blanks = block.querySelectorAll('.allo-frame-blank');
+                          let hasEdits = false;
+                          blanks.forEach((b) => {
+                            const stripped = (b.textContent || '').replace(/[_\s\/]/g, '');
+                            if (stripped.length >= 4 && stripped !== 'agreedisagree') hasEdits = true;
+                          });
+                          if (hasEdits) {
+                            const win = doc.defaultView;
+                            const proceed = (win && typeof win.confirm === 'function')
+                              ? win.confirm('Switch sentence frame template? Your edits to the blanks will be replaced.')
+                              : true;
+                            if (!proceed) {
+                              announce('Template change cancelled');
+                              return;
+                            }
                           }
+                          const removeBtn = block.querySelector(':scope > .allo-block-remove');
+                          const picker = block.querySelector(':scope > .allo-frame-template-picker');
+                          block.innerHTML = (removeBtn ? removeBtn.outerHTML : '') + tpl + (picker ? picker.outerHTML : '');
+                          announce('Sentence frame: ' + t.value);
+                          persist();
                         }
                         // Definition language change
                         if (t.classList && t.classList.contains('allo-def-lang-select')) {
                           const block = t.closest('.allo-block-definition'); if (!block) return;
                           const span = block.querySelector('dt > span');
                           if (span) { span.setAttribute('lang', t.value); announce('Term language: ' + t.value); persist(); }
+                        }
+                        // Math formula library pick
+                        if (t.classList && t.classList.contains('allo-math-formula-select')) {
+                          const key = t.value;
+                          if (!key) return;
+                          const formula = _MATH_FORMULAS[key];
+                          if (!formula) return;
+                          const block = t.closest('.allo-block-math'); if (!block) return;
+                          const inp = block.querySelector('.allo-math-input');
+                          const out = block.querySelector('.allo-math-output');
+                          const status = block.querySelector('.allo-math-status');
+                          if (inp) inp.value = formula.latex;
+                          const win = doc.defaultView;
+                          if (win && win.katex && out) {
+                            try { win.katex.render(formula.latex, out, { throwOnError: false, displayMode: true }); if (status) status.textContent = 'Rendered'; }
+                            catch (e) { if (out) out.textContent = formula.latex; }
+                          } else if (out) {
+                            out.textContent = formula.latex;
+                          }
+                          announce('Inserted ' + formula.label);
+                          persist();
+                          // Reset select to placeholder for repeat use
+                          t.value = '';
                         }
                       }, true);
                     };
@@ -37622,11 +37780,22 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       { label: 'Image', icon: '🖼️', category: 'media', keywords: 'image picture photo media',
                         html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label="Image with description"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove image" title="Remove">×</button><div class="allo-img-placeholder"><span aria-hidden="true">🖼️</span><br/>Upload a file or paste an image URL below.</div><div class="allo-img-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-img-file-input" style="display:none" /></label><input type="url" class="allo-img-url-input" placeholder="https://image.url" aria-label="Image URL" /></div><figcaption>Image description for screen readers — edit this caption</figcaption></figure>' },
                       { label: 'Audio', icon: '🔊', category: 'media', keywords: 'audio sound music podcast pronunciation',
-                        html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">×</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"></audio><div class="allo-audio-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-audio-file-input" style="display:none" /></label><input type="url" class="allo-audio-url-input" placeholder="https://audio.url" aria-label="Audio URL" /></div><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>' },
+                        html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">×</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"></audio><div class="allo-audio-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-audio-file-input" style="display:none" /></label><input type="url" class="allo-audio-url-input" placeholder="https://audio.url" aria-label="Audio URL" /><button type="button" class="allo-audio-tts-btn" aria-label="Generate audio from transcript using AI text-to-speech" title="Generate audio from the transcript text" style="font-size:11px;background:#7c3aed;color:white;border:none;border-radius:4px;padding:4px 10px;cursor:pointer;font-family:inherit;font-weight:600;">🎤 TTS from transcript</button></div><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>' },
                       { label: 'Math', icon: '➗', category: 'media', keywords: 'math equation latex formula katex',
-                        html: '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Mathematical equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">×</button><div class="allo-math-output">a² + b² = c²</div><div class="allo-math-input-wrap" contenteditable="false"><label>LaTeX</label><input type="text" class="allo-math-input" value="a^2 + b^2 = c^2" placeholder="e.g. \\frac{a}{b} or \\int_0^1 x^2 dx" /><span class="allo-math-status">Loading…</span></div></div>' },
+                        html: (() => {
+                          // Build optgroup'd formula library select
+                          const groups = {};
+                          Object.entries(_MATH_FORMULAS).forEach(([k, v]) => {
+                            if (!groups[v.group]) groups[v.group] = [];
+                            groups[v.group].push('<option value="' + k + '">' + v.label + '</option>');
+                          });
+                          const optgroups = Object.entries(groups)
+                            .map(([g, opts]) => '<optgroup label="' + g + '">' + opts.join('') + '</optgroup>')
+                            .join('');
+                          return '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Mathematical equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">×</button><div class="allo-math-output">a² + b² = c²</div><div class="allo-math-input-wrap" contenteditable="false"><label>LaTeX</label><input type="text" class="allo-math-input" value="a^2 + b^2 = c^2" placeholder="e.g. \\frac{a}{b} or \\int_0^1 x^2 dx" /><span class="allo-math-status">Loading…</span></div><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Library</span><select class="allo-math-formula-select" aria-label="Insert formula from library"><option value="">— Pick a formula —</option>' + optgroups + '</select></div></div>';
+                        }) },
                       { label: 'Code', icon: '💻', category: 'media', keywords: 'code syntax programming snippet',
-                        html: '<div class="allo-block allo-block-code-wrap" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code" title="Remove">×</button><div class="allo-code-header" contenteditable="false"><label style="font-size:11px;color:#94a3b8;">Lang:</label><select class="allo-code-lang-select" aria-label="Programming language"><option value="python" selected>Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="java">Java</option><option value="csharp">C#</option><option value="cpp">C++</option><option value="c">C</option><option value="ruby">Ruby</option><option value="go">Go</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Bash</option><option value="json">JSON</option><option value="markdown">Markdown</option><option value="plaintext">Plain text</option></select></div><pre><code class="language-python" aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div>' },
+                        html: '<div class="allo-block allo-block-code-wrap" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code" title="Remove">×</button><div class="allo-code-header" contenteditable="false"><label style="font-size:11px;color:#94a3b8;">Lang:</label><select class="allo-code-lang-select" aria-label="Programming language"><option value="python" selected>Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="java">Java</option><option value="csharp">C#</option><option value="cpp">C++</option><option value="c">C</option><option value="ruby">Ruby</option><option value="go">Go</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Bash</option><option value="json">JSON</option><option value="markdown">Markdown</option><option value="plaintext">Plain text</option></select><button type="button" class="allo-code-copy-btn" aria-label="Copy code to clipboard" title="Copy code" style="font-size:11px;background:#475569;color:white;border:none;border-radius:4px;padding:3px 10px;cursor:pointer;font-family:inherit;font-weight:600;margin-left:auto;">📋 Copy</button></div><pre><code class="language-python" aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div>' },
                     ];
 
                     const _CAT_LABELS = { layout: '🎨 Layout', content: '📝 Content', educational: '🎓 Educational', interactive: '🖱️ Interactive', media: '📷 Media' };
@@ -37662,17 +37831,27 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         const blockType = newBlock.getAttribute && newBlock.getAttribute('data-allo-block');
                         if (blockType === 'math') {
                           _ensureKatex(doc);
-                          setTimeout(() => {
+                          // Poll for window.katex availability (max 5s) then render.
+                          // Slow connections may take >400ms to load KaTeX from CDN.
+                          const inp = newBlock.querySelector('.allo-math-input');
+                          const out = newBlock.querySelector('.allo-math-output');
+                          const status = newBlock.querySelector('.allo-math-status');
+                          let _kxAttempts = 0;
+                          const _kxTry = () => {
                             try {
-                              const inp = newBlock.querySelector('.allo-math-input');
-                              const out = newBlock.querySelector('.allo-math-output');
-                              const status = newBlock.querySelector('.allo-math-status');
-                              if (inp && out && doc.defaultView.katex) {
+                              if (doc.defaultView && doc.defaultView.katex && inp && out) {
                                 doc.defaultView.katex.render(inp.value, out, { throwOnError: false, displayMode: true });
                                 if (status) status.textContent = 'Rendered';
+                                return;
                               }
                             } catch (_) {}
-                          }, 400);
+                            if (++_kxAttempts < 25) {
+                              setTimeout(_kxTry, 200);
+                            } else if (status) {
+                              status.textContent = 'KaTeX failed to load';
+                            }
+                          };
+                          setTimeout(_kxTry, 100);
                         } else if (blockType === 'code') {
                           _ensurePrism(doc, 'python');
                         }

@@ -3720,6 +3720,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('strong', null, 'Ranked meta-analytic validity (r with supervisor-rated performance): '),
           'Work Sample Test (.54) > Structured Interview (.51) = GCA Test (.51) > Assessment Center (.37) > SJT (.34) > Reference Check (.26) > Personality measure for Conscientiousness (.31) > Unstructured Interview (.19) > Years of experience (.18).'
         ),
+        // Validity scale bar — visualizes predictive r across the 7 methods.
+        // Lifts the BirdLab Featured Migrators distance-bar pattern.
+        (function() {
+          var SCALE_MAX = 0.6;
+          function parseR(r) {
+            if (typeof r === 'number') return r;
+            var m = String(r || '').match(/(\d*\.\d+)/);
+            return m ? parseFloat(m[1]) : 0;
+          }
+          function categoryColor(name) {
+            if (/Work Sample/i.test(name))            return { fill: '#10b981', border: '#047857' };
+            if (/Structured Behavioral/i.test(name))  return { fill: '#10b981', border: '#047857' };
+            if (/Cognitive Ability/i.test(name))      return { fill: '#10b981', border: '#047857' };
+            if (/Assessment Center/i.test(name))      return { fill: '#0ea5e9', border: '#0369a1' };
+            if (/Situational Judgment/i.test(name))   return { fill: '#0ea5e9', border: '#0369a1' };
+            if (/Reference/i.test(name))              return { fill: '#f59e0b', border: '#b45309' };
+            if (/AI-Scored/i.test(name))              return { fill: '#f43f5e', border: '#be123c' };
+            return { fill: '#94a3b8', border: '#475569' };
+          }
+          return h('div', { className: 'p-4 rounded-xl bg-slate-900/60 border border-amber-500/30' },
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-3' }, '📏 Predictive validity at a glance'),
+            h('div', { className: 'space-y-2' },
+              HIRING_METHODS.map(function(m) {
+                var r = parseR(m.r);
+                var pct = Math.min(100, (r / SCALE_MAX) * 100);
+                var col = categoryColor(m.name);
+                var displayR = (typeof m.r === 'number') ? m.r.toFixed(2) : (r ? '~' + r.toFixed(2) + '*' : '?');
+                return h('div', { key: m.name, className: 'flex items-center gap-2 text-xs' },
+                  h('div', {
+                    style: { width: 180, flexShrink: 0, color: '#e2e8f0', fontWeight: 600, paddingRight: 4, textAlign: 'right' }
+                  }, m.name),
+                  h('div', { className: 'relative flex-1 h-5 rounded border', style: { background: 'rgba(15,23,42,0.7)', borderColor: 'rgba(148,163,184,0.25)', minWidth: 100 } },
+                    [0.2, 0.4, 0.6].map(function(t, ti) {
+                      return h('div', { key: 'tk' + ti, 'aria-hidden': true,
+                        style: { position: 'absolute', top: 0, bottom: 0, left: ((t / SCALE_MAX) * 100) + '%', width: 1, background: 'rgba(148,163,184,0.25)' } });
+                    }),
+                    h('div', {
+                      style: {
+                        position: 'absolute', top: 2, bottom: 2, left: 0,
+                        width: pct + '%',
+                        background: 'linear-gradient(90deg, ' + col.border + ', ' + col.fill + ')',
+                        borderRadius: '999px',
+                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.18)'
+                      }
+                    }),
+                    h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: pct + '%', display: 'flex', alignItems: 'center', paddingLeft: 4, fontSize: 11, fontWeight: 800, fontFamily: 'monospace', color: col.fill } }, displayR)
+                  )
+                );
+              })
+            ),
+            h('div', { className: 'mt-2 flex justify-between text-[9px] font-mono text-slate-400' },
+              h('span', null, '0.0'),
+              h('span', null, '0.2 small'),
+              h('span', null, '0.4 medium'),
+              h('span', null, '0.6 large')
+            ),
+            h('div', { className: 'mt-1 text-[10px] italic text-slate-400' }, '* AI-Scored video validity is contested — vendor claims 0.30–0.45, independent replication limited. Bar shows midpoint estimate.')
+          );
+        })(),
         HIRING_METHODS.map(function(m, i) {
           return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-amber-500/30' },
             h('div', { className: 'flex items-baseline justify-between mb-2' },
@@ -4370,9 +4429,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         backBtn('schoolpsych', null, 'School Psych menu'),
         h('h2', { className: 'text-2xl font-black text-sky-200' }, '\uD83D\uDCC4 How to Read a Psych Report'),
         h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'A psychoeducational report is a dense legal-clinical document that parents, teachers, and advocates often need to interpret without training. Here\'s the anatomy — what each section should contain and the red flags to watch for.'),
+        // Step-flow overview lifts the BirdLab career-pathway pattern.
+        h('div', { className: 'p-4 rounded-2xl bg-gradient-to-br from-slate-900/80 to-sky-950/60 border border-sky-500/40' },
+          h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-sky-300 mb-3' }, 'The 8-section flow'),
+          h('div', { className: 'flex flex-wrap items-stretch gap-1.5' },
+            REPORT_ANATOMY.map(function(r, i) {
+              var isLast = i === REPORT_ANATOMY.length - 1;
+              var glyph = ['📨', '📚', '👁', '📋', '📊', '🔍', '✅', '🎯'][i] || '📄';
+              return h('div', { key: 'flow-' + i, className: 'flex items-center gap-1.5', style: { flex: '0 0 auto' } },
+                h('div', {
+                  style: {
+                    background: 'rgba(15, 23, 42, 0.85)',
+                    border: '2px solid rgba(56, 189, 248, 0.6)',
+                    color: '#bae6fd',
+                    padding: '6px 10px 6px 14px',
+                    borderRadius: 8,
+                    fontSize: 11, fontWeight: 700,
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
+                    position: 'relative',
+                    display: 'flex', alignItems: 'center', gap: 6
+                  }
+                },
+                  h('span', {
+                    'aria-hidden': 'true',
+                    style: {
+                      position: 'absolute', top: -8, left: -8,
+                      width: 20, height: 20, borderRadius: '50%',
+                      background: '#0284c7', color: '#ffffff',
+                      fontSize: 10, fontWeight: 900,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.5)'
+                    }
+                  }, String(i + 1)),
+                  h('span', { 'aria-hidden': 'true' }, glyph),
+                  h('span', null, r.section)
+                ),
+                !isLast && h('span', {
+                  'aria-hidden': 'true',
+                  style: { color: '#38bdf8', fontSize: 16, fontWeight: 'bold' }
+                }, '→')
+              );
+            })
+          )
+        ),
         REPORT_ANATOMY.map(function(r, i) {
-          return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-sky-500/30' },
-            h('h3', { className: 'text-sm font-black text-sky-200 mb-1' }, (i + 1) + '. ' + r.section),
+          var glyph = ['📨', '📚', '👁', '📋', '📊', '🔍', '✅', '🎯'][i] || '📄';
+          return h('section', { key: i, className: 'p-4 rounded-xl bg-slate-800/60 border border-sky-500/30 relative mt-3' },
+            h('div', {
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute', top: -10, left: 14,
+                width: 26, height: 26, borderRadius: '50%',
+                background: 'linear-gradient(135deg, #0284c7, #0369a1)',
+                color: '#ffffff', fontSize: 12, fontWeight: 900,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '2px solid #0f172a',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.4)'
+              }
+            }, String(i + 1)),
+            h('h3', { className: 'text-sm font-black text-sky-200 mb-1 pl-7' },
+              h('span', { 'aria-hidden': 'true', className: 'mr-1.5' }, glyph),
+              r.section
+            ),
             h('div', { className: 'text-xs text-slate-200 mb-2' }, h('strong', { className: 'text-sky-300' }, 'Purpose: '), r.purpose),
             h('div', { className: 'text-xs text-slate-200' }, h('strong', { className: 'text-amber-300' }, 'Watch for: '), r.watchFor)
           );

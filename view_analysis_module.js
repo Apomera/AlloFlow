@@ -241,57 +241,68 @@
       try {
         const errorsToFix = rawGrammarNotes.filter((_, i) => selectedGrammarErrors.has(i) && !isInvalidGrammarNote(rawGrammarNotes[i]));
         const originalText = generatedContent?.data.originalText;
-        let correctedText = originalText;
-        for (const errorDesc of errorsToFix) {
-          const errorKeywords = errorDesc.match(/["']([^"']+)["']/g)?.map(s => s.replace(/["']/g, '')) || [];
-          let targetSentence = '';
-          if (errorKeywords.length > 0) {
-            const sentences = correctedText.split(/(?<=[.!?])\s+/);
-            for (const sentence of sentences) {
-              if (errorKeywords.some(kw => sentence.includes(kw))) {
-                targetSentence = sentence;
-                break;
-              }
-            }
-          }
-          const contextToFix = targetSentence || correctedText.substring(0, 500);
-          const fixPrompt = `Fix ONLY this specific grammar/spelling error in the text below. Return ONLY the corrected text segment, nothing else.
-ERROR TO FIX: ${errorDesc}
-TEXT TO CORRECT:
-"${contextToFix}",
-Return only the corrected version of this exact text:`;
-          const result = (await window.ai?.languageModel?.create().then(async session => {
-            const response = await session.prompt(fixPrompt);
-            session.destroy();
-            return response;
-          })) || (await callGemini(fixPrompt, false, false, null));
-          if (result && targetSentence) {
-            const fixedSegment = typeof result === 'string' ? result.trim() : result;
-            const cleanedFix = fixedSegment.replace(/^["']|["']$/g, '');
-            correctedText = correctedText.replace(targetSentence, cleanedFix);
-          }
+        if (errorsToFix.length === 0) {
+          addToast(t('process.grammar_fix_failed') || 'No errors selected to fix.', 'warning');
+          return;
         }
-        const lengthChange = Math.abs(correctedText.length - originalText.length) / originalText.length;
+        // Single-pass fix: send the whole text + the whole error list, ask
+        // for the corrected text back. Avoids the per-error keyword-matching
+        // trap (smart quotes, ellipsis-in-quotes) that silently no-op'd.
+        const errorList = errorsToFix.map((e, i) => `${i + 1}. ${e}`).join('\n');
+        const fixPrompt = `You are a careful copy editor. Apply the listed grammar/spelling/punctuation corrections to the SOURCE TEXT below. Make ONLY these specific changes. Do not paraphrase, do not rewrite, do not change anything else, do not add or remove sentences.
+
+ERRORS TO FIX:
+${errorList}
+
+SOURCE TEXT:
+${originalText}
+
+Return ONLY the corrected text. No preamble, no explanation, no quote marks around the result, no markdown fences.`;
+        let raw = '';
+        try {
+          if (window.ai && window.ai.languageModel && typeof window.ai.languageModel.create === 'function') {
+            const session = await window.ai.languageModel.create();
+            raw = await session.prompt(fixPrompt);
+            try { session.destroy(); } catch (_) {}
+          }
+        } catch (e) {
+          warnLog('Built-in AI failed, falling back to Gemini:', e);
+          raw = '';
+        }
+        if (!raw) {
+          raw = await callGemini(fixPrompt, false, false, null);
+        }
+        const cleaned = (typeof raw === 'string' ? raw : (raw && raw.text) || '')
+          .trim()
+          .replace(/^```(?:[a-z]+)?\s*/i, '')
+          .replace(/\s*```$/, '')
+          .replace(/^["']|["']$/g, '')
+          .trim();
+        if (!cleaned) {
+          addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
+          return;
+        }
+        const lengthChange = Math.abs(cleaned.length - originalText.length) / Math.max(1, originalText.length);
         if (lengthChange > 0.15) {
           warnLog(`Grammar fix length change too large: ${(lengthChange * 100).toFixed(1)}%`);
           addToast(t('process.grammar_fix_truncation') || 'Text changed significantly. Please try again with fewer errors selected.', 'warning');
-          setIsProcessing(false);
-          setGenerationStep('');
           return;
         }
-        if (correctedText && correctedText.trim()) {
-          setGeneratedContent(prev => ({
-            ...prev,
-            data: {
-              ...prev.data,
-              originalText: correctedText.trim(),
-              grammar: prev.data.grammar.map((g, i) => selectedGrammarErrors.has(i) ? `✓ FIXED: ${g}` : g)
-            }
-          }));
-          setInputText(correctedText.trim());
-          addToast(t('process.grammar_fixed') || 'Grammar errors fixed!', 'success');
-          setSelectedGrammarErrors(new Set());
+        if (cleaned === originalText) {
+          addToast(t('process.grammar_fix_failed') || 'No changes applied.', 'warning');
+          return;
         }
+        setGeneratedContent(prev => ({
+          ...prev,
+          data: {
+            ...prev.data,
+            originalText: cleaned,
+            grammar: prev.data.grammar.map((g, i) => selectedGrammarErrors.has(i) ? `✓ FIXED: ${g}` : g)
+          }
+        }));
+        setInputText(cleaned);
+        addToast(t('process.grammar_fixed') || 'Grammar errors fixed!', 'success');
+        setSelectedGrammarErrors(new Set());
       } catch (err) {
         warnLog('Grammar fix error:', err);
         addToast(t('process.grammar_fix_failed') || 'Failed to fix grammar errors.', 'error');
