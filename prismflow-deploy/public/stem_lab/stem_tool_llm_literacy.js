@@ -4771,13 +4771,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
             checked && h('button', { onClick: reset, style: btn('#e2e8f0', COLORS.text, false) }, 'Try again'),
             !checked && hintsUsed > 0 && h('span', { style: { fontSize: '11px', color: COLORS.muted, fontStyle: 'italic' } }, 'Hints used \u2014 perfect bonus forfeited on this attempt. Reset and retry without hints to earn it.')
           ),
-          checked && score && h('div', { style: { background: score.perfect ? '#f0fdf4' : '#fff7ed', border: '2px solid ' + (score.perfect ? '#bbf7d0' : '#fed7aa'), borderRadius: '10px', padding: '12px', marginBottom: '10px', textAlign: 'center' } },
-            h('div', { style: { fontSize: '22px', fontWeight: 800, color: score.perfect ? COLORS.good : COLORS.warn, marginBottom: '4px' } },
-              score.perfect ? '\uD83C\uDFAF Perfect' : (score.hits + ' of ' + score.errors + ' caught')),
-            h('div', { style: { fontSize: '12px', color: COLORS.subtext } },
-              score.falsePos > 0 ? (score.falsePos + ' false alarm' + (score.falsePos === 1 ? '' : 's') + '. False alarms matter — over-flagging real information is its own failure mode.')
-                                  : (score.perfect ? 'You caught every seeded error with no false alarms. Keep this calibration — skepticism AND accuracy.' : 'You missed ' + score.misses + '. Scroll down for why each one sounded plausible.'))
-          ),
+          checked && score && (function() {
+            // Tier logic: perfect (no misses, no false-alarms) > strong (caught all but had FPs) >
+            // learning (some misses, some catches) > review (low recall).
+            var hits = score.hits || 0, errs = score.errors || 1, fp = score.falsePos || 0;
+            var recall = errs > 0 ? hits / errs : 0;
+            var pct = Math.round(recall * 100);
+            var tier = score.perfect ? 'perfect'
+                       : recall >= 1 ? 'strong'
+                       : recall >= 0.5 ? 'learning'
+                       : 'review';
+            var tierColor = tier === 'perfect' ? COLORS.good
+                            : tier === 'strong' ? '#16a34a'
+                            : tier === 'learning' ? COLORS.warn
+                            : COLORS.bad;
+            var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎯' : tier === 'learning' ? '🪶' : '📚';
+            var tierTitle = tier === 'perfect' ? 'Perfect — no misses, no false alarms'
+                            : tier === 'strong' ? 'Caught everything — but watch the false alarms'
+                            : tier === 'learning' ? 'Building hallucination radar'
+                            : 'Review the seeded errors';
+            var tierMsg = tier === 'perfect'
+                          ? 'You caught every seeded error with no false alarms. Keep this calibration — skepticism AND accuracy.'
+                          : tier === 'strong'
+                            ? 'You caught all ' + errs + ' seeded errors but flagged ' + fp + ' real fact' + (fp === 1 ? '' : 's') + ' as wrong. False alarms matter — over-flagging real info is its own failure mode.'
+                            : tier === 'learning'
+                              ? 'Mixed result — caught ' + hits + ' of ' + errs + ' errors. Read the explanations below for the misses; the patterns repeat.'
+                              : 'You missed ' + score.misses + ' of ' + errs + '. Recognition is the gate. Read the explanations, then try the next passage.';
+            var rad = 32, circ = 2 * Math.PI * rad;
+            var dashOff = circ - (recall) * circ;
+            return h('div', { style: { background: '#ffffff', border: '2px solid ' + tierColor, borderRadius: '12px', overflow: 'hidden', marginBottom: '10px' } },
+              h('div', { style: { padding: '14px', display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
+                h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
+                  h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
+                    'aria-label': 'Caught ' + hits + ' of ' + errs + ' seeded errors'
+                  },
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                      strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                  ),
+                  h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                    h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: COLORS.muted } }, 'recall')
+                  )
+                ),
+                h('div', { style: { flex: 1, minWidth: 200 } },
+                  h('div', { style: { fontSize: 26, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
+                  h('div', { style: { fontSize: 16, fontWeight: 900, color: tierColor, lineHeight: 1.15 } }, tierTitle),
+                  h('div', { style: { fontSize: 12, color: COLORS.subtext, lineHeight: 1.5, marginTop: 4 } }, tierMsg)
+                )
+              ),
+              // Hits / misses / false alarms tally chips
+              h('div', { style: { padding: '8px 14px 12px', display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#d1fae5', color: '#065f46', border: '1px solid ' + COLORS.good } }, '✓ ' + hits + ' caught'),
+                score.misses > 0 && h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#fee2e2', color: '#991b1b', border: '1px solid ' + COLORS.bad } }, '⊘ ' + score.misses + ' missed'),
+                fp > 0 && h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#fef3c7', color: '#854d0e', border: '1px solid ' + COLORS.warn } }, '⚠ ' + fp + ' false alarm' + (fp === 1 ? '' : 's')),
+                score.hintsUsed > 0 && h('span', { style: { fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999, background: '#ede9fe', color: '#5b21b6', border: '1px solid #a78bfa' } }, '💡 ' + score.hintsUsed + ' hint' + (score.hintsUsed === 1 ? '' : 's'))
+              )
+            );
+          })(),
           checked && h('div', { style: { background: '#f8fafc', border: '1px solid ' + COLORS.border, borderRadius: '8px', padding: '12px' } },
             h('div', { style: { fontSize: '12px', fontWeight: 700, color: COLORS.subtext, marginBottom: '6px' } }, 'LEGEND'),
             h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '12px', marginBottom: '10px' } },
