@@ -3248,18 +3248,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         if (!question) {
           var pct = Math.round((score / QUIZ.length) * 100);
           if (pct >= 80) awardBadge('quiz-passed', 'Quiz Passed');
+          var tier = score === QUIZ.length ? 'mastery'
+                     : pct >= 90 ? 'strong'
+                     : pct >= 80 ? 'solid'
+                     : pct >= 60 ? 'building'
+                     : 'review';
+          var tierColor = tier === 'mastery' ? '#fbbf24'
+                          : tier === 'strong' ? T.good
+                          : tier === 'solid' ? '#16a34a'
+                          : tier === 'building' ? T.warn
+                          : T.bad;
+          var tierIcon = tier === 'mastery' ? '🏆' : tier === 'strong' ? '🎓' : tier === 'solid' ? '📘' : tier === 'building' ? '🚧' : '📚';
+          var tierTitle = tier === 'mastery' ? 'Pedagogy mastery'
+                          : tier === 'strong' ? 'Strong understanding'
+                          : tier === 'solid' ? 'Solid baseline'
+                          : tier === 'building' ? 'Building understanding'
+                          : 'Worth another pass';
+          var tierMsg = tier === 'mastery'
+                        ? 'You can teach this content yourself. Use this confidence to design your next lesson — start with a desired difficulty + retrieval prompt.'
+                        : tier === 'strong'
+                          ? 'You hit the high bar. The handful you missed are usually neuromyth-related (learning styles, left/right brain) — worth a quick re-skim.'
+                          : tier === 'solid'
+                            ? 'Solid baseline. Re-review the modules where you missed — especially the spacing-effect or interleaving sections if those tripped you up.'
+                            : tier === 'building'
+                              ? 'Building real understanding. Re-read Bloom\'s, Cognitive Load, and the neuromyths sections — those carry the most miss-prone questions.'
+                              : 'Worth another pass through the modules — especially Bloom\'s + Cognitive Load + the neuromyths. Practice testing yourself before retaking.';
+          var rad = 38, circ = 2 * Math.PI * rad;
+          var dashOff = circ - (pct / 100) * circ;
+          // Per-question correctness array
+          var perQ = QUIZ.map(function(q) {
+            return { id: q.id, icon: q.icon, correct: answers[q.id] === q.correct, answered: answers[q.id] != null };
+          });
           return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
             backBar('🧪 Quiz complete'),
-            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
-              h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.accentHi } }, '🎉 Quiz complete: ' + score + ' / ' + QUIZ.length + ' (' + pct + '%)'),
-              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.5 } },
-                pct >= 90 ? '🏆 Pedagogy mastery. You can teach this content yourself.' :
-                pct >= 80 ? '🎓 Strong understanding. A few details to refine.' :
-                pct >= 60 ? '🚧 Good baseline. Re-review the modules where you missed.' :
-                '📚 Worth another pass through the modules — especially Bloom\'s + Cognitive Load + the neuromyths.'),
-              h('button', { 'data-ll-focusable': true,
-                onClick: function() { upd('quizIdx', 0); upd('quizAnswers', {}); },
-                style: btnPrimary() }, '🔄 Retake quiz')
+            h('div', { style: { borderRadius: 14, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: T.card } },
+              h('div', { style: { padding: 18, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
+                // Score donut
+                h('div', { style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
+                  h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
+                    'aria-label': 'Score: ' + score + ' out of ' + QUIZ.length
+                  },
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                      strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                  ),
+                  h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                    h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted } }, score + ' / ' + QUIZ.length)
+                  )
+                ),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('div', { style: { fontSize: 30, marginBottom: 4 }, 'aria-hidden': 'true' }, tierIcon),
+                  h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                  h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, tierMsg)
+                )
+              ),
+              // Per-question result strip
+              h('div', { style: { padding: '0 18px 8px' } },
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, 'Your answers'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                  perQ.map(function(q, qi) {
+                    return h('div', { key: qi,
+                      title: 'Q' + (qi + 1) + (q.correct ? ' correct ✓' : q.answered ? ' incorrect ✗' : ' skipped'),
+                      style: {
+                        width: 14, height: 14, borderRadius: 3,
+                        background: q.correct ? T.good : T.bad,
+                        border: '1.5px solid ' + (q.correct ? '#15803d' : '#7f1d1d'),
+                        boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                      },
+                      'aria-label': 'Q' + (qi + 1) + (q.correct ? ' correct' : ' incorrect')
+                    });
+                  })
+                )
+              ),
+              pct >= 80 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.good, fontWeight: 700, borderTop: '1px solid ' + T.border } }, '🏅 Badge earned: Quiz Passed'),
+              h('div', { style: { padding: '12px 18px', borderTop: '1px solid ' + T.border } },
+                h('button', { 'data-ll-focusable': true,
+                  onClick: function() { upd('quizIdx', 0); upd('quizAnswers', {}); },
+                  style: btnPrimary() }, '🔄 Retake quiz')
+              )
             ),
             disclaimerFooter()
           );
