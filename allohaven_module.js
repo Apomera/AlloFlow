@@ -1395,6 +1395,9 @@
     { id: 'first-voice-note', emoji: '🎤', label: 'First voice note',
       desc: 'Recorded a voice note on a decoration — your words, your voice.',
       check: function(s) { return (s.decorations || []).some(function(d) { return !!(d.voiceNote && d.voiceNote.base64); }); } },
+    { id: 'first-treat', emoji: '🍪', label: 'First treat',
+      desc: 'Gave your buddy a treat. Daily care goes a long way.',
+      check: function(s) { return !!(s.companion && s.companion.lastTreatAt); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -1933,6 +1936,19 @@
       '.ah-root [data-species="dragon"] .ah-companion-tail { animation: ah-companion-tail-dragon 4000ms ease-in-out infinite; }',
       '.ah-root .ah-companion-root:hover { transform: scale(1.05) translateY(-2px); }',
       '.ah-root .ah-companion-bubble { animation: ah-companion-bubble-in 280ms cubic-bezier(0.34, 1.6, 0.64, 1) 1; transform-origin: bottom right; }',
+      // Decoration micro-animations (Phase 2p.16) — gentle ambient
+      // motion applied to the <img> inside a placed decoration cell,
+      // keyed by template kind. The cell\'s base ±3° rotation stays
+      // intact (it\'s on the outer div); these animate the inner image.
+      // All suppressed by the existing prefers-reduced-motion block.
+      '@keyframes ah-deco-sway   { 0%, 100% { transform: rotate(-1.4deg); } 50% { transform: rotate(1.4deg); } }',
+      '@keyframes ah-deco-bob    { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }',
+      '@keyframes ah-deco-pulse  { 0%, 100% { opacity: 0.92; } 50% { opacity: 1; } }',
+      '@keyframes ah-deco-shimmer { 0%, 100% { filter: brightness(0.96); } 50% { filter: brightness(1.04); } }',
+      '.ah-root .ah-deco-sway    img { animation: ah-deco-sway 6500ms ease-in-out infinite; transform-origin: 50% 90%; }',
+      '.ah-root .ah-deco-bob     img { animation: ah-deco-bob 5500ms ease-in-out infinite; }',
+      '.ah-root .ah-deco-pulse   img { animation: ah-deco-pulse 3800ms ease-in-out infinite; }',
+      '.ah-root .ah-deco-shimmer img { animation: ah-deco-shimmer 7200ms ease-in-out infinite; }',
       // Sleeping companion (Live mode) — slow the breathe, stop the bob,
       // freeze the tail. Eyelids are shut via the SVG eyelid group.
       '.ah-root .ah-companion-root.ah-companion-sleeping { animation: none; transform: translateY(0); cursor: pointer; }',
@@ -1952,6 +1968,10 @@
       '  .ah-root .ah-companion-bubble,',
       '  .ah-root .ah-companion-wings,',
       '  .ah-root .ah-companion-z,',
+      '  .ah-root .ah-deco-sway img,',
+      '  .ah-root .ah-deco-bob img,',
+      '  .ah-root .ah-deco-pulse img,',
+      '  .ah-root .ah-deco-shimmer img,',
       '  .ah-root .ah-companion-confetti-piece { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible,',
@@ -8124,6 +8144,44 @@
       setStateField('companion', next);
     }
 
+    // Daily treat (Phase 2p.16) — once per calendar day, students can
+    // give the companion a treat. Bumps happiness by 2 (capped at 10),
+    // fires excited bounce + species-flavored gratitude bubble. Sims-y
+    // care interaction without manipulative needs spirals — the
+    // companion never demands a treat or signals hunger.
+    function canGiveTreatToday() {
+      var c = state.companion;
+      if (!c || !c.species) return false;
+      if (state.roomMode === 'live') return false;
+      var todayStr = new Date().toISOString().slice(0, 10);
+      var lastStr = c.lastTreatAt ? c.lastTreatAt.slice(0, 10) : null;
+      return lastStr !== todayStr;
+    }
+    function giveCompanionTreat() {
+      if (!canGiveTreatToday()) return;
+      var c = state.companion;
+      var sp = getCompanionSpecies(c.species);
+      var nowIso = new Date().toISOString();
+      var nextHappiness = Math.min(10, (c.happiness || 0) + 2);
+      var thanks = {
+        cat:    'Hmm. Crunchy. Pleasant.',
+        fox:    'Oh — thanks!',
+        owl:    'Most appreciated. Quietly.',
+        turtle: 'Slowly nibbling. So good.',
+        dragon: 'Whoa! Best treat ever!'
+      };
+      saveCompanion({
+        happiness: nextHappiness,
+        lastTreatAt: nowIso,
+        lastBubbleAt: nowIso,
+        lastBubbleText: (thanks[c.species] || thanks.cat) + ' (+♥)'
+      });
+      // Fire the same excited-bounce reaction the click handler uses.
+      // The state.companion update propagates; the companion overlay
+      // re-renders with the new happiness and bubble.
+      addToast('🍪 ' + (c.name || sp.label) + ' got a treat!');
+    }
+
     // Generate a state-aware thought bubble — observational only, never
     // guilt-inducing. Picks the first applicable observation, falling
     // back to a species-flavored idle line. Voice prefix is NOT prepended
@@ -9570,7 +9628,22 @@
                   + ')'
                 : '')
             + ' — click to add or review memory content',
-          className: 'ah-decoration',
+          className: 'ah-decoration' + (function() {
+            // Phase 2p.16 — template-specific micro-animation class on the
+            // <img> child. Plants sway, companions bob, lamps + weather +
+            // food gently pulse, window views shimmer. Posters, books,
+            // instruments, sports stay still (these are art / objects
+            // that look weird in motion).
+            switch (decoration.template) {
+              case 'plants':      return ' ah-deco-sway';
+              case 'companions':  return ' ah-deco-bob';
+              case 'food':        return ' ah-deco-bob';
+              case 'lamps':       return ' ah-deco-pulse';
+              case 'weather':     return ' ah-deco-pulse';
+              case 'windows':     return ' ah-deco-shimmer';
+              default:            return '';
+            }
+          })(),
           title: hoverTitle,
           // Drag-to-rearrange (Phase 2p.10) — only enabled in Build mode.
           // Sets a drag image hint via dataTransfer; on drop in another
@@ -10262,6 +10335,20 @@
           }
         },
           h('span', { style: { fontSize: '10px', fontWeight: 700, color: palette.text } }, displayName),
+          // Daily treat (Phase 2p.16) — once per day, students can give
+          // the companion a treat. Visible only when available; hidden
+          // after use until the calendar rolls over.
+          canGiveTreatToday() ? h('button', {
+            onClick: giveCompanionTreat,
+            'aria-label': 'Give ' + displayName + ' a treat (once per day)',
+            title: 'Daily treat for ' + displayName,
+            style: {
+              background: 'transparent', border: 'none',
+              color: palette.accent, fontSize: '12px',
+              cursor: 'pointer', padding: '0 2px',
+              fontFamily: 'inherit'
+            }
+          }, '🍪') : null,
           h('button', {
             onClick: function() { setStateField('activeModal', 'companion-setup'); },
             'aria-label': 'Edit ' + displayName,
