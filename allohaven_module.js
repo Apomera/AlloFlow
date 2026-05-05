@@ -1839,6 +1839,9 @@
     { id: 'first-drawing', emoji: '🎨', label: 'First drawing',
       desc: 'Drew your own decoration on the canvas — pure you.',
       check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomDrawing; }); } },
+    { id: 'first-phrase', emoji: '🗣️', label: 'First taught phrase',
+      desc: 'Taught your companion a personal phrase — your voice through theirs.',
+      check: function(s) { return !!(s.companion && Array.isArray(s.companion.customPhrases) && s.companion.customPhrases.length > 0); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -8806,6 +8809,10 @@
             || isNaN(new Date(merged.companion.createdAt).getTime())) {
           merged.companion.createdAt = new Date().toISOString();
         }
+        // Phase 2p.32 — custom phrases array (forward-compat default).
+        if (!Array.isArray(merged.companion.customPhrases)) {
+          merged.companion.customPhrases = [];
+        }
       }
       // Phase 2p.6 tour
       if (typeof merged.tourSeen !== 'boolean') merged.tourSeen = false;
@@ -10042,6 +10049,18 @@
       }
       var candidates = [];
 
+      // Custom phrases (Phase 2p.32) — student-taught lines mix in at
+      // ~25% probability when present. They join the candidate pool, so
+      // the existing dedupe-against-lastBubble logic still applies.
+      var customPhrases = (state.companion && Array.isArray(state.companion.customPhrases))
+        ? state.companion.customPhrases : [];
+      if (customPhrases.length > 0 && Math.random() < 0.25) {
+        var phrasePick = customPhrases[Math.floor(Math.random() * customPhrases.length)];
+        if ((phrasePick || '').trim().length > 0) {
+          candidates.push(phrasePick.trim());
+        }
+      }
+
       // Recent decoration (last 24h)
       var newDecs = (state.decorations || []).filter(function(d) {
         if (d.isStarter || !d.earnedAt) return false;
@@ -10499,6 +10518,17 @@
     var letterLoadingTuple = useState(false);
     var letterLoading = letterLoadingTuple[0];
     var setLetterLoading = letterLoadingTuple[1];
+
+    // Phase 2p.32 — companion-phrases draft, lifted for rules-of-hooks.
+    var phraseDraftTuple = useState('');
+    var phraseDraft = phraseDraftTuple[0];
+    var setPhraseDraft = phraseDraftTuple[1];
+    // Reset draft each time the phrases modal opens.
+    useEffect(function() {
+      if (state.activeModal !== 'companion-phrases') return;
+      setPhraseDraft('');
+      // eslint-disable-next-line
+    }, [state.activeModal]);
 
     // Phase 2p.31 — sensory grounding (5-4-3-2-1) state, lifted here
     // per the established rules-of-hooks pattern. Steps cycle 0→1→2→3→4
@@ -12473,6 +12503,17 @@
             }
           }, '🍪') : null,
           h('button', {
+            onClick: function() { setStateField('activeModal', 'companion-phrases'); },
+            'aria-label': 'Teach ' + displayName + ' a phrase',
+            title: 'Teach ' + displayName + ' to say something',
+            style: {
+              background: 'transparent', border: 'none',
+              color: palette.textMute, fontSize: '12px',
+              cursor: 'pointer', padding: '0 2px',
+              fontFamily: 'inherit'
+            }
+          }, '💬'),
+          h('button', {
             onClick: function() { setStateField('activeModal', 'companion-setup'); },
             'aria-label': 'Edit ' + displayName,
             title: 'Change species, color, or name',
@@ -13240,6 +13281,154 @@
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
             }, 'Done')
           )
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // COMPANION PHRASES (Phase 2p.32) — students teach the companion
+    // 1-5 personal phrases that mix into the bubble pool at ~25%
+    // chance. Tiny, delightful, deeply personal. Phrases are stored
+    // on the companion record so they survive species/color changes.
+    // ─────────────────────────────────────────────────
+    var COMPANION_PHRASE_MAX = 5;
+    var COMPANION_PHRASE_LIMIT = 80;
+    function renderCompanionPhrasesModal() {
+      if (state.activeModal !== 'companion-phrases') return null;
+      var c = state.companion;
+      if (!c || !c.species) {
+        // No companion — bounce to setup.
+        setTimeout(function() { setStateField('activeModal', 'companion-setup'); }, 0);
+        return null;
+      }
+      var sp = getCompanionSpecies(c.species);
+      var phrases = Array.isArray(c.customPhrases) ? c.customPhrases : [];
+      var canAdd = phrases.length < COMPANION_PHRASE_MAX;
+      var trimmed = (phraseDraft || '').trim();
+      var validDraft = trimmed.length > 0 && trimmed.length <= COMPANION_PHRASE_LIMIT;
+
+      function close() { setStateField('activeModal', null); }
+      function teachPhrase() {
+        if (!canAdd || !validDraft) return;
+        // Clamp + dedupe (case-insensitive)
+        var lc = trimmed.toLowerCase();
+        if (phrases.some(function(p) { return p.toLowerCase() === lc; })) {
+          addToast(c.name + ' already knows that one.');
+          return;
+        }
+        var next = phrases.concat([trimmed]);
+        saveCompanion({ customPhrases: next });
+        setPhraseDraft('');
+        addToast('💬 ' + c.name + ' learned a new phrase.');
+      }
+      function forgetPhrase(idx) {
+        var next = phrases.slice(); next.splice(idx, 1);
+        saveCompanion({ customPhrases: next });
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Teach ' + c.name + ' a phrase',
+        onClick: function(e) { if (e.target === e.currentTarget) close(); },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '460px', width: '100%', maxHeight: '85vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+              '💬 Teach ' + c.name + ' a phrase'),
+            h('button', {
+              onClick: close,
+              'aria-label': 'Close',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', { style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', margin: '0 0 14px 0', lineHeight: '1.5' } },
+            'Anything you write here ' + c.name + ' will say sometimes when you click them. Up to ' + COMPANION_PHRASE_MAX + ' phrases. Forget any, any time.'),
+
+          // Existing phrases
+          phrases.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+              (sp ? sp.label : 'Buddy') + ' knows · ' + phrases.length + '/' + COMPANION_PHRASE_MAX),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              phrases.map(function(p, i) {
+                return h('div', {
+                  key: 'phrase-' + i,
+                  style: {
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '8px 10px',
+                    background: palette.surface, border: '1px solid ' + palette.border,
+                    borderRadius: '8px'
+                  }
+                },
+                  h('div', { style: { flex: 1, fontSize: '13px', color: palette.text, lineHeight: '1.4' } },
+                    h('span', { 'aria-hidden': 'true', style: { color: palette.accent, marginRight: '6px' } }, '"'),
+                    p,
+                    h('span', { 'aria-hidden': 'true', style: { color: palette.accent, marginLeft: '4px' } }, '"')
+                  ),
+                  h('button', {
+                    onClick: function() { forgetPhrase(i); },
+                    'aria-label': 'Forget this phrase',
+                    title: 'Forget',
+                    style: {
+                      background: 'transparent', border: 'none', color: palette.textMute,
+                      fontSize: '14px', cursor: 'pointer', padding: '0 4px', fontFamily: 'inherit'
+                    }
+                  }, '✕')
+                );
+              })
+            )
+          ) : h('p', { style: { fontSize: '12px', color: palette.textMute, fontStyle: 'italic', textAlign: 'center', padding: '14px 0', marginBottom: '14px' } },
+            (sp ? sp.label : 'Your buddy') + ' hasn\'t learned anything yet.'),
+
+          // Teach new phrase
+          canAdd ? h('div', null,
+            h('label', {
+              htmlFor: 'ah-phrase-input',
+              style: { display: 'block', fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }
+            }, 'Teach a new phrase'),
+            h('textarea', {
+              id: 'ah-phrase-input',
+              value: phraseDraft,
+              onChange: function(e) { setPhraseDraft(e.target.value.slice(0, COMPANION_PHRASE_LIMIT)); },
+              placeholder: 'Anything you want — an inside joke, a reminder, a little wisdom...',
+              maxLength: COMPANION_PHRASE_LIMIT,
+              rows: 2,
+              'aria-label': 'New phrase to teach your buddy',
+              style: {
+                width: '100%', padding: '10px 12px',
+                background: palette.surface, border: '1px solid ' + palette.border,
+                borderRadius: '8px', color: palette.text,
+                fontSize: '13px', fontFamily: 'inherit', lineHeight: '1.5',
+                resize: 'vertical', boxSizing: 'border-box'
+              }
+            }),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+              h('span', null, trimmed.length + '/' + COMPANION_PHRASE_LIMIT + ' characters'),
+              h('button', {
+                onClick: teachPhrase,
+                disabled: !validDraft,
+                style: Object.assign({}, primaryBtnStyle(palette), {
+                  padding: '6px 14px', fontSize: '12px',
+                  opacity: validDraft ? 1 : 0.5,
+                  cursor: validDraft ? 'pointer' : 'not-allowed'
+                })
+              }, '+ Teach phrase')
+            )
+          ) : h('p', { style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', textAlign: 'center' } },
+            c.name + ' has learned the maximum (' + COMPANION_PHRASE_MAX + '). Forget one to teach another.')
         )
       );
     }
@@ -17881,6 +18070,7 @@
       renderSettingsModal(),
       renderBreathingModal(),
       renderGroundingModal(),
+      renderCompanionPhrasesModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard(),
       // Print packet — portaled to body so the @media print rule's
