@@ -4826,6 +4826,16 @@
         var newCards = cards.filter(function(c) { return c.id !== id; });
         setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
       }
+      // Drag-to-reorder (Phase 2p.24) — native HTML5 DnD between card rows.
+      // Lets students sequence cards from foundational → advanced.
+      function moveCard(fromIdx, toIdx) {
+        if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
+        if (fromIdx >= cards.length || toIdx >= cards.length) return;
+        var newCards = cards.slice();
+        var moved = newCards.splice(fromIdx, 1)[0];
+        newCards.splice(toIdx, 0, moved);
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
       function clearAllCards() {
         if (window.confirm && !window.confirm('Remove all ' + cards.length + ' cards from this deck? Mastery stats are lost.')) return;
         setDraft(Object.assign({}, draft, { data: { cards: [
@@ -4968,15 +4978,41 @@
           cards.map(function(card, idx) {
             return h('div', {
               key: card.id,
+              // Phase 2p.24 — drag-to-reorder. Drop anywhere on a row
+              // moves the dragged card to that position.
+              draggable: cards.length > 1 ? true : false,
+              onDragStart: function(e) {
+                if (cards.length <= 1) { e.preventDefault(); return; }
+                try {
+                  e.dataTransfer.effectAllowed = 'move';
+                  e.dataTransfer.setData('text/plain', String(idx));
+                } catch (err) { /* IE quirks */ }
+              },
+              onDragOver: function(e) {
+                if (cards.length <= 1) return;
+                e.preventDefault();
+                try { e.dataTransfer.dropEffect = 'move'; } catch (err) {}
+              },
+              onDrop: function(e) {
+                if (cards.length <= 1) return;
+                e.preventDefault();
+                var fromIdx;
+                try { fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10); } catch (err) { return; }
+                if (isNaN(fromIdx) || fromIdx === idx) return;
+                moveCard(fromIdx, idx);
+              },
               style: {
                 padding: '10px',
                 background: palette.surface,
                 border: '1px solid ' + palette.border,
-                borderRadius: '8px'
+                borderRadius: '8px',
+                cursor: cards.length > 1 ? 'grab' : 'default'
               }
             },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
-                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700 } }, 'Card ' + (idx + 1)),
+                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700 } },
+                  // Phase 2p.24 — drag handle visual hint when reorder is possible
+                  cards.length > 1 ? '⋮⋮ Card ' + (idx + 1) : 'Card ' + (idx + 1)),
                 cards.length > 1 ? h('button', {
                   onClick: function() { deleteCard(card.id); },
                   'aria-label': 'Delete card ' + (idx + 1),
@@ -12671,20 +12707,33 @@
       // the visible decks. activeSubjectFilter lives in generateContext
       // since it's modal-scoped and shouldn't persist beyond close.
       var activeFilter = (state.generateContext && state.generateContext.subjectFilter) || null;
+      var activeMoodFilter = (state.generateContext && state.generateContext.moodFilter) || null;
       var allWithContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
-      var withContent = activeFilter
-        ? allWithContent.filter(function(d) {
-            return Array.isArray(d.subjects) && d.subjects.indexOf(activeFilter) !== -1;
-          })
-        : allWithContent;
-      // Compute which subjects are actually present (for filter row)
+      var withContent = allWithContent.filter(function(d) {
+        if (activeFilter) {
+          if (!Array.isArray(d.subjects) || d.subjects.indexOf(activeFilter) === -1) return false;
+        }
+        if (activeMoodFilter) {
+          if (d.mood !== activeMoodFilter) return false;
+        }
+        return true;
+      });
+      // Compute which subjects + moods are actually present (for filter rows)
       var subjectsPresent = {};
+      var moodsPresent = {};
       allWithContent.forEach(function(d) {
         (d.subjects || []).forEach(function(s) { subjectsPresent[s] = (subjectsPresent[s] || 0) + 1; });
+        if (d.mood) moodsPresent[d.mood] = (moodsPresent[d.mood] || 0) + 1;
       });
       function setSubjectFilter(id) {
         var nextCtx = Object.assign({}, state.generateContext || {}, {
           subjectFilter: (activeFilter === id) ? null : id
+        });
+        setStateField('generateContext', nextCtx);
+      }
+      function setMoodFilter(id) {
+        var nextCtx = Object.assign({}, state.generateContext || {}, {
+          moodFilter: (activeMoodFilter === id) ? null : id
         });
         setStateField('generateContext', nextCtx);
       }
@@ -12830,13 +12879,21 @@
           // Empty-state — distinguish "no content yet" vs "filter narrowed to zero"
           totalDecks === 0 ? (function() {
             var allCount = allWithContent.length;
-            var filteredOut = activeFilter && allCount > 0;
+            var filteredOut = (activeFilter || activeMoodFilter) && allCount > 0;
             if (filteredOut) {
               var filterLabel = (function() {
-                for (var fi = 0; fi < SUBJECT_TAGS.length; fi++) {
-                  if (SUBJECT_TAGS[fi].id === activeFilter) return SUBJECT_TAGS[fi].label;
+                var parts = [];
+                if (activeFilter) {
+                  for (var fi = 0; fi < SUBJECT_TAGS.length; fi++) {
+                    if (SUBJECT_TAGS[fi].id === activeFilter) { parts.push(SUBJECT_TAGS[fi].label); break; }
+                  }
+                  if (parts.length === 0) parts.push(activeFilter);
                 }
-                return activeFilter;
+                if (activeMoodFilter) {
+                  var mo = getMoodOption(activeMoodFilter);
+                  parts.push(mo ? mo.label : activeMoodFilter);
+                }
+                return parts.join(' + ');
               })();
               return h('div', {
                 role: 'status', 'aria-live': 'polite',
@@ -12846,8 +12903,15 @@
                 h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: '0 0 10px 0' } },
                   'No decks tagged "' + filterLabel + '" yet. Tag a deck via its memory modal, or:'),
                 h('button', {
-                  onClick: function() { setSubjectFilter(activeFilter); },
-                  'aria-label': 'Clear subject filter',
+                  onClick: function() {
+                    // Clear BOTH filters simultaneously
+                    var nextCtx = Object.assign({}, state.generateContext || {}, {
+                      subjectFilter: null,
+                      moodFilter: null
+                    });
+                    setStateField('generateContext', nextCtx);
+                  },
+                  'aria-label': 'Clear all filters',
                   style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
                 }, 'Show all decks')
               );
@@ -12924,6 +12988,52 @@
             activeFilter ? h('button', {
               onClick: function() { setSubjectFilter(activeFilter); }, // toggle clears
               'aria-label': 'Clear subject filter',
+              style: {
+                background: 'transparent',
+                color: palette.textMute,
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textDecoration: 'underline',
+                marginLeft: '4px'
+              }
+            }, 'Clear') : null
+          ) : null,
+
+          // Mood filter chips (Phase 2p.24) — parallel to subject filter,
+          // appears when ≥1 deck has any mood tagged. Lets clinicians
+          // quickly view all "struggle"-tagged decks (or any other mood).
+          Object.keys(moodsPresent).length > 0 ? h('div', {
+            role: 'region',
+            'aria-label': 'Filter decks by mood',
+            style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px', alignItems: 'center' }
+          },
+            h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+              'Mood:'),
+            MOOD_OPTIONS.filter(function(m) { return !!moodsPresent[m.id]; }).map(function(m) {
+              var active = activeMoodFilter === m.id;
+              return h('button', {
+                key: 'mf-' + m.id,
+                onClick: function() { setMoodFilter(m.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  background: active ? palette.accent : 'transparent',
+                  color: active ? palette.onAccent : palette.text,
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, m.emoji + ' ' + m.label + ' · ' + moodsPresent[m.id]);
+            }),
+            activeMoodFilter ? h('button', {
+              onClick: function() { setMoodFilter(activeMoodFilter); },
+              'aria-label': 'Clear mood filter',
               style: {
                 background: 'transparent',
                 color: palette.textMute,
