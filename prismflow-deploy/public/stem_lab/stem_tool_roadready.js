@@ -13709,7 +13709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     [
                       { dx: 0,    dz: -1.6 }, { dx: 0,    dz: 0 }, { dx: 0,    dz: 1.6 },
                       { dx: -1.4, dz: -0.8 }, { dx: -1.4, dz: 0.8 }
-                    ].forEach(function(mp, mpi) {
+                    ].forEach(function(mp) {
                       var mktColor = mktCarColors[Math.floor(mktRng() * mktCarColors.length)];
                       var mktBodyMat = new T.MeshLambertMaterial({ color: mktColor });
                       var mktCabMat = new T.MeshLambertMaterial({ color: Math.max(0, mktColor - 0x202020) });
@@ -13936,7 +13936,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // splineCenter at the sign's Z.
                 var lmSignSplineCx = iw.spline ? (iw.spline.centerAt(landmarkSignZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
                 var roadShoulderX = lmSignSplineCx + lm.side * (MAX_ROAD_WIDTH + 1);
-                var signBackMat = new T.MeshLambertMaterial({ color: 0xffffff });
                 var signPost2Mat = new T.MeshLambertMaterial({ color: 0xd1d5db });
                 function addRoadSign(shape, faceColor, label, labelColor, zOff) {
                   var postZ = landmarkSignZ + (zOff || 0);
@@ -17483,7 +17482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(g, 18 + gi * 12, H - 64);
           });
           // Warning light strip — shows active indicator lights like a real car
-          var warnX = 10, warnY = H - 54, warnW = 100, warnH = 18;
+          var warnX = 10, warnY = H - 54;
           var warnIcons = [];
           if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: 'High beams' });
           if (blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: 'Left signal' });
@@ -21349,7 +21348,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ROAD TEST SIMULATOR (intro → pre-trip → drive → result)
       // ══════════════════════════════════════════════════════════
       if (view === 'roadTestIntro') {
-        var rtStage = d.roadTestStage || 'pretrip';
         var rtPretripOk = d.preTripChecks && Object.keys(d.preTripChecks).filter(function(k){return d.preTripChecks[k];}).length >= 20;
         return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),

@@ -6275,7 +6275,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var travelsY = !t.crossStreet;
             var forwardSign = travelsY ? (t.heading > 0 ? 1 : -1) : (Math.abs(t.heading) < 1 ? 1 : -1);
             var axis = travelsY ? 'y' : 'x';
-            var crossAxis = travelsY ? 'x' : 'y';
             var aheadOf = function(targetX, targetY) {
               var d = (axis === 'y') ? (targetY - t.y) * forwardSign : (targetX - t.x) * forwardSign;
               var lat = (axis === 'y') ? (targetX - t.x) : (targetY - t.y);
@@ -8451,10 +8450,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var tVy = Math.sin(t.heading) * t.speed;
             var relVx = carVx - tVx;
             var relVy = carVy - tVy;
-            // Closing along the impact line (normalize displacement vector first)
-            var distSafe = Math.max(dist, 0.001);
-            var dirX = dx / distSafe;
-            var dirY = dy / distSafe;
             // Closing speed = component of (-relV) along (other → self) direction
             // ≈ Math.hypot(relVx, relVy) is the upper bound; use it as worst-case impact.
             var relativeSpeed = Math.hypot(relVx, relVy);
@@ -11859,7 +11854,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // direction, ±X is left/right of the bike, +Y is up.
               // The group rotates on rotation.y to align with heading at render time.
               var cg = new T.Group();
-              var bikeMetal = new T.MeshLambertMaterial({ color: isMoto ? 0x1e293b : 0xef4444 });
               var wheelMat2 = new T.MeshLambertMaterial({ color: 0x1e1e1e });
               var spokeMat = new T.MeshLambertMaterial({ color: 0xcfcfcf });
               var wheelR = isMoto ? 0.30 : 0.33;
@@ -13715,7 +13709,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     [
                       { dx: 0,    dz: -1.6 }, { dx: 0,    dz: 0 }, { dx: 0,    dz: 1.6 },
                       { dx: -1.4, dz: -0.8 }, { dx: -1.4, dz: 0.8 }
-                    ].forEach(function(mp, mpi) {
+                    ].forEach(function(mp) {
                       var mktColor = mktCarColors[Math.floor(mktRng() * mktCarColors.length)];
                       var mktBodyMat = new T.MeshLambertMaterial({ color: mktColor });
                       var mktCabMat = new T.MeshLambertMaterial({ color: Math.max(0, mktColor - 0x202020) });
@@ -13942,7 +13936,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // splineCenter at the sign's Z.
                 var lmSignSplineCx = iw.spline ? (iw.spline.centerAt(landmarkSignZ - chunkWorldZ + ribbonChunkBaseY) - MAP_SIZE / 2) : 0;
                 var roadShoulderX = lmSignSplineCx + lm.side * (MAX_ROAD_WIDTH + 1);
-                var signBackMat = new T.MeshLambertMaterial({ color: 0xffffff });
                 var signPost2Mat = new T.MeshLambertMaterial({ color: 0xd1d5db });
                 function addRoadSign(shape, faceColor, label, labelColor, zOff) {
                   var postZ = landmarkSignZ + (zOff || 0);
@@ -17489,7 +17482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillText(g, 18 + gi * 12, H - 64);
           });
           // Warning light strip — shows active indicator lights like a real car
-          var warnX = 10, warnY = H - 54, warnW = 100, warnH = 18;
+          var warnX = 10, warnY = H - 54;
           var warnIcons = [];
           if (d && d.highBeams) warnIcons.push({ icon: '🔆', color: '#3b82f6', title: 'High beams' });
           if (blinkerRef.current === -1 && (Math.floor(timeRef.current * 2) % 2 === 0)) warnIcons.push({ icon: '◄', color: '#22c55e', title: 'Left signal' });
@@ -21355,7 +21348,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ROAD TEST SIMULATOR (intro → pre-trip → drive → result)
       // ══════════════════════════════════════════════════════════
       if (view === 'roadTestIntro') {
-        var rtStage = d.roadTestStage || 'pretrip';
         var rtPretripOk = d.preTripChecks && Object.keys(d.preTripChecks).filter(function(k){return d.preTripChecks[k];}).length >= 20;
         return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
           h('button', { onClick: function() { updMulti({ view: 'menu', roadTestStage: null }); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
