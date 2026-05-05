@@ -2776,6 +2776,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
           ]),
           renderGenerationLoop(),
 
+          // ── Pipeline overview: where each Section 1 sub-card fits in the LLM flow ──
+          // Lifts the BirdLab career-pathway step-flow pattern.
+          (function() {
+            var STAGES = [
+              { id: 'tokens',  glyph: '🔤', title: 'Tokens',          subtitle: 'Text → sub-word IDs',     color: '#2563eb', anchor: '#llm-lit-s1-tokens' },
+              { id: 'embed',   glyph: '🧮', title: 'Embeddings',      subtitle: 'IDs → high-D vectors',    color: '#7c3aed', anchor: '#llm-lit-s1-tokens' },
+              { id: 'context', glyph: '🪟', title: 'Context window',  subtitle: 'N tokens visible at once', color: '#0891b2', anchor: '#llm-lit-s1-loop' },
+              { id: 'predict', glyph: '🎲', title: 'Next-token',      subtitle: 'Probabilities over vocab',  color: '#0d9488', anchor: '#llm-lit-s1-nexttok' },
+              { id: 'temp',    glyph: '🌡️', title: 'Temperature',    subtitle: 'How far from the top pick',  color: '#d97706', anchor: '#llm-lit-s1-tempcompare' },
+              { id: 'output',  glyph: '🔁', title: 'Sample + repeat', subtitle: 'Append → loop until stop',   color: '#be123c', anchor: '#llm-lit-s1-loop' }
+            ];
+            return h('div', { style: Object.assign({}, cardStyle, { borderLeft: '4px solid #6366f1', background: 'linear-gradient(135deg, #eef2ff 0%, #f0f9ff 60%, #ecfeff 100%)' }) },
+              h('div', { style: { fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#4338ca', marginBottom: '10px' } }, '🛤 The full pipeline at a glance'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'stretch', gap: '6px' } },
+                STAGES.map(function(s, i) {
+                  var isLast = i === STAGES.length - 1;
+                  return h('div', { key: s.id, style: { display: 'flex', alignItems: 'center', gap: '6px' } },
+                    h('a', {
+                      href: s.anchor,
+                      onClick: function(e) {
+                        e.preventDefault();
+                        var el = document.querySelector(s.anchor);
+                        if (el && el.scrollIntoView) {
+                          var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                          el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+                        }
+                      },
+                      'aria-label': 'Step ' + (i + 1) + ': ' + s.title + ' — ' + s.subtitle + '. Jump to section.',
+                      style: {
+                        position: 'relative',
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        background: '#ffffff',
+                        border: '2px solid ' + s.color,
+                        borderRadius: '10px',
+                        padding: '8px 12px 8px 16px',
+                        textDecoration: 'none',
+                        boxShadow: '0 1px 3px rgba(15,23,42,0.08)',
+                        color: COLORS.text
+                      }
+                    },
+                      h('span', {
+                        'aria-hidden': 'true',
+                        style: {
+                          position: 'absolute', top: -8, left: -8,
+                          width: 22, height: 22, borderRadius: '50%',
+                          background: s.color, color: '#ffffff',
+                          fontSize: 11, fontWeight: 900,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.25)'
+                        }
+                      }, String(i + 1)),
+                      h('span', { 'aria-hidden': 'true', style: { fontSize: '18px' } }, s.glyph),
+                      h('div', { style: { display: 'flex', flexDirection: 'column', lineHeight: 1.15 } },
+                        h('span', { style: { fontWeight: 800, fontSize: '13px', color: s.color } }, s.title),
+                        h('span', { style: { fontSize: '10px', color: COLORS.muted } }, s.subtitle)
+                      )
+                    ),
+                    !isLast && h('span', {
+                      'aria-hidden': 'true',
+                      style: { color: '#6366f1', fontSize: '18px', fontWeight: 'bold' }
+                    }, '→')
+                  );
+                })
+              ),
+              h('p', { style: { fontSize: '11px', color: COLORS.muted, margin: '10px 0 0', lineHeight: 1.4, fontStyle: 'italic' } },
+                'Each block below explores one of these stages. Click any chip to jump straight to it.')
+            );
+          })(),
+
           // ── Part A: Tokenization ──
           h('div', { id: 'llm-lit-s1-tokens', className: 'llm-lit-anchor', style: Object.assign({}, cardStyle, { borderLeft: '4px solid ' + COLORS.accent2 }) },
             h('h3', { style: { margin: '0 0 6px', fontSize: '17px', color: COLORS.accent2 } }, '\uD83D\uDD24 ', Term('tokenization', 'Tokenization')),
