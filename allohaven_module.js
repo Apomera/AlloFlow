@@ -1392,6 +1392,9 @@
     { id: 'first-favorite', emoji: '⭐', label: 'First favorite',
       desc: 'Marked a decoration as a favorite — claimed your taste.',
       check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isFavorite; }); } },
+    { id: 'first-voice-note', emoji: '🎤', label: 'First voice note',
+      desc: 'Recorded a voice note on a decoration — your words, your voice.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!(d.voiceNote && d.voiceNote.base64); }); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -3302,11 +3305,34 @@
     var h = React.createElement;
     var useState = React.useState;
     var useEffect = React.useEffect;
+    var useRef = React.useRef;
 
     var palette = p.palette;
     var decoration = p.decoration;
     var existing = decoration && decoration.linkedContent;
     var hasContent = !!existing;
+
+    // Voice note state (Phase 2p.15) — local-only; saved values come
+    // from decoration.voiceNote, in-progress recording lives here.
+    var voiceModeTuple = useState('idle'); // 'idle' | 'recording' | 'preview'
+    var voiceMode = voiceModeTuple[0];
+    var setVoiceMode = voiceModeTuple[1];
+    var recordedTuple = useState(null); // { base64, durationMs }
+    var recorded = recordedTuple[0];
+    var setRecorded = recordedTuple[1];
+    var recordSecondsTuple = useState(0);
+    var recordSeconds = recordSecondsTuple[0];
+    var setRecordSeconds = recordSecondsTuple[1];
+    var voiceErrorTuple = useState(null);
+    var voiceError = voiceErrorTuple[0];
+    var setVoiceError = voiceErrorTuple[1];
+    var mediaRecorderRef = useRef(null);
+    var recordedChunksRef = useRef([]);
+    var recordTimerRef = useRef(null);
+    var recordStartedAtRef = useRef(0);
+    var voicePanelOpenTuple = useState(false);
+    var voicePanelOpen = voicePanelOpenTuple[0];
+    var setVoicePanelOpen = voicePanelOpenTuple[1];
 
     // ── Modal mode ──
     // 'pick-type'   — empty state, choosing what kind of content to add
@@ -5024,6 +5050,207 @@
       );
     }
 
+    // ── Voice note recording (Phase 2p.15) ──
+    function blobToBase64(blob) {
+      return new Promise(function(resolve, reject) {
+        var reader = new FileReader();
+        reader.onloadend = function() {
+          // result is "data:audio/webm;base64,XXXX" — keep the full data URI
+          // so playback can use it directly as <audio src>
+          resolve(reader.result);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    }
+    function startRecording() {
+      setVoiceError(null);
+      if (!navigator || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setVoiceError('Voice recording isn\'t supported on this browser.');
+        return;
+      }
+      if (typeof window.MediaRecorder === 'undefined') {
+        setVoiceError('Voice recording isn\'t supported on this browser.');
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
+        recordedChunksRef.current = [];
+        // Prefer webm/opus; fall back to default if unsupported
+        var mimeType = '';
+        try {
+          if (window.MediaRecorder.isTypeSupported && window.MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+            mimeType = 'audio/webm;codecs=opus';
+          }
+        } catch (e) { /* ignore */ }
+        var rec;
+        try {
+          rec = mimeType ? new window.MediaRecorder(stream, { mimeType: mimeType }) : new window.MediaRecorder(stream);
+        } catch (e) {
+          rec = new window.MediaRecorder(stream);
+        }
+        mediaRecorderRef.current = rec;
+        rec.ondataavailable = function(e) {
+          if (e.data && e.data.size > 0) recordedChunksRef.current.push(e.data);
+        };
+        rec.onstop = function() {
+          // Stop all tracks to release the mic
+          try { stream.getTracks().forEach(function(t) { t.stop(); }); } catch (e) {}
+          var blob = new Blob(recordedChunksRef.current, { type: rec.mimeType || 'audio/webm' });
+          var elapsed = Date.now() - recordStartedAtRef.current;
+          blobToBase64(blob).then(function(base64) {
+            setRecorded({ base64: base64, durationMs: elapsed });
+            setVoiceMode('preview');
+          }).catch(function() {
+            setVoiceError('Could not save the recording. Try again.');
+            setVoiceMode('idle');
+          });
+        };
+        recordStartedAtRef.current = Date.now();
+        setRecordSeconds(0);
+        rec.start();
+        setVoiceMode('recording');
+        // Tick every 250ms; auto-stop at 30 seconds
+        recordTimerRef.current = setInterval(function() {
+          var sec = Math.floor((Date.now() - recordStartedAtRef.current) / 1000);
+          setRecordSeconds(sec);
+          if (sec >= 30) stopRecording();
+        }, 250);
+      }).catch(function() {
+        setVoiceError('Microphone access denied. You can enable it in browser settings.');
+      });
+    }
+    function stopRecording() {
+      if (recordTimerRef.current) {
+        clearInterval(recordTimerRef.current);
+        recordTimerRef.current = null;
+      }
+      var rec = mediaRecorderRef.current;
+      if (rec && rec.state === 'recording') {
+        try { rec.stop(); } catch (e) {}
+      }
+    }
+    function discardRecording() {
+      setRecorded(null);
+      setVoiceMode('idle');
+      setRecordSeconds(0);
+    }
+    function saveRecording() {
+      if (!recorded || typeof p.onSaveVoiceNote !== 'function') return;
+      p.onSaveVoiceNote(recorded.base64, recorded.durationMs);
+      setRecorded(null);
+      setVoiceMode('idle');
+      setRecordSeconds(0);
+      setVoicePanelOpen(false);
+    }
+    // Cleanup on unmount: stop any in-progress recording
+    useEffect(function() {
+      return function() {
+        if (recordTimerRef.current) clearInterval(recordTimerRef.current);
+        var rec = mediaRecorderRef.current;
+        if (rec && rec.state === 'recording') {
+          try { rec.stop(); } catch (e) {}
+        }
+      };
+    }, []);
+
+    function renderVoiceNotePanel() {
+      var savedNote = decoration.voiceNote;
+      var hasNote = !!(savedNote && savedNote.base64);
+      // If panel collapsed, just show the toggle button
+      if (!voicePanelOpen) return null;
+      return h('div', {
+        role: 'region',
+        'aria-label': 'Voice note',
+        style: {
+          marginTop: '12px',
+          marginBottom: '12px',
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '10px'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' } },
+          h('span', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+            '🎤 Voice note'),
+          h('button', {
+            onClick: function() { setVoicePanelOpen(false); },
+            'aria-label': 'Close voice note panel',
+            style: { background: 'transparent', border: 'none', color: palette.textMute, fontSize: '11px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        // Existing saved note — show playback + replace + delete
+        hasNote && voiceMode === 'idle' ? h('div', null,
+          h('audio', {
+            src: savedNote.base64,
+            controls: true,
+            style: { width: '100%', marginBottom: '8px' }
+          }),
+          h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '8px', fontStyle: 'italic' } },
+            'Recorded ' + new Date(savedNote.recordedAt).toLocaleString()
+            + ' · ' + Math.round((savedNote.durationMs || 0) / 1000) + 's'),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', {
+              onClick: startRecording,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+            }, '🎤 Replace'),
+            h('button', {
+              onClick: function() {
+                if (window.confirm && !window.confirm('Delete this voice note?')) return;
+                if (typeof p.onClearVoiceNote === 'function') p.onClearVoiceNote();
+              },
+              style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+            }, '🗑 Delete')
+          )
+        ) : null,
+        // Idle, no saved note — show record button
+        !hasNote && voiceMode === 'idle' ? h('div', null,
+          h('p', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5', margin: '0 0 10px 0' } },
+            'Up to 30 seconds. Talk about what this decoration means to you, or quiz yourself out loud.'),
+          h('button', {
+            onClick: startRecording,
+            style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+          }, '🎤 Start recording')
+        ) : null,
+        // Recording — show timer + stop
+        voiceMode === 'recording' ? h('div', { style: { textAlign: 'center', padding: '6px 0' } },
+          h('div', {
+            'aria-live': 'polite', 'aria-atomic': 'true',
+            style: { fontSize: '32px', fontWeight: 800, color: '#dc2626', fontVariantNumeric: 'tabular-nums' }
+          }, '● ' + recordSeconds + 's'),
+          h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '12px' } }, 'Recording — auto-stops at 30s'),
+          h('button', {
+            onClick: stopRecording,
+            style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 22px', fontSize: '13px' })
+          }, '⏹ Stop')
+        ) : null,
+        // Preview — playback + save / discard
+        voiceMode === 'preview' && recorded ? h('div', null,
+          h('audio', {
+            src: recorded.base64,
+            controls: true,
+            style: { width: '100%', marginBottom: '8px' }
+          }),
+          h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '8px' } },
+            Math.round(recorded.durationMs / 1000) + ' second' + (Math.round(recorded.durationMs / 1000) === 1 ? '' : 's')),
+          h('div', { style: { display: 'flex', gap: '8px' } },
+            h('button', {
+              onClick: discardRecording,
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
+            }, '✕ Discard'),
+            h('button', {
+              onClick: saveRecording,
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 18px', fontSize: '12px' })
+            }, '✓ Save')
+          )
+        ) : null,
+        voiceError ? h('div', {
+          role: 'alert',
+          style: { fontSize: '11px', color: '#dc2626', marginTop: '8px', fontStyle: 'italic' }
+        }, voiceError) : null
+      );
+    }
+
     return h('div', {
       role: 'dialog',
       'aria-modal': 'true',
@@ -5106,6 +5333,24 @@
                 fontFamily: 'inherit'
               }
             }, '🔄 Similar') : null,
+            // Voice note (Phase 2p.15)
+            typeof p.onSaveVoiceNote === 'function' ? h('button', {
+              onClick: function() { setVoicePanelOpen(!voicePanelOpen); },
+              'aria-pressed': voicePanelOpen ? 'true' : 'false',
+              'aria-label': decoration.voiceNote ? 'Open voice note panel' : 'Record a voice note',
+              title: decoration.voiceNote ? 'Voice note attached — open to play or replace' : 'Record up to 30 seconds of audio',
+              style: {
+                background: decoration.voiceNote ? palette.accent : 'transparent',
+                border: '1px solid ' + (decoration.voiceNote ? palette.accent : palette.border),
+                color: decoration.voiceNote ? palette.onAccent : palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '🎤' + (decoration.voiceNote ? ' ▶' : '')) : null,
             h('button', {
               onClick: p.onClose,
               'aria-label': 'Close memory modal',
@@ -5185,6 +5430,7 @@
             }, s.emoji + ' ' + s.label);
           })
         ) : null,
+        renderVoiceNotePanel(),
         renderTabs(),
         body
       )
@@ -8796,6 +9042,48 @@
       setStateField('decorations', newDecs);
     }
 
+    // Voice notes (Phase 2p.15) — students record up to 30 seconds of
+    // audio per decoration. Stored as base64 webm/opus in localStorage.
+    // No token cost — voice is pure expression, not currency.
+    function setDecorationVoiceNote(decorationId, base64, durationMs) {
+      var hadBefore = false;
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        hadBefore = !!(d.voiceNote && d.voiceNote.base64);
+        return Object.assign({}, d, {
+          voiceNote: {
+            base64: base64,
+            durationMs: durationMs,
+            recordedAt: new Date().toISOString()
+          }
+        });
+      });
+      setStateField('decorations', newDecs);
+      // Companion responds to the recording — small relational beat
+      if (!hadBefore && state.companion && state.companion.species) {
+        var openers = {
+          cat: 'Hmm. ', fox: 'Aha — ', owl: 'Observed: ',
+          turtle: 'Quietly: ', dragon: 'Whoa! '
+        };
+        var prefix = openers[state.companion.species] || 'Hmm. ';
+        setTimeout(function() {
+          saveCompanion({
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: prefix + 'I hear you. Saved.'
+          });
+        }, 80);
+      }
+    }
+    function clearDecorationVoiceNote(decorationId) {
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        var copy = Object.assign({}, d);
+        delete copy.voiceNote;
+        return copy;
+      });
+      setStateField('decorations', newDecs);
+    }
+
     // "Make similar" — opens the generate modal with the same template +
     // slots pre-loaded, so students can iterate on a design they liked
     // (try a different color, different art style) without rebuilding
@@ -9376,6 +9664,24 @@
               zIndex: 1
             }
           }, '⭐') : null,
+          // Voice note 🎤 overlay (Phase 2p.15) — small mic top-left
+          // adjacent to mood emoji. Indicates audio is attached.
+          decoration.voiceNote ? h('span', {
+            'aria-label': 'Voice note attached',
+            title: 'Voice note attached · click decoration to play',
+            style: {
+              position: 'absolute',
+              top: '2px',
+              left: decoration.mood && getMoodOption(decoration.mood) ? '24px' : '4px',
+              fontSize: '11px',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              background: 'rgba(0,0,0,0.45)',
+              lineHeight: 1,
+              pointerEvents: 'none',
+              zIndex: 1
+            }
+          }, '🎤') : null,
           // Mood tag overlay (Phase 2m) — small emoji top-left, away from
           // delete ✕ (top-right) and memory 📖 (bottom-left)
           decoration.mood && getMoodOption(decoration.mood) ? h('span', {
@@ -11649,7 +11955,9 @@
         onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); },
         onSetSubjects: function(subjectIds) { setDecorationSubjects(decorationId, subjectIds); },
         onToggleFavorite: function() { toggleDecorationFavorite(decorationId); },
-        onMakeSimilar: function() { makeSimilarTo(decorationId); }
+        onMakeSimilar: function() { makeSimilarTo(decorationId); },
+        onSaveVoiceNote: function(base64, durationMs) { setDecorationVoiceNote(decorationId, base64, durationMs); },
+        onClearVoiceNote: function() { clearDecorationVoiceNote(decorationId); }
       });
     }
 
@@ -13668,7 +13976,12 @@
           h('strong', null, 'Activity summary: '),
           (state.earnings || []).length + ' token-earning event' + ((state.earnings || []).length === 1 ? '' : 's'),
           ' · ', state.tokens, ' tokens earned and unspent',
-          ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies')
+          ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies'),
+          // Phase 2p.15 — flag voice-note count (audio itself doesn\'t print)
+          (function() {
+            var vCount = (state.decorations || []).filter(function(d) { return d.voiceNote && d.voiceNote.base64; }).length;
+            return vCount > 0 ? (' · ' + vCount + ' voice note' + (vCount === 1 ? '' : 's') + ' (audio not printable — see screen view)') : null;
+          })()
         ),
         // 90-day activity heatmap (Phase 2p.8) — paper-friendly grid
         // showing engagement consistency for IEP / parent review.
