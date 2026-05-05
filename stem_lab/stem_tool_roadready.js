@@ -5008,17 +5008,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // 1500 ft: general heading
                 if (qdist < 150 && !q._gpsCalls.far) {
                   q._gpsCalls.far = true;
-                  speak('In about ' + qdistFt + ' feet, ' + q.name + ' will be on your ' + qSide + '.');
+                  speak('In about ' + qdistFt + ' feet, ' + q.name + ' will be on your ' + qSide + '.', 'navigation');
                 }
                 // 500 ft: start slowing down, signal
                 if (qdist < 50 && !q._gpsCalls.mid) {
                   q._gpsCalls.mid = true;
-                  speak('In 500 feet, ' + q.name + ' on your ' + qSide + '. Signal ' + qSide + ' and slow down.');
+                  speak('In 500 feet, ' + q.name + ' on your ' + qSide + '. Signal ' + qSide + ' and slow down.', 'navigation');
                 }
-                // 200 ft: arrival
+                // 200 ft: arrival (critical-ish: tag as navigation but don't suppress final cue)
                 if (qdist < 20 && !q._gpsCalls.near) {
                   q._gpsCalls.near = true;
-                  speak('Arriving at ' + q.name + '. Pull in when safe.');
+                  speak('Arriving at ' + q.name + '. Pull in when safe.', 'navigation');
                 }
                 // Legacy toast
                 if (!q.announced && qdist < 18) {
@@ -5042,19 +5042,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var nextEvt = (weatherSysRef.current.queue && weatherSysRef.current.queue[0]) || null;
                 if (nextEvt) {
                   var etaMin = Math.max(0, Math.round((nextEvt.startAt - timeRef.current) / 60));
-                  speak('Weather radio: ' + nextEvt.weather + ' expected in about ' + (etaMin === 0 ? 'one' : etaMin) + ' minute' + (etaMin === 1 ? '' : 's') + '.');
+                  speak('Weather radio: ' + nextEvt.weather + ' expected in about ' + (etaMin === 0 ? 'one' : etaMin) + ' minute' + (etaMin === 1 ? '' : 's') + '.', 'radio');
                 } else {
-                  speak('Weather radio: ' + currentScenario.weather + ' conditions holding steady.');
+                  speak('Weather radio: ' + currentScenario.weather + ' conditions holding steady.', 'radio');
                 }
               }
               if (rd.station === 'traffic' && nowMs - rd.lastTrafficAt > 35000) {
                 rd.lastTrafficAt = nowMs;
                 var em = emergencyRef.current;
                 if (em && !em.responded) {
-                  speak('Traffic alert: emergency vehicle in your area. Be ready to pull right and stop.');
+                  speak('Traffic alert: emergency vehicle in your area. Be ready to pull right and stop.', 'radio');
                 } else {
                   var trafficLevel = currentScenario.traffic || 'medium';
-                  speak('Traffic update: ' + trafficLevel + ' volume on your route. Drive defensively.');
+                  speak('Traffic update: ' + trafficLevel + ' volume on your route. Drive defensively.', 'radio');
                 }
               }
               // ── Dynamic weather: pop the next queued transition when its startAt elapses ──
@@ -5526,16 +5526,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (wl && !ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)]) {
               if (Math.abs(wl.x - car.x) < 6 && (car.y - wl.y) > 0 && (car.y - wl.y) < 20) {
                 ras.announcedHazards['wl_' + wl.kind + '_' + Math.floor(wl.y)] = true;
-                if (wl.kind === 'moose') speak('Moose on the road edge. Braking straight, not swerving. Never swerve around a moose.');
-                else if (wl.kind === 'deer') speak('Deer detected. Slowing and scanning for more — deer travel in groups.');
-                else speak('Animal in the road. Braking.');
+                if (wl.kind === 'moose') speak('Moose on the road edge. Braking straight, not swerving. Never swerve around a moose.', 'hazard', 'critical');
+                else if (wl.kind === 'deer') speak('Deer detected. Slowing and scanning for more — deer travel in groups.', 'hazard', 'critical');
+                else speak('Animal in the road. Braking.', 'hazard', 'critical');
               }
             }
             // Target-speed narration on big changes (rate-limited to 8 s)
             if (rNow - ras.lastNarration > 8) {
               var gap = raTarget - raSpeedMph;
-              if (raTarget < 5 && raSpeedMph > 8) { speak('Slowing to a stop.'); ras.lastNarration = rNow; }
-              else if (gap > 12) { speak('Accelerating toward posted speed of ' + Math.round(raTarget) + '.'); ras.lastNarration = rNow; }
+              if (raTarget < 5 && raSpeedMph > 8) { speak('Slowing to a stop.', 'coach'); ras.lastNarration = rNow; }
+              else if (gap > 12) { speak('Accelerating toward posted speed of ' + Math.round(raTarget) + '.', 'coach'); ras.lastNarration = rNow; }
             }
           }
           // In Park: no movement at all
@@ -7089,24 +7089,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var laneSplineCenter = (iwTraf && iwTraf.spline) ? iwTraf.spline.centerAt(t.y) : splineCenter;
               var targetX = laneSplineCenter + t.laneOffset;
               var xErr = t.x - targetX;
-              // Aggressive lerp (0.12s time constant) so the X correction outruns the
-              // perpendicular drift introduced by spline-aligned forward motion on bends.
-              var xLerp = 1 - Math.exp(-dt / 0.12);
+              // Aggressive lerp (0.08s time constant — tightened from 0.12s) so the X
+              // correction outruns the perpendicular drift introduced by spline-aligned
+              // forward motion on bends. Tighter lerp keeps cars visibly anchored to
+              // their lane on curves, addressing the "cars don't stay in their correct
+              // lane" complaint.
+              var xLerp = 1 - Math.exp(-dt / 0.08);
               t.x -= xErr * xLerp;
               // ── Defensive lane-discipline guard ──
               // Legal lane offsets in play range from −2.4 to +2.4 (the
               // emergency-vehicle pull-over at line 5627 is the widest at
               // ±2.4; default lanes are ±1.5; overtake inner lane ±0.5).
-              // If t.x ever drifts more than 5.0 units from the spline
-              // center, something has gone wrong (off-road) and the soft
-              // 0.12s lerp won't catch up before the car is visibly
-              // through a tree or in oncoming traffic. Hard-snap back to
-              // the legal lane offset and reset heading to the spline
-              // tangent so the car re-joins traffic cleanly. Also reset
-              // any pending lane change so the snap isn't immediately
-              // undone by stale state.
-              var laneDriftDist = Math.abs(t.x - laneSplineCenter);
-              if (laneDriftDist > 5.0) {
+              // Measure drift FROM TARGET (not from spline center) so the
+              // guard scales properly with legal lane offsets. Tightened from
+              // 5.0 (vs spline center) → 1.5 (vs target lane): catches drift
+              // before any same-direction lane crossing without spuriously
+              // snapping legal emergency pullovers. The soft 0.08s lerp above
+              // handles normal cornering; this guard only fires on real
+              // off-lane drift.
+              var laneDriftDist = Math.abs(t.x - targetX);
+              if (laneDriftDist > 1.5) {
                 t.x = targetX;
                 t._pendingLaneOffset = null;
                 t._pendingLaneTimer = 0;
@@ -15230,7 +15232,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var width = lineWidth || (yellow ? 0.18 : 0.22);
                 var length = lineLen || 2.2;
                 var mat = new T.MeshBasicMaterial({ color: yellow ? alwaysYellowColor : alwaysMarksColor });
-                for (var sz = chunkWorldZ + z_start; sz < chunkWorldZ + CHUNK_SIZE - 0.5; sz += step) {
+                // Phase-align stripes to GLOBAL Z so chunk boundaries don't show a
+                // visible phase shift. Without this, CHUNK_SIZE=32 % step=7 = 4-meter
+                // shift between chunks (a "double dash" or missing-dash artifact at
+                // every chunk seam). With the alignment, stripes appear at z =
+                // z_start, z_start+step, z_start+2*step, ... in the world frame
+                // regardless of which chunk renders them.
+                var firstStripeZ = z_start + Math.ceil((chunkWorldZ - z_start) / step) * step;
+                if (firstStripeZ < chunkWorldZ + z_start - 0.001) firstStripeZ += step;
+                for (var sz = firstStripeZ; sz < chunkWorldZ + CHUNK_SIZE - 0.5; sz += step) {
                   if (sz > skipZ1 && sz < skipZ2) continue;
                   var stCtr = markCenterAtZ(sz);
                   var stHt = iw.spline ? iw.spline.heightAt(sz - chunkWorldZ + ribbonChunkBaseY) : 0;
