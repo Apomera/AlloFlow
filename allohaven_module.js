@@ -6988,6 +6988,23 @@
                 fontFamily: 'inherit'
               }
             }, '🖨 Print') : null,
+            // Save as image (Phase 2p.33) — downloads PNG share card
+            typeof p.onExportCard === 'function' && !decoration.isStarter && decoration.imageBase64 ? h('button', {
+              onClick: p.onExportCard,
+              'aria-label': 'Save this decoration as a PNG image',
+              title: 'Save as a PNG share card (image + reflection + mood)',
+              style: {
+                background: 'transparent',
+                border: '1px solid ' + palette.border,
+                color: palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '💾 Save image') : null,
             // Voice note (Phase 2p.15)
             typeof p.onSaveVoiceNote === 'function' ? h('button', {
               onClick: function() { setVoicePanelOpen(!voicePanelOpen); },
@@ -11224,6 +11241,162 @@
       addToast(isDrawing ? '🎨 Your drawing is in the room.' : '🌿 Your image is in the room.');
     }
 
+    // Export a decoration as a PNG share card (Phase 2p.33). Composes
+    // the decoration's image + name + date + mood + subjects + truncated
+    // reflection on a clean canvas, then triggers a download. Useful
+    // for IEP packets, parent meetings, scrapbooks, sharing with peers.
+    function exportDecorationAsImage(decorationId) {
+      var d = (state.decorations || []).filter(function(x) { return x.id === decorationId; })[0];
+      if (!d || !d.imageBase64) {
+        addToast('No image to save.');
+        return;
+      }
+      // Pre-load the decoration image so we can draw it.
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        try {
+          var W = 1080, H = 1080;
+          var canvas = document.createElement('canvas');
+          canvas.width = W; canvas.height = H;
+          var ctx = canvas.getContext('2d');
+
+          // Background — soft gradient based on active palette
+          var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+          bgGrad.addColorStop(0, palette.bg);
+          bgGrad.addColorStop(1, palette.surface);
+          ctx.fillStyle = bgGrad;
+          ctx.fillRect(0, 0, W, H);
+
+          // Thin border
+          ctx.strokeStyle = palette.accent;
+          ctx.lineWidth = 4;
+          ctx.strokeRect(20, 20, W - 40, H - 40);
+
+          // Top label
+          ctx.fillStyle = palette.textMute;
+          ctx.font = '600 22px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('FROM ALLOHAVEN', 60, 70);
+
+          // Decoration label (top right)
+          var label = (d.templateLabel || d.template || 'decoration').toString();
+          if (label.length > 26) label = label.slice(0, 24) + '…';
+          ctx.fillStyle = palette.text;
+          ctx.font = '700 24px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(label, W - 60, 70);
+
+          // Decoration image — fit centered into a 700x700 box
+          var BOX = 720, BX = (W - BOX) / 2, BY = 110;
+          // Image background card
+          ctx.fillStyle = palette.surface;
+          ctx.strokeStyle = palette.border;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(BX, BY, BOX, BOX, 24);
+          } else {
+            ctx.rect(BX, BY, BOX, BOX);
+          }
+          ctx.fill();
+          ctx.stroke();
+          // Aspect-fit the decoration image
+          var ar = img.naturalWidth / img.naturalHeight;
+          var iw, ih;
+          if (ar >= 1) { iw = BOX - 40; ih = (BOX - 40) / ar; }
+          else         { ih = BOX - 40; iw = (BOX - 40) * ar; }
+          var ix = BX + (BOX - iw) / 2;
+          var iy = BY + (BOX - ih) / 2;
+          ctx.drawImage(img, ix, iy, iw, ih);
+
+          // Mood + subjects pill row
+          var pillY = BY + BOX + 28;
+          var pills = [];
+          if (d.mood) {
+            var mo = getMoodOption(d.mood);
+            if (mo) pills.push(mo.emoji + '  ' + mo.label);
+          }
+          (d.subjects || []).slice(0, 3).forEach(function(sid) {
+            var t = getSubjectTag(sid);
+            if (t) pills.push(t.emoji + '  ' + t.label);
+          });
+          ctx.font = '600 18px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'left';
+          var px = 60;
+          pills.forEach(function(text) {
+            var pw = ctx.measureText(text).width + 24;
+            ctx.fillStyle = palette.surface;
+            ctx.strokeStyle = palette.border;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(px, pillY, pw, 32, 16);
+            else ctx.rect(px, pillY, pw, 32);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = palette.text;
+            ctx.fillText(text, px + 12, pillY + 22);
+            px += pw + 8;
+            if (px > W - 200) return;
+          });
+
+          // Reflection text — wrapped, truncated
+          var refl = (d.studentReflection || '').trim();
+          if (refl.length > 0) {
+            ctx.font = 'italic 22px Georgia, serif';
+            ctx.fillStyle = palette.text;
+            ctx.textAlign = 'left';
+            var maxW = W - 120;
+            var words = refl.split(/\s+/);
+            var lines = [];
+            var current = '';
+            for (var i = 0; i < words.length; i++) {
+              var test = current ? current + ' ' + words[i] : words[i];
+              if (ctx.measureText(test).width <= maxW) current = test;
+              else { lines.push(current); current = words[i]; if (lines.length >= 4) break; }
+            }
+            if (current && lines.length < 5) lines.push(current);
+            if (words.length > lines.join(' ').split(/\s+/).length) {
+              var last = lines[lines.length - 1] || '';
+              lines[lines.length - 1] = (last + '…').slice(0, 80);
+            }
+            var ty = pillY + 60;
+            lines.slice(0, 5).forEach(function(ln, i) {
+              ctx.fillText(ln, 60, ty + i * 30);
+            });
+          }
+
+          // Footer — date + companion + AlloHaven mark
+          var earnedStr = d.earnedAt ? new Date(d.earnedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+          var companion = state.companion;
+          var companionLabel = (companion && companion.name) ? ('with ' + companion.name) : '';
+          ctx.font = '600 18px system-ui, -apple-system, sans-serif';
+          ctx.fillStyle = palette.textMute;
+          ctx.textAlign = 'left';
+          ctx.fillText('🌿 AlloHaven' + (companionLabel ? '  ·  ' + companionLabel : ''), 60, H - 50);
+          ctx.textAlign = 'right';
+          if (earnedStr) ctx.fillText(earnedStr, W - 60, H - 50);
+
+          // Trigger download
+          var dataUrl = canvas.toDataURL('image/png');
+          var a = document.createElement('a');
+          var safeLabel = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30) || 'decoration';
+          a.href = dataUrl;
+          a.download = 'allohaven-' + safeLabel + '-' + (d.earnedAt ? d.earnedAt.slice(0, 10) : 'card') + '.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          addToast('💾 Saved as image.');
+        } catch (err) {
+          addToast('Could not export image. Try Print instead.');
+        }
+      };
+      img.onerror = function() {
+        addToast('Image unavailable. Try again later.');
+      };
+      img.src = d.imageBase64;
+    }
+
     // AI generation — calls props.callImagen with the constructed prompt.
     // Token deduction happens HERE (3 tokens), before the call. If the
     // generation fails, the token IS refunded (separate path from
@@ -14991,6 +15164,10 @@
             // (modern browsers); a tiny delay handles weird timing edge cases.
             setTimeout(function() { setStateField('printScope', null); }, 200);
           }, 60);
+        },
+        onExportCard: function() {
+          // Phase 2p.33 — render decoration to a canvas + download as PNG.
+          exportDecorationAsImage(decorationId);
         }
       });
     }
