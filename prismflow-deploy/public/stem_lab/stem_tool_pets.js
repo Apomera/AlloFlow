@@ -2387,17 +2387,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           );
         }
         if (blQuiz.done) {
-          var pct = (blQuiz.score / blQuiz.qs.length * 100).toFixed(0);
-          var praise = blQuiz.score >= 9 ? 'Outstanding — you can read pets like a pro.'
-                     : blQuiz.score >= 7 ? 'Strong — you\'ll spot most danger signals before they escalate.'
-                     : blQuiz.score >= 5 ? 'Solid foundation — review the Read tab to sharpen specific species.'
-                     : 'These signals take practice. Re-read the species sections, then try again.';
-          return h('div', { style: { padding: 18, borderRadius: 12, background: T.card, border: '2px solid ' + (blQuiz.score >= 8 ? T.ok : T.accent) } },
-            h('div', { style: { fontSize: 28, fontWeight: 900, color: T.text, marginBottom: 6 } },
-              'Score: ' + blQuiz.score + ' / ' + blQuiz.qs.length + '  (' + pct + '%)'),
-            blQuiz.score >= 8 && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 8 } }, '🏅 Badge earned: Body Language Reader'),
-            h('p', { style: { color: T.muted, fontSize: 13, lineHeight: 1.6, margin: '0 0 14px' } }, praise),
-            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+          var pct = Math.round(blQuiz.score / blQuiz.qs.length * 100);
+          var tier = blQuiz.score === blQuiz.qs.length ? 'perfect'
+                     : blQuiz.score >= 9 ? 'outstanding'
+                     : blQuiz.score >= 7 ? 'strong'
+                     : blQuiz.score >= 5 ? 'learning'
+                     : 'review';
+          var tierColor = tier === 'perfect' ? '#fbbf24'
+                          : tier === 'outstanding' ? T.ok
+                          : tier === 'strong' ? '#16a34a'
+                          : tier === 'learning' ? T.accent
+                          : T.danger;
+          var tierIcon = tier === 'perfect' ? '🏆' : tier === 'outstanding' ? '🎯' : tier === 'strong' ? '👊' : tier === 'learning' ? '📚' : '📖';
+          var tierTitle = tier === 'perfect' ? 'Perfect — every signal read'
+                          : tier === 'outstanding' ? 'Outstanding — you can read pets like a pro'
+                          : tier === 'strong' ? 'Strong — you will spot most danger signals before they escalate'
+                          : tier === 'learning' ? 'Solid foundation'
+                          : 'These signals take practice';
+          var tierMsg = tier === 'perfect'
+                        ? 'You read every species cleanly. Bring this skill to a real shelter — most volunteers can read 3 of 4 species at this level after weeks of work.'
+                        : tier === 'outstanding'
+                          ? 'You read all 4 species at near-expert level. The signal most volunteers miss is whale eye in cats — you got it.'
+                          : tier === 'strong'
+                            ? 'Strong overall. Re-read the species you missed (most likely cats or rabbits — they have the most-misread signals).'
+                            : tier === 'learning'
+                              ? 'Solid foundation — review the Read tab to sharpen specific species. Most miss-prone: cat whale eye, rabbit thumping, dog calming signals.'
+                              : 'Re-read the species sections, then try again. Body language fluency is muscle memory; one quiz pass isn\'t enough.';
+          var rad = 36, circ = 2 * Math.PI * rad;
+          var dashOff = circ - (pct / 100) * circ;
+          var ans = blQuiz.answers || [];
+          return h('div', { style: { borderRadius: 14, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: T.card } },
+            h('div', { style: { padding: 18, display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
+              // Score donut
+              h('div', { style: { position: 'relative', width: 96, height: 96, flexShrink: 0 } },
+                h('svg', { viewBox: '0 0 100 100', width: 96, height: 96,
+                  'aria-label': 'Score: ' + blQuiz.score + ' out of ' + blQuiz.qs.length
+                },
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                    strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                ),
+                h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                  h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted } }, blQuiz.score + ' / ' + blQuiz.qs.length)
+                )
+              ),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('div', { style: { fontSize: 30, marginBottom: 4 }, 'aria-hidden': 'true' }, tierIcon),
+                h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, tierMsg)
+              )
+            ),
+            // Per-question result strip
+            h('div', { style: { padding: '0 18px 8px' } },
+              h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, 'Your answers'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                blQuiz.qs.map(function(qq, qi) {
+                  var picked = ans[qi];
+                  var isCorrect = picked === qq.correct;
+                  return h('div', { key: qi,
+                    title: 'Q' + (qi + 1) + ' (' + qq.species + ')' + (isCorrect ? ' correct ✓' : ' incorrect'),
+                    style: {
+                      width: 14, height: 14, borderRadius: 3,
+                      background: isCorrect ? T.ok : T.danger,
+                      border: '1.5px solid ' + (isCorrect ? '#15803d' : '#7f1d1d'),
+                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                    },
+                    'aria-label': 'Q' + (qi + 1) + (isCorrect ? ' correct' : ' incorrect')
+                  });
+                })
+              )
+            ),
+            blQuiz.score >= 8 && h('div', { style: { padding: '8px 18px', fontSize: 13, color: T.ok, fontWeight: 700, borderTop: '1px solid ' + T.border } }, '🏅 Badge earned: Body Language Reader'),
+            h('div', { style: { padding: '12px 18px', display: 'flex', gap: 8, flexWrap: 'wrap', borderTop: '1px solid ' + T.border } },
               h('button', { 'data-pets-focusable': true,
                 onClick: newQuiz,
                 style: btnPrimary({ padding: '10px 18px', fontSize: 13 })
