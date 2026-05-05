@@ -293,6 +293,9 @@
     // ── Active modal (within AlloHaven; NOT the outer Open/Close state) ──
     activeModal: null,               // 'generate' | 'reflection' | 'journal' | 'settings' | 'memory' | 'memory-overview' | 'stories' | 'story-builder' | 'story-walk' | 'insights' | 'companion-setup' | null
     generateContext: null,           // { surface, cellIndex } when generate modal open
+    // Phase 2p.17 — print scope. null = full packet via existing print
+    // button; { type: 'card', decorationId } = single-decoration card.
+    printScope: null,
 
     // ── Reflection insights cache ──
     // Holds the last AI-generated summary of journal entries. Cleared on
@@ -480,6 +483,127 @@
       pool.splice(idx, 1);
     }
     return picked;
+  }
+
+  // Adaptive reflection prompts (Phase 2p.17) — returns ONE context-aware
+  // prompt object based on what\'s happened in the student\'s last day or
+  // two. Picks first applicable trigger. Returns null when no clear
+  // contextual hook exists; the modal then just shows the static 3.
+  // Triggers (priority order):
+  //   1. Story walk in last 4h         → "what part will you remember?"
+  //   2. New decoration in last 24h    → "what does the {label} mean?"
+  //   3. Quiz passed (≥80%) in last 4h → "what do you finally know?"
+  //   4. Struggle moods ≥50% last 7d   → "what\'s been tough — what helped?"
+  //   5. Streak ≥5 days                → "what brings you back?"
+  //   6. First Pomodoro of today done  → "what do you want to focus on?"
+  //   7. No reflection in 5+ days      → "where has your attention been?"
+  function computeAdaptivePrompt(state) {
+    var now = Date.now();
+    var fourHr = 4 * 60 * 60 * 1000;
+    var oneDay = 24 * 60 * 60 * 1000;
+
+    // 1. Recent story walk
+    var recentWalk = (state.earnings || []).filter(function(e) {
+      return e.source === 'story-walk' && e.date && (now - new Date(e.date).getTime()) < fourHr;
+    }).pop();
+    if (recentWalk && recentWalk.metadata && recentWalk.metadata.storyId) {
+      var storyMatch = (state.stories || []).filter(function(s) { return s.id === recentWalk.metadata.storyId; })[0];
+      if (storyMatch && storyMatch.title) {
+        return {
+          id: 'adaptive',
+          text: 'You just walked "' + storyMatch.title + '" — what part will you remember?',
+          hint: 'sparked by your recent story walk'
+        };
+      }
+    }
+
+    // 2. New decoration in last 24h
+    var newDec = (state.decorations || []).filter(function(d) {
+      return !d.isStarter && d.earnedAt && (now - new Date(d.earnedAt).getTime()) < oneDay;
+    }).pop();
+    if (newDec) {
+      var dLabel = newDec.templateLabel || newDec.template || 'new decoration';
+      return {
+        id: 'adaptive',
+        text: 'What does the ' + dLabel + ' mean to you right now?',
+        hint: 'sparked by your new decoration'
+      };
+    }
+
+    // 3. Recent quiz pass
+    var recentQuiz = (state.earnings || []).filter(function(e) {
+      var ok = e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz';
+      return ok && e.date && (now - new Date(e.date).getTime()) < fourHr;
+    }).pop();
+    if (recentQuiz && recentQuiz.metadata && recentQuiz.metadata.decorationId) {
+      var quizDec = (state.decorations || []).filter(function(d) { return d.id === recentQuiz.metadata.decorationId; })[0];
+      if (quizDec) {
+        var qLabel = quizDec.templateLabel || quizDec.template || 'that deck';
+        return {
+          id: 'adaptive',
+          text: "What's something you finally know about " + qLabel + '?',
+          hint: 'sparked by your recent quiz pass'
+        };
+      }
+    }
+
+    // 4. Struggle moods clustered in last 7d
+    var weekAgo = now - 7 * oneDay;
+    var recentMoods = (state.decorations || []).filter(function(d) {
+      return d.mood && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgo;
+    });
+    if (recentMoods.length >= 3) {
+      var struggleN = recentMoods.filter(function(d) { return d.mood === 'struggle'; }).length;
+      if (struggleN / recentMoods.length >= 0.5) {
+        return {
+          id: 'adaptive',
+          text: "What's been tough this week — and what's helped, even a little?",
+          hint: 'sparked by your recent moods'
+        };
+      }
+    }
+
+    // 5. Streak ≥5
+    var streak = computeStreak(state.visits || []);
+    if (streak.current >= 5) {
+      return {
+        id: 'adaptive',
+        text: "You've been here " + streak.current + ' days running. What brings you back?',
+        hint: 'sparked by your visit streak'
+      };
+    }
+
+    // 6. First Pomodoro of today
+    var todayStr = new Date().toISOString().slice(0, 10);
+    var todayPoms = (state.earnings || []).filter(function(e) {
+      return (e.source === 'pomodoro' || e.source === 'cycle-bonus') && e.date && e.date.slice(0, 10) === todayStr;
+    });
+    if (todayPoms.length === 1) {
+      return {
+        id: 'adaptive',
+        text: "You just finished a focus session. What's one thing you want to focus on next?",
+        hint: 'sparked by your first Pomodoro today'
+      };
+    }
+
+    // 7. No reflection in 5+ days
+    var entries = (state.journalEntries || []);
+    if (entries.length === 0) {
+      return null; // Don\'t prompt re-engagement on the very first reflection
+    }
+    var lastEntry = entries[entries.length - 1];
+    if (lastEntry && lastEntry.date) {
+      var daysSince = (now - new Date(lastEntry.date).getTime()) / oneDay;
+      if (daysSince >= 5) {
+        return {
+          id: 'adaptive',
+          text: 'Where has your attention been lately?',
+          hint: 'gentle re-entry — your last reflection was a while ago'
+        };
+      }
+    }
+
+    return null;
   }
 
   function getPromptText(promptId) {
@@ -2108,7 +2232,8 @@
     function handleSubmit() {
       if (!canSubmit) return;
       p.stopVoice();
-      p.onSubmit(draft, pickedPromptId, pickedMood);
+      var override = (pickedPromptId === 'adaptive' && p.adaptivePrompt) ? p.adaptivePrompt.text : null;
+      p.onSubmit(draft, pickedPromptId, pickedMood, override);
     }
 
     return h('div', {
@@ -2226,7 +2351,40 @@
                 lineHeight: '1.4'
               }
             }, text);
-          })
+          }),
+          // Adaptive prompt (Phase 2p.17) — context-aware, only shown
+          // when current state offers a meaningful hook. Distinguished
+          // visually with an accent border + ✨ "just for today" hint.
+          p.adaptivePrompt ? (function() {
+            var ap = p.adaptivePrompt;
+            var active = pickedPromptId === 'adaptive';
+            return h('button', {
+              key: 'pp-adaptive',
+              onClick: function() { setPickedPromptId('adaptive'); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': 'Adaptive prompt — ' + ap.text + '. ' + ap.hint,
+              style: {
+                background: active ? palette.surface : 'transparent',
+                border: '1.5px solid ' + palette.accent,
+                borderRadius: '8px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                fontSize: '13px',
+                color: palette.text,
+                textAlign: 'left',
+                lineHeight: '1.4',
+                position: 'relative'
+              }
+            },
+              h('span', {
+                'aria-hidden': 'true',
+                style: { fontSize: '10px', color: palette.accent, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }
+              }, '✨ Just for today'),
+              h('span', { style: { display: 'block' } }, ap.text),
+              h('span', { style: { display: 'block', fontSize: '11px', color: palette.textMute, fontStyle: 'italic', marginTop: '4px' } }, ap.hint)
+            );
+          })() : null
         ),
         // Text area + voice button
         h('div', { style: { position: 'relative', marginBottom: '8px' } },
@@ -5353,6 +5511,23 @@
                 fontFamily: 'inherit'
               }
             }, '🔄 Similar') : null,
+            // Print this card (Phase 2p.17) — single-decoration printable
+            typeof p.onPrintCard === 'function' && !decoration.isStarter ? h('button', {
+              onClick: p.onPrintCard,
+              'aria-label': 'Print this decoration as a single-page card',
+              title: 'Print one-page card with image + reflection + memory content',
+              style: {
+                background: 'transparent',
+                border: '1px solid ' + palette.border,
+                color: palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '🖨 Print') : null,
             // Voice note (Phase 2p.15)
             typeof p.onSaveVoiceNote === 'function' ? h('button', {
               onClick: function() { setVoicePanelOpen(!voicePanelOpen); },
@@ -7682,15 +7857,19 @@
     // is currently 0; otherwise saves the entry but earns 0 (1/day cap).
     // Length gate is enforced at the UI level (button disabled <20 chars);
     // this handler trusts the input.
-    function submitReflection(text, promptId, mood) {
+    function submitReflection(text, promptId, mood, promptTextOverride) {
       var trimmed = (text || '').trim();
       if (!trimmed) return;
       var alreadyEarned = (state.dailyState.reflectionsSubmitted || 0) >= 1;
       var tokensEarned = alreadyEarned ? 0 : 1;
+      // Phase 2p.17 — adaptive prompts pass their text directly via
+      // promptTextOverride (since the text is computed from current state
+      // and isn\'t in the static PROMPT_BANK).
+      var promptText = promptTextOverride || (promptId ? getPromptText(promptId) : null);
       var entry = {
         id: 'j-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
         date: new Date().toISOString(),
-        prompt: promptId ? getPromptText(promptId) : null,
+        prompt: promptText,
         promptId: promptId || null,
         text: trimmed,
         mood: mood || null,
@@ -12044,7 +12223,18 @@
         onToggleFavorite: function() { toggleDecorationFavorite(decorationId); },
         onMakeSimilar: function() { makeSimilarTo(decorationId); },
         onSaveVoiceNote: function(base64, durationMs) { setDecorationVoiceNote(decorationId, base64, durationMs); },
-        onClearVoiceNote: function() { clearDecorationVoiceNote(decorationId); }
+        onClearVoiceNote: function() { clearDecorationVoiceNote(decorationId); },
+        onPrintCard: function() {
+          // Phase 2p.17 — set printScope to the decoration, paint, fire
+          // window.print(), then reset printScope after the dialog closes.
+          setStateField('printScope', { type: 'card', decorationId: decorationId });
+          setTimeout(function() {
+            try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+            // Reset shortly after — the print dialog blocks until closed
+            // (modern browsers); a tiny delay handles weird timing edge cases.
+            setTimeout(function() { setStateField('printScope', null); }, 200);
+          }, 60);
+        }
       });
     }
 
@@ -12235,6 +12425,10 @@
       // we manage drafts via a stable inner component.
       return h(ReflectionModalInner, {
         promptIds: promptIds,
+        // Adaptive prompt (Phase 2p.17) — context-aware single prompt
+        // based on student\'s recent activity. May be null when no
+        // contextual hook applies; modal handles either case.
+        adaptivePrompt: computeAdaptivePrompt(state),
         palette: palette,
         speechSupported: speechSupported,
         startVoice: startVoiceCapture,
@@ -12244,7 +12438,9 @@
         // text. Falls back to a local capitalize-after-period heuristic
         // when callGemini isn't available.
         callGemini: callGemini,
-        onSubmit: function(text, promptId, mood) { submitReflection(text, promptId, mood); },
+        onSubmit: function(text, promptId, mood, promptTextOverride) {
+          submitReflection(text, promptId, mood, promptTextOverride);
+        },
         onClose: function() {
           stopVoiceCapture();
           setStateField('activeModal', null);
@@ -13901,7 +14097,132 @@
     // the packet. Class-based hide so the print rule overrides
     // without !important on the inline display attribute.
     // ─────────────────────────────────────────────────
+    // Per-decoration print card (Phase 2p.17) — single decoration\'s
+    // full info on one printable page. Rendered when state.printScope
+    // points at a specific decoration id. Useful for IEP review packets,
+    // parent meetings, "send home" scenarios.
+    function renderPrintCard(decorationId) {
+      var d = (state.decorations || []).filter(function(x) { return x.id === decorationId; })[0];
+      if (!d) return null;
+      var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var label = d.templateLabel || d.template || 'decoration';
+      var earnedStr = d.earnedAt ? new Date(d.earnedAt).toLocaleDateString() : '?';
+      var moodOpt = d.mood ? getMoodOption(d.mood) : null;
+      var lc = d.linkedContent;
+      var subjectLabels = (d.subjects || []).map(function(sid) {
+        for (var i = 0; i < SUBJECT_TAGS.length; i++) {
+          if (SUBJECT_TAGS[i].id === sid) return SUBJECT_TAGS[i].emoji + ' ' + SUBJECT_TAGS[i].label;
+        }
+        return sid;
+      });
+      // Memory content body
+      var contentBody = null;
+      if (lc && lc.data) {
+        if (lc.type === 'flashcards' && Array.isArray(lc.data.cards)) {
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } },
+              '📚 Flashcards · ' + lc.data.cards.length + ' card' + (lc.data.cards.length === 1 ? '' : 's')),
+            h('ol', { style: { paddingLeft: '24px', margin: '6px 0' } },
+              lc.data.cards.map(function(c) {
+                var atts = (c.correctCount || 0) + (c.missCount || 0);
+                return h('li', { key: 'pcc-' + c.id, style: { marginBottom: '5px', fontSize: '12px', color: '#222', lineHeight: 1.5 } },
+                  h('strong', null, c.front || ''),
+                  h('span', null, ' — ' + (c.back || '')),
+                  atts > 0 ? h('span', { style: { fontSize: '10px', color: '#666', fontStyle: 'italic' } },
+                    ' (' + (c.correctCount || 0) + '/' + atts + ')') : null
+                );
+              })
+            )
+          );
+        } else if (lc.type === 'acronym') {
+          var letters = (lc.data.letters || '').toUpperCase();
+          var meanings = lc.data.meanings || [];
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } },
+              '🔤 Acronym' + (lc.data.context ? ' · ' + lc.data.context : '')),
+            h('div', { style: { fontSize: '20px', fontWeight: 800, letterSpacing: '0.12em', color: '#000', marginBottom: '6px' } }, letters),
+            h('ul', { style: { listStyle: 'none', paddingLeft: 0, margin: '4px 0' } },
+              letters.split('').map(function(letter, i) {
+                return h('li', { key: 'pcl-' + i, style: { fontSize: '12px', color: '#222', marginBottom: '3px' } },
+                  h('strong', null, letter), ' — ', meanings[i] || '(blank)');
+              })
+            )
+          );
+        } else if (lc.type === 'image-link') {
+          var tgt = state.decorations.filter(function(x) { return x.id === lc.data.targetDecorationId; })[0];
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } }, '🔗 Image link'),
+            h('p', { style: { fontSize: '12px', color: '#222' } },
+              h('strong', null, label), ' → ', h('strong', null, tgt ? (tgt.templateLabel || tgt.template) : '(removed item)')),
+            h('p', { style: { fontSize: '12px', color: '#333', fontStyle: 'italic', marginTop: '4px' } },
+              '"' + (lc.data.association || '') + '"')
+          );
+        } else if (lc.type === 'notes') {
+          var text = (lc.data.text || '');
+          var clozeCount = extractClozeAnswers(text).length;
+          contentBody = h('div', null,
+            h('p', { style: { fontSize: '11px', color: '#444', margin: '4px 0' } },
+              '📝 Notes' + (clozeCount > 0 ? ' · ' + clozeCount + ' fill-in blank' + (clozeCount === 1 ? '' : 's') : '')),
+            clozeCount > 0 ? (function() {
+              var segments = buildClozeSegments(text);
+              return h('div', { style: { fontSize: '12px', color: '#222', lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
+                segments.map(function(seg, i) {
+                  if (seg.kind === 'text') return h('span', { key: 'pn-' + i }, seg.value);
+                  return h('span', {
+                    key: 'pn-' + i,
+                    style: { borderBottom: '1px solid #000', padding: '0 4px', minWidth: '60px', display: 'inline-block', textAlign: 'center', fontWeight: 700 }
+                  }, seg.answer);
+                })
+              );
+            })() : h('p', { style: { fontSize: '12px', color: '#222', whiteSpace: 'pre-wrap', lineHeight: 1.55, margin: '4px 0' } }, text)
+          );
+        }
+      }
+      return h('div', {
+        className: 'ah-print-packet',
+        'aria-hidden': 'true'
+      },
+        h('div', { style: { borderBottom: '3px double #000', paddingBottom: '12px', marginBottom: '20px' } },
+          h('h1', { style: { fontSize: '22px', margin: 0, fontWeight: 800, color: '#000' } },
+            '🌿 AlloHaven · ' + label),
+          h('p', { style: { margin: '6px 0 0 0', fontSize: '11px', color: '#444' } },
+            'Earned ' + earnedStr + ' · printed ' + dateStr)
+        ),
+        h('div', { style: { marginBottom: '16px', display: 'flex', gap: '14px' } },
+          d.imageBase64 ? h('img', {
+            src: d.imageBase64, alt: label,
+            style: { width: '180px', height: '180px', objectFit: 'contain', border: '1px solid #999', borderRadius: '6px', flexShrink: 0 }
+          }) : null,
+          h('div', { style: { flex: 1, fontSize: '12px', color: '#222', lineHeight: 1.6 } },
+            moodOpt ? h('p', { style: { margin: '0 0 6px 0' } },
+              h('strong', null, 'Mood: '), moodOpt.emoji + ' ' + moodOpt.label) : null,
+            subjectLabels.length > 0 ? h('p', { style: { margin: '0 0 6px 0' } },
+              h('strong', null, 'Subject' + (subjectLabels.length === 1 ? '' : 's') + ': '),
+              subjectLabels.join(' · ')) : null,
+            d.studentReflection ? h('p', { style: { margin: '0 0 6px 0', fontStyle: 'italic' } },
+              '"' + d.studentReflection + '"') : null,
+            d.voiceNote ? h('p', { style: { margin: '0 0 6px 0', fontSize: '11px', color: '#666' } },
+              '🎤 Voice note attached (' + Math.round((d.voiceNote.durationMs || 0) / 1000) + 's, audio not printable)') : null
+          )
+        ),
+        contentBody ? h('div', { style: { padding: '12px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '20px' } }, contentBody) : null,
+        // Signature lines
+        h('div', { style: { marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Reviewed with: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' ')),
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Date: '), h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '120px', padding: '0 4px' } }, ' '))
+        ),
+        h('div', { style: { marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
+          'AlloHaven · single decoration card · printed ' + dateStr)
+      );
+    }
+
     function renderPrintPacket() {
+      // Phase 2p.17 — when printScope is a card, render that instead
+      if (state.printScope && state.printScope.type === 'card' && state.printScope.decorationId) {
+        return renderPrintCard(state.printScope.decorationId);
+      }
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
       var allStories = state.stories || [];
       var dateStr = new Date().toLocaleDateString(undefined, {
