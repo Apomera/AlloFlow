@@ -15004,14 +15004,24 @@
             overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
           }
         },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px', flexWrap: 'wrap' } },
             h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
               '🏆 Achievements · ' + unlockedItems.length + '/' + ACHIEVEMENT_CATALOG.length),
-            h('button', {
-              onClick: function() { setStateField('activeModal', null); },
-              'aria-label': 'Close achievements',
-              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
-            }, '✕')
+            h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+              // Tenure recap entry (Phase 2p.29) — lives next to Close
+              // so the modal stays the celebration surface.
+              h('button', {
+                onClick: function() { setStateField('activeModal', 'tenure-recap'); },
+                'aria-label': 'See your AlloHaven journey recap',
+                title: 'Your AlloHaven journey',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 12px', fontSize: '12px', borderColor: palette.accent, color: palette.accent })
+              }, '🌱 Journey'),
+              h('button', {
+                onClick: function() { setStateField('activeModal', null); },
+                'aria-label': 'Close achievements',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            )
           ),
           h('p', {
             style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
@@ -17471,6 +17481,7 @@
       renderGoalsListModal(),
       renderGoalBuilderModal(),
       renderAchievementsModal(),
+      renderTenureRecapModal(),
       renderCompanionSetupModal(),
       renderTourModal(),
       renderReviewQueueSummaryModal(),
