@@ -2536,8 +2536,38 @@
         }
       }
     }
+    // Topic-specific accent palette — keys off the tab id so each topic feels distinct
+    var topicMeta = {
+      'reflection':   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', hint: 'Mirrors flip the path. Predict where the image lands before running the sim.' },
+      'refraction':   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  hint: "Light slows in denser media. Snell's law: n\u2081 sin\u03B8\u2081 = n\u2082 sin\u03B8\u2082." },
+      'lenses':       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', hint: 'Same equation as a mirror, different sign convention. Real vs virtual depends on object distance.' },
+      'interference': { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', hint: 'Two slits: bright fringes where path difference equals an integer number of wavelengths.' },
+      'diffraction':  { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  hint: 'Light bends around edges. The narrower the slit relative to \u03BB, the more spread.' },
+      'polarization': { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', hint: "Malus's law: I = I\u2080 cos\u00B2\u03B8. Two crossed polarizers: total extinction." }
+    };
+    var meta = topicMeta[tab] || { accent: '#7dd3fc', soft: 'rgba(125,211,252,0.10)', hint: '' };
     return h('div', null,
-      h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, opts.title),
+      // Topic hero — gradient banner with title + tagline (lifts the BirdLab tab-hero pattern).
+      h('div', {
+        style: {
+          background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0.6) 100%)',
+          border: '1px solid ' + meta.accent + '55',
+          borderLeft: '4px solid ' + meta.accent,
+          borderRadius: 10,
+          padding: '12px 14px',
+          marginBottom: 12,
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+        }
+      },
+        h('div', { style: { flex: 1, minWidth: 220 } },
+          h('h3', {
+            style: { color: meta.accent, fontSize: 18, fontWeight: 900, margin: 0, lineHeight: 1.2 }
+          }, opts.title),
+          meta.hint && h('p', {
+            style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.45, fontStyle: 'italic' }
+          }, meta.hint)
+        )
+      ),
       researchQuestion && h('div', {
         style: {
           background: 'rgba(251,191,36,0.10)',
