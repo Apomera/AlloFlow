@@ -40982,6 +40982,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     isOpen: true,
                     onClose: () => setIsCommunityCatalogOpen(false),
                     addToast,
+                    loadProjectFromJson,
                 });
             }
             return (

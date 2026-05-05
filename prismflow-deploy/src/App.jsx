@@ -15571,6 +15571,21 @@ Return ONLY valid JSON in this format:
       });
     throw new Error("[handleLoadProject] MiscHandlers module not loaded - reload the page");
   };
+  // Bridge for the Community Catalog: synthesizes a fake file-input event
+  // from a parsed lesson JSON so the existing handleLoadProject flow runs
+  // unchanged (mode switching, settings, history, all the side-effects).
+  const loadProjectFromJson = (parsed) => {
+    try {
+      const jsonString = JSON.stringify(parsed);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const fileName = (parsed && parsed.title ? parsed.title : 'community-lesson') + '.json';
+      const file = new File([blob], fileName, { type: 'application/json' });
+      const fakeEvent = { target: { files: [file] } };
+      handleLoadProject(fakeEvent);
+    } catch (err) {
+      addToast && addToast('Failed to load lesson: ' + (err && err.message), 'error');
+    }
+  };
   const handleRestoreView = (item) => {
       console.error("[WS-DBG] handleRestoreView CALLED with type:", item?.type, "data length:", item?.data?.length || 0);
       setGeneratedContent({ ...item, type: item.type, data: item.data, id: item.id, lessonPlanConfig: item.lessonPlanConfig || null, lessonPlanSequence: item.lessonPlanSequence || [] });
@@ -40967,6 +40982,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     isOpen: true,
                     onClose: () => setIsCommunityCatalogOpen(false),
                     addToast,
+                    loadProjectFromJson,
                 });
             }
             return (
