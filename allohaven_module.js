@@ -325,7 +325,15 @@
     // pass filter chain. Persisted so the student's preference survives
     // reloads. Volume is held quiet (~15% gain) by design — this is
     // background, not foreground.
-    soundscape: 'off'
+    soundscape: 'off',
+
+    // ── Ambient weather (Phase 2p.27) ──
+    // CSS-only particle overlay on the room. 'clear' (default, no
+    // particles) | 'rain' | 'snow' | 'sparkles' (whimsical floating
+    // dust). Suppressed under prefers-reduced-motion. Independent
+    // from `soundscape` since some students want falling snow in
+    // silence (or rain sound without rain visuals).
+    atmosphere: { weather: 'clear' }
   };
 
   // ─────────────────────────────────────────────────────────
@@ -2551,6 +2559,21 @@
       '@keyframes ah-companion-z { 0% { opacity: 0; transform: translate(0, 0) scale(0.6); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(8px, -16px) scale(1.1); } }',
       '.ah-root .ah-companion-z { animation: ah-companion-z 2400ms ease-in-out infinite; }',
       '.ah-root .ah-companion-confetti-piece { animation: ah-companion-confetti 800ms ease-out 1 forwards; }',
+      // Ambient weather (Phase 2p.27) — CSS-only particle overlay on top
+      // of the wall and floor surfaces. All particles are pure CSS divs;
+      // no canvas, no JS animation loop. The container is pointer-
+      // events: none so it never interferes with cell clicks. Suppressed
+      // under prefers-reduced-motion via the global block above.
+      '.ah-root .ah-weather-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; z-index: 3; }',
+      // Rain — thin diagonal streaks falling fast.
+      '@keyframes ah-rain-fall { 0% { transform: translate3d(0, -10%, 0); opacity: 0; } 8% { opacity: 0.55; } 92% { opacity: 0.55; } 100% { transform: translate3d(-6px, 110%, 0); opacity: 0; } }',
+      '.ah-root .ah-rain-drop { position: absolute; top: -10px; width: 1.5px; height: 14px; background: linear-gradient(180deg, transparent, rgba(180,210,235,0.55)); border-radius: 1px; transform: translate3d(0, -10%, 0); animation: ah-rain-fall linear infinite; }',
+      // Snow — soft round flakes drifting slowly with gentle horizontal sway.
+      '@keyframes ah-snow-fall { 0% { transform: translate3d(0, -10%, 0); opacity: 0; } 8% { opacity: 0.85; } 50% { transform: translate3d(8px, 50%, 0); } 92% { opacity: 0.85; } 100% { transform: translate3d(-6px, 110%, 0); opacity: 0; } }',
+      '.ah-root .ah-snow-flake { position: absolute; top: -10px; width: 5px; height: 5px; background: rgba(255,255,255,0.85); border-radius: 50%; box-shadow: 0 0 4px rgba(255,255,255,0.5); transform: translate3d(0, -10%, 0); animation: ah-snow-fall linear infinite; }',
+      // Sparkles — tiny twinkles that fade in/out at random spots without falling.
+      '@keyframes ah-sparkle-twinkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 0.85; transform: scale(1.1); } }',
+      '.ah-root .ah-sparkle { position: absolute; width: 6px; height: 6px; background: radial-gradient(circle at center, #fff, transparent 70%); border-radius: 50%; opacity: 0; animation: ah-sparkle-twinkle ease-in-out infinite; }',
       '@media (prefers-reduced-motion: reduce) {',
       '  .ah-root .ah-token-tick,',
       '  .ah-root .ah-welcome,',
@@ -11139,7 +11162,8 @@
               gridAutoRows: '80px',
               gap: '12px'
             }
-          }, wallCells)
+          }, wallCells),
+          renderWeatherLayer('wall')
         ),
         // Floor surface (with warm-light overlay + mood tint + companion).
         // Mood-driven tint (Phase 2p.2) — subtle radial overlay reflecting
@@ -11182,6 +11206,7 @@
               gap: '10px'
             }
           }, floorCells),
+          renderWeatherLayer('floor'),
           renderCompanionOverlay()
         ),
         // Skills panel — only renders when companion exists + has activity
@@ -11735,6 +11760,76 @@
           }, '✕') : null
         )
       );
+    }
+
+    // Weather particle overlay (Phase 2p.27) — renders a CSS-only layer
+    // of falling drops, snowflakes, or twinkling sparkles based on
+    // state.atmosphere.weather. Suppressed in high-contrast mode (the
+    // accommodation wins over decorative ambient motion). Particle
+    // count is capped low (~24) so reflows stay cheap on lo-fi devices.
+    // Each particle gets a stable seeded position/delay/duration via
+    // its index so React re-renders don't shuffle them.
+    function renderWeatherLayer(surface) {
+      var weather = (state.atmosphere && state.atmosphere.weather) || 'clear';
+      if (weather === 'clear') return null;
+      if (inherited.highContrast) return null;
+      // Different particle counts per surface (wall is shorter, floor taller)
+      var COUNT = surface === 'wall' ? 14 : 20;
+      var particles = [];
+      for (var i = 0; i < COUNT; i++) {
+        // Pseudo-random but stable: derived from index, so re-renders don't reshuffle
+        var leftPct = ((i * 47) % 97) + ((i % 5) * 0.7);
+        if (leftPct > 96) leftPct = 96;
+        if (weather === 'rain') {
+          var rDur = 0.85 + ((i * 13) % 7) * 0.08; // 0.85–1.4s
+          var rDelay = ((i * 31) % 100) / 100 * 1.2; // 0–1.2s
+          particles.push(h('span', {
+            key: 'p-' + i,
+            'aria-hidden': 'true',
+            className: 'ah-rain-drop',
+            style: {
+              left: leftPct + '%',
+              animationDuration: rDur.toFixed(2) + 's',
+              animationDelay: rDelay.toFixed(2) + 's'
+            }
+          }));
+        } else if (weather === 'snow') {
+          var sDur = 7 + ((i * 11) % 6); // 7–12s
+          var sDelay = ((i * 23) % 100) / 100 * 5; // 0–5s
+          var sSize = 3 + ((i * 17) % 5); // 3–7px
+          particles.push(h('span', {
+            key: 'p-' + i,
+            'aria-hidden': 'true',
+            className: 'ah-snow-flake',
+            style: {
+              left: leftPct + '%',
+              width: sSize + 'px',
+              height: sSize + 'px',
+              animationDuration: sDur + 's',
+              animationDelay: sDelay.toFixed(2) + 's'
+            }
+          }));
+        } else if (weather === 'sparkles') {
+          var topPct = ((i * 41) % 90) + 5; // 5–95
+          var kDur = 2.4 + ((i * 7) % 5) * 0.4; // 2.4–4.0s
+          var kDelay = ((i * 19) % 100) / 100 * 3; // 0–3s
+          particles.push(h('span', {
+            key: 'p-' + i,
+            'aria-hidden': 'true',
+            className: 'ah-sparkle',
+            style: {
+              left: leftPct + '%',
+              top: topPct + '%',
+              animationDuration: kDur.toFixed(2) + 's',
+              animationDelay: kDelay.toFixed(2) + 's'
+            }
+          }));
+        }
+      }
+      return h('div', {
+        className: 'ah-weather-layer',
+        'aria-hidden': 'true'
+      }, particles);
     }
 
     // Companion overlay (Phase 2p) — bottom-right floating critter.
@@ -15178,6 +15273,53 @@
               return h('button', {
                 key: 'snd-' + opt.id,
                 onClick: function() { setStateField('soundscape', opt.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  flex: '1 1 calc(50% - 4px)',
+                  background: active ? palette.surface : 'transparent',
+                  border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '8px',
+                  padding: '8px 10px',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  fontSize: '13px',
+                  fontWeight: active ? 700 : 500,
+                  color: palette.text,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  justifyContent: 'flex-start'
+                }
+              },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: '16px' } }, opt.emoji),
+                h('span', null, opt.label)
+              );
+            })
+          ),
+
+          // ── Ambient weather (Phase 2p.27) ──
+          // CSS-only particle overlay on the room. Independent from the
+          // sound layer above so students can mix freely.
+          h('div', {
+            style: { fontSize: '13px', color: palette.textDim, marginTop: '18px', marginBottom: '6px', fontWeight: 600 }
+          }, 'Ambient weather'),
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, marginTop: 0, marginBottom: '10px', lineHeight: '1.5' }
+          }, 'A gentle visual layer over your room. Suppressed automatically if your device prefers reduced motion.'),
+          h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+            [
+              { id: 'clear',    label: 'Clear',    emoji: '🌤' },
+              { id: 'rain',     label: 'Rain',     emoji: '🌧' },
+              { id: 'snow',     label: 'Snow',     emoji: '❄️' },
+              { id: 'sparkles', label: 'Sparkles', emoji: '✨' }
+            ].map(function(opt) {
+              var current = (state.atmosphere && state.atmosphere.weather) || 'clear';
+              var active = current === opt.id;
+              return h('button', {
+                key: 'wx-' + opt.id,
+                onClick: function() {
+                  setStateField('atmosphere', { weather: opt.id });
+                },
                 'aria-pressed': active ? 'true' : 'false',
                 style: {
                   flex: '1 1 calc(50% - 4px)',
