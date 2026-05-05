@@ -333,7 +333,22 @@
     // dust). Suppressed under prefers-reduced-motion. Independent
     // from `soundscape` since some students want falling snow in
     // silence (or rain sound without rain visuals).
-    atmosphere: { weather: 'clear' }
+    atmosphere: { weather: 'clear' },
+
+    // ── Print packet section toggles (Phase 2p.34) ──
+    // Per-section booleans the print options modal flips so the user
+    // can produce focused packets (e.g. just achievements for an IEP
+    // meeting, just reflections for a therapy session). Defaults all
+    // true — previous Print Packet behavior preserved when nobody
+    // touches the options.
+    printOptions: {
+      companion:    true,
+      achievements: true,
+      goals:        true,
+      memoryDecks:  true,
+      stories:      true,
+      journals:     true
+    }
   };
 
   // ─────────────────────────────────────────────────────────
@@ -8837,6 +8852,17 @@
       if (merged.roomMode !== 'live' && merged.roomMode !== 'build') {
         merged.roomMode = 'build';
       }
+      // Phase 2p.34 — print section toggles. Backfill any missing keys
+      // with true so older saves get the full packet by default.
+      var printDefaults = {
+        companion: true, achievements: true, goals: true,
+        memoryDecks: true, stories: true, journals: true
+      };
+      if (!merged.printOptions || typeof merged.printOptions !== 'object') {
+        merged.printOptions = Object.assign({}, printDefaults);
+      } else {
+        merged.printOptions = Object.assign({}, printDefaults, merged.printOptions);
+      }
       return merged;
     });
     var state = stateTuple[0];
@@ -13459,6 +13485,161 @@
     }
 
     // ─────────────────────────────────────────────────
+    // PRINT OPTIONS (Phase 2p.34) — pick which sections to include in
+    // the printed packet. Surfaced before window.print() fires so the
+    // user can produce focused packets (just achievements for IEP,
+    // just reflections for a therapy session, etc.).
+    // ─────────────────────────────────────────────────
+    var PRINT_SECTION_DEFS = [
+      { id: 'companion',    emoji: '🌿', label: 'Companion + skills',    hint: 'Critter, name, skill levels, longest streak.' },
+      { id: 'achievements', emoji: '🏆', label: 'Achievements',          hint: 'Recent unlocks + total progress.' },
+      { id: 'goals',        emoji: '🎯', label: 'Goals',                 hint: 'Active and completed goals with metric progress.' },
+      { id: 'memoryDecks',  emoji: '📖', label: 'Memory decks',          hint: 'Flashcards, acronyms, notes attached to decorations.' },
+      { id: 'stories',      emoji: '📜', label: 'Stories',               hint: 'Walkable story chains across decorations.' },
+      { id: 'journals',     emoji: '📝', label: 'Recent reflections',    hint: 'The last several journal entries.' }
+    ];
+    function renderPrintOptionsModal() {
+      if (state.activeModal !== 'print-options') return null;
+      var opts = state.printOptions || {};
+      var ctx = state.generateContext || {};
+      // Where to bounce back when Cancel is hit. Defaults to memory-overview
+      // (the original button location).
+      var returnTo = ctx.returnTo || 'memory-overview';
+
+      function toggle(id) {
+        var next = Object.assign({}, opts);
+        next[id] = !next[id];
+        setStateField('printOptions', next);
+      }
+      function selectedCount() {
+        return PRINT_SECTION_DEFS.filter(function(s) { return !!opts[s.id]; }).length;
+      }
+      function setAll(val) {
+        var next = Object.assign({}, opts);
+        PRINT_SECTION_DEFS.forEach(function(s) { next[s.id] = val; });
+        setStateField('printOptions', next);
+      }
+      function doPrint() {
+        if (selectedCount() === 0) {
+          addToast('Pick at least one section to print.');
+          return;
+        }
+        // Close the options modal then bounce to print AFTER the
+        // packet's filters re-render in the next tick.
+        setStateMulti({ activeModal: returnTo, generateContext: null });
+        setTimeout(function() {
+          try { window.print(); }
+          catch (e) { addToast('Print not available in this browser.'); }
+        }, 80);
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Print options',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) {
+            setStateMulti({ activeModal: returnTo, generateContext: null });
+          }
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 180,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '480px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+              '🖨 Print options'),
+            h('button', {
+              onClick: function() { setStateMulti({ activeModal: returnTo, generateContext: null }); },
+              'aria-label': 'Cancel',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', margin: '0 0 14px 0', lineHeight: '1.5' }
+          }, 'Pick which sections go into the printed packet. Useful when sharing focused content with a parent, teacher, or clinician.'),
+
+          // Quick all/none controls
+          h('div', { style: { display: 'flex', gap: '6px', marginBottom: '14px' } },
+            h('button', {
+              onClick: function() { setAll(true); },
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px' })
+            }, '✓ All'),
+            h('button', {
+              onClick: function() { setAll(false); },
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px' })
+            }, '○ None')
+          ),
+
+          // Section checkboxes
+          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+            PRINT_SECTION_DEFS.map(function(sec) {
+              var on = !!opts[sec.id];
+              return h('label', {
+                key: 'po-' + sec.id,
+                style: {
+                  display: 'flex', alignItems: 'flex-start', gap: '12px',
+                  padding: '10px 12px',
+                  background: on ? palette.surface : 'transparent',
+                  border: '1.5px solid ' + (on ? palette.accent : palette.border),
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }
+              },
+                h('input', {
+                  type: 'checkbox',
+                  checked: on,
+                  onChange: function() { toggle(sec.id); },
+                  'aria-label': 'Include ' + sec.label,
+                  style: { marginTop: '3px', cursor: 'pointer', width: '18px', height: '18px', accentColor: palette.accent }
+                }),
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } },
+                    sec.emoji + ' ' + sec.label),
+                  h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45', marginTop: '2px' } }, sec.hint)
+                )
+              );
+            })
+          ),
+
+          // Action row
+          h('div', {
+            style: { display: 'flex', gap: '10px', justifyContent: 'space-between', alignItems: 'center', marginTop: '18px', flexWrap: 'wrap' }
+          },
+            h('div', { style: { fontSize: '11px', color: palette.textMute } },
+              selectedCount() + ' / ' + PRINT_SECTION_DEFS.length + ' sections'),
+            h('div', { style: { display: 'flex', gap: '8px' } },
+              h('button', {
+                onClick: function() { setStateMulti({ activeModal: returnTo, generateContext: null }); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
+              }, 'Cancel'),
+              h('button', {
+                onClick: doPrint,
+                disabled: selectedCount() === 0,
+                style: Object.assign({}, primaryBtnStyle(palette), {
+                  padding: '8px 18px', fontSize: '13px',
+                  opacity: selectedCount() === 0 ? 0.5 : 1,
+                  cursor: selectedCount() === 0 ? 'not-allowed' : 'pointer'
+                })
+              }, '🖨 Print these')
+            )
+          )
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
     // COMPANION PHRASES (Phase 2p.32) — students teach the companion
     // 1-5 personal phrases that mix into the bubble pool at ~25%
     // chance. Tiny, delightful, deeply personal. Phrases are stored
@@ -14522,16 +14703,16 @@
               }, '📋 Review packet') : null,
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
                 onClick: function() {
-                  // Print delay so React paints the print packet before
-                  // the dialog grabs DOM. Browsers debounce print() but
-                  // a tiny rAF-style timeout is safer for slow tabs.
-                  setTimeout(function() {
-                    try { window.print(); }
-                    catch (err) { addToast('Print not available in this browser.'); }
-                  }, 60);
+                  // Phase 2p.34 — go through the print options modal so
+                  // the user can pick which sections to include before
+                  // window.print() fires.
+                  setStateMulti({
+                    activeModal: 'print-options',
+                    generateContext: { returnTo: 'memory-overview' }
+                  });
                 },
-                'aria-label': 'Print study packet',
-                title: 'Open print dialog with a study packet of all decks, stories, and content',
+                'aria-label': 'Print study packet (pick sections)',
+                title: 'Pick which sections to include, then print',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🖨 Print') : null,
               h('button', {
@@ -17247,12 +17428,14 @@
             h('div', { style: { display: 'flex', gap: '6px' } },
               h('button', {
                 onClick: function() {
-                  setTimeout(function() {
-                    try { window.print(); }
-                    catch (err) { addToast('Print not available.'); }
-                  }, 60);
+                  // Phase 2p.34 — open the section picker before printing.
+                  setStateMulti({
+                    activeModal: 'print-options',
+                    generateContext: { returnTo: 'clinical-review' }
+                  });
                 },
-                'aria-label': 'Print this packet',
+                'aria-label': 'Print this packet (pick sections)',
+                title: 'Pick which sections to include, then print',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🖨 Print'),
               h('button', {
@@ -18032,6 +18215,7 @@
         })(),
         // Companion + Skills (Phase 2p)
         (function() {
+          if (state.printOptions && state.printOptions.companion === false) return null;
           var companion = state.companion;
           if (!companion || !companion.species) return null;
           var sp = getCompanionSpecies(companion.species);
@@ -18076,6 +18260,7 @@
         })(),
         // Recent achievements (Phase 2p.5) — last 30 days, newest first
         (function() {
+          if (state.printOptions && state.printOptions.achievements === false) return null;
           var ach = state.achievements || {};
           var nowMs = Date.now();
           var thirty = 30 * 24 * 60 * 60 * 1000;
@@ -18105,6 +18290,7 @@
         })(),
         // Goals section (Phase 2n) — active + recently-completed
         (function() {
+          if (state.printOptions && state.printOptions.goals === false) return null;
           var goals = state.goals || [];
           var nowMs = Date.now();
           var activeOrCompleted = goals.filter(function(g) {
@@ -18140,11 +18326,13 @@
           );
         })(),
         // Decks section
+        (state.printOptions && state.printOptions.memoryDecks === false) ? null :
         withContent.length > 0 ? h('div', { style: sectionStyle },
           h('h2', { style: sectionTitleStyle }, '📖 Memory Decks'),
           withContent.map(function(d) { return renderDeckPrint(d); })
         ) : null,
         // Stories section
+        (state.printOptions && state.printOptions.stories === false) ? null :
         allStories.length > 0 ? h('div', {
           style: sectionStyle,
           className: withContent.length > 5 ? 'ah-print-page-break' : ''
@@ -18153,6 +18341,7 @@
           allStories.map(function(s) { return renderStoryPrint(s); })
         ) : null,
         // Recent reflections
+        (state.printOptions && state.printOptions.journals === false) ? null :
         recentJournals.length > 0 ? h('div', { style: sectionStyle },
           h('h2', { style: sectionTitleStyle }, '📝 Recent Reflections (last ' + recentJournals.length + ')'),
           recentJournals.map(function(j) {
@@ -18248,6 +18437,7 @@
       renderBreathingModal(),
       renderGroundingModal(),
       renderCompanionPhrasesModal(),
+      renderPrintOptionsModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard(),
       // Print packet — portaled to body so the @media print rule's
