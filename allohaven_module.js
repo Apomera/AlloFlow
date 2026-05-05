@@ -12503,6 +12503,169 @@
     // dim for spent. A single horizontal balance line traces the running
     // total across the period. Read aloud well: aria-label summarizes
     // total earned + spent + current balance.
+    // ── Mood timeline (Phase 2p.25) ──
+    // Stacked bar chart showing mood-tagged decoration distribution by
+    // week over the last 13 weeks. Pairs with trends + heatmap to give
+    // three different time-scoped views: 30-day flow / 13-week mood /
+    // 90-day daily activity. Clinical-grade visualization for tracking
+    // affective trajectory across an intervention period.
+    function renderMoodTimeline() {
+      var decorations = state.decorations || [];
+      var taggedDecs = decorations.filter(function(d) {
+        return d.mood && d.earnedAt && !d.isStarter;
+      });
+      if (taggedDecs.length < 3) return null;
+      var WEEKS = 13;
+      var msPerWeek = 7 * 24 * 60 * 60 * 1000;
+      var now = Date.now();
+      // Align to end-of-week (Saturday) so the rightmost bar is the
+      // current week and prior bars are full weeks back
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var dowToday = today.getDay();
+      var endOfWeekTs = today.getTime() + (6 - dowToday) * 24 * 60 * 60 * 1000;
+      var startMs = endOfWeekTs - (WEEKS * msPerWeek - 1);
+      // Build per-week mood counts
+      var perWeek = [];
+      for (var w = 0; w < WEEKS; w++) {
+        perWeek.push({ joy: 0, pride: 0, curiosity: 0, calm: 0, struggle: 0, total: 0 });
+      }
+      taggedDecs.forEach(function(d) {
+        var t = new Date(d.earnedAt).getTime();
+        if (t < startMs || t > endOfWeekTs) return;
+        var idx = Math.floor((t - startMs) / msPerWeek);
+        if (idx < 0 || idx >= WEEKS) return;
+        if (perWeek[idx][d.mood] !== undefined) {
+          perWeek[idx][d.mood]++;
+          perWeek[idx].total++;
+        }
+      });
+      var maxTotal = 1;
+      perWeek.forEach(function(w) { if (w.total > maxTotal) maxTotal = w.total; });
+
+      // SVG dimensions
+      var W = 320, H = 100;
+      var padL = 4, padR = 4, padT = 6, padB = 16;
+      var plotW = W - padL - padR;
+      var plotH = H - padT - padB;
+      var barW = plotW / WEEKS;
+      var maxBarH = plotH;
+      // Mood color mapping (matches mood-tag tints established in 2p.2)
+      var moodColors = {
+        joy:       '#ffc85a',  // warm yellow
+        pride:     '#ffaa50',  // warm orange
+        curiosity: '#b48cdc',  // soft purple
+        calm:      '#78b4c8',  // cool teal
+        struggle:  '#c896aa'   // soft pink
+      };
+      var moodOrder = ['joy', 'pride', 'curiosity', 'calm', 'struggle'];
+
+      // Build stacked bars
+      var bars = [];
+      for (var i = 0; i < WEEKS; i++) {
+        var weekBucket = perWeek[i];
+        var x = padL + i * barW;
+        var stackedH = 0;
+        if (weekBucket.total === 0) continue;
+        moodOrder.forEach(function(mid) {
+          var n = weekBucket[mid] || 0;
+          if (n === 0) return;
+          var segH = (n / maxTotal) * maxBarH;
+          var y = padT + maxBarH - stackedH - segH;
+          bars.push(h('rect', {
+            key: 'mw-' + i + '-' + mid,
+            x: x + barW * 0.15, y: y,
+            width: Math.max(2, barW * 0.7), height: segH,
+            fill: moodColors[mid],
+            opacity: 0.92
+          }));
+          stackedH += segH;
+        });
+      }
+
+      // X-axis date labels (start, mid, end)
+      function fmt(d) {
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      }
+      var startLabelDate = new Date(startMs);
+      var midLabelDate = new Date(startMs + (WEEKS / 2) * msPerWeek);
+
+      // Aria summary
+      var totalCount = taggedDecs.length;
+      var moodCounts = { joy: 0, pride: 0, curiosity: 0, calm: 0, struggle: 0 };
+      taggedDecs.forEach(function(d) { if (moodCounts[d.mood] !== undefined) moodCounts[d.mood]++; });
+      var ariaSummary = 'Mood timeline, last ' + WEEKS + ' weeks. ' + totalCount + ' tagged decorations. '
+        + moodOrder.map(function(m) {
+          return moodCounts[m] + ' ' + m;
+        }).join(', ') + '.';
+
+      return h('div', {
+        role: 'figure',
+        'aria-label': ariaSummary,
+        style: {
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px',
+          marginBottom: '14px'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }
+        },
+          h('span', {
+            style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+          }, '🎭 Mood timeline · 13 weeks'),
+          h('span', {
+            style: { fontSize: '11px', color: palette.textDim, fontVariantNumeric: 'tabular-nums' }
+          },
+            h('span', { style: { color: palette.text, fontWeight: 700 } }, totalCount),
+            ' tagged decoration' + (totalCount === 1 ? '' : 's')
+          )
+        ),
+        h('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          width: '100%',
+          height: H,
+          'aria-hidden': 'true',
+          style: { display: 'block' }
+        },
+          // Baseline
+          h('line', {
+            x1: padL, x2: W - padR,
+            y1: padT + maxBarH, y2: padT + maxBarH,
+            stroke: palette.border, strokeWidth: 0.5
+          }),
+          bars,
+          // X-axis labels
+          h('text', {
+            x: padL, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'start'
+          }, fmt(startLabelDate)),
+          h('text', {
+            x: padL + plotW / 2, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'middle'
+          }, fmt(midLabelDate)),
+          h('text', {
+            x: W - padR, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'end'
+          }, 'This week')
+        ),
+        // Legend
+        h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px', fontSize: '10px', color: palette.textMute } },
+          MOOD_OPTIONS.map(function(m) {
+            if (!moodCounts[m.id]) return null;
+            return h('span', {
+              key: 'leg-' + m.id,
+              style: { display: 'inline-flex', alignItems: 'center', gap: '4px' }
+            },
+              h('span', {
+                'aria-hidden': 'true',
+                style: { width: '10px', height: '10px', background: moodColors[m.id], borderRadius: '2px', display: 'inline-block' }
+              }),
+              h('span', null, m.emoji + ' ' + m.label + ' · ' + moodCounts[m.id])
+            );
+          })
+        )
+      );
+    }
+
     function renderTrendsChart() {
       var earnings = state.earnings || [];
       var decorations = state.decorations || [];
@@ -12950,6 +13113,10 @@
 
           // 30-day token trend chart (Phase 2l) — only renders when there's data
           renderTrendsChart(),
+
+          // 13-week mood timeline (Phase 2p.25) — affective trajectory
+          // visualization complementing the trend chart\'s token flow
+          renderMoodTimeline(),
 
           // 90-day activity heatmap (Phase 2p.8) — calendar-grid view
           // of cumulative engagement. Rendered below the trend chart so
@@ -15336,6 +15503,10 @@
               )
             );
           })(),
+          // Mood timeline (Phase 2p.25) — palette-aware version of the
+          // memory-overview timeline, for parents/clinicians reviewing
+          // the affective trajectory on screen.
+          renderMoodTimeline(),
           // Recent achievements (Phase 2p.5) — same spirit as the print
           // packet section, palette-aware for on-screen review
           (function() {
@@ -15815,6 +15986,85 @@
             h('div', null, rows),
             h('div', { style: { fontSize: '9px', color: '#666', marginTop: '4px', fontStyle: 'italic' } },
               'Each square = one day. Darker = more activity. Empty days are neutral, not negative.')
+          );
+        })(),
+        // Mood timeline (Phase 2p.25) — paper-friendly stacked bars by week
+        (function() {
+          var taggedDecs = (state.decorations || []).filter(function(d) {
+            return d.mood && d.earnedAt && !d.isStarter;
+          });
+          if (taggedDecs.length < 3) return null;
+          var WEEKS = 13;
+          var msPerWeek = 7 * 24 * 60 * 60 * 1000;
+          var today = new Date(); today.setHours(0, 0, 0, 0);
+          var dowToday = today.getDay();
+          var endOfWeekTs = today.getTime() + (6 - dowToday) * 24 * 60 * 60 * 1000;
+          var startMs = endOfWeekTs - (WEEKS * msPerWeek - 1);
+          var perWeek = [];
+          for (var w = 0; w < WEEKS; w++) {
+            perWeek.push({ joy: 0, pride: 0, curiosity: 0, calm: 0, struggle: 0, total: 0 });
+          }
+          taggedDecs.forEach(function(d) {
+            var t = new Date(d.earnedAt).getTime();
+            if (t < startMs || t > endOfWeekTs) return;
+            var idx = Math.floor((t - startMs) / msPerWeek);
+            if (idx < 0 || idx >= WEEKS) return;
+            if (perWeek[idx][d.mood] !== undefined) {
+              perWeek[idx][d.mood]++;
+              perWeek[idx].total++;
+            }
+          });
+          var maxTotal = 1;
+          perWeek.forEach(function(w) { if (w.total > maxTotal) maxTotal = w.total; });
+          // Paper-friendly grayscale + dotted-pattern coding for moods
+          var moodGray = {
+            joy: '#cccccc', pride: '#999999', curiosity: '#666666',
+            calm: '#aaaaaa', struggle: '#3a3a3a'
+          };
+          var moodOrder = ['joy', 'pride', 'curiosity', 'calm', 'struggle'];
+          var bars = [];
+          var maxBarH = 60;
+          var W = 320, padL = 4, padR = 4, padT = 4, padB = 14;
+          var plotW = W - padL - padR;
+          var barW = plotW / WEEKS;
+          for (var i = 0; i < WEEKS; i++) {
+            var weekBucket = perWeek[i];
+            if (weekBucket.total === 0) continue;
+            var x = padL + i * barW;
+            var stackedH = 0;
+            moodOrder.forEach(function(mid) {
+              var n = weekBucket[mid] || 0;
+              if (n === 0) return;
+              var segH = (n / maxTotal) * maxBarH;
+              var y = padT + maxBarH - stackedH - segH;
+              bars.push(h('rect', {
+                key: 'pmt-' + i + '-' + mid,
+                x: x + barW * 0.15, y: y,
+                width: Math.max(2, barW * 0.7), height: segH,
+                fill: moodGray[mid],
+                stroke: '#000', strokeWidth: 0.3
+              }));
+              stackedH += segH;
+            });
+          }
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '11px', color: '#000' } },
+              '🎭 Mood timeline · last 13 weeks · ' + taggedDecs.length + ' tagged decoration' + (taggedDecs.length === 1 ? '' : 's')),
+            h('svg', { viewBox: '0 0 ' + W + ' ' + (padT + maxBarH + padB), width: '100%', height: padT + maxBarH + padB },
+              h('line', { x1: padL, x2: W - padR, y1: padT + maxBarH, y2: padT + maxBarH, stroke: '#000', strokeWidth: 0.4 }),
+              bars,
+              h('text', { x: padL, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444' }, '13w ago'),
+              h('text', { x: padL + plotW / 2, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444', textAnchor: 'middle' }, '6w ago'),
+              h('text', { x: W - padR, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444', textAnchor: 'end' }, 'now')
+            ),
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px', fontSize: '9px', color: '#444' } },
+              MOOD_OPTIONS.map(function(m) {
+                return h('span', { key: 'plg-' + m.id, style: { display: 'inline-flex', alignItems: 'center', gap: '3px' } },
+                  h('span', { style: { width: '8px', height: '8px', background: moodGray[m.id], border: '1px solid #000', display: 'inline-block' } }),
+                  h('span', null, m.label)
+                );
+              })
+            )
           );
         })(),
         // Mood distribution (Phase 2m) — affective-domain insight for
