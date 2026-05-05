@@ -988,6 +988,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 'These are the nutrients your body needs in small amounts but cannot make on its own. Click any card to see what it does, where to find it, and what happens when you don\'t get enough. Sources cited inline from NIH Office of Dietary Supplements.')
             ),
+            // High-priority deficiency callout — surfaces the 5 nutrients adolescents
+            // in the US (and Maine specifically) most commonly under-consume. Each card
+            // shows a 3-stage cascade: Nutrient → Body function → What it looks like.
+            // Lifts the BirdLab Climate Pressure 4-card grid pattern.
+            (function() {
+              var PRIORITIES = [
+                { id: 'vitD',     emoji: '☀️', name: 'Vitamin D',  why: 'WIDESPREAD in Maine winters', function_: 'Calcium absorption + immunity + mood', symptom: 'Bone weakness, low mood, frequent illness', stripe: '#f59e0b' },
+                { id: 'iron',     emoji: '🩸', name: 'Iron',       why: 'Menstruating teens at high risk',     function_: 'Hemoglobin carries oxygen + brain fuel', symptom: 'Fatigue, brain fog, ADHD-like attention drop', stripe: '#dc2626' },
+                { id: 'mag',      emoji: '🌿', name: 'Magnesium',  why: 'Most US adults under-consume',      function_: 'Muscle + nerve + sleep + blood sugar', symptom: 'Cramps, fatigue, anxiety-like symptoms', stripe: '#16a34a' },
+                { id: 'b12',      emoji: '🥛', name: 'Vitamin B12', why: 'Vegans / vegetarians at risk',       function_: 'Nerves + red blood cells + DNA',          symptom: 'Anemia, nerve damage, dementia-like symptoms', stripe: '#7c3aed' },
+                { id: 'calcium',  emoji: '🦴', name: 'Calcium',    why: 'Teens build PEAK bone density now', function_: 'Bones + teeth + nerve signaling',         symptom: 'Higher fracture risk, lifelong bone deficit', stripe: '#0ea5e9' }
+              ];
+              return h('div', { className: 'rounded-2xl overflow-hidden border-2 border-rose-300 shadow bg-gradient-to-br from-rose-50 via-amber-50 to-emerald-50' },
+                h('div', { className: 'px-5 py-3 border-b-2 border-rose-200', style: { background: 'rgba(254, 226, 226, 0.5)' } },
+                  h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '🚨'),
+                    h('h3', { className: 'text-base font-black text-rose-900' }, 'Watch these in Maine'),
+                    h('span', { className: 'text-xs italic text-slate-700' }, '— nutrients adolescents most often under-consume')
+                  )
+                ),
+                h('div', { className: 'p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3' },
+                  PRIORITIES.map(function(n) {
+                    return h('button', {
+                      key: n.id,
+                      onClick: function() {
+                        var match = (VITAMINS.concat(MINERALS)).filter(function(x) { return x.id === n.id; })[0];
+                        if (match) {
+                          var t = MINERALS.indexOf(match) >= 0 ? 'minerals' : 'vitamins';
+                          setTab(t);
+                          setTimeout(function() { setPicked(match); }, 60);
+                          announce('Opening ' + match.name);
+                        }
+                      },
+                      'aria-label': n.name + ' — ' + n.why + '. Click to see full nutrient card.',
+                      className: 'text-left p-3 rounded-xl border-2 bg-white hover:shadow-lg transition focus:outline-none focus:ring-2 ring-rose-500/40 relative overflow-hidden',
+                      style: { borderColor: n.stripe + '88', paddingLeft: 18 }
+                    },
+                      h('span', { 'aria-hidden': 'true',
+                        style: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 6, background: n.stripe, borderRadius: '11px 0 0 11px' }
+                      }),
+                      h('div', { className: 'flex items-baseline gap-2 mb-2 flex-wrap' },
+                        h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, n.emoji),
+                        h('div', { className: 'flex-1 min-w-0' },
+                          h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: n.stripe } }, n.why),
+                          h('div', { className: 'text-base font-black text-slate-800', style: { lineHeight: 1.15 } }, n.name)
+                        )
+                      ),
+                      // Cascade: Function → Symptom
+                      h('div', { className: 'flex items-stretch gap-1.5' },
+                        h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#ecfdf5', color: '#064e3b', border: '1px solid #a7f3d0' } },
+                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, 'Function'),
+                          n.function_
+                        ),
+                        h('span', { 'aria-hidden': 'true', className: 'self-center text-slate-400 font-bold' }, '→'),
+                        h('div', { className: 'flex-1 p-1.5 rounded text-[10px] leading-snug', style: { background: '#fef2f2', color: '#7f1d1d', border: '1px solid #fecaca' } },
+                          h('div', { className: 'text-[8px] font-bold uppercase tracking-wider opacity-70 mb-0.5' }, 'Without it'),
+                          n.symptom
+                        )
+                      )
+                    );
+                  })
+                )
+              );
+            })(),
             // Tab strip
             h('div', { 'role': 'tablist', 'aria-label': 'Nutrient categories', className: 'flex flex-wrap gap-2' },
               tabs.map(function(t) {
