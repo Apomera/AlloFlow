@@ -99,6 +99,10 @@ setup-local-ai.bat
 # Misc test files
 nonshareabletest.txt
 
+# Catalog staging area: lessons exported from AlloFlow, before placing in
+# examples/ or submitting to the Cloudflare Worker
+Lesson JSONs/
+
 # Agent-generated temp/debug files (one-off scripts, logs, diffs, backups)
 fix_*.py
 fix_*.js
