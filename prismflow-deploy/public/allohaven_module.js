@@ -1425,6 +1425,126 @@
     }).length;
   }
 
+  // Tenure recap stats (Phase 2p.29) — pure aggregator over existing
+  // state, returning everything the recap modal needs in one pass.
+  // No side effects; safe to call any time. Returns null only if the
+  // state is so empty that a recap would be meaningless.
+  function computeTenureStats(state) {
+    var earnings = state.earnings || [];
+    var decorations = state.decorations || [];
+    var journals = state.journalEntries || [];
+    var stories = state.stories || [];
+    var visits = state.visits || [];
+    var achievements = state.achievements || {};
+    var goals = state.goals || [];
+    var companion = state.companion || null;
+
+    if (earnings.length === 0 && decorations.length === 0 && journals.length === 0) {
+      return null;
+    }
+
+    // Tenure span — earliest date across all timestamped data
+    function ts(d) { return d ? new Date(d).getTime() : null; }
+    var earliestMs = Infinity;
+    earnings.forEach(function(e) { var t = ts(e.date); if (t && t < earliestMs) earliestMs = t; });
+    decorations.forEach(function(d) { var t = ts(d.earnedAt); if (t && t < earliestMs) earliestMs = t; });
+    journals.forEach(function(j) { var t = ts(j.date); if (t && t < earliestMs) earliestMs = t; });
+    if (companion && companion.createdAt) {
+      var ct = ts(companion.createdAt);
+      if (ct && ct < earliestMs) earliestMs = ct;
+    }
+    if (earliestMs === Infinity) earliestMs = Date.now();
+    var daysSince = Math.max(1, Math.ceil((Date.now() - earliestMs) / (24 * 60 * 60 * 1000)));
+
+    // Tokens earned + spent (positives + negatives separately)
+    var tokensEarned = 0, tokensSpent = 0;
+    earnings.forEach(function(e) {
+      var n = +e.tokens || 0;
+      if (n > 0) tokensEarned += n;
+      else tokensSpent += -n;
+    });
+
+    // Decoration breakdown
+    var nonStarter = decorations.filter(function(d) { return !d.isStarter; });
+    var customCount = nonStarter.filter(function(d) { return !!(d.isCustomUpload || d.isCustomDrawing); }).length;
+    var favoriteCount = nonStarter.filter(function(d) { return !!d.isFavorite; }).length;
+    var withReflection = nonStarter.filter(function(d) { return (d.studentReflection || '').trim().length > 0; }).length;
+    var withMemoryContent = nonStarter.filter(function(d) { return !!(d.linkedContent && d.linkedContent.type); }).length;
+    var withVoiceNote = nonStarter.filter(function(d) { return !!(d.voiceNote && d.voiceNote.base64); }).length;
+
+    // Top moods
+    var moodCounts = {};
+    nonStarter.forEach(function(d) { if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1; });
+    var moodList = Object.keys(moodCounts).map(function(k) {
+      return { id: k, count: moodCounts[k], option: getMoodOption(k) };
+    }).sort(function(a, b) { return b.count - a.count; });
+
+    // Top subjects
+    var subjectCounts = {};
+    nonStarter.forEach(function(d) {
+      (d.subjects || []).forEach(function(s) { subjectCounts[s] = (subjectCounts[s] || 0) + 1; });
+    });
+    var subjectList = Object.keys(subjectCounts).map(function(k) {
+      return { id: k, count: subjectCounts[k], tag: getSubjectTag(k) };
+    }).sort(function(a, b) { return b.count - a.count; });
+
+    // Skill levels
+    var skills = SKILL_DEFS.map(function(def) {
+      var count = countSkillEvents(state, def.id);
+      var lvl = computeSkillLevel(count);
+      return { def: def, count: count, level: lvl.level, atMax: lvl.atMax };
+    });
+
+    // Achievement count
+    var unlockedCount = Object.keys(achievements).length;
+    var totalAchievements = (typeof ACHIEVEMENT_CATALOG !== 'undefined') ? ACHIEVEMENT_CATALOG.length : unlockedCount;
+
+    // Streak
+    var streak = computeStreak(visits);
+
+    // Words written across journal entries
+    var totalWords = 0;
+    journals.forEach(function(j) {
+      var t = (j.text || '').trim();
+      if (t.length > 0) totalWords += t.split(/\s+/).length;
+    });
+
+    // Story walks completed
+    var storiesWalked = 0;
+    stories.forEach(function(s) { storiesWalked += (s.walkCount || 0); });
+
+    // Goals completed
+    var goalsDone = goals.filter(function(g) { return !!g.completedAt; }).length;
+
+    return {
+      daysSince: daysSince,
+      earliestMs: earliestMs,
+      tokensEarned: tokensEarned,
+      tokensSpent: tokensSpent,
+      decorationCount: nonStarter.length,
+      customCount: customCount,
+      favoriteCount: favoriteCount,
+      withReflection: withReflection,
+      withMemoryContent: withMemoryContent,
+      withVoiceNote: withVoiceNote,
+      topMoods: moodList,
+      topSubjects: subjectList,
+      skills: skills,
+      unlockedAchievements: unlockedCount,
+      totalAchievements: totalAchievements,
+      streakLongest: streak.longest,
+      streakCurrent: streak.current,
+      visitDays: visits.length > 0 ? Object.keys(visits.reduce(function(acc, v) { if (v) acc[v] = 1; return acc; }, {})).length : 0,
+      journalCount: journals.length,
+      totalWords: totalWords,
+      storyCount: stories.length,
+      storiesWalked: storiesWalked,
+      goalsDone: goalsDone,
+      goalsTotal: goals.length,
+      companion: companion
+    };
+  }
+
   // Returns { level, current, nextThreshold, pct, atMax }.
   // pct is progress toward the NEXT level (0–100).
   function computeSkillLevel(count) {
@@ -8880,11 +9000,15 @@
     // Only runs while the timer is active. Re-renders the mm:ss display.
     // Cheap; doesn't affect perceived smoothness at 4Hz.
     useEffect(function() {
-      if (!state.pomodoroState.active) return;
+      // Tick while Pomodoro OR breathing pacer is active so any
+      // mm:ss / elapsed displays smoothly refresh.
+      var pomActive = !!(state.pomodoroState && state.pomodoroState.active);
+      var breatheActive = state.activeModal === 'breathe';
+      if (!pomActive && !breatheActive) return;
       var iv = setInterval(function() { setNowTick(Date.now()); }, 250);
       return function() { clearInterval(iv); };
       // eslint-disable-next-line
-    }, [state.pomodoroState.active]);
+    }, [state.pomodoroState.active, state.activeModal]);
 
     // ── Ambient soundscape (Phase 2g) ──
     // Procedural Web Audio noise — no external assets. A 5-second buffer
@@ -10310,6 +10434,58 @@
     var letterLoadingTuple = useState(false);
     var letterLoading = letterLoadingTuple[0];
     var setLetterLoading = letterLoadingTuple[1];
+
+    // Phase 2p.28 — breathing pacer state, lifted here for the same
+    // rules-of-hooks reason. The phase advance interval ONLY runs when
+    // state.activeModal === 'breathe'.
+    var breathePhaseTuple = useState('inhale');
+    var breathePhase = breathePhaseTuple[0];
+    var setBreathePhase = breathePhaseTuple[1];
+    var breatheCyclesTuple = useState(0);
+    var breatheCycles = breatheCyclesTuple[0];
+    var setBreatheCycles = breatheCyclesTuple[1];
+    var breatheVoiceOnTuple = useState(true);
+    var breatheVoiceOn = breatheVoiceOnTuple[0];
+    var setBreatheVoiceOn = breatheVoiceOnTuple[1];
+    var breatheStartedAtTuple = useState(0);
+    var breatheStartedAt = breatheStartedAtTuple[0];
+    var setBreatheStartedAt = breatheStartedAtTuple[1];
+
+    // Breathing pacer driver (Phase 2p.28). Resets on open and ticks
+    // the phase machine ('inhale' → 'hold-in' → 'exhale' → 'hold-out')
+    // every 4 seconds while the modal is open. The hook always runs;
+    // the body short-circuits when the modal is closed so no work
+    // happens unless the student opened the pacer.
+    useEffect(function() {
+      if (state.activeModal !== 'breathe') return;
+      // Reset on each open so the orb starts at 'inhale' every time.
+      setBreathePhase('inhale');
+      setBreatheCycles(0);
+      setBreatheStartedAt(Date.now());
+      // First voice cue
+      if (breatheVoiceOn && props.callTTS) {
+        try { props.callTTS('Breathe in', { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
+      }
+      var iv = setInterval(function() {
+        setBreathePhase(function(prev) {
+          var idx = ['inhale', 'hold-in', 'exhale', 'hold-out'].indexOf(prev);
+          var next = ['inhale', 'hold-in', 'exhale', 'hold-out'][(idx + 1) % 4];
+          if (next === 'inhale') {
+            setBreatheCycles(function(c) { return c + 1; });
+          }
+          if (breatheVoiceOn && props.callTTS) {
+            var label = next === 'inhale' ? 'Breathe in'
+                       : next === 'hold-in' ? 'Hold'
+                       : next === 'exhale' ? 'Breathe out'
+                       : 'Rest';
+            try { props.callTTS(label, { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
+          }
+          return next;
+        });
+      }, 4000);
+      return function() { clearInterval(iv); };
+      // eslint-disable-next-line
+    }, [state.activeModal, breatheVoiceOn]);
     var reactingTuple = useState(false);
     var reacting = reactingTuple[0];
     var setReacting = reactingTuple[1];
@@ -12813,64 +12989,30 @@
     // breaks. No tokens, no streak, no judgment — pure self-care.
     // Closeable any time. Voice cue is on by default but mute-able.
     // ─────────────────────────────────────────────────
+    // Constants for the box-breathing pacer (Phase 2p.28). Module-scope
+    // would also work but inline keeps them close to their consumers.
+    var BREATHE_PHASE_MS = 4000;
+    var BREATHE_ORDER = ['inhale', 'hold-in', 'exhale', 'hold-out'];
+    var BREATHE_LABELS = {
+      'inhale':   'Breathe in',
+      'hold-in':  'Hold',
+      'exhale':   'Breathe out',
+      'hold-out': 'Rest'
+    };
+    var BREATHE_HINTS = {
+      'inhale':   'Through the nose. Soft, slow.',
+      'hold-in':  'Hold gently. No strain.',
+      'exhale':   'Through the mouth. Let it go.',
+      'hold-out': 'Empty. Pause. You\'re here.'
+    };
     function renderBreathingModal() {
       if (state.activeModal !== 'breathe') return null;
-      // Phase machine: 'inhale' → 'hold-in' → 'exhale' → 'hold-out'.
-      // Each phase is 4 seconds; full cycle = 16s.
-      var phaseTuple = useState('inhale');
-      var phase = phaseTuple[0];
-      var setPhase = phaseTuple[1];
-      var cyclesTuple = useState(0);
-      var cycles = cyclesTuple[0];
-      var setCycles = cyclesTuple[1];
-      var voiceTuple = useState(true);
-      var voiceOn = voiceTuple[0];
-      var setVoiceOn = voiceTuple[1];
-      var startedAtTuple = useState(Date.now());
-      var startedAt = startedAtTuple[0];
-      var setStartedAt = startedAtTuple[1];
+      var phase = breathePhase;
+      var cycles = breatheCycles;
+      var voiceOn = breatheVoiceOn;
+      var startedAt = breatheStartedAt;
 
-      var PHASE_MS = 4000;
-      var ORDER = ['inhale', 'hold-in', 'exhale', 'hold-out'];
-      var LABELS = {
-        'inhale':   'Breathe in',
-        'hold-in':  'Hold',
-        'exhale':   'Breathe out',
-        'hold-out': 'Rest'
-      };
-      var HINTS = {
-        'inhale':   'Through the nose. Soft, slow.',
-        'hold-in':  'Hold gently. No strain.',
-        'exhale':   'Through the mouth. Let it go.',
-        'hold-out': 'Empty. Pause. You\'re here.'
-      };
-
-      // Advance phase every PHASE_MS ms. Increment cycle count when we
-      // wrap from hold-out back to inhale.
-      useEffect(function() {
-        var iv = setInterval(function() {
-          var idx = ORDER.indexOf(phase);
-          var nextIdx = (idx + 1) % ORDER.length;
-          if (nextIdx === 0) setCycles(cycles + 1);
-          setPhase(ORDER[nextIdx]);
-          // Voice cue at the start of each phase
-          if (voiceOn && props.callTTS) {
-            try { props.callTTS(LABELS[ORDER[nextIdx]], { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
-          }
-        }, PHASE_MS);
-        return function() { clearInterval(iv); };
-        // eslint-disable-next-line
-      }, [phase, voiceOn]);
-
-      // Speak the very first phase on open
-      useEffect(function() {
-        if (voiceOn && props.callTTS) {
-          try { props.callTTS(LABELS.inhale, { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
-        }
-        // eslint-disable-next-line
-      }, []);
-
-      var elapsedSec = Math.floor((Date.now() - startedAt) / 1000);
+      var elapsedSec = startedAt > 0 ? Math.floor((Date.now() - startedAt) / 1000) : 0;
       var elapsedMin = Math.floor(elapsedSec / 60);
       var elapsedRemSec = elapsedSec % 60;
       var elapsedStr = elapsedMin + ':' + (elapsedRemSec < 10 ? '0' : '') + elapsedRemSec;
@@ -12944,10 +13086,10 @@
               fontSize: '22px', fontWeight: 800, color: palette.text,
               marginBottom: '4px', letterSpacing: '0.02em'
             }
-          }, LABELS[phase]),
+          }, BREATHE_LABELS[phase]),
           h('div', {
             style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', marginBottom: '14px', minHeight: '16px' }
-          }, HINTS[phase]),
+          }, BREATHE_HINTS[phase]),
           // Cycle + time stats
           h('div', {
             style: {
@@ -12992,7 +13134,7 @@
             style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }
           },
             h('button', {
-              onClick: function() { setVoiceOn(!voiceOn); },
+              onClick: function() { setBreatheVoiceOn(!voiceOn); },
               'aria-pressed': voiceOn ? 'true' : 'false',
               'aria-label': voiceOn ? 'Mute voice cues' : 'Unmute voice cues',
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })

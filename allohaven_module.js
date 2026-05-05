@@ -1425,6 +1425,126 @@
     }).length;
   }
 
+  // Tenure recap stats (Phase 2p.29) — pure aggregator over existing
+  // state, returning everything the recap modal needs in one pass.
+  // No side effects; safe to call any time. Returns null only if the
+  // state is so empty that a recap would be meaningless.
+  function computeTenureStats(state) {
+    var earnings = state.earnings || [];
+    var decorations = state.decorations || [];
+    var journals = state.journalEntries || [];
+    var stories = state.stories || [];
+    var visits = state.visits || [];
+    var achievements = state.achievements || {};
+    var goals = state.goals || [];
+    var companion = state.companion || null;
+
+    if (earnings.length === 0 && decorations.length === 0 && journals.length === 0) {
+      return null;
+    }
+
+    // Tenure span — earliest date across all timestamped data
+    function ts(d) { return d ? new Date(d).getTime() : null; }
+    var earliestMs = Infinity;
+    earnings.forEach(function(e) { var t = ts(e.date); if (t && t < earliestMs) earliestMs = t; });
+    decorations.forEach(function(d) { var t = ts(d.earnedAt); if (t && t < earliestMs) earliestMs = t; });
+    journals.forEach(function(j) { var t = ts(j.date); if (t && t < earliestMs) earliestMs = t; });
+    if (companion && companion.createdAt) {
+      var ct = ts(companion.createdAt);
+      if (ct && ct < earliestMs) earliestMs = ct;
+    }
+    if (earliestMs === Infinity) earliestMs = Date.now();
+    var daysSince = Math.max(1, Math.ceil((Date.now() - earliestMs) / (24 * 60 * 60 * 1000)));
+
+    // Tokens earned + spent (positives + negatives separately)
+    var tokensEarned = 0, tokensSpent = 0;
+    earnings.forEach(function(e) {
+      var n = +e.tokens || 0;
+      if (n > 0) tokensEarned += n;
+      else tokensSpent += -n;
+    });
+
+    // Decoration breakdown
+    var nonStarter = decorations.filter(function(d) { return !d.isStarter; });
+    var customCount = nonStarter.filter(function(d) { return !!(d.isCustomUpload || d.isCustomDrawing); }).length;
+    var favoriteCount = nonStarter.filter(function(d) { return !!d.isFavorite; }).length;
+    var withReflection = nonStarter.filter(function(d) { return (d.studentReflection || '').trim().length > 0; }).length;
+    var withMemoryContent = nonStarter.filter(function(d) { return !!(d.linkedContent && d.linkedContent.type); }).length;
+    var withVoiceNote = nonStarter.filter(function(d) { return !!(d.voiceNote && d.voiceNote.base64); }).length;
+
+    // Top moods
+    var moodCounts = {};
+    nonStarter.forEach(function(d) { if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1; });
+    var moodList = Object.keys(moodCounts).map(function(k) {
+      return { id: k, count: moodCounts[k], option: getMoodOption(k) };
+    }).sort(function(a, b) { return b.count - a.count; });
+
+    // Top subjects
+    var subjectCounts = {};
+    nonStarter.forEach(function(d) {
+      (d.subjects || []).forEach(function(s) { subjectCounts[s] = (subjectCounts[s] || 0) + 1; });
+    });
+    var subjectList = Object.keys(subjectCounts).map(function(k) {
+      return { id: k, count: subjectCounts[k], tag: getSubjectTag(k) };
+    }).sort(function(a, b) { return b.count - a.count; });
+
+    // Skill levels
+    var skills = SKILL_DEFS.map(function(def) {
+      var count = countSkillEvents(state, def.id);
+      var lvl = computeSkillLevel(count);
+      return { def: def, count: count, level: lvl.level, atMax: lvl.atMax };
+    });
+
+    // Achievement count
+    var unlockedCount = Object.keys(achievements).length;
+    var totalAchievements = (typeof ACHIEVEMENT_CATALOG !== 'undefined') ? ACHIEVEMENT_CATALOG.length : unlockedCount;
+
+    // Streak
+    var streak = computeStreak(visits);
+
+    // Words written across journal entries
+    var totalWords = 0;
+    journals.forEach(function(j) {
+      var t = (j.text || '').trim();
+      if (t.length > 0) totalWords += t.split(/\s+/).length;
+    });
+
+    // Story walks completed
+    var storiesWalked = 0;
+    stories.forEach(function(s) { storiesWalked += (s.walkCount || 0); });
+
+    // Goals completed
+    var goalsDone = goals.filter(function(g) { return !!g.completedAt; }).length;
+
+    return {
+      daysSince: daysSince,
+      earliestMs: earliestMs,
+      tokensEarned: tokensEarned,
+      tokensSpent: tokensSpent,
+      decorationCount: nonStarter.length,
+      customCount: customCount,
+      favoriteCount: favoriteCount,
+      withReflection: withReflection,
+      withMemoryContent: withMemoryContent,
+      withVoiceNote: withVoiceNote,
+      topMoods: moodList,
+      topSubjects: subjectList,
+      skills: skills,
+      unlockedAchievements: unlockedCount,
+      totalAchievements: totalAchievements,
+      streakLongest: streak.longest,
+      streakCurrent: streak.current,
+      visitDays: visits.length > 0 ? Object.keys(visits.reduce(function(acc, v) { if (v) acc[v] = 1; return acc; }, {})).length : 0,
+      journalCount: journals.length,
+      totalWords: totalWords,
+      storyCount: stories.length,
+      storiesWalked: storiesWalked,
+      goalsDone: goalsDone,
+      goalsTotal: goals.length,
+      companion: companion
+    };
+  }
+
   // Returns { level, current, nextThreshold, pct, atMax }.
   // pct is progress toward the NEXT level (0–100).
   function computeSkillLevel(count) {
@@ -14911,6 +15031,254 @@
               lockedItems.map(function(a) { return renderRow(a, false); })
             )
           ) : null
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // TENURE RECAP MODAL (Phase 2p.29) — "Your AlloHaven journey"
+    // Aggregates everything across the student's entire engagement
+    // window into one celebratory retrospective. Heavy reuse of
+    // computeTenureStats; renders nothing for genuinely-empty saves.
+    // ─────────────────────────────────────────────────
+    function renderTenureRecapModal() {
+      if (state.activeModal !== 'tenure-recap') return null;
+      var stats = computeTenureStats(state);
+      if (!stats) {
+        // Auto-close if there's truly nothing to show. A guard rather
+        // than a dialog so the student doesn't see an empty modal.
+        setTimeout(function() { setStateField('activeModal', null); }, 0);
+        return null;
+      }
+      var startDate = new Date(stats.earliestMs);
+      var startDateStr = startDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Companion species + recap line
+      var c = stats.companion;
+      var sp = (c && c.species) ? getCompanionSpecies(c.species) : null;
+      var swatch = (c && c.species) ? getCompanionPalette(c.species, c.colorVariant || 'warm') : null;
+
+      // Companion's recap message — entirely template-driven (no AI
+      // call to keep this snappy). Uses top mood + skill peak + visit
+      // streak to flavor the line.
+      var topMood = stats.topMoods[0];
+      var topSkill = null;
+      stats.skills.forEach(function(sk) { if (!topSkill || sk.level > topSkill.level) topSkill = sk; });
+      var recapByspecies = {
+        cat:    'Hmm. ' + stats.daysSince + ' days. ' + stats.decorationCount + ' decorations. I\'ve been watching. You showed up.',
+        fox:    'What a journey. ' + stats.daysSince + ' days, ' + stats.decorationCount + ' decorations, and a whole room that\'s yours. Onward.',
+        owl:    'Considering... ' + stats.daysSince + ' days, ' + stats.unlockedAchievements + ' achievements. Thoughtful work, steadily done.',
+        turtle: 'Step by step — ' + stats.daysSince + ' days, ' + stats.decorationCount + ' decorations, no rushing. This is the way.',
+        dragon: 'Whoa! ' + stats.daysSince + ' days! ' + stats.tokensEarned + ' tokens earned! ' + stats.decorationCount + ' decorations placed! Epic!'
+      };
+      var recapLine = (c && c.species && recapByspecies[c.species]) || ('A journey of ' + stats.daysSince + ' days. Real progress.');
+
+      var statBox = function(label, value, sub) {
+        return h('div', {
+          style: {
+            background: palette.surface, border: '1px solid ' + palette.border,
+            borderRadius: '10px', padding: '12px',
+            textAlign: 'center', minWidth: 0
+          }
+        },
+          h('div', {
+            style: {
+              fontSize: '22px', fontWeight: 800, color: palette.accent,
+              fontVariantNumeric: 'tabular-nums', lineHeight: '1.1', marginBottom: '2px'
+            }
+          }, value),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, fontWeight: 600 } }, label),
+          sub ? h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '2px', fontStyle: 'italic' } }, sub) : null
+        );
+      };
+
+      // Mood / subject mini-bar (top 3 each)
+      var renderMiniBars = function(items, totalKey) {
+        if (items.length === 0) return h('div', { style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic' } }, 'Not enough yet — just keep tagging.');
+        var maxC = items[0].count || 1;
+        return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+          items.slice(0, 3).map(function(item, i) {
+            var label = (item.option && (item.option.emoji + ' ' + item.option.label))
+                      || (item.tag && (item.tag.emoji + ' ' + item.tag.label))
+                      || item.id;
+            return h('div', { key: totalKey + '-' + item.id, style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+              h('div', { style: { fontSize: '12px', color: palette.text, minWidth: '120px' } }, label),
+              h('div', {
+                'aria-hidden': 'true',
+                style: { flex: 1, height: '8px', background: palette.surface, borderRadius: '4px', overflow: 'hidden', border: '1px solid ' + palette.border }
+              },
+                h('div', {
+                  style: {
+                    width: Math.round((item.count / maxC) * 100) + '%',
+                    height: '100%', background: palette.accent
+                  }
+                })
+              ),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums', minWidth: '24px', textAlign: 'right' } }, item.count)
+            );
+          })
+        );
+      };
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Tenure recap — your AlloHaven journey',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', 'achievements');
+        },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.65)', zIndex: 180,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '2px solid ' + palette.accent,
+            borderRadius: '16px', padding: '28px',
+            maxWidth: '640px', width: '100%', maxHeight: '90vh',
+            overflowY: 'auto', boxShadow: '0 30px 70px rgba(0,0,0,0.5)'
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800 } },
+              '🌱 Your AlloHaven journey'),
+            h('button', {
+              onClick: function() { setStateField('activeModal', 'achievements'); },
+              'aria-label': 'Close recap',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', { style: { fontSize: '12px', color: palette.textDim, margin: '0 0 18px 0', fontStyle: 'italic' } },
+            'Since ' + startDateStr + ' · ' + stats.daysSince + ' days'),
+
+          // Companion + recap line
+          (c && sp) ? h('div', {
+            style: {
+              display: 'flex', gap: '14px', alignItems: 'center',
+              padding: '12px 14px', marginBottom: '18px',
+              background: palette.surface, border: '1px solid ' + palette.accent,
+              borderRadius: '12px'
+            }
+          },
+            h('div', {
+              'data-species': c.species,
+              style: { width: '64px', height: '64px', flexShrink: 0, padding: '4px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '12px' }
+            },
+              h('div', { className: 'ah-companion-root' },
+                getCompanionSvg(c.species, swatch, { blinking: blinking, pupilOffset: { x: 0, y: 0 } })
+              )
+            ),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '4px' } }, (c.name || sp.label) + ' · ' + sp.label),
+              h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5', fontStyle: 'italic' } }, '"' + recapLine + '"')
+            )
+          ) : null,
+
+          // Stats grid (4-up)
+          h('div', {
+            style: {
+              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '10px', marginBottom: '20px'
+            }
+          },
+            statBox('Tokens earned', stats.tokensEarned, '🪙'),
+            statBox('Decorations', stats.decorationCount, stats.customCount > 0 ? stats.customCount + ' your own' : null),
+            statBox('Reflections', stats.journalCount, stats.totalWords > 0 ? stats.totalWords + ' words' : null),
+            statBox('Achievements', stats.unlockedAchievements + '/' + stats.totalAchievements, '🏆')
+          ),
+
+          // Skills row
+          h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+            'Skill levels'),
+          h('div', {
+            style: {
+              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '8px', marginBottom: '20px'
+            }
+          },
+            stats.skills.map(function(sk) {
+              return h('div', {
+                key: 'sk-' + sk.def.id,
+                style: {
+                  background: palette.surface, border: '1px solid ' + palette.border,
+                  borderRadius: '8px', padding: '10px', textAlign: 'center'
+                }
+              },
+                h('div', { style: { fontSize: '20px', marginBottom: '2px' } }, sk.def.emoji),
+                h('div', { style: { fontSize: '11px', color: palette.textDim, fontWeight: 600 } }, sk.def.label),
+                h('div', { style: { fontSize: '16px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums' } },
+                  'Lv ' + sk.level + (sk.atMax ? ' ★' : ''))
+              );
+            })
+          ),
+
+          // Top moods + subjects (side by side on wide screens)
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '20px', marginBottom: '20px' } },
+            h('div', null,
+              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+                'Top moods'),
+              renderMiniBars(stats.topMoods, 'mood')
+            ),
+            h('div', null,
+              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
+                'Top subjects'),
+              renderMiniBars(stats.topSubjects, 'subj')
+            )
+          ),
+
+          // Streak + extras row
+          h('div', {
+            style: {
+              display: 'flex', flexWrap: 'wrap', gap: '10px',
+              fontSize: '12px', color: palette.textDim,
+              padding: '12px 14px', background: palette.surface,
+              border: '1px solid ' + palette.border, borderRadius: '10px',
+              marginBottom: '20px'
+            }
+          },
+            h('div', { style: { flex: '1 1 140px' } },
+              h('span', { style: { color: palette.text, fontWeight: 700 } }, stats.streakLongest + ' day'),
+              ' longest streak'
+            ),
+            h('div', { style: { flex: '1 1 140px' } },
+              h('span', { style: { color: palette.text, fontWeight: 700 } }, stats.visitDays),
+              ' days visited'
+            ),
+            stats.storyCount > 0 ? h('div', { style: { flex: '1 1 140px' } },
+              h('span', { style: { color: palette.text, fontWeight: 700 } }, stats.storyCount),
+              ' ' + (stats.storyCount === 1 ? 'story' : 'stories') + ' (' + stats.storiesWalked + ' walks)'
+            ) : null,
+            stats.goalsTotal > 0 ? h('div', { style: { flex: '1 1 140px' } },
+              h('span', { style: { color: palette.text, fontWeight: 700 } }, stats.goalsDone + '/' + stats.goalsTotal),
+              ' goals reached'
+            ) : null,
+            stats.favoriteCount > 0 ? h('div', { style: { flex: '1 1 140px' } },
+              h('span', { style: { color: palette.text, fontWeight: 700 } }, stats.favoriteCount),
+              ' favorites ⭐'
+            ) : null
+          ),
+
+          // Action row
+          h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
+            h('button', {
+              onClick: function() {
+                setStateField('printScope', { type: 'tenure' });
+                setTimeout(function() {
+                  try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+                  setTimeout(function() { setStateField('printScope', null); }, 1000);
+                }, 50);
+              },
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 16px', fontSize: '13px' })
+            }, '🖨 Print recap'),
+            h('button', {
+              onClick: function() { setStateField('activeModal', 'achievements'); },
+              style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+            }, 'Done')
+          )
         )
       );
     }
