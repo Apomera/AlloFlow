@@ -1389,6 +1389,10 @@
       desc: 'A month-long stretch. Rare and quietly remarkable.',
       check: function(s) { return computeStreak(s.visits || []).longest >= 30; } },
 
+    { id: 'first-favorite', emoji: '⭐', label: 'First favorite',
+      desc: 'Marked a decoration as a favorite — claimed your taste.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isFavorite; }); } },
+
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
       desc: 'A quiet outdoor corner of your room.',
@@ -2696,19 +2700,25 @@
       return t.surface === ctx.surface || t.surface === 'both';
     });
 
-    var stepTuple = useState('pick-template');
+    // "Make similar" pre-fill (Phase 2p.14): if generateContext carries
+    // a preTemplate / preSlots / preArtStyle, jump straight to the
+    // configure step with those values seeded. Lets students iterate
+    // on a design they liked without rebuilding from scratch.
+    var preTemplate = ctx.preTemplate ? getTemplate(ctx.preTemplate) : null;
+
+    var stepTuple = useState(preTemplate ? 'configure' : 'pick-template');
     var step = stepTuple[0];
     var setStep = stepTuple[1];
 
-    var templateTuple = useState(null);
+    var templateTuple = useState(preTemplate || null);
     var template = templateTuple[0];
     var setTemplate = templateTuple[1];
 
-    var slotsTuple = useState({});
+    var slotsTuple = useState(ctx.preSlots ? Object.assign({}, ctx.preSlots) : {});
     var slots = slotsTuple[0];
     var setSlots = slotsTuple[1];
 
-    var artStyleTuple = useState(inheritedStyleId);
+    var artStyleTuple = useState(ctx.preArtStyle || inheritedStyleId);
     var artStyleId = artStyleTuple[0];
     var setArtStyleId = artStyleTuple[1];
 
@@ -5061,20 +5071,56 @@
                 ? 'Review queue · deck ' + p.queueInfo.current + ' of ' + p.queueInfo.total + ' · ' + label
                 : (hasContent ? 'Memory · ' + label : 'Add memory · ' + label))
           ),
-          h('button', {
-            onClick: p.onClose,
-            'aria-label': 'Close memory modal',
-            style: {
-              background: 'transparent',
-              border: '1px solid ' + palette.border,
-              color: palette.textDim,
-              borderRadius: '8px',
-              padding: '4px 10px',
-              fontSize: '13px',
-              cursor: 'pointer',
-              fontFamily: 'inherit'
-            }
-          }, '✕')
+          h('div', { style: { display: 'flex', gap: '6px' } },
+            // Star (Phase 2p.14) — favorite toggle, hidden on starter
+            typeof p.onToggleFavorite === 'function' && !decoration.isStarter ? h('button', {
+              onClick: p.onToggleFavorite,
+              'aria-pressed': decoration.isFavorite ? 'true' : 'false',
+              'aria-label': decoration.isFavorite ? 'Remove from favorites' : 'Mark as favorite',
+              title: decoration.isFavorite ? 'Favorite — click to unmark' : 'Mark as favorite',
+              style: {
+                background: decoration.isFavorite ? palette.accent : 'transparent',
+                border: '1px solid ' + (decoration.isFavorite ? palette.accent : palette.border),
+                color: decoration.isFavorite ? palette.onAccent : palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '13px',
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, decoration.isFavorite ? '⭐' : '☆') : null,
+            // Make similar (Phase 2p.14) — re-roll with same template+slots
+            typeof p.onMakeSimilar === 'function' && !decoration.isStarter ? h('button', {
+              onClick: p.onMakeSimilar,
+              'aria-label': 'Make a similar decoration with the same template',
+              title: 'Generate a new decoration with the same template + slots (3 tokens)',
+              style: {
+                background: 'transparent',
+                border: '1px solid ' + palette.border,
+                color: palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '🔄 Similar') : null,
+            h('button', {
+              onClick: p.onClose,
+              'aria-label': 'Close memory modal',
+              style: {
+                background: 'transparent',
+                border: '1px solid ' + palette.border,
+                color: palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '13px',
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '✕')
+          )
         ),
         // Mood pill (Phase 2m) — clickable, cycles through MOOD_OPTIONS
         // and back to null. Displayed under the header so it's discoverable
@@ -8739,6 +8785,66 @@
       setStateField('decorations', newDecs);
     }
 
+    // Toggle favorite on a decoration (Phase 2p.14). Pure preference,
+    // no token cost. Surfaces favorites first in memory overview + cell
+    // overlay badge.
+    function toggleDecorationFavorite(decorationId) {
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId) return d;
+        return Object.assign({}, d, { isFavorite: !d.isFavorite });
+      });
+      setStateField('decorations', newDecs);
+    }
+
+    // "Make similar" — opens the generate modal with the same template +
+    // slots pre-loaded, so students can iterate on a design they liked
+    // (try a different color, different art style) without rebuilding
+    // the whole config from scratch. Re-uses the standard generate
+    // flow; charges the regular DECORATION_COST per item.
+    function makeSimilarTo(decorationId) {
+      var src = state.decorations.filter(function(d) { return d.id === decorationId; })[0];
+      if (!src) return;
+      // Find an empty cell in the active room to drop the new item into
+      var activeId = state.activeRoomId || 'main';
+      var room = (state.rooms || []).filter(function(r) { return r.id === activeId; })[0]
+              || state.rooms[0];
+      var occupied = {};
+      state.decorations.forEach(function(d) {
+        if (!d.placement) return;
+        if ((d.placement.roomId || 'main') !== activeId) return;
+        occupied[d.placement.surface + '-' + d.placement.cellIndex] = true;
+      });
+      var surface = src.placement && src.placement.surface || 'floor';
+      var max = surface === 'wall' ? room.wallSlots : room.floorSlots;
+      var found = -1;
+      for (var i = 0; i < max; i++) {
+        if (!occupied[surface + '-' + i]) { found = i; break; }
+      }
+      if (found === -1) {
+        // No room on preferred surface — try the other
+        var altSurface = surface === 'wall' ? 'floor' : 'wall';
+        var altMax = altSurface === 'wall' ? room.wallSlots : room.floorSlots;
+        for (var j = 0; j < altMax; j++) {
+          if (!occupied[altSurface + '-' + j]) { surface = altSurface; found = j; break; }
+        }
+      }
+      if (found === -1) {
+        addToast('No empty cells in this room to place a similar one. Try removing or moving something first.');
+        return;
+      }
+      // Pre-fill generate modal context with the source template + slots
+      setStateMulti({
+        activeModal: 'generate',
+        generateContext: {
+          surface: surface,
+          cellIndex: found,
+          preTemplate: src.template,
+          preSlots: src.slots ? Object.assign({}, src.slots) : null,
+          preArtStyle: src.artStyle || null
+        }
+      });
+    }
+
     // AI generation — calls props.callImagen with the constructed prompt.
     // Token deduction happens HERE (3 tokens), before the call. If the
     // generation fails, the token IS refunded (separate path from
@@ -9252,6 +9358,24 @@
               letterSpacing: '0.04em'
             }
           }, 'starter') : null,
+          // Favorite ⭐ overlay (Phase 2p.14) — small star top-right
+          // (above the hover-revealed delete ✕). Stays visible always.
+          decoration.isFavorite ? h('span', {
+            'aria-label': 'Favorite',
+            title: 'Favorite',
+            style: {
+              position: 'absolute',
+              top: '2px',
+              right: '4px',
+              fontSize: '11px',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              background: 'rgba(0,0,0,0.45)',
+              lineHeight: 1,
+              pointerEvents: 'none',
+              zIndex: 1
+            }
+          }, '⭐') : null,
           // Mood tag overlay (Phase 2m) — small emoji top-left, away from
           // delete ✕ (top-right) and memory 📖 (bottom-left)
           decoration.mood && getMoodOption(decoration.mood) ? h('span', {
@@ -10860,7 +10984,13 @@
         else if (isMemoryDueSoon(d)) dueSoon.push(d);
         else                          fresh.push(d);
       });
+      // Sort priority (Phase 2p.14): favorites first within each bucket,
+      // then by most-recently-reviewed. Keeps the queue actionable while
+      // letting students see their cherished decks at the top.
       var byLastReviewedDesc = function(a, b) {
+        var aFav = !!a.isFavorite;
+        var bFav = !!b.isFavorite;
+        if (aFav !== bFav) return aFav ? -1 : 1;
         var aIso = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
         var bIso = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
         return bIso.localeCompare(aIso);
@@ -11517,7 +11647,9 @@
         },
         onAdvanceQueue: ctx.reviewQueue ? function(scorePct) { advanceReviewQueue(scorePct); } : null,
         onSetMood: function(moodId) { setDecorationMood(decorationId, moodId); },
-        onSetSubjects: function(subjectIds) { setDecorationSubjects(decorationId, subjectIds); }
+        onSetSubjects: function(subjectIds) { setDecorationSubjects(decorationId, subjectIds); },
+        onToggleFavorite: function() { toggleDecorationFavorite(decorationId); },
+        onMakeSimilar: function() { makeSimilarTo(decorationId); }
       });
     }
 
