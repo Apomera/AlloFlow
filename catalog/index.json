@@ -1,5 +1,22 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-05-04T00:00:00Z",
-  "entries": []
+  "generated_at": "2026-05-05T01:49:32.142Z",
+  "entries": [
+    {
+      "slug": "water_cycle",
+      "title": "The Water Cycle",
+      "subject": "Science",
+      "grade_level": "2-3",
+      "tags": [
+        "water-cycle",
+        "ngss",
+        "informational-text",
+        "ela"
+      ],
+      "credit": "AlloFlow Seed Library",
+      "license": "CC0",
+      "submitted_at": "2026-05-05T01:48:23.225Z",
+      "path": "catalog/approved/water_cycle.json"
+    }
+  ]
 }
