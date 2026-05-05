@@ -1839,6 +1839,9 @@
     { id: 'first-drawing', emoji: '🎨', label: 'First drawing',
       desc: 'Drew your own decoration on the canvas — pure you.',
       check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomDrawing; }); } },
+    { id: 'first-phrase', emoji: '🗣️', label: 'First taught phrase',
+      desc: 'Taught your companion a personal phrase — your voice through theirs.',
+      check: function(s) { return !!(s.companion && Array.isArray(s.companion.customPhrases) && s.companion.customPhrases.length > 0); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -6985,6 +6988,23 @@
                 fontFamily: 'inherit'
               }
             }, '🖨 Print') : null,
+            // Save as image (Phase 2p.33) — downloads PNG share card
+            typeof p.onExportCard === 'function' && !decoration.isStarter && decoration.imageBase64 ? h('button', {
+              onClick: p.onExportCard,
+              'aria-label': 'Save this decoration as a PNG image',
+              title: 'Save as a PNG share card (image + reflection + mood)',
+              style: {
+                background: 'transparent',
+                border: '1px solid ' + palette.border,
+                color: palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '💾 Save image') : null,
             // Voice note (Phase 2p.15)
             typeof p.onSaveVoiceNote === 'function' ? h('button', {
               onClick: function() { setVoicePanelOpen(!voicePanelOpen); },
@@ -8806,6 +8826,10 @@
             || isNaN(new Date(merged.companion.createdAt).getTime())) {
           merged.companion.createdAt = new Date().toISOString();
         }
+        // Phase 2p.32 — custom phrases array (forward-compat default).
+        if (!Array.isArray(merged.companion.customPhrases)) {
+          merged.companion.customPhrases = [];
+        }
       }
       // Phase 2p.6 tour
       if (typeof merged.tourSeen !== 'boolean') merged.tourSeen = false;
@@ -10042,6 +10066,18 @@
       }
       var candidates = [];
 
+      // Custom phrases (Phase 2p.32) — student-taught lines mix in at
+      // ~25% probability when present. They join the candidate pool, so
+      // the existing dedupe-against-lastBubble logic still applies.
+      var customPhrases = (state.companion && Array.isArray(state.companion.customPhrases))
+        ? state.companion.customPhrases : [];
+      if (customPhrases.length > 0 && Math.random() < 0.25) {
+        var phrasePick = customPhrases[Math.floor(Math.random() * customPhrases.length)];
+        if ((phrasePick || '').trim().length > 0) {
+          candidates.push(phrasePick.trim());
+        }
+      }
+
       // Recent decoration (last 24h)
       var newDecs = (state.decorations || []).filter(function(d) {
         if (d.isStarter || !d.earnedAt) return false;
@@ -10499,6 +10535,17 @@
     var letterLoadingTuple = useState(false);
     var letterLoading = letterLoadingTuple[0];
     var setLetterLoading = letterLoadingTuple[1];
+
+    // Phase 2p.32 — companion-phrases draft, lifted for rules-of-hooks.
+    var phraseDraftTuple = useState('');
+    var phraseDraft = phraseDraftTuple[0];
+    var setPhraseDraft = phraseDraftTuple[1];
+    // Reset draft each time the phrases modal opens.
+    useEffect(function() {
+      if (state.activeModal !== 'companion-phrases') return;
+      setPhraseDraft('');
+      // eslint-disable-next-line
+    }, [state.activeModal]);
 
     // Phase 2p.31 — sensory grounding (5-4-3-2-1) state, lifted here
     // per the established rules-of-hooks pattern. Steps cycle 0→1→2→3→4
@@ -11192,6 +11239,162 @@
         generateContext: null
       });
       addToast(isDrawing ? '🎨 Your drawing is in the room.' : '🌿 Your image is in the room.');
+    }
+
+    // Export a decoration as a PNG share card (Phase 2p.33). Composes
+    // the decoration's image + name + date + mood + subjects + truncated
+    // reflection on a clean canvas, then triggers a download. Useful
+    // for IEP packets, parent meetings, scrapbooks, sharing with peers.
+    function exportDecorationAsImage(decorationId) {
+      var d = (state.decorations || []).filter(function(x) { return x.id === decorationId; })[0];
+      if (!d || !d.imageBase64) {
+        addToast('No image to save.');
+        return;
+      }
+      // Pre-load the decoration image so we can draw it.
+      var img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        try {
+          var W = 1080, H = 1080;
+          var canvas = document.createElement('canvas');
+          canvas.width = W; canvas.height = H;
+          var ctx = canvas.getContext('2d');
+
+          // Background — soft gradient based on active palette
+          var bgGrad = ctx.createLinearGradient(0, 0, 0, H);
+          bgGrad.addColorStop(0, palette.bg);
+          bgGrad.addColorStop(1, palette.surface);
+          ctx.fillStyle = bgGrad;
+          ctx.fillRect(0, 0, W, H);
+
+          // Thin border
+          ctx.strokeStyle = palette.accent;
+          ctx.lineWidth = 4;
+          ctx.strokeRect(20, 20, W - 40, H - 40);
+
+          // Top label
+          ctx.fillStyle = palette.textMute;
+          ctx.font = '600 22px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('FROM ALLOHAVEN', 60, 70);
+
+          // Decoration label (top right)
+          var label = (d.templateLabel || d.template || 'decoration').toString();
+          if (label.length > 26) label = label.slice(0, 24) + '…';
+          ctx.fillStyle = palette.text;
+          ctx.font = '700 24px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'right';
+          ctx.fillText(label, W - 60, 70);
+
+          // Decoration image — fit centered into a 700x700 box
+          var BOX = 720, BX = (W - BOX) / 2, BY = 110;
+          // Image background card
+          ctx.fillStyle = palette.surface;
+          ctx.strokeStyle = palette.border;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(BX, BY, BOX, BOX, 24);
+          } else {
+            ctx.rect(BX, BY, BOX, BOX);
+          }
+          ctx.fill();
+          ctx.stroke();
+          // Aspect-fit the decoration image
+          var ar = img.naturalWidth / img.naturalHeight;
+          var iw, ih;
+          if (ar >= 1) { iw = BOX - 40; ih = (BOX - 40) / ar; }
+          else         { ih = BOX - 40; iw = (BOX - 40) * ar; }
+          var ix = BX + (BOX - iw) / 2;
+          var iy = BY + (BOX - ih) / 2;
+          ctx.drawImage(img, ix, iy, iw, ih);
+
+          // Mood + subjects pill row
+          var pillY = BY + BOX + 28;
+          var pills = [];
+          if (d.mood) {
+            var mo = getMoodOption(d.mood);
+            if (mo) pills.push(mo.emoji + '  ' + mo.label);
+          }
+          (d.subjects || []).slice(0, 3).forEach(function(sid) {
+            var t = getSubjectTag(sid);
+            if (t) pills.push(t.emoji + '  ' + t.label);
+          });
+          ctx.font = '600 18px system-ui, -apple-system, sans-serif';
+          ctx.textAlign = 'left';
+          var px = 60;
+          pills.forEach(function(text) {
+            var pw = ctx.measureText(text).width + 24;
+            ctx.fillStyle = palette.surface;
+            ctx.strokeStyle = palette.border;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(px, pillY, pw, 32, 16);
+            else ctx.rect(px, pillY, pw, 32);
+            ctx.fill();
+            ctx.stroke();
+            ctx.fillStyle = palette.text;
+            ctx.fillText(text, px + 12, pillY + 22);
+            px += pw + 8;
+            if (px > W - 200) return;
+          });
+
+          // Reflection text — wrapped, truncated
+          var refl = (d.studentReflection || '').trim();
+          if (refl.length > 0) {
+            ctx.font = 'italic 22px Georgia, serif';
+            ctx.fillStyle = palette.text;
+            ctx.textAlign = 'left';
+            var maxW = W - 120;
+            var words = refl.split(/\s+/);
+            var lines = [];
+            var current = '';
+            for (var i = 0; i < words.length; i++) {
+              var test = current ? current + ' ' + words[i] : words[i];
+              if (ctx.measureText(test).width <= maxW) current = test;
+              else { lines.push(current); current = words[i]; if (lines.length >= 4) break; }
+            }
+            if (current && lines.length < 5) lines.push(current);
+            if (words.length > lines.join(' ').split(/\s+/).length) {
+              var last = lines[lines.length - 1] || '';
+              lines[lines.length - 1] = (last + '…').slice(0, 80);
+            }
+            var ty = pillY + 60;
+            lines.slice(0, 5).forEach(function(ln, i) {
+              ctx.fillText(ln, 60, ty + i * 30);
+            });
+          }
+
+          // Footer — date + companion + AlloHaven mark
+          var earnedStr = d.earnedAt ? new Date(d.earnedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) : '';
+          var companion = state.companion;
+          var companionLabel = (companion && companion.name) ? ('with ' + companion.name) : '';
+          ctx.font = '600 18px system-ui, -apple-system, sans-serif';
+          ctx.fillStyle = palette.textMute;
+          ctx.textAlign = 'left';
+          ctx.fillText('🌿 AlloHaven' + (companionLabel ? '  ·  ' + companionLabel : ''), 60, H - 50);
+          ctx.textAlign = 'right';
+          if (earnedStr) ctx.fillText(earnedStr, W - 60, H - 50);
+
+          // Trigger download
+          var dataUrl = canvas.toDataURL('image/png');
+          var a = document.createElement('a');
+          var safeLabel = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30) || 'decoration';
+          a.href = dataUrl;
+          a.download = 'allohaven-' + safeLabel + '-' + (d.earnedAt ? d.earnedAt.slice(0, 10) : 'card') + '.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          addToast('💾 Saved as image.');
+        } catch (err) {
+          addToast('Could not export image. Try Print instead.');
+        }
+      };
+      img.onerror = function() {
+        addToast('Image unavailable. Try again later.');
+      };
+      img.src = d.imageBase64;
     }
 
     // AI generation — calls props.callImagen with the constructed prompt.
@@ -12473,6 +12676,17 @@
             }
           }, '🍪') : null,
           h('button', {
+            onClick: function() { setStateField('activeModal', 'companion-phrases'); },
+            'aria-label': 'Teach ' + displayName + ' a phrase',
+            title: 'Teach ' + displayName + ' to say something',
+            style: {
+              background: 'transparent', border: 'none',
+              color: palette.textMute, fontSize: '12px',
+              cursor: 'pointer', padding: '0 2px',
+              fontFamily: 'inherit'
+            }
+          }, '💬'),
+          h('button', {
             onClick: function() { setStateField('activeModal', 'companion-setup'); },
             'aria-label': 'Edit ' + displayName,
             title: 'Change species, color, or name',
@@ -13240,6 +13454,154 @@
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
             }, 'Done')
           )
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // COMPANION PHRASES (Phase 2p.32) — students teach the companion
+    // 1-5 personal phrases that mix into the bubble pool at ~25%
+    // chance. Tiny, delightful, deeply personal. Phrases are stored
+    // on the companion record so they survive species/color changes.
+    // ─────────────────────────────────────────────────
+    var COMPANION_PHRASE_MAX = 5;
+    var COMPANION_PHRASE_LIMIT = 80;
+    function renderCompanionPhrasesModal() {
+      if (state.activeModal !== 'companion-phrases') return null;
+      var c = state.companion;
+      if (!c || !c.species) {
+        // No companion — bounce to setup.
+        setTimeout(function() { setStateField('activeModal', 'companion-setup'); }, 0);
+        return null;
+      }
+      var sp = getCompanionSpecies(c.species);
+      var phrases = Array.isArray(c.customPhrases) ? c.customPhrases : [];
+      var canAdd = phrases.length < COMPANION_PHRASE_MAX;
+      var trimmed = (phraseDraft || '').trim();
+      var validDraft = trimmed.length > 0 && trimmed.length <= COMPANION_PHRASE_LIMIT;
+
+      function close() { setStateField('activeModal', null); }
+      function teachPhrase() {
+        if (!canAdd || !validDraft) return;
+        // Clamp + dedupe (case-insensitive)
+        var lc = trimmed.toLowerCase();
+        if (phrases.some(function(p) { return p.toLowerCase() === lc; })) {
+          addToast(c.name + ' already knows that one.');
+          return;
+        }
+        var next = phrases.concat([trimmed]);
+        saveCompanion({ customPhrases: next });
+        setPhraseDraft('');
+        addToast('💬 ' + c.name + ' learned a new phrase.');
+      }
+      function forgetPhrase(idx) {
+        var next = phrases.slice(); next.splice(idx, 1);
+        saveCompanion({ customPhrases: next });
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Teach ' + c.name + ' a phrase',
+        onClick: function(e) { if (e.target === e.currentTarget) close(); },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '460px', width: '100%', maxHeight: '85vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+              '💬 Teach ' + c.name + ' a phrase'),
+            h('button', {
+              onClick: close,
+              'aria-label': 'Close',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', { style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', margin: '0 0 14px 0', lineHeight: '1.5' } },
+            'Anything you write here ' + c.name + ' will say sometimes when you click them. Up to ' + COMPANION_PHRASE_MAX + ' phrases. Forget any, any time.'),
+
+          // Existing phrases
+          phrases.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+              (sp ? sp.label : 'Buddy') + ' knows · ' + phrases.length + '/' + COMPANION_PHRASE_MAX),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              phrases.map(function(p, i) {
+                return h('div', {
+                  key: 'phrase-' + i,
+                  style: {
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '8px 10px',
+                    background: palette.surface, border: '1px solid ' + palette.border,
+                    borderRadius: '8px'
+                  }
+                },
+                  h('div', { style: { flex: 1, fontSize: '13px', color: palette.text, lineHeight: '1.4' } },
+                    h('span', { 'aria-hidden': 'true', style: { color: palette.accent, marginRight: '6px' } }, '"'),
+                    p,
+                    h('span', { 'aria-hidden': 'true', style: { color: palette.accent, marginLeft: '4px' } }, '"')
+                  ),
+                  h('button', {
+                    onClick: function() { forgetPhrase(i); },
+                    'aria-label': 'Forget this phrase',
+                    title: 'Forget',
+                    style: {
+                      background: 'transparent', border: 'none', color: palette.textMute,
+                      fontSize: '14px', cursor: 'pointer', padding: '0 4px', fontFamily: 'inherit'
+                    }
+                  }, '✕')
+                );
+              })
+            )
+          ) : h('p', { style: { fontSize: '12px', color: palette.textMute, fontStyle: 'italic', textAlign: 'center', padding: '14px 0', marginBottom: '14px' } },
+            (sp ? sp.label : 'Your buddy') + ' hasn\'t learned anything yet.'),
+
+          // Teach new phrase
+          canAdd ? h('div', null,
+            h('label', {
+              htmlFor: 'ah-phrase-input',
+              style: { display: 'block', fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }
+            }, 'Teach a new phrase'),
+            h('textarea', {
+              id: 'ah-phrase-input',
+              value: phraseDraft,
+              onChange: function(e) { setPhraseDraft(e.target.value.slice(0, COMPANION_PHRASE_LIMIT)); },
+              placeholder: 'Anything you want — an inside joke, a reminder, a little wisdom...',
+              maxLength: COMPANION_PHRASE_LIMIT,
+              rows: 2,
+              'aria-label': 'New phrase to teach your buddy',
+              style: {
+                width: '100%', padding: '10px 12px',
+                background: palette.surface, border: '1px solid ' + palette.border,
+                borderRadius: '8px', color: palette.text,
+                fontSize: '13px', fontFamily: 'inherit', lineHeight: '1.5',
+                resize: 'vertical', boxSizing: 'border-box'
+              }
+            }),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '6px', fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+              h('span', null, trimmed.length + '/' + COMPANION_PHRASE_LIMIT + ' characters'),
+              h('button', {
+                onClick: teachPhrase,
+                disabled: !validDraft,
+                style: Object.assign({}, primaryBtnStyle(palette), {
+                  padding: '6px 14px', fontSize: '12px',
+                  opacity: validDraft ? 1 : 0.5,
+                  cursor: validDraft ? 'pointer' : 'not-allowed'
+                })
+              }, '+ Teach phrase')
+            )
+          ) : h('p', { style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', textAlign: 'center' } },
+            c.name + ' has learned the maximum (' + COMPANION_PHRASE_MAX + '). Forget one to teach another.')
         )
       );
     }
@@ -14802,6 +15164,10 @@
             // (modern browsers); a tiny delay handles weird timing edge cases.
             setTimeout(function() { setStateField('printScope', null); }, 200);
           }, 60);
+        },
+        onExportCard: function() {
+          // Phase 2p.33 — render decoration to a canvas + download as PNG.
+          exportDecorationAsImage(decorationId);
         }
       });
     }
@@ -17881,6 +18247,7 @@
       renderSettingsModal(),
       renderBreathingModal(),
       renderGroundingModal(),
+      renderCompanionPhrasesModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard(),
       // Print packet — portaled to body so the @media print rule's

@@ -4537,6 +4537,167 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       );
     }
 
+    if (sub === 'eligibilitySort') {
+      // Catalog of categories the game uses (keys back to IDEA_CATEGORIES + DD).
+      // Players pick from the SAME 14-button grid no matter the vignette \u2014 forces
+      // active discrimination instead of multiple-choice with 4 distractors.
+      var ELG_VIGNETTES = [
+        { id: 1, scenario: '5-year-old non-speaking child. Parent describes intense fixation on train schedules + memorized bus routes. Toddler-era language regression noted. M-CHAT-R was elevated at 18 months. Resists changes in routine.', correct: 'AU', why: 'Hallmark autism profile: communication impairment + restricted/repetitive interests + early onset. ADOS-2 + ADI-R + cognitive + adaptive + language battery. Note: same kid in a different state might also qualify under DD if under 9 and the team prefers to defer specific-category commitment.' },
+        { id: 2, scenario: '9-year-old. FSIQ 95 (average). Reads at 5th percentile despite tier-2 + tier-3 reading interventions. Phonological processing 2nd percentile. Achievement gap is reading-only \u2014 math + writing average.', correct: 'SLD', why: 'Classic specific-reading-disability (dyslexia) profile. Average cognitive ability + dramatic basic-reading deficit + non-responder to tiered intervention = SLD in basic reading skills. NOT ID (FSIQ average) and NOT "primarily due to environmental disadvantage" if interventions were appropriate.' },
+        { id: 3, scenario: '8-year-old with clinical ADHD diagnosis on stimulant medication. Teacher reports persistent inattention impacting work completion. Cognitive battery within normal limits. No academic-skill deficits beyond what attention can explain.', correct: 'OHI', why: 'ADHD is most commonly classified under Other Health Impairment in IDEA. The "limited alertness" language captures attention disorders. Eval typically: medical documentation + behavior rating scales (Conners-4, BASC-3, BRIEF-2) + classroom observations + cognitive (rule-out other) + achievement.' },
+        { id: 4, scenario: '14-year-old. FSIQ 65 (95% CI 60\u201370). Vineland-3 adaptive composite 62. Deficits emerged in early childhood, evident across academics + adaptive behavior. No sensory or motor disability.', correct: 'ID', why: 'Three-prong ID: significantly subaverage cognition (FSIQ ~70 or below with CI), concurrent adaptive deficits, manifested in developmental period. The CI matters \u2014 ID determination requires the CI to clearly support the cutoff, not a point estimate of 70 exactly.' },
+        { id: 5, scenario: '12-year-old. Long-standing inability to build/maintain peer relationships across years and contexts. Pervasive depressed mood per BASC-3 SRP. Two psychiatric hospitalizations in past 12 months. Academic performance has declined.', correct: 'ED', why: 'Long-duration + marked-degree ED criteria: inability to build relationships AND pervasive mood of unhappiness/depression AND adverse educational impact. Note: ED explicitly EXCLUDES social maladjustment alone \u2014 this kid has documented mental-health condition, not just "behavior problems."' },
+        { id: 6, scenario: '6-year-old. Cognitive battery WNL (FSIQ 102). SLP eval: expressive language at 3rd percentile, articulation typical for age. Documented classroom impact \u2014 cannot adequately respond to teacher questions or peer conversations.', correct: 'SLI', why: 'Speech-language impairment with adverse educational impact. Average cognition rules out ID. The deficit is specifically in language production, not overall learning. Service is typically SLP push-in/pull-out under SLI eligibility.' },
+        { id: 7, scenario: '14-year-old. Was honor-roll student until a motor vehicle accident 6 months ago. Post-injury: documented executive function deficits (BRIEF-2 GEC at 75T) and slowed processing speed. Was previously not eligible for special education.', correct: 'TBI', why: 'Traumatic Brain Injury eligibility. The acquired-from-external-physical-force language is the key. NOT congenital. Eval includes neuropsych + cognitive + achievement + behavioral + medical records. Educational team plans accommodations + specialized instruction targeting the new EF and processing-speed needs.' },
+        { id: 8, scenario: '7-year-old. Bilateral mild-to-moderate hearing loss, hearing aids fit and consistently worn. With amplification, child processes speech adequately. Classroom accommodations include FM system + preferential seating. Language acquisition WNL.', correct: 'HI', why: 'Hearing Impairment, NOT Deafness. The IDEA distinction: Deafness = hearing impairment so severe child cannot process linguistic info through hearing even with amplification. This child CAN with hearing aids \u2014 so HI is the right category. Audiology + language + cognitive + achievement battery.' },
+        { id: 9, scenario: '7-year-old. Has documented language delay (3rd percentile expressive). NO restricted/repetitive interests. Normal social reciprocity \u2014 makes eye contact, takes conversational turns, develops peer friendships. ADOS-2 negative for ASD.', correct: 'SLI', why: 'Language delay WITHOUT the social-communication and restricted-interest features that define autism. The negative ADOS-2 is the discriminator. This kid is SLI, not AU \u2014 a common misclassification in the other direction. Don\'t over-call autism just because language is delayed.' },
+        { id: 10, scenario: '9-year-old. Legally blind in one eye after retinal detachment. Vision in remaining eye corrects to 20/40. Normal cognition. Needs enlarged print for reading; braille not required. Mobility WNL with no orientation training needed.', correct: 'VI', why: 'Visual Impairment (including Blindness). The educational-impact framing matters: vision impairment that, even with correction, adversely affects educational performance. Functional vision eval + ophth records + access/accommodation evaluation. Note: not all visual impairments rise to IDEA-eligible.' },
+        { id: 11, scenario: '11-year-old. Spastic cerebral palsy with significant lower-extremity motor impairment. Wheelchair user. Cognition average. Needs PT + OT integrated into school day, accessible seating, modified PE. Academic performance close to peers when access supports are in place.', correct: 'OI', why: 'Orthopedic Impairment \u2014 includes cerebral palsy and other congenital, disease-caused, or other physical impairments adversely affecting educational performance. Eval focus is medical records + PT/OT + access/accommodation evaluation + cognitive only if there is a question (here, average).' },
+        { id: 12, scenario: '4-year-old. Congenital hearing loss (severe-profound) plus progressive vision loss from Usher syndrome. Cannot be served adequately under either Deafness or Visual Impairment alone \u2014 the combined impairment requires specialized programming.', correct: 'DB', why: 'Deaf-Blindness is its own category specifically because the combined impairment exceeds what either single-category program can serve. The IDEA carve-out reflects that. Specialized eval: combined audiology + vision + communication + adaptive + dual-impairment specialist consultation.' }
+      ];
+      // Pick from full IDEA_CATEGORIES (13) + DD = 14 buttons.
+      var ELG_OPTIONS = IDEA_CATEGORIES.concat([IDEA_DEVDELAY]);
+
+      // State
+      var elgIdx = s.elgIdx == null ? -1 : s.elgIdx;
+      var elgSeed = s.elgSeed || 1;
+      var elgAnswered = !!s.elgAnswered;
+      var elgPick = s.elgPick;
+      var elgScore = s.elgScore || 0;
+      var elgRounds = s.elgRounds || 0;
+      var elgStreak = s.elgStreak || 0;
+      var elgBest = s.elgBest || 0;
+      var elgShown = s.elgShown || [];
+
+      function nextRound() {
+        var pool = [];
+        for (var i = 0; i < ELG_VIGNETTES.length; i++) if (elgShown.indexOf(i) < 0) pool.push(i);
+        if (pool.length === 0) { pool = []; for (var j = 0; j < ELG_VIGNETTES.length; j++) pool.push(j); elgShown = []; }
+        var seedNext = ((elgSeed * 16807 + 11) % 2147483647) || 7;
+        var pick = pool[seedNext % pool.length];
+        upd({
+          elgSeed: seedNext,
+          elgIdx: pick,
+          elgAnswered: false,
+          elgPick: null,
+          elgShown: elgShown.concat([pick])
+        });
+      }
+
+      function answer(catCode) {
+        if (elgAnswered) return;
+        var v = ELG_VIGNETTES[elgIdx];
+        var correct = catCode === v.correct;
+        var newScore = elgScore + (correct ? 1 : 0);
+        var newStreak = correct ? (elgStreak + 1) : 0;
+        var newBest = Math.max(elgBest, newStreak);
+        upd({
+          elgAnswered: true,
+          elgPick: catCode,
+          elgScore: newScore,
+          elgRounds: elgRounds + 1,
+          elgStreak: newStreak,
+          elgBest: newBest
+        });
+        if (addToast) addToast(correct ? '\u2705 Correct \u2014 ' + v.correct : '\u274C Not the right category \u2014 it was ' + v.correct, correct ? 'success' : 'info');
+      }
+
+      // Intro state
+      if (elgIdx < 0) {
+        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
+          backBtn('schoolpsych', null, 'School Psych menu'),
+          h('h2', { className: 'text-2xl font-black text-sky-200' }, '\uD83C\uDFAF Eligibility Sort \u2014 IDEA category match'),
+          h('p', { className: 'text-sm text-slate-200 leading-relaxed' }, 'You will see 12 short student-profile vignettes. For each, pick the IDEA eligibility category that fits best from the full 14-button grid. The grid never narrows by elimination \u2014 forces real discrimination, not multiple-choice. After each answer, a coaching block names what is happening and why this kid does not fit the look-alike categories.'),
+          h('div', { className: 'p-4 rounded-xl bg-amber-900/30 border border-amber-500/40' },
+            h('div', { className: 'text-sm font-bold text-amber-300 mb-2' }, '\u26A0\uFE0F Three-prong reminder'),
+            h('p', { className: 'text-xs text-slate-200 leading-relaxed' }, 'Real eligibility requires (1) category match + (2) adverse educational impact + (3) need for specialized instruction. This game tests *category match only* \u2014 the easier of the three calls. Real teams must document all three.')
+          ),
+          h('button', {
+            onClick: nextRound,
+            className: 'w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+          }, '\uD83C\uDFAF Start \u2014 vignette 1 of 12')
+        );
+      }
+
+      var v = ELG_VIGNETTES[elgIdx];
+      var pickedCorrect = elgAnswered && elgPick === v.correct;
+      var pct = elgRounds > 0 ? Math.round((elgScore / elgRounds) * 100) : 0;
+      var allDone = elgShown.length >= ELG_VIGNETTES.length && elgAnswered;
+      return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
+        backBtn('schoolpsych', null, 'School Psych menu'),
+        h('h2', { className: 'text-2xl font-black text-sky-200' }, '\uD83C\uDFAF Eligibility Sort'),
+        // Score header
+        h('div', { className: 'flex flex-wrap gap-3 items-center text-xs' },
+          h('span', { className: 'text-slate-300' }, 'Vignette ', h('strong', { className: 'text-white' }, elgShown.length)),
+          h('span', { className: 'text-slate-300' }, 'Score ', h('strong', { className: 'text-emerald-300' }, elgScore + ' / ' + elgRounds)),
+          elgRounds > 0 && h('span', { className: 'text-slate-300' }, 'Accuracy ', h('strong', { className: 'text-cyan-300' }, pct + '%')),
+          h('span', { className: 'text-slate-300' }, 'Streak ', h('strong', { className: 'text-amber-300' }, elgStreak)),
+          h('span', { className: 'text-slate-300' }, 'Best ', h('strong', { className: 'text-yellow-300' }, elgBest))
+        ),
+        // The vignette
+        h('section', { className: 'p-5 rounded-xl bg-slate-800/60 border-2 border-sky-500/40' },
+          h('div', { className: 'text-xs font-bold text-sky-300 uppercase tracking-widest mb-2' }, 'Vignette ' + (elgShown.length) + ' of ' + ELG_VIGNETTES.length),
+          h('p', { className: 'text-sm text-slate-100 leading-relaxed' }, v.scenario)
+        ),
+        // 14-button category grid
+        h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2', role: 'radiogroup', 'aria-label': 'Pick the IDEA eligibility category' },
+          ELG_OPTIONS.map(function(opt) {
+            var picked = elgAnswered && elgPick === opt.code;
+            var isRight = elgAnswered && opt.code === v.correct;
+            var bg, border, color;
+            if (elgAnswered) {
+              if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
+              else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
+              else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+            } else {
+              bg = 'rgba(14,165,233,0.10)'; border = 'rgba(14,165,233,0.40)'; color = '#e2e8f0';
+            }
+            return h('button', {
+              key: opt.code, role: 'radio',
+              'aria-checked': picked ? 'true' : 'false',
+              disabled: elgAnswered,
+              onClick: function() { answer(opt.code); },
+              style: { padding: '8px 10px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: elgAnswered ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 11, transition: 'all 0.15s', minHeight: 44 }
+            },
+              h('div', { style: { fontFamily: 'monospace', fontSize: 12, fontWeight: 800, marginBottom: 2 } }, opt.code),
+              h('div', { style: { fontSize: 10, fontWeight: 600, lineHeight: 1.25 } }, opt.name)
+            );
+          })
+        ),
+        // Feedback
+        elgAnswered && h('section', {
+          className: 'p-4 rounded-xl',
+          style: { background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.08)', border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)') }
+        },
+          h('div', { className: 'text-sm font-bold mb-2', style: { color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+            pickedCorrect
+              ? '\u2705 Correct \u2014 ' + v.correct + ' (' + (ELG_OPTIONS.filter(function(x) { return x.code === v.correct; })[0] || {}).name + ')'
+              : '\u274C The right category is ' + v.correct + ' (' + (ELG_OPTIONS.filter(function(x) { return x.code === v.correct; })[0] || {}).name + ')' + (elgPick ? ' \u2014 you picked ' + elgPick : '')
+          ),
+          h('p', { className: 'text-xs text-slate-100 leading-relaxed mb-2' }, v.why),
+          allDone
+            ? h('div', { className: 'p-3 rounded-lg bg-sky-900/40 border border-sky-500/40 mt-2' },
+                h('div', { className: 'text-sm font-black text-sky-200 mb-1' }, '\uD83C\uDFC6 All 12 vignettes complete!'),
+                h('div', { className: 'text-xs text-slate-100 leading-relaxed' },
+                  'Final score: ', h('strong', { className: 'text-white' }, elgScore + ' / ' + ELG_VIGNETTES.length + ' (' + Math.round((elgScore / ELG_VIGNETTES.length) * 100) + '%)'),
+                  elgScore === ELG_VIGNETTES.length ? ' \u2014 all 12 categories matched correctly. Ready for case-conference work.' :
+                  elgScore >= 10 ? ' \u2014 strong category-match reasoning. The most-miss-prone pairs are SLD vs ED (when behavior + academic concerns coexist) and OHI vs SLD (when ADHD coexists with reading deficits).' :
+                  elgScore >= 7 ? ' \u2014 solid baseline. The most-confused categories are usually AU vs SLI (language delay without the autism social-communication profile) and HI vs D (functional access vs total impairment).' :
+                  ' \u2014 these distinctions take real practice. Re-read the IDEA Categories module + the rationale on misses, then retake. Pattern recognition for category matching comes from many cases.'
+                ),
+                h('button', {
+                  onClick: function() { upd({ elgIdx: -1, elgShown: [], elgScore: 0, elgRounds: 0, elgStreak: 0 }); },
+                  className: 'mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
+                }, '\uD83D\uDD04 Restart')
+              )
+            : h('button', {
+                onClick: nextRound,
+                className: 'mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+              }, '\u27A1\uFE0F Next vignette')
+        )
+      );
+    }
+
     if (sub === 'rti') {
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
         backBtn('schoolpsych', null, 'School Psych menu'),
@@ -5938,6 +6099,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       { id: 'psychoed', icon: '\uD83D\uDD2C', label: 'Psychoed Eval Components', desc: 'Cognitive, achievement, behavior, adaptive, EF, reading-specific, autism, trauma — matching domains to referral questions.' },
       { id: 'iep504', icon: '\u2696\uFE0F', label: '504 Plan vs. IEP', desc: 'Eligibility differences, what each provides, decision tree, common misunderstandings.' },
       { id: 'categories', icon: '\uD83D\uDCD6', label: 'The 13 IDEA Categories', desc: 'Click any category to see its federal definition and typical eval battery. Three-prong eligibility requirement explained.' },
+      { id: 'eligibilitySort', icon: '\uD83C\uDFAF', label: 'Eligibility Sort \u2014 interactive', desc: '12 student-profile vignettes. Pick the IDEA category from the full 14-button grid (no narrow-by-elimination). Coaching after each answer names common misclassifications (SLD vs ED, OHI vs SLD, AU vs SLI, HI vs D).' },
       { id: 'report', icon: '\uD83D\uDCC4', label: 'How to Read a Psych Report', desc: 'Section-by-section anatomy, score conversion cheat sheet, what to watch for in each section.' },
       { id: 'sem', icon: '\uD83D\uDCCF', label: 'SEM & Confidence Interval Simulator', desc: 'Interactive sliders. See why a test score is a range, not a point. The single most important concept in psychometric consumption.' },
       { id: 'rights', icon: '\uD83D\uDD12', label: 'Parent Procedural Safeguards', desc: 'PWN, consent, IEE, records access, due process, mediation, stay-put, transition. When rights get violated and what to do.' },

@@ -2583,6 +2583,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 }, t.label);
               })
             ),
+            // Tab-specific topic-accent hero band
+            (function() {
+              var TAB_META = {
+                gear:      { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '🦺', title: 'Gear up — every item is non-negotiable', hint: 'Hood, gloves, jacket, boots, respirator (when needed). Skip one and you do not weld today. Arc burns retinas in seconds.' },
+                scenarios: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚠️', title: 'Hazard scenarios — what could go wrong', hint: 'Galvanized fumes, hexavalent chromium from stainless, hot-work sparks at 30+ ft. Each scenario is from a documented incident.' },
+                reference: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📋', title: 'Quick reference — pin to your locker',     hint: 'Material × process × lethal-fume table, hot-work fire-watch rules, OSHA 1910.252 cheat-sheet — the things you actually look up at 7 AM.' }
+              };
+              var meta = TAB_META[view] || TAB_META.gear;
+              return h('div', {
+                style: {
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                  display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '4px 0 0', color: '#475569', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
             view === 'gear' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
                 h('div', { className: 'flex items-center justify-between mb-2' },
