@@ -1992,13 +1992,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             }, '\uD83D\uDD25 Evaluate Burn Plan'),
 
             burnResult ? h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 16, border: '2px solid ' + burnResult.verdict.color } },
-              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 } },
-                h('span', { style: { fontSize: 28 } }, burnResult.verdict.icon),
-                h('div', null,
-                  h('div', { style: { fontWeight: 700, color: burnResult.verdict.color, fontSize: 18 } }, burnResult.verdict.label),
-                  h('div', { style: { color: '#94a3b8', fontSize: 13 } }, 'Safety score: ' + burnResult.score + '/100')
-                )
-              ),
+              (function() {
+                var rad = 32, circ = 2 * Math.PI * rad;
+                var dashOff = circ - (burnResult.score / 100) * circ;
+                // Threshold markers — GO needs 85, CAUTION needs 60
+                var goAngleEnd = (85 / 100) * 360 - 90;
+                var cautionAngleEnd = (60 / 100) * 360 - 90;
+                return h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, marginBottom: 12, flexWrap: 'wrap' } },
+                  h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
+                    h('svg', { viewBox: '0 0 100 100', width: 84, height: 84,
+                      'aria-label': 'Safety score: ' + burnResult.score + ' out of 100. ' + burnResult.verdict.label
+                    },
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.18)', strokeWidth: 8 }),
+                      // Threshold tick marks at 60 (CAUTION) and 85 (GO)
+                      (function() {
+                        var ticks = [60, 85];
+                        return ticks.map(function(t) {
+                          var ang = (t / 100) * 2 * Math.PI - Math.PI / 2;
+                          var x1 = 50 + (rad - 4) * Math.cos(ang);
+                          var y1 = 50 + (rad - 4) * Math.sin(ang);
+                          var x2 = 50 + (rad + 4) * Math.cos(ang);
+                          var y2 = 50 + (rad + 4) * Math.sin(ang);
+                          return h('line', { key: t, x1: x1, y1: y1, x2: x2, y2: y2, stroke: t === 85 ? '#22c55e' : '#f59e0b', strokeWidth: 1.5, strokeLinecap: 'round' });
+                        });
+                      })(),
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: burnResult.verdict.color, strokeWidth: 8, strokeLinecap: 'round',
+                        strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                    ),
+                    h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                      h('div', { style: { fontSize: 22, fontWeight: 900, color: burnResult.verdict.color, lineHeight: 1 } }, burnResult.score),
+                      h('div', { style: { fontSize: 8, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8' } }, '/ 100')
+                    )
+                  ),
+                  h('div', { style: { flex: 1, minWidth: 200, display: 'flex', alignItems: 'center', gap: 10 } },
+                    h('span', { style: { fontSize: 28 }, 'aria-hidden': 'true' }, burnResult.verdict.icon),
+                    h('div', null,
+                      h('div', { style: { fontWeight: 700, color: burnResult.verdict.color, fontSize: 17, lineHeight: 1.2 } }, burnResult.verdict.label),
+                      h('div', { style: { color: '#94a3b8', fontSize: 11, marginTop: 4, lineHeight: 1.5 } },
+                        burnResult.score >= 85 ? 'All four conditions in safe range.'
+                        : burnResult.score >= 60 ? 'Threshold for GO is 85. Adjust the slider for the worst-flagged condition.'
+                        : 'Threshold for CAUTION is 60. Multiple conditions need adjustment before this is safe to burn.'
+                      )
+                    )
+                  )
+                );
+              })(),
               burnResult.notes.map(function(note, ni) {
                 return h('div', { key: ni, style: { padding: '4px 0', fontSize: 14, color: '#e2e8f0' } }, note);
               }),
