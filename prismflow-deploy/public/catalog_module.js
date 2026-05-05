@@ -156,13 +156,23 @@
       });
     }, [state.entries, filters]);
 
+    // Catalog/approved files are wrapped submission records when they came in
+    // via the Worker: { schema_version, metadata, affirmations, pii_scan,
+    // lesson_payload }. The actual lesson is the lesson_payload field. If a
+    // file was placed directly in approved/ (raw lesson, no wrapper), there's
+    // no lesson_payload field and we use the object as-is.
+    function unwrapLesson(fetched) {
+      return fetched && fetched.lesson_payload ? fetched.lesson_payload : fetched;
+    }
+
     function handleLoadIntoApp(entry) {
       fetch(ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
         .then(function (r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
           return r.json();
         })
-        .then(function (lesson) {
+        .then(function (fetched) {
+          var lesson = unwrapLesson(fetched);
           if (loadProjectFromJson) {
             loadProjectFromJson(lesson);
             addToast && addToast('Loaded "' + entry.title + '" into AlloFlow.', 'success');
@@ -179,7 +189,7 @@
     function handleDownload(entry) {
       fetch(ENTRY_BASE_URL + entry.path + '?t=' + Date.now())
         .then(function (r) { return r.json(); })
-        .then(function (lesson) { downloadJsonFile(lesson, entry.slug); })
+        .then(function (fetched) { downloadJsonFile(unwrapLesson(fetched), entry.slug); })
         .catch(function (err) { addToast && addToast('Download failed: ' + err.message, 'error'); });
     }
 
