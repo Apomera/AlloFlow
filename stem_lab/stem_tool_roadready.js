@@ -12323,13 +12323,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Load chunks ASYMMETRICALLY based on direction of travel.
             // Player moving -Y (heading sin < 0, default NB) → ahead = lower chunkIndex.
             // Player moving +Y (sin > 0, SB) → ahead = higher chunkIndex.
-            // Previously the range was hardcoded `currentChunk - 2 to currentChunk + 4`
-            // which loaded 4 chunks AHEAD only for SB players. NB players (default in Free
-            // Explore) saw chunks pop in 64m ahead (~2 sec at highway speed). Now: 4 chunks
-            // ahead in the direction of travel + 2 behind.
+            // Bumped to 8 chunks ahead (was 4) after a Free Explore report that "the road
+            // doesn't continue and the player drives off the map." 4 chunks * 32m = 128m,
+            // which is only ~5s of road at highway speed (60 mph = 27 m/s); on faster
+            // hardware the player would catch the unloaded edge as a visible cliff. 8
+            // chunks * 32m = 256m gives ~10s of buffer at highway speed and ~30s at city
+            // speed. Behind bumped 2 → 3 so the rear-view mirror doesn't pop chunks out
+            // mid-glance. Total chunks live: 11 (was 7); ~57% memory increase, but each
+            // chunk is just terrain + landmarks + signals so impact is bounded.
             var travelSign = Math.sin(car.heading) < 0 ? -1 : 1; // -1 = moving toward lower chunks
-            var loFromTravel = travelSign === -1 ? -4 : -2;
-            var hiFromTravel = travelSign === -1 ? +2 : +4;
+            var loFromTravel = travelSign === -1 ? -8 : -3;
+            var hiFromTravel = travelSign === -1 ? +3 : +8;
             for (var ci = currentChunk + loFromTravel; ci <= currentChunk + hiFromTravel; ci++) {
               if (s3._loadedChunks[ci]) continue;
               var chunk = iw.getChunk(ci);
