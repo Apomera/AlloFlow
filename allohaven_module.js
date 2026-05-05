@@ -16839,6 +16839,95 @@
     // the packet. Class-based hide so the print rule overrides
     // without !important on the inline display attribute.
     // ─────────────────────────────────────────────────
+    // Tenure recap print (Phase 2p.30) — paper-friendly one-page
+    // version of the recap modal. Reuses computeTenureStats, renders
+    // grayscale + high-contrast for printer fidelity.
+    function renderPrintTenure() {
+      var stats = computeTenureStats(state);
+      if (!stats) return null;
+      var startDate = new Date(stats.earliestMs);
+      var startStr = startDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var nowStr = new Date().toLocaleDateString();
+      var c = stats.companion;
+      var sp = (c && c.species) ? getCompanionSpecies(c.species) : null;
+      var statBox = function(label, value, sub) {
+        return h('div', {
+          style: { border: '1px solid #999', borderRadius: '4px', padding: '6px 8px', textAlign: 'center', flex: '1 1 80px', minWidth: 0 }
+        },
+          h('div', { style: { fontSize: '16px', fontWeight: 700, color: '#000' } }, value),
+          h('div', { style: { fontSize: '9px', color: '#444' } }, label),
+          sub ? h('div', { style: { fontSize: '8px', color: '#666', fontStyle: 'italic' } }, sub) : null
+        );
+      };
+      return h('div', {
+        className: 'ah-print-packet',
+        role: 'document',
+        'aria-label': 'Tenure recap — printable',
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          padding: '36px',
+          background: '#fff', color: '#000',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          overflow: 'auto',
+          zIndex: 250
+        }
+      },
+        h('div', { style: { borderBottom: '2px solid #000', paddingBottom: '8px', marginBottom: '14px' } },
+          h('h1', { style: { margin: 0, fontSize: '20px' } }, '🌱 AlloHaven Journey Recap'),
+          h('div', { style: { fontSize: '10px', color: '#666', marginTop: '4px' } },
+            'Since ' + startStr + ' · ' + stats.daysSince + ' days · printed ' + nowStr)
+        ),
+        c && sp ? h('div', { style: { marginBottom: '16px', fontSize: '11px', color: '#222' } },
+          h('strong', null, c.name || sp.label), ' · ', sp.label,
+          c.createdAt ? ', companion since ' + new Date(c.createdAt).toLocaleDateString() : null
+        ) : null,
+        // Top stats row
+        h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' } },
+          statBox('Tokens earned', stats.tokensEarned),
+          statBox('Decorations', stats.decorationCount, stats.customCount > 0 ? stats.customCount + ' your own' : null),
+          statBox('Reflections', stats.journalCount, stats.totalWords > 0 ? stats.totalWords + ' words' : null),
+          statBox('Achievements', stats.unlockedAchievements + '/' + stats.totalAchievements),
+          statBox('Longest streak', stats.streakLongest + ' day' + (stats.streakLongest === 1 ? '' : 's')),
+          statBox('Days visited', stats.visitDays)
+        ),
+        // Skills
+        h('h2', { style: { margin: '14px 0 4px 0', fontSize: '13px', borderBottom: '1px solid #999', paddingBottom: '2px' } }, 'Skill levels'),
+        h('div', { style: { display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' } },
+          stats.skills.map(function(sk) {
+            return h('div', { key: 'psk-' + sk.def.id, style: { border: '1px solid #999', borderRadius: '4px', padding: '6px 10px', minWidth: 0, flex: '1 1 80px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 700 } }, sk.def.label),
+              h('div', { style: { fontSize: '14px', fontWeight: 700 } }, 'Level ' + sk.level + (sk.atMax ? ' ★' : '')),
+              h('div', { style: { fontSize: '9px', color: '#666' } }, sk.count + ' events')
+            );
+          })
+        ),
+        // Top moods + subjects
+        h('div', { style: { display: 'flex', gap: '20px', marginBottom: '12px', flexWrap: 'wrap' } },
+          h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
+            h('h2', { style: { margin: '0 0 4px 0', fontSize: '13px', borderBottom: '1px solid #999', paddingBottom: '2px' } }, 'Top moods'),
+            stats.topMoods.length === 0 ? h('p', { style: { fontSize: '11px', color: '#666', fontStyle: 'italic' } }, '— ') :
+            h('ul', { style: { paddingLeft: '20px', margin: '4px 0', fontSize: '11px' } },
+              stats.topMoods.slice(0, 3).map(function(m) {
+                return h('li', { key: 'pm-' + m.id }, (m.option ? m.option.label : m.id) + ' — ' + m.count);
+              })
+            )
+          ),
+          h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
+            h('h2', { style: { margin: '0 0 4px 0', fontSize: '13px', borderBottom: '1px solid #999', paddingBottom: '2px' } }, 'Top subjects'),
+            stats.topSubjects.length === 0 ? h('p', { style: { fontSize: '11px', color: '#666', fontStyle: 'italic' } }, '— ') :
+            h('ul', { style: { paddingLeft: '20px', margin: '4px 0', fontSize: '11px' } },
+              stats.topSubjects.slice(0, 3).map(function(s) {
+                return h('li', { key: 'ps-' + s.id }, (s.tag ? s.tag.label : s.id) + ' — ' + s.count);
+              })
+            )
+          )
+        ),
+        // Footer note
+        h('div', { style: { marginTop: '20px', fontSize: '10px', color: '#666', fontStyle: 'italic', borderTop: '1px solid #ccc', paddingTop: '8px' } },
+          'AlloHaven · cozy room learning portfolio · this recap reflects activity stored locally on this device.')
+      );
+    }
+
     // Per-decoration print card (Phase 2p.17) — single decoration\'s
     // full info on one printable page. Rendered when state.printScope
     // points at a specific decoration id. Useful for IEP review packets,
