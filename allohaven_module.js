@@ -2023,6 +2023,47 @@
     var pupilTransform = 'translate(' + px.toFixed(2) + ' ' + py.toFixed(2) + ')';
     var pupilStyle = { transform: pupilTransform, transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1)' };
 
+    // Accessory rendering (Phase 2p.22) — bow on the head, position varies
+    // per species. Uses the accent color so it pops against the body palette.
+    var accessory = animState && animState.accessory;
+    function bowAt(cx, cy, scale) {
+      // Two triangle "wings" + center knot. cx,cy is the center of the knot.
+      var s = scale || 1;
+      var w = 6 * s, h2 = 4 * s;
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        // Left wing
+        h('path', {
+          d: 'M ' + cx + ' ' + cy + ' L ' + (cx - w) + ' ' + (cy - h2) + ' L ' + (cx - w) + ' ' + (cy + h2) + ' Z',
+          fill: p.accent
+        }),
+        // Right wing
+        h('path', {
+          d: 'M ' + cx + ' ' + cy + ' L ' + (cx + w) + ' ' + (cy - h2) + ' L ' + (cx + w) + ' ' + (cy + h2) + ' Z',
+          fill: p.accent
+        }),
+        // Center knot
+        h('ellipse', { cx: cx, cy: cy, rx: 1.6 * s, ry: 2.2 * s, fill: p.primary }),
+        // Tiny highlight on the wings for dimension
+        h('ellipse', { cx: cx - w * 0.55, cy: cy - h2 * 0.3, rx: 0.8 * s, ry: 1.2 * s, fill: p.secondary, opacity: 0.5 }),
+        h('ellipse', { cx: cx + w * 0.55, cy: cy - h2 * 0.3, rx: 0.8 * s, ry: 1.2 * s, fill: p.secondary, opacity: 0.5 })
+      );
+    }
+    // Per-species bow position (above the head, sized for fit)
+    function renderAccessory() {
+      if (accessory !== 'bow') return null;
+      switch (speciesId) {
+        case 'cat':    return bowAt(38, 22, 0.85); // off-center, between left ear and head
+        case 'fox':    return bowAt(50, 18, 0.9);  // between the tall triangle ears
+        case 'owl':    return bowAt(50, 22, 1.0);  // top of head, between tufted ears
+        case 'turtle': return bowAt(18, 50, 0.8);  // small, on top of the green head (which is left-side)
+        case 'dragon': return bowAt(50, 22, 0.9);  // between horns
+        default:       return bowAt(50, 22, 1.0);
+      }
+    }
+
     if (speciesId === 'cat') {
       return h('svg', commonRoot,
         // Tail (sitting curl) — pivots at base; transform-origin in CSS
@@ -2062,7 +2103,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 3.5, fill: p.primary }),
           h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 3.5, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2101,7 +2143,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('ellipse', { cx: 41, cy: 36, rx: 3, ry: 3, fill: p.primary }),
           h('ellipse', { cx: 59, cy: 36, rx: 3, ry: 3, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2147,7 +2190,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('circle', { cx: 40, cy: 42, r: 6, fill: p.primary }),
           h('circle', { cx: 60, cy: 42, r: 6, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2186,7 +2230,8 @@
         ),
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('circle', { cx: 14, cy: 58, r: 1.8, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2239,7 +2284,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('ellipse', { cx: 42, cy: 38, rx: 3.5, ry: 4, fill: p.primary }),
           h('ellipse', { cx: 58, cy: 38, rx: 3.5, ry: 4, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -7324,7 +7370,9 @@
       return {
         species: existing ? existing.species : null,
         colorVariant: existing ? existing.colorVariant : 'warm',
-        name: existing ? existing.name : ''
+        name: existing ? existing.name : '',
+        // Phase 2p.22 — accessory carries through across the wizard
+        accessory: existing ? (existing.accessory || null) : null
       };
     });
     var draft = draftTuple[0];
@@ -7340,7 +7388,9 @@
       p.onSave({
         species: draft.species,
         colorVariant: draft.colorVariant,
-        name: (draft.name || '').trim() || (getCompanionSpecies(draft.species) || {}).label || 'Buddy'
+        name: (draft.name || '').trim() || (getCompanionSpecies(draft.species) || {}).label || 'Buddy',
+        // Phase 2p.22 — only include accessory if unlocked, otherwise leave existing untouched
+        accessory: p.bowUnlocked ? (draft.accessory || null) : (existing && existing.accessory) || null
       });
     }
 
@@ -7419,7 +7469,7 @@
               }
             },
               h('div', { style: { width: '60px', height: '60px' } },
-                getCompanionSvg(draft.species, swatch, { blinking: false })
+                getCompanionSvg(draft.species, swatch, { blinking: false, accessory: draft.accessory })
               ),
               h('div', { style: { fontWeight: 700, fontSize: '12px' } }, v.label),
               // Color trio swatch
@@ -7445,7 +7495,8 @@
           h('div', {
             style: { width: '90px', height: '90px', flexShrink: 0, padding: '6px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '12px' }
           },
-            getCompanionSvg(draft.species, swatch, { blinking: false })
+            // Phase 2p.22 — preview reflects the accessory toggle
+            getCompanionSvg(draft.species, swatch, { blinking: false, accessory: draft.accessory })
           ),
           h('div', { style: { flex: 1 } },
             h('input', {
@@ -7482,7 +7533,34 @@
               })
             )
           )
-        )
+        ),
+        // Phase 2p.22 — bow accessory toggle. Visible only after the
+        // student has unlocked it via the "first-favorite" achievement.
+        p.bowUnlocked ? h('div', {
+          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }
+        },
+          h('div', null,
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text } }, '🎀 Bow accessory'),
+            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+              draft.accessory === 'bow' ? 'Currently worn — tap to remove' : 'Unlocked from your first favorite')
+          ),
+          h('button', {
+            onClick: function() { setField('accessory', draft.accessory === 'bow' ? null : 'bow'); },
+            'aria-pressed': draft.accessory === 'bow' ? 'true' : 'false',
+            'aria-label': 'Toggle bow accessory',
+            style: {
+              background: draft.accessory === 'bow' ? palette.accent : palette.bg,
+              color: draft.accessory === 'bow' ? palette.onAccent : palette.textDim,
+              border: '1px solid ' + (draft.accessory === 'bow' ? palette.accent : palette.border),
+              borderRadius: '999px',
+              padding: '4px 14px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, draft.accessory === 'bow' ? 'On' : 'Off')
+        ) : null
       );
     }
 
@@ -9844,10 +9922,18 @@
       // batch — don\'t spam if many fire at once on a fresh-state import)
       if (state.companion && state.companion.species) {
         var first = newly[0];
-        stateUpdates.companion = Object.assign({}, state.companion, {
+        var companionPatch = {
           lastBubbleAt: nowIso,
           lastBubbleText: first.emoji + ' ' + first.label + '! ' + first.desc
-        });
+        };
+        // Phase 2p.22 — auto-grant bow accessory when "first-favorite"
+        // achievement unlocks, if companion has no accessory yet.
+        var unlockedFirstFav = newly.some(function(a) { return a.id === 'first-favorite'; });
+        if (unlockedFirstFav && !state.companion.accessory) {
+          companionPatch.accessory = 'bow';
+          companionPatch.lastBubbleText = '🎀 Found a bow in the room — wearing it for you!';
+        }
+        stateUpdates.companion = Object.assign({}, state.companion, companionPatch);
       }
       setStateMulti(stateUpdates);
       setTimeout(function() {
@@ -11314,7 +11400,7 @@
             }
           },
             getCompanionSvg(companion.species, paletteColors,
-              { blinking: blinking, pupilOffset: pupilOffset, sleeping: sleeping }),
+              { blinking: blinking, pupilOffset: pupilOffset, sleeping: sleeping, accessory: companion.accessory }),
             // Floating "Z" when sleeping — gentle visual signal, not "needs sleep" coded
             sleeping ? h('span', {
               className: 'ah-companion-z',
@@ -13858,9 +13944,12 @@
 
     function renderCompanionSetupModal() {
       if (state.activeModal !== 'companion-setup') return null;
+      // Phase 2p.22 — gate bow toggle behind first-favorite achievement
+      var bowUnlocked = !!((state.achievements || {})['first-favorite']);
       return h(CompanionSetupInner, {
         existing: state.companion,
         palette: palette,
+        bowUnlocked: bowUnlocked,
         onSave: function(updates) {
           // Preserve skillCelebrations + createdAt from existing if present
           var prev = state.companion || {};
