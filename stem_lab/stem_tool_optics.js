@@ -2506,16 +2506,76 @@
             borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 800
           }
         }, '📝 Submit quiz'),
-        d.quizSubmitted && h('div', { style: { marginTop: 8, padding: 12, background: d.quizCorrect >= 4 ? 'rgba(22,163,74,0.15)' : 'rgba(245,158,11,0.10)', border: '1px solid ' + (d.quizCorrect >= 4 ? 'rgba(22,163,74,0.55)' : 'rgba(245,158,11,0.45)'), borderRadius: 8 } },
-          h('div', { style: { fontSize: 16, fontWeight: 900, color: d.quizCorrect >= 4 ? '#86efac' : '#fbbf24', marginBottom: 4 } },
-            'Score: ' + d.quizCorrect + ' / ' + d.quizQuestions.length + (d.quizCorrect === 5 ? '  🎉 Perfect!' : '')
-          ),
-          h('button', {
-            onClick: function() { upd({ quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
-            'data-op-focusable': 'true',
-            style: { marginTop: 8, padding: '6px 14px', background: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
-          }, '🔁 New quiz')
-        )
+        d.quizSubmitted && (function() {
+          var pct = Math.round((d.quizCorrect / d.quizQuestions.length) * 100);
+          var tier = d.quizCorrect === d.quizQuestions.length ? 'perfect'
+                     : pct >= 80 ? 'strong'
+                     : pct >= 60 ? 'solid'
+                     : 'review';
+          var tierColor = tier === 'perfect' ? '#fbbf24' : tier === 'strong' ? '#22c55e' : tier === 'solid' ? '#a855f7' : '#f59e0b';
+          var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎯' : tier === 'solid' ? '📘' : '📚';
+          var tierTitle = tier === 'perfect' ? 'Perfect — every concept landed'
+                          : tier === 'strong' ? 'Strong understanding'
+                          : tier === 'solid' ? 'Solid foundation'
+                          : 'Worth another pass';
+          var tierMsg = tier === 'perfect'
+                        ? 'You’re ready for AP-level optics problems. The hard ones combine sign conventions with phasor reasoning — you can do both.'
+                        : tier === 'strong'
+                          ? 'Strong overall. Sign conventions for lenses + concave mirrors are the most-miss-prone area — worth a quick re-skim.'
+                          : tier === 'solid'
+                            ? 'Solid baseline. Re-read the topic where you missed — especially the worked examples in the sample problems for that topic.'
+                            : 'Re-read the topic panels and work through 1–2 sample problems before retrying. Optics depends on sign conventions; rote memorization fails fast.';
+          var rad = 36, circ = 2 * Math.PI * rad;
+          var dashOff = circ - (pct / 100) * circ;
+          var ans = d.quizAnswers || [];
+          return h('div', { style: { marginTop: 8, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + tierColor + 'aa', background: 'rgba(15,23,42,0.6)' } },
+            h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap', background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
+              h('div', { style: { position: 'relative', width: 88, height: 88, flexShrink: 0 } },
+                h('svg', { viewBox: '0 0 100 100', width: 88, height: 88,
+                  'aria-label': 'Score: ' + d.quizCorrect + ' out of ' + d.quizQuestions.length
+                },
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                    strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                ),
+                h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                  h('div', { style: { fontSize: 19, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8' } }, d.quizCorrect + ' / ' + d.quizQuestions.length)
+                )
+              ),
+              h('div', { style: { flex: 1, minWidth: 200 } },
+                h('div', { style: { fontSize: 26, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
+                h('div', { style: { fontSize: 16, fontWeight: 900, color: tierColor, lineHeight: 1.15 } }, tierTitle),
+                h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5 } }, tierMsg)
+              )
+            ),
+            h('div', { style: { padding: '0 14px 8px' } },
+              h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, 'Your answers'),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                d.quizQuestions.map(function(qq, qi) {
+                  var isCorrect = ans[qi] === qq.correct;
+                  return h('div', { key: qi,
+                    title: 'Q' + (qi + 1) + (isCorrect ? ' correct ✓' : ' incorrect'),
+                    style: {
+                      width: 14, height: 14, borderRadius: 3,
+                      background: isCorrect ? '#22c55e' : '#ef4444',
+                      border: '1.5px solid ' + (isCorrect ? '#15803d' : '#7f1d1d'),
+                      boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                    },
+                    'aria-label': 'Q' + (qi + 1) + (isCorrect ? ' correct' : ' incorrect')
+                  });
+                })
+              )
+            ),
+            h('div', { style: { padding: '10px 14px', borderTop: '1px solid rgba(148,163,184,0.25)' } },
+              h('button', {
+                onClick: function() { upd({ quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
+                'data-op-focusable': 'true',
+                style: { padding: '6px 14px', background: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+              }, '🔁 New quiz')
+            )
+          );
+        })()
       )
     );
   }
