@@ -7326,6 +7326,65 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setNotebook(nextNotebook);
           lsSet('birdLab.fieldNotebook.v1', nextNotebook);
         }
+        // Inline-edit support for notebook entries
+        var editingEntryId_state = useState(null);
+        var editingEntryId = editingEntryId_state[0], setEditingEntryId = editingEntryId_state[1];
+        var editDraft_state = useState(null);
+        var editDraft = editDraft_state[0], setEditDraft = editDraft_state[1];
+        function startEditEntry(entry) {
+          setEditDraft({
+            date: entry.date || '',
+            time: entry.time || '',
+            location: entry.location || '',
+            count: entry.count || 1,
+            behaviors: (entry.behaviors || []).slice(),
+            weather: entry.weather || '',
+            notes: entry.notes || '',
+            reflection: entry.reflection || '',
+            speciesName: entry.speciesName || '',
+            speciesSciName: entry.speciesSciName || ''
+          });
+          setEditingEntryId(entry.id);
+          announce('Editing entry');
+        }
+        function cancelEditEntry() {
+          setEditingEntryId(null);
+          setEditDraft(null);
+          announce('Edit cancelled');
+        }
+        function saveEditEntry() {
+          if (!editingEntryId || !editDraft) return;
+          if (!(editDraft.location || '').trim()) {
+            announce('Location is required');
+            return;
+          }
+          var nextNotebook = notebook.map(function(e) {
+            if (e.id !== editingEntryId) return e;
+            return Object.assign({}, e, {
+              date: editDraft.date,
+              time: editDraft.time,
+              location: editDraft.location.trim(),
+              count: parseInt(editDraft.count, 10) || 1,
+              behaviors: editDraft.behaviors.slice(),
+              weather: editDraft.weather,
+              notes: editDraft.notes,
+              reflection: editDraft.reflection,
+              speciesName: editDraft.speciesName,
+              speciesSciName: editDraft.speciesSciName
+            });
+          });
+          setNotebook(nextNotebook);
+          lsSet('birdLab.fieldNotebook.v1', nextNotebook);
+          setEditingEntryId(null);
+          setEditDraft(null);
+          announce('Entry saved');
+        }
+        function toggleEditBehavior(b) {
+          if (!editDraft) return;
+          var current = editDraft.behaviors || [];
+          var next = current.indexOf(b) === -1 ? current.concat([b]) : current.filter(function(x) { return x !== b; });
+          setEditDraft(Object.assign({}, editDraft, { behaviors: next }));
+        }
         var BEHAVIORS = ['Foraging', 'Flying', 'Calling/singing', 'Perched', 'Hunting', 'Display/courtship', 'Nesting', 'Drinking/bathing', 'In a flock'];
         var WEATHER = [
           { id: 'clear', label: '☀️ Clear' },
@@ -8172,15 +8231,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               lastDate: dates[dates.length - 1]
             };
           })();
+          // ── Export helpers ──
+          function csvEscape(v) {
+            if (v == null) return '';
+            var s = String(v);
+            if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+            return s;
+          }
+          function downloadNotebookCSV() {
+            if (!notebook.length) return;
+            var headers = ['Date','Time','Location','Species','Sci Name','Count','Behavior','Weather','Notes','Reflection'];
+            var rows = notebook.map(function(e) {
+              return [
+                e.date || '',
+                e.time || '',
+                e.location || '',
+                e.speciesName || '',
+                e.speciesSciName || '',
+                e.count || 1,
+                Array.isArray(e.behaviors) ? e.behaviors.join('; ') : '',
+                ((WEATHER.filter(function(w) { return w.id === e.weather; })[0] || {}).label || e.weather || '').replace(/^[^\s]+\s/, ''),
+                e.notes || '',
+                e.reflection || ''
+              ].map(csvEscape).join(',');
+            });
+            var csv = headers.join(',') + '\n' + rows.join('\n') + '\n';
+            try {
+              var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              var stamp = new Date().toISOString().slice(0, 10);
+              a.href = url;
+              a.download = 'birdlab-field-notebook-' + stamp + '.csv';
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(function() {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+              }, 100);
+              announce('Notebook exported as CSV — ' + notebook.length + ' entries');
+            } catch (err) {
+              announce('CSV export failed — try printing instead');
+            }
+          }
+          function downloadNotebookJSON() {
+            if (!notebook.length) return;
+            try {
+              var blob = new Blob([JSON.stringify(notebook, null, 2)], { type: 'application/json' });
+              var url = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              var stamp = new Date().toISOString().slice(0, 10);
+              a.href = url;
+              a.download = 'birdlab-field-notebook-' + stamp + '.json';
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(function() { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+              announce('Notebook exported as JSON');
+            } catch (err) {
+              announce('JSON export failed');
+            }
+          }
+          function printNotebook() {
+            try { window.print(); } catch (_) {}
+          }
           return h('div', { className: 'min-h-screen bg-slate-50' },
             h(BackBar, { icon: '📓', title: 'My Field Notebook' }),
             h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
               h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
                 h('h2', { className: 'text-lg font-black text-slate-800' },
                   notebook.length + ' observation' + (notebook.length === 1 ? '' : 's')),
-                h('button', { onClick: startOver,
-                  className: 'px-4 py-2 rounded-xl bg-teal-700 text-white text-sm font-bold hover:bg-teal-800 focus:outline-none focus:ring-2 ring-teal-500/40'
-                }, '+ New observation')
+                h('div', { className: 'flex flex-wrap gap-2 birdlab-no-print' },
+                  notebook.length > 0 && h('button', {
+                    onClick: downloadNotebookCSV,
+                    'aria-label': 'Download notebook as CSV',
+                    title: 'Download as CSV (Excel-compatible)',
+                    className: 'px-3 py-2 rounded-xl bg-white text-emerald-800 border-2 border-emerald-400 text-sm font-bold hover:border-emerald-600 focus:outline-none focus:ring-2 ring-emerald-500/40'
+                  }, '⤓ CSV'),
+                  notebook.length > 0 && h('button', {
+                    onClick: downloadNotebookJSON,
+                    'aria-label': 'Download notebook as JSON',
+                    title: 'Download as JSON (developer-friendly)',
+                    className: 'px-3 py-2 rounded-xl bg-white text-violet-800 border-2 border-violet-400 text-sm font-bold hover:border-violet-600 focus:outline-none focus:ring-2 ring-violet-500/40'
+                  }, '{ } JSON'),
+                  notebook.length > 0 && h('button', {
+                    onClick: printNotebook,
+                    'aria-label': 'Print notebook',
+                    title: 'Print or save as PDF',
+                    className: 'px-3 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500 focus:outline-none focus:ring-2 ring-slate-400'
+                  }, '🖨 Print'),
+                  h('button', { onClick: startOver,
+                    className: 'px-4 py-2 rounded-xl bg-teal-700 text-white text-sm font-bold hover:bg-teal-800 focus:outline-none focus:ring-2 ring-teal-500/40'
+                  }, '+ New observation')
+                )
               ),
               // ── Stats summary (only if ≥ 2 entries, since with 1 entry nothing meaningful) ──
               nbStats && h('div', { className: 'bg-gradient-to-br from-teal-50 via-emerald-50 to-amber-50 rounded-2xl border-2 border-teal-300 shadow-lg overflow-hidden' },
@@ -8258,6 +8400,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                     notebook.map(function(entry) {
                       var dt = entry.date + (entry.time ? ' ' + entry.time : '');
                       var weatherLabel = (WEATHER.filter(function(w) { return w.id === entry.weather; })[0] || {}).label || entry.weather;
+                      var isEditing = editingEntryId === entry.id;
+                      // ── EDIT MODE ──
+                      if (isEditing && editDraft) {
+                        return h('div', { key: entry.id,
+                          className: 'bg-amber-50 rounded-2xl border-2 border-amber-500 shadow-lg p-4 space-y-3',
+                          'aria-live': 'polite'
+                        },
+                          h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-1' },
+                            h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-800' }, '✏ Editing entry'),
+                            h('span', { 'aria-hidden': true, className: 'text-3xl' }, entry.speciesIcon || '🐦')
+                          ),
+                          // Species (read-only — no rename in scope; edit notes/reflection if mis-ID'd)
+                          h('div', { className: 'p-2.5 bg-white border border-amber-300 rounded-lg' },
+                            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, 'Species'),
+                            h('div', { className: 'text-sm font-bold text-slate-800' }, editDraft.speciesName || '—'),
+                            editDraft.speciesSciName && h('div', { className: 'text-xs italic text-slate-700' }, editDraft.speciesSciName)
+                          ),
+                          // Date + time
+                          h('div', { className: 'grid grid-cols-2 gap-2' },
+                            h('div', null,
+                              h('label', { htmlFor: 'edit-date-' + entry.id, className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '📅 Date'),
+                              h('input', { id: 'edit-date-' + entry.id, type: 'date', value: editDraft.date,
+                                onChange: function(e) { setEditDraft(Object.assign({}, editDraft, { date: e.target.value })); },
+                                className: 'w-full p-2 rounded-lg border-2 border-slate-300 text-sm focus:outline-none focus:border-amber-500'
+                              })
+                            ),
+                            h('div', null,
+                              h('label', { htmlFor: 'edit-time-' + entry.id, className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '⏰ Time'),
+                              h('input', { id: 'edit-time-' + entry.id, type: 'time', value: editDraft.time,
+                                onChange: function(e) { setEditDraft(Object.assign({}, editDraft, { time: e.target.value })); },
+                                className: 'w-full p-2 rounded-lg border-2 border-slate-300 text-sm focus:outline-none focus:border-amber-500'
+                              })
+                            )
+                          ),
+                          // Location
+                          h('div', null,
+                            h('label', { htmlFor: 'edit-loc-' + entry.id, className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '📍 Location *'),
+                            h('input', { id: 'edit-loc-' + entry.id, type: 'text', value: editDraft.location,
+                              onChange: function(e) { setEditDraft(Object.assign({}, editDraft, { location: e.target.value })); },
+                              className: 'w-full p-2 rounded-lg border-2 border-slate-300 text-sm focus:outline-none focus:border-amber-500',
+                              'aria-required': 'true'
+                            })
+                          ),
+                          // Count
+                          h('div', null,
+                            h('label', { htmlFor: 'edit-count-' + entry.id, className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '🔢 Count'),
+                            h('input', { id: 'edit-count-' + entry.id, type: 'number', min: 1, max: 999, value: editDraft.count,
+                              onChange: function(e) { setEditDraft(Object.assign({}, editDraft, { count: e.target.value })); },
+                              className: 'w-full p-2 rounded-lg border-2 border-slate-300 text-sm focus:outline-none focus:border-amber-500'
+                            })
+                          ),
+                          // Behaviors
+                          h('div', null,
+                            h('div', { className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '🐦 Behaviors'),
+                            h('div', { className: 'flex flex-wrap gap-1.5' },
+                              BEHAVIORS.map(function(b) {
+                                var sel = (editDraft.behaviors || []).indexOf(b) !== -1;
+                                return h('button', { key: b,
+                                  onClick: function() { toggleEditBehavior(b); },
+                                  'aria-pressed': sel ? 'true' : 'false',
+                                  className: 'px-2 py-1 rounded-lg border-2 text-[11px] font-bold transition focus:outline-none focus:ring-2 ring-amber-500/40 ' +
+                                    (sel ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-slate-800 border-slate-300 hover:border-amber-500')
+                                }, (sel ? '✓ ' : '+ ') + b);
+                              })
+                            )
+                          ),
+                          // Weather
+                          h('div', null,
+                            h('div', { className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '🌤 Weather'),
+                            h('div', { role: 'radiogroup', 'aria-label': 'Weather', className: 'flex flex-wrap gap-1.5' },
+                              WEATHER.map(function(w) {
+                                var sel = editDraft.weather === w.id;
+                                return h('button', { key: w.id,
+                                  onClick: function() { setEditDraft(Object.assign({}, editDraft, { weather: w.id })); },
+                                  role: 'radio', 'aria-checked': sel ? 'true' : 'false',
+                                  className: 'px-2 py-1 rounded-lg border-2 text-[11px] font-bold transition focus:outline-none focus:ring-2 ring-amber-500/40 ' +
+                                    (sel ? 'bg-amber-700 text-white border-amber-800' : 'bg-white text-slate-800 border-slate-300 hover:border-amber-500')
+                                }, w.label);
+                              })
+                            )
+                          ),
+                          // Notes
+                          h('div', null,
+                            h('label', { htmlFor: 'edit-notes-' + entry.id, className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '📝 Notes'),
+                            h('textarea', { id: 'edit-notes-' + entry.id, value: editDraft.notes, rows: 2,
+                              onChange: function(e) { setEditDraft(Object.assign({}, editDraft, { notes: e.target.value })); },
+                              className: 'w-full p-2 rounded-lg border-2 border-slate-300 text-sm focus:outline-none focus:border-amber-500 resize-y'
+                            })
+                          ),
+                          // Reflection
+                          h('div', null,
+                            h('label', { htmlFor: 'edit-reflect-' + entry.id, className: 'block text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1' }, '🪶 Reflection'),
+                            h('textarea', { id: 'edit-reflect-' + entry.id, value: editDraft.reflection, rows: 3,
+                              onChange: function(e) { setEditDraft(Object.assign({}, editDraft, { reflection: e.target.value })); },
+                              className: 'w-full p-2 rounded-lg border-2 border-slate-300 text-sm focus:outline-none focus:border-amber-500 resize-y'
+                            })
+                          ),
+                          // Save / Cancel buttons
+                          h('div', { className: 'flex gap-2 flex-wrap pt-1' },
+                            h('button', {
+                              onClick: saveEditEntry,
+                              className: 'px-4 py-2 rounded-xl bg-amber-700 text-white text-sm font-bold hover:bg-amber-800 focus:outline-none focus:ring-4 ring-amber-500/40'
+                            }, '💾 Save changes'),
+                            h('button', {
+                              onClick: cancelEditEntry,
+                              className: 'px-4 py-2 rounded-xl bg-white text-slate-700 border-2 border-slate-300 text-sm font-bold hover:border-slate-500 focus:outline-none focus:ring-2 ring-slate-400'
+                            }, 'Cancel')
+                          )
+                        );
+                      }
+                      // ── READ MODE ──
                       return h('div', { key: entry.id, className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-4' },
                         h('div', { className: 'flex items-start gap-3 mb-2' },
                           h('span', { 'aria-hidden': true, className: 'text-3xl flex-shrink-0' }, entry.speciesIcon || '🐦'),
@@ -8267,11 +8520,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                             ),
                             h('div', { className: 'text-xs text-slate-700 font-mono' }, dt + ' · ' + entry.location)
                           ),
-                          h('button', {
-                            onClick: function() { if (window.confirm('Delete this observation?')) deleteEntry(entry.id); },
-                            'aria-label': 'Delete entry from ' + dt,
-                            className: 'text-rose-600 hover:text-rose-800 text-sm font-bold'
-                          }, '✕')
+                          h('div', { className: 'flex items-center gap-1 birdlab-no-print' },
+                            h('button', {
+                              onClick: function() { startEditEntry(entry); },
+                              'aria-label': 'Edit entry from ' + dt,
+                              title: 'Edit',
+                              className: 'px-2 py-1 rounded text-amber-700 hover:bg-amber-100 hover:text-amber-900 text-sm font-bold focus:outline-none focus:ring-2 ring-amber-500/40'
+                            }, '✏'),
+                            h('button', {
+                              onClick: function() { if (window.confirm('Delete this observation?')) deleteEntry(entry.id); },
+                              'aria-label': 'Delete entry from ' + dt,
+                              title: 'Delete',
+                              className: 'px-2 py-1 rounded text-rose-600 hover:bg-rose-100 hover:text-rose-800 text-sm font-bold focus:outline-none focus:ring-2 ring-rose-500/40'
+                            }, '✕')
+                          )
                         ),
                         h('div', { className: 'flex flex-wrap gap-1.5 mb-2' },
                           weatherLabel && h('span', { className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-300' }, weatherLabel),
@@ -8286,7 +8548,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                           h('p', { className: 'text-xs text-slate-800 leading-relaxed italic' }, entry.reflection)
                         ),
                         // Deep-link cluster — verify or read more about this species
-                        entry.speciesName && entry.speciesName !== 'Unidentified' && h('div', { className: 'pt-2 border-t border-slate-200' },
+                        entry.speciesName && entry.speciesName !== 'Unidentified' && h('div', { className: 'pt-2 border-t border-slate-200 birdlab-no-print' },
                           h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, '🔗 Verify or learn more'),
                           birdLinkButtons(entry.speciesName, entry.speciesSciName, { size: 'xs' })
                         )
