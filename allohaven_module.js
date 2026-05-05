@@ -190,12 +190,16 @@
     },
 
     // ── Room + decorations ──
-    // Multi-room (Phase 2p.12). 'main' is the default bedroom, always
-    // unlocked. 'garden' unlocks at 10 decorations placed. Each room
-    // has its own grid + decorations are filtered by placement.roomId.
+    // Multi-room (Phase 2p.12 + 2p.13).
+    //   main:    always unlocked (the original bedroom)
+    //   garden:  10 non-starter decorations placed
+    //   library: 30 flashcards quizzed (memory-focused unlock)
+    //   studio:  5 stories created OR 15 decorations placed (creative unlock)
     rooms: [
-      { id: 'main',   label: 'My Room', icon: '🏠', kind: 'bedroom', wallSlots: 8, floorSlots: 12, unlocked: true },
-      { id: 'garden', label: 'Garden',  icon: '🌳', kind: 'garden',  wallSlots: 6, floorSlots: 9,  unlocked: false, unlockCriteria: 'ten-decorations' }
+      { id: 'main',    label: 'My Room', icon: '🏠', kind: 'bedroom', wallSlots: 8, floorSlots: 12, unlocked: true },
+      { id: 'garden',  label: 'Garden',  icon: '🌳', kind: 'garden',  wallSlots: 6, floorSlots: 9,  unlocked: false, unlockCriteria: 'ten-decorations' },
+      { id: 'library', label: 'Library', icon: '📚', kind: 'library', wallSlots: 8, floorSlots: 8,  unlocked: false, unlockCriteria: 'thirty-cards' },
+      { id: 'studio',  label: 'Studio',  icon: '🎨', kind: 'studio',  wallSlots: 12, floorSlots: 12, unlocked: false, unlockCriteria: 'fifteen-decs-or-five-stories' }
     ],
     activeRoomId: 'main',
     decorations: [
@@ -1383,7 +1387,27 @@
       check: function(s) { return computeStreak(s.visits || []).longest >= 7; } },
     { id: 'streak-30', emoji: '🌲', label: 'Thirty days in a row',
       desc: 'A month-long stretch. Rare and quietly remarkable.',
-      check: function(s) { return computeStreak(s.visits || []).longest >= 30; } }
+      check: function(s) { return computeStreak(s.visits || []).longest >= 30; } },
+
+    // Room-unlock achievements (Phase 2p.13)
+    { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
+      desc: 'A quiet outdoor corner of your room.',
+      check: function(s) {
+        var g = (s.rooms || []).filter(function(r) { return r.id === 'garden'; })[0];
+        return !!(g && g.unlocked);
+      } },
+    { id: 'library-unlocked', emoji: '📚', label: 'Library unlocked',
+      desc: 'A focused study room — earned by quizzing yourself.',
+      check: function(s) {
+        var l = (s.rooms || []).filter(function(r) { return r.id === 'library'; })[0];
+        return !!(l && l.unlocked);
+      } },
+    { id: 'studio-unlocked', emoji: '🎨', label: 'Studio unlocked',
+      desc: 'A wide creative space — earned by making things.',
+      check: function(s) {
+        var st = (s.rooms || []).filter(function(r) { return r.id === 'studio'; })[0];
+        return !!(st && st.unlocked);
+      } }
   ];
 
   function getAchievement(id) {
@@ -6711,13 +6735,15 @@
       merged.pomodoroState       = Object.assign({}, DEFAULT_STATE.pomodoroState, loaded.pomodoroState || {});
       merged.pomodoroPreferences = Object.assign({}, DEFAULT_STATE.pomodoroPreferences, loaded.pomodoroPreferences || {});
       if (!merged.rooms || !merged.rooms.length) merged.rooms = DEFAULT_STATE.rooms.slice();
-      // Phase 2p.12 — backfill the garden room if a saved state predates
-      // multi-room. Preserves existing main-room state intact.
-      if (!merged.rooms.some(function(r) { return r.id === 'garden'; })) {
-        merged.rooms = merged.rooms.concat([
-          DEFAULT_STATE.rooms.filter(function(r) { return r.id === 'garden'; })[0]
-        ]);
-      }
+      // Phase 2p.12/2p.13 — backfill any new rooms added after the
+      // student\'s saved state was written. Preserves existing rooms\'
+      // unlocked-state and slot counts.
+      ['garden', 'library', 'studio'].forEach(function(roomId) {
+        if (!merged.rooms.some(function(r) { return r.id === roomId; })) {
+          var defaultRoom = DEFAULT_STATE.rooms.filter(function(r) { return r.id === roomId; })[0];
+          if (defaultRoom) merged.rooms = merged.rooms.concat([defaultRoom]);
+        }
+      });
       // Default activeRoomId
       if (!merged.activeRoomId) merged.activeRoomId = 'main';
       // Ensure activeRoomId points to a room that exists; fall back to main
@@ -8032,6 +8058,33 @@
         candidates.push(pickOpener() + 'you have ' + achCount + ' achievements unlocked. Quietly proud.');
       }
 
+      // "On this day" memory (Phase 2p.13) — companion surfaces a
+      // decoration earned exactly 1, 3, or 6 months ago today. Built-
+      // in spaced re-encounter: students bump into past artifacts
+      // they\'d otherwise scroll past. Only fires when an exact match
+      // exists at one of the milestones.
+      (function() {
+        var now = new Date();
+        var milestones = [
+          { months: 1, label: 'a month ago' },
+          { months: 3, label: 'three months ago' },
+          { months: 6, label: 'six months ago' },
+          { months: 12, label: 'a year ago' }
+        ];
+        milestones.forEach(function(m) {
+          var target = new Date(now.getFullYear(), now.getMonth() - m.months, now.getDate());
+          var targetIso = target.toISOString().slice(0, 10);
+          var match = (state.decorations || []).filter(function(d) {
+            if (d.isStarter || !d.earnedAt) return false;
+            return d.earnedAt.slice(0, 10) === targetIso;
+          })[0];
+          if (match) {
+            var ml = match.templateLabel || match.template || 'decoration';
+            candidates.push(pickOpener() + 'on this day ' + m.label + ', you earned the ' + ml + '.');
+          }
+        });
+      })();
+
       // Seasonal context (Phase 2p.11) — date-aware lines surfaced
       // before idle filler so they take priority on the right days
       // without dominating every visit.
@@ -8352,36 +8405,74 @@
       // eslint-disable-next-line
     }, [state.onboardingSeen, state.tourSeen, state.activeModal]);
 
-    // Garden unlock detection (Phase 2p.12) — when a student crosses
-    // 10 placed decorations (excluding starter), the Garden room
-    // becomes accessible. Companion celebrates the unlock with a
-    // species-flavored bubble. Once unlocked, never re-locks.
+    // Room unlock detection (Phase 2p.12/2p.13) — Garden, Library, and
+    // Studio each unlock at distinct pedagogical milestones. Companion
+    // celebrates each unlock with a species-flavored bubble; rooms
+    // never re-lock once unlocked.
     useEffect(function() {
-      var garden = (state.rooms || []).filter(function(r) { return r.id === 'garden'; })[0];
-      if (!garden || garden.unlocked) return;
+      var rooms = state.rooms || [];
+      var newlyUnlocked = [];
+
       var placedCount = (state.decorations || []).filter(function(d) { return !d.isStarter; }).length;
-      if (placedCount < 10) return;
-      var newRooms = state.rooms.map(function(r) {
-        if (r.id !== 'garden') return r;
+      // Total flashcard quiz attempts across all decks
+      var cardsQuizzed = (state.decorations || []).reduce(function(sum, d) {
+        if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return sum;
+        var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+        return sum + cards.reduce(function(s, c) { return s + (c.correctCount || 0) + (c.missCount || 0); }, 0);
+      }, 0);
+      var storyCount = (state.stories || []).filter(function(s) {
+        var v = (s.steps || []).filter(function(stp) {
+          return stp.decorationId && (stp.narrative || '').trim().length > 0;
+        });
+        return v.length >= 3 && (s.title || '').trim().length > 0;
+      }).length;
+
+      var checks = [
+        { id: 'garden',  label: 'Garden',  icon: '🌳', condition: placedCount >= 10, hint: 'a quiet outdoor corner' },
+        { id: 'library', label: 'Library', icon: '📚', condition: cardsQuizzed >= 30, hint: 'a focused study room' },
+        { id: 'studio',  label: 'Studio',  icon: '🎨', condition: placedCount >= 15 || storyCount >= 5, hint: 'a wide creative space' }
+      ];
+
+      checks.forEach(function(c) {
+        var room = rooms.filter(function(r) { return r.id === c.id; })[0];
+        if (!room || room.unlocked) return;
+        if (!c.condition) return;
+        newlyUnlocked.push(c);
+      });
+
+      if (newlyUnlocked.length === 0) return;
+
+      var newRooms = rooms.map(function(r) {
+        var match = newlyUnlocked.filter(function(c) { return c.id === r.id; })[0];
+        if (!match) return r;
         return Object.assign({}, r, { unlocked: true });
       });
       var updates = { rooms: newRooms };
+      // Companion announcement — name only the FIRST newly-unlocked
+      // (don\'t spam if multiple unlock simultaneously on a fresh load)
       if (state.companion && state.companion.species) {
-        var sp = getCompanionSpecies(state.companion.species);
         var openers = {
           cat:    'Hmm. ', fox: 'Aha — ', owl: 'Observed: ',
           turtle: 'Quietly: ', dragon: 'Whoa! '
         };
         var prefix = openers[state.companion.species] || 'Hmm. ';
+        var first = newlyUnlocked[0];
         updates.companion = Object.assign({}, state.companion, {
           lastBubbleAt: new Date().toISOString(),
-          lastBubbleText: prefix + 'the Garden just opened up. Try the 🌳 tab.'
+          lastBubbleText: prefix + 'the ' + first.label + ' just opened up — ' + first.hint + '. Try the ' + first.icon + ' tab.'
         });
       }
       setStateMulti(updates);
-      setTimeout(function() { addToast('🌳 The Garden is now unlocked! Switch via the room tabs at the top.'); }, 60);
+      setTimeout(function() {
+        if (newlyUnlocked.length === 1) {
+          var n = newlyUnlocked[0];
+          addToast(n.icon + ' The ' + n.label + ' is now unlocked!');
+        } else {
+          addToast('🎉 ' + newlyUnlocked.length + ' new rooms unlocked!');
+        }
+      }, 60);
       // eslint-disable-next-line
-    }, [state.decorations.length]);
+    }, [state.decorations.length, state.stories.length]);
 
     // Achievement unlock detection (Phase 2p.5) — runs the catalog\'s
     // check() functions against current state. Newly-passing achievements
@@ -8766,14 +8857,27 @@
       var wallCount = Object.keys(wallByCell).length;
       var floorCount = Object.keys(floorByCell).length;
 
-      // Garden gets a green-tinted background overlay on wall + floor.
-      // Bedroom stays at the default palette.
-      var gardenWallTint = roomKind === 'garden'
-        ? 'linear-gradient(180deg, rgba(135,206,235,0.18) 0%, rgba(135,206,235,0.08) 100%), '
-        : '';
-      var gardenFloorTint = roomKind === 'garden'
-        ? 'linear-gradient(180deg, rgba(80,150,80,0.20) 0%, rgba(80,150,80,0.10) 100%), '
-        : '';
+      // Per-room visual tints (Phase 2p.12/2p.13). Each non-bedroom
+      // room gets a subtle gradient overlay layered on top of the
+      // base palette wallpaper/floor — distinct vibe per space.
+      var roomWallTint = '';
+      var roomFloorTint = '';
+      if (roomKind === 'garden') {
+        // Sky blue overhead + grass green underfoot
+        roomWallTint = 'linear-gradient(180deg, rgba(135,206,235,0.18) 0%, rgba(135,206,235,0.08) 100%), ';
+        roomFloorTint = 'linear-gradient(180deg, rgba(80,150,80,0.20) 0%, rgba(80,150,80,0.10) 100%), ';
+      } else if (roomKind === 'library') {
+        // Warm sepia / wood — focused study vibe
+        roomWallTint = 'linear-gradient(180deg, rgba(180,130,80,0.16) 0%, rgba(140,90,50,0.10) 100%), ';
+        roomFloorTint = 'linear-gradient(180deg, rgba(120,80,40,0.18) 0%, rgba(80,55,30,0.10) 100%), ';
+      } else if (roomKind === 'studio') {
+        // Bright pastel mix — creative open space
+        roomWallTint = 'linear-gradient(135deg, rgba(255,200,100,0.12) 0%, rgba(180,130,255,0.10) 50%, rgba(120,210,200,0.10) 100%), ';
+        roomFloorTint = 'linear-gradient(180deg, rgba(255,235,200,0.12) 0%, rgba(220,210,255,0.08) 100%), ';
+      }
+      // Backwards-compat alias for existing template literals below
+      var gardenWallTint = roomWallTint;
+      var gardenFloorTint = roomFloorTint;
 
       return h('div', {
         style: {
