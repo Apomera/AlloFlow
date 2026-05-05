@@ -1353,7 +1353,9 @@
     { id: 'flower', label: 'Flower', emoji: '🌸', unlockAchievement: 'first-reflection',
       hint: 'Earned by writing your first reflection.' },
     { id: 'scarf',  label: 'Scarf',  emoji: '🧣', unlockAchievement: 'streak-30',
-      hint: 'Earned by reaching a 30-day streak.' }
+      hint: 'Earned by reaching a 30-day streak.' },
+    { id: 'crown',  label: 'Crown',  emoji: '👑', unlockAchievement: 'memory-palace-builder',
+      hint: 'Earned by building 5 memory decks across your decorations.' }
   ];
   function isAccessoryUnlocked(state, accessoryId) {
     var def = null;
@@ -2234,6 +2236,58 @@
         h('circle', { cx: cx, cy: cy, r: 0.7 * s, fill: p.primary, opacity: 0.6 })
       );
     }
+    function crownAt(cx, cy, scale) {
+      // A simple 5-point gold crown with a banded base + soft jewels.
+      // Sits on top of the head; cx,cy is the centerpoint of the band.
+      var s = scale || 1;
+      var w = 14 * s;
+      var bandH = 3 * s;
+      var pointH = 7 * s;
+      var bandTop = cy - bandH / 2;
+      var pointBaseY = bandTop;
+      // 5 triangular points across the top
+      var points = [];
+      for (var i = 0; i <= 4; i++) {
+        var px = cx - w + (i * w / 2);
+        if (i % 2 === 0) {
+          // tall point
+          points.push(px + ',' + (pointBaseY - pointH));
+        } else {
+          // valley between points (slight dip)
+          points.push(px + ',' + (pointBaseY - 1.5 * s));
+        }
+      }
+      var polyPoints = (cx - w) + ',' + bandTop + ' '
+        + points.join(' ') + ' '
+        + (cx + w) + ',' + bandTop;
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        // Crown body (points + band)
+        h('polygon', {
+          points: polyPoints,
+          fill: '#f6c84a', stroke: '#b88a1c', strokeWidth: 0.8 * s
+        }),
+        // Band base
+        h('rect', {
+          x: cx - w, y: bandTop, width: 2 * w, height: bandH,
+          fill: '#e0a91e', stroke: '#b88a1c', strokeWidth: 0.6 * s
+        }),
+        // Three small jewel circles on the band
+        h('circle', { cx: cx - w * 0.5, cy: cy, r: 1.4 * s, fill: '#dc2626' }),
+        h('circle', { cx: cx,           cy: cy, r: 1.6 * s, fill: '#3b82f6' }),
+        h('circle', { cx: cx + w * 0.5, cy: cy, r: 1.4 * s, fill: '#16a34a' }),
+        // Highlight on the center point (shine)
+        h('polygon', {
+          points: cx + ',' + (pointBaseY - pointH) + ' '
+                + (cx - 1 * s) + ',' + (pointBaseY - 1.5 * s) + ' '
+                + (cx + 1 * s) + ',' + (pointBaseY - 1.5 * s),
+          fill: '#fff7d6', opacity: 0.6
+        })
+      );
+    }
+
     function scarfAt(cx, cy, width, scale) {
       // A horizontal arc-band wrapping near the neck/body. width is the
       // half-width of the band; cx,cy is its center point.
@@ -2300,6 +2354,13 @@
         owl:    [50, 50, 20, 0.9], // around the head/body transition
         turtle: [20, 60, 9, 0.9],  // small around the turtle\'s neck
         dragon: [50, 54, 18, 1.0]  // wraps the dragon\'s neck
+      },
+      crown: {
+        cat:    [50, 16, 0.85], // sits between the ears
+        fox:    [50, 14, 0.8],  // between the tall triangle ears
+        owl:    [50, 16, 0.95], // top of head, between ear tufts
+        turtle: [18, 46, 0.65], // smaller, on the green head
+        dragon: [50, 16, 0.95]  // between the horns
       }
     };
     function renderAccessory() {
@@ -2315,6 +2376,10 @@
       if (accessory === 'scarf') {
         var s = ACC_POS.scarf[speciesId] || ACC_POS.scarf.cat;
         return scarfAt(s[0], s[1], s[2] || 16, s[3] || 1.0);
+      }
+      if (accessory === 'crown') {
+        var cr = ACC_POS.crown[speciesId] || ACC_POS.crown.cat;
+        return crownAt(cr[0], cr[1], cr[2] || 1.0);
       }
       return null;
     }
@@ -10435,6 +10500,24 @@
     var letterLoading = letterLoadingTuple[0];
     var setLetterLoading = letterLoadingTuple[1];
 
+    // Phase 2p.31 — sensory grounding (5-4-3-2-1) state, lifted here
+    // per the established rules-of-hooks pattern. Steps cycle 0→1→2→3→4
+    // (see → feel → hear → smell → taste). Per-step typed-thing notes
+    // are optional; the act of looking/listening counts.
+    var groundingStepTuple = useState(0);
+    var groundingStep = groundingStepTuple[0];
+    var setGroundingStep = groundingStepTuple[1];
+    var groundingNotesTuple = useState(['', '', '', '', '']);
+    var groundingNotes = groundingNotesTuple[0];
+    var setGroundingNotes = groundingNotesTuple[1];
+    // Reset grounding state each time the modal opens.
+    useEffect(function() {
+      if (state.activeModal !== 'grounding') return;
+      setGroundingStep(0);
+      setGroundingNotes(['', '', '', '', '']);
+      // eslint-disable-next-line
+    }, [state.activeModal]);
+
     // Phase 2p.28 — breathing pacer state, lifted here for the same
     // rules-of-hooks reason. The phase advance interval ONLY runs when
     // state.activeModal === 'breathe'.
@@ -11425,6 +11508,13 @@
             'aria-label': 'Open breathing pacer for self-care',
             style: secondaryBtnStyle(palette)
           }, '🫁 Breathe'),
+          // Grounding (Phase 2p.31) — sibling self-care affordance.
+          // 5-4-3-2-1 sensory anchoring. Same opt-in posture.
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'grounding'); },
+            'aria-label': 'Open 5-4-3-2-1 sensory grounding exercise',
+            style: secondaryBtnStyle(palette)
+          }, '🧷 Grounding'),
           (function() {
             var deckCount = state.decorations.filter(function(d) { return !!d.linkedContent; }).length;
             var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
@@ -12887,13 +12977,18 @@
           h('div', {
             style: { marginTop: '24px', display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }
           },
-            // Breathe button — break phases only. Opens the breathing
-            // pacer modal as an opt-in self-care option.
+            // Breathe + Grounding (Phase 2p.28 / 2p.31) — break-phase
+            // self-care affordances. Both opt-in.
             (phase === 'short-break' || phase === 'long-break') ? h('button', {
               onClick: function() { setStateField('activeModal', 'breathe'); },
               style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
               'aria-label': 'Open breathing pacer'
             }, '🫁 Breathe') : null,
+            (phase === 'short-break' || phase === 'long-break') ? h('button', {
+              onClick: function() { setStateField('activeModal', 'grounding'); },
+              style: Object.assign({}, secondaryBtnStyle(palette), { borderColor: palette.accent, color: palette.accent }),
+              'aria-label': 'Open grounding exercise'
+            }, '🧷 Grounding') : null,
             h('button', {
               onClick: cancelPomodoro,
               style: Object.assign({}, secondaryBtnStyle(palette), {
@@ -13144,6 +13239,204 @@
               'aria-label': 'Close breathing pacer',
               style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
             }, 'Done')
+          )
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // GROUNDING (Phase 2p.31) — 5-4-3-2-1 sensory anchoring exercise.
+    // Sibling to the breathing pacer. Common in clinical practice for
+    // anxiety, dissociation, autistic self-regulation. Same opt-in
+    // positioning: room toolbar + Pomodoro break overlay. No tokens,
+    // no streak. Skip-friendly at every step.
+    // ─────────────────────────────────────────────────
+    var GROUNDING_STEPS = [
+      { sense: 'see',   emoji: '👀', count: 5, label: 'see',   verb: 'look around for', hint: 'Anything in the room. The light, a corner, your hands, your decorations.' },
+      { sense: 'feel',  emoji: '🤲', count: 4, label: 'feel',  verb: 'notice you can feel', hint: 'Your feet on the floor. The chair under you. Fabric on your skin.' },
+      { sense: 'hear',  emoji: '👂', count: 3, label: 'hear',  verb: 'listen for',         hint: 'Distant sounds, close sounds, the quiet ones underneath.' },
+      { sense: 'smell', emoji: '👃', count: 2, label: 'smell', verb: 'try to smell',       hint: 'Your space. Your hair. The air. (Hard to find? Just notice the trying.)' },
+      { sense: 'taste', emoji: '👅', count: 1, label: 'taste', verb: 'notice the taste of', hint: 'Anything in your mouth right now — even just the taste of breath or your tongue.' }
+    ];
+    function renderGroundingModal() {
+      if (state.activeModal !== 'grounding') return null;
+      var idx = Math.max(0, Math.min(groundingStep, GROUNDING_STEPS.length));
+      var done = idx >= GROUNDING_STEPS.length;
+      var stepDef = !done ? GROUNDING_STEPS[idx] : null;
+      var note = !done ? (groundingNotes[idx] || '') : '';
+
+      function setNote(text) {
+        var next = groundingNotes.slice();
+        next[idx] = text;
+        setGroundingNotes(next);
+      }
+      function advance() {
+        setGroundingStep(idx + 1);
+      }
+      function goBack() {
+        if (idx > 0) setGroundingStep(idx - 1);
+      }
+      function close() {
+        setStateField('activeModal', null);
+      }
+
+      // Companion accompaniment
+      var c = state.companion;
+      var sp = (c && c.species) ? getCompanionSpecies(c.species) : null;
+      var swatch = (c && c.species) ? getCompanionPalette(c.species, c.colorVariant || 'warm') : null;
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Sensory grounding exercise',
+        onClick: function(e) { if (e.target === e.currentTarget) close(); },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.78)',
+          zIndex: 200,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '2px solid ' + palette.accent,
+            borderRadius: '20px', padding: '28px',
+            maxWidth: '420px', width: '100%',
+            boxShadow: '0 30px 70px rgba(0,0,0,0.55)'
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' } },
+            h('div', {
+              style: {
+                fontSize: '12px', color: palette.textMute,
+                textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 700
+              }
+            }, '🧷 Grounding · 5·4·3·2·1'),
+            h('button', {
+              onClick: close,
+              'aria-label': 'Close grounding exercise',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', margin: '0 0 16px 0' }
+          }, 'Find what\'s here, one sense at a time. Skip any step you want.'),
+
+          // Progress dots
+          h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '16px' } },
+            GROUNDING_STEPS.map(function(s, i) {
+              var current = i === idx && !done;
+              var past = i < idx || done;
+              return h('span', {
+                key: 'gd-' + i,
+                'aria-label': 'Step ' + (i + 1) + ' of ' + GROUNDING_STEPS.length + (current ? ' (current)' : past ? ' (done)' : ''),
+                style: {
+                  width: current ? '14px' : '10px',
+                  height: current ? '14px' : '10px',
+                  borderRadius: '50%',
+                  background: past ? palette.accent : (current ? palette.accent : 'transparent'),
+                  border: '1.5px solid ' + palette.accent,
+                  opacity: past && !current ? 0.5 : 1,
+                  transition: 'width 200ms, height 200ms'
+                }
+              });
+            })
+          ),
+
+          // Step body OR completion
+          !done ? h('div', null,
+            h('div', { style: { textAlign: 'center', marginBottom: '6px' } },
+              h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', lineHeight: 1 } }, stepDef.emoji),
+              h('div', {
+                style: {
+                  fontSize: '22px', fontWeight: 800, color: palette.text,
+                  marginTop: '6px', letterSpacing: '0.02em'
+                }
+              }, stepDef.count + ' things you can ' + stepDef.label),
+              h('div', {
+                style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', marginTop: '4px', lineHeight: '1.4' }
+              }, stepDef.hint)
+            ),
+            // Optional notes input
+            h('label', {
+              htmlFor: 'ah-grounding-notes',
+              style: { display: 'block', fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '14px', marginBottom: '6px' }
+            }, 'Note them down (optional)'),
+            h('textarea', {
+              id: 'ah-grounding-notes',
+              value: note,
+              onChange: function(e) { setNote(e.target.value); },
+              placeholder: stepDef.count === 1 ? 'whatever you notice...' : 'one per line, or just type...',
+              rows: 3,
+              'aria-label': 'Notes for grounding step ' + (idx + 1) + ' (optional)',
+              style: {
+                width: '100%',
+                padding: '10px 12px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                color: palette.text,
+                fontSize: '13px',
+                fontFamily: 'inherit',
+                lineHeight: '1.5',
+                resize: 'vertical',
+                boxSizing: 'border-box'
+              }
+            })
+          ) : h('div', { style: { textAlign: 'center', padding: '12px 0' } },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '56px', marginBottom: '8px' } }, '🌿'),
+            h('div', {
+              style: { fontSize: '20px', fontWeight: 800, color: palette.text, marginBottom: '6px' }
+            }, 'You\'re grounded.'),
+            h('div', {
+              style: { fontSize: '13px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5', maxWidth: '320px', margin: '0 auto' }
+            }, 'You\'re here. Right now. The room is real, and so are you.')
+          ),
+
+          // Optional companion accompaniment row
+          (c && sp) ? h('div', {
+            style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginTop: '16px' }
+          },
+            h('div', {
+              'data-species': c.species,
+              style: { width: '48px', height: '48px', padding: '4px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '12px' }
+            },
+              h('div', { className: 'ah-companion-root' },
+                getCompanionSvg(c.species, swatch, { blinking: blinking, pupilOffset: { x: 0, y: 0 } })
+              )
+            ),
+            h('div', {
+              style: { fontSize: '11px', fontStyle: 'italic', color: palette.textDim, lineHeight: '1.4' }
+            }, c.name + ' is right here.')
+          ) : null,
+
+          // Action row
+          h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'space-between', marginTop: '20px', flexWrap: 'wrap' } },
+            !done ? h('button', {
+              onClick: goBack,
+              disabled: idx === 0,
+              'aria-label': 'Go back one step',
+              style: Object.assign({}, secondaryBtnStyle(palette), {
+                padding: '8px 14px', fontSize: '12px',
+                opacity: idx === 0 ? 0.4 : 1,
+                cursor: idx === 0 ? 'not-allowed' : 'pointer'
+              })
+            }, '← Back') : h('span', null),
+            h('div', { style: { display: 'flex', gap: '8px' } },
+              !done ? h('button', {
+                onClick: advance,
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
+              }, 'Skip') : null,
+              !done ? h('button', {
+                onClick: advance,
+                style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+              }, idx === GROUNDING_STEPS.length - 1 ? 'Finish' : 'Next →') : h('button', {
+                onClick: close,
+                style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 18px', fontSize: '13px' })
+              }, 'Done')
+            )
           )
         )
       );
@@ -16774,6 +17067,95 @@
     // the packet. Class-based hide so the print rule overrides
     // without !important on the inline display attribute.
     // ─────────────────────────────────────────────────
+    // Tenure recap print (Phase 2p.30) — paper-friendly one-page
+    // version of the recap modal. Reuses computeTenureStats, renders
+    // grayscale + high-contrast for printer fidelity.
+    function renderPrintTenure() {
+      var stats = computeTenureStats(state);
+      if (!stats) return null;
+      var startDate = new Date(stats.earliestMs);
+      var startStr = startDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var nowStr = new Date().toLocaleDateString();
+      var c = stats.companion;
+      var sp = (c && c.species) ? getCompanionSpecies(c.species) : null;
+      var statBox = function(label, value, sub) {
+        return h('div', {
+          style: { border: '1px solid #999', borderRadius: '4px', padding: '6px 8px', textAlign: 'center', flex: '1 1 80px', minWidth: 0 }
+        },
+          h('div', { style: { fontSize: '16px', fontWeight: 700, color: '#000' } }, value),
+          h('div', { style: { fontSize: '9px', color: '#444' } }, label),
+          sub ? h('div', { style: { fontSize: '8px', color: '#666', fontStyle: 'italic' } }, sub) : null
+        );
+      };
+      return h('div', {
+        className: 'ah-print-packet',
+        role: 'document',
+        'aria-label': 'Tenure recap — printable',
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          padding: '36px',
+          background: '#fff', color: '#000',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+          overflow: 'auto',
+          zIndex: 250
+        }
+      },
+        h('div', { style: { borderBottom: '2px solid #000', paddingBottom: '8px', marginBottom: '14px' } },
+          h('h1', { style: { margin: 0, fontSize: '20px' } }, '🌱 AlloHaven Journey Recap'),
+          h('div', { style: { fontSize: '10px', color: '#666', marginTop: '4px' } },
+            'Since ' + startStr + ' · ' + stats.daysSince + ' days · printed ' + nowStr)
+        ),
+        c && sp ? h('div', { style: { marginBottom: '16px', fontSize: '11px', color: '#222' } },
+          h('strong', null, c.name || sp.label), ' · ', sp.label,
+          c.createdAt ? ', companion since ' + new Date(c.createdAt).toLocaleDateString() : null
+        ) : null,
+        // Top stats row
+        h('div', { style: { display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' } },
+          statBox('Tokens earned', stats.tokensEarned),
+          statBox('Decorations', stats.decorationCount, stats.customCount > 0 ? stats.customCount + ' your own' : null),
+          statBox('Reflections', stats.journalCount, stats.totalWords > 0 ? stats.totalWords + ' words' : null),
+          statBox('Achievements', stats.unlockedAchievements + '/' + stats.totalAchievements),
+          statBox('Longest streak', stats.streakLongest + ' day' + (stats.streakLongest === 1 ? '' : 's')),
+          statBox('Days visited', stats.visitDays)
+        ),
+        // Skills
+        h('h2', { style: { margin: '14px 0 4px 0', fontSize: '13px', borderBottom: '1px solid #999', paddingBottom: '2px' } }, 'Skill levels'),
+        h('div', { style: { display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' } },
+          stats.skills.map(function(sk) {
+            return h('div', { key: 'psk-' + sk.def.id, style: { border: '1px solid #999', borderRadius: '4px', padding: '6px 10px', minWidth: 0, flex: '1 1 80px' } },
+              h('div', { style: { fontSize: '11px', fontWeight: 700 } }, sk.def.label),
+              h('div', { style: { fontSize: '14px', fontWeight: 700 } }, 'Level ' + sk.level + (sk.atMax ? ' ★' : '')),
+              h('div', { style: { fontSize: '9px', color: '#666' } }, sk.count + ' events')
+            );
+          })
+        ),
+        // Top moods + subjects
+        h('div', { style: { display: 'flex', gap: '20px', marginBottom: '12px', flexWrap: 'wrap' } },
+          h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
+            h('h2', { style: { margin: '0 0 4px 0', fontSize: '13px', borderBottom: '1px solid #999', paddingBottom: '2px' } }, 'Top moods'),
+            stats.topMoods.length === 0 ? h('p', { style: { fontSize: '11px', color: '#666', fontStyle: 'italic' } }, '— ') :
+            h('ul', { style: { paddingLeft: '20px', margin: '4px 0', fontSize: '11px' } },
+              stats.topMoods.slice(0, 3).map(function(m) {
+                return h('li', { key: 'pm-' + m.id }, (m.option ? m.option.label : m.id) + ' — ' + m.count);
+              })
+            )
+          ),
+          h('div', { style: { flex: '1 1 200px', minWidth: 0 } },
+            h('h2', { style: { margin: '0 0 4px 0', fontSize: '13px', borderBottom: '1px solid #999', paddingBottom: '2px' } }, 'Top subjects'),
+            stats.topSubjects.length === 0 ? h('p', { style: { fontSize: '11px', color: '#666', fontStyle: 'italic' } }, '— ') :
+            h('ul', { style: { paddingLeft: '20px', margin: '4px 0', fontSize: '11px' } },
+              stats.topSubjects.slice(0, 3).map(function(s) {
+                return h('li', { key: 'ps-' + s.id }, (s.tag ? s.tag.label : s.id) + ' — ' + s.count);
+              })
+            )
+          )
+        ),
+        // Footer note
+        h('div', { style: { marginTop: '20px', fontSize: '10px', color: '#666', fontStyle: 'italic', borderTop: '1px solid #ccc', paddingTop: '8px' } },
+          'AlloHaven · cozy room learning portfolio · this recap reflects activity stored locally on this device.')
+      );
+    }
+
     // Per-decoration print card (Phase 2p.17) — single decoration\'s
     // full info on one printable page. Rendered when state.printScope
     // points at a specific decoration id. Useful for IEP review packets,
@@ -16899,6 +17281,11 @@
       // Phase 2p.17 — when printScope is a card, render that instead
       if (state.printScope && state.printScope.type === 'card' && state.printScope.decorationId) {
         return renderPrintCard(state.printScope.decorationId);
+      }
+      // Phase 2p.30 — tenure recap print (one-page summary of the
+      // student's full AlloHaven journey).
+      if (state.printScope && state.printScope.type === 'tenure') {
+        return renderPrintTenure();
       }
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
       var allStories = state.stories || [];
@@ -17493,6 +17880,7 @@
       renderDeleteDecorationModal(),
       renderSettingsModal(),
       renderBreathingModal(),
+      renderGroundingModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard(),
       // Print packet — portaled to body so the @media print rule's
