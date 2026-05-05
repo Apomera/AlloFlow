@@ -2060,7 +2060,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['ispy','fieldMarks','beakFeet','calls','habitatMatch','maineBirds','migration','citizenScience','conservation','fieldObs','photoId'];
+      var BADGE_IDS = ['ispy','fieldMarks','beakFeet','calls','habitatMatch','maineBirds','migration','citizenScience','conservation','fieldObs','photoId','compare'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -2423,6 +2423,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
             desc: 'Rosenberg 2019 "3 billion birds" study with methodology + key findings + the hopeful takeaway. 4 Maine focal species (Piping Plover, Wood Thrush, recovered Bald Eagle + Atlantic Puffin). Climate context (Gulf of Maine warming). 9 ornithology career paths with honest pay + Maine programs.',
             color: 'from-rose-500 to-pink-700',
             ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'compare', title: 'Side-by-Side Comparator', icon: '🔁',
+            subtitle: 'Train the comparison-ID skill',
+            desc: 'Pick any two species — see them rendered at matching scale with their field marks, habitats, calls, and movement signatures lined up. The way an experienced birder evaluates a confusing sighting. 6 hand-curated teaching pairs (chickadee ⇄ junco, mallard ⇄ eider, etc.) plus free-pick from 15 species.',
+            color: 'from-teal-500 to-violet-700',
+            ring: 'ring-teal-500/40',
             ready: true
           }
         ];
@@ -9136,6 +9144,228 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
+      // SIDE-BY-SIDE COMPARATOR
+      // Real birding skill: compare similar species against each
+      // other to spot the diagnostic differences. Pick any two
+      // BIRDS, see them rendered at matching scale with all the
+      // ID-relevant fields lined up.
+      // ─────────────────────────────────────────────────────
+      function CompareLab() {
+        var birdKeys = Object.keys(BIRDS).filter(function(k) { return BIRDS[k] && typeof BIRDS[k].svg === 'function'; });
+        var leftKey_state = useState(d.cmpLeft || 'chickadee');
+        var leftKey = leftKey_state[0], setLeftKey = leftKey_state[1];
+        var rightKey_state = useState(d.cmpRight || 'junco');
+        var rightKey = rightKey_state[0], setRightKey = rightKey_state[1];
+        function pickPair(L, R) {
+          setLeftKey(L); upd('cmpLeft', L);
+          setRightKey(R); upd('cmpRight', R);
+          announce('Comparing ' + (BIRDS[L] && BIRDS[L].name) + ' and ' + (BIRDS[R] && BIRDS[R].name));
+        }
+        // Hand-curated interesting pairs from the available BIRDS
+        var SUGGESTED_PAIRS = [
+          { left: 'chickadee', right: 'junco', why: 'Two small grayish backyard birds' },
+          { left: 'robin', right: 'cardinal', why: 'Both have warm-toned breasts' },
+          { left: 'mallard', right: 'eider', why: 'Both ducks — freshwater vs ocean' },
+          { left: 'bluejay', right: 'raven', why: 'Both corvids, very different size' },
+          { left: 'pileated', right: 'nuthatch', why: 'Both climb trees — different scales' },
+          { left: 'coopershawk', right: 'puffin', why: 'Two ends of the bird-shape spectrum' }
+        ];
+        var L = BIRDS[leftKey] || BIRDS[birdKeys[0]];
+        var R = BIRDS[rightKey] || BIRDS[birdKeys[1]];
+        function birdPanel(bird, side) {
+          if (!bird) return null;
+          return h('div', { className: 'flex-1 min-w-0', style: { minWidth: 240 } },
+            h('div', {
+              className: 'rounded-2xl border-2 shadow overflow-hidden',
+              style: { borderColor: side === 'left' ? '#0d9488' : '#7c3aed' }
+            },
+              // Hero band
+              h('div', {
+                className: 'p-4 border-b-2',
+                style: {
+                  background: side === 'left'
+                    ? 'linear-gradient(135deg, #ccfbf1 0%, #ffffff 100%)'
+                    : 'linear-gradient(135deg, #ede9fe 0%, #ffffff 100%)',
+                  borderColor: side === 'left' ? '#0d9488' : '#7c3aed'
+                }
+              },
+                h('div', { className: 'flex items-start gap-3 flex-wrap' },
+                  // Bird SVG in a white circle
+                  h('div', {
+                    'aria-hidden': 'true',
+                    style: {
+                      width: 100, height: 100, borderRadius: '50%',
+                      background: '#ffffff',
+                      border: '3px solid ' + (side === 'left' ? '#0d9488' : '#7c3aed'),
+                      boxShadow: '0 0 0 4px ' + (side === 'left' ? 'rgba(13,148,136,0.18)' : 'rgba(124,58,237,0.18)') + ', 0 4px 10px rgba(0,0,0,0.12)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      flexShrink: 0
+                    }
+                  },
+                    h('svg', { viewBox: '0 0 30 30', style: { width: 80, height: 80 }, role: 'img', 'aria-label': bird.name },
+                      h('g', { transform: 'translate(2, 2)' }, bird.svg(h))
+                    )
+                  ),
+                  h('div', { className: 'flex-1 min-w-0' },
+                    h('div', { className: 'text-[10px] font-bold uppercase tracking-widest', style: { color: side === 'left' ? '#0f766e' : '#5b21b6' } },
+                      side === 'left' ? '🟢 Left' : '🟣 Right'),
+                    h('h3', { className: 'text-xl font-black text-slate-800', style: { lineHeight: 1.15 } }, bird.name),
+                    h('div', { className: 'text-sm italic text-slate-700' }, bird.sciName),
+                    h('div', { className: 'text-xs text-slate-700 font-mono mt-1' }, bird.size)
+                  )
+                )
+              ),
+              // Body — facts grid
+              h('div', { className: 'p-4 space-y-2 text-sm text-slate-800 bg-white' },
+                h('div', null, h('strong', { className: 'text-slate-800' }, '🌲 Habitat: '), bird.habitat),
+                h('div', null, h('strong', { className: 'text-slate-800' }, '📍 Maine: '), bird.mainePresence),
+                h('div', null, h('strong', { className: 'text-slate-800' }, '🐾 Movement: '),
+                  h('span', { style: { textTransform: 'capitalize' } }, (bird.movement || '').replace(/-/g, ' '))),
+                h('div', null, h('strong', { className: 'text-slate-800' }, '🎶 Call: '), bird.callDescription),
+                h('div', { className: 'pt-2 border-t border-slate-200' },
+                  h('strong', { className: 'text-slate-800' }, '✨ Did you know: '), bird.funFact)
+              ),
+              // Action — open Maine Birds detail or external links
+              h('div', { className: 'p-3 bg-slate-50 border-t border-slate-200' },
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, '🔗 Verify or read more'),
+                birdLinkButtons(bird.name, bird.sciName, { size: 'xs' })
+              )
+            )
+          );
+        }
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '🔁', title: 'Side-by-Side Comparator' }),
+          h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
+            // Intro
+            h('div', { className: 'bg-teal-50 border-2 border-teal-300 rounded-2xl p-5' },
+              h('h2', { className: 'text-lg font-black text-teal-900 mb-2' }, 'Compare any two species side-by-side'),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-2' },
+                'Real birding ID is comparison: not "what bird is this," but "is it the chickadee or the junco?" Pick any two species below to see their field marks, habitats, calls, and movement signatures lined up — the way an experienced birder evaluates a confusing sighting.'),
+              h('p', { className: 'text-xs text-slate-700 italic' },
+                '15 species available. The pairs below are intentional teaching pairs — both for similarity and for instructive contrast.')
+            ),
+            // Quick pairs
+            h('div', null,
+              h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, '✨ Suggested teaching pairs'),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                SUGGESTED_PAIRS.map(function(p, i) {
+                  var lb = (BIRDS[p.left] || {}).name || p.left;
+                  var rb = (BIRDS[p.right] || {}).name || p.right;
+                  var active = leftKey === p.left && rightKey === p.right;
+                  return h('button', { key: i,
+                    onClick: function() { pickPair(p.left, p.right); },
+                    'aria-pressed': active ? 'true' : 'false',
+                    title: p.why,
+                    className: 'text-left p-2.5 rounded-lg border-2 text-xs transition focus:outline-none focus:ring-2 ring-teal-500/40 ' +
+                      (active ? 'bg-teal-100 border-teal-600 text-teal-900' : 'bg-white border-slate-300 text-slate-800 hover:border-teal-500')
+                  },
+                    h('div', { className: 'font-bold' }, lb + ' ⇄ ' + rb),
+                    h('div', { className: 'text-[10px] italic text-slate-700' }, p.why)
+                  );
+                })
+              )
+            ),
+            // Manual pickers
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+              h('div', null,
+                h('label', { htmlFor: 'cmp-left', className: 'block text-xs font-bold uppercase tracking-wider text-teal-700 mb-1' }, '🟢 Left species'),
+                h('select', { id: 'cmp-left', value: leftKey,
+                  onChange: function(e) { setLeftKey(e.target.value); upd('cmpLeft', e.target.value); },
+                  className: 'w-full p-2.5 rounded-xl border-2 border-teal-300 text-sm font-bold focus:outline-none focus:border-teal-600 focus:ring-2 ring-teal-500/30'
+                },
+                  birdKeys.map(function(k) {
+                    return h('option', { key: k, value: k }, BIRDS[k].name);
+                  })
+                )
+              ),
+              h('div', null,
+                h('label', { htmlFor: 'cmp-right', className: 'block text-xs font-bold uppercase tracking-wider text-violet-700 mb-1' }, '🟣 Right species'),
+                h('select', { id: 'cmp-right', value: rightKey,
+                  onChange: function(e) { setRightKey(e.target.value); upd('cmpRight', e.target.value); },
+                  className: 'w-full p-2.5 rounded-xl border-2 border-violet-300 text-sm font-bold focus:outline-none focus:border-violet-600 focus:ring-2 ring-violet-500/30'
+                },
+                  birdKeys.map(function(k) {
+                    return h('option', { key: k, value: k }, BIRDS[k].name);
+                  })
+                )
+              )
+            ),
+            // Same-bird warning
+            leftKey === rightKey && h('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded-lg text-sm text-amber-900' },
+              h('strong', null, '⚠ Same species selected. '), 'Pick two different species to compare.'),
+            // Side-by-side panels
+            leftKey !== rightKey && h('div', { className: 'flex flex-col md:flex-row gap-4 items-stretch' },
+              birdPanel(L, 'left'),
+              // Big "vs" divider
+              h('div', { className: 'flex items-center justify-center', style: { flexShrink: 0 } },
+                h('div', {
+                  'aria-hidden': 'true',
+                  style: {
+                    width: 56, height: 56, borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #0d9488 0%, #7c3aed 100%)',
+                    color: '#ffffff', fontWeight: 900, fontSize: 18,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                    border: '3px solid #ffffff',
+                    fontStyle: 'italic'
+                  }
+                }, 'vs')
+              ),
+              birdPanel(R, 'right')
+            ),
+            // Comparison checklist (generic ID strategy guidance)
+            leftKey !== rightKey && h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-5' },
+              h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, '🔍 What an experienced birder compares first'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-800' },
+                h('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded-lg' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-emerald-900 mb-1' }, '1. Size + shape'),
+                  h('p', { className: 'text-xs leading-relaxed' }, 'Compare ' + L.size + ' vs ' + R.size + '. The shape silhouette (slim warbler vs chunky finch, soaring raptor vs diving duck) is often the first cue.')
+                ),
+                h('div', { className: 'p-3 bg-sky-50 border border-sky-200 rounded-lg' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-sky-900 mb-1' }, '2. Habitat'),
+                  h('p', { className: 'text-xs leading-relaxed' }, 'Where is it? "' + L.habitat + '" vs "' + R.habitat + '" already narrows the candidate list before you look at any field marks.')
+                ),
+                h('div', { className: 'p-3 bg-violet-50 border border-violet-200 rounded-lg' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-violet-900 mb-1' }, '3. Movement'),
+                  h('p', { className: 'text-xs leading-relaxed' },
+                    L.name + ': ' + (L.movement || '').replace(/-/g, ' '),
+                    h('br'),
+                    R.name + ': ' + (R.movement || '').replace(/-/g, ' '),
+                    h('br'),
+                    h('em', null, 'Movement is a real field mark — sometimes the most reliable one in poor light.')
+                  )
+                ),
+                h('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded-lg' },
+                  h('div', { className: 'text-xs font-bold uppercase tracking-wider text-amber-900 mb-1' }, '4. Sound'),
+                  h('p', { className: 'text-xs leading-relaxed' },
+                    'In dense foliage you often hear before you see. ',
+                    h('strong', null, 'Merlin Bird ID'),
+                    "'s Sound ID can confirm in real time."
+                  )
+                )
+              )
+            ),
+            h(TeacherNotes, {
+              standards: ['NGSS HS-LS4-2 (Adaptation evidence)', 'NGSS MS-LS4-2 (Anatomical similarities)'],
+              questions: [
+                'Sharp-shinned vs Cooper\'s Hawks — both small accipiters. The professionals get them wrong sometimes too. What does that say about how confident you should ever be in a quick-glance ID?',
+                'In a 5-second look at a backyard sparrow, what 2 things do you check first? Why those?',
+                'Why do field guides put confusing species pairs on facing pages? What\'s the pedagogy?',
+                'You\'re looking at two birds you\'re comparing. One is calling. Do you trust your eyes more, or your ears more? Defend.'
+              ],
+              misconceptions: [
+                '"Color is the most reliable field mark" — color shifts with light, distance, and individual variation. Shape, size, and behavior are usually more diagnostic.',
+                '"If field marks match, you\'re done" — habitat-out-of-range is a strong signal of misidentification. Always reconcile sighting with range.',
+                '"Beginners can\'t do this" — the pair-comparison drill is exactly how field guides train you. Six pairs → you can ID 12 species reliably.'
+              ],
+              extension: 'Pick any two confusion species (Hairy/Downy, Sharpie/Cooper\'s, Black-capped/Carolina, House Finch/Purple Finch). For each pair: identify the 3 most diagnostic differences. Then quiz a friend on which is which.',
+              sources: 'Sibley Guide to Birds (David Sibley) — pioneered the modern facing-page comparison layout. Cornell Lab Bird Academy "Be a Better Birder" courses are built on this comparison drill.'
+            })
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'ispy') return h(ISpyHabitat);
@@ -9149,6 +9379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (view === 'fieldObs') return h(FieldObservation);
       if (view === 'conservation') return h(ConservationCareers);
       if (view === 'photoId') return h(BirdPhotoID);
+      if (view === 'compare') return h(CompareLab);
       return h(MainMenu);
     }
   });
