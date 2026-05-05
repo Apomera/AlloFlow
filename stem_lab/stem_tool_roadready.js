@@ -3171,13 +3171,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // collapsed to "first one only", breaking the Coach AI feature. New
       // behavior: dedup only the SAME text within 2s; different lines pass
       // through and the underlying TTS layer handles queuing/interrupt.
-      var _lastSpokenRef = useRef({ text: null, at: 0 });
-      var speak = function(text) {
+      var _lastSpokenRef = useRef({ text: null, at: 0, anyAt: 0, byCategory: {} });
+      // speak(text, category, priority?)
+      //   text: the phrase to speak
+      //   category: optional bucket key for per-category cooldown (e.g. 'navigation',
+      //     'hazard', 'radio', 'coach'). Different categories use different debounce
+      //     windows so chatty triggers (radio, navigation) don't mute critical ones
+      //     (hazards). Defaults to a per-text bucket if omitted.
+      //   priority: 'critical' bypasses both global and per-category cooldowns
+      //     (used for crash, wrong-way, emergency vehicle). Default = normal.
+      // Layered rate limit:
+      //   - Identical text within 2s: skip (existing protection against duplicate sub-events)
+      //   - ANY speech within 1.6s of the last: skip (prevents pile-on of distinct phrases)
+      //   - Same category within its window: skip (default 6s; navigation/coach 8s; radio 25s)
+      var CAT_WINDOW = { navigation: 8000, coach: 8000, radio: 25000, hazard: 4000, _default: 6000 };
+      var speak = function(text, category, priority) {
         if (!callTTS || !text) return;
         var now = Date.now();
         var last = _lastSpokenRef.current;
-        if (last.text === text && (now - last.at) < 2000) return;
-        _lastSpokenRef.current = { text: text, at: now };
+        var isCritical = priority === 'critical';
+        if (!isCritical) {
+          if (last.text === text && (now - last.at) < 2000) return;
+          if ((now - last.anyAt) < 1600) return;
+          if (category) {
+            var win = CAT_WINDOW[category] || CAT_WINDOW._default;
+            var catLast = last.byCategory[category] || 0;
+            if ((now - catLast) < win) return;
+          }
+        }
+        last.text = text;
+        last.at = now;
+        last.anyAt = now;
+        if (category) last.byCategory[category] = now;
         callTTS(text, null, 1.0, { force: true }).catch(function() {});
       };
       // Photo Mode: composite the WebGL 3D canvas + 2D HUD onto an offscreen canvas,
