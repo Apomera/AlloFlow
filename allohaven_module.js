@@ -8880,11 +8880,15 @@
     // Only runs while the timer is active. Re-renders the mm:ss display.
     // Cheap; doesn't affect perceived smoothness at 4Hz.
     useEffect(function() {
-      if (!state.pomodoroState.active) return;
+      // Tick while Pomodoro OR breathing pacer is active so any
+      // mm:ss / elapsed displays smoothly refresh.
+      var pomActive = !!(state.pomodoroState && state.pomodoroState.active);
+      var breatheActive = state.activeModal === 'breathe';
+      if (!pomActive && !breatheActive) return;
       var iv = setInterval(function() { setNowTick(Date.now()); }, 250);
       return function() { clearInterval(iv); };
       // eslint-disable-next-line
-    }, [state.pomodoroState.active]);
+    }, [state.pomodoroState.active, state.activeModal]);
 
     // ── Ambient soundscape (Phase 2g) ──
     // Procedural Web Audio noise — no external assets. A 5-second buffer
@@ -10326,6 +10330,42 @@
     var breatheStartedAtTuple = useState(0);
     var breatheStartedAt = breatheStartedAtTuple[0];
     var setBreatheStartedAt = breatheStartedAtTuple[1];
+
+    // Breathing pacer driver (Phase 2p.28). Resets on open and ticks
+    // the phase machine ('inhale' → 'hold-in' → 'exhale' → 'hold-out')
+    // every 4 seconds while the modal is open. The hook always runs;
+    // the body short-circuits when the modal is closed so no work
+    // happens unless the student opened the pacer.
+    useEffect(function() {
+      if (state.activeModal !== 'breathe') return;
+      // Reset on each open so the orb starts at 'inhale' every time.
+      setBreathePhase('inhale');
+      setBreatheCycles(0);
+      setBreatheStartedAt(Date.now());
+      // First voice cue
+      if (breatheVoiceOn && props.callTTS) {
+        try { props.callTTS('Breathe in', { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
+      }
+      var iv = setInterval(function() {
+        setBreathePhase(function(prev) {
+          var idx = ['inhale', 'hold-in', 'exhale', 'hold-out'].indexOf(prev);
+          var next = ['inhale', 'hold-in', 'exhale', 'hold-out'][(idx + 1) % 4];
+          if (next === 'inhale') {
+            setBreatheCycles(function(c) { return c + 1; });
+          }
+          if (breatheVoiceOn && props.callTTS) {
+            var label = next === 'inhale' ? 'Breathe in'
+                       : next === 'hold-in' ? 'Hold'
+                       : next === 'exhale' ? 'Breathe out'
+                       : 'Rest';
+            try { props.callTTS(label, { voice: props.selectedVoice, rate: 0.85 }); } catch (e) {}
+          }
+          return next;
+        });
+      }, 4000);
+      return function() { clearInterval(iv); };
+      // eslint-disable-next-line
+    }, [state.activeModal, breatheVoiceOn]);
     var reactingTuple = useState(false);
     var reacting = reactingTuple[0];
     var setReacting = reactingTuple[1];
@@ -12974,7 +13014,7 @@
             style: { display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }
           },
             h('button', {
-              onClick: function() { setVoiceOn(!voiceOn); },
+              onClick: function() { setBreatheVoiceOn(!voiceOn); },
               'aria-pressed': voiceOn ? 'true' : 'false',
               'aria-label': voiceOn ? 'Mute voice cues' : 'Unmute voice cues',
               style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
