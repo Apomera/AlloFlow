@@ -1883,6 +1883,58 @@
     } catch (e) { /* silent — Web Audio sometimes blocked, no harm */ }
   }
 
+  // ── Smart deck import (Phase 2p.21) ──
+  // Parses pasted text into { front, back } pairs. Auto-detects the
+  // separator: prefers ": " or "—" (em dash), falls back to tab, then
+  // comma, then a single space pivot. Skips blank/comment lines.
+  // Returns { pairs, format } where format is the detected separator.
+  function parseDeckText(raw) {
+    if (!raw || typeof raw !== 'string') return { pairs: [], format: null };
+    var lines = raw.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(function(l) {
+      return l.length > 0 && l.charAt(0) !== '#'; // ignore comment lines starting with #
+    });
+    if (lines.length === 0) return { pairs: [], format: null };
+    // Score each candidate separator by how many lines split into 2 parts
+    var candidates = [
+      { sep: ' — ', label: 'em-dash' },
+      { sep: ' - ', label: 'hyphen-spaced' },
+      { sep: ': ',  label: 'colon-space' },
+      { sep: '\t',  label: 'tab' },
+      { sep: ' = ', label: 'equals-spaced' },
+      { sep: ',',   label: 'comma' },
+      { sep: ':',   label: 'colon' }
+    ];
+    var best = null, bestScore = -1;
+    candidates.forEach(function(c) {
+      var split = lines.map(function(l) { return l.split(c.sep); });
+      var score = split.filter(function(s) { return s.length === 2 && s[0].trim() && s[1].trim(); }).length;
+      // Prefer separators that work for MOST lines, with a small bonus
+      // for explicit separators over comma (which often appears within
+      // a definition).
+      var weighted = score - (c.sep === ',' ? 0.3 * lines.length : 0);
+      if (weighted > bestScore) { bestScore = weighted; best = c; }
+    });
+    if (!best || bestScore < lines.length * 0.5) {
+      // Fall back to first-space pivot (single-word terms)
+      var pairs = lines.map(function(l) {
+        var firstSpace = l.indexOf(' ');
+        if (firstSpace === -1) return null;
+        return { front: l.slice(0, firstSpace).trim(), back: l.slice(firstSpace + 1).trim() };
+      }).filter(function(p) { return p && p.front && p.back; });
+      return { pairs: pairs, format: 'first-space' };
+    }
+    var sep = best.sep;
+    var resultPairs = lines.map(function(l) {
+      var idx = l.indexOf(sep);
+      if (idx === -1) return null;
+      var front = l.slice(0, idx).trim();
+      var back = l.slice(idx + sep.length).trim();
+      if (!front || !back) return null;
+      return { front: front, back: back };
+    }).filter(function(p) { return !!p; });
+    return { pairs: resultPairs, format: best.label };
+  }
+
   // ── Custom upload compression (Phase 2p.19) ──
   // Reads a File via FileReader, downscales to a max edge of 256px on
   // a canvas, returns a JPEG data URI ~50-80KB. Keeps localStorage
@@ -3918,6 +3970,15 @@
     var voicePanelOpen = voicePanelOpenTuple[0];
     var setVoicePanelOpen = voicePanelOpenTuple[1];
 
+    // Smart deck import (Phase 2p.21) — lifted to MemoryModalInner top
+    // so the hook order stays stable across edit/view/quiz mode toggles.
+    var importPanelOpenTuple = useState(false);
+    var importPanelOpen = importPanelOpenTuple[0];
+    var setImportPanelOpen = importPanelOpenTuple[1];
+    var importTextTuple = useState('');
+    var importText = importTextTuple[0];
+    var setImportText = importTextTuple[1];
+
     // ── Modal mode ──
     // 'pick-type'   — empty state, choosing what kind of content to add
     // 'view'        — read-only display of existing content
@@ -4595,9 +4656,144 @@
         var newCards = cards.filter(function(c) { return c.id !== id; });
         setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
       }
+      function clearAllCards() {
+        if (window.confirm && !window.confirm('Remove all ' + cards.length + ' cards from this deck? Mastery stats are lost.')) return;
+        setDraft(Object.assign({}, draft, { data: { cards: [
+          { id: 'c-' + Date.now(), front: '', back: '', correctCount: 0, missCount: 0 }
+        ] } }));
+      }
+      // Smart deck import (Phase 2p.21)
+      var importParse = importText ? parseDeckText(importText) : null;
+      function importAppend() {
+        if (!importParse || importParse.pairs.length === 0) return;
+        // Drop any existing fully-empty card before appending parsed pairs
+        var keepers = cards.filter(function(c) { return (c.front || '').trim() || (c.back || '').trim(); });
+        var newCards = keepers.concat(importParse.pairs.map(function(p, i) {
+          return {
+            id: 'c-' + Date.now() + '-' + i + '-' + Math.floor(Math.random() * 1000),
+            front: p.front, back: p.back,
+            correctCount: 0, missCount: 0
+          };
+        }));
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+        setImportText('');
+        setImportPanelOpen(false);
+      }
+      function importReplace() {
+        if (!importParse || importParse.pairs.length === 0) return;
+        if (cards.length > 1 && window.confirm && !window.confirm('Replace all existing cards with the imported ones?')) return;
+        var newCards = importParse.pairs.map(function(p, i) {
+          return {
+            id: 'c-' + Date.now() + '-' + i + '-' + Math.floor(Math.random() * 1000),
+            front: p.front, back: p.back,
+            correctCount: 0, missCount: 0
+          };
+        });
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+        setImportText('');
+        setImportPanelOpen(false);
+      }
       return h('div', null,
-        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
-          '📚 Flashcard deck · ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+          h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+            '📚 Flashcard deck · ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+          h('div', { style: { display: 'flex', gap: '6px' } },
+            h('button', {
+              onClick: function() { setImportPanelOpen(!importPanelOpen); },
+              'aria-pressed': importPanelOpen ? 'true' : 'false',
+              'aria-label': importPanelOpen ? 'Close bulk import panel' : 'Bulk import from text',
+              title: 'Paste a list of term-definition pairs to import many cards at once',
+              style: {
+                background: importPanelOpen ? palette.accent : 'transparent',
+                color: importPanelOpen ? palette.onAccent : palette.textDim,
+                border: '1px solid ' + (importPanelOpen ? palette.accent : palette.border),
+                borderRadius: '6px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '📥 Import'),
+            cards.length > 1 ? h('button', {
+              onClick: clearAllCards,
+              'aria-label': 'Remove all cards',
+              title: 'Clear all cards (mastery stats are lost)',
+              style: {
+                background: 'transparent',
+                color: '#dc2626',
+                border: '1px solid rgba(220,38,38,0.4)',
+                borderRadius: '6px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '🗑 Clear all') : null
+          )
+        ),
+        // Import panel
+        importPanelOpen ? h('div', {
+          role: 'region',
+          'aria-label': 'Bulk import flashcards',
+          style: { padding: '12px 14px', background: palette.surface, border: '1px dashed ' + palette.accent, borderRadius: '8px', marginBottom: '12px' }
+        },
+          h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' } },
+            'Paste a list of term-definition pairs. Auto-detects formats:'),
+          h('ul', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', paddingLeft: '18px', lineHeight: '1.5' } },
+            h('li', null, h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px' } }, 'term: definition'), ' (one per line)'),
+            h('li', null, h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px' } }, 'term — definition'), ' (em-dash)'),
+            h('li', null, h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px' } }, 'term \\t definition'), ' (tab-separated, e.g. spreadsheet paste)'),
+            h('li', null, 'Lines starting with # are skipped (use for comments)')
+          ),
+          h('textarea', {
+            value: importText,
+            onChange: function(e) { setImportText(e.target.value); },
+            placeholder: 'mitochondria: powerhouse of the cell\nphotosynthesis: how plants make energy from sunlight\n# you can comment lines like this',
+            'aria-label': 'Bulk import text',
+            rows: 6,
+            style: {
+              width: '100%',
+              padding: '8px 10px',
+              background: palette.bg,
+              border: '1px solid ' + palette.border,
+              borderRadius: '6px',
+              color: palette.text,
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              boxSizing: 'border-box',
+              lineHeight: '1.5',
+              resize: 'vertical'
+            }
+          }),
+          // Preview
+          importParse ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: palette.textDim } },
+            importParse.pairs.length > 0
+              ? h('span', null,
+                  h('span', { style: { color: palette.accent, fontWeight: 700 } }, '✓ ' + importParse.pairs.length + ' card' + (importParse.pairs.length === 1 ? '' : 's') + ' detected'),
+                  ' (format: ' + importParse.format + ')'
+                )
+              : h('span', { style: { color: palette.textMute, fontStyle: 'italic' } }, 'No card pairs detected yet — keep typing or check the format.')
+          ) : null,
+          // Action buttons
+          importParse && importParse.pairs.length > 0 ? h('div', {
+            style: { display: 'flex', gap: '8px', marginTop: '10px', justifyContent: 'flex-end' }
+          },
+            h('button', {
+              onClick: function() { setImportText(''); setImportPanelOpen(false); },
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: importAppend,
+              style: { background: 'transparent', color: palette.accent, border: '1px solid ' + palette.accent, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, '+ Append'),
+            h('button', {
+              onClick: importReplace,
+              style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Replace all')
+          ) : null
+        ) : null,
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
           cards.map(function(card, idx) {
             return h('div', {
