@@ -614,42 +614,88 @@ window.StemLab = window.StemLab || {
         ),
 
         // ── Speed Run results (when just ended) ──
-        !_mt.active && _mt.total > 0 && _mt.timeLeft === 0 && h('div', { className: 'bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4 border-2 border-emerald-300' },
-          h('div', { className: 'text-center' },
-            h('p', { className: 'text-lg font-bold text-emerald-800' }, '\uD83C\uDFC6 Speed Run Complete!'),
-            h('p', { className: 'text-2xl font-bold text-emerald-600 mt-1' }, _mt.score + ' / ' + _mt.total),
-            h('p', { className: 'text-xs text-emerald-500 mt-1' },
-              _mt.total > 0 ? Math.round((_mt.score / _mt.total) * 100) + '% accuracy' : '')
-          ),
-          // Wrong-answer review
-          _mt.missed && _mt.missed.length > 0 && h('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-red-200' },
-            h('p', { className: 'text-xs font-bold text-red-700 mb-2' }, '\uD83D\uDCDD Review Mistakes (' + getUniqueMissed(_mt.missed).length + ')'),
-            h('div', { className: 'flex flex-wrap gap-1.5' },
-              getUniqueMissed(_mt.missed).map(function(m, i) {
-                return h('span', { key: i, className: 'inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-xs font-bold text-red-700' },
-                  m.a + ' \u00D7 ' + m.b + ' = ' + m.answer
-                );
-              })
+        !_mt.active && _mt.total > 0 && _mt.timeLeft === 0 && (function() {
+          var pct = Math.round((_mt.score / _mt.total) * 100);
+          var tier = _mt.score === _mt.total && _mt.total >= 10 ? 'perfect'
+                     : pct >= 90 ? 'fluent'
+                     : pct >= 75 ? 'strong'
+                     : pct >= 50 ? 'building'
+                     : 'practice';
+          var tierColor = tier === 'perfect' ? '#fbbf24'
+                          : tier === 'fluent' ? '#10b981'
+                          : tier === 'strong' ? '#16a34a'
+                          : tier === 'building' ? '#f59e0b'
+                          : '#dc2626';
+          var tierIcon = tier === 'perfect' ? '\uD83C\uDFC6' : tier === 'fluent' ? '\u26A1' : tier === 'strong' ? '\uD83C\uDFAF' : tier === 'building' ? '\uD83D\uDCDA' : '\uD83D\uDD01';
+          var tierTitle = tier === 'perfect' ? 'Perfect run'
+                          : tier === 'fluent' ? 'Fact fluency'
+                          : tier === 'strong' ? 'Strong recall'
+                          : tier === 'building' ? 'Building recall'
+                          : 'Keep practicing';
+          var tierMsg = tier === 'perfect'
+                        ? _mt.total + ' for ' + _mt.total + ' under timer pressure. Math-fact recall is automatic for you now \u2014 that frees working memory for harder problems.'
+                        : tier === 'fluent'
+                          ? 'Near-automatic recall. The 10% you missed are usually the same family (7s and 8s for most kids). Hit "Practice These" to lock them in.'
+                          : tier === 'strong'
+                            ? 'Strong recall under time pressure. Use the missed-list below to target weak spots \u2014 short focused practice beats long random drills.'
+                            : tier === 'building'
+                              ? 'Building real recall \u2014 the missed list is your roadmap. Practice 5 facts at a time, not the whole table.'
+                              : 'Recall is still slow under pressure. That is normal. Use the table without timer for a few sessions before retrying Speed Run.';
+          var rad = 38, circ = 2 * Math.PI * rad;
+          var dashOff = circ - (pct / 100) * circ;
+          return h('div', { className: 'rounded-xl overflow-hidden border-2', style: { borderColor: tierColor + 'aa', background: 'linear-gradient(135deg, ' + tierColor + '15, #ecfdf5)' } },
+            h('div', { className: 'p-4 flex flex-wrap items-center gap-4' },
+              h('div', { className: 'relative flex-shrink-0', style: { width: 92, height: 92 } },
+                h('svg', { viewBox: '0 0 100 100', width: 92, height: 92,
+                  'aria-label': 'Score: ' + _mt.score + ' out of ' + _mt.total
+                },
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                  h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                    strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                ),
+                h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                  h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#64748b' } }, _mt.score + ' / ' + _mt.total)
+                )
+              ),
+              h('div', { className: 'flex-1', style: { minWidth: 200 } },
+                h('div', { style: { fontSize: 26, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
+                h('h3', { style: { margin: '0 0 4px', fontSize: 16, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                h('p', { style: { margin: 0, color: '#1e293b', fontSize: 12, lineHeight: 1.5 } }, tierMsg)
+              )
             ),
-            h('button', { 'aria-label': 'Practice These',
-              onClick: function() {
-                var missed = getUniqueMissed(_mt.missed);
-                var pick = missed[Math.floor(Math.random() * missed.length)];
-                setMultTableChallenge({ a: pick.a, b: pick.b });
-                setMultTableAnswer('');
-                setMultTableFeedback(null);
-                setHighlightCell(null);
-                setInputDisabled(false);
-                _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: _mt.missed });
-              },
-              className: 'mt-2 px-4 py-1.5 bg-red-700 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
-            }, '\uD83C\uDFAF Practice These')
-          ),
-          h('button', { 'aria-label': 'Try Again',
-            onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
-            className: 'mt-2 px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
-          }, '\uD83D\uDD04 Try Again')
-        ),
+            // Wrong-answer review (kept)
+            _mt.missed && _mt.missed.length > 0 && h('div', { className: 'mx-4 mb-3 bg-white rounded-lg p-3 border border-red-200' },
+              h('p', { className: 'text-xs font-bold text-red-700 mb-2' }, '\uD83D\uDCDD Review mistakes (' + getUniqueMissed(_mt.missed).length + ')'),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                getUniqueMissed(_mt.missed).map(function(m, i) {
+                  return h('span', { key: i, className: 'inline-flex items-center gap-1 px-2 py-1 bg-red-50 border border-red-200 rounded-lg text-xs font-bold text-red-700' },
+                    m.a + ' \u00D7 ' + m.b + ' = ' + m.answer
+                  );
+                })
+              ),
+              h('button', { 'aria-label': 'Practice These',
+                onClick: function() {
+                  var missed = getUniqueMissed(_mt.missed);
+                  var pick = missed[Math.floor(Math.random() * missed.length)];
+                  setMultTableChallenge({ a: pick.a, b: pick.b });
+                  setMultTableAnswer('');
+                  setMultTableFeedback(null);
+                  setHighlightCell(null);
+                  setInputDisabled(false);
+                  _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: _mt.missed });
+                },
+                className: 'mt-2 px-4 py-1.5 bg-red-700 text-white font-bold rounded-lg text-xs hover:bg-red-600 transition-all'
+              }, '\uD83C\uDFAF Practice these')
+            ),
+            h('div', { className: 'px-4 pb-4' },
+              h('button', { 'aria-label': 'Try Again',
+                onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
+                className: 'px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
+              }, '\uD83D\uDD04 Try again')
+            )
+          );
+        })(),
 
         // ── 12×12 Grid ──
         h('div', { className: 'bg-white rounded-xl border-2 border-pink-200 p-3 overflow-x-auto' },
