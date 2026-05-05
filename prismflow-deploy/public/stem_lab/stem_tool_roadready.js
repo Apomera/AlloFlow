@@ -6275,7 +6275,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var travelsY = !t.crossStreet;
             var forwardSign = travelsY ? (t.heading > 0 ? 1 : -1) : (Math.abs(t.heading) < 1 ? 1 : -1);
             var axis = travelsY ? 'y' : 'x';
-            var crossAxis = travelsY ? 'x' : 'y';
             var aheadOf = function(targetX, targetY) {
               var d = (axis === 'y') ? (targetY - t.y) * forwardSign : (targetX - t.x) * forwardSign;
               var lat = (axis === 'y') ? (targetX - t.x) : (targetY - t.y);
@@ -8451,10 +8450,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var tVy = Math.sin(t.heading) * t.speed;
             var relVx = carVx - tVx;
             var relVy = carVy - tVy;
-            // Closing along the impact line (normalize displacement vector first)
-            var distSafe = Math.max(dist, 0.001);
-            var dirX = dx / distSafe;
-            var dirY = dy / distSafe;
             // Closing speed = component of (-relV) along (other → self) direction
             // ≈ Math.hypot(relVx, relVy) is the upper bound; use it as worst-case impact.
             var relativeSpeed = Math.hypot(relVx, relVy);
@@ -11859,7 +11854,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               // direction, ±X is left/right of the bike, +Y is up.
               // The group rotates on rotation.y to align with heading at render time.
               var cg = new T.Group();
-              var bikeMetal = new T.MeshLambertMaterial({ color: isMoto ? 0x1e293b : 0xef4444 });
               var wheelMat2 = new T.MeshLambertMaterial({ color: 0x1e1e1e });
               var spokeMat = new T.MeshLambertMaterial({ color: 0xcfcfcf });
               var wheelR = isMoto ? 0.30 : 0.33;

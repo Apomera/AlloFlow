@@ -3903,6 +3903,137 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           );
         }
 
+        // Listen Quiz — flips the LISTEN_CUES reference into a 4-choice game.
+        // Student gets the symptom context ('when') and picks the most likely cause.
+        // Pulls 3 distractor causes from other cues. Score + streak persists in d.
+        function dxListenQuiz() {
+          var cueId = d.dxQuizCueId;
+          var choices = d.dxQuizChoices || [];
+          var picked = d.dxQuizPicked || null;
+          var score = d.dxQuizScore || 0;
+          var attempts = d.dxQuizAttempts || 0;
+          var streak = d.dxQuizStreak || 0;
+          // Initialize first round on render if no question loaded yet
+          var current = cueId ? LISTEN_CUES.find(function(c) { return c.id === cueId; }) : null;
+          function startRound() {
+            var idx = Math.floor(Math.random() * LISTEN_CUES.length);
+            // Avoid immediate repeat
+            if (LISTEN_CUES.length > 1 && LISTEN_CUES[idx].id === cueId) idx = (idx + 1) % LISTEN_CUES.length;
+            var target = LISTEN_CUES[idx];
+            var distractorPool = LISTEN_CUES.filter(function(c) { return c.id !== target.id; });
+            for (var i = distractorPool.length - 1; i > 0; i--) {
+              var j = Math.floor(Math.random() * (i + 1));
+              var t = distractorPool[i]; distractorPool[i] = distractorPool[j]; distractorPool[j] = t;
+            }
+            var distractors = distractorPool.slice(0, 3).map(function(c) { return c.id; });
+            var nextChoices = distractors.concat([target.id]);
+            // Shuffle final 4
+            for (var k = nextChoices.length - 1; k > 0; k--) {
+              var l = Math.floor(Math.random() * (k + 1));
+              var t2 = nextChoices[k]; nextChoices[k] = nextChoices[l]; nextChoices[l] = t2;
+            }
+            upd({ dxQuizCueId: target.id, dxQuizChoices: nextChoices, dxQuizPicked: null });
+          }
+          function pickAnswer(choiceId) {
+            if (picked) return;
+            var correct = choiceId === cueId;
+            var nextStreak = correct ? streak + 1 : 0;
+            upd({
+              dxQuizPicked: choiceId,
+              dxQuizScore: score + (correct ? 1 : 0),
+              dxQuizAttempts: attempts + 1,
+              dxQuizStreak: nextStreak,
+              dxQuizBestStreak: Math.max(d.dxQuizBestStreak || 0, nextStreak)
+            });
+            if (correct) awardBadge('listen-quiz-correct', 'Listen quiz: correct');
+            if (nextStreak >= 5) awardBadge('listen-quiz-streak5', 'Listen quiz: 5-streak');
+          }
+          var pct = attempts > 0 ? Math.round((score / attempts) * 100) : 0;
+          // Reveal-time UI
+          if (picked && current) {
+            var pickedCue = LISTEN_CUES.find(function(c) { return c.id === picked; });
+            var isCorrect = picked === cueId;
+            return h('div', null,
+              // Score header
+              h('div', { style: { padding: 10, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' } },
+                  h('span', { style: { fontSize: 11, color: T.muted } }, 'Score: ', h('strong', { style: { color: T.text, fontFamily: 'monospace' } }, score + ' / ' + attempts)),
+                  attempts > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, 'Accuracy: ', h('strong', { style: { color: pct >= 70 ? T.good : pct >= 40 ? T.warn : T.bad, fontFamily: 'monospace' } }, pct + '%')),
+                  streak > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, h('span', null, '🔥 streak ' + streak)),
+                  d.dxQuizBestStreak > 1 && h('span', { style: { fontSize: 11, color: T.muted } }, 'Best: ' + d.dxQuizBestStreak)
+                )
+              ),
+              // Verdict card
+              h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + (isCorrect ? T.good : T.warn), marginBottom: 10 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 } },
+                  h('span', { style: { fontSize: 24 } }, isCorrect ? '✓' : '✗'),
+                  h('strong', { style: { fontSize: 14, color: isCorrect ? T.good : T.warn } },
+                    isCorrect ? ('Correct — that was a ' + current.name + '.')
+                              : ('Not quite. The answer was: ' + current.name))
+                ),
+                !isCorrect && h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
+                  'You picked: ', h('strong', { style: { color: T.text } }, pickedCue ? pickedCue.name : 'Unknown')),
+                h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 13, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.warn } }, 'Likely cause: '), current.cause),
+                h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.good } }, 'DIY: '), current.diy),
+                h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                  h('strong', { style: { color: T.warn } }, 'Shop: '), current.shop)
+              ),
+              h('button', { 'data-ar-focusable': true,
+                onClick: startRound,
+                style: btnPrimary()
+              }, '↻ Next noise →')
+            );
+          }
+          // Question UI
+          return h('div', null,
+            h('div', { style: { padding: 10, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap' } },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' } },
+                h('span', { style: { fontSize: 11, color: T.muted } }, 'Score: ', h('strong', { style: { color: T.text, fontFamily: 'monospace' } }, score + ' / ' + attempts)),
+                attempts > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, 'Accuracy: ', h('strong', { style: { color: pct >= 70 ? T.good : pct >= 40 ? T.warn : T.bad, fontFamily: 'monospace' } }, pct + '%')),
+                streak > 0 && h('span', { style: { fontSize: 11, color: T.muted } }, h('span', null, '🔥 streak ' + streak))
+              ),
+              attempts > 0 && h('button', { 'data-ar-focusable': true,
+                onClick: function() { upd({ dxQuizScore: 0, dxQuizAttempts: 0, dxQuizStreak: 0 }); },
+                style: Object.assign({}, btnSecondary(), { fontSize: 11 })
+              }, '↺ Reset score')
+            ),
+            !current && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, textAlign: 'center' } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🎯 Diagnose by ear'),
+              h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
+                'You will get a noise + when it happens. Pick the most likely cause from 4 options. ' + LISTEN_CUES.length + ' real Maine-flavored cues in rotation.'),
+              h('button', { 'data-ar-focusable': true, onClick: startRound, style: btnPrimary() }, '🚗 Start')
+            ),
+            current && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent, marginBottom: 10 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.accentHi, marginBottom: 6 } }, '👂 Listen — what do you hear?'),
+              h('p', { style: { margin: '0 0 4px', color: T.text, fontSize: 14, lineHeight: 1.5 } },
+                h('strong', null, 'When: '), current.when),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } },
+                'Pick the most likely cause:')
+            ),
+            current && h('div', { role: 'radiogroup', 'aria-label': 'Cause choices', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
+              choices.map(function(cid) {
+                var c = LISTEN_CUES.find(function(x) { return x.id === cid; });
+                if (!c) return null;
+                return h('button', { key: cid, 'data-ar-focusable': true,
+                  role: 'radio', 'aria-checked': 'false',
+                  onClick: function() { pickAnswer(cid); },
+                  style: Object.assign({}, btnSecondary(), {
+                    background: T.cardAlt,
+                    color: T.text,
+                    textAlign: 'left',
+                    fontWeight: 600,
+                    padding: '12px 14px',
+                    fontSize: 13,
+                    lineHeight: 1.4
+                  })
+                }, c.cause);
+              })
+            )
+          );
+        }
+
         function dxFluid() {
           var picked = d.dxFluidPicked || null;
           var pickedFluid = picked ? FLUID_CHECKS.find(function(c) { return c.id === picked; }) : null;
@@ -4003,12 +4134,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             tabBtn('overview', 'Overview'),
             tabBtn('obd', '🔌 OBD codes'),
             tabBtn('listen', '👂 Listen'),
+            tabBtn('listenQuiz', '🎯 Listen Quiz'),
             tabBtn('fluid', '🛢️ Fluids'),
             tabBtn('visual', '👁️ Visual')
           ),
           dxView === 'overview' && dxOverview(),
           dxView === 'obd' && dxObd(),
           dxView === 'listen' && dxListen(),
+          dxView === 'listenQuiz' && dxListenQuiz(),
           dxView === 'fluid' && dxFluid(),
           dxView === 'visual' && dxVisual(),
           disclaimerFooter()
