@@ -3636,24 +3636,122 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
               )
             )
           ),
-          recs && h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
-            h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🎯 Recommended strategies for your situation'),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
-              recs.map(function(sId) {
-                var detail = STRATEGY_DETAILS[sId];
-                if (!detail) return null;
-                var isCaveat = sId.indexOf('CAVEAT') >= 0;
-                return h('div', { key: sId, style: { padding: 10, borderRadius: 8, background: isCaveat ? '#7c2d12' : T.cardAlt, border: '1px solid ' + (isCaveat ? T.warn : T.good) } },
-                  h('strong', { style: { fontSize: 13, color: isCaveat ? '#fed7aa' : T.accentHi, display: 'block', marginBottom: 4 } },
-                    isCaveat ? '⚠️ ' + detail.name : '→ ' + detail.name),
-                  h('div', { style: { fontSize: 12, color: isCaveat ? '#fed7aa' : T.text, lineHeight: 1.55 } }, detail.what)
+          recs && (function() {
+            // Group strategies by Dunlosky 2013 utility tier (high/moderate/low),
+            // with caveats split out for visual prominence.
+            var tierIndex = {};
+            STUDY_STRATEGIES.forEach(function(s) { tierIndex[s.id] = s.utility; });
+            var groups = { high: [], moderate: [], other: [], caveat: [] };
+            recs.forEach(function(sId) {
+              if (sId.indexOf('CAVEAT') >= 0) { groups.caveat.push(sId); return; }
+              var t = tierIndex[sId];
+              if (t === 'high')          groups.high.push(sId);
+              else if (t === 'moderate') groups.moderate.push(sId);
+              else                       groups.other.push(sId);
+            });
+            var groupMeta = [
+              { key: 'high',     icon: '🟢', title: 'HIGH UTILITY', desc: 'Strongest evidence (Dunlosky 2013) — prioritize these', color: T.good },
+              { key: 'moderate', icon: '🟡', title: 'MODERATE UTILITY', desc: 'Useful with caveats — works in specific conditions', color: T.warn },
+              { key: 'other',    icon: '🟦', title: 'STRUCTURE / SUPPORTING', desc: 'Scaffolding patterns that pair with the high-utility ones', color: T.accent }
+            ];
+            // Time-blocked plan keyed off the student's `time` input
+            var planByTime = {
+              'cramming-tonight': [
+                { mins: 30, label: 'Free recall (closed-book; write what you remember)', strategy: 'free-recall' },
+                { mins: 15, label: 'Compare against notes; identify gaps', strategy: 'self-explanation' },
+                { mins: 15, label: 'Practice quiz on weak spots', strategy: 'practice-testing' },
+                { mins: 0,  label: 'Sleep — consolidates the retrieval you just did', strategy: 'sleep-between-sessions' }
+              ],
+              'few-days': [
+                { mins: 25, label: 'Day 1: read + summarize from memory', strategy: 'free-recall' },
+                { mins: 25, label: 'Day 2: retrieval-practice quiz', strategy: 'practice-testing' },
+                { mins: 20, label: 'Day 3: mixed problem set (interleaved)', strategy: 'interleaving' },
+                { mins: 15, label: 'Day 4: explain to a friend', strategy: 'self-explanation' }
+              ],
+              '1-2-weeks': [
+                { mins: 30, label: 'Week 1, day 1: SQ3R initial pass', strategy: 'active-reading-SQ3R' },
+                { mins: 25, label: 'Week 1, day 3: free recall + quiz', strategy: 'practice-testing' },
+                { mins: 25, label: 'Week 1, day 6: interleaved problems', strategy: 'interleaving' },
+                { mins: 25, label: 'Week 2, day 2: spaced retrieval', strategy: 'spaced-retrieval' },
+                { mins: 20, label: 'Week 2, day 5: mock test under conditions', strategy: 'mixed-problem-sets' }
+              ],
+              'month-plus': [
+                { mins: 20, label: 'Set up Anki/Quizlet deck (one-time)', strategy: 'spaced-repetition-app' },
+                { mins: 15, label: 'Daily — 5-15 min spaced flashcards', strategy: 'spaced-repetition-flashcards' },
+                { mins: 30, label: 'Weekly — free recall + cumulative review', strategy: 'periodic-cumulative-review' },
+                { mins: 30, label: 'Bi-weekly — mock test under conditions', strategy: 'mixed-problem-sets' },
+                { mins: 20, label: 'Final week — deliberate practice on weak spots', strategy: 'deliberate-practice' }
+              ]
+            };
+            var plan = planByTime[time] || planByTime['few-days'];
+            var totalMins = plan.reduce(function(a, b) { return a + b.mins; }, 0);
+            return h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent } },
+              h('h4', { style: { margin: '0 0 10px', fontSize: 15, color: T.accentHi } }, '🎯 Recommended strategies for your situation'),
+              groupMeta.map(function(g) {
+                var ids = groups[g.key];
+                if (!ids.length) return null;
+                return h('div', { key: g.key, style: { marginBottom: 12 } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 11 } }, g.icon),
+                    h('span', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: g.color } }, g.title),
+                    h('span', { style: { fontSize: 10, color: T.muted, fontStyle: 'italic' } }, '· ' + g.desc)
+                  ),
+                  h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                    ids.map(function(sId) {
+                      var detail = STRATEGY_DETAILS[sId];
+                      if (!detail) return null;
+                      var stratFull = STUDY_STRATEGIES.find(function(s) { return s.id === sId; });
+                      return h('div', { key: sId, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + g.color + '88' } },
+                        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 4, flexWrap: 'wrap' } },
+                          h('strong', { style: { fontSize: 13, color: T.accentHi } }, '→ ' + detail.name),
+                          stratFull && stratFull.research && h('span', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic' } }, '· ' + stratFull.research)
+                        ),
+                        h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.55 } }, detail.what),
+                        stratFull && stratFull.whyWorks && h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.5, marginTop: 4, paddingLeft: 8, borderLeft: '2px solid ' + g.color + '55' } },
+                          h('strong', null, 'Why it works: '), stratFull.whyWorks)
+                      );
+                    })
+                  )
                 );
-              })
-            ),
-            h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.accentHi } }, '🎯 Action: '),
-              'Pick 2-3 of these strategies. Use them on this assignment THIS WEEK. The first time always feels awkward — push through. Notice the difference vs your default approach. That\'s the proof.')
-          ),
+              }),
+              groups.caveat.length > 0 && h('div', { style: { marginBottom: 12 } },
+                h('div', { style: { fontSize: 10, fontWeight: 800, letterSpacing: '0.06em', color: T.warn, marginBottom: 6 } }, '⚠️ WATCH OUT'),
+                groups.caveat.map(function(sId) {
+                  var detail = STRATEGY_DETAILS[sId];
+                  if (!detail) return null;
+                  return h('div', { key: sId, style: { padding: 10, borderRadius: 8, background: '#7c2d12', border: '1px solid ' + T.warn } },
+                    h('strong', { style: { fontSize: 13, color: '#fed7aa', display: 'block', marginBottom: 4 } }, '⚠️ ' + detail.name),
+                    h('div', { style: { fontSize: 12, color: '#fed7aa', lineHeight: 1.55 } }, detail.what)
+                  );
+                })
+              ),
+              h('div', { style: { marginTop: 14, padding: 12, borderRadius: 8, background: 'linear-gradient(135deg, ' + T.accent + '22, ' + T.cardAlt + ')', border: '2px solid ' + T.accent } },
+                h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, '🗓️'),
+                  h('strong', { style: { fontSize: 14, color: T.accentHi } }, 'Your time-blocked study session'),
+                  h('span', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic' } }, '· ' + totalMins + ' min total, scoped to your time available')
+                ),
+                h('ol', { style: { margin: 0, paddingLeft: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 6 } },
+                  plan.map(function(step, i) {
+                    var stratDetail = STRATEGY_DETAILS[step.strategy];
+                    return h('li', { key: i, style: { padding: 8, borderRadius: 6, background: T.bg, border: '1px solid ' + T.border, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+                      h('span', { 'aria-hidden': 'true', style: { flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: T.accent, color: T.bg, fontSize: 12, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, String(i + 1)),
+                      h('div', { style: { flex: 1, minWidth: 0 } },
+                        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                          h('strong', { style: { fontSize: 12, color: T.text } }, step.label),
+                          step.mins > 0 && h('span', { style: { fontSize: 10, fontFamily: 'monospace', color: T.accentHi, fontWeight: 800 } }, step.mins + 'min')
+                        ),
+                        stratDetail && h('div', { style: { fontSize: 10, color: T.muted, marginTop: 2, fontStyle: 'italic' } }, '→ ' + stratDetail.name)
+                      )
+                    );
+                  })
+                )
+              ),
+              h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.accentHi } }, '🎯 Action: '),
+                'Use the time-blocked plan above on THIS assignment THIS WEEK. The first time always feels awkward — push through. Notice the difference vs your default approach. That\'s the proof.')
+            );
+          })(),
           !recs && h('div', { style: { padding: 16, textAlign: 'center', color: T.dim, fontSize: 13 } },
             'Fill in all 4 fields above to get strategy recommendations.'),
           disclaimerFooter()
