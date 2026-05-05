@@ -990,6 +990,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         }
 
         function pulseScale() {
+          // Respect prefers-reduced-motion (WCAG 2.3.3): hold scale at 1.0
+          // so the heart doesn't pulse for users who opt out of motion.
+          var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (reduce) return 1;
           // Phase: 0 = start of beat, 1 = next beat. Scale 1.0 → 1.25 → 1.0.
           var intervalMs = 60000 / bpm;
           var phase = (Date.now() % intervalMs) / intervalMs;
@@ -1015,7 +1019,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 boxShadow: '0 0 40px rgba(220,38,38,0.45)'
               } }, '❤'),
               h('div', { 'aria-live': 'off', style: { fontSize: 36, fontWeight: 800, color: T.text, marginBottom: 4 } }, bpm + ' bpm'),
-              h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 14 } }, 'Beats counted: ', beat),
+              h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8 } }, 'Beats counted: ', beat),
+              // Visual rhythm strip — last 16 beats as pulsing dots that fade.
+              // Pairs with the audio metronome so deaf/hard-of-hearing rescuers
+              // see the rhythm too.
+              h('div', { 'aria-hidden': 'true',
+                style: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 4, marginBottom: 14, minHeight: 16 }
+              },
+                Array.from({ length: 16 }, function(_, i) {
+                  // The freshest dot is the rightmost; index 0 is oldest.
+                  var age = 15 - i; // 0 = newest
+                  var isCurrent = (beat % 16) === i;
+                  var opacity = isCurrent ? 1 : Math.max(0.15, 0.95 - age * 0.06);
+                  var size = isCurrent ? 14 : 8;
+                  return h('div', { key: i,
+                    style: {
+                      width: size, height: size, borderRadius: '50%',
+                      background: isCurrent ? T.accentHi : T.accent,
+                      opacity: opacity,
+                      transition: 'all 80ms ease-out',
+                      boxShadow: isCurrent ? ('0 0 8px ' + T.accentHi) : 'none'
+                    }
+                  });
+                })
+              ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 10 } },
                 h('label', { htmlFor: 'fr-bpm-slider', style: { fontSize: 12, color: T.muted } }, 'BPM:'),
                 h('input', { id: 'fr-bpm-slider', type: 'range', min: 100, max: 120, step: 1, value: bpm,

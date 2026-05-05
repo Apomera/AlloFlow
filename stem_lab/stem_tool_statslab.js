@@ -3245,21 +3245,74 @@ window.StemLab = window.StemLab || {
               borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 800
             }
           }, '📝 Submit quiz'),
-          d.quizSubmitted && h('div', { style: { marginTop: 8, padding: 12, background: d.quizCorrect >= 4 ? 'rgba(22,163,74,0.15)' : 'rgba(245,158,11,0.10)', border: '1px solid ' + (d.quizCorrect >= 4 ? 'rgba(22,163,74,0.55)' : 'rgba(245,158,11,0.45)'), borderRadius: 8 } },
-            h('div', { style: { fontSize: 16, fontWeight: 900, color: d.quizCorrect >= 4 ? '#86efac' : '#fbbf24', marginBottom: 4 } },
-              'Score: ' + d.quizCorrect + ' / ' + d.quizQuestions.length + (d.quizCorrect === 5 ? '  🎉 Perfect!' : '')
-            ),
-            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55 } },
-              d.quizCorrect >= 4 ? 'Strong understanding of the concepts. Read the rationales for any you missed.'
-                : (d.quizCorrect >= 2 ? 'Solid grasp on some, gaps on others. Review the explanations and try a different test.'
-                    : 'These concepts are fundamental for the AP exam. Re-read each rationale carefully — the misconceptions panel above may also help.')
-            ),
-            h('button', {
-              onClick: function() { upd({ quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
-              'data-sl-focusable': 'true',
-              style: { marginTop: 8, padding: '6px 14px', background: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
-            }, '🔁 New quiz')
-          )
+          d.quizSubmitted && (function() {
+            var pct = Math.round((d.quizCorrect / d.quizQuestions.length) * 100);
+            var tier = d.quizCorrect === d.quizQuestions.length ? 'perfect'
+                       : d.quizCorrect >= 4 ? 'strong'
+                       : d.quizCorrect >= 2 ? 'learning'
+                       : 'review';
+            var tierColor = tier === 'perfect' ? '#fbbf24'
+                            : tier === 'strong' ? '#22c55e'
+                            : tier === 'learning' ? '#f59e0b'
+                            : '#ef4444';
+            var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎯' : tier === 'learning' ? '🪶' : '📚';
+            var tierTitle = tier === 'perfect' ? 'Perfect score!'
+                            : tier === 'strong' ? 'You can run a t-test now'
+                            : tier === 'learning' ? 'Solid — review effect-size pages'
+                            : 'Concepts to revisit';
+            var tierMsg = tier === 'perfect' ? 'You can interpret your output for a peer right now. Try a harder test next.'
+                          : tier === 'strong' ? 'Strong understanding. Read the rationales for the ones you missed and you will close the gap.'
+                          : tier === 'learning' ? 'Solid grasp on some, gaps on others. Review the explanations and try a different test.'
+                          : 'These concepts are fundamental for the AP exam. Re-read each rationale carefully — the misconceptions panel above may also help.';
+            var rad = 30, circ = 2 * Math.PI * rad;
+            var dashOff = circ - (pct / 100) * circ;
+            var ans = d.quizAnswers || [];
+            return h('div', { style: { marginTop: 10, borderRadius: 12, overflow: 'hidden', border: '2px solid ' + tierColor + '88', background: 'linear-gradient(135deg, rgba(15,23,42,0.85), rgba(30,41,59,0.85))' } },
+              h('div', { style: { padding: 14, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
+                h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
+                  h('svg', { viewBox: '0 0 100 100', width: 84, height: 84, 'aria-label': 'Score: ' + d.quizCorrect + ' out of ' + d.quizQuestions.length },
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                    h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round', strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                  ),
+                  h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                    h('div', { style: { fontSize: 20, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8' } }, d.quizCorrect + ' / ' + d.quizQuestions.length)
+                  )
+                ),
+                h('div', { style: { flex: 1, minWidth: 200 } },
+                  h('div', { style: { fontSize: 26, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
+                  h('div', { style: { fontSize: 16, fontWeight: 900, color: tierColor, lineHeight: 1.1 } }, tierTitle),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 4 } }, tierMsg)
+                )
+              ),
+              h('div', { style: { padding: '0 14px 8px' } },
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 4 } }, 'Your answers'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+                  d.quizQuestions.map(function(q, qi) {
+                    var picked = ans[qi];
+                    var isCorrect = picked === q.correct;
+                    return h('div', { key: qi,
+                      title: 'Q' + (qi + 1) + (isCorrect ? ' correct ✓' : ' incorrect (you picked ' + (picked != null ? picked + 1 : '?') + ', answer was ' + (q.correct + 1) + ')'),
+                      style: {
+                        width: 14, height: 14, borderRadius: 3,
+                        background: isCorrect ? '#22c55e' : '#ef4444',
+                        border: '1.5px solid ' + (isCorrect ? '#15803d' : '#b91c1c'),
+                        boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                      },
+                      'aria-label': 'Q' + (qi + 1) + (isCorrect ? ' correct' : ' incorrect')
+                    });
+                  })
+                )
+              ),
+              h('div', { style: { padding: '8px 14px 12px', borderTop: '1px solid rgba(148,163,184,0.25)', display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                h('button', {
+                  onClick: function() { upd({ quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
+                  'data-sl-focusable': 'true',
+                  style: { padding: '6px 14px', background: 'rgba(168,85,247,0.18)', color: '#d8b4fe', border: '1px solid rgba(168,85,247,0.45)', borderRadius: 6, cursor: 'pointer', fontSize: 11, fontWeight: 700 }
+                }, '🔁 New quiz')
+              )
+            );
+          })()
         )
       ),
       // AI Interpretation Grader

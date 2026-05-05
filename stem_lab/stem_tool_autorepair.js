@@ -4309,22 +4309,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           backBar('🛡️ Safety modules'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
             'Six safety areas. Skipping any of these can cost you a hand, an eye, or your life. Tap each module to see the rule + checklist.'),
-          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 14 } },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 14 } },
             SAFETY_MODULES.map(function(m) {
               var sel = picked === m.id;
+              // Hazard-class palette — color tells students at a glance what kind of harm.
+              var pal = m.id === 'jack-stands'    ? { stripe: '#dc2626', soft: 'rgba(239,68,68,0.10)',  text: '#fecaca', tag: 'CRUSH HAZARD' }
+                      : m.id === 'electrical'     ? { stripe: '#f59e0b', soft: 'rgba(245,158,11,0.10)', text: '#fde68a', tag: 'SHOCK / SHORT' }
+                      : m.id === 'refrigerant'    ? { stripe: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  text: '#a5f3fc', tag: 'COLD + CHEMICAL' }
+                      : m.id === 'hot-exhaust'    ? { stripe: '#ea580c', soft: 'rgba(234,88,12,0.10)',  text: '#fed7aa', tag: 'BURN' }
+                      : m.id === 'spring-tension' ? { stripe: '#e11d48', soft: 'rgba(225,29,72,0.10)',  text: '#fecdd3', tag: 'STORED ENERGY' }
+                      : m.id === 'fluid-disposal' ? { stripe: '#16a34a', soft: 'rgba(22,163,74,0.10)',  text: '#bbf7d0', tag: 'ENVIRONMENT + LAW' }
+                      : { stripe: '#94a3b8', soft: 'rgba(148,163,184,0.10)', text: '#e2e8f0', tag: 'SAFETY' };
               return h('button', { key: m.id, 'data-ar-focusable': true,
-                'aria-label': m.name,
+                'aria-label': m.name + ' — ' + pal.tag,
                 'aria-pressed': sel ? 'true' : 'false',
                 onClick: function() { upd('safetyPicked', sel ? null : m.id); awardBadge('safety-' + m.id, 'Safety: ' + m.name); },
-                style: Object.assign({}, btnSecondary(), {
-                  background: sel ? T.accent : T.cardAlt,
-                  color: sel ? '#0f172a' : T.text,
+                style: {
+                  position: 'relative',
                   textAlign: 'left',
-                  fontWeight: sel ? 800 : 600,
-                  display: 'flex', alignItems: 'flex-start', gap: 8
-                }) },
-                h('span', { style: { fontSize: 22 } }, m.icon),
-                h('span', null, m.name)
+                  padding: '12px 12px 12px 18px',
+                  borderRadius: 10,
+                  border: '2px solid ' + (sel ? pal.stripe : 'rgba(148,163,184,0.25)'),
+                  background: sel ? pal.soft : T.cardAlt,
+                  color: T.text,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  boxShadow: sel ? ('0 4px 12px ' + pal.stripe + '33, inset 0 1px 0 rgba(255,255,255,0.04)') : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                  transition: 'border-color 120ms ease, background 120ms ease'
+                }
+              },
+                h('span', { 'aria-hidden': 'true',
+                  style: {
+                    position: 'absolute', left: 0, top: 0, bottom: 0, width: 6,
+                    background: pal.stripe,
+                    borderRadius: '10px 0 0 10px'
+                  }
+                }),
+                h('span', { 'aria-hidden': 'true',
+                  style: {
+                    flexShrink: 0,
+                    width: 38, height: 38, borderRadius: '50%',
+                    background: pal.soft,
+                    border: '2px solid ' + pal.stripe,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 20
+                  }
+                }, m.icon),
+                h('span', { style: { display: 'flex', flexDirection: 'column', gap: 2 } },
+                  h('span', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', color: pal.text } }, pal.tag),
+                  h('span', { style: { fontSize: 13, fontWeight: 700, color: T.text, lineHeight: 1.2 } }, m.name)
+                )
               );
             })
           ),
