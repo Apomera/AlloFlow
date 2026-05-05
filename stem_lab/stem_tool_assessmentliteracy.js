@@ -3334,14 +3334,117 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           });
       };
 
+      // Tier logic — keys off Holland's 'differentiation' concept (gap between top
+      // and bottom of profile). High differentiation = clear interest pattern;
+      // flat profile = mixed signals across multiple paths.
+      var sortedKeys = Object.keys(scores).filter(function(k) { return scores[k] != null; }).sort(function(a, b) { return scores[b] - scores[a]; });
+      var topAvg = sortedKeys.slice(0, 3).reduce(function(a, k) { return a + scores[k]; }, 0) / 3;
+      var bottomAvg = sortedKeys.slice(3).reduce(function(a, k) { return a + scores[k]; }, 0) / Math.max(1, sortedKeys.length - 3);
+      var differentiation = topAvg - bottomAvg;
+      var tier = differentiation >= 25 ? 'sharp'
+                 : differentiation >= 12 ? 'mixed'
+                 : 'flat';
+      var tierColor = tier === 'sharp' ? '#10b981' : tier === 'mixed' ? '#f59e0b' : '#6366f1';
+      var tierIcon = tier === 'sharp' ? '🎯' : tier === 'mixed' ? '🪶' : '📚';
+      var tierTitle = tier === 'sharp' ? 'Strong differentiation'
+                      : tier === 'mixed' ? 'Mixed profile'
+                      : 'Flat profile';
+      var tierMsg = tier === 'sharp'
+                    ? 'Your top types stand out clearly from the rest. Look at occupations clustered around your code — your interest pattern is a real signal.'
+                    : tier === 'mixed'
+                      ? 'Your top three types fit, but the rest aren\u2019t far behind. Multiple career paths could fit you. Cross-check with skills + values to narrow.'
+                      : 'Profile is flat — no strong preference jumped out. Try retaking with stronger Likert range (use the 1\u20135 endpoints), or pair this with a values inventory.';
+      // Score-donut maths — donut shows top letter's percentage
+      var topScore = scores[sortedKeys[0]] || 0;
+      var donutRad = 38, donutCirc = 2 * Math.PI * donutRad;
+      var donutOff = donutCirc - (topScore / 100) * donutCirc;
+      // Holland hexagon — 6 vertices in canonical RIASEC order (R/I/A/S/E/C clockwise from top)
+      var HEX_ORDER = ['R', 'I', 'A', 'S', 'E', 'C'];
+      var HEX_LABELS = { R: 'Realistic', I: 'Investigative', A: 'Artistic', S: 'Social', E: 'Enterprising', C: 'Conventional' };
+      var hexCx = 70, hexCy = 70, hexR = 50;
+      var hexVerts = HEX_ORDER.map(function(k, i) {
+        var ang = (-Math.PI / 2) + (i * Math.PI / 3); // start at top, go clockwise
+        return { letter: k, x: hexCx + hexR * Math.cos(ang), y: hexCy + hexR * Math.sin(ang) };
+      });
+      var hexPath = hexVerts.map(function(v, i) { return (i === 0 ? 'M' : 'L') + ' ' + v.x.toFixed(1) + ' ' + v.y.toFixed(1); }).join(' ') + ' Z';
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
         backBtn('career', null, 'Career menu'),
         h('h2', { className: 'text-2xl font-black text-emerald-200' }, 'Your Holland Code'),
 
+        // ── Hero band: donut + hexagon + tier ──
+        h('section', {
+          className: 'p-4 rounded-xl border-2 overflow-hidden',
+          style: { borderColor: tierColor + 'aa', background: 'linear-gradient(135deg, ' + tierColor + '22, rgba(15,23,42,0.85))' }
+        },
+          h('div', { className: 'flex flex-wrap items-center gap-4 mb-3' },
+            // Score donut — top score as %
+            h('div', { className: 'relative flex-shrink-0', style: { width: 100, height: 100 } },
+              h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
+                'aria-label': 'Top letter ' + sortedKeys[0] + ' at ' + topScore + ' percent'
+              },
+                h('circle', { cx: 50, cy: 50, r: donutRad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                h('circle', { cx: 50, cy: 50, r: donutRad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                  strokeDasharray: donutCirc, strokeDashoffset: donutOff, transform: 'rotate(-90 50 50)' })
+              ),
+              h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                h('div', { style: { fontSize: 30, fontWeight: 900, color: tierColor, lineHeight: 1, letterSpacing: '0.04em' } }, code),
+                h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8' } }, topScore + '/100')
+              )
+            ),
+            // Holland hexagon
+            h('svg', { viewBox: '0 0 140 140', width: 140, height: 140, role: 'img',
+              'aria-label': 'Holland hexagon — your code is ' + code,
+              style: { flexShrink: 0 }
+            },
+              // hexagon outline
+              h('path', { d: hexPath, fill: 'rgba(148,163,184,0.08)', stroke: 'rgba(148,163,184,0.35)', strokeWidth: 1 }),
+              // adjacency edges (RI, IA, AS, SE, EC, CR — already drawn by the hex outline)
+              // vertex circles — colored if letter is in the code, dimmed otherwise
+              hexVerts.map(function(v, i) {
+                var inCode = code.indexOf(v.letter) >= 0;
+                var rank = code.indexOf(v.letter); // 0 = primary, 1 = secondary, 2 = tertiary
+                var fill = inCode ? (rank === 0 ? tierColor : (rank === 1 ? tierColor + 'cc' : tierColor + '99')) : 'rgba(148,163,184,0.25)';
+                var rOut = inCode ? (rank === 0 ? 14 : (rank === 1 ? 12 : 10)) : 9;
+                return h('g', { key: v.letter },
+                  h('circle', { cx: v.x, cy: v.y, r: rOut, fill: fill, stroke: inCode ? '#0f172a' : 'rgba(15,23,42,0.6)', strokeWidth: 2 }),
+                  h('text', { x: v.x, y: v.y + 4, textAnchor: 'middle', fontSize: 12, fontWeight: 900, fill: inCode ? '#0f172a' : '#94a3b8' }, v.letter)
+                );
+              })
+            ),
+            // Tier message
+            h('div', { style: { flex: 1, minWidth: 200 } },
+              h('div', { style: { fontSize: 28, marginBottom: 2 }, 'aria-hidden': 'true' }, tierIcon),
+              h('div', { style: { fontSize: 17, fontWeight: 900, color: tierColor, lineHeight: 1.15 } }, tierTitle),
+              h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 } }, tierMsg)
+            )
+          ),
+          // Six-letter ranking strip
+          h('div', { className: 'flex flex-wrap gap-1.5' },
+            sortedKeys.map(function(k, i) {
+              var inCode = i < 3;
+              return h('span', { key: k,
+                style: {
+                  display: 'inline-flex', alignItems: 'baseline', gap: 4,
+                  padding: '3px 10px', borderRadius: 999,
+                  background: inCode ? (tierColor + '33') : 'rgba(148,163,184,0.10)',
+                  border: '1px solid ' + (inCode ? tierColor + '88' : 'rgba(148,163,184,0.25)'),
+                  fontSize: 11, fontWeight: 800,
+                  color: inCode ? tierColor : '#94a3b8'
+                }
+              },
+                h('span', { style: { fontFamily: 'monospace', fontSize: 12 } }, '#' + (i + 1)),
+                h('span', null, k + ' — ' + (RIASEC_TYPES[k] && RIASEC_TYPES[k].name || k)),
+                h('span', { style: { fontFamily: 'monospace', opacity: 0.75 } }, scores[k] + '/100')
+              );
+            })
+          )
+        ),
+
+        // ── Existing detail section (kept for granular per-type breakdowns) ──
         h('section', { className: 'p-4 rounded-xl bg-gradient-to-br from-emerald-900/40 to-teal-900/40 border border-emerald-500/30' },
           h('div', { className: 'text-center mb-3' },
-            h('div', { className: 'text-5xl font-black text-emerald-200 tracking-widest' }, code),
-            h('div', { className: 'text-xs text-slate-400 mt-2' }, 'Top 3 interest types, in order')
+            h('div', { className: 'text-xs uppercase tracking-widest text-emerald-300 font-bold' }, 'Detailed type breakdown'),
+            h('div', { className: 'text-xs text-slate-400 mt-1' }, 'Top 3 interest types, in order \u2014 with what each one prefers')
           ),
           h('div', { className: 'space-y-2' },
             ['R', 'I', 'A', 'S', 'E', 'C'].map(function(k) {

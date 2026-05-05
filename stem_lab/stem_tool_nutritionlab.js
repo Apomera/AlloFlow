@@ -1437,19 +1437,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                 'The Nutrition Facts panel is required by the FDA on every packaged food. It tells the truth — but the manufacturer chooses how to slice that truth. Common tricks: dividing one bag into "2 servings" so per-serving numbers look smaller, putting "0 g trans fat" on something that\'s 49% saturated fat, calling something "fat-free" while it\'s loaded with added sugar. Once you can read these labels, you can\'t un-read them.')
             ),
+            // Per-challenge completion + accuracy across all challenges (lifts the BirdLab pattern).
+            // A challenge is 'complete' when every question is answered AND every answer is correct.
+            // Accuracy = total correct picks / total picks across the whole flow.
+            (function() { /* hoisted compute below */ })(),
             // Challenge selector
             h('div', { className: 'flex flex-wrap gap-2' },
               LABELS.map(function(L, i) {
                 var sel = (labelIdx === i);
+                var done = L.questions.every(function(q, qi) {
+                  var key = i + '_' + qi;
+                  return answers[key] != null && answers[key] === q.answer;
+                });
                 return h('button', {
                   key: L.id,
                   onClick: function() { setLabelIdx(i); announce('Loaded ' + L.name); },
                   'aria-pressed': sel ? 'true' : 'false',
-                  className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
-                    (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-500')
-                }, 'Challenge ' + (i + 1) + ' · ' + L.difficulty);
+                  'aria-label': 'Challenge ' + (i + 1) + ' (' + L.difficulty + ')' + (done ? ' — completed' : ''),
+                  className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 relative ' +
+                    (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : (done ? 'bg-emerald-50 text-emerald-900 border-emerald-400' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-500'))
+                },
+                  done && !sel && h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: -6, right: -6, background: '#16a34a', color: '#ffffff', fontSize: 10, fontWeight: 900, width: 18, height: 18, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 1px 3px rgba(0,0,0,0.18)' } }, '✓'),
+                  'Challenge ' + (i + 1) + ' · ' + L.difficulty
+                );
               })
             ),
+            // Progress strip — visible "X of 5 complete" plus 5 dots
+            (function() {
+              var doneCount = LABELS.reduce(function(acc, L, i) {
+                var done = L.questions.every(function(q, qi) {
+                  var key = i + '_' + qi;
+                  return answers[key] != null && answers[key] === q.answer;
+                });
+                return acc + (done ? 1 : 0);
+              }, 0);
+              return h('div', { className: 'flex items-center gap-3 text-xs text-slate-700 flex-wrap', 'aria-live': 'polite' },
+                h('div', { className: 'flex items-center gap-1' },
+                  LABELS.map(function(L, i) {
+                    var done = L.questions.every(function(q, qi) {
+                      var key = i + '_' + qi;
+                      return answers[key] != null && answers[key] === q.answer;
+                    });
+                    return h('span', { key: L.id, 'aria-hidden': 'true',
+                      style: {
+                        display: 'inline-block', width: 12, height: 12, borderRadius: '50%',
+                        background: done ? '#16a34a' : '#e2e8f0',
+                        border: '1.5px solid ' + (done ? '#15803d' : '#94a3b8')
+                      }
+                    });
+                  })
+                ),
+                h('span', { className: 'font-bold' }, doneCount + ' of ' + LABELS.length + ' challenges complete')
+              );
+            })(),
             // Label + questions side by side on wide screens
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-2 gap-5' },
               // LEFT: the label (or two labels if dual)
@@ -1514,6 +1554,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 )
               )
             ),
+            // ── End-of-flow completion hero ──
+            // Only renders after all 5 challenges are complete. Aggregates accuracy
+            // across the entire flow (correct picks / picks made), tier-coaches the
+            // student, and awards a 'Nutrition Facts Decoder' visual badge.
+            (function() {
+              var allDone = LABELS.every(function(L, i) {
+                return L.questions.every(function(q, qi) {
+                  var key = i + '_' + qi;
+                  return answers[key] != null && answers[key] === q.answer;
+                });
+              });
+              if (!allDone) return null;
+              // Compute total picks vs total correct across all challenges
+              var totalQs = LABELS.reduce(function(a, L) { return a + L.questions.length; }, 0);
+              var totalCorrect = 0, totalPicks = 0;
+              LABELS.forEach(function(L, i) {
+                L.questions.forEach(function(q, qi) {
+                  var key = i + '_' + qi;
+                  if (answers[key] != null) {
+                    totalPicks += 1;
+                    if (answers[key] === q.answer) totalCorrect += 1;
+                  }
+                });
+              });
+              var pct = totalPicks > 0 ? Math.round((totalCorrect / totalPicks) * 100) : 0;
+              // Tier — based on first-attempt-needed estimate (totalPicks vs totalQs)
+              var efficiency = totalPicks > 0 ? totalQs / totalPicks : 1;
+              var tier = (totalPicks === totalQs) ? 'mastery'
+                         : efficiency >= 0.7 ? 'strong'
+                         : 'learning';
+              var tierColor = tier === 'mastery' ? '#fbbf24' : tier === 'strong' ? '#16a34a' : '#0ea5e9';
+              var tierIcon = tier === 'mastery' ? '🏆' : tier === 'strong' ? '🎯' : '📚';
+              var tierTitle = tier === 'mastery' ? 'Nutrition Facts Decoder — first try!'
+                              : tier === 'strong' ? 'Solid label literacy'
+                              : 'You decoded all 5 — keep going';
+              var tierMsg = tier === 'mastery'
+                            ? 'You answered every question correctly on the first attempt across all 5 challenges. You can now read a Nutrition Facts panel like a registered dietitian.'
+                            : tier === 'strong'
+                              ? 'You finished all 5 challenges with strong accuracy. The labels you saw cover every common deception (serving-size split, added vs total sugars, multi-serving frozen meals).'
+                              : 'You finished all 5 challenges — some took multiple tries, which is exactly how learning works. Read the explanations again for the questions where you needed retries.';
+              var rad = 36, circ = 2 * Math.PI * rad;
+              var dashOff = circ - (pct / 100) * circ;
+              return h('div', { className: 'rounded-2xl overflow-hidden shadow-lg border-2', style: { borderColor: tierColor }, 'aria-live': 'polite' },
+                h('div', { className: 'p-5 flex items-center gap-5 flex-wrap', style: { background: 'linear-gradient(135deg, ' + tierColor + '22, #ffffff)' } },
+                  // Score donut
+                  h('div', { className: 'relative flex-shrink-0', style: { width: 96, height: 96 } },
+                    h('svg', { viewBox: '0 0 100 100', width: 96, height: 96,
+                      'aria-label': 'Accuracy: ' + totalCorrect + ' of ' + totalPicks + ' picks correct'
+                    },
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                        strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                    ),
+                    h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                      h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                      h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700' }, totalCorrect + ' / ' + totalPicks)
+                    )
+                  ),
+                  // Tier headline
+                  h('div', { className: 'flex-1 min-w-[220px]' },
+                    h('div', { className: 'text-3xl mb-1', 'aria-hidden': 'true' }, tierIcon),
+                    h('h3', { className: 'text-xl font-black', style: { color: tierColor, lineHeight: 1.15 } }, tierTitle),
+                    h('p', { className: 'text-sm text-slate-800 leading-snug mt-1' }, tierMsg)
+                  ),
+                  // Badge medallion
+                  h('div', { 'aria-hidden': 'true', className: 'flex-shrink-0 hidden md:flex',
+                    style: { width: 84, height: 84, borderRadius: '50%', background: tierColor, color: '#ffffff', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: '0 4px 14px ' + tierColor + '44, inset 0 1px 0 rgba(255,255,255,0.25)', border: '4px solid #ffffff' }
+                  },
+                    h('div', { style: { fontSize: 26, lineHeight: 1 } }, '🏷'),
+                    h('div', { style: { fontSize: 9, fontWeight: 900, letterSpacing: '0.04em', textAlign: 'center', textTransform: 'uppercase', marginTop: 4 } }, 'Decoder')
+                  )
+                ),
+                // Per-challenge checklist
+                h('div', { className: 'p-4 bg-white border-t border-emerald-200' },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-700 mb-2' }, '✓ All five challenges decoded'),
+                  h('ul', { className: 'space-y-1 text-sm text-slate-800' },
+                    LABELS.map(function(L) {
+                      return h('li', { key: L.id, className: 'flex items-center gap-2' },
+                        h('span', { 'aria-hidden': 'true', className: 'text-emerald-700 font-black' }, '✓'),
+                        h('span', { className: 'font-bold' }, L.name),
+                        h('span', { className: 'text-xs text-slate-700 italic' }, '— ' + L.difficulty)
+                      );
+                    })
+                  )
+                )
+              );
+            })(),
             h(TeacherNotes, {
               standards: ['CTE Family & Consumer Sciences 4.1', 'FDA Nutrition Facts Label Final Rule (2016)', 'NGSS HS-LS1-7'],
               questions: [

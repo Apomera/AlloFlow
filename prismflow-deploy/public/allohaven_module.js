@@ -301,6 +301,11 @@
     // regeneratable via the Refresh button. Saves Gemini quota.
     companionLetters: {},
 
+    // Phase 2p.20 — gentle Pomodoro completion chime preference.
+    // Web Audio sine-wave bell when a focus session ends. Default on
+    // for new students; toggle in settings.
+    pomodoroChimeEnabled: true,
+
     // ── Reflection insights cache ──
     // Holds the last AI-generated summary of journal entries. Cleared on
     // demand by clicking "Refresh" in the insights modal. Not persisted
@@ -1842,6 +1847,94 @@
     '</svg>'
   ].join('');
 
+  // ── Pomodoro completion chime (Phase 2p.20) ──
+  // Synthesizes a gentle 3-tone bell via Web Audio. No external assets.
+  // Each tone is a sine wave with exponential decay. Tones overlap
+  // slightly for a soft chord. Total duration ~2.4s.
+  function playPomodoroChime() {
+    if (typeof window === 'undefined') return;
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      var actx = new Ctx();
+      // C5, E5, G5 (C major triad). Pleasant, calming, anchored.
+      var freqs = [523.25, 659.25, 783.99];
+      var startDelay = 0;
+      freqs.forEach(function(f, i) {
+        var osc = actx.createOscillator();
+        var gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        var t0 = actx.currentTime + startDelay;
+        // Soft attack + long exponential decay
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.18, t0 + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.6);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 1.7);
+        startDelay += 0.18; // small stagger between tones
+      });
+      // Close context after the longest tone finishes (cleanup)
+      setTimeout(function() {
+        try { actx.close(); } catch (e) { /* ignore */ }
+      }, 2500);
+    } catch (e) { /* silent — Web Audio sometimes blocked, no harm */ }
+  }
+
+  // ── Smart deck import (Phase 2p.21) ──
+  // Parses pasted text into { front, back } pairs. Auto-detects the
+  // separator: prefers ": " or "—" (em dash), falls back to tab, then
+  // comma, then a single space pivot. Skips blank/comment lines.
+  // Returns { pairs, format } where format is the detected separator.
+  function parseDeckText(raw) {
+    if (!raw || typeof raw !== 'string') return { pairs: [], format: null };
+    var lines = raw.split(/\r?\n/).map(function(l) { return l.trim(); }).filter(function(l) {
+      return l.length > 0 && l.charAt(0) !== '#'; // ignore comment lines starting with #
+    });
+    if (lines.length === 0) return { pairs: [], format: null };
+    // Score each candidate separator by how many lines split into 2 parts
+    var candidates = [
+      { sep: ' — ', label: 'em-dash' },
+      { sep: ' - ', label: 'hyphen-spaced' },
+      { sep: ': ',  label: 'colon-space' },
+      { sep: '\t',  label: 'tab' },
+      { sep: ' = ', label: 'equals-spaced' },
+      { sep: ',',   label: 'comma' },
+      { sep: ':',   label: 'colon' }
+    ];
+    var best = null, bestScore = -1;
+    candidates.forEach(function(c) {
+      var split = lines.map(function(l) { return l.split(c.sep); });
+      var score = split.filter(function(s) { return s.length === 2 && s[0].trim() && s[1].trim(); }).length;
+      // Prefer separators that work for MOST lines, with a small bonus
+      // for explicit separators over comma (which often appears within
+      // a definition).
+      var weighted = score - (c.sep === ',' ? 0.3 * lines.length : 0);
+      if (weighted > bestScore) { bestScore = weighted; best = c; }
+    });
+    if (!best || bestScore < lines.length * 0.5) {
+      // Fall back to first-space pivot (single-word terms)
+      var pairs = lines.map(function(l) {
+        var firstSpace = l.indexOf(' ');
+        if (firstSpace === -1) return null;
+        return { front: l.slice(0, firstSpace).trim(), back: l.slice(firstSpace + 1).trim() };
+      }).filter(function(p) { return p && p.front && p.back; });
+      return { pairs: pairs, format: 'first-space' };
+    }
+    var sep = best.sep;
+    var resultPairs = lines.map(function(l) {
+      var idx = l.indexOf(sep);
+      if (idx === -1) return null;
+      var front = l.slice(0, idx).trim();
+      var back = l.slice(idx + sep.length).trim();
+      if (!front || !back) return null;
+      return { front: front, back: back };
+    }).filter(function(p) { return !!p; });
+    return { pairs: resultPairs, format: best.label };
+  }
+
   // ── Custom upload compression (Phase 2p.19) ──
   // Reads a File via FileReader, downscales to a max edge of 256px on
   // a canvas, returns a JPEG data URI ~50-80KB. Keeps localStorage
@@ -1930,6 +2023,47 @@
     var pupilTransform = 'translate(' + px.toFixed(2) + ' ' + py.toFixed(2) + ')';
     var pupilStyle = { transform: pupilTransform, transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1)' };
 
+    // Accessory rendering (Phase 2p.22) — bow on the head, position varies
+    // per species. Uses the accent color so it pops against the body palette.
+    var accessory = animState && animState.accessory;
+    function bowAt(cx, cy, scale) {
+      // Two triangle "wings" + center knot. cx,cy is the center of the knot.
+      var s = scale || 1;
+      var w = 6 * s, h2 = 4 * s;
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        // Left wing
+        h('path', {
+          d: 'M ' + cx + ' ' + cy + ' L ' + (cx - w) + ' ' + (cy - h2) + ' L ' + (cx - w) + ' ' + (cy + h2) + ' Z',
+          fill: p.accent
+        }),
+        // Right wing
+        h('path', {
+          d: 'M ' + cx + ' ' + cy + ' L ' + (cx + w) + ' ' + (cy - h2) + ' L ' + (cx + w) + ' ' + (cy + h2) + ' Z',
+          fill: p.accent
+        }),
+        // Center knot
+        h('ellipse', { cx: cx, cy: cy, rx: 1.6 * s, ry: 2.2 * s, fill: p.primary }),
+        // Tiny highlight on the wings for dimension
+        h('ellipse', { cx: cx - w * 0.55, cy: cy - h2 * 0.3, rx: 0.8 * s, ry: 1.2 * s, fill: p.secondary, opacity: 0.5 }),
+        h('ellipse', { cx: cx + w * 0.55, cy: cy - h2 * 0.3, rx: 0.8 * s, ry: 1.2 * s, fill: p.secondary, opacity: 0.5 })
+      );
+    }
+    // Per-species bow position (above the head, sized for fit)
+    function renderAccessory() {
+      if (accessory !== 'bow') return null;
+      switch (speciesId) {
+        case 'cat':    return bowAt(38, 22, 0.85); // off-center, between left ear and head
+        case 'fox':    return bowAt(50, 18, 0.9);  // between the tall triangle ears
+        case 'owl':    return bowAt(50, 22, 1.0);  // top of head, between tufted ears
+        case 'turtle': return bowAt(18, 50, 0.8);  // small, on top of the green head (which is left-side)
+        case 'dragon': return bowAt(50, 22, 0.9);  // between horns
+        default:       return bowAt(50, 22, 1.0);
+      }
+    }
+
     if (speciesId === 'cat') {
       return h('svg', commonRoot,
         // Tail (sitting curl) — pivots at base; transform-origin in CSS
@@ -1969,7 +2103,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('ellipse', { cx: 42, cy: 38, rx: 3, ry: 3.5, fill: p.primary }),
           h('ellipse', { cx: 58, cy: 38, rx: 3, ry: 3.5, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2008,7 +2143,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('ellipse', { cx: 41, cy: 36, rx: 3, ry: 3, fill: p.primary }),
           h('ellipse', { cx: 59, cy: 36, rx: 3, ry: 3, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2054,7 +2190,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('circle', { cx: 40, cy: 42, r: 6, fill: p.primary }),
           h('circle', { cx: 60, cy: 42, r: 6, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2093,7 +2230,8 @@
         ),
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('circle', { cx: 14, cy: 58, r: 1.8, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -2146,7 +2284,8 @@
         h('g', { className: 'ah-companion-eyelid', style: { opacity: eyelidOpacity, transition: 'opacity 80ms ease' } },
           h('ellipse', { cx: 42, cy: 38, rx: 3.5, ry: 4, fill: p.primary }),
           h('ellipse', { cx: 58, cy: 38, rx: 3.5, ry: 4, fill: p.primary })
-        )
+        ),
+        renderAccessory()
       );
     }
 
@@ -3877,6 +4016,15 @@
     var voicePanelOpen = voicePanelOpenTuple[0];
     var setVoicePanelOpen = voicePanelOpenTuple[1];
 
+    // Smart deck import (Phase 2p.21) — lifted to MemoryModalInner top
+    // so the hook order stays stable across edit/view/quiz mode toggles.
+    var importPanelOpenTuple = useState(false);
+    var importPanelOpen = importPanelOpenTuple[0];
+    var setImportPanelOpen = importPanelOpenTuple[1];
+    var importTextTuple = useState('');
+    var importText = importTextTuple[0];
+    var setImportText = importTextTuple[1];
+
     // ── Modal mode ──
     // 'pick-type'   — empty state, choosing what kind of content to add
     // 'view'        — read-only display of existing content
@@ -4554,9 +4702,144 @@
         var newCards = cards.filter(function(c) { return c.id !== id; });
         setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
       }
+      function clearAllCards() {
+        if (window.confirm && !window.confirm('Remove all ' + cards.length + ' cards from this deck? Mastery stats are lost.')) return;
+        setDraft(Object.assign({}, draft, { data: { cards: [
+          { id: 'c-' + Date.now(), front: '', back: '', correctCount: 0, missCount: 0 }
+        ] } }));
+      }
+      // Smart deck import (Phase 2p.21)
+      var importParse = importText ? parseDeckText(importText) : null;
+      function importAppend() {
+        if (!importParse || importParse.pairs.length === 0) return;
+        // Drop any existing fully-empty card before appending parsed pairs
+        var keepers = cards.filter(function(c) { return (c.front || '').trim() || (c.back || '').trim(); });
+        var newCards = keepers.concat(importParse.pairs.map(function(p, i) {
+          return {
+            id: 'c-' + Date.now() + '-' + i + '-' + Math.floor(Math.random() * 1000),
+            front: p.front, back: p.back,
+            correctCount: 0, missCount: 0
+          };
+        }));
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+        setImportText('');
+        setImportPanelOpen(false);
+      }
+      function importReplace() {
+        if (!importParse || importParse.pairs.length === 0) return;
+        if (cards.length > 1 && window.confirm && !window.confirm('Replace all existing cards with the imported ones?')) return;
+        var newCards = importParse.pairs.map(function(p, i) {
+          return {
+            id: 'c-' + Date.now() + '-' + i + '-' + Math.floor(Math.random() * 1000),
+            front: p.front, back: p.back,
+            correctCount: 0, missCount: 0
+          };
+        });
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+        setImportText('');
+        setImportPanelOpen(false);
+      }
       return h('div', null,
-        h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
-          '📚 Flashcard deck · ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
+          h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } },
+            '📚 Flashcard deck · ' + cards.length + ' card' + (cards.length === 1 ? '' : 's')),
+          h('div', { style: { display: 'flex', gap: '6px' } },
+            h('button', {
+              onClick: function() { setImportPanelOpen(!importPanelOpen); },
+              'aria-pressed': importPanelOpen ? 'true' : 'false',
+              'aria-label': importPanelOpen ? 'Close bulk import panel' : 'Bulk import from text',
+              title: 'Paste a list of term-definition pairs to import many cards at once',
+              style: {
+                background: importPanelOpen ? palette.accent : 'transparent',
+                color: importPanelOpen ? palette.onAccent : palette.textDim,
+                border: '1px solid ' + (importPanelOpen ? palette.accent : palette.border),
+                borderRadius: '6px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '📥 Import'),
+            cards.length > 1 ? h('button', {
+              onClick: clearAllCards,
+              'aria-label': 'Remove all cards',
+              title: 'Clear all cards (mastery stats are lost)',
+              style: {
+                background: 'transparent',
+                color: '#dc2626',
+                border: '1px solid rgba(220,38,38,0.4)',
+                borderRadius: '6px',
+                padding: '4px 10px',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '🗑 Clear all') : null
+          )
+        ),
+        // Import panel
+        importPanelOpen ? h('div', {
+          role: 'region',
+          'aria-label': 'Bulk import flashcards',
+          style: { padding: '12px 14px', background: palette.surface, border: '1px dashed ' + palette.accent, borderRadius: '8px', marginBottom: '12px' }
+        },
+          h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' } },
+            'Paste a list of term-definition pairs. Auto-detects formats:'),
+          h('ul', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', paddingLeft: '18px', lineHeight: '1.5' } },
+            h('li', null, h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px' } }, 'term: definition'), ' (one per line)'),
+            h('li', null, h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px' } }, 'term — definition'), ' (em-dash)'),
+            h('li', null, h('code', { style: { background: palette.bg, padding: '0 4px', borderRadius: '3px' } }, 'term \\t definition'), ' (tab-separated, e.g. spreadsheet paste)'),
+            h('li', null, 'Lines starting with # are skipped (use for comments)')
+          ),
+          h('textarea', {
+            value: importText,
+            onChange: function(e) { setImportText(e.target.value); },
+            placeholder: 'mitochondria: powerhouse of the cell\nphotosynthesis: how plants make energy from sunlight\n# you can comment lines like this',
+            'aria-label': 'Bulk import text',
+            rows: 6,
+            style: {
+              width: '100%',
+              padding: '8px 10px',
+              background: palette.bg,
+              border: '1px solid ' + palette.border,
+              borderRadius: '6px',
+              color: palette.text,
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              boxSizing: 'border-box',
+              lineHeight: '1.5',
+              resize: 'vertical'
+            }
+          }),
+          // Preview
+          importParse ? h('div', { style: { marginTop: '10px', fontSize: '11px', color: palette.textDim } },
+            importParse.pairs.length > 0
+              ? h('span', null,
+                  h('span', { style: { color: palette.accent, fontWeight: 700 } }, '✓ ' + importParse.pairs.length + ' card' + (importParse.pairs.length === 1 ? '' : 's') + ' detected'),
+                  ' (format: ' + importParse.format + ')'
+                )
+              : h('span', { style: { color: palette.textMute, fontStyle: 'italic' } }, 'No card pairs detected yet — keep typing or check the format.')
+          ) : null,
+          // Action buttons
+          importParse && importParse.pairs.length > 0 ? h('div', {
+            style: { display: 'flex', gap: '8px', marginTop: '10px', justifyContent: 'flex-end' }
+          },
+            h('button', {
+              onClick: function() { setImportText(''); setImportPanelOpen(false); },
+              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Cancel'),
+            h('button', {
+              onClick: importAppend,
+              style: { background: 'transparent', color: palette.accent, border: '1px solid ' + palette.accent, borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, '+ Append'),
+            h('button', {
+              onClick: importReplace,
+              style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '4px 12px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Replace all')
+          ) : null
+        ) : null,
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
           cards.map(function(card, idx) {
             return h('div', {
@@ -5299,34 +5582,67 @@
         checkAndAdvance();
       }
 
+      // Voice input (Phase 2p.20) — speech-to-text fills the current
+      // guess, replacing whatever was typed. Hidden when Web Speech
+      // unavailable. Already-recording state shown with red mic.
+      function handleVoiceForAcronym() {
+        if (!p.startVoice) return;
+        if (p.isRecording) { p.stopVoice && p.stopVoice(); return; }
+        p.startVoice(function(transcript) {
+          updateGuess((transcript || '').trim());
+        });
+      }
       return h('div', null,
         h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
           'Letter ' + (idx + 1) + ' / ' + quiz.letters.length),
         h('div', { style: { fontSize: '64px', fontWeight: 800, color: palette.accent, textAlign: 'center', marginBottom: '14px', letterSpacing: '0.04em' } },
           letter),
-        h('input', {
-          type: 'text',
-          value: currentGuess,
-          onChange: function(e) { updateGuess(e.target.value); },
-          placeholder: 'What does ' + letter + ' stand for?',
-          'aria-label': 'Meaning of ' + letter,
-          autoFocus: true,
-          onKeyDown: function(e) {
-            if (e.key === 'Enter') { e.preventDefault(); checkAndAdvance(); }
-          },
-          style: {
-            width: '100%',
-            padding: '10px 12px',
-            background: palette.surface,
-            border: '1px solid ' + palette.border,
-            borderRadius: '8px',
-            color: palette.text,
-            fontSize: '15px',
-            fontFamily: 'inherit',
-            boxSizing: 'border-box',
-            marginBottom: '14px'
-          }
-        }),
+        h('div', { style: { position: 'relative', marginBottom: '14px' } },
+          h('input', {
+            type: 'text',
+            value: currentGuess,
+            onChange: function(e) { updateGuess(e.target.value); },
+            placeholder: 'What does ' + letter + ' stand for?',
+            'aria-label': 'Meaning of ' + letter,
+            autoFocus: true,
+            onKeyDown: function(e) {
+              if (e.key === 'Enter') { e.preventDefault(); checkAndAdvance(); }
+            },
+            style: {
+              width: '100%',
+              padding: '10px 12px',
+              paddingRight: p.speechSupported ? '46px' : '12px',
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              color: palette.text,
+              fontSize: '15px',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box'
+            }
+          }),
+          // Voice button — only shown when Web Speech is supported
+          p.speechSupported ? h('button', {
+            onClick: handleVoiceForAcronym,
+            'aria-pressed': p.isRecording ? 'true' : 'false',
+            'aria-label': p.isRecording ? 'Stop voice recording' : 'Speak your answer',
+            title: p.isRecording ? 'Recording — click to stop' : 'Speak your answer (voice-to-text)',
+            style: {
+              position: 'absolute',
+              top: '6px', right: '6px',
+              width: '32px', height: '32px',
+              borderRadius: '50%',
+              background: p.isRecording ? '#dc2626' : 'transparent',
+              border: '1px solid ' + (p.isRecording ? '#dc2626' : palette.border),
+              color: p.isRecording ? '#fff' : palette.textDim,
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            },
+            className: p.isRecording ? 'ah-record-pulse' : ''
+          }, '🎤') : null
+        ),
         h('div', { style: { display: 'flex', gap: '10px' } },
           h('button', {
             onClick: skip,
@@ -5422,29 +5738,58 @@
           )
         ),
         !revealed ? h('div', null,
-          h('input', {
-            type: 'text',
-            value: guess,
-            onChange: function(e) { updateGuess(e.target.value); },
-            placeholder: 'Type what this reminds you of…',
-            'aria-label': 'Your recall of the association',
-            autoFocus: true,
-            onKeyDown: function(e) {
-              if (e.key === 'Enter') { e.preventDefault(); reveal(); }
-            },
-            style: {
-              width: '100%',
-              padding: '10px 12px',
-              background: palette.surface,
-              border: '1px solid ' + palette.border,
-              borderRadius: '8px',
-              color: palette.text,
-              fontSize: '14px',
-              fontFamily: 'inherit',
-              boxSizing: 'border-box',
-              marginBottom: '10px'
-            }
-          }),
+          h('div', { style: { position: 'relative', marginBottom: '10px' } },
+            h('input', {
+              type: 'text',
+              value: guess,
+              onChange: function(e) { updateGuess(e.target.value); },
+              placeholder: 'Type what this reminds you of…',
+              'aria-label': 'Your recall of the association',
+              autoFocus: true,
+              onKeyDown: function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); reveal(); }
+              },
+              style: {
+                width: '100%',
+                padding: '10px 12px',
+                paddingRight: p.speechSupported ? '46px' : '12px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                color: palette.text,
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box'
+              }
+            }),
+            // Voice button (Phase 2p.20)
+            p.speechSupported ? h('button', {
+              onClick: function() {
+                if (!p.startVoice) return;
+                if (p.isRecording) { p.stopVoice && p.stopVoice(); return; }
+                p.startVoice(function(transcript) {
+                  updateGuess((transcript || '').trim());
+                });
+              },
+              'aria-pressed': p.isRecording ? 'true' : 'false',
+              'aria-label': p.isRecording ? 'Stop voice recording' : 'Speak your answer',
+              title: p.isRecording ? 'Recording — click to stop' : 'Speak your answer (voice-to-text)',
+              style: {
+                position: 'absolute',
+                top: '6px', right: '6px',
+                width: '32px', height: '32px',
+                borderRadius: '50%',
+                background: p.isRecording ? '#dc2626' : 'transparent',
+                border: '1px solid ' + (p.isRecording ? '#dc2626' : palette.border),
+                color: p.isRecording ? '#fff' : palette.textDim,
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              },
+              className: p.isRecording ? 'ah-record-pulse' : ''
+            }, '🎤') : null
+          ),
           h('div', { style: { display: 'flex', gap: '10px' } },
             h('button', {
               onClick: function() { setMode('view'); setQuiz(null); },
@@ -7025,7 +7370,9 @@
       return {
         species: existing ? existing.species : null,
         colorVariant: existing ? existing.colorVariant : 'warm',
-        name: existing ? existing.name : ''
+        name: existing ? existing.name : '',
+        // Phase 2p.22 — accessory carries through across the wizard
+        accessory: existing ? (existing.accessory || null) : null
       };
     });
     var draft = draftTuple[0];
@@ -7041,7 +7388,9 @@
       p.onSave({
         species: draft.species,
         colorVariant: draft.colorVariant,
-        name: (draft.name || '').trim() || (getCompanionSpecies(draft.species) || {}).label || 'Buddy'
+        name: (draft.name || '').trim() || (getCompanionSpecies(draft.species) || {}).label || 'Buddy',
+        // Phase 2p.22 — only include accessory if unlocked, otherwise leave existing untouched
+        accessory: p.bowUnlocked ? (draft.accessory || null) : (existing && existing.accessory) || null
       });
     }
 
@@ -7120,7 +7469,7 @@
               }
             },
               h('div', { style: { width: '60px', height: '60px' } },
-                getCompanionSvg(draft.species, swatch, { blinking: false })
+                getCompanionSvg(draft.species, swatch, { blinking: false, accessory: draft.accessory })
               ),
               h('div', { style: { fontWeight: 700, fontSize: '12px' } }, v.label),
               // Color trio swatch
@@ -7146,7 +7495,8 @@
           h('div', {
             style: { width: '90px', height: '90px', flexShrink: 0, padding: '6px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '12px' }
           },
-            getCompanionSvg(draft.species, swatch, { blinking: false })
+            // Phase 2p.22 — preview reflects the accessory toggle
+            getCompanionSvg(draft.species, swatch, { blinking: false, accessory: draft.accessory })
           ),
           h('div', { style: { flex: 1 } },
             h('input', {
@@ -7183,7 +7533,34 @@
               })
             )
           )
-        )
+        ),
+        // Phase 2p.22 — bow accessory toggle. Visible only after the
+        // student has unlocked it via the "first-favorite" achievement.
+        p.bowUnlocked ? h('div', {
+          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }
+        },
+          h('div', null,
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text } }, '🎀 Bow accessory'),
+            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+              draft.accessory === 'bow' ? 'Currently worn — tap to remove' : 'Unlocked from your first favorite')
+          ),
+          h('button', {
+            onClick: function() { setField('accessory', draft.accessory === 'bow' ? null : 'bow'); },
+            'aria-pressed': draft.accessory === 'bow' ? 'true' : 'false',
+            'aria-label': 'Toggle bow accessory',
+            style: {
+              background: draft.accessory === 'bow' ? palette.accent : palette.bg,
+              color: draft.accessory === 'bow' ? palette.onAccent : palette.textDim,
+              border: '1px solid ' + (draft.accessory === 'bow' ? palette.accent : palette.border),
+              borderRadius: '999px',
+              padding: '4px 14px',
+              fontSize: '11px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, draft.accessory === 'bow' ? 'On' : 'Off')
+        ) : null
       );
     }
 
@@ -8138,6 +8515,17 @@
           updates.companion = Object.assign({}, state.companion, {
             lastQuizPromptDismissedAt: null
           });
+        }
+
+        // Phase 2p.20 — gentle 3-tone bell when focus completes.
+        // Suppressed for cycle-bonus completion since the cycle-bonus
+        // toast already celebrates. Skipped if user disabled in settings.
+        if (state.pomodoroChimeEnabled !== false && !isFourthInCycle) {
+          try { playPomodoroChime(); } catch (e) { /* fail silent */ }
+        } else if (state.pomodoroChimeEnabled !== false && isFourthInCycle) {
+          // Cycle-bonus gets the chime too — students who completed 4
+          // straight Pomodoros deserve more of a celebration, not less
+          try { playPomodoroChime(); } catch (e) { /* fail silent */ }
         }
 
         // First-Pomodoro toast (one-time)
@@ -9534,10 +9922,18 @@
       // batch — don\'t spam if many fire at once on a fresh-state import)
       if (state.companion && state.companion.species) {
         var first = newly[0];
-        stateUpdates.companion = Object.assign({}, state.companion, {
+        var companionPatch = {
           lastBubbleAt: nowIso,
           lastBubbleText: first.emoji + ' ' + first.label + '! ' + first.desc
-        });
+        };
+        // Phase 2p.22 — auto-grant bow accessory when "first-favorite"
+        // achievement unlocks, if companion has no accessory yet.
+        var unlockedFirstFav = newly.some(function(a) { return a.id === 'first-favorite'; });
+        if (unlockedFirstFav && !state.companion.accessory) {
+          companionPatch.accessory = 'bow';
+          companionPatch.lastBubbleText = '🎀 Found a bow in the room — wearing it for you!';
+        }
+        stateUpdates.companion = Object.assign({}, state.companion, companionPatch);
       }
       setStateMulti(stateUpdates);
       setTimeout(function() {
@@ -10451,6 +10847,23 @@
               letterSpacing: '0.04em'
             }
           }, 'starter') : null,
+          // Custom-upload badge (Phase 2p.19) — distinguishes student-
+          // uploaded images from AI-generated ones. Bottom-center, soft.
+          decoration.isCustomUpload ? h('span', {
+            'aria-label': 'Custom uploaded image',
+            title: 'Your image',
+            style: {
+              position: 'absolute',
+              bottom: '2px',
+              right: decoration.isStarter ? '38px' : '4px',
+              fontSize: '8px',
+              color: palette.textMute,
+              background: 'rgba(0,0,0,0.4)',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              letterSpacing: '0.04em'
+            }
+          }, '📎') : null,
           // Favorite ⭐ overlay (Phase 2p.14) — small star top-right
           // (above the hover-revealed delete ✕). Stays visible always.
           decoration.isFavorite ? h('span', {
@@ -10987,7 +11400,7 @@
             }
           },
             getCompanionSvg(companion.species, paletteColors,
-              { blinking: blinking, pupilOffset: pupilOffset, sleeping: sleeping }),
+              { blinking: blinking, pupilOffset: pupilOffset, sleeping: sleeping, accessory: companion.accessory }),
             // Floating "Z" when sleeping — gentle visual signal, not "needs sleep" coded
             sleeping ? h('span', {
               className: 'ah-companion-z',
@@ -12757,6 +13170,12 @@
         palette: palette,
         autoStartQuiz: !!ctx.autoStartQuiz,
         queueInfo: queueInfo,
+        // Voice input (Phase 2p.20) — let acronym + image-link quizzes
+        // accept spoken answers via Web Speech API
+        speechSupported: speechSupported,
+        startVoice: startVoiceCapture,
+        stopVoice: stopVoiceCapture,
+        isRecording: isRecording,
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
         },
@@ -13525,9 +13944,12 @@
 
     function renderCompanionSetupModal() {
       if (state.activeModal !== 'companion-setup') return null;
+      // Phase 2p.22 — gate bow toggle behind first-favorite achievement
+      var bowUnlocked = !!((state.achievements || {})['first-favorite']);
       return h(CompanionSetupInner, {
         existing: state.companion,
         palette: palette,
+        bowUnlocked: bowUnlocked,
         onSave: function(updates) {
           // Preserve skillCelebrations + createdAt from existing if present
           var prev = state.companion || {};
@@ -14016,6 +14438,39 @@
               'aria-label': 'Replay the welcome tour',
               style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 14px' })
             }, '🎬 Replay tour')
+          ),
+          // Phase 2p.20 — Pomodoro completion chime toggle
+          h('div', {
+            style: { marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }
+          },
+            h('div', null,
+              h('div', { style: { fontSize: '12px', fontWeight: 600, color: palette.text } }, '🔔 Sound on Pomodoro complete'),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px' } },
+                'Gentle 3-tone bell when a focus session ends')
+            ),
+            h('button', {
+              onClick: function() {
+                var next = state.pomodoroChimeEnabled === false ? true : false;
+                setStateField('pomodoroChimeEnabled', next);
+                if (next) {
+                  // Preview the chime so students hear what they\'re enabling
+                  try { playPomodoroChime(); } catch (e) {}
+                }
+              },
+              'aria-pressed': state.pomodoroChimeEnabled !== false ? 'true' : 'false',
+              'aria-label': 'Toggle Pomodoro completion chime',
+              style: {
+                background: state.pomodoroChimeEnabled !== false ? palette.accent : palette.surface,
+                color: state.pomodoroChimeEnabled !== false ? palette.onAccent : palette.textDim,
+                border: '1px solid ' + (state.pomodoroChimeEnabled !== false ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '4px 14px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, state.pomodoroChimeEnabled !== false ? 'On' : 'Off')
           )
         )
       );

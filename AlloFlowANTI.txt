@@ -9877,6 +9877,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfPreviewA11yInspect, setPdfPreviewA11yInspect] = useState(false);
   const [insertBlockFilter, setInsertBlockFilter] = useState('');
   const [insertBlockOpenCats, setInsertBlockOpenCats] = useState({ layout: true, content: true, educational: true, interactive: true, media: true });
+  const [insertBlockRecent, setInsertBlockRecent] = useState([]);  // session-only most-recent block labels (max 5)
+  const insertBlockPickerRef = useRef(null);
   const pdfPreviewRef = useRef(null);
   const selectedPreviewImgRef = useRef(null);
   const [extractedImagesList, setExtractedImagesList] = useState([]);
@@ -37275,6 +37277,45 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         live.setAttribute('contenteditable', 'false');
                         doc.body && doc.body.appendChild(live);
                       }
+                      // Inject Move Up / Move Down buttons next to remove on every block.
+                      // Runs once for existing blocks, then via MutationObserver for new ones.
+                      const _ensureMoveButtons = (block) => {
+                        if (!block || block.querySelector(':scope > .allo-block-move-up')) return;
+                        const remove = block.querySelector(':scope > .allo-block-remove');
+                        if (!remove) return;
+                        const up = doc.createElement('button');
+                        up.type = 'button';
+                        up.className = 'allo-block-move-up';
+                        up.setAttribute('contenteditable', 'false');
+                        up.setAttribute('aria-label', 'Move block up');
+                        up.title = 'Move up';
+                        up.textContent = '↑';
+                        const down = doc.createElement('button');
+                        down.type = 'button';
+                        down.className = 'allo-block-move-down';
+                        down.setAttribute('contenteditable', 'false');
+                        down.setAttribute('aria-label', 'Move block down');
+                        down.title = 'Move down';
+                        down.textContent = '↓';
+                        block.insertBefore(up, remove);
+                        block.insertBefore(down, remove);
+                      };
+                      try { doc.querySelectorAll('[data-allo-block]').forEach(_ensureMoveButtons); } catch (_) {}
+                      if (!doc.__alloBlocksObserver) {
+                        try {
+                          const obs = new (doc.defaultView.MutationObserver || MutationObserver)((muts) => {
+                            muts.forEach((m) => {
+                              m.addedNodes.forEach((n) => {
+                                if (!n || n.nodeType !== 1) return;
+                                if (n.matches && n.matches('[data-allo-block]')) _ensureMoveButtons(n);
+                                if (n.querySelectorAll) n.querySelectorAll('[data-allo-block]').forEach(_ensureMoveButtons);
+                              });
+                            });
+                          });
+                          obs.observe(doc.body, { childList: true, subtree: true });
+                          doc.__alloBlocksObserver = obs;
+                        } catch (_) {}
+                      }
                       if (doc.__alloBlocksDelegated) return;
                       doc.__alloBlocksDelegated = true;
                       const announce = (msg) => {
@@ -37287,6 +37328,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       const persist = () => {
                         try { if (typeof window.parent.__alloflowOnPdfPreviewMutated === 'function') window.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {}
                       };
+                      // ── FOCUS DELEGATION (snapshot select values for revert-on-cancel) ──
+                      doc.addEventListener('focusin', (ev) => {
+                        const t = ev.target;
+                        if (t && t.tagName === 'SELECT' && t.classList && t.classList.contains('allo-frame-template-select')) {
+                          t.dataset.prevValue = t.value;
+                        }
+                      }, true);
                       // ── CLICK DELEGATION (covers remove + structural controls + style controls) ──
                       doc.addEventListener('click', (ev) => {
                         const t = ev.target;
@@ -37300,6 +37348,42 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             block.remove();
                             announce('Removed ' + type + ' block');
                             persist();
+                          }
+                          return;
+                        }
+                        // Move Up / Move Down — accessible block reordering
+                        const moveUpBtn = t.closest('.allo-block-move-up');
+                        if (moveUpBtn) {
+                          ev.preventDefault();
+                          const block = moveUpBtn.closest('[data-allo-block]');
+                          if (!block) return;
+                          // Find the previous sibling that is a block-level node (skip text nodes)
+                          let prev = block.previousElementSibling;
+                          while (prev && (prev.tagName === 'SPAN' || prev.id === 'allo-blocks-live')) prev = prev.previousElementSibling;
+                          if (prev && block.parentNode) {
+                            block.parentNode.insertBefore(block, prev);
+                            announce('Moved up');
+                            setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
+                            persist();
+                          } else {
+                            announce('Already at top');
+                          }
+                          return;
+                        }
+                        const moveDownBtn = t.closest('.allo-block-move-down');
+                        if (moveDownBtn) {
+                          ev.preventDefault();
+                          const block = moveDownBtn.closest('[data-allo-block]');
+                          if (!block) return;
+                          let next = block.nextElementSibling;
+                          while (next && (next.tagName === 'SPAN' || next.id === 'allo-blocks-live')) next = next.nextElementSibling;
+                          if (next && block.parentNode) {
+                            block.parentNode.insertBefore(next, block);
+                            announce('Moved down');
+                            setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
+                            persist();
+                          } else {
+                            announce('Already at bottom');
                           }
                           return;
                         }
@@ -37876,6 +37960,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               ? win.confirm('Switch sentence frame template? Your edits to the blanks will be replaced.')
                               : true;
                             if (!proceed) {
+                              // Restore the dropdown to the previously-selected template (snapshotted on focus)
+                              const prev = t.dataset.prevValue;
+                              if (prev) t.value = prev;
                               announce('Template change cancelled');
                               return;
                             }
@@ -37883,6 +37970,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           const removeBtn = block.querySelector(':scope > .allo-block-remove');
                           const picker = block.querySelector(':scope > .allo-frame-template-picker');
                           block.innerHTML = (removeBtn ? removeBtn.outerHTML : '') + tpl + (picker ? picker.outerHTML : '');
+                          // Snapshot the new value as the new "previous" so the next change-and-cancel reverts to this one
+                          const newSelect = block.querySelector('.allo-frame-template-select');
+                          if (newSelect) { newSelect.value = t.value; newSelect.dataset.prevValue = t.value; }
                           announce('Sentence frame: ' + t.value);
                           persist();
                         }
@@ -38053,19 +38143,74 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       } catch (_) {}
                       try { if (typeof addToast === 'function') addToast('Inserted: ' + block.label, 'success'); } catch (_) {}
                       try { if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
+                      // Track recently used (session-only; max 5; dedup; most-recent-first)
+                      try { setInsertBlockRecent(prev => [block.label, ...prev.filter(l => l !== block.label)].slice(0, 5)); } catch (_) {}
                     };
 
                     // ── Filter logic ──
                     const f = (insertBlockFilter || '').toLowerCase().trim();
                     const visible = f ? blocks.filter(b => b.label.toLowerCase().includes(f) || (b.keywords && b.keywords.toLowerCase().includes(f))) : blocks;
 
+                    // Translation helper — uses LanguageContext t() with English fallback.
+                    // Block label key: lowercased, '_' for spaces and '&'.
+                    const _bt = (label) => {
+                      const key = 'docbuilder.block.' + String(label).toLowerCase().replace(/[\s&]+/g, '_');
+                      const out = (typeof t === 'function') ? t(key) : null;
+                      return (out && out !== key) ? out : label;
+                    };
+                    const _ct = (cat) => {
+                      const key = 'docbuilder.cat.' + cat;
+                      const out = (typeof t === 'function') ? t(key) : null;
+                      return (out && out !== key) ? out : _CAT_LABELS[cat];
+                    };
+
+                    // Roving keyboard navigation across all picker buttons (works across categories + Recent).
+                    const _onPickerKey = (e) => {
+                      if (!insertBlockPickerRef.current) return;
+                      const buttons = Array.from(insertBlockPickerRef.current.querySelectorAll('button[data-allo-pick]'));
+                      if (buttons.length === 0) return;
+                      const idx = buttons.indexOf(document.activeElement);
+                      if (idx === -1) return;
+                      let next = -1;
+                      if (e.key === 'ArrowRight') next = (idx + 1) % buttons.length;
+                      else if (e.key === 'ArrowLeft') next = (idx - 1 + buttons.length) % buttons.length;
+                      else if (e.key === 'ArrowDown') next = Math.min(idx + 2, buttons.length - 1);
+                      else if (e.key === 'ArrowUp') next = Math.max(idx - 2, 0);
+                      else if (e.key === 'Home') next = 0;
+                      else if (e.key === 'End') next = buttons.length - 1;
+                      else return;
+                      e.preventDefault();
+                      buttons[next] && buttons[next].focus();
+                    };
+
                     return (
-                      <div className="space-y-1.5">
-                        <input type="search" value={insertBlockFilter} onChange={e => setInsertBlockFilter(e.target.value)} placeholder={`Search ${blocks.length} blocks…`}
-                          aria-label="Search blocks"
+                      <div ref={insertBlockPickerRef} className="space-y-1.5" onKeyDown={_onPickerKey}>
+                        <input type="search" value={insertBlockFilter} onChange={e => setInsertBlockFilter(e.target.value)}
+                          placeholder={(typeof t === 'function' && t('docbuilder.search_placeholder') !== 'docbuilder.search_placeholder' && t('docbuilder.search_placeholder')) || (`Search ${blocks.length} blocks…`)}
+                          aria-label={(typeof t === 'function' && t('docbuilder.search_aria') !== 'docbuilder.search_aria' && t('docbuilder.search_aria')) || 'Search blocks'}
                           className="w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none" />
                         {f && visible.length === 0 && (
                           <div className="text-[11px] text-slate-500 italic px-2 py-1">No blocks match "{insertBlockFilter}"</div>
+                        )}
+                        {/* Recent row — only when no active filter and at least 1 recent */}
+                        {!f && insertBlockRecent.length > 0 && (
+                          <div>
+                            <div className="text-[10px] font-bold text-indigo-700 px-1 py-0.5 uppercase tracking-wider">⏱ {_ct('recent')}</div>
+                            <div className="grid grid-cols-2 gap-1 mt-0.5">
+                              {insertBlockRecent.map(label => {
+                                const block = blocks.find(b => b.label === label);
+                                if (!block) return null;
+                                const dispLabel = _bt(block.label);
+                                return (
+                                  <button key={'recent-' + label} type="button" data-allo-pick="1" onClick={() => _insertBlock(block)}
+                                    className="text-[11px] font-bold text-indigo-700 px-1.5 py-2 bg-indigo-50 border border-indigo-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-100 transition-colors text-left min-h-[36px]"
+                                    aria-label={`Insert ${dispLabel}`} title={`Insert ${dispLabel}`}>
+                                    {block.icon} {dispLabel}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         )}
                         {_CAT_ORDER.map(cat => {
                           const catBlocks = visible.filter(b => b.category === cat);
@@ -38076,23 +38221,27 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               <button type="button" onClick={() => setInsertBlockOpenCats(p => ({ ...p, [cat]: !p[cat] }))}
                                 aria-expanded={isOpen} aria-controls={`allo-cat-${cat}`}
                                 className="w-full flex items-center justify-between text-[10px] font-bold text-slate-600 px-1 py-0.5 hover:text-indigo-700 transition-colors uppercase tracking-wider">
-                                <span>{_CAT_LABELS[cat]} <span className="text-slate-400 font-normal">({catBlocks.length})</span></span>
+                                <span>{_ct(cat)} <span className="text-slate-400 font-normal">({catBlocks.length})</span></span>
                                 <span aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
                               </button>
                               {isOpen && (
                                 <div id={`allo-cat-${cat}`} className="grid grid-cols-2 gap-1 mt-0.5">
-                                  {catBlocks.map(block => (
-                                    <button key={block.label} onClick={() => _insertBlock(block)}
-                                      className="text-[11px] font-bold text-slate-600 px-1.5 py-2 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left min-h-[36px]"
-                                      aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
-                                      {block.icon} {block.label}
-                                    </button>
-                                  ))}
+                                  {catBlocks.map(block => {
+                                    const dispLabel = _bt(block.label);
+                                    return (
+                                      <button key={block.label} type="button" data-allo-pick="1" onClick={() => _insertBlock(block)}
+                                        className="text-[11px] font-bold text-slate-600 px-1.5 py-2 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left min-h-[36px]"
+                                        aria-label={`Insert ${dispLabel}`} title={`Insert ${dispLabel}`}>
+                                        {block.icon} {dispLabel}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
                           );
                         })}
+                        <div className="text-[9px] text-slate-400 italic px-1 pt-0.5" aria-hidden="true">↑↓←→ Home End to navigate · Enter to insert</div>
                       </div>
                     );
                   })()}

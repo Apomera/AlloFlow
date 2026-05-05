@@ -4859,84 +4859,84 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/firestore_sync_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/allohaven_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/sel_hub/sel_hub_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/story_stage_module.js');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('AlloHaven', './allohaven_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/view_adventure_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/export_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4947,7 +4947,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@23f776c/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -9877,6 +9877,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [pdfPreviewA11yInspect, setPdfPreviewA11yInspect] = useState(false);
   const [insertBlockFilter, setInsertBlockFilter] = useState('');
   const [insertBlockOpenCats, setInsertBlockOpenCats] = useState({ layout: true, content: true, educational: true, interactive: true, media: true });
+  const [insertBlockRecent, setInsertBlockRecent] = useState([]);  // session-only most-recent block labels (max 5)
+  const insertBlockPickerRef = useRef(null);
   const pdfPreviewRef = useRef(null);
   const selectedPreviewImgRef = useRef(null);
   const [extractedImagesList, setExtractedImagesList] = useState([]);
@@ -37101,6 +37103,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       .allo-block:hover > .allo-block-remove, .allo-block:focus-within > .allo-block-remove, .allo-block-remove:focus { opacity: 1; }
                       .allo-block-remove:hover { background: #dc2626; }
                       .allo-block-remove:focus { outline: 2px solid #6366f1; outline-offset: 2px; }
+                      .allo-block-move-up, .allo-block-move-down { position: absolute; top: 4px; width: 24px; height: 28px; background: rgba(15, 23, 42, 0.6); color: white; border: none; border-radius: 4px; cursor: pointer; opacity: 0; transition: opacity 0.15s; font-size: 13px; line-height: 1; display: flex; align-items: center; justify-content: center; z-index: 5; padding: 0; font-weight: 700; }
+                      .allo-block-move-down { right: 38px; }
+                      .allo-block-move-up { right: 66px; }
+                      .allo-block:hover > .allo-block-move-up, .allo-block:hover > .allo-block-move-down, .allo-block:focus-within > .allo-block-move-up, .allo-block:focus-within > .allo-block-move-down, .allo-block-move-up:focus, .allo-block-move-down:focus { opacity: 1; }
+                      .allo-block-move-up:hover, .allo-block-move-down:hover { background: #6366f1; }
+                      .allo-block-move-up:focus, .allo-block-move-down:focus { outline: 2px solid #6366f1; outline-offset: 2px; }
+                      .allo-block-move-up:disabled, .allo-block-move-down:disabled { opacity: 0 !important; cursor: not-allowed; }
                       .allo-block-controls { display: flex; gap: 4px; margin-top: 8px; padding: 6px; background: rgba(99, 102, 241, 0.08); border-radius: 6px; flex-wrap: wrap; align-items: center; }
                       .allo-block-controls button { font-size: 11px; padding: 4px 9px; min-height: 28px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 600; color: #334155; font-family: inherit; }
                       .allo-block-controls button:hover { background: #6366f1; color: white; border-color: #6366f1; }
@@ -37110,7 +37119,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       .allo-block-controls select { font-size: 11px; padding: 4px 6px; min-height: 28px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; color: #334155; font-family: inherit; }
                       .allo-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
                       @media print {
-                        .allo-block-remove, .allo-block-controls, .allo-img-controls, .allo-audio-controls, .allo-video-controls, .allo-frame-template-picker, .allo-math-input-wrap, .allo-code-header { display: none !important; }
+                        .allo-block-remove, .allo-block-move-up, .allo-block-move-down, .allo-block-controls, .allo-img-controls, .allo-audio-controls, .allo-video-controls, .allo-frame-template-picker, .allo-math-input-wrap, .allo-code-header { display: none !important; }
                         .allo-block { break-inside: avoid; }
                         .allo-block-math .allo-math-output { font-size: 16pt; }
                       }
@@ -37268,6 +37277,45 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         live.setAttribute('contenteditable', 'false');
                         doc.body && doc.body.appendChild(live);
                       }
+                      // Inject Move Up / Move Down buttons next to remove on every block.
+                      // Runs once for existing blocks, then via MutationObserver for new ones.
+                      const _ensureMoveButtons = (block) => {
+                        if (!block || block.querySelector(':scope > .allo-block-move-up')) return;
+                        const remove = block.querySelector(':scope > .allo-block-remove');
+                        if (!remove) return;
+                        const up = doc.createElement('button');
+                        up.type = 'button';
+                        up.className = 'allo-block-move-up';
+                        up.setAttribute('contenteditable', 'false');
+                        up.setAttribute('aria-label', 'Move block up');
+                        up.title = 'Move up';
+                        up.textContent = '↑';
+                        const down = doc.createElement('button');
+                        down.type = 'button';
+                        down.className = 'allo-block-move-down';
+                        down.setAttribute('contenteditable', 'false');
+                        down.setAttribute('aria-label', 'Move block down');
+                        down.title = 'Move down';
+                        down.textContent = '↓';
+                        block.insertBefore(up, remove);
+                        block.insertBefore(down, remove);
+                      };
+                      try { doc.querySelectorAll('[data-allo-block]').forEach(_ensureMoveButtons); } catch (_) {}
+                      if (!doc.__alloBlocksObserver) {
+                        try {
+                          const obs = new (doc.defaultView.MutationObserver || MutationObserver)((muts) => {
+                            muts.forEach((m) => {
+                              m.addedNodes.forEach((n) => {
+                                if (!n || n.nodeType !== 1) return;
+                                if (n.matches && n.matches('[data-allo-block]')) _ensureMoveButtons(n);
+                                if (n.querySelectorAll) n.querySelectorAll('[data-allo-block]').forEach(_ensureMoveButtons);
+                              });
+                            });
+                          });
+                          obs.observe(doc.body, { childList: true, subtree: true });
+                          doc.__alloBlocksObserver = obs;
+                        } catch (_) {}
+                      }
                       if (doc.__alloBlocksDelegated) return;
                       doc.__alloBlocksDelegated = true;
                       const announce = (msg) => {
@@ -37280,6 +37328,13 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       const persist = () => {
                         try { if (typeof window.parent.__alloflowOnPdfPreviewMutated === 'function') window.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {}
                       };
+                      // ── FOCUS DELEGATION (snapshot select values for revert-on-cancel) ──
+                      doc.addEventListener('focusin', (ev) => {
+                        const t = ev.target;
+                        if (t && t.tagName === 'SELECT' && t.classList && t.classList.contains('allo-frame-template-select')) {
+                          t.dataset.prevValue = t.value;
+                        }
+                      }, true);
                       // ── CLICK DELEGATION (covers remove + structural controls + style controls) ──
                       doc.addEventListener('click', (ev) => {
                         const t = ev.target;
@@ -37293,6 +37348,42 @@ Return ONLY the plain language summary in ${lang}.`, false);
                             block.remove();
                             announce('Removed ' + type + ' block');
                             persist();
+                          }
+                          return;
+                        }
+                        // Move Up / Move Down — accessible block reordering
+                        const moveUpBtn = t.closest('.allo-block-move-up');
+                        if (moveUpBtn) {
+                          ev.preventDefault();
+                          const block = moveUpBtn.closest('[data-allo-block]');
+                          if (!block) return;
+                          // Find the previous sibling that is a block-level node (skip text nodes)
+                          let prev = block.previousElementSibling;
+                          while (prev && (prev.tagName === 'SPAN' || prev.id === 'allo-blocks-live')) prev = prev.previousElementSibling;
+                          if (prev && block.parentNode) {
+                            block.parentNode.insertBefore(block, prev);
+                            announce('Moved up');
+                            setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
+                            persist();
+                          } else {
+                            announce('Already at top');
+                          }
+                          return;
+                        }
+                        const moveDownBtn = t.closest('.allo-block-move-down');
+                        if (moveDownBtn) {
+                          ev.preventDefault();
+                          const block = moveDownBtn.closest('[data-allo-block]');
+                          if (!block) return;
+                          let next = block.nextElementSibling;
+                          while (next && (next.tagName === 'SPAN' || next.id === 'allo-blocks-live')) next = next.nextElementSibling;
+                          if (next && block.parentNode) {
+                            block.parentNode.insertBefore(next, block);
+                            announce('Moved down');
+                            setTimeout(() => { try { block.focus(); } catch (_) {} }, 30);
+                            persist();
+                          } else {
+                            announce('Already at bottom');
                           }
                           return;
                         }
@@ -37869,6 +37960,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               ? win.confirm('Switch sentence frame template? Your edits to the blanks will be replaced.')
                               : true;
                             if (!proceed) {
+                              // Restore the dropdown to the previously-selected template (snapshotted on focus)
+                              const prev = t.dataset.prevValue;
+                              if (prev) t.value = prev;
                               announce('Template change cancelled');
                               return;
                             }
@@ -37876,6 +37970,9 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           const removeBtn = block.querySelector(':scope > .allo-block-remove');
                           const picker = block.querySelector(':scope > .allo-frame-template-picker');
                           block.innerHTML = (removeBtn ? removeBtn.outerHTML : '') + tpl + (picker ? picker.outerHTML : '');
+                          // Snapshot the new value as the new "previous" so the next change-and-cancel reverts to this one
+                          const newSelect = block.querySelector('.allo-frame-template-select');
+                          if (newSelect) { newSelect.value = t.value; newSelect.dataset.prevValue = t.value; }
                           announce('Sentence frame: ' + t.value);
                           persist();
                         }
@@ -38046,19 +38143,74 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       } catch (_) {}
                       try { if (typeof addToast === 'function') addToast('Inserted: ' + block.label, 'success'); } catch (_) {}
                       try { if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
+                      // Track recently used (session-only; max 5; dedup; most-recent-first)
+                      try { setInsertBlockRecent(prev => [block.label, ...prev.filter(l => l !== block.label)].slice(0, 5)); } catch (_) {}
                     };
 
                     // ── Filter logic ──
                     const f = (insertBlockFilter || '').toLowerCase().trim();
                     const visible = f ? blocks.filter(b => b.label.toLowerCase().includes(f) || (b.keywords && b.keywords.toLowerCase().includes(f))) : blocks;
 
+                    // Translation helper — uses LanguageContext t() with English fallback.
+                    // Block label key: lowercased, '_' for spaces and '&'.
+                    const _bt = (label) => {
+                      const key = 'docbuilder.block.' + String(label).toLowerCase().replace(/[\s&]+/g, '_');
+                      const out = (typeof t === 'function') ? t(key) : null;
+                      return (out && out !== key) ? out : label;
+                    };
+                    const _ct = (cat) => {
+                      const key = 'docbuilder.cat.' + cat;
+                      const out = (typeof t === 'function') ? t(key) : null;
+                      return (out && out !== key) ? out : _CAT_LABELS[cat];
+                    };
+
+                    // Roving keyboard navigation across all picker buttons (works across categories + Recent).
+                    const _onPickerKey = (e) => {
+                      if (!insertBlockPickerRef.current) return;
+                      const buttons = Array.from(insertBlockPickerRef.current.querySelectorAll('button[data-allo-pick]'));
+                      if (buttons.length === 0) return;
+                      const idx = buttons.indexOf(document.activeElement);
+                      if (idx === -1) return;
+                      let next = -1;
+                      if (e.key === 'ArrowRight') next = (idx + 1) % buttons.length;
+                      else if (e.key === 'ArrowLeft') next = (idx - 1 + buttons.length) % buttons.length;
+                      else if (e.key === 'ArrowDown') next = Math.min(idx + 2, buttons.length - 1);
+                      else if (e.key === 'ArrowUp') next = Math.max(idx - 2, 0);
+                      else if (e.key === 'Home') next = 0;
+                      else if (e.key === 'End') next = buttons.length - 1;
+                      else return;
+                      e.preventDefault();
+                      buttons[next] && buttons[next].focus();
+                    };
+
                     return (
-                      <div className="space-y-1.5">
-                        <input type="search" value={insertBlockFilter} onChange={e => setInsertBlockFilter(e.target.value)} placeholder={`Search ${blocks.length} blocks…`}
-                          aria-label="Search blocks"
+                      <div ref={insertBlockPickerRef} className="space-y-1.5" onKeyDown={_onPickerKey}>
+                        <input type="search" value={insertBlockFilter} onChange={e => setInsertBlockFilter(e.target.value)}
+                          placeholder={(typeof t === 'function' && t('docbuilder.search_placeholder') !== 'docbuilder.search_placeholder' && t('docbuilder.search_placeholder')) || (`Search ${blocks.length} blocks…`)}
+                          aria-label={(typeof t === 'function' && t('docbuilder.search_aria') !== 'docbuilder.search_aria' && t('docbuilder.search_aria')) || 'Search blocks'}
                           className="w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none" />
                         {f && visible.length === 0 && (
                           <div className="text-[11px] text-slate-500 italic px-2 py-1">No blocks match "{insertBlockFilter}"</div>
+                        )}
+                        {/* Recent row — only when no active filter and at least 1 recent */}
+                        {!f && insertBlockRecent.length > 0 && (
+                          <div>
+                            <div className="text-[10px] font-bold text-indigo-700 px-1 py-0.5 uppercase tracking-wider">⏱ {_ct('recent')}</div>
+                            <div className="grid grid-cols-2 gap-1 mt-0.5">
+                              {insertBlockRecent.map(label => {
+                                const block = blocks.find(b => b.label === label);
+                                if (!block) return null;
+                                const dispLabel = _bt(block.label);
+                                return (
+                                  <button key={'recent-' + label} type="button" data-allo-pick="1" onClick={() => _insertBlock(block)}
+                                    className="text-[11px] font-bold text-indigo-700 px-1.5 py-2 bg-indigo-50 border border-indigo-200 rounded-lg hover:border-indigo-300 hover:bg-indigo-100 transition-colors text-left min-h-[36px]"
+                                    aria-label={`Insert ${dispLabel}`} title={`Insert ${dispLabel}`}>
+                                    {block.icon} {dispLabel}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
                         )}
                         {_CAT_ORDER.map(cat => {
                           const catBlocks = visible.filter(b => b.category === cat);
@@ -38069,23 +38221,27 @@ Return ONLY the plain language summary in ${lang}.`, false);
                               <button type="button" onClick={() => setInsertBlockOpenCats(p => ({ ...p, [cat]: !p[cat] }))}
                                 aria-expanded={isOpen} aria-controls={`allo-cat-${cat}`}
                                 className="w-full flex items-center justify-between text-[10px] font-bold text-slate-600 px-1 py-0.5 hover:text-indigo-700 transition-colors uppercase tracking-wider">
-                                <span>{_CAT_LABELS[cat]} <span className="text-slate-400 font-normal">({catBlocks.length})</span></span>
+                                <span>{_ct(cat)} <span className="text-slate-400 font-normal">({catBlocks.length})</span></span>
                                 <span aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
                               </button>
                               {isOpen && (
                                 <div id={`allo-cat-${cat}`} className="grid grid-cols-2 gap-1 mt-0.5">
-                                  {catBlocks.map(block => (
-                                    <button key={block.label} onClick={() => _insertBlock(block)}
-                                      className="text-[11px] font-bold text-slate-600 px-1.5 py-2 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left min-h-[36px]"
-                                      aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
-                                      {block.icon} {block.label}
-                                    </button>
-                                  ))}
+                                  {catBlocks.map(block => {
+                                    const dispLabel = _bt(block.label);
+                                    return (
+                                      <button key={block.label} type="button" data-allo-pick="1" onClick={() => _insertBlock(block)}
+                                        className="text-[11px] font-bold text-slate-600 px-1.5 py-2 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left min-h-[36px]"
+                                        aria-label={`Insert ${dispLabel}`} title={`Insert ${dispLabel}`}>
+                                        {block.icon} {dispLabel}
+                                      </button>
+                                    );
+                                  })}
                                 </div>
                               )}
                             </div>
                           );
                         })}
+                        <div className="text-[9px] text-slate-400 italic px-1 pt-0.5" aria-hidden="true">↑↓←→ Home End to navigate · Enter to insert</div>
                       </div>
                     );
                   })()}
