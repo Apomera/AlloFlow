@@ -1353,7 +1353,9 @@
     { id: 'flower', label: 'Flower', emoji: '🌸', unlockAchievement: 'first-reflection',
       hint: 'Earned by writing your first reflection.' },
     { id: 'scarf',  label: 'Scarf',  emoji: '🧣', unlockAchievement: 'streak-30',
-      hint: 'Earned by reaching a 30-day streak.' }
+      hint: 'Earned by reaching a 30-day streak.' },
+    { id: 'crown',  label: 'Crown',  emoji: '👑', unlockAchievement: 'memory-palace-builder',
+      hint: 'Earned by building 5 memory decks across your decorations.' }
   ];
   function isAccessoryUnlocked(state, accessoryId) {
     var def = null;
@@ -2234,6 +2236,58 @@
         h('circle', { cx: cx, cy: cy, r: 0.7 * s, fill: p.primary, opacity: 0.6 })
       );
     }
+    function crownAt(cx, cy, scale) {
+      // A simple 5-point gold crown with a banded base + soft jewels.
+      // Sits on top of the head; cx,cy is the centerpoint of the band.
+      var s = scale || 1;
+      var w = 14 * s;
+      var bandH = 3 * s;
+      var pointH = 7 * s;
+      var bandTop = cy - bandH / 2;
+      var pointBaseY = bandTop;
+      // 5 triangular points across the top
+      var points = [];
+      for (var i = 0; i <= 4; i++) {
+        var px = cx - w + (i * w / 2);
+        if (i % 2 === 0) {
+          // tall point
+          points.push(px + ',' + (pointBaseY - pointH));
+        } else {
+          // valley between points (slight dip)
+          points.push(px + ',' + (pointBaseY - 1.5 * s));
+        }
+      }
+      var polyPoints = (cx - w) + ',' + bandTop + ' '
+        + points.join(' ') + ' '
+        + (cx + w) + ',' + bandTop;
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        // Crown body (points + band)
+        h('polygon', {
+          points: polyPoints,
+          fill: '#f6c84a', stroke: '#b88a1c', strokeWidth: 0.8 * s
+        }),
+        // Band base
+        h('rect', {
+          x: cx - w, y: bandTop, width: 2 * w, height: bandH,
+          fill: '#e0a91e', stroke: '#b88a1c', strokeWidth: 0.6 * s
+        }),
+        // Three small jewel circles on the band
+        h('circle', { cx: cx - w * 0.5, cy: cy, r: 1.4 * s, fill: '#dc2626' }),
+        h('circle', { cx: cx,           cy: cy, r: 1.6 * s, fill: '#3b82f6' }),
+        h('circle', { cx: cx + w * 0.5, cy: cy, r: 1.4 * s, fill: '#16a34a' }),
+        // Highlight on the center point (shine)
+        h('polygon', {
+          points: cx + ',' + (pointBaseY - pointH) + ' '
+                + (cx - 1 * s) + ',' + (pointBaseY - 1.5 * s) + ' '
+                + (cx + 1 * s) + ',' + (pointBaseY - 1.5 * s),
+          fill: '#fff7d6', opacity: 0.6
+        })
+      );
+    }
+
     function scarfAt(cx, cy, width, scale) {
       // A horizontal arc-band wrapping near the neck/body. width is the
       // half-width of the band; cx,cy is its center point.
@@ -2300,6 +2354,13 @@
         owl:    [50, 50, 20, 0.9], // around the head/body transition
         turtle: [20, 60, 9, 0.9],  // small around the turtle\'s neck
         dragon: [50, 54, 18, 1.0]  // wraps the dragon\'s neck
+      },
+      crown: {
+        cat:    [50, 16, 0.85], // sits between the ears
+        fox:    [50, 14, 0.8],  // between the tall triangle ears
+        owl:    [50, 16, 0.95], // top of head, between ear tufts
+        turtle: [18, 46, 0.65], // smaller, on the green head
+        dragon: [50, 16, 0.95]  // between the horns
       }
     };
     function renderAccessory() {
@@ -2315,6 +2376,10 @@
       if (accessory === 'scarf') {
         var s = ACC_POS.scarf[speciesId] || ACC_POS.scarf.cat;
         return scarfAt(s[0], s[1], s[2] || 16, s[3] || 1.0);
+      }
+      if (accessory === 'crown') {
+        var cr = ACC_POS.crown[speciesId] || ACC_POS.crown.cat;
+        return crownAt(cr[0], cr[1], cr[2] || 1.0);
       }
       return null;
     }
@@ -16899,6 +16964,11 @@
       // Phase 2p.17 — when printScope is a card, render that instead
       if (state.printScope && state.printScope.type === 'card' && state.printScope.decorationId) {
         return renderPrintCard(state.printScope.decorationId);
+      }
+      // Phase 2p.30 — tenure recap print (one-page summary of the
+      // student's full AlloHaven journey).
+      if (state.printScope && state.printScope.type === 'tenure') {
+        return renderPrintTenure();
       }
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
       var allStories = state.stories || [];
