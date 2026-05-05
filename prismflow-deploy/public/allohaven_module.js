@@ -1334,6 +1334,28 @@
     return { mood: top, color: tints[top] || null, count: topN, total: recent.length };
   }
 
+  // ── Accessory catalog (Phase 2p.22 / 2p.23) ──
+  // Each accessory has an unlock keyed to an achievement id. The
+  // achievement-detection useEffect grants the accessory the moment
+  // its unlock fires (if companion has none). Ordered earliest-game
+  // unlock first so the wizard\'s picker reads naturally.
+  var ACCESSORY_DEFS = [
+    { id: 'bow',    label: 'Bow',    emoji: '🎀', unlockAchievement: 'first-favorite',
+      hint: 'Earned by marking your first favorite decoration.' },
+    { id: 'flower', label: 'Flower', emoji: '🌸', unlockAchievement: 'first-reflection',
+      hint: 'Earned by writing your first reflection.' },
+    { id: 'scarf',  label: 'Scarf',  emoji: '🧣', unlockAchievement: 'streak-30',
+      hint: 'Earned by reaching a 30-day streak.' }
+  ];
+  function isAccessoryUnlocked(state, accessoryId) {
+    var def = null;
+    for (var i = 0; i < ACCESSORY_DEFS.length; i++) {
+      if (ACCESSORY_DEFS[i].id === accessoryId) { def = ACCESSORY_DEFS[i]; break; }
+    }
+    if (!def) return false;
+    return !!((state.achievements || {})[def.unlockAchievement]);
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 4.5: COMPANION CRITTERS + SKILL LEVELS (Phase 2p)
   // ─────────────────────────────────────────────────────────
@@ -1684,6 +1706,9 @@
     { id: 'first-custom-upload', emoji: '📎', label: 'First custom upload',
       desc: 'Uploaded your own image — your work, your room.',
       check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomUpload; }); } },
+    { id: 'first-drawing', emoji: '🎨', label: 'First drawing',
+      desc: 'Drew your own decoration on the canvas — pure you.',
+      check: function(s) { return (s.decorations || []).some(function(d) { return !!d.isCustomDrawing; }); } },
 
     // Room-unlock achievements (Phase 2p.13)
     { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
@@ -2023,8 +2048,9 @@
     var pupilTransform = 'translate(' + px.toFixed(2) + ' ' + py.toFixed(2) + ')';
     var pupilStyle = { transform: pupilTransform, transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1)' };
 
-    // Accessory rendering (Phase 2p.22) — bow on the head, position varies
-    // per species. Uses the accent color so it pops against the body palette.
+    // Accessory rendering (Phase 2p.22, extended 2p.23) — bow / flower /
+    // scarf with per-species positioning. All use palette.accent so they
+    // pop against the body color.
     var accessory = animState && animState.accessory;
     function bowAt(cx, cy, scale) {
       // Two triangle "wings" + center knot. cx,cy is the center of the knot.
@@ -2051,17 +2077,118 @@
         h('ellipse', { cx: cx + w * 0.55, cy: cy - h2 * 0.3, rx: 0.8 * s, ry: 1.2 * s, fill: p.secondary, opacity: 0.5 })
       );
     }
-    // Per-species bow position (above the head, sized for fit)
-    function renderAccessory() {
-      if (accessory !== 'bow') return null;
-      switch (speciesId) {
-        case 'cat':    return bowAt(38, 22, 0.85); // off-center, between left ear and head
-        case 'fox':    return bowAt(50, 18, 0.9);  // between the tall triangle ears
-        case 'owl':    return bowAt(50, 22, 1.0);  // top of head, between tufted ears
-        case 'turtle': return bowAt(18, 50, 0.8);  // small, on top of the green head (which is left-side)
-        case 'dragon': return bowAt(50, 22, 0.9);  // between horns
-        default:       return bowAt(50, 22, 1.0);
+    function flowerAt(cx, cy, scale) {
+      // 5-petal rosette: 5 ellipses arranged at 72° increments + center disc
+      var s = scale || 1;
+      var r = 3 * s;             // petal radius (long)
+      var rd = 1.6 * s;          // petal radius (short)
+      var dist = 3.2 * s;        // distance from center to petal center
+      var petals = [];
+      for (var i = 0; i < 5; i++) {
+        var theta = (i / 5) * Math.PI * 2 - Math.PI / 2;
+        var px2 = cx + Math.cos(theta) * dist;
+        var py2 = cy + Math.sin(theta) * dist;
+        var rotDeg = (theta * 180 / Math.PI) + 90; // align petal long axis radially
+        petals.push(h('ellipse', {
+          key: 'petal-' + i,
+          cx: px2, cy: py2, rx: rd, ry: r,
+          fill: p.accent,
+          transform: 'rotate(' + rotDeg.toFixed(2) + ' ' + px2.toFixed(2) + ' ' + py2.toFixed(2) + ')'
+        }));
       }
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        petals,
+        // Center disc (warm tone, picks up secondary palette)
+        h('circle', { cx: cx, cy: cy, r: 1.4 * s, fill: p.secondary }),
+        h('circle', { cx: cx, cy: cy, r: 0.7 * s, fill: p.primary, opacity: 0.6 })
+      );
+    }
+    function scarfAt(cx, cy, width, scale) {
+      // A horizontal arc-band wrapping near the neck/body. width is the
+      // half-width of the band; cx,cy is its center point.
+      var s = scale || 1;
+      var w = width * s;
+      var hh = 4 * s;
+      var hangX = cx + w * 0.7;
+      var hangY = cy + hh * 0.6;
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        // Main wrap — slightly curved bar
+        h('path', {
+          d: 'M ' + (cx - w) + ' ' + cy
+            + ' Q ' + cx + ' ' + (cy + hh * 0.6) + ' '
+            + (cx + w) + ' ' + cy
+            + ' L ' + (cx + w) + ' ' + (cy - hh)
+            + ' Q ' + cx + ' ' + (cy - hh * 0.4) + ' '
+            + (cx - w) + ' ' + (cy - hh) + ' Z',
+          fill: p.accent
+        }),
+        // Tassel hanging on one side
+        h('rect', {
+          x: hangX - 1.2 * s, y: hangY,
+          width: 2.4 * s, height: 5 * s,
+          fill: p.accent
+        }),
+        h('rect', {
+          x: hangX - 1.2 * s, y: hangY + 5 * s,
+          width: 2.4 * s, height: 1.2 * s,
+          fill: p.secondary, opacity: 0.6
+        }),
+        // Lighter stripe along the wrap for dimension
+        h('path', {
+          d: 'M ' + (cx - w * 0.85) + ' ' + (cy - hh * 0.3)
+            + ' Q ' + cx + ' ' + (cy + hh * 0.05) + ' '
+            + (cx + w * 0.85) + ' ' + (cy - hh * 0.3),
+          stroke: p.secondary, strokeWidth: 0.8 * s, fill: 'none', opacity: 0.5
+        })
+      );
+    }
+
+    // Per-species accessory positions. Each species has a different
+    // anchor point that suits its silhouette.
+    var ACC_POS = {
+      bow: {
+        cat:    [38, 22, 0.85], // off-center, between left ear and head
+        fox:    [50, 18, 0.9],  // between the tall triangle ears
+        owl:    [50, 22, 1.0],  // top of head, between tufted ears
+        turtle: [18, 50, 0.8],  // small, on top of the green head (left-side)
+        dragon: [50, 22, 0.9]   // between horns
+      },
+      flower: {
+        cat:    [60, 24, 0.9],  // mirror side of bow position
+        fox:    [38, 22, 0.85], // off to the side of the ears
+        owl:    [38, 30, 0.9],  // tucked beside the eye-disc
+        turtle: [22, 54, 0.7],  // beside the head
+        dragon: [38, 26, 0.85]  // beside one horn
+      },
+      scarf: {
+        cat:    [50, 56, 18, 1.0], // around the body where head meets body
+        fox:    [50, 56, 16, 1.0],
+        owl:    [50, 50, 20, 0.9], // around the head/body transition
+        turtle: [20, 60, 9, 0.9],  // small around the turtle\'s neck
+        dragon: [50, 54, 18, 1.0]  // wraps the dragon\'s neck
+      }
+    };
+    function renderAccessory() {
+      if (!accessory) return null;
+      if (accessory === 'bow') {
+        var b = ACC_POS.bow[speciesId] || ACC_POS.bow.cat;
+        return bowAt(b[0], b[1], b[2] || 1.0);
+      }
+      if (accessory === 'flower') {
+        var f = ACC_POS.flower[speciesId] || ACC_POS.flower.cat;
+        return flowerAt(f[0], f[1], f[2] || 1.0);
+      }
+      if (accessory === 'scarf') {
+        var s = ACC_POS.scarf[speciesId] || ACC_POS.scarf.cat;
+        return scarfAt(s[0], s[1], s[2] || 16, s[3] || 1.0);
+      }
+      return null;
     }
 
     if (speciesId === 'cat') {
@@ -3274,6 +3401,18 @@
       // eslint-disable-next-line
     }, [step, freeUntil]);
 
+    // Initialize the drawing canvas when entering the 'draw' step. Runs
+    // once per entry so re-entering after a back-out clears any prior stroke.
+    useEffect(function() {
+      if (step !== 'draw') return;
+      // Defer one tick so the canvas DOM node is mounted.
+      var raf = (typeof requestAnimationFrame === 'function') ? requestAnimationFrame : function(cb) { return setTimeout(cb, 16); };
+      var caf = (typeof cancelAnimationFrame === 'function') ? cancelAnimationFrame : clearTimeout;
+      var id = raf(function() { initDrawCanvas(); });
+      return function() { caf(id); };
+      // eslint-disable-next-line
+    }, [step]);
+
     var reflectionDraftTuple = useState('');
     var reflectionDraft = reflectionDraftTuple[0];
     var setReflectionDraft = reflectionDraftTuple[1];
@@ -3309,6 +3448,32 @@
     var isCustomUploadFlowTuple = useState(false);
     var isCustomUploadFlow = isCustomUploadFlowTuple[0];
     var setIsCustomUploadFlow = isCustomUploadFlowTuple[1];
+
+    // Drawing canvas (Phase 2p.26) — student draws their own decoration
+    // directly on a canvas. Reuses the custom-upload pathway, with a
+    // distinct isCustomDrawing flag so the badge differs (✏️ vs 📎).
+    var useRef = React.useRef;
+    var drawCanvasRef = useRef(null);
+    var drawCtxRef = useRef(null);
+    var drawIsDownRef = useRef(false);
+    var drawLastPointRef = useRef(null);
+    var drawHistoryRef = useRef([]);  // ImageData snapshots for undo
+    var drawColorTuple = useState('#222222');
+    var drawColor = drawColorTuple[0];
+    var setDrawColor = drawColorTuple[1];
+    var drawSizeTuple = useState(4);
+    var drawSize = drawSizeTuple[0];
+    var setDrawSize = drawSizeTuple[1];
+    var drawToolTuple = useState('brush'); // 'brush' | 'eraser'
+    var drawTool = drawToolTuple[0];
+    var setDrawTool = drawToolTuple[1];
+    var isCustomDrawingFlowTuple = useState(false);
+    var isCustomDrawingFlow = isCustomDrawingFlowTuple[0];
+    var setIsCustomDrawingFlow = isCustomDrawingFlowTuple[1];
+    var drawDirtyTuple = useState(false); // whether anything has been drawn yet
+    var drawDirty = drawDirtyTuple[0];
+    var setDrawDirty = drawDirtyTuple[1];
+
     function handleFileChosen(file) {
       setUploadError(null);
       if (!file) return;
@@ -3324,6 +3489,122 @@
         setUploadError((err && err.message) || 'Could not load that image.');
         setUploading(false);
       });
+    }
+
+    // Drawing canvas helpers (Phase 2p.26) — initializes the 2D context,
+    // pushes/pops history snapshots for undo, and converts the canvas to
+    // a base64 PNG when the student is done.
+    var DRAW_W = 400;
+    var DRAW_H = 300;
+    var DRAW_PALETTE = [
+      '#222222', '#ffffff', '#dc2626', '#f59e0b',
+      '#fbbf24', '#16a34a', '#06b6d4', '#3b82f6',
+      '#7c3aed', '#db2777', '#92400e', '#94a3b8'
+    ];
+    function initDrawCanvas() {
+      var canvas = drawCanvasRef.current;
+      if (!canvas) return;
+      // Honor device pixel ratio for crisp lines on hi-dpi screens.
+      var ratio = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+      canvas.width = DRAW_W * ratio;
+      canvas.height = DRAW_H * ratio;
+      canvas.style.width = DRAW_W + 'px';
+      canvas.style.height = DRAW_H + 'px';
+      var c = canvas.getContext('2d');
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.scale(ratio, ratio);
+      c.fillStyle = '#ffffff';
+      c.fillRect(0, 0, DRAW_W, DRAW_H);
+      c.lineCap = 'round';
+      c.lineJoin = 'round';
+      drawCtxRef.current = c;
+      drawHistoryRef.current = [];
+      pushDrawHistory();
+      setDrawDirty(false);
+    }
+    function pushDrawHistory() {
+      var canvas = drawCanvasRef.current;
+      var c = drawCtxRef.current;
+      if (!canvas || !c) return;
+      try {
+        var snap = c.getImageData(0, 0, canvas.width, canvas.height);
+        drawHistoryRef.current.push(snap);
+        // Keep at most 20 snapshots to bound memory.
+        if (drawHistoryRef.current.length > 20) drawHistoryRef.current.shift();
+      } catch (err) { /* ignore — taint or memory pressure */ }
+    }
+    function undoDraw() {
+      var hist = drawHistoryRef.current;
+      var canvas = drawCanvasRef.current;
+      var c = drawCtxRef.current;
+      if (!canvas || !c || hist.length < 2) return;
+      hist.pop();
+      var prev = hist[hist.length - 1];
+      try { c.putImageData(prev, 0, 0); } catch (err) {}
+      // If we're back to the initial blank, clear dirty flag.
+      if (hist.length <= 1) setDrawDirty(false);
+    }
+    function clearDraw() {
+      var c = drawCtxRef.current;
+      if (!c) return;
+      c.fillStyle = '#ffffff';
+      c.fillRect(0, 0, DRAW_W, DRAW_H);
+      drawHistoryRef.current = [];
+      pushDrawHistory();
+      setDrawDirty(false);
+    }
+    function drawPointerPos(evt) {
+      var canvas = drawCanvasRef.current;
+      if (!canvas) return { x: 0, y: 0 };
+      var rect = canvas.getBoundingClientRect();
+      var clientX = evt.clientX != null ? evt.clientX : (evt.touches && evt.touches[0] ? evt.touches[0].clientX : 0);
+      var clientY = evt.clientY != null ? evt.clientY : (evt.touches && evt.touches[0] ? evt.touches[0].clientY : 0);
+      return {
+        x: (clientX - rect.left) * (DRAW_W / rect.width),
+        y: (clientY - rect.top) * (DRAW_H / rect.height)
+      };
+    }
+    function drawStroke(from, to) {
+      var c = drawCtxRef.current;
+      if (!c) return;
+      c.strokeStyle = drawTool === 'eraser' ? '#ffffff' : drawColor;
+      c.lineWidth = drawTool === 'eraser' ? Math.max(drawSize * 2, 8) : drawSize;
+      c.beginPath();
+      c.moveTo(from.x, from.y);
+      c.lineTo(to.x, to.y);
+      c.stroke();
+    }
+    function handleDrawDown(evt) {
+      evt.preventDefault();
+      var canvas = drawCanvasRef.current;
+      if (canvas && canvas.setPointerCapture && evt.pointerId != null) {
+        try { canvas.setPointerCapture(evt.pointerId); } catch (err) {}
+      }
+      drawIsDownRef.current = true;
+      var p1 = drawPointerPos(evt);
+      drawLastPointRef.current = p1;
+      // Single dot for tap-and-release.
+      drawStroke(p1, { x: p1.x + 0.01, y: p1.y + 0.01 });
+      setDrawDirty(true);
+    }
+    function handleDrawMove(evt) {
+      if (!drawIsDownRef.current) return;
+      evt.preventDefault();
+      var p = drawPointerPos(evt);
+      var last = drawLastPointRef.current;
+      if (last) drawStroke(last, p);
+      drawLastPointRef.current = p;
+    }
+    function handleDrawUp(evt) {
+      if (!drawIsDownRef.current) return;
+      drawIsDownRef.current = false;
+      drawLastPointRef.current = null;
+      pushDrawHistory();
+    }
+    function exportDrawAsBase64() {
+      var canvas = drawCanvasRef.current;
+      if (!canvas) return null;
+      try { return canvas.toDataURL('image/png'); } catch (err) { return null; }
     }
 
     function handlePickTemplate(t) {
@@ -3383,16 +3664,18 @@
       // Phase 2p.19 — custom-upload flow places via dedicated handler so
       // template synthesis happens in the parent rather than passing a
       // synthetic template through the same path.
-      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
-        p.onPlaceCustomUpload(imageBase64, '', moodTag, subjectTags);
+      // Phase 2p.26 — custom-drawing flow shares the same dedicated handler;
+      // the isCustomDrawingFlow flag is forwarded so the badge differs.
+      if ((isCustomUploadFlow || isCustomDrawingFlow) && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, '', moodTag, subjectTags, !!isCustomDrawingFlow);
         return;
       }
       p.onPlace(template, slots, artStyleId, imageBase64, '', moodTag, subjectTags);
     }
 
     function handleSubmitReflection() {
-      if (isCustomUploadFlow && typeof p.onPlaceCustomUpload === 'function') {
-        p.onPlaceCustomUpload(imageBase64, reflectionDraft, moodTag, subjectTags);
+      if ((isCustomUploadFlow || isCustomDrawingFlow) && typeof p.onPlaceCustomUpload === 'function') {
+        p.onPlaceCustomUpload(imageBase64, reflectionDraft, moodTag, subjectTags, !!isCustomDrawingFlow);
         return;
       }
       p.onPlace(template, slots, artStyleId, imageBase64, reflectionDraft, moodTag, subjectTags);
@@ -3479,32 +3762,61 @@
         h('p', { style: { fontSize: '13px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5' } },
           'Pick a category. Each cell on the ' + ctx.surface + ' supports specific kinds of decorations.'),
         // Upload your own (Phase 2p.19) — alternative to AI generation
-        typeof p.onPlaceCustomUpload === 'function' ? h('button', {
-          onClick: function() {
-            setIsCustomUploadFlow(true);
-            setUploadData(null);
-            setUploadError(null);
-            setStep('upload');
+        typeof p.onPlaceCustomUpload === 'function' ? h('div', { style: { display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() {
+              setIsCustomUploadFlow(true);
+              setIsCustomDrawingFlow(false);
+              setUploadData(null);
+              setUploadError(null);
+              setStep('upload');
+            },
+            style: {
+              flex: '1 1 220px',
+              display: 'flex', gap: '12px', alignItems: 'center',
+              padding: '12px 14px',
+              background: 'transparent',
+              border: '1.5px dashed ' + palette.accent,
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: palette.text,
+              textAlign: 'left'
+            }
           },
-          style: {
-            display: 'flex', gap: '12px', alignItems: 'center',
-            width: '100%',
-            padding: '12px 14px',
-            background: 'transparent',
-            border: '1.5px dashed ' + palette.accent,
-            borderRadius: '10px',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            color: palette.text,
-            textAlign: 'left',
-            marginBottom: '14px'
-          }
-        },
-          h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '📎'),
-          h('span', { style: { flex: 1 } },
-            h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Upload your own image'),
-            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
-              'A drawing you made, a photo, a diagram — your image, your room. ' + DECORATION_COST + ' 🪙')
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '📎'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Upload your own image'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+                'A drawing, photo, or diagram. ' + DECORATION_COST + ' 🪙')
+            )
+          ),
+          // Draw your own (Phase 2p.26) — canvas drawing alternative
+          h('button', {
+            onClick: function() {
+              setIsCustomDrawingFlow(true);
+              setIsCustomUploadFlow(false);
+              setStep('draw');
+            },
+            style: {
+              flex: '1 1 220px',
+              display: 'flex', gap: '12px', alignItems: 'center',
+              padding: '12px 14px',
+              background: 'transparent',
+              border: '1.5px dashed ' + palette.accent,
+              borderRadius: '10px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              color: palette.text,
+              textAlign: 'left'
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '✏️'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Draw your own'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
+                'Sketch a decoration right here. ' + DECORATION_COST + ' 🪙')
+            )
           )
         ) : null,
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' } },
@@ -3711,6 +4023,190 @@
               cursor: 'pointer', fontFamily: 'inherit'
             }
           }, 'Place this here ✨')
+        )
+      );
+    } else if (step === 'draw') {
+      // Drawing canvas step (Phase 2p.26) — student draws on a 400×300
+      // canvas. Brush + eraser + 12 colors + 3 sizes + undo/clear. On
+      // confirm, the canvas is exported to PNG, charged 3 tokens, and
+      // routed through the same reflect step (mood / subject / words).
+      stepBody = h('div', null,
+        h('button', {
+          onClick: function() { setStep('pick-template'); setIsCustomDrawingFlow(false); },
+          style: {
+            background: 'transparent', color: palette.textDim, border: 'none',
+            padding: '4px 0', fontSize: '12px', cursor: 'pointer',
+            marginBottom: '10px', fontFamily: 'inherit'
+          }
+        }, '← Back to categories'),
+        h('h4', { style: { margin: '0 0 8px 0', fontSize: '17px', fontWeight: 700, color: palette.text } },
+          '✏️ Draw your own'),
+        h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '12px', lineHeight: '1.5' } },
+          'Sketch anything — a plant, a creature, a logo, a feeling. Costs ' + DECORATION_COST + ' 🪙 tokens like generation.'),
+        // Canvas
+        h('div', {
+          style: {
+            display: 'flex', justifyContent: 'center',
+            background: palette.surface, borderRadius: '10px',
+            border: '1px solid ' + palette.border, padding: '8px',
+            marginBottom: '10px'
+          }
+        },
+          h('canvas', {
+            ref: drawCanvasRef,
+            'aria-label': 'Drawing canvas. Use a mouse, finger, or stylus to draw.',
+            role: 'img',
+            onPointerDown: handleDrawDown,
+            onPointerMove: handleDrawMove,
+            onPointerUp: handleDrawUp,
+            onPointerCancel: handleDrawUp,
+            onPointerLeave: handleDrawUp,
+            style: {
+              cursor: drawTool === 'eraser' ? 'cell' : 'crosshair',
+              touchAction: 'none',
+              borderRadius: '6px',
+              maxWidth: '100%',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+            }
+          })
+        ),
+        // Tool row: brush / eraser
+        h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '8px', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() { setDrawTool('brush'); },
+            'aria-pressed': drawTool === 'brush' ? 'true' : 'false',
+            style: {
+              background: drawTool === 'brush' ? palette.accent : 'transparent',
+              color: drawTool === 'brush' ? palette.onAccent : palette.text,
+              border: '1.5px solid ' + (drawTool === 'brush' ? palette.accent : palette.border),
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '✏️ Brush'),
+          h('button', {
+            onClick: function() { setDrawTool('eraser'); },
+            'aria-pressed': drawTool === 'eraser' ? 'true' : 'false',
+            style: {
+              background: drawTool === 'eraser' ? palette.accent : 'transparent',
+              color: drawTool === 'eraser' ? palette.onAccent : palette.text,
+              border: '1.5px solid ' + (drawTool === 'eraser' ? palette.accent : palette.border),
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '🩹 Eraser'),
+          h('button', {
+            onClick: undoDraw,
+            disabled: drawHistoryRef.current.length < 2,
+            style: {
+              background: 'transparent', color: palette.text,
+              border: '1.5px solid ' + palette.border,
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: drawHistoryRef.current.length < 2 ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+              opacity: drawHistoryRef.current.length < 2 ? 0.5 : 1
+            }
+          }, '↶ Undo'),
+          h('button', {
+            onClick: clearDraw,
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1.5px solid ' + palette.border,
+              borderRadius: '999px', padding: '5px 14px',
+              fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, '✕ Clear')
+        ),
+        // Brush-size row
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', marginBottom: '8px' } },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: '4px' } }, 'Size'),
+          [2, 4, 8, 14].map(function(sz) {
+            var active = drawSize === sz;
+            return h('button', {
+              key: 'sz-' + sz,
+              onClick: function() { setDrawSize(sz); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': 'Brush size ' + sz,
+              style: {
+                width: '34px', height: '34px',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                background: active ? palette.surface : 'transparent',
+                border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                borderRadius: '8px',
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            },
+              h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  display: 'inline-block',
+                  width: Math.min(sz * 1.6, 22) + 'px',
+                  height: Math.min(sz * 1.6, 22) + 'px',
+                  borderRadius: '50%',
+                  background: drawTool === 'eraser' ? palette.textMute : drawColor
+                }
+              })
+            );
+          })
+        ),
+        // Color palette
+        h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap' } },
+          h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginRight: '4px' } }, 'Color'),
+          DRAW_PALETTE.map(function(c) {
+            var active = drawColor === c && drawTool === 'brush';
+            return h('button', {
+              key: 'col-' + c,
+              onClick: function() { setDrawColor(c); setDrawTool('brush'); },
+              'aria-pressed': active ? 'true' : 'false',
+              'aria-label': 'Color ' + c,
+              title: c,
+              style: {
+                width: '24px', height: '24px',
+                background: c,
+                border: active ? '2.5px solid ' + palette.accent : '1.5px solid ' + palette.border,
+                borderRadius: '50%',
+                cursor: 'pointer',
+                padding: 0,
+                boxShadow: active ? '0 0 0 2px ' + palette.bg + ' inset' : 'none'
+              }
+            });
+          })
+        ),
+        h('div', { style: { display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' } },
+          h('button', {
+            onClick: function() { setStep('pick-template'); setIsCustomDrawingFlow(false); },
+            style: {
+              background: 'transparent', color: palette.textDim,
+              border: '1px solid ' + palette.border, borderRadius: '8px',
+              padding: '8px 14px', fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', fontFamily: 'inherit'
+            }
+          }, 'Cancel'),
+          h('button', {
+            onClick: function() {
+              if (!drawDirty) return;
+              if (typeof p.onChargeForUpload !== 'function') return;
+              if (!p.onChargeForUpload()) return;
+              var dataUrl = exportDrawAsBase64();
+              if (!dataUrl) return;
+              setImageBase64(dataUrl);
+              setHasGenerated(true);
+              setStep('reflect');
+            },
+            disabled: !drawDirty || p.tokens < DECORATION_COST,
+            style: {
+              background: (drawDirty && p.tokens >= DECORATION_COST) ? palette.accent : palette.surface,
+              color: (drawDirty && p.tokens >= DECORATION_COST) ? palette.onAccent : palette.textMute,
+              border: 'none', borderRadius: '8px',
+              padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+              cursor: (drawDirty && p.tokens >= DECORATION_COST) ? 'pointer' : 'not-allowed',
+              fontFamily: 'inherit',
+              opacity: (drawDirty && p.tokens >= DECORATION_COST) ? 1 : 0.6
+            }
+          }, p.tokens < DECORATION_COST ? 'Need ' + DECORATION_COST + ' 🪙' : (drawDirty ? 'Use this drawing · ' + DECORATION_COST + ' 🪙' : 'Draw something first'))
         )
       );
     } else if (step === 'upload') {
@@ -4702,6 +5198,16 @@
         var newCards = cards.filter(function(c) { return c.id !== id; });
         setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
       }
+      // Drag-to-reorder (Phase 2p.24) — native HTML5 DnD between card rows.
+      // Lets students sequence cards from foundational → advanced.
+      function moveCard(fromIdx, toIdx) {
+        if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0) return;
+        if (fromIdx >= cards.length || toIdx >= cards.length) return;
+        var newCards = cards.slice();
+        var moved = newCards.splice(fromIdx, 1)[0];
+        newCards.splice(toIdx, 0, moved);
+        setDraft(Object.assign({}, draft, { data: { cards: newCards } }));
+      }
       function clearAllCards() {
         if (window.confirm && !window.confirm('Remove all ' + cards.length + ' cards from this deck? Mastery stats are lost.')) return;
         setDraft(Object.assign({}, draft, { data: { cards: [
@@ -4844,15 +5350,41 @@
           cards.map(function(card, idx) {
             return h('div', {
               key: card.id,
+              // Phase 2p.24 — drag-to-reorder. Drop anywhere on a row
+              // moves the dragged card to that position.
+              draggable: cards.length > 1 ? true : false,
+              onDragStart: function(e) {
+                if (cards.length <= 1) { e.preventDefault(); return; }
+                try {
+                  e.dataTransfer.effectAllowed = 'move';
+                  e.dataTransfer.setData('text/plain', String(idx));
+                } catch (err) { /* IE quirks */ }
+              },
+              onDragOver: function(e) {
+                if (cards.length <= 1) return;
+                e.preventDefault();
+                try { e.dataTransfer.dropEffect = 'move'; } catch (err) {}
+              },
+              onDrop: function(e) {
+                if (cards.length <= 1) return;
+                e.preventDefault();
+                var fromIdx;
+                try { fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10); } catch (err) { return; }
+                if (isNaN(fromIdx) || fromIdx === idx) return;
+                moveCard(fromIdx, idx);
+              },
               style: {
                 padding: '10px',
                 background: palette.surface,
                 border: '1px solid ' + palette.border,
-                borderRadius: '8px'
+                borderRadius: '8px',
+                cursor: cards.length > 1 ? 'grab' : 'default'
               }
             },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
-                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700 } }, 'Card ' + (idx + 1)),
+                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700 } },
+                  // Phase 2p.24 — drag handle visual hint when reorder is possible
+                  cards.length > 1 ? '⋮⋮ Card ' + (idx + 1) : 'Card ' + (idx + 1)),
                 cards.length > 1 ? h('button', {
                   onClick: function() { deleteCard(card.id); },
                   'aria-label': 'Delete card ' + (idx + 1),
@@ -7534,33 +8066,70 @@
             )
           )
         ),
-        // Phase 2p.22 — bow accessory toggle. Visible only after the
-        // student has unlocked it via the "first-favorite" achievement.
-        p.bowUnlocked ? h('div', {
-          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }
-        },
-          h('div', null,
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text } }, '🎀 Bow accessory'),
-            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
-              draft.accessory === 'bow' ? 'Currently worn — tap to remove' : 'Unlocked from your first favorite')
-          ),
-          h('button', {
-            onClick: function() { setField('accessory', draft.accessory === 'bow' ? null : 'bow'); },
-            'aria-pressed': draft.accessory === 'bow' ? 'true' : 'false',
-            'aria-label': 'Toggle bow accessory',
-            style: {
-              background: draft.accessory === 'bow' ? palette.accent : palette.bg,
-              color: draft.accessory === 'bow' ? palette.onAccent : palette.textDim,
-              border: '1px solid ' + (draft.accessory === 'bow' ? palette.accent : palette.border),
-              borderRadius: '999px',
-              padding: '4px 14px',
-              fontSize: '11px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit'
-            }
-          }, draft.accessory === 'bow' ? 'On' : 'Off')
-        ) : null
+        // Phase 2p.22/2p.23 — accessory picker. Shows all UNLOCKED
+        // accessories as a row of pills + a "None" tile. Single-pick.
+        // Locked accessories show a 🔒 with their unlock hint so
+        // students can see what they\'re working toward.
+        (function() {
+          var unlocked = (p.unlockedAccessories && p.unlockedAccessories.length > 0)
+            ? p.unlockedAccessories : (p.bowUnlocked ? ['bow'] : []);
+          // Always render the section if at least one is unlocked OR if
+          // there are locked teasers worth showing
+          var hasAny = unlocked.length > 0;
+          if (!hasAny && !p.showLockedTeasers) return null;
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Accessory picker',
+            style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
+          },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '8px' } },
+              '🎀 Accessory'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+              // None
+              h('button', {
+                onClick: function() { setField('accessory', null); },
+                'aria-pressed': !draft.accessory ? 'true' : 'false',
+                'aria-label': 'No accessory',
+                style: {
+                  background: !draft.accessory ? palette.accent : palette.bg,
+                  color: !draft.accessory ? palette.onAccent : palette.textDim,
+                  border: '1px solid ' + (!draft.accessory ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  padding: '4px 12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, 'None'),
+              // Each accessory — unlocked clickable, locked dimmed with 🔒
+              ACCESSORY_DEFS.map(function(def) {
+                var isUnlocked = unlocked.indexOf(def.id) !== -1;
+                var active = draft.accessory === def.id;
+                return h('button', {
+                  key: 'acc-' + def.id,
+                  onClick: function() { if (isUnlocked) setField('accessory', def.id); },
+                  disabled: !isUnlocked,
+                  'aria-pressed': active ? 'true' : 'false',
+                  'aria-label': def.label + (isUnlocked ? '' : ' (locked: ' + def.hint + ')'),
+                  title: isUnlocked ? def.hint : '🔒 ' + def.hint,
+                  style: {
+                    background: active ? palette.accent : palette.bg,
+                    color: active ? palette.onAccent : (isUnlocked ? palette.text : palette.textMute),
+                    border: '1px solid ' + (active ? palette.accent : palette.border),
+                    borderRadius: '999px',
+                    padding: '4px 12px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: isUnlocked ? 'pointer' : 'not-allowed',
+                    fontFamily: 'inherit',
+                    opacity: isUnlocked ? 1 : 0.55
+                  }
+                }, isUnlocked ? (def.emoji + ' ' + def.label) : ('🔒 ' + def.label));
+              })
+            )
+          );
+        })()
       );
     }
 
@@ -9926,12 +10495,26 @@
           lastBubbleAt: nowIso,
           lastBubbleText: first.emoji + ' ' + first.label + '! ' + first.desc
         };
-        // Phase 2p.22 — auto-grant bow accessory when "first-favorite"
-        // achievement unlocks, if companion has no accessory yet.
-        var unlockedFirstFav = newly.some(function(a) { return a.id === 'first-favorite'; });
-        if (unlockedFirstFav && !state.companion.accessory) {
-          companionPatch.accessory = 'bow';
-          companionPatch.lastBubbleText = '🎀 Found a bow in the room — wearing it for you!';
+        // Phase 2p.22/2p.23 — auto-grant accessories when their
+        // unlock-achievement fires, if companion has none. Bow takes
+        // priority since it\'s the earliest-game unlock; flower next;
+        // scarf the long-term reward.
+        if (!state.companion.accessory) {
+          var grantMap = { 'first-favorite': 'bow', 'first-reflection': 'flower', 'streak-30': 'scarf' };
+          var grantBubble = {
+            'first-favorite':   '🎀 Found a bow in the room — wearing it for you!',
+            'first-reflection': '🌸 Tucked a little flower behind my ear. Thanks for writing.',
+            'streak-30':        '🧣 You\'ve been here 30 days running. Made you a scarf — putting it on.'
+          };
+          // Pick the FIRST newly-unlocked accessory grant (highest priority by order)
+          for (var gi = 0; gi < newly.length; gi++) {
+            var grantId = grantMap[newly[gi].id];
+            if (grantId) {
+              companionPatch.accessory = grantId;
+              companionPatch.lastBubbleText = grantBubble[newly[gi].id];
+              break;
+            }
+          }
         }
         stateUpdates.companion = Object.assign({}, state.companion, companionPatch);
       }
@@ -10287,19 +10870,22 @@
     }
 
     // Place a custom-upload decoration. Reuses the existing decoration
-    // shape; template = 'custom-upload', slots empty, artStyle 'custom'.
-    function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags) {
+    // shape; template = 'custom-upload' (or 'custom-drawing' for canvas).
+    // Phase 2p.26: isDrawing flag distinguishes student-drawn from
+    // student-uploaded so the badge + achievement differ.
+    function placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags, isDrawing) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       var rotation = (Math.random() * 6) - 3;
       var entry = {
         id: 'd-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-        template: 'custom-upload',
-        templateLabel: 'Custom upload',
+        template: isDrawing ? 'custom-drawing' : 'custom-upload',
+        templateLabel: isDrawing ? 'Custom drawing' : 'Custom upload',
         slots: {},
         artStyle: 'custom',
         imageBase64: imageBase64,
         isStarter: false,
-        isCustomUpload: true, // distinguishes from AI-generated for badges
+        isCustomUpload: !isDrawing, // legacy badge
+        isCustomDrawing: !!isDrawing, // distinguishes drawn from uploaded
         placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
         rotation: rotation,
         earnedAt: new Date().toISOString(),
@@ -10316,7 +10902,7 @@
         activeModal: null,
         generateContext: null
       });
-      addToast('🌿 Your image is in the room.');
+      addToast(isDrawing ? '🎨 Your drawing is in the room.' : '🌿 Your image is in the room.');
     }
 
     // AI generation — calls props.callImagen with the constructed prompt.
@@ -10864,6 +11450,23 @@
               letterSpacing: '0.04em'
             }
           }, '📎') : null,
+          // Custom-drawing badge (Phase 2p.26) — distinguishes student-
+          // drawn-on-canvas decorations from AI/upload.
+          decoration.isCustomDrawing ? h('span', {
+            'aria-label': 'Hand-drawn',
+            title: 'Your drawing',
+            style: {
+              position: 'absolute',
+              bottom: '2px',
+              right: decoration.isStarter ? '38px' : '4px',
+              fontSize: '8px',
+              color: palette.textMute,
+              background: 'rgba(0,0,0,0.4)',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              letterSpacing: '0.04em'
+            }
+          }, '✏️') : null,
           // Favorite ⭐ overlay (Phase 2p.14) — small star top-right
           // (above the hover-revealed delete ✕). Stays visible always.
           decoration.isFavorite ? h('span', {
@@ -12292,6 +12895,169 @@
     // dim for spent. A single horizontal balance line traces the running
     // total across the period. Read aloud well: aria-label summarizes
     // total earned + spent + current balance.
+    // ── Mood timeline (Phase 2p.25) ──
+    // Stacked bar chart showing mood-tagged decoration distribution by
+    // week over the last 13 weeks. Pairs with trends + heatmap to give
+    // three different time-scoped views: 30-day flow / 13-week mood /
+    // 90-day daily activity. Clinical-grade visualization for tracking
+    // affective trajectory across an intervention period.
+    function renderMoodTimeline() {
+      var decorations = state.decorations || [];
+      var taggedDecs = decorations.filter(function(d) {
+        return d.mood && d.earnedAt && !d.isStarter;
+      });
+      if (taggedDecs.length < 3) return null;
+      var WEEKS = 13;
+      var msPerWeek = 7 * 24 * 60 * 60 * 1000;
+      var now = Date.now();
+      // Align to end-of-week (Saturday) so the rightmost bar is the
+      // current week and prior bars are full weeks back
+      var today = new Date(); today.setHours(0, 0, 0, 0);
+      var dowToday = today.getDay();
+      var endOfWeekTs = today.getTime() + (6 - dowToday) * 24 * 60 * 60 * 1000;
+      var startMs = endOfWeekTs - (WEEKS * msPerWeek - 1);
+      // Build per-week mood counts
+      var perWeek = [];
+      for (var w = 0; w < WEEKS; w++) {
+        perWeek.push({ joy: 0, pride: 0, curiosity: 0, calm: 0, struggle: 0, total: 0 });
+      }
+      taggedDecs.forEach(function(d) {
+        var t = new Date(d.earnedAt).getTime();
+        if (t < startMs || t > endOfWeekTs) return;
+        var idx = Math.floor((t - startMs) / msPerWeek);
+        if (idx < 0 || idx >= WEEKS) return;
+        if (perWeek[idx][d.mood] !== undefined) {
+          perWeek[idx][d.mood]++;
+          perWeek[idx].total++;
+        }
+      });
+      var maxTotal = 1;
+      perWeek.forEach(function(w) { if (w.total > maxTotal) maxTotal = w.total; });
+
+      // SVG dimensions
+      var W = 320, H = 100;
+      var padL = 4, padR = 4, padT = 6, padB = 16;
+      var plotW = W - padL - padR;
+      var plotH = H - padT - padB;
+      var barW = plotW / WEEKS;
+      var maxBarH = plotH;
+      // Mood color mapping (matches mood-tag tints established in 2p.2)
+      var moodColors = {
+        joy:       '#ffc85a',  // warm yellow
+        pride:     '#ffaa50',  // warm orange
+        curiosity: '#b48cdc',  // soft purple
+        calm:      '#78b4c8',  // cool teal
+        struggle:  '#c896aa'   // soft pink
+      };
+      var moodOrder = ['joy', 'pride', 'curiosity', 'calm', 'struggle'];
+
+      // Build stacked bars
+      var bars = [];
+      for (var i = 0; i < WEEKS; i++) {
+        var weekBucket = perWeek[i];
+        var x = padL + i * barW;
+        var stackedH = 0;
+        if (weekBucket.total === 0) continue;
+        moodOrder.forEach(function(mid) {
+          var n = weekBucket[mid] || 0;
+          if (n === 0) return;
+          var segH = (n / maxTotal) * maxBarH;
+          var y = padT + maxBarH - stackedH - segH;
+          bars.push(h('rect', {
+            key: 'mw-' + i + '-' + mid,
+            x: x + barW * 0.15, y: y,
+            width: Math.max(2, barW * 0.7), height: segH,
+            fill: moodColors[mid],
+            opacity: 0.92
+          }));
+          stackedH += segH;
+        });
+      }
+
+      // X-axis date labels (start, mid, end)
+      function fmt(d) {
+        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      }
+      var startLabelDate = new Date(startMs);
+      var midLabelDate = new Date(startMs + (WEEKS / 2) * msPerWeek);
+
+      // Aria summary
+      var totalCount = taggedDecs.length;
+      var moodCounts = { joy: 0, pride: 0, curiosity: 0, calm: 0, struggle: 0 };
+      taggedDecs.forEach(function(d) { if (moodCounts[d.mood] !== undefined) moodCounts[d.mood]++; });
+      var ariaSummary = 'Mood timeline, last ' + WEEKS + ' weeks. ' + totalCount + ' tagged decorations. '
+        + moodOrder.map(function(m) {
+          return moodCounts[m] + ' ' + m;
+        }).join(', ') + '.';
+
+      return h('div', {
+        role: 'figure',
+        'aria-label': ariaSummary,
+        style: {
+          padding: '12px 14px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px',
+          marginBottom: '14px'
+        }
+      },
+        h('div', {
+          style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px', flexWrap: 'wrap', gap: '8px' }
+        },
+          h('span', {
+            style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+          }, '🎭 Mood timeline · 13 weeks'),
+          h('span', {
+            style: { fontSize: '11px', color: palette.textDim, fontVariantNumeric: 'tabular-nums' }
+          },
+            h('span', { style: { color: palette.text, fontWeight: 700 } }, totalCount),
+            ' tagged decoration' + (totalCount === 1 ? '' : 's')
+          )
+        ),
+        h('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          width: '100%',
+          height: H,
+          'aria-hidden': 'true',
+          style: { display: 'block' }
+        },
+          // Baseline
+          h('line', {
+            x1: padL, x2: W - padR,
+            y1: padT + maxBarH, y2: padT + maxBarH,
+            stroke: palette.border, strokeWidth: 0.5
+          }),
+          bars,
+          // X-axis labels
+          h('text', {
+            x: padL, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'start'
+          }, fmt(startLabelDate)),
+          h('text', {
+            x: padL + plotW / 2, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'middle'
+          }, fmt(midLabelDate)),
+          h('text', {
+            x: W - padR, y: H - 2, fontSize: '9', fill: palette.textMute, textAnchor: 'end'
+          }, 'This week')
+        ),
+        // Legend
+        h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', marginTop: '8px', fontSize: '10px', color: palette.textMute } },
+          MOOD_OPTIONS.map(function(m) {
+            if (!moodCounts[m.id]) return null;
+            return h('span', {
+              key: 'leg-' + m.id,
+              style: { display: 'inline-flex', alignItems: 'center', gap: '4px' }
+            },
+              h('span', {
+                'aria-hidden': 'true',
+                style: { width: '10px', height: '10px', background: moodColors[m.id], borderRadius: '2px', display: 'inline-block' }
+              }),
+              h('span', null, m.emoji + ' ' + m.label + ' · ' + moodCounts[m.id])
+            );
+          })
+        )
+      );
+    }
+
     function renderTrendsChart() {
       var earnings = state.earnings || [];
       var decorations = state.decorations || [];
@@ -12496,20 +13262,33 @@
       // the visible decks. activeSubjectFilter lives in generateContext
       // since it's modal-scoped and shouldn't persist beyond close.
       var activeFilter = (state.generateContext && state.generateContext.subjectFilter) || null;
+      var activeMoodFilter = (state.generateContext && state.generateContext.moodFilter) || null;
       var allWithContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
-      var withContent = activeFilter
-        ? allWithContent.filter(function(d) {
-            return Array.isArray(d.subjects) && d.subjects.indexOf(activeFilter) !== -1;
-          })
-        : allWithContent;
-      // Compute which subjects are actually present (for filter row)
+      var withContent = allWithContent.filter(function(d) {
+        if (activeFilter) {
+          if (!Array.isArray(d.subjects) || d.subjects.indexOf(activeFilter) === -1) return false;
+        }
+        if (activeMoodFilter) {
+          if (d.mood !== activeMoodFilter) return false;
+        }
+        return true;
+      });
+      // Compute which subjects + moods are actually present (for filter rows)
       var subjectsPresent = {};
+      var moodsPresent = {};
       allWithContent.forEach(function(d) {
         (d.subjects || []).forEach(function(s) { subjectsPresent[s] = (subjectsPresent[s] || 0) + 1; });
+        if (d.mood) moodsPresent[d.mood] = (moodsPresent[d.mood] || 0) + 1;
       });
       function setSubjectFilter(id) {
         var nextCtx = Object.assign({}, state.generateContext || {}, {
           subjectFilter: (activeFilter === id) ? null : id
+        });
+        setStateField('generateContext', nextCtx);
+      }
+      function setMoodFilter(id) {
+        var nextCtx = Object.assign({}, state.generateContext || {}, {
+          moodFilter: (activeMoodFilter === id) ? null : id
         });
         setStateField('generateContext', nextCtx);
       }
@@ -12655,13 +13434,21 @@
           // Empty-state — distinguish "no content yet" vs "filter narrowed to zero"
           totalDecks === 0 ? (function() {
             var allCount = allWithContent.length;
-            var filteredOut = activeFilter && allCount > 0;
+            var filteredOut = (activeFilter || activeMoodFilter) && allCount > 0;
             if (filteredOut) {
               var filterLabel = (function() {
-                for (var fi = 0; fi < SUBJECT_TAGS.length; fi++) {
-                  if (SUBJECT_TAGS[fi].id === activeFilter) return SUBJECT_TAGS[fi].label;
+                var parts = [];
+                if (activeFilter) {
+                  for (var fi = 0; fi < SUBJECT_TAGS.length; fi++) {
+                    if (SUBJECT_TAGS[fi].id === activeFilter) { parts.push(SUBJECT_TAGS[fi].label); break; }
+                  }
+                  if (parts.length === 0) parts.push(activeFilter);
                 }
-                return activeFilter;
+                if (activeMoodFilter) {
+                  var mo = getMoodOption(activeMoodFilter);
+                  parts.push(mo ? mo.label : activeMoodFilter);
+                }
+                return parts.join(' + ');
               })();
               return h('div', {
                 role: 'status', 'aria-live': 'polite',
@@ -12671,8 +13458,15 @@
                 h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: '0 0 10px 0' } },
                   'No decks tagged "' + filterLabel + '" yet. Tag a deck via its memory modal, or:'),
                 h('button', {
-                  onClick: function() { setSubjectFilter(activeFilter); },
-                  'aria-label': 'Clear subject filter',
+                  onClick: function() {
+                    // Clear BOTH filters simultaneously
+                    var nextCtx = Object.assign({}, state.generateContext || {}, {
+                      subjectFilter: null,
+                      moodFilter: null
+                    });
+                    setStateField('generateContext', nextCtx);
+                  },
+                  'aria-label': 'Clear all filters',
                   style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
                 }, 'Show all decks')
               );
@@ -12712,6 +13506,10 @@
           // 30-day token trend chart (Phase 2l) — only renders when there's data
           renderTrendsChart(),
 
+          // 13-week mood timeline (Phase 2p.25) — affective trajectory
+          // visualization complementing the trend chart\'s token flow
+          renderMoodTimeline(),
+
           // 90-day activity heatmap (Phase 2p.8) — calendar-grid view
           // of cumulative engagement. Rendered below the trend chart so
           // students see daily-level granularity (heatmap) + flow shape
@@ -12749,6 +13547,52 @@
             activeFilter ? h('button', {
               onClick: function() { setSubjectFilter(activeFilter); }, // toggle clears
               'aria-label': 'Clear subject filter',
+              style: {
+                background: 'transparent',
+                color: palette.textMute,
+                border: 'none',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit',
+                textDecoration: 'underline',
+                marginLeft: '4px'
+              }
+            }, 'Clear') : null
+          ) : null,
+
+          // Mood filter chips (Phase 2p.24) — parallel to subject filter,
+          // appears when ≥1 deck has any mood tagged. Lets clinicians
+          // quickly view all "struggle"-tagged decks (or any other mood).
+          Object.keys(moodsPresent).length > 0 ? h('div', {
+            role: 'region',
+            'aria-label': 'Filter decks by mood',
+            style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px', alignItems: 'center' }
+          },
+            h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+              'Mood:'),
+            MOOD_OPTIONS.filter(function(m) { return !!moodsPresent[m.id]; }).map(function(m) {
+              var active = activeMoodFilter === m.id;
+              return h('button', {
+                key: 'mf-' + m.id,
+                onClick: function() { setMoodFilter(m.id); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  background: active ? palette.accent : 'transparent',
+                  color: active ? palette.onAccent : palette.text,
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  padding: '4px 10px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, m.emoji + ' ' + m.label + ' · ' + moodsPresent[m.id]);
+            }),
+            activeMoodFilter ? h('button', {
+              onClick: function() { setMoodFilter(activeMoodFilter); },
+              'aria-label': 'Clear mood filter',
               style: {
                 background: 'transparent',
                 color: palette.textMute,
@@ -13378,8 +14222,8 @@
           placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags);
         },
         onChargeForUpload: function() { return chargeForCustomUpload(); },
-        onPlaceCustomUpload: function(imageBase64, reflectionText, moodTag, subjectTags) {
-          placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags);
+        onPlaceCustomUpload: function(imageBase64, reflectionText, moodTag, subjectTags, isDrawing) {
+          placeCustomUpload(imageBase64, reflectionText, moodTag, subjectTags, isDrawing);
         },
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
@@ -13944,12 +14788,20 @@
 
     function renderCompanionSetupModal() {
       if (state.activeModal !== 'companion-setup') return null;
-      // Phase 2p.22 — gate bow toggle behind first-favorite achievement
-      var bowUnlocked = !!((state.achievements || {})['first-favorite']);
+      // Phase 2p.22/2p.23 — gate accessory picker behind unlock state
+      var unlockedAccessories = ACCESSORY_DEFS
+        .filter(function(def) { return isAccessoryUnlocked(state, def.id); })
+        .map(function(def) { return def.id; });
+      var bowUnlocked = unlockedAccessories.indexOf('bow') !== -1; // legacy
       return h(CompanionSetupInner, {
         existing: state.companion,
         palette: palette,
         bowUnlocked: bowUnlocked,
+        unlockedAccessories: unlockedAccessories,
+        // Show locked teasers when companion has at least 1 unlocked
+        // (so students can see what\'s next without overwhelming new
+        // companions who haven\'t earned anything yet)
+        showLockedTeasers: unlockedAccessories.length > 0,
         onSave: function(updates) {
           // Preserve skillCelebrations + createdAt from existing if present
           var prev = state.companion || {};
@@ -15043,6 +15895,10 @@
               )
             );
           })(),
+          // Mood timeline (Phase 2p.25) — palette-aware version of the
+          // memory-overview timeline, for parents/clinicians reviewing
+          // the affective trajectory on screen.
+          renderMoodTimeline(),
           // Recent achievements (Phase 2p.5) — same spirit as the print
           // packet section, palette-aware for on-screen review
           (function() {
@@ -15522,6 +16378,85 @@
             h('div', null, rows),
             h('div', { style: { fontSize: '9px', color: '#666', marginTop: '4px', fontStyle: 'italic' } },
               'Each square = one day. Darker = more activity. Empty days are neutral, not negative.')
+          );
+        })(),
+        // Mood timeline (Phase 2p.25) — paper-friendly stacked bars by week
+        (function() {
+          var taggedDecs = (state.decorations || []).filter(function(d) {
+            return d.mood && d.earnedAt && !d.isStarter;
+          });
+          if (taggedDecs.length < 3) return null;
+          var WEEKS = 13;
+          var msPerWeek = 7 * 24 * 60 * 60 * 1000;
+          var today = new Date(); today.setHours(0, 0, 0, 0);
+          var dowToday = today.getDay();
+          var endOfWeekTs = today.getTime() + (6 - dowToday) * 24 * 60 * 60 * 1000;
+          var startMs = endOfWeekTs - (WEEKS * msPerWeek - 1);
+          var perWeek = [];
+          for (var w = 0; w < WEEKS; w++) {
+            perWeek.push({ joy: 0, pride: 0, curiosity: 0, calm: 0, struggle: 0, total: 0 });
+          }
+          taggedDecs.forEach(function(d) {
+            var t = new Date(d.earnedAt).getTime();
+            if (t < startMs || t > endOfWeekTs) return;
+            var idx = Math.floor((t - startMs) / msPerWeek);
+            if (idx < 0 || idx >= WEEKS) return;
+            if (perWeek[idx][d.mood] !== undefined) {
+              perWeek[idx][d.mood]++;
+              perWeek[idx].total++;
+            }
+          });
+          var maxTotal = 1;
+          perWeek.forEach(function(w) { if (w.total > maxTotal) maxTotal = w.total; });
+          // Paper-friendly grayscale + dotted-pattern coding for moods
+          var moodGray = {
+            joy: '#cccccc', pride: '#999999', curiosity: '#666666',
+            calm: '#aaaaaa', struggle: '#3a3a3a'
+          };
+          var moodOrder = ['joy', 'pride', 'curiosity', 'calm', 'struggle'];
+          var bars = [];
+          var maxBarH = 60;
+          var W = 320, padL = 4, padR = 4, padT = 4, padB = 14;
+          var plotW = W - padL - padR;
+          var barW = plotW / WEEKS;
+          for (var i = 0; i < WEEKS; i++) {
+            var weekBucket = perWeek[i];
+            if (weekBucket.total === 0) continue;
+            var x = padL + i * barW;
+            var stackedH = 0;
+            moodOrder.forEach(function(mid) {
+              var n = weekBucket[mid] || 0;
+              if (n === 0) return;
+              var segH = (n / maxTotal) * maxBarH;
+              var y = padT + maxBarH - stackedH - segH;
+              bars.push(h('rect', {
+                key: 'pmt-' + i + '-' + mid,
+                x: x + barW * 0.15, y: y,
+                width: Math.max(2, barW * 0.7), height: segH,
+                fill: moodGray[mid],
+                stroke: '#000', strokeWidth: 0.3
+              }));
+              stackedH += segH;
+            });
+          }
+          return h('div', { style: { marginBottom: '20px', padding: '10px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+            h('div', { style: { fontWeight: 700, marginBottom: '6px', fontSize: '11px', color: '#000' } },
+              '🎭 Mood timeline · last 13 weeks · ' + taggedDecs.length + ' tagged decoration' + (taggedDecs.length === 1 ? '' : 's')),
+            h('svg', { viewBox: '0 0 ' + W + ' ' + (padT + maxBarH + padB), width: '100%', height: padT + maxBarH + padB },
+              h('line', { x1: padL, x2: W - padR, y1: padT + maxBarH, y2: padT + maxBarH, stroke: '#000', strokeWidth: 0.4 }),
+              bars,
+              h('text', { x: padL, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444' }, '13w ago'),
+              h('text', { x: padL + plotW / 2, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444', textAnchor: 'middle' }, '6w ago'),
+              h('text', { x: W - padR, y: padT + maxBarH + padB - 2, fontSize: '8', fill: '#444', textAnchor: 'end' }, 'now')
+            ),
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px', fontSize: '9px', color: '#444' } },
+              MOOD_OPTIONS.map(function(m) {
+                return h('span', { key: 'plg-' + m.id, style: { display: 'inline-flex', alignItems: 'center', gap: '3px' } },
+                  h('span', { style: { width: '8px', height: '8px', background: moodGray[m.id], border: '1px solid #000', display: 'inline-block' } }),
+                  h('span', null, m.label)
+                );
+              })
+            )
           );
         })(),
         // Mood distribution (Phase 2m) — affective-domain insight for

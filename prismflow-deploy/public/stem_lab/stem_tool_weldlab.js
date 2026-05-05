@@ -1776,6 +1776,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var quizScore = quizScore_state[0], setQuizScore = quizScore_state[1];
         var quizFeedback_state = useState(null);
         var quizFeedback = quizFeedback_state[0], setQuizFeedback = quizFeedback_state[1];
+        var quizAnswers_state = useState([]);
+        var quizAnswers = quizAnswers_state[0], setQuizAnswers = quizAnswers_state[1];
 
         useEffect(function() { upd('jc_tab', tab); }, [tab]);
 
@@ -1784,6 +1786,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           setQuizIdx(0);
           setQuizScore(0);
           setQuizFeedback(null);
+          setQuizAnswers([]);
           setQuizMode(true);
           announce('Joint matching quiz started');
         }
@@ -1793,6 +1796,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var correct = (answerKey === current.key);
           if (correct) setQuizScore(quizScore + 1);
           setQuizFeedback({ correct: correct, picked: answerKey, was: current.key });
+          setQuizAnswers(quizAnswers.concat([{ key: current.key, picked: answerKey, correct: correct }]));
           announce(correct ? 'Correct: ' + current.joint.name : 'Incorrect. Correct answer: ' + current.joint.name);
         }
         function nextQuiz() {
@@ -1823,17 +1827,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('div', { className: 'text-sm font-bold text-slate-700' },
                   'Question ' + Math.min(quizIdx + 1, quizPool.length) + ' of ' + quizPool.length + ' · Score: ' + quizScore)
               ),
-              done ? h('div', { className: 'bg-white rounded-2xl shadow border-2 border-orange-300 p-8 text-center' },
-                h('div', { className: 'text-6xl mb-3' }, quizScore === quizPool.length ? '🏆' : quizScore >= quizPool.length * 0.6 ? '✅' : '🔁'),
-                h('h2', { className: 'text-2xl font-black text-slate-800 mb-2' }, 'Quiz Complete'),
-                h('p', { className: 'text-lg text-slate-700 mb-4' },
-                  'You scored ' + quizScore + ' of ' + quizPool.length +
-                  (quizScore === quizPool.length ? ' — perfect!' : quizScore >= quizPool.length * 0.6 ? ' — solid work.' : ' — review the catalog and try again.')),
-                h('button', {
-                  onClick: startQuiz,
-                  className: 'px-5 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition focus:outline-none focus:ring-4 ring-orange-500/40'
-                }, '🔄 Retry Quiz')
-              ) : h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+              done ? (function() {
+                var pct = Math.round((quizScore / quizPool.length) * 100);
+                var tier = quizScore === quizPool.length ? 'perfect'
+                           : pct >= 80 ? 'strong'
+                           : pct >= 60 ? 'solid'
+                           : 'review';
+                var tierColor = tier === 'perfect' ? '#fbbf24' : tier === 'strong' ? '#16a34a' : tier === 'solid' ? '#ea580c' : '#dc2626';
+                var tierIcon = tier === 'perfect' ? '🏆' : tier === 'strong' ? '🎯' : tier === 'solid' ? '🔁' : '📚';
+                var tierTitle = tier === 'perfect' ? 'Perfect — every joint identified'
+                                : tier === 'strong' ? 'Strong joint reading'
+                                : tier === 'solid' ? 'Solid foundation'
+                                : 'Worth another pass';
+                var tierMsg = tier === 'perfect'
+                              ? 'You can read joint cross-sections at the level of a journeyman fitter. AWS D1.1 inspection starts here.'
+                              : tier === 'strong'
+                                ? 'Strong overall. Most missed joints are corner vs. edge — those two trip up new welders constantly.'
+                                : tier === 'solid'
+                                  ? 'Solid first pass. Re-read the catalog, especially T-joint vs. corner — they look similar in cross-section but load very differently.'
+                                  : 'Re-read the catalog from butt through edge before retrying. Joint ID is the foundation of every weld procedure.';
+                var rad = 38, circ = 2 * Math.PI * rad;
+                var dashOff = circ - (pct / 100) * circ;
+                return h('div', { className: 'bg-white rounded-2xl shadow overflow-hidden border-2', style: { borderColor: tierColor + 'aa' } },
+                  h('div', { className: 'p-6 flex flex-wrap items-center gap-5', style: { background: 'linear-gradient(135deg, ' + tierColor + '22, transparent)' } },
+                    h('div', { className: 'relative flex-shrink-0', style: { width: 100, height: 100 } },
+                      h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
+                        'aria-label': 'Score: ' + quizScore + ' out of ' + quizPool.length
+                      },
+                        h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                        h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: tierColor, strokeWidth: 9, strokeLinecap: 'round',
+                          strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                      ),
+                      h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                        h('div', { style: { fontSize: 22, fontWeight: 900, color: tierColor, lineHeight: 1 } }, pct + '%'),
+                        h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#64748b' } }, quizScore + ' / ' + quizPool.length)
+                      )
+                    ),
+                    h('div', { className: 'flex-1', style: { minWidth: 220 } },
+                      h('div', { style: { fontSize: 30, marginBottom: 4 }, 'aria-hidden': 'true' }, tierIcon),
+                      h('h2', { style: { margin: '0 0 6px', fontSize: 18, color: tierColor, fontWeight: 900, lineHeight: 1.15 } }, tierTitle),
+                      h('p', { style: { margin: 0, color: '#1e293b', fontSize: 13, lineHeight: 1.55 } }, tierMsg)
+                    )
+                  ),
+                  quizAnswers.length > 0 && h('div', { className: 'px-6 pb-3' },
+                    h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#475569', marginBottom: 4 } }, 'Your answers'),
+                    h('div', { className: 'flex flex-wrap gap-1' },
+                      quizAnswers.map(function(a, ai) {
+                        var jointName = (JOINTS[a.key] && JOINTS[a.key].name) || a.key;
+                        return h('div', { key: ai,
+                          title: 'Q' + (ai + 1) + ': ' + jointName + (a.correct ? ' ✓' : ' ✗ (you picked ' + ((JOINTS[a.picked] && JOINTS[a.picked].name) || a.picked) + ')'),
+                          style: {
+                            width: 14, height: 14, borderRadius: 3,
+                            background: a.correct ? '#16a34a' : '#dc2626',
+                            border: '1.5px solid ' + (a.correct ? '#15803d' : '#7f1d1d'),
+                            boxShadow: '0 1px 1px rgba(0,0,0,0.3)'
+                          },
+                          'aria-label': 'Q' + (ai + 1) + (a.correct ? ' correct' : ' incorrect')
+                        });
+                      })
+                    )
+                  ),
+                  pct >= 80 && h('div', { className: 'px-6 py-2 border-t border-slate-200', style: { fontSize: 13, color: '#15803d', fontWeight: 700 } }, '🏅 Badge earned: Joint Reader'),
+                  h('div', { className: 'px-6 py-3 border-t border-slate-200' },
+                    h('button', {
+                      onClick: startQuiz,
+                      className: 'px-5 py-2.5 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 transition focus:outline-none focus:ring-4 ring-orange-500/40'
+                    }, '🔄 Retry Quiz')
+                  )
+                );
+              })() : h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'Identify this joint'),
                 h('div', {
                   role: 'img',
