@@ -4670,6 +4670,193 @@ var d = labToolData || {};
               )
             ),
 
+            // === SCHEDULE SLEUTH (net-new mini-game) ===
+            // Show ONE unlabeled cumulative-response curve. Player picks which schedule
+            // produced it. Tests the same pedagogy as the Comparison canvas above, but
+            // requires reasoning *about* the curve shape rather than passively viewing it.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(245,158,11,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "\uD83D\uDD75\uFE0F Schedule Sleuth \u2014 identify the schedule from its curve"),
+                React.createElement("button", {
+                  onClick: function() { upd('blShowSleuth', !d.blShowSleuth); },
+                  className: "text-[11px] text-amber-400 hover:text-amber-300"
+                }, d.blShowSleuth ? 'Hide' : 'Play \u2192')
+              ),
+              d.blShowSleuth && (function() {
+                var sleuthIdx = (d.blSleuthIdx == null) ? -1 : d.blSleuthIdx;
+                var sleuthSeed = d.blSleuthSeed || 0;
+                var sleuthAnswered = !!d.blSleuthAnswered;
+                var sleuthPick = d.blSleuthPick;
+                var sleuthScore = d.blSleuthScore || 0;
+                var sleuthRounds = d.blSleuthRounds || 0;
+                var sleuthBestStreak = d.blSleuthBest || 0;
+                var sleuthStreak = d.blSleuthStreak || 0;
+                // Start a new round if not initialized
+                function startRound() {
+                  var nextSeed = ((sleuthSeed * 16807 + 11) % 2147483647) || 7;
+                  var nextIdx = nextSeed % SCHEDULE_TYPES.length;
+                  upd('blSleuthIdx', nextIdx);
+                  upd('blSleuthSeed', nextSeed);
+                  upd('blSleuthAnswered', false);
+                  upd('blSleuthPick', null);
+                }
+                if (sleuthIdx < 0) {
+                  return React.createElement("div", { className: "text-center py-4" },
+                    React.createElement("p", { className: "text-[11px] text-slate-300 mb-3 italic" }, "You will see one unlabeled cumulative-response curve. Pick which schedule produced it. The curve shape is the only clue."),
+                    React.createElement("button", {
+                      onClick: startRound,
+                      "aria-label": "Start Schedule Sleuth",
+                      className: "px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300"
+                    }, "\uD83D\uDD75\uFE0F Start the game")
+                  );
+                }
+                var sch = SCHEDULE_TYPES[sleuthIdx];
+                // Generate cumulative-response curve points deterministically from seed.
+                var WIDTH = 320, HEIGHT = 110, MARGIN_X = 20, MARGIN_Y = 8;
+                var T_MAX = 200, R_MAX = 60;
+                var rngSeed = sleuthSeed * 31 + 13;
+                function prng() { rngSeed = (rngSeed * 16807 + 11) % 2147483647; return (rngSeed % 1000) / 1000; }
+                var points = [];
+                var cumResp = 0;
+                if (sch.pattern === 'high-pause') {
+                  for (var t = 0; t < T_MAX; t++) {
+                    var localT = cumResp % sch.ratio;
+                    if (!(localT < 1 && cumResp > 0)) {
+                      if (prng() > 0.25) cumResp++;
+                    }
+                    points.push(cumResp);
+                  }
+                } else if (sch.pattern === 'high-steady') {
+                  for (var t2 = 0; t2 < T_MAX; t2++) {
+                    if (prng() > 0.2) cumResp++;
+                    points.push(cumResp);
+                  }
+                } else if (sch.pattern === 'scallop') {
+                  var lastR = 0;
+                  for (var t3 = 0; t3 < T_MAX; t3++) {
+                    var inInt = (t3 - lastR) / sch.interval;
+                    var prob = inInt * inInt * 0.7;
+                    if (prng() < prob) {
+                      cumResp++;
+                      if ((t3 - lastR) >= sch.interval) lastR = t3;
+                    }
+                    points.push(cumResp);
+                  }
+                } else { // low-steady
+                  for (var t4 = 0; t4 < T_MAX; t4++) {
+                    if (prng() > 0.55) cumResp++;
+                    points.push(cumResp);
+                  }
+                }
+                var pointsScaled = points.map(function(c, i) {
+                  var px = MARGIN_X + (i / T_MAX) * (WIDTH - 2 * MARGIN_X);
+                  var py = HEIGHT - MARGIN_Y - (c / R_MAX) * (HEIGHT - 2 * MARGIN_Y);
+                  return px.toFixed(1) + ',' + py.toFixed(1);
+                }).join(' ');
+                // Choices: when answered, color the picked + correct buttons. Otherwise neutral.
+                function pick(idx) {
+                  if (sleuthAnswered) return;
+                  var correct = idx === sleuthIdx;
+                  var newScore = sleuthScore + (correct ? 1 : 0);
+                  var newStreak = correct ? (sleuthStreak + 1) : 0;
+                  var newBest = Math.max(sleuthBestStreak, newStreak);
+                  upd('blSleuthAnswered', true);
+                  upd('blSleuthPick', idx);
+                  upd('blSleuthScore', newScore);
+                  upd('blSleuthRounds', sleuthRounds + 1);
+                  upd('blSleuthStreak', newStreak);
+                  upd('blSleuthBest', newBest);
+                  if (addToast) addToast(correct ? '\u2705 Correct \u2014 ' + sch.name : '\u274C Not quite \u2014 it was ' + sch.name, correct ? 'success' : 'info');
+                }
+                var pct = sleuthRounds > 0 ? Math.round((sleuthScore / sleuthRounds) * 100) : 0;
+                return React.createElement("div", null,
+                  // Score header
+                  React.createElement("div", { className: "flex items-center justify-between mb-2 text-[11px] flex-wrap gap-2" },
+                    React.createElement("div", { className: "flex gap-3 items-center" },
+                      React.createElement("span", { className: "text-slate-300" }, "Round ", React.createElement("strong", { className: "text-white" }, sleuthRounds + (sleuthAnswered ? '' : '+1'))),
+                      React.createElement("span", { className: "text-slate-300" }, "Streak ", React.createElement("strong", { className: "text-amber-400" }, sleuthStreak)),
+                      React.createElement("span", { className: "text-slate-300" }, "Best ", React.createElement("strong", { className: "text-emerald-400" }, sleuthBestStreak)),
+                      sleuthRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
+                    )
+                  ),
+                  // SVG curve (the puzzle)
+                  React.createElement("div", { style: { background: '#0f172a', borderRadius: 10, padding: 8, border: '1px solid rgba(100,116,139,0.3)' } },
+                    React.createElement("svg", {
+                      viewBox: '0 0 ' + WIDTH + ' ' + HEIGHT,
+                      width: '100%', height: HEIGHT,
+                      role: 'img',
+                      'aria-label': sleuthAnswered ? 'Cumulative-response curve for ' + sch.name : 'Unlabeled cumulative-response curve. Identify the schedule from its shape.',
+                      style: { display: 'block' }
+                    },
+                      // Grid
+                      [25, 50, 75].map(function(g) { return React.createElement('line', { key: 'gy' + g, x1: MARGIN_X, x2: WIDTH - MARGIN_X, y1: g, y2: g, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
+                      [80, 160, 240].map(function(g) { return React.createElement('line', { key: 'gx' + g, x1: g, x2: g, y1: MARGIN_Y, y2: HEIGHT - MARGIN_Y, stroke: 'rgba(100,116,139,0.18)', strokeWidth: 0.5 }); }),
+                      // Axes labels
+                      React.createElement('text', { x: MARGIN_X, y: 12, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, 'Cumulative responses'),
+                      React.createElement('text', { x: WIDTH - 36, y: HEIGHT - 1, fontSize: 8, fill: '#94a3b8', fontFamily: 'monospace' }, 'Time \u2192'),
+                      // The curve \u2014 color reveals only after answered
+                      React.createElement('polyline', {
+                        points: pointsScaled, fill: 'none',
+                        stroke: sleuthAnswered ? sch.color : '#cbd5e1',
+                        strokeWidth: 2, strokeLinejoin: 'round', strokeLinecap: 'round'
+                      })
+                    )
+                  ),
+                  // Picker buttons
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mt-3", role: 'radiogroup', 'aria-label': 'Pick the schedule' },
+                    SCHEDULE_TYPES.map(function(opt, oi) {
+                      var isPicked = sleuthAnswered && sleuthPick === oi;
+                      var isCorrect = sleuthAnswered && oi === sleuthIdx;
+                      var bg, border, color;
+                      if (sleuthAnswered) {
+                        if (isCorrect) { bg = '#064e3b'; border = '#22c55e'; color = '#bbf7d0'; }
+                        else if (isPicked) { bg = '#7f1d1d'; border = '#ef4444'; color = '#fecaca'; }
+                        else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+                      } else {
+                        bg = 'rgba(30,41,59,0.7)'; border = opt.color + '60'; color = '#e2e8f0';
+                      }
+                      return React.createElement('button', {
+                        key: oi, role: 'radio',
+                        'aria-checked': isPicked ? 'true' : 'false',
+                        'aria-label': opt.name + ' (' + opt.abbrev + ')',
+                        disabled: sleuthAnswered,
+                        onClick: function() { pick(oi); },
+                        style: { padding: '8px 10px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: sleuthAnswered ? 'default' : 'pointer', fontSize: 11, fontWeight: 700, textAlign: 'left', transition: 'all 0.15s' }
+                      },
+                        React.createElement('div', { style: { fontFamily: 'monospace', fontSize: 11, color: opt.color, marginBottom: 2, fontWeight: 800 } }, opt.abbrev),
+                        React.createElement('div', { style: { fontSize: 11, fontWeight: 800 } }, opt.name)
+                      );
+                    })
+                  ),
+                  // Feedback
+                  sleuthAnswered && React.createElement("div", {
+                    className: "mt-3 rounded-lg p-3",
+                    style: {
+                      background: sleuthPick === sleuthIdx ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+                      border: '1px solid ' + (sleuthPick === sleuthIdx ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.45)')
+                    }
+                  },
+                    React.createElement("div", { className: "text-[11px] font-bold mb-1", style: { color: sleuthPick === sleuthIdx ? '#86efac' : '#fca5a5' } },
+                      sleuthPick === sleuthIdx ? '\u2705 Correct \u2014 ' + sch.name : '\u274C Not quite \u2014 it was ' + sch.name + (sleuthPick != null ? ' (you picked ' + SCHEDULE_TYPES[sleuthPick].abbrev + ')' : '')
+                    ),
+                    React.createElement("div", { className: "text-[11px] text-slate-200 leading-relaxed mb-2" },
+                      sch.pattern === 'high-pause' ? 'Fixed Ratio creates a *post-reinforcement pause* after each delivery, then a rapid burst of responses to reach the next reinforcer. Look for the staircase shape with brief flat plateaus.'
+                      : sch.pattern === 'high-steady' ? 'Variable Ratio produces the *steepest, smoothest* climb because the next reinforcer could come at any moment. This is the slot-machine pattern \u2014 most resistant to extinction.'
+                      : sch.pattern === 'scallop' ? 'Fixed Interval produces a *scallop*: slow responding right after reinforcement, then accelerating as the interval ends and the next reinforcer becomes available. Look for repeating concave curves.'
+                      : 'Variable Interval produces a *low, steady* rate. The next reinforcer arrives at unpredictable times, so a moderate steady rate maximizes the chance of catching it. Look for the lowest, smoothest line.'
+                    ),
+                    React.createElement("button", {
+                      onClick: startRound,
+                      "aria-label": "Next round",
+                      className: "px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-[11px] hover:bg-amber-500 focus:outline-none focus:ring-2 ring-amber-300"
+                    }, "\u27A1\uFE0F Next round")
+                  )
+                );
+              })()
+            ),
+
             // === REINFORCEMENT / PUNISHMENT 2x2 MATRIX ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)
