@@ -301,6 +301,11 @@
     // regeneratable via the Refresh button. Saves Gemini quota.
     companionLetters: {},
 
+    // Phase 2p.20 — gentle Pomodoro completion chime preference.
+    // Web Audio sine-wave bell when a focus session ends. Default on
+    // for new students; toggle in settings.
+    pomodoroChimeEnabled: true,
+
     // ── Reflection insights cache ──
     // Holds the last AI-generated summary of journal entries. Cleared on
     // demand by clicking "Refresh" in the insights modal. Not persisted
@@ -1841,6 +1846,42 @@
     '<ellipse cx="36" cy="64" rx="3" ry="6" fill="rgba(255,255,255,0.18)"/>',
     '</svg>'
   ].join('');
+
+  // ── Pomodoro completion chime (Phase 2p.20) ──
+  // Synthesizes a gentle 3-tone bell via Web Audio. No external assets.
+  // Each tone is a sine wave with exponential decay. Tones overlap
+  // slightly for a soft chord. Total duration ~2.4s.
+  function playPomodoroChime() {
+    if (typeof window === 'undefined') return;
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      var actx = new Ctx();
+      // C5, E5, G5 (C major triad). Pleasant, calming, anchored.
+      var freqs = [523.25, 659.25, 783.99];
+      var startDelay = 0;
+      freqs.forEach(function(f, i) {
+        var osc = actx.createOscillator();
+        var gain = actx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        var t0 = actx.currentTime + startDelay;
+        // Soft attack + long exponential decay
+        gain.gain.setValueAtTime(0, t0);
+        gain.gain.linearRampToValueAtTime(0.18, t0 + 0.04);
+        gain.gain.exponentialRampToValueAtTime(0.001, t0 + 1.6);
+        osc.connect(gain);
+        gain.connect(actx.destination);
+        osc.start(t0);
+        osc.stop(t0 + 1.7);
+        startDelay += 0.18; // small stagger between tones
+      });
+      // Close context after the longest tone finishes (cleanup)
+      setTimeout(function() {
+        try { actx.close(); } catch (e) { /* ignore */ }
+      }, 2500);
+    } catch (e) { /* silent — Web Audio sometimes blocked, no harm */ }
+  }
 
   // ── Custom upload compression (Phase 2p.19) ──
   // Reads a File via FileReader, downscales to a max edge of 256px on
@@ -5299,34 +5340,67 @@
         checkAndAdvance();
       }
 
+      // Voice input (Phase 2p.20) — speech-to-text fills the current
+      // guess, replacing whatever was typed. Hidden when Web Speech
+      // unavailable. Already-recording state shown with red mic.
+      function handleVoiceForAcronym() {
+        if (!p.startVoice) return;
+        if (p.isRecording) { p.stopVoice && p.stopVoice(); return; }
+        p.startVoice(function(transcript) {
+          updateGuess((transcript || '').trim());
+        });
+      }
       return h('div', null,
         h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '10px', textAlign: 'center' } },
           'Letter ' + (idx + 1) + ' / ' + quiz.letters.length),
         h('div', { style: { fontSize: '64px', fontWeight: 800, color: palette.accent, textAlign: 'center', marginBottom: '14px', letterSpacing: '0.04em' } },
           letter),
-        h('input', {
-          type: 'text',
-          value: currentGuess,
-          onChange: function(e) { updateGuess(e.target.value); },
-          placeholder: 'What does ' + letter + ' stand for?',
-          'aria-label': 'Meaning of ' + letter,
-          autoFocus: true,
-          onKeyDown: function(e) {
-            if (e.key === 'Enter') { e.preventDefault(); checkAndAdvance(); }
-          },
-          style: {
-            width: '100%',
-            padding: '10px 12px',
-            background: palette.surface,
-            border: '1px solid ' + palette.border,
-            borderRadius: '8px',
-            color: palette.text,
-            fontSize: '15px',
-            fontFamily: 'inherit',
-            boxSizing: 'border-box',
-            marginBottom: '14px'
-          }
-        }),
+        h('div', { style: { position: 'relative', marginBottom: '14px' } },
+          h('input', {
+            type: 'text',
+            value: currentGuess,
+            onChange: function(e) { updateGuess(e.target.value); },
+            placeholder: 'What does ' + letter + ' stand for?',
+            'aria-label': 'Meaning of ' + letter,
+            autoFocus: true,
+            onKeyDown: function(e) {
+              if (e.key === 'Enter') { e.preventDefault(); checkAndAdvance(); }
+            },
+            style: {
+              width: '100%',
+              padding: '10px 12px',
+              paddingRight: p.speechSupported ? '46px' : '12px',
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              color: palette.text,
+              fontSize: '15px',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box'
+            }
+          }),
+          // Voice button — only shown when Web Speech is supported
+          p.speechSupported ? h('button', {
+            onClick: handleVoiceForAcronym,
+            'aria-pressed': p.isRecording ? 'true' : 'false',
+            'aria-label': p.isRecording ? 'Stop voice recording' : 'Speak your answer',
+            title: p.isRecording ? 'Recording — click to stop' : 'Speak your answer (voice-to-text)',
+            style: {
+              position: 'absolute',
+              top: '6px', right: '6px',
+              width: '32px', height: '32px',
+              borderRadius: '50%',
+              background: p.isRecording ? '#dc2626' : 'transparent',
+              border: '1px solid ' + (p.isRecording ? '#dc2626' : palette.border),
+              color: p.isRecording ? '#fff' : palette.textDim,
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontFamily: 'inherit',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            },
+            className: p.isRecording ? 'ah-record-pulse' : ''
+          }, '🎤') : null
+        ),
         h('div', { style: { display: 'flex', gap: '10px' } },
           h('button', {
             onClick: skip,
@@ -5422,29 +5496,58 @@
           )
         ),
         !revealed ? h('div', null,
-          h('input', {
-            type: 'text',
-            value: guess,
-            onChange: function(e) { updateGuess(e.target.value); },
-            placeholder: 'Type what this reminds you of…',
-            'aria-label': 'Your recall of the association',
-            autoFocus: true,
-            onKeyDown: function(e) {
-              if (e.key === 'Enter') { e.preventDefault(); reveal(); }
-            },
-            style: {
-              width: '100%',
-              padding: '10px 12px',
-              background: palette.surface,
-              border: '1px solid ' + palette.border,
-              borderRadius: '8px',
-              color: palette.text,
-              fontSize: '14px',
-              fontFamily: 'inherit',
-              boxSizing: 'border-box',
-              marginBottom: '10px'
-            }
-          }),
+          h('div', { style: { position: 'relative', marginBottom: '10px' } },
+            h('input', {
+              type: 'text',
+              value: guess,
+              onChange: function(e) { updateGuess(e.target.value); },
+              placeholder: 'Type what this reminds you of…',
+              'aria-label': 'Your recall of the association',
+              autoFocus: true,
+              onKeyDown: function(e) {
+                if (e.key === 'Enter') { e.preventDefault(); reveal(); }
+              },
+              style: {
+                width: '100%',
+                padding: '10px 12px',
+                paddingRight: p.speechSupported ? '46px' : '12px',
+                background: palette.surface,
+                border: '1px solid ' + palette.border,
+                borderRadius: '8px',
+                color: palette.text,
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                boxSizing: 'border-box'
+              }
+            }),
+            // Voice button (Phase 2p.20)
+            p.speechSupported ? h('button', {
+              onClick: function() {
+                if (!p.startVoice) return;
+                if (p.isRecording) { p.stopVoice && p.stopVoice(); return; }
+                p.startVoice(function(transcript) {
+                  updateGuess((transcript || '').trim());
+                });
+              },
+              'aria-pressed': p.isRecording ? 'true' : 'false',
+              'aria-label': p.isRecording ? 'Stop voice recording' : 'Speak your answer',
+              title: p.isRecording ? 'Recording — click to stop' : 'Speak your answer (voice-to-text)',
+              style: {
+                position: 'absolute',
+                top: '6px', right: '6px',
+                width: '32px', height: '32px',
+                borderRadius: '50%',
+                background: p.isRecording ? '#dc2626' : 'transparent',
+                border: '1px solid ' + (p.isRecording ? '#dc2626' : palette.border),
+                color: p.isRecording ? '#fff' : palette.textDim,
+                cursor: 'pointer',
+                fontSize: '13px',
+                fontFamily: 'inherit',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              },
+              className: p.isRecording ? 'ah-record-pulse' : ''
+            }, '🎤') : null
+          ),
           h('div', { style: { display: 'flex', gap: '10px' } },
             h('button', {
               onClick: function() { setMode('view'); setQuiz(null); },
@@ -8138,6 +8241,17 @@
           updates.companion = Object.assign({}, state.companion, {
             lastQuizPromptDismissedAt: null
           });
+        }
+
+        // Phase 2p.20 — gentle 3-tone bell when focus completes.
+        // Suppressed for cycle-bonus completion since the cycle-bonus
+        // toast already celebrates. Skipped if user disabled in settings.
+        if (state.pomodoroChimeEnabled !== false && !isFourthInCycle) {
+          try { playPomodoroChime(); } catch (e) { /* fail silent */ }
+        } else if (state.pomodoroChimeEnabled !== false && isFourthInCycle) {
+          // Cycle-bonus gets the chime too — students who completed 4
+          // straight Pomodoros deserve more of a celebration, not less
+          try { playPomodoroChime(); } catch (e) { /* fail silent */ }
         }
 
         // First-Pomodoro toast (one-time)
@@ -12774,6 +12888,12 @@
         palette: palette,
         autoStartQuiz: !!ctx.autoStartQuiz,
         queueInfo: queueInfo,
+        // Voice input (Phase 2p.20) — let acronym + image-link quizzes
+        // accept spoken answers via Web Speech API
+        speechSupported: speechSupported,
+        startVoice: startVoiceCapture,
+        stopVoice: stopVoiceCapture,
+        isRecording: isRecording,
         onClose: function() {
           setStateMulti({ activeModal: null, generateContext: null });
         },
@@ -14033,6 +14153,39 @@
               'aria-label': 'Replay the welcome tour',
               style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '6px 14px' })
             }, '🎬 Replay tour')
+          ),
+          // Phase 2p.20 — Pomodoro completion chime toggle
+          h('div', {
+            style: { marginTop: '14px', paddingTop: '12px', borderTop: '1px solid ' + palette.border, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }
+          },
+            h('div', null,
+              h('div', { style: { fontSize: '12px', fontWeight: 600, color: palette.text } }, '🔔 Sound on Pomodoro complete'),
+              h('div', { style: { fontSize: '11px', color: palette.textMute, marginTop: '2px' } },
+                'Gentle 3-tone bell when a focus session ends')
+            ),
+            h('button', {
+              onClick: function() {
+                var next = state.pomodoroChimeEnabled === false ? true : false;
+                setStateField('pomodoroChimeEnabled', next);
+                if (next) {
+                  // Preview the chime so students hear what they\'re enabling
+                  try { playPomodoroChime(); } catch (e) {}
+                }
+              },
+              'aria-pressed': state.pomodoroChimeEnabled !== false ? 'true' : 'false',
+              'aria-label': 'Toggle Pomodoro completion chime',
+              style: {
+                background: state.pomodoroChimeEnabled !== false ? palette.accent : palette.surface,
+                color: state.pomodoroChimeEnabled !== false ? palette.onAccent : palette.textDim,
+                border: '1px solid ' + (state.pomodoroChimeEnabled !== false ? palette.accent : palette.border),
+                borderRadius: '999px',
+                padding: '4px 14px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, state.pomodoroChimeEnabled !== false ? 'On' : 'Off')
           )
         )
       );
