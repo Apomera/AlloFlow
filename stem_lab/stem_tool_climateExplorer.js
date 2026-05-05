@@ -1122,6 +1122,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
           })
         ),
 
+        // ── Topic-accent hero band (swaps with the active tab) ──
+        (function() {
+          var TAB_META = {
+            carbon:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.12)',  icon: '\uD83E\uDDEE', title: 'Carbon Calculator',     hint: 'Average US household emits ~16 tons CO\u2082/yr. The biggest levers are home heating, transport, and diet \u2014 not plastic straws.' },
+            renewables: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.12)', icon: '\u26A1',         title: 'Renewable energy',      hint: 'Solar + wind are now cheaper than new fossil plants in most markets. The hard part is grid integration, not generation cost.' },
+            keeling:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.12)',  icon: '\uD83D\uDCC8', title: 'The Keeling Curve',     hint: 'Continuous CO\u2082 measurement at Mauna Loa since 1958 \u2014 the longest-running atmospheric record. Sawtooth pattern from N. Hemisphere photosynthesis.' },
+            tipping:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.12)',  icon: '\u26A0\uFE0F', title: 'Climate tipping points', hint: 'Thresholds where the system shifts state and stays there \u2014 Greenland melt, Amazon dieback, AMOC slowdown. Recent work suggests several may be closer than thought.' },
+            justice:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.12)', icon: '\u2696\uFE0F',  title: 'Climate justice',       hint: 'The countries that emitted the least face the worst impacts. Climate is an equity issue first \u2014 vulnerability tracks income, geography, and historical responsibility.' },
+            solutions:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.12)', icon: '\uD83D\uDCA1', title: 'Solutions toolkit',     hint: 'Drawdown ranks 100 solutions by gigatons of CO\u2082 avoided. Refrigerants, food waste, and educating girls top the list \u2014 not what most people guess.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.carbon;
+          return el('div', {
+            style: {
+              margin: '12px 24px 0',
+              padding: '12px 16px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+            }
+          },
+            el('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            el('div', { style: { flex: 1, minWidth: 220 } },
+              el('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              el('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ── Content ──
         el('div', { style: { padding: 20 } },
 

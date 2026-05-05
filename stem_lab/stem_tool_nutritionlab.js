@@ -208,7 +208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths'];
+      var BADGE_IDS = ['macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -390,6 +390,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             desc: 'Registered Dietitian (Master\'s + 1200hr internship), public health nutritionist, food scientist, sports nutritionist, school nutrition director. UMaine + Husson programs.',
             color: 'from-blue-600 to-indigo-700',
             ring: 'ring-blue-600/40',
+            ready: true
+          },
+          {
+            id: 'maineDay', title: 'Build a Maine Day', icon: '🌲',
+            subtitle: 'Pick 4 meals → see what your day adds up to',
+            desc: 'Pick one food for breakfast, lunch, dinner, and snack from a Maine-realistic short list (Maine wild blueberries, Atlantic salmon, lobster roll, fortified cereal, etc.). Watch six nutrient bars (protein, fiber, vitamin D, omega-3, iron, calcium) update against approximate adolescent DRIs. Final summary names deficits + strengths and ties them to Maine context (winter vit D, fisheries omega-3, adolescent iron).',
+            color: 'from-stone-500 to-emerald-700',
+            ring: 'ring-stone-500/40',
             ready: true
           }
         ];
@@ -3514,6 +3522,238 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
 
       // ─────────────────────────────────────────────────────
+      // ─────────────────────────────────────────────────────
+      // BUILD A MAINE DAY (net-new mini-game)
+      // Pick one food per meal (breakfast/lunch/dinner/snack) from a Maine-
+      // realistic short list. Live nutrient totals against approximate
+      // adolescent DRIs. Final summary names deficits + standout strengths
+      // and ties them back to Maine context (vit D winters, omega-3 fisheries).
+      // Pedagogical frame: NOT prescriptive ("hit these targets"). Descriptive
+      // ("here is what a balanced Maine day actually looks like").
+      // ─────────────────────────────────────────────────────
+      function MaineDayBuilder() {
+        // Approximate values per serving from USDA FoodData Central.
+        // Nutrients tracked: protein(g), fiber(g), vitD(mcg), omega3(g),
+        // iron(mg), calcium(mg). Adolescent DRIs (avg teen): protein 50g,
+        // fiber 28g, vitD 15mcg, omega3 1.3g, iron 12mg, calcium 1300mg.
+        var DRI = { protein: 50, fiber: 28, vitD: 15, omega3: 1.3, iron: 12, calcium: 1300 };
+        var FOODS = [
+          // Breakfast
+          { id: 'bOatBlue', meal: 'breakfast', icon: '🫐', name: 'Maine wild blueberries on oatmeal', protein: 7, fiber: 5, vitD: 0.5, omega3: 0.4, iron: 2.5, calcium: 105, note: 'Maine wild blueberries pack 33% more antioxidants than cultivated.' },
+          { id: 'bEggs',    meal: 'breakfast', icon: '🍳', name: 'Two eggs, any style',                protein: 12, fiber: 0, vitD: 2.0, omega3: 0.1, iron: 1.8, calcium: 50, note: 'Eggs are one of the few natural vitamin-D foods.' },
+          { id: 'bYogurt',  meal: 'breakfast', icon: '🍯', name: 'Greek yogurt with honey',            protein: 17, fiber: 0, vitD: 1.5, omega3: 0,   iron: 0.1, calcium: 230, note: 'Calcium standout.' },
+          { id: 'bToast',   meal: 'breakfast', icon: '🍞', name: 'Whole-grain toast with butter',      protein: 4, fiber: 3, vitD: 0.2, omega3: 0.05, iron: 1.4, calcium: 35, note: 'Quick carbs + fiber, low everything else.' },
+          { id: 'bCereal',  meal: 'breakfast', icon: '🥣', name: 'Fortified cereal with milk',         protein: 8, fiber: 3, vitD: 3.5, omega3: 0.05, iron: 9.0, calcium: 320, note: 'Fortified iron + vit D + calcium — nutrient-dense for the price.' },
+          // Lunch
+          { id: 'lLobster', meal: 'lunch',     icon: '🦞', name: 'Lobster roll (Maine summer)',         protein: 22, fiber: 1, vitD: 0,   omega3: 0.2, iron: 0.8, calcium: 90, note: 'Maine lobster — protein-dense; vit D negligible.' },
+          { id: 'lTuna',    meal: 'lunch',     icon: '🐟', name: 'Tuna sandwich (canned light)',        protein: 24, fiber: 2, vitD: 1.0, omega3: 0.5, iron: 2.2, calcium: 70, note: 'Canned light tuna — solid omega-3, low mercury.' },
+          { id: 'lTurkey',  meal: 'lunch',     icon: '🥪', name: 'Turkey sandwich on whole wheat',     protein: 22, fiber: 4, vitD: 0.2, omega3: 0.1, iron: 2.5, calcium: 180, note: 'Balanced protein + fiber.' },
+          { id: 'lSalad',   meal: 'lunch',     icon: '🥗', name: 'Mixed greens with chickpeas & feta', protein: 14, fiber: 8, vitD: 0,   omega3: 0.2, iron: 4.0, calcium: 220, note: 'Iron + fiber standout. Add citrus for iron absorption.' },
+          { id: 'lPizza',   meal: 'lunch',     icon: '🍕', name: 'Cheese pizza (school slice)',        protein: 12, fiber: 2, vitD: 0.3, omega3: 0,   iron: 2.0, calcium: 220, note: 'Calcium from cheese; modest fiber/iron.' },
+          // Dinner
+          { id: 'dSalmon',  meal: 'dinner',    icon: '🍣', name: 'Baked Atlantic salmon, rice, greens', protein: 32, fiber: 4, vitD: 14.0, omega3: 1.8, iron: 1.5, calcium: 85, note: 'Maine fisheries powerhouse — vit D + omega-3 in one plate.' },
+          { id: 'dPasta',   meal: 'dinner',    icon: '🍝', name: 'Spaghetti with marinara',             protein: 12, fiber: 5, vitD: 0,   omega3: 0.2, iron: 3.0, calcium: 60, note: 'Carb-forward; modest iron from sauce + pasta.' },
+          { id: 'dChicken', meal: 'dinner',    icon: '🍗', name: 'Roasted chicken, sweet potato, peas', protein: 30, fiber: 7, vitD: 0.5, omega3: 0.1, iron: 2.5, calcium: 80, note: 'Balanced protein + complex carbs + fiber.' },
+          { id: 'dChili',   meal: 'dinner',    icon: '🌶️', name: 'Beef chili with beans',                protein: 26, fiber: 11, vitD: 0.3, omega3: 0.1, iron: 5.5, calcium: 110, note: 'Iron + fiber standout. Beef + beans together stack well.' },
+          { id: 'dTacos',   meal: 'dinner',    icon: '🌮', name: 'Black bean tacos with cheese',        protein: 18, fiber: 12, vitD: 0.2, omega3: 0.1, iron: 4.0, calcium: 230, note: 'Plant-based protein + huge fiber + calcium from cheese.' },
+          // Snack
+          { id: 'sApple',   meal: 'snack',     icon: '🍎', name: 'Apple',                                protein: 0.5, fiber: 4, vitD: 0,   omega3: 0,   iron: 0.2, calcium: 11, note: 'Fiber-only standout; minimal everything else.' },
+          { id: 'sCheese',  meal: 'snack',     icon: '🧀', name: 'Cheese stick',                         protein: 7, fiber: 0, vitD: 0.4, omega3: 0,   iron: 0.1, calcium: 200, note: 'Calcium-dense, protein-dense.' },
+          { id: 'sTrail',   meal: 'snack',     icon: '🥜', name: 'Trail mix (almonds + cranberries)',   protein: 6, fiber: 4, vitD: 0,   omega3: 0.1, iron: 1.5, calcium: 80, note: 'Healthy fats, fiber, plant iron.' },
+          { id: 'sHummus',  meal: 'snack',     icon: '🥕', name: 'Carrot sticks with hummus',           protein: 5, fiber: 6, vitD: 0,   omega3: 0.1, iron: 1.5, calcium: 60, note: 'Plant fiber + protein.' },
+          { id: 'sIceCream', meal: 'snack',    icon: '🍦', name: 'Maine maple ice cream',                protein: 4, fiber: 0, vitD: 0.5, omega3: 0,   iron: 0.1, calcium: 130, note: 'Treat — calcium present, low everything else.' }
+        ];
+
+        var picks = d.bmd_picks || {};
+        var done = !!d.bmd_done;
+        function setPicks(meal, foodId) {
+          var next = Object.assign({}, picks); next[meal] = foodId;
+          upd('bmd_picks', next);
+        }
+        function reset() {
+          upd('bmd_picks', {});
+          upd('bmd_done', false);
+        }
+
+        // Live nutrient totals
+        var totals = { protein: 0, fiber: 0, vitD: 0, omega3: 0, iron: 0, calcium: 0 };
+        ['breakfast','lunch','dinner','snack'].forEach(function(m) {
+          if (!picks[m]) return;
+          var f = FOODS.filter(function(x) { return x.id === picks[m]; })[0];
+          if (!f) return;
+          ['protein','fiber','vitD','omega3','iron','calcium'].forEach(function(k) { totals[k] += f[k] || 0; });
+        });
+        var pickedCount = ['breakfast','lunch','dinner','snack'].filter(function(m) { return !!picks[m]; }).length;
+
+        function nutBar(key, label, unit, decimals) {
+          var val = totals[key];
+          var pct = Math.min(100, Math.round((val / DRI[key]) * 100));
+          var color, status;
+          if (pct >= 80) { color = '#16a34a'; status = 'Strong'; }
+          else if (pct >= 50) { color = '#f59e0b'; status = 'Building'; }
+          else { color = '#ef4444'; status = 'Low'; }
+          var d = decimals == null ? 1 : decimals;
+          return h('div', { key: key, className: 'mb-2' },
+            h('div', { className: 'flex justify-between text-xs mb-1' },
+              h('span', { className: 'text-slate-700 font-bold' }, label),
+              h('span', { style: { color: color, fontWeight: 700 } }, val.toFixed(d) + unit + ' / ' + DRI[key] + unit + '  (' + pct + '% — ' + status + ')')
+            ),
+            h('div', { className: 'w-full bg-slate-200 rounded-full h-2 overflow-hidden' },
+              h('div', { style: { width: pct + '%', height: '100%', background: color, transition: 'width 0.3s' }, role: 'progressbar', 'aria-valuenow': pct, 'aria-valuemin': 0, 'aria-valuemax': 100 })
+            )
+          );
+        }
+
+        // ── Summary screen ──
+        if (done) {
+          var deficits = [];
+          var strengths = [];
+          [
+            { k: 'protein',  l: 'protein' },
+            { k: 'fiber',    l: 'fiber' },
+            { k: 'vitD',     l: 'vitamin D' },
+            { k: 'omega3',   l: 'omega-3' },
+            { k: 'iron',     l: 'iron' },
+            { k: 'calcium',  l: 'calcium' }
+          ].forEach(function(n) {
+            var pct = Math.round((totals[n.k] / DRI[n.k]) * 100);
+            if (pct >= 80) strengths.push({ label: n.l, pct: pct });
+            else if (pct < 50) deficits.push({ label: n.l, pct: pct });
+          });
+          var maineHighlight =
+            totals.vitD < 7 ? 'Your day is low in vitamin D — common for Mainers in winter (latitude 43–47°N). Real-world fix: fortified milk/cereal, eggs, fatty fish, or a winter supplement (talk to a doctor).'
+            : totals.omega3 < 0.5 ? 'Your day is low in omega-3 — Maine has world-class fisheries (salmon, herring, sardines) that make this easy to fix.'
+            : totals.iron < 6 ? 'Your day is low in iron — adolescents (especially menstruating teens) have high iron needs. Pair plant iron with vitamin C for absorption.'
+            : 'Your day looks pretty balanced. Maine context — winter vitamin D and adolescent iron — both look covered.';
+
+          return h('div', { className: 'min-h-screen bg-slate-50' },
+            h(BackBar, { icon: '🌲', title: 'Build a Maine Day — summary' }),
+            h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
+              h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-5' },
+                h('h2', { className: 'text-lg font-black text-emerald-900 mb-2' }, 'Your day, in numbers'),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                  'Six nutrients tracked against approximate adolescent DRIs. The point is not to hit 100% on every bar — it is to see what a real day actually adds up to and what tends to be over- or under-represented.')
+              ),
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+                h('h3', { className: 'text-base font-black text-slate-800 mb-3' }, 'Nutrient totals'),
+                nutBar('protein', 'Protein', 'g'),
+                nutBar('fiber', 'Fiber', 'g'),
+                nutBar('vitD', 'Vitamin D', 'mcg', 1),
+                nutBar('omega3', 'Omega-3', 'g', 2),
+                nutBar('iron', 'Iron', 'mg', 1),
+                nutBar('calcium', 'Calcium', 'mg', 0)
+              ),
+              h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-4' },
+                h('h3', { className: 'text-sm font-black text-amber-900 mb-2' }, '🌲 Maine context'),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, maineHighlight)
+              ),
+              strengths.length > 0 && h('div', { className: 'bg-emerald-50 border border-emerald-300 rounded-xl p-4' },
+                h('h3', { className: 'text-sm font-black text-emerald-900 mb-2' }, '✅ Standout strengths'),
+                h('ul', { className: 'list-disc list-inside text-xs text-slate-800 space-y-0.5' },
+                  strengths.map(function(s, si) { return h('li', { key: si }, s.label + ' at ' + s.pct + '% of DRI'); })
+                )
+              ),
+              deficits.length > 0 && h('div', { className: 'bg-rose-50 border border-rose-300 rounded-xl p-4' },
+                h('h3', { className: 'text-sm font-black text-rose-900 mb-2' }, '⚠️ Below 50% of DRI'),
+                h('ul', { className: 'list-disc list-inside text-xs text-slate-800 space-y-0.5' },
+                  deficits.map(function(s, si) { return h('li', { key: si }, s.label + ' at ' + s.pct + '%'); })
+                ),
+                h('p', { className: 'text-xs text-slate-700 italic mt-2' }, 'Reminder: this is one day. Nutrient needs balance over a week, not within a day. Persistent deficits across multiple days are what matter.')
+              ),
+              h('div', { className: 'bg-white rounded-xl border border-slate-300 p-4' },
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-2' }, 'What you ate today'),
+                ['breakfast','lunch','dinner','snack'].map(function(m) {
+                  var f = FOODS.filter(function(x) { return x.id === picks[m]; })[0];
+                  if (!f) return null;
+                  return h('div', { key: m, className: 'flex items-center gap-3 py-1' },
+                    h('span', { className: 'text-2xl' }, f.icon),
+                    h('div', { className: 'flex-1' },
+                      h('div', { className: 'text-xs font-bold uppercase text-slate-500' }, m),
+                      h('div', { className: 'text-sm font-bold text-slate-800' }, f.name),
+                      h('div', { className: 'text-xs text-slate-600 italic' }, f.note)
+                    )
+                  );
+                })
+              ),
+              h('button', {
+                onClick: reset,
+                className: 'w-full px-5 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 focus:outline-none focus:ring-2 ring-emerald-400'
+              }, '🔄 Build another day')
+            )
+          );
+        }
+
+        // ── Builder screen ──
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '🌲', title: 'Build a Maine Day' }),
+          h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
+            h('div', { className: 'bg-stone-100 border-2 border-stone-300 rounded-2xl p-5' },
+              h('h2', { className: 'text-lg font-black text-stone-900 mb-2' }, 'What does a balanced Maine day actually look like?'),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                'Pick one food for each meal from a Maine-realistic short list. Watch the six nutrient bars update as you go. The bars are tied to approximate adolescent DRIs — but the point is not to "win" by hitting 100% on each one. It is to see what a real day adds up to and what tends to be over- or under-represented.')
+            ),
+            // Live totals (sticky-ish at top of meal pickers)
+            h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
+              h('div', { className: 'flex justify-between items-baseline mb-2' },
+                h('h3', { className: 'text-sm font-black text-slate-800' }, 'Live nutrient totals'),
+                h('span', { className: 'text-xs text-slate-500' }, pickedCount + ' of 4 meals chosen')
+              ),
+              nutBar('protein', 'Protein', 'g'),
+              nutBar('fiber', 'Fiber', 'g'),
+              nutBar('vitD', 'Vitamin D', 'mcg', 1),
+              nutBar('omega3', 'Omega-3', 'g', 2),
+              nutBar('iron', 'Iron', 'mg', 1),
+              nutBar('calcium', 'Calcium', 'mg', 0)
+            ),
+            // 4 meal pickers
+            ['breakfast','lunch','dinner','snack'].map(function(meal) {
+              var foods = FOODS.filter(function(f) { return f.meal === meal; });
+              var pickedId = picks[meal];
+              var mealLabel = meal.charAt(0).toUpperCase() + meal.slice(1);
+              var mealIcon = meal === 'breakfast' ? '🥣' : meal === 'lunch' ? '🥪' : meal === 'dinner' ? '🍽️' : '🍿';
+              return h('section', { key: meal, className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
+                h('h3', { className: 'text-sm font-black text-slate-800 mb-3 flex items-center gap-2' },
+                  h('span', null, mealIcon),
+                  h('span', null, mealLabel),
+                  pickedId && h('span', { className: 'ml-auto text-xs font-normal text-emerald-700' }, '✓ chosen')
+                ),
+                h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
+                  foods.map(function(f) {
+                    var sel = pickedId === f.id;
+                    return h('button', {
+                      key: f.id,
+                      onClick: function() { setPicks(meal, f.id); announce(f.name + ' chosen for ' + mealLabel); },
+                      'aria-pressed': sel ? 'true' : 'false',
+                      className: 'text-left p-3 rounded-xl border-2 transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
+                        (sel ? 'bg-emerald-100 border-emerald-500 shadow' : 'bg-white border-slate-300 hover:border-emerald-400')
+                    },
+                      h('div', { className: 'flex items-start gap-2' },
+                        h('span', { className: 'text-2xl flex-shrink-0' }, f.icon),
+                        h('div', { className: 'flex-1' },
+                          h('div', { className: 'text-sm font-bold text-slate-800' }, f.name),
+                          h('div', { className: 'text-xs text-slate-600 italic mt-0.5' }, f.note)
+                        )
+                      )
+                    );
+                  })
+                )
+              );
+            }),
+            // See-my-day button
+            h('button', {
+              onClick: function() {
+                if (pickedCount < 4) { if (addToast) addToast('Pick one food for every meal first.', 'info'); return; }
+                upd('bmd_done', true);
+              },
+              disabled: pickedCount < 4,
+              className: 'w-full px-5 py-3 rounded-xl font-bold focus:outline-none focus:ring-2 ring-emerald-400 ' +
+                (pickedCount >= 4 ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-500 cursor-not-allowed')
+            }, pickedCount >= 4 ? '📊 See my day' : 'Pick ' + (4 - pickedCount) + ' more meal' + (4 - pickedCount === 1 ? '' : 's'))
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'macroLab') return h(MacronutrientLab);
@@ -3526,6 +3766,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       if (view === 'edAwareness') return h(EDAwareness);
       if (view === 'maineReality') return h(MaineFoodReality);
       if (view === 'careerPaths') return h(CareerPathwaysNutrition);
+      if (view === 'maineDay') return h(MaineDayBuilder);
       return h(MainMenu);
     }
   });
