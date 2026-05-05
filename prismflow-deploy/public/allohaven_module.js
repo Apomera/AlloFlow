@@ -190,9 +190,18 @@
     },
 
     // ── Room + decorations ──
+    // Multi-room (Phase 2p.12 + 2p.13).
+    //   main:    always unlocked (the original bedroom)
+    //   garden:  10 non-starter decorations placed
+    //   library: 30 flashcards quizzed (memory-focused unlock)
+    //   studio:  5 stories created OR 15 decorations placed (creative unlock)
     rooms: [
-      { id: 'main', label: 'My Room', wallSlots: 8, floorSlots: 12 }
+      { id: 'main',    label: 'My Room', icon: '🏠', kind: 'bedroom', wallSlots: 8, floorSlots: 12, unlocked: true },
+      { id: 'garden',  label: 'Garden',  icon: '🌳', kind: 'garden',  wallSlots: 6, floorSlots: 9,  unlocked: false, unlockCriteria: 'ten-decorations' },
+      { id: 'library', label: 'Library', icon: '📚', kind: 'library', wallSlots: 8, floorSlots: 8,  unlocked: false, unlockCriteria: 'thirty-cards' },
+      { id: 'studio',  label: 'Studio',  icon: '🎨', kind: 'studio',  wallSlots: 12, floorSlots: 12, unlocked: false, unlockCriteria: 'fifteen-decs-or-five-stories' }
     ],
+    activeRoomId: 'main',
     decorations: [
       // {
       //   id, template, slots, artStyle,
@@ -244,6 +253,11 @@
       //   reviewCount: 0
       // }
     ],
+
+    // ── Visit log (Phase 2p.11) ──
+    // Array of YYYY-MM-DD strings. Auto-stamped on every AlloHaven open.
+    // Used for gentle streak celebration only — never punitive.
+    visits: [],
 
     // ── Tour (Phase 2p.6) ──
     // First-visit guided walkthrough. tourSeen flips true when student
@@ -955,6 +969,60 @@
   // The overlay is layered on the floor surface at low opacity so the
   // room "feels" like the student's recent affective state without
   // hijacking the existing warm-light gradient.
+  // ── Visit streaks (Phase 2p.11) ──
+  // Computes current consecutive-days-visited streak ending today, plus
+  // longest streak of all time. Designed for celebration only — never
+  // surfaces a broken streak, never punishes missing days.
+  function computeStreak(visits) {
+    if (!visits || visits.length === 0) return { current: 0, longest: 0 };
+    var unique = {};
+    visits.forEach(function(v) { if (v) unique[v] = true; });
+    var dates = Object.keys(unique).sort();
+    var msPerDay = 24 * 60 * 60 * 1000;
+    var todayStr = new Date().toISOString().slice(0, 10);
+    var current = 0;
+    if (unique[todayStr]) {
+      current = 1;
+      for (var i = 1; i < 365; i++) {
+        var prev = new Date(Date.now() - i * msPerDay).toISOString().slice(0, 10);
+        if (unique[prev]) current++;
+        else break;
+      }
+    }
+    var longest = 0, streak = 0;
+    for (var j = 0; j < dates.length; j++) {
+      if (j === 0) { streak = 1; }
+      else {
+        var prevD = new Date(dates[j - 1]).getTime();
+        var thisD = new Date(dates[j]).getTime();
+        if (Math.round((thisD - prevD) / msPerDay) === 1) streak++;
+        else streak = 1;
+      }
+      if (streak > longest) longest = streak;
+    }
+    if (current > longest) longest = current;
+    return { current: current, longest: longest };
+  }
+
+  // ── Seasonal context (Phase 2p.11) ──
+  // Returns the active "season label" for today, or null if it\'s an
+  // ordinary day. Used by the companion bubble pool to surface seasonal
+  // observations without changing visuals (intentional minimal-touch).
+  function getSeasonalContext() {
+    var now = new Date();
+    var month = now.getMonth(); // 0-11
+    var day = now.getDate();
+    // Specific days first (more specific wins)
+    if (month === 1 && day >= 11 && day <= 14) return { id: 'valentine', label: 'around Valentine\'s' };
+    if (month === 9 && day >= 24) return { id: 'spooky', label: 'spooky season' };
+    if (month === 11 || (month === 0 && day <= 6)) return { id: 'winter', label: 'winter holidays' };
+    // Generic seasons (Northern Hemisphere)
+    if (month >= 2 && month <= 4) return { id: 'spring', label: 'spring' };
+    if (month >= 5 && month <= 7) return { id: 'summer', label: 'summer' };
+    if (month >= 8 && month <= 10) return { id: 'fall', label: 'fall' };
+    return null;
+  }
+
   function getDominantMoodTint(state) {
     var thirtyAgoMs = Date.now() - 30 * 24 * 60 * 60 * 1000;
     var recent = (state.decorations || []).filter(function(d) {
@@ -1306,7 +1374,40 @@
       check: function(s) { return computeSkillLevel(countSkillEvents(s, 'focus')).level >= 3; } },
     { id: 'memory-l3', emoji: '🧠', label: 'Memory level 3',
       desc: 'Real retrieval reps logged.',
-      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'memory')).level >= 3; } }
+      check: function(s) { return computeSkillLevel(countSkillEvents(s, 'memory')).level >= 3; } },
+
+    // Streak markers — current OR longest based on the achievement\'s
+    // intent. "First N-day streak" achievements use longest so they
+    // remain unlocked once earned, never re-locking if a day is missed.
+    { id: 'streak-3', emoji: '🌿', label: '3 days in a row',
+      desc: 'Showed up three days running.',
+      check: function(s) { return computeStreak(s.visits || []).longest >= 3; } },
+    { id: 'streak-7', emoji: '🌳', label: 'A week in a row',
+      desc: 'Seven straight days. Habits build like this.',
+      check: function(s) { return computeStreak(s.visits || []).longest >= 7; } },
+    { id: 'streak-30', emoji: '🌲', label: 'Thirty days in a row',
+      desc: 'A month-long stretch. Rare and quietly remarkable.',
+      check: function(s) { return computeStreak(s.visits || []).longest >= 30; } },
+
+    // Room-unlock achievements (Phase 2p.13)
+    { id: 'garden-unlocked', emoji: '🌳', label: 'Garden unlocked',
+      desc: 'A quiet outdoor corner of your room.',
+      check: function(s) {
+        var g = (s.rooms || []).filter(function(r) { return r.id === 'garden'; })[0];
+        return !!(g && g.unlocked);
+      } },
+    { id: 'library-unlocked', emoji: '📚', label: 'Library unlocked',
+      desc: 'A focused study room — earned by quizzing yourself.',
+      check: function(s) {
+        var l = (s.rooms || []).filter(function(r) { return r.id === 'library'; })[0];
+        return !!(l && l.unlocked);
+      } },
+    { id: 'studio-unlocked', emoji: '🎨', label: 'Studio unlocked',
+      desc: 'A wide creative space — earned by making things.',
+      check: function(s) {
+        var st = (s.rooms || []).filter(function(r) { return r.id === 'studio'; })[0];
+        return !!(st && st.unlocked);
+      } }
   ];
 
   function getAchievement(id) {
@@ -5653,6 +5754,287 @@
   // 6-step modal walkthrough introducing the major features.
   // Skippable, replayable from settings. Tour fires once on first
   // visit AFTER the welcome card is dismissed (via state.tourSeen).
+  // ─────────────────────────────────────────────────────────
+  // SECTION 6.8: SEARCH MODAL (Phase 2p.10)
+  // ─────────────────────────────────────────────────────────
+  // Text-based search across decoration labels, deck content
+  // (flashcards, acronym meanings, notes, image-link associations),
+  // story titles and step narratives, and journal entries. Case-
+  // insensitive substring match. Click a result to jump to the
+  // appropriate modal at the right spot.
+  function SearchModalInner(p) {
+    var React = window.React;
+    var h = React.createElement;
+    var useState = React.useState;
+    var palette = p.palette;
+
+    var queryTuple = useState('');
+    var query = queryTuple[0];
+    var setQuery = queryTuple[1];
+
+    var q = (query || '').trim().toLowerCase();
+    var minLen = 2;
+    var results = q.length < minLen ? null : (function() {
+      var out = { decorations: [], stories: [], journals: [] };
+      // Decoration labels + deck content
+      (p.decorations || []).forEach(function(d) {
+        var label = (d.templateLabel || d.template || '').toLowerCase();
+        var labelHit = label.indexOf(q) !== -1;
+        var refl = (d.studentReflection || '').toLowerCase();
+        var reflHit = refl.indexOf(q) !== -1;
+        var contentHits = []; // matching content snippets
+        var lc = d.linkedContent;
+        if (lc && lc.data) {
+          if (lc.type === 'flashcards' && Array.isArray(lc.data.cards)) {
+            lc.data.cards.forEach(function(c) {
+              var f = (c.front || '').toLowerCase();
+              var b = (c.back || '').toLowerCase();
+              if (f.indexOf(q) !== -1 || b.indexOf(q) !== -1) {
+                contentHits.push((c.front || '') + ' — ' + (c.back || ''));
+              }
+            });
+          } else if (lc.type === 'acronym') {
+            var letters = (lc.data.letters || '').toLowerCase();
+            var meanings = (lc.data.meanings || []).join(' ').toLowerCase();
+            var ctx = (lc.data.context || '').toLowerCase();
+            if (letters.indexOf(q) !== -1 || meanings.indexOf(q) !== -1 || ctx.indexOf(q) !== -1) {
+              contentHits.push((lc.data.letters || '').toUpperCase() + ' — ' + (lc.data.context || ''));
+            }
+          } else if (lc.type === 'notes') {
+            var text = (lc.data.text || '').toLowerCase();
+            if (text.indexOf(q) !== -1) {
+              // Snippet around match
+              var idx = text.indexOf(q);
+              var rawText = lc.data.text || '';
+              var start = Math.max(0, idx - 30);
+              var end = Math.min(rawText.length, idx + q.length + 30);
+              contentHits.push((start > 0 ? '…' : '') + rawText.slice(start, end) + (end < rawText.length ? '…' : ''));
+            }
+          } else if (lc.type === 'image-link') {
+            var assoc = (lc.data.association || '').toLowerCase();
+            if (assoc.indexOf(q) !== -1) {
+              contentHits.push(lc.data.association || '');
+            }
+          }
+        }
+        if (labelHit || reflHit || contentHits.length > 0) {
+          out.decorations.push({
+            decoration: d,
+            labelHit: labelHit,
+            reflHit: reflHit,
+            contentHits: contentHits.slice(0, 3) // cap snippets
+          });
+        }
+      });
+      // Stories: title + step narratives
+      (p.stories || []).forEach(function(s) {
+        var titleHit = (s.title || '').toLowerCase().indexOf(q) !== -1;
+        var narrativeHits = (s.steps || []).filter(function(stp) {
+          return (stp.narrative || '').toLowerCase().indexOf(q) !== -1;
+        });
+        if (titleHit || narrativeHits.length > 0) {
+          out.stories.push({ story: s, titleHit: titleHit, narrativeHits: narrativeHits.slice(0, 2) });
+        }
+      });
+      // Journal entries
+      (p.journalEntries || []).forEach(function(e) {
+        var text = (e.text || '').toLowerCase();
+        if (text.indexOf(q) === -1) return;
+        var idx = text.indexOf(q);
+        var rawText = e.text || '';
+        var start = Math.max(0, idx - 30);
+        var end = Math.min(rawText.length, idx + q.length + 30);
+        out.journals.push({
+          entry: e,
+          snippet: (start > 0 ? '…' : '') + rawText.slice(start, end) + (end < rawText.length ? '…' : '')
+        });
+      });
+      return out;
+    })();
+
+    var totalCount = results
+      ? (results.decorations.length + results.stories.length + results.journals.length)
+      : 0;
+
+    function highlightSnippet(text, queryStr) {
+      // Simple highlight via splitting on lowercased index
+      if (!text || !queryStr) return text;
+      var lower = text.toLowerCase();
+      var qi = lower.indexOf(queryStr.toLowerCase());
+      if (qi === -1) return text;
+      var before = text.slice(0, qi);
+      var match = text.slice(qi, qi + queryStr.length);
+      var after = text.slice(qi + queryStr.length);
+      return [
+        h('span', null, before),
+        h('mark', { style: { background: palette.accent, color: palette.onAccent, padding: '0 2px', borderRadius: '2px' } }, match),
+        h('span', null, after)
+      ];
+    }
+
+    return h('div', {
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Search across your decks, stories, and reflections',
+      onClick: function(e) {
+        if (e.target === e.currentTarget) p.onClose();
+      },
+      style: {
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.55)', zIndex: 175,
+        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
+        padding: '60px 20px 20px 20px'
+      }
+    },
+      h('div', {
+        style: {
+          background: palette.bg, border: '1px solid ' + palette.border,
+          borderRadius: '14px', padding: '20px',
+          maxWidth: '600px', width: '100%', maxHeight: '85vh',
+          overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+        }
+      },
+        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' } },
+          h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+            '🔍 Search'),
+          h('button', {
+            onClick: p.onClose,
+            'aria-label': 'Close search',
+            style: { background: 'transparent', border: '1px solid ' + palette.border, color: palette.textDim, borderRadius: '8px', padding: '4px 10px', fontSize: '13px', cursor: 'pointer' }
+          }, '✕')
+        ),
+        h('input', {
+          type: 'search',
+          value: query,
+          onChange: function(e) { setQuery(e.target.value); },
+          placeholder: 'Search decks, stories, reflections…',
+          'aria-label': 'Search query',
+          autoFocus: true,
+          style: {
+            width: '100%',
+            padding: '10px 12px',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            color: palette.text,
+            fontSize: '15px',
+            fontFamily: 'inherit',
+            boxSizing: 'border-box',
+            marginBottom: '14px'
+          }
+        }),
+        // Empty / hint state
+        q.length < minLen ? h('p', {
+          style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', textAlign: 'center', padding: '20px', lineHeight: '1.5' }
+        }, q.length === 0
+          ? 'Type at least 2 characters to search across your decks, stories, and reflections.'
+          : 'Keep typing…'
+        ) : (totalCount === 0 ? h('div', {
+          role: 'status', 'aria-live': 'polite',
+          style: { padding: '24px 16px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '8px', textAlign: 'center' }
+        },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: '28px', marginBottom: '6px' } }, '🤷'),
+          h('p', { style: { color: palette.textDim, fontSize: '13px', margin: 0 } },
+            'No matches for "' + query.trim() + '"')
+        ) : h('div', {
+          role: 'region', 'aria-label': totalCount + ' result' + (totalCount === 1 ? '' : 's'),
+          style: { display: 'flex', flexDirection: 'column', gap: '10px' }
+        },
+          h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+            totalCount + ' result' + (totalCount === 1 ? '' : 's')),
+          // Decorations
+          results.decorations.length > 0 ? h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, marginBottom: '6px' } },
+              '🌿 Decorations · ' + results.decorations.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              results.decorations.map(function(r) {
+                var d = r.decoration;
+                var dLabel = d.templateLabel || d.template || 'item';
+                return h('button', {
+                  key: 'sr-d-' + d.id,
+                  onClick: function() { p.onClickDecoration(d.id); },
+                  'aria-label': 'Open ' + dLabel,
+                  style: {
+                    display: 'flex', gap: '10px', alignItems: 'center',
+                    padding: '8px 10px',
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '8px',
+                    cursor: 'pointer', fontFamily: 'inherit',
+                    textAlign: 'left', color: palette.text
+                  }
+                },
+                  d.imageBase64 ? h('img', { src: d.imageBase64, alt: '', 'aria-hidden': 'true', style: { width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px', flexShrink: 0 } }) : null,
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: '13px', fontWeight: 700 } }, highlightSnippet(dLabel, query)),
+                    r.contentHits.length > 0 ? h('div', {
+                      style: { fontSize: '11px', color: palette.textDim, marginTop: '2px', lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis' }
+                    }, highlightSnippet(r.contentHits[0], query)) : (
+                      r.reflHit ? h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginTop: '2px' } },
+                        '"' + (d.studentReflection || '').slice(0, 100) + (d.studentReflection.length > 100 ? '…' : '') + '"') : null
+                    )
+                  )
+                );
+              })
+            )
+          ) : null,
+          // Stories
+          results.stories.length > 0 ? h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, marginBottom: '6px' } },
+              '📜 Stories · ' + results.stories.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              results.stories.map(function(r) {
+                return h('button', {
+                  key: 'sr-s-' + r.story.id,
+                  onClick: function() { p.onClickStory(r.story.id); },
+                  'aria-label': 'Open story ' + (r.story.title || 'untitled'),
+                  style: {
+                    display: 'block', width: '100%', padding: '8px 10px',
+                    background: palette.surface, border: '1px solid ' + palette.border,
+                    borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                    textAlign: 'left', color: palette.text
+                  }
+                },
+                  h('div', { style: { fontSize: '13px', fontWeight: 700 } },
+                    '📜 ' + (r.story.title ? '' : '') + ' ',
+                    highlightSnippet(r.story.title || '(untitled)', query)),
+                  r.narrativeHits.length > 0 ? h('div', {
+                    style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginTop: '3px', lineHeight: '1.4' }
+                  }, highlightSnippet('"' + r.narrativeHits[0].narrative + '"', query)) : null
+                );
+              })
+            )
+          ) : null,
+          // Journal entries
+          results.journals.length > 0 ? h('div', null,
+            h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 600, marginBottom: '6px' } },
+              '📝 Reflections · ' + results.journals.length),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+              results.journals.map(function(r) {
+                var dateStr = r.entry.date ? new Date(r.entry.date).toLocaleDateString() : '';
+                return h('button', {
+                  key: 'sr-j-' + r.entry.id,
+                  onClick: function() { p.onClickJournal(r.entry.id); },
+                  'aria-label': 'Open journal entry from ' + dateStr,
+                  style: {
+                    display: 'block', width: '100%', padding: '8px 10px',
+                    background: palette.surface, border: '1px solid ' + palette.border,
+                    borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit',
+                    textAlign: 'left', color: palette.text
+                  }
+                },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '3px' } }, dateStr),
+                  h('div', { style: { fontSize: '12px', color: palette.text, lineHeight: '1.4', fontStyle: 'italic' } },
+                    highlightSnippet('"' + r.snippet + '"', query))
+                );
+              })
+            )
+          ) : null
+        ))
+      )
+    );
+  }
+
   function TourModalInner(p) {
     var React = window.React;
     var h = React.createElement;
@@ -6353,11 +6735,27 @@
       merged.pomodoroState       = Object.assign({}, DEFAULT_STATE.pomodoroState, loaded.pomodoroState || {});
       merged.pomodoroPreferences = Object.assign({}, DEFAULT_STATE.pomodoroPreferences, loaded.pomodoroPreferences || {});
       if (!merged.rooms || !merged.rooms.length) merged.rooms = DEFAULT_STATE.rooms.slice();
+      // Phase 2p.12/2p.13 — backfill any new rooms added after the
+      // student\'s saved state was written. Preserves existing rooms\'
+      // unlocked-state and slot counts.
+      ['garden', 'library', 'studio'].forEach(function(roomId) {
+        if (!merged.rooms.some(function(r) { return r.id === roomId; })) {
+          var defaultRoom = DEFAULT_STATE.rooms.filter(function(r) { return r.id === roomId; })[0];
+          if (defaultRoom) merged.rooms = merged.rooms.concat([defaultRoom]);
+        }
+      });
+      // Default activeRoomId
+      if (!merged.activeRoomId) merged.activeRoomId = 'main';
+      // Ensure activeRoomId points to a room that exists; fall back to main
+      if (!merged.rooms.some(function(r) { return r.id === merged.activeRoomId; })) {
+        merged.activeRoomId = 'main';
+      }
       if (!Array.isArray(merged.decorations))    merged.decorations    = [];
       if (!Array.isArray(merged.journalEntries)) merged.journalEntries = [];
       if (!Array.isArray(merged.earnings))       merged.earnings       = [];
       if (!Array.isArray(merged.stories))        merged.stories        = [];
       if (!Array.isArray(merged.goals))          merged.goals          = [];
+      if (!Array.isArray(merged.visits))         merged.visits         = [];
       if (!merged.achievements || typeof merged.achievements !== 'object') merged.achievements = {};
       // Phase 2p.7 defensive normalization: backfill new fields onto
       // older saved state so post-update loads don\'t crash on undefined
@@ -6367,6 +6765,11 @@
         var patched = Object.assign({}, d);
         if (!Array.isArray(patched.subjects)) patched.subjects = [];  // Phase 2p.6
         if (typeof patched.mood === 'undefined') patched.mood = null; // Phase 2m
+        // Phase 2p.12 — ensure placement.roomId is set so multi-room
+        // filtering doesn\'t drop pre-existing decorations
+        if (patched.placement && !patched.placement.roomId) {
+          patched.placement = Object.assign({}, patched.placement, { roomId: 'main' });
+        }
         return patched;
       });
       // Companion: ensure skillCelebrations object + createdAt sane
@@ -6458,6 +6861,19 @@
         aiRationale: null
       };
       setStateField('decorations', [starter]);
+      // eslint-disable-next-line
+    }, []);
+
+    // ── Visit log (Phase 2p.11) ──
+    // Stamp today\'s date once per session if not already there. The
+    // streak helpers compute current/longest from this list.
+    useEffect(function() {
+      var todayStr = new Date().toISOString().slice(0, 10);
+      if (!Array.isArray(state.visits)) {
+        setStateField('visits', [todayStr]);
+      } else if (state.visits.indexOf(todayStr) === -1) {
+        setStateField('visits', state.visits.concat([todayStr]));
+      }
       // eslint-disable-next-line
     }, []);
 
@@ -7642,6 +8058,55 @@
         candidates.push(pickOpener() + 'you have ' + achCount + ' achievements unlocked. Quietly proud.');
       }
 
+      // "On this day" memory (Phase 2p.13) — companion surfaces a
+      // decoration earned exactly 1, 3, or 6 months ago today. Built-
+      // in spaced re-encounter: students bump into past artifacts
+      // they\'d otherwise scroll past. Only fires when an exact match
+      // exists at one of the milestones.
+      (function() {
+        var now = new Date();
+        var milestones = [
+          { months: 1, label: 'a month ago' },
+          { months: 3, label: 'three months ago' },
+          { months: 6, label: 'six months ago' },
+          { months: 12, label: 'a year ago' }
+        ];
+        milestones.forEach(function(m) {
+          var target = new Date(now.getFullYear(), now.getMonth() - m.months, now.getDate());
+          var targetIso = target.toISOString().slice(0, 10);
+          var match = (state.decorations || []).filter(function(d) {
+            if (d.isStarter || !d.earnedAt) return false;
+            return d.earnedAt.slice(0, 10) === targetIso;
+          })[0];
+          if (match) {
+            var ml = match.templateLabel || match.template || 'decoration';
+            candidates.push(pickOpener() + 'on this day ' + m.label + ', you earned the ' + ml + '.');
+          }
+        });
+      })();
+
+      // Seasonal context (Phase 2p.11) — date-aware lines surfaced
+      // before idle filler so they take priority on the right days
+      // without dominating every visit.
+      var season = getSeasonalContext();
+      if (season) {
+        var seasonLines = {
+          winter:    [pickOpener() + 'cozy in here, with the winter outside.', pickOpener() + 'something about winter that makes a quiet room feel right.'],
+          spring:    [pickOpener() + 'spring is stirring.', pickOpener() + 'the air is changing — spring.'],
+          summer:    [pickOpener() + 'long days now. Summer.', pickOpener() + 'summer light suits the room.'],
+          fall:      [pickOpener() + 'leaves are turning.', pickOpener() + 'fall — quietly my favorite season.'],
+          spooky:    [pickOpener() + 'something spooky in the air. Boo. (Just kidding.)', pickOpener() + 'spooky season — extra cozy.'],
+          valentine: [pickOpener() + 'I\'m glad we hang out.', pickOpener() + 'we make a good team, you and I.']
+        };
+        (seasonLines[season.id] || []).forEach(function(l) { candidates.push(l); });
+      }
+
+      // Streak celebration — fires on milestone visits (3, 7, 14, 30 day)
+      var streak = computeStreak(state.visits || []);
+      if ([3, 7, 14, 30, 60, 100].indexOf(streak.current) !== -1) {
+        candidates.push(pickOpener() + 'that\'s ' + streak.current + ' days in a row. Quietly proud.');
+      }
+
       // Idle filler — fully species-flavored standalone lines (no
       // synthetic concatenation) so grammar reads naturally for each.
       var fillers = {
@@ -7940,6 +8405,75 @@
       // eslint-disable-next-line
     }, [state.onboardingSeen, state.tourSeen, state.activeModal]);
 
+    // Room unlock detection (Phase 2p.12/2p.13) — Garden, Library, and
+    // Studio each unlock at distinct pedagogical milestones. Companion
+    // celebrates each unlock with a species-flavored bubble; rooms
+    // never re-lock once unlocked.
+    useEffect(function() {
+      var rooms = state.rooms || [];
+      var newlyUnlocked = [];
+
+      var placedCount = (state.decorations || []).filter(function(d) { return !d.isStarter; }).length;
+      // Total flashcard quiz attempts across all decks
+      var cardsQuizzed = (state.decorations || []).reduce(function(sum, d) {
+        if (!d.linkedContent || d.linkedContent.type !== 'flashcards') return sum;
+        var cards = (d.linkedContent.data && d.linkedContent.data.cards) || [];
+        return sum + cards.reduce(function(s, c) { return s + (c.correctCount || 0) + (c.missCount || 0); }, 0);
+      }, 0);
+      var storyCount = (state.stories || []).filter(function(s) {
+        var v = (s.steps || []).filter(function(stp) {
+          return stp.decorationId && (stp.narrative || '').trim().length > 0;
+        });
+        return v.length >= 3 && (s.title || '').trim().length > 0;
+      }).length;
+
+      var checks = [
+        { id: 'garden',  label: 'Garden',  icon: '🌳', condition: placedCount >= 10, hint: 'a quiet outdoor corner' },
+        { id: 'library', label: 'Library', icon: '📚', condition: cardsQuizzed >= 30, hint: 'a focused study room' },
+        { id: 'studio',  label: 'Studio',  icon: '🎨', condition: placedCount >= 15 || storyCount >= 5, hint: 'a wide creative space' }
+      ];
+
+      checks.forEach(function(c) {
+        var room = rooms.filter(function(r) { return r.id === c.id; })[0];
+        if (!room || room.unlocked) return;
+        if (!c.condition) return;
+        newlyUnlocked.push(c);
+      });
+
+      if (newlyUnlocked.length === 0) return;
+
+      var newRooms = rooms.map(function(r) {
+        var match = newlyUnlocked.filter(function(c) { return c.id === r.id; })[0];
+        if (!match) return r;
+        return Object.assign({}, r, { unlocked: true });
+      });
+      var updates = { rooms: newRooms };
+      // Companion announcement — name only the FIRST newly-unlocked
+      // (don\'t spam if multiple unlock simultaneously on a fresh load)
+      if (state.companion && state.companion.species) {
+        var openers = {
+          cat:    'Hmm. ', fox: 'Aha — ', owl: 'Observed: ',
+          turtle: 'Quietly: ', dragon: 'Whoa! '
+        };
+        var prefix = openers[state.companion.species] || 'Hmm. ';
+        var first = newlyUnlocked[0];
+        updates.companion = Object.assign({}, state.companion, {
+          lastBubbleAt: new Date().toISOString(),
+          lastBubbleText: prefix + 'the ' + first.label + ' just opened up — ' + first.hint + '. Try the ' + first.icon + ' tab.'
+        });
+      }
+      setStateMulti(updates);
+      setTimeout(function() {
+        if (newlyUnlocked.length === 1) {
+          var n = newlyUnlocked[0];
+          addToast(n.icon + ' The ' + n.label + ' is now unlocked!');
+        } else {
+          addToast('🎉 ' + newlyUnlocked.length + ' new rooms unlocked!');
+        }
+      }, 60);
+      // eslint-disable-next-line
+    }, [state.decorations.length, state.stories.length]);
+
     // Achievement unlock detection (Phase 2p.5) — runs the catalog\'s
     // check() functions against current state. Newly-passing achievements
     // get an unlockedAt timestamp persisted + a companion celebration
@@ -8035,10 +8569,15 @@
     // exactly when the threshold is crossed.
     var roomExpandedRef = useRef(false);
     useEffect(function() {
-      var room = state.rooms[0];
+      var room = state.rooms[0]; // expansion targets main bedroom only
       if (!room) return;
       var totalSlots = room.wallSlots + room.floorSlots;
-      var placedCount = state.decorations.length;
+      // Phase 2p.12: count only MAIN-room decorations toward expansion
+      // threshold so garden decorations don\'t prematurely trigger
+      // bedroom expansion.
+      var placedCount = state.decorations.filter(function(d) {
+        return d.placement && (d.placement.roomId || 'main') === 'main';
+      }).length;
       var thresholdHit = placedCount >= Math.floor(totalSlots * 0.9);
       // Cap expansion at 50 total slots (concept-doc decision; v2+ adds new rooms)
       if (!thresholdHit) {
@@ -8103,6 +8642,52 @@
     // commits to the AI-generated image. Token already deducted at
     // generate time; this just records the placement + closes modal.
     // Optional reflection text attaches to the decoration's metadata.
+    // Move a decoration to a new cell (Phase 2p.10) — drag-to-rearrange.
+    // If the target cell is empty, simply moves the decoration.
+    // If target cell has another decoration, swaps placements.
+    // Cross-surface swaps (wall ↔ floor) are allowed — the SVG/image
+    // renders fine on either, and it gives students full freedom to
+    // rearrange. No-op for self-drop or if source is the starter (which
+    // students shouldn\'t inadvertently shuffle around without warning).
+    function moveDecorationToCell(decorationId, targetSurface, targetCellIndex) {
+      if (state.roomMode === 'live') return; // build mode only
+      var activeId = state.activeRoomId || 'main';
+      var decs = state.decorations || [];
+      var srcIdx = -1, tgtIdx = -1;
+      // Phase 2p.12 — target decoration must be in the SAME active room.
+      // Otherwise a drop on cell N of the garden could "swap" with a
+      // decoration in cell N of the bedroom (matching cellIndex but
+      // different room).
+      for (var i = 0; i < decs.length; i++) {
+        if (decs[i].id === decorationId) srcIdx = i;
+        if (decs[i].placement
+            && (decs[i].placement.roomId || 'main') === activeId
+            && decs[i].placement.surface === targetSurface
+            && decs[i].placement.cellIndex === targetCellIndex) tgtIdx = i;
+      }
+      if (srcIdx === -1) return;
+      if (srcIdx === tgtIdx) return; // self-drop = no-op
+
+      // Validate the target cell is within ACTIVE room bounds for the surface
+      var room = (state.rooms || []).filter(function(r) { return r.id === activeId; })[0]
+              || state.rooms[0] || { wallSlots: 8, floorSlots: 12 };
+      var maxIdx = targetSurface === 'wall' ? room.wallSlots : room.floorSlots;
+      if (targetCellIndex < 0 || targetCellIndex >= maxIdx) return;
+
+      var src = decs[srcIdx];
+      var newDecs = decs.slice();
+      if (tgtIdx !== -1) {
+        // Swap: target decoration takes source\'s old placement
+        newDecs[tgtIdx] = Object.assign({}, decs[tgtIdx], {
+          placement: Object.assign({}, src.placement)
+        });
+      }
+      newDecs[srcIdx] = Object.assign({}, src, {
+        placement: { roomId: state.activeRoomId || 'main', surface: targetSurface, cellIndex: targetCellIndex }
+      });
+      setStateField('decorations', newDecs);
+    }
+
     function placeDecoration(template, slots, artStyleId, imageBase64, reflectionText, moodTag, subjectTags) {
       var ctx = state.generateContext || { surface: 'floor', cellIndex: 0 };
       // Slight ±3° rotation, randomized once per item — "lived-in wobble"
@@ -8115,7 +8700,7 @@
         artStyle: artStyleId,
         imageBase64: imageBase64,
         isStarter: false,
-        placement: { roomId: 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
+        placement: { roomId: state.activeRoomId || 'main', surface: ctx.surface, cellIndex: ctx.cellIndex },
         rotation: rotation,
         earnedAt: new Date().toISOString(),
         tokensSpent: DECORATION_COST,
@@ -8238,11 +8823,24 @@
     // VIEW: ROOM (wall + floor grids, header, action buttons)
     // ─────────────────────────────────────────────────
     function renderRoom() {
-      var room = state.rooms[0];
+      // Multi-room (Phase 2p.12) — pick the active room based on
+      // state.activeRoomId, fallback to main if missing/unlocked-only.
+      var activeId = state.activeRoomId || 'main';
+      var room = (state.rooms || []).filter(function(r) { return r.id === activeId; })[0];
+      // Fallback: if active room locked or missing, snap back to main
+      if (!room || !room.unlocked) {
+        room = (state.rooms || []).filter(function(r) { return r.id === 'main'; })[0]
+            || { id: 'main', wallSlots: 8, floorSlots: 12, unlocked: true };
+      }
+      var roomKind = room.kind || 'bedroom';
+
       var wallByCell = {};
       var floorByCell = {};
+      // Filter decorations by active room
       state.decorations.forEach(function(d) {
         if (!d.placement) return;
+        var dRoomId = d.placement.roomId || 'main';
+        if (dRoomId !== room.id) return;
         if (d.placement.surface === 'wall')  wallByCell[d.placement.cellIndex] = d;
         if (d.placement.surface === 'floor') floorByCell[d.placement.cellIndex] = d;
       });
@@ -8259,6 +8857,28 @@
       var wallCount = Object.keys(wallByCell).length;
       var floorCount = Object.keys(floorByCell).length;
 
+      // Per-room visual tints (Phase 2p.12/2p.13). Each non-bedroom
+      // room gets a subtle gradient overlay layered on top of the
+      // base palette wallpaper/floor — distinct vibe per space.
+      var roomWallTint = '';
+      var roomFloorTint = '';
+      if (roomKind === 'garden') {
+        // Sky blue overhead + grass green underfoot
+        roomWallTint = 'linear-gradient(180deg, rgba(135,206,235,0.18) 0%, rgba(135,206,235,0.08) 100%), ';
+        roomFloorTint = 'linear-gradient(180deg, rgba(80,150,80,0.20) 0%, rgba(80,150,80,0.10) 100%), ';
+      } else if (roomKind === 'library') {
+        // Warm sepia / wood — focused study vibe
+        roomWallTint = 'linear-gradient(180deg, rgba(180,130,80,0.16) 0%, rgba(140,90,50,0.10) 100%), ';
+        roomFloorTint = 'linear-gradient(180deg, rgba(120,80,40,0.18) 0%, rgba(80,55,30,0.10) 100%), ';
+      } else if (roomKind === 'studio') {
+        // Bright pastel mix — creative open space
+        roomWallTint = 'linear-gradient(135deg, rgba(255,200,100,0.12) 0%, rgba(180,130,255,0.10) 50%, rgba(120,210,200,0.10) 100%), ';
+        roomFloorTint = 'linear-gradient(180deg, rgba(255,235,200,0.12) 0%, rgba(220,210,255,0.08) 100%), ';
+      }
+      // Backwards-compat alias for existing template literals below
+      var gardenWallTint = roomWallTint;
+      var gardenFloorTint = roomFloorTint;
+
       return h('div', {
         style: {
           padding: '20px',
@@ -8271,6 +8891,41 @@
         }
       },
         renderHeader(palette, state.tokens, props.onClose),
+        // Room tabs (Phase 2p.12) — only render when ≥1 room beyond main
+        // is unlocked. Single-room state shows nothing here, keeping the
+        // pre-multi-room UX clean for new students.
+        (function() {
+          var unlockedRooms = (state.rooms || []).filter(function(r) { return r.unlocked; });
+          if (unlockedRooms.length < 2) return null;
+          return h('div', {
+            role: 'tablist',
+            'aria-label': 'Rooms',
+            style: { display: 'flex', gap: '6px', marginTop: '6px', marginBottom: '8px', flexWrap: 'wrap' }
+          },
+            unlockedRooms.map(function(r) {
+              var active = r.id === room.id;
+              return h('button', {
+                key: 'rt-' + r.id,
+                role: 'tab',
+                'aria-selected': active ? 'true' : 'false',
+                'aria-label': r.label + (active ? ' (currently viewing)' : ''),
+                onClick: function() { setStateField('activeRoomId', r.id); },
+                style: {
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
+                  padding: '6px 14px',
+                  background: active ? palette.accent : palette.surface,
+                  color: active ? palette.onAccent : palette.textDim,
+                  border: '1px solid ' + (active ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, (r.icon || '🏠') + ' ' + r.label);
+            })
+          );
+        })(),
         renderQuestPanel(),
         renderTodayCard(),
         // Compute responsive row count based on slot count + columns
@@ -8294,10 +8949,13 @@
             padding: '14px',
             background: (function() {
               var tod = !inherited.highContrast ? getTimeOfDayTint() : null;
+              var base = palette.wallpaper;
               if (tod && tod.color) {
-                return 'linear-gradient(180deg, ' + tod.color + ', transparent 70%), ' + palette.wallpaper;
+                base = 'linear-gradient(180deg, ' + tod.color + ', transparent 70%), ' + base;
               }
-              return palette.wallpaper;
+              // Garden room: layer a sky-blue tint on the wall (Phase 2p.12)
+              if (gardenWallTint) base = gardenWallTint + base;
+              return base;
             })(),
             borderRadius: '12px 12px 0 0',
             marginTop: '16px',
@@ -8333,10 +8991,13 @@
             padding: '14px',
             background: (function() {
               var tint = !inherited.highContrast ? getDominantMoodTint(state) : null;
+              var base = palette.floor;
               if (tint && tint.color) {
-                return 'radial-gradient(ellipse at 50% 30%, ' + tint.color + ', transparent 70%), ' + palette.floor;
+                base = 'radial-gradient(ellipse at 50% 30%, ' + tint.color + ', transparent 70%), ' + base;
               }
-              return palette.floor;
+              // Garden room: layer a grass-green tint on the floor
+              if (gardenFloorTint) base = gardenFloorTint + base;
+              return base;
             })(),
             borderRadius: '0 0 12px 12px',
             border: '1px solid ' + palette.border,
@@ -8517,6 +9178,31 @@
             + ' — click to add or review memory content',
           className: 'ah-decoration',
           title: hoverTitle,
+          // Drag-to-rearrange (Phase 2p.10) — only enabled in Build mode.
+          // Sets a drag image hint via dataTransfer; on drop in another
+          // cell, moveDecorationToCell handles the swap.
+          draggable: state.roomMode !== 'live',
+          onDragStart: function(e) {
+            if (state.roomMode === 'live') { e.preventDefault(); return; }
+            try {
+              e.dataTransfer.effectAllowed = 'move';
+              e.dataTransfer.setData('text/plain', decoration.id);
+            } catch (err) { /* IE/Safari quirks — fail silent */ }
+          },
+          onDragOver: function(e) {
+            if (state.roomMode === 'live') return;
+            // Allow drop onto another decoration (will swap placements)
+            e.preventDefault();
+            try { e.dataTransfer.dropEffect = 'move'; } catch (err) {}
+          },
+          onDrop: function(e) {
+            if (state.roomMode === 'live') return;
+            e.preventDefault();
+            var draggedId;
+            try { draggedId = e.dataTransfer.getData('text/plain'); } catch (err) { return; }
+            if (!draggedId || draggedId === decoration.id) return;
+            moveDecorationToCell(draggedId, surface, index);
+          },
           onClick: function() { openMemoryModal(decoration.id); },
           onKeyDown: function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -8534,7 +9220,7 @@
             justifyContent: 'center',
             position: 'relative',
             transform: 'rotate(' + rot + 'deg)',
-            cursor: 'pointer',
+            cursor: state.roomMode === 'live' ? 'pointer' : 'grab',
             boxShadow: surface === 'floor' ? '0 3px 8px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.2)'
           }
         },
@@ -8663,7 +9349,7 @@
         key: surface + '-cell-' + index,
         role: 'button',
         tabIndex: 0,
-        'aria-label': 'Empty ' + surface + ' slot ' + (index + 1) + ' — click to add a decoration',
+        'aria-label': 'Empty ' + surface + ' slot ' + (index + 1) + ' — click to add a decoration, or drop a decoration here to move it',
         className: 'ah-empty-cell',
         onClick: function() { handleEmptyCellClick(surface, index); },
         onKeyDown: function(e) {
@@ -8671,6 +9357,18 @@
             e.preventDefault();
             handleEmptyCellClick(surface, index);
           }
+        },
+        // Drop target for drag-to-rearrange (Phase 2p.10)
+        onDragOver: function(e) {
+          e.preventDefault();
+          try { e.dataTransfer.dropEffect = 'move'; } catch (err) {}
+        },
+        onDrop: function(e) {
+          e.preventDefault();
+          var draggedId;
+          try { draggedId = e.dataTransfer.getData('text/plain'); } catch (err) { return; }
+          if (!draggedId) return;
+          moveDecorationToCell(draggedId, surface, index);
         },
         style: {
           border: '1px dotted ' + palette.textMute,
@@ -8706,6 +9404,24 @@
           'AlloHaven'
         ),
         h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+          // Search (Phase 2p.10) — quick text search across decks,
+          // stories, decorations, reflections. Compact icon-only button.
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'search'); },
+            'aria-label': 'Search',
+            title: 'Search across decks, stories, and reflections',
+            style: {
+              display: 'inline-flex', alignItems: 'center',
+              padding: '6px 10px',
+              background: palette.surface,
+              color: palette.textDim,
+              border: '1px solid ' + palette.border,
+              borderRadius: '999px',
+              fontSize: '13px',
+              cursor: 'pointer',
+              fontFamily: 'inherit'
+            }
+          }, '🔍'),
           // Build / Live toggle (Phase 2p.3) — Sims-y mode distinction.
           // Build mode is editing; Live mode is rest. Persists in state.
           (function() {
@@ -9289,6 +10005,27 @@
         quizTokens > 0 ? chip('✓', 'Quizzes passed', quizTokens, 2) : null,
         walkTokens > 0 ? chip('📜', 'Walks', walkTokens, 1) : null,
         decorationsToday > 0 ? chip('🌿', 'Decorations placed', decorationsToday) : null,
+        // Visit streak (Phase 2p.11) — only shown when ≥3 days. No
+        // counter when below threshold, no broken-streak shame.
+        (function() {
+          var streak = computeStreak(state.visits);
+          if (streak.current < 3) return null;
+          return h('span', {
+            'aria-label': 'Visit streak: ' + streak.current + ' days in a row',
+            title: 'Quietly proud of you for showing up.',
+            style: {
+              display: 'inline-flex', alignItems: 'center', gap: '4px',
+              padding: '4px 10px',
+              background: palette.surface,
+              border: '1px solid ' + (palette.success || palette.accent),
+              borderRadius: '999px',
+              fontSize: '11px',
+              color: palette.success || palette.accent,
+              fontWeight: 700,
+              fontVariantNumeric: 'tabular-nums'
+            }
+          }, h('span', { 'aria-hidden': 'true' }, '🔥'), streak.current + '-day streak');
+        })(),
         topGoal ? (function() {
           var prog = computeGoalProgress(topGoal, state);
           var endDate = topGoal.endDate ? new Date(topGoal.endDate) : null;
@@ -11467,6 +12204,35 @@
       );
     }
 
+    function renderSearchModal() {
+      if (state.activeModal !== 'search') return null;
+      return h(SearchModalInner, {
+        palette: palette,
+        decorations: state.decorations,
+        stories: state.stories,
+        journalEntries: state.journalEntries,
+        onClose: function() { setStateField('activeModal', null); },
+        onClickDecoration: function(id) {
+          openMemoryModal(id, false);
+        },
+        onClickStory: function(id) {
+          var story = (state.stories || []).filter(function(s) { return s.id === id; })[0];
+          var validSteps = story && (story.steps || []).filter(function(stp) {
+            return stp.decorationId && (stp.narrative || '').trim().length > 0;
+          });
+          var walkable = validSteps && validSteps.length >= 3 && (story.title || '').trim().length > 0;
+          setStateMulti({
+            activeModal: walkable ? 'story-walk' : 'story-builder',
+            generateContext: { storyId: id }
+          });
+        },
+        onClickJournal: function() {
+          // Journal entries don\'t have individual modal route; open journal list
+          setStateMulti({ activeModal: 'journal', generateContext: null });
+        }
+      });
+    }
+
     function renderTourModal() {
       if (state.activeModal !== 'tour') return null;
       return h(TourModalInner, {
@@ -13110,6 +13876,7 @@
       renderTourModal(),
       renderReviewQueueSummaryModal(),
       renderWeeklySummaryModal(),
+      renderSearchModal(),
       renderReflectionModal(),
       renderJournalModal(),
       renderInsightsModal(),

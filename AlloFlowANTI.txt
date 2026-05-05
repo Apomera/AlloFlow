@@ -36970,58 +36970,94 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     const _ALLO_BLOCKS_CSS = `
                       .allo-block { position: relative; margin: 12px 0; border-radius: 8px; }
                       .allo-block:focus, .allo-block:focus-within { outline: 2px solid #6366f1; outline-offset: 2px; }
-                      .allo-block-info { background: #eff6ff; border-left: 4px solid #3b82f6; padding: 12px 16px; }
-                      .allo-block-info > strong { color: #1e40af; }
-                      .allo-block-warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; }
-                      .allo-block-warning > strong { color: #92400e; }
-                      .allo-block-success { background: #f0fdf4; border-left: 4px solid #22c55e; padding: 12px 16px; }
-                      .allo-block-success > strong { color: #166534; }
+                      .allo-callout { padding: 12px 16px; border-left: 4px solid; }
+                      .allo-callout-info { background: #eff6ff; border-color: #3b82f6; }
+                      .allo-callout-info > strong { color: #1e40af; }
+                      .allo-callout-warning { background: #fef3c7; border-color: #f59e0b; }
+                      .allo-callout-warning > strong { color: #92400e; }
+                      .allo-callout-success { background: #f0fdf4; border-color: #22c55e; }
+                      .allo-callout-success > strong { color: #166534; }
+                      .allo-callout-note { background: #faf5ff; border-color: #a855f7; }
+                      .allo-callout-note > strong { color: #6b21a8; }
+                      .allo-callout-danger { background: #fef2f2; border-color: #dc2626; }
+                      .allo-callout-danger > strong { color: #991b1b; }
                       .allo-block-quote { border-left: 4px solid #a78bfa; padding: 12px 16px; background: #f5f3ff; border-radius: 0 8px 8px 0; font-style: italic; color: #4c1d95; }
                       .allo-block-quote cite { font-size: 0.85em; color: #6d28d9; font-style: normal; display: block; margin-top: 6px; }
                       .allo-block-columns { display: grid; gap: 16px; }
                       .allo-block-columns > .allo-col { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; min-width: 0; }
                       .allo-block-divider hr { border: none; border-top: 2px solid #e2e8f0; margin: 0; }
                       .allo-block-pagebreak { page-break-before: always; border-top: 2px dashed #cbd5e1; padding-top: 8px; text-align: center; }
-                      .allo-block-pagebreak .allo-pb-label { font-size: 10px; color: #94a3b8; background: white; padding: 0 8px; }
+                      .allo-block-pagebreak .allo-pb-label { font-size: 10px; color: #475569; background: white; padding: 0 8px; }
                       .allo-block-checklist { list-style: none; padding: 0; margin: 0; }
                       .allo-block-checklist li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px solid #f1f5f9; }
                       .allo-block-checklist input[type='checkbox'] { width: 18px; height: 18px; accent-color: #6366f1; flex-shrink: 0; }
                       .allo-block-checklist label { flex: 1; cursor: pointer; }
+                      .allo-block-checklist[data-list-style='ordered'] { list-style: decimal inside; padding-left: 8px; }
+                      .allo-block-checklist[data-list-style='ordered'] li { display: list-item; border-bottom: 1px solid #f1f5f9; padding: 6px 0 6px 4px; }
+                      .allo-block-checklist[data-list-style='ordered'] input { display: none; }
+                      .allo-block-checklist[data-list-style='bullet'] { list-style: disc inside; padding-left: 8px; }
+                      .allo-block-checklist[data-list-style='bullet'] li { display: list-item; border-bottom: 1px solid #f1f5f9; padding: 6px 0 6px 4px; }
+                      .allo-block-checklist[data-list-style='bullet'] input { display: none; }
                       .allo-block-table table, .allo-block-rubric table { width: 100%; border-collapse: collapse; font-size: 14px; }
                       .allo-block-table caption, .allo-block-rubric caption { font-weight: 700; font-size: 13px; text-align: left; padding: 8px 0; color: #1e293b; }
                       .allo-block-table th { padding: 10px 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #cbd5e1; background: #f1f5f9; color: #1e293b; }
+                      .allo-block-table[data-header-style='dark'] th { background: #1e293b; color: white; }
+                      .allo-block-table[data-header-style='accent'] th { background: #4338ca; color: white; }
+                      .allo-block-table[data-header-style='minimal'] th { background: transparent; border-bottom: 2px solid #1e293b; }
                       .allo-block-table td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
-                      .allo-block-table tbody tr:nth-child(even) td { background: #f9fafb; }
+                      .allo-block-table[data-zebra='on'] tbody tr:nth-child(even) td { background: #f9fafb; }
+                      .allo-block-table[data-zebra='off'] tbody tr:nth-child(even) td { background: transparent; }
                       .allo-block-image { margin: 16px 0; text-align: center; }
-                      .allo-block-image .allo-img-placeholder { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px 20px; color: #475569; font-size: 13px; }
+                      .allo-block-image .allo-img-placeholder { background: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 28px 20px; color: #475569; font-size: 13px; }
+                      .allo-block-image .allo-img-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: center; margin-top: 8px; }
+                      .allo-block-image .allo-img-controls input[type='url'] { padding: 4px 8px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; min-width: 200px; }
+                      .allo-block-image .allo-img-controls label.allo-file-btn { display: inline-block; padding: 4px 10px; font-size: 12px; background: #6366f1; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; }
                       .allo-block-image figcaption { font-size: 12px; color: #475569; margin-top: 8px; font-style: italic; }
                       .allo-block-image img { max-width: 100%; border-radius: 8px; }
                       .allo-block-definition { padding: 16px; background: #faf5ff; border-left: 4px solid #7c3aed; border-radius: 0 8px 8px 0; }
                       .allo-block-definition dt { font-weight: 800; color: #5b21b6; font-size: 15px; margin-bottom: 4px; }
+                      .allo-block-definition .allo-def-pron { font-size: 12px; color: #7c3aed; font-style: italic; font-weight: 500; margin-left: 8px; }
                       .allo-block-definition dd { color: #1f2937; font-size: 14px; margin: 0; line-height: 1.6; }
                       .allo-block-steps { padding-left: 0; list-style: none; margin: 0; }
                       .allo-block-steps li { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-start; }
                       .allo-block-steps .allo-step-num { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+                      .allo-block-steps[data-num-style='alpha'] .allo-step-num { font-size: 14px; }
+                      .allo-block-steps[data-num-style='roman'] .allo-step-num { font-size: 12px; letter-spacing: -0.05em; }
                       .allo-block-steps .allo-step-body { flex: 1; padding-top: 3px; }
                       .allo-block-accordion { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; padding: 0; }
                       .allo-block-accordion summary { padding: 12px 16px; font-weight: 700; cursor: pointer; background: #f8fafc; color: #1e293b; font-size: 14px; user-select: none; }
                       .allo-block-accordion .allo-accordion-body { padding: 16px; border-top: 1px solid #e2e8f0; font-size: 14px; line-height: 1.6; }
                       .allo-block-frame { padding: 14px 18px; background: #fefce8; border-left: 4px solid #ca8a04; border-radius: 0 8px 8px 0; font-size: 15px; line-height: 1.9; color: #422006; }
                       .allo-block-frame .allo-frame-blank { display: inline-block; min-width: 90px; border-bottom: 2px solid #78350f; padding: 0 6px; color: #713f12; font-style: italic; }
+                      .allo-block-frame .allo-frame-template-picker { margin-top: 8px; padding: 6px; background: rgba(202,138,4,0.08); border-radius: 6px; }
+                      .allo-block-frame .allo-frame-template-picker select { font-size: 12px; padding: 3px 6px; border: 1px solid #ca8a04; border-radius: 4px; font-family: inherit; }
                       .allo-block-objective { background: linear-gradient(135deg, #ecfeff, #cffafe); border-left: 4px solid #0e7490; padding: 14px 18px; border-radius: 0 8px 8px 0; }
                       .allo-block-objective .allo-obj-label { font-size: 11px; font-weight: 800; color: #155e75; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 4px; }
                       .allo-block-objective .allo-obj-text { color: #164e63; font-size: 15px; line-height: 1.6; }
-                      .allo-block-vocab { display: grid; grid-template-columns: 80px 1fr; gap: 14px; padding: 14px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; }
-                      .allo-block-vocab .allo-vocab-img { background: #fef3c7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #78350f; min-height: 80px; }
+                      .allo-block-objective .allo-obj-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; font-size: 11px; color: #155e75; }
+                      .allo-block-objective .allo-obj-meta span { background: rgba(8,145,178,0.12); padding: 2px 8px; border-radius: 10px; }
+                      .allo-block-vocab { display: grid; grid-template-columns: 100px 1fr; gap: 14px; padding: 14px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; }
+                      .allo-block-vocab .allo-vocab-img { background: #fef3c7; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 36px; color: #78350f; min-height: 100px; overflow: hidden; }
+                      .allo-block-vocab .allo-vocab-img img { width: 100%; height: 100%; object-fit: cover; }
                       .allo-block-vocab .allo-vocab-word { font-size: 18px; font-weight: 800; color: #78350f; margin: 0; }
                       .allo-block-vocab .allo-vocab-pos { font-size: 11px; color: #a16207; font-style: italic; margin-left: 6px; font-weight: 600; }
+                      .allo-block-vocab .allo-vocab-pron { font-size: 12px; color: #92400e; font-style: italic; }
                       .allo-block-vocab .allo-vocab-def { font-size: 13px; color: #422006; margin: 4px 0; line-height: 1.5; }
-                      .allo-block-vocab .allo-vocab-example { font-size: 12px; color: #713f12; font-style: italic; margin: 4px 0 0; }
-                      .allo-block-math { padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 18px; color: #1e293b; font-family: 'Cambria Math', 'Latin Modern Math', Georgia, serif; }
-                      .allo-block-math .allo-math-latex { display: block; font-family: ui-monospace, monospace; font-size: 11px; color: #475569; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; }
+                      .allo-block-vocab .allo-vocab-example { font-size: 12px; color: #713f12; font-style: italic; margin: 2px 0; }
+                      .allo-block-vocab .allo-vocab-audio audio { width: 100%; max-width: 240px; height: 32px; }
+                      .allo-block-math { padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; font-size: 18px; color: #1e293b; }
+                      .allo-block-math .allo-math-output { font-family: 'Cambria Math', 'Latin Modern Math', Georgia, serif; min-height: 40px; padding: 8px 0; }
+                      .allo-block-math .allo-math-input-wrap { display: flex; gap: 6px; align-items: center; padding-top: 8px; border-top: 1px dashed #cbd5e1; margin-top: 8px; }
+                      .allo-block-math .allo-math-input-wrap label { font-size: 11px; font-weight: 700; color: #475569; text-transform: uppercase; }
+                      .allo-block-math .allo-math-input { flex: 1; font-family: ui-monospace, monospace; font-size: 12px; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 4px; background: white; color: #1e293b; }
+                      .allo-block-math .allo-math-status { font-size: 10px; color: #6366f1; font-weight: 600; }
                       .allo-block-reflection { background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px; padding: 14px 18px; }
-                      .allo-block-reflection .allo-refl-prompt { font-weight: 700; color: #14532d; font-size: 14px; margin-bottom: 8px; }
-                      .allo-block-reflection .allo-refl-area { width: 100%; min-height: 80px; padding: 10px; border: 1px solid #86efac; border-radius: 8px; font-size: 14px; line-height: 1.6; background: white; resize: vertical; font-family: inherit; box-sizing: border-box; color: #1f2937; }
+                      .allo-block-reflection .allo-refl-prompt { font-weight: 700; color: #14532d; font-size: 14px; margin-bottom: 6px; }
+                      .allo-block-reflection .allo-refl-stems { font-size: 12px; color: #166534; font-style: italic; margin-bottom: 8px; }
+                      .allo-block-reflection .allo-refl-area { width: 100%; padding: 10px; border: 1px solid #86efac; border-radius: 8px; font-size: 14px; line-height: 1.6; background: white; resize: vertical; font-family: inherit; box-sizing: border-box; color: #1f2937; }
+                      .allo-block-reflection[data-length='short'] .allo-refl-area { min-height: 60px; }
+                      .allo-block-reflection[data-length='medium'] .allo-refl-area { min-height: 120px; }
+                      .allo-block-reflection[data-length='long'] .allo-refl-area { min-height: 200px; }
                       .allo-block-rubric { overflow-x: auto; }
                       .allo-block-rubric table { font-size: 13px; }
                       .allo-block-rubric thead th { background: #1e293b; color: white; padding: 8px 10px; text-align: left; font-weight: 700; font-size: 12px; }
@@ -37030,26 +37066,115 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       .allo-block-audio { padding: 12px; background: #f5f3ff; border-radius: 12px; border: 1px solid #ddd6fe; }
                       .allo-block-audio audio { width: 100%; }
                       .allo-block-audio .allo-audio-label { font-size: 11px; font-weight: 700; color: #5b21b6; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.05em; }
+                      .allo-block-audio .allo-audio-controls { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+                      .allo-block-audio .allo-audio-controls input[type='url'] { padding: 4px 8px; font-size: 12px; border: 1px solid #c4b5fd; border-radius: 4px; min-width: 220px; flex: 1; }
+                      .allo-block-audio .allo-audio-controls label.allo-file-btn { display: inline-block; padding: 4px 10px; font-size: 12px; background: #7c3aed; color: white; border-radius: 4px; cursor: pointer; font-weight: 600; }
                       .allo-block-audio .allo-audio-transcript { margin-top: 8px; padding: 10px; background: white; border-radius: 8px; font-size: 13px; color: #1f2937; line-height: 1.6; max-height: 200px; overflow-y: auto; }
-                      .allo-block-code { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px; font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Consolas, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; }
-                      .allo-block-code pre { margin: 0; }
-                      .allo-block-code code { white-space: pre; color: inherit; background: transparent; }
-                      .allo-block-code .allo-code-lang { display: inline-block; font-size: 10px; font-weight: 700; background: #334155; color: #cbd5e1; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
-                      .allo-block-remove { position: absolute; top: 4px; right: 4px; width: 26px; height: 26px; background: rgba(15, 23, 42, 0.78); color: white; border: none; border-radius: 50%; cursor: pointer; opacity: 0; transition: opacity 0.15s; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; z-index: 5; padding: 0; }
+                      .allo-block-code-wrap { background: #0f172a; color: #e2e8f0; padding: 14px; border-radius: 8px; font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Consolas, monospace; font-size: 13px; line-height: 1.6; overflow-x: auto; }
+                      .allo-block-code-wrap pre { margin: 0; background: transparent; padding: 0; }
+                      .allo-block-code-wrap code { background: transparent; color: inherit; }
+                      .allo-block-code-wrap .allo-code-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+                      .allo-block-code-wrap .allo-code-lang-select { font-size: 11px; background: #334155; color: #cbd5e1; border: 1px solid #475569; border-radius: 4px; padding: 2px 6px; font-family: inherit; }
+                      .allo-block-remove { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; background: rgba(15, 23, 42, 0.78); color: white; border: none; border-radius: 50%; cursor: pointer; opacity: 0; transition: opacity 0.15s; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; z-index: 5; padding: 0; }
                       .allo-block:hover > .allo-block-remove, .allo-block:focus-within > .allo-block-remove, .allo-block-remove:focus { opacity: 1; }
                       .allo-block-remove:hover { background: #dc2626; }
                       .allo-block-remove:focus { outline: 2px solid #6366f1; outline-offset: 2px; }
                       .allo-block-controls { display: flex; gap: 4px; margin-top: 8px; padding: 6px; background: rgba(99, 102, 241, 0.08); border-radius: 6px; flex-wrap: wrap; align-items: center; }
-                      .allo-block-controls button { font-size: 11px; padding: 3px 8px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 600; color: #334155; font-family: inherit; }
+                      .allo-block-controls button { font-size: 11px; padding: 4px 9px; min-height: 28px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; cursor: pointer; font-weight: 600; color: #334155; font-family: inherit; }
                       .allo-block-controls button:hover { background: #6366f1; color: white; border-color: #6366f1; }
                       .allo-block-controls button:focus { outline: 2px solid #6366f1; outline-offset: 1px; }
+                      .allo-block-controls button[aria-pressed='true'] { background: #6366f1; color: white; border-color: #4f46e5; }
                       .allo-block-controls .allo-control-label { font-size: 10px; font-weight: 700; color: #4338ca; text-transform: uppercase; padding: 0 4px; letter-spacing: 0.05em; }
+                      .allo-block-controls select { font-size: 11px; padding: 4px 6px; min-height: 28px; background: white; border: 1px solid #cbd5e1; border-radius: 4px; color: #334155; font-family: inherit; }
                       .allo-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
                       @media print {
-                        .allo-block-remove, .allo-block-controls { display: none !important; }
+                        .allo-block-remove, .allo-block-controls, .allo-img-controls, .allo-audio-controls, .allo-frame-template-picker, .allo-math-input-wrap, .allo-code-header { display: none !important; }
                         .allo-block { break-inside: avoid; }
+                        .allo-block-math .allo-math-output { font-size: 16pt; }
+                      }
+                      @media (prefers-reduced-motion: reduce) {
+                        .allo-block-remove { transition: none; }
                       }
                     `;
+
+                    // ── Lazy CDN loaders for KaTeX (math) and Prism (code) ──
+                    const _ensureKatex = (doc) => {
+                      if (doc.getElementById('allo-katex-css')) return;
+                      const link = doc.createElement('link');
+                      link.id = 'allo-katex-css';
+                      link.rel = 'stylesheet';
+                      link.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css';
+                      doc.head.appendChild(link);
+                      const script = doc.createElement('script');
+                      script.id = 'allo-katex-js';
+                      script.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js';
+                      script.onload = () => {
+                        try {
+                          doc.querySelectorAll('.allo-block-math').forEach((el) => {
+                            const inp = el.querySelector('.allo-math-input');
+                            const out = el.querySelector('.allo-math-output');
+                            if (inp && out && doc.defaultView.katex) {
+                              try { doc.defaultView.katex.render(inp.value, out, { throwOnError: false, displayMode: true }); }
+                              catch (e) { out.textContent = inp.value; }
+                            }
+                          });
+                        } catch (_) {}
+                      };
+                      doc.head.appendChild(script);
+                    };
+                    const _ensurePrism = (doc, language) => {
+                      if (!doc.getElementById('allo-prism-css')) {
+                        const link = doc.createElement('link');
+                        link.id = 'allo-prism-css';
+                        link.rel = 'stylesheet';
+                        link.href = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css';
+                        doc.head.appendChild(link);
+                      }
+                      if (!doc.getElementById('allo-prism-js')) {
+                        const script = doc.createElement('script');
+                        script.id = 'allo-prism-js';
+                        script.src = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js';
+                        script.onload = () => { _loadPrismLang(doc, language || 'python'); };
+                        doc.head.appendChild(script);
+                      } else {
+                        _loadPrismLang(doc, language || 'python');
+                      }
+                    };
+                    const _loadPrismLang = (doc, language) => {
+                      if (!language || language === 'plaintext') return;
+                      const id = 'allo-prism-lang-' + language;
+                      if (doc.getElementById(id)) {
+                        try { doc.defaultView.Prism && doc.defaultView.Prism.highlightAll(); } catch (_) {}
+                        return;
+                      }
+                      const script = doc.createElement('script');
+                      script.id = id;
+                      script.src = 'https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-' + language + '.min.js';
+                      script.onload = () => { try { doc.defaultView.Prism && doc.defaultView.Prism.highlightAll(); } catch (_) {} };
+                      script.onerror = () => {};
+                      doc.head.appendChild(script);
+                    };
+
+                    // ── Sentence Frame template library ──
+                    const _SENTENCE_FRAMES = {
+                      'notice-because': 'I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+                      'cer': '<strong>Claim:</strong> <span class="allo-frame-blank">_______________</span><br/><strong>Evidence:</strong> <span class="allo-frame-blank">_______________</span><br/><strong>Reasoning:</strong> <span class="allo-frame-blank">_______________</span>',
+                      'agree-disagree': 'I <span class="allo-frame-blank">agree / disagree</span> with <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+                      'compare': '<span class="allo-frame-blank">_______________</span> and <span class="allo-frame-blank">_______________</span> are similar because <span class="allo-frame-blank">_______________</span>, but they differ in <span class="allo-frame-blank">_______________</span>.',
+                      'cause-effect': 'When <span class="allo-frame-blank">_______________</span> happens, then <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+                      'wonder': 'I wonder why <span class="allo-frame-blank">_______________</span>. I think it might be because <span class="allo-frame-blank">_______________</span>.',
+                      'sel-feeling': 'I feel <span class="allo-frame-blank">_______________</span> when <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.',
+                      'add-on': 'I want to add to what <span class="allo-frame-blank">_______________</span> said. I think <span class="allo-frame-blank">_______________</span>.',
+                    };
+
+                    // ── Rubric scale presets ──
+                    const _RUBRIC_SCALES = {
+                      '4pt': ['4 — Exemplary', '3 — Proficient', '2 — Developing', '1 — Beginning'],
+                      '3pt': ['3 — Above Standard', '2 — At Standard', '1 — Approaching'],
+                      '5pt': ['5 — Outstanding', '4 — Proficient', '3 — Developing', '2 — Emerging', '1 — Not Yet'],
+                      'standards': ['Mastered', 'Proficient', 'Approaching', 'Beginning'],
+                      'ungraded': ['Glow', 'Grow'],
+                    };
 
                     // ── One-time per-iframe setup: inject stylesheet + click delegation ──
                     const _ensureAlloBlocksReady = (doc) => {
@@ -37059,7 +37184,6 @@ Return ONLY the plain language summary in ${lang}.`, false);
                         s.textContent = _ALLO_BLOCKS_CSS;
                         doc.head.appendChild(s);
                       }
-                      // SR live region (announces inserted/removed blocks)
                       if (!doc.getElementById('allo-blocks-live')) {
                         const live = doc.createElement('div');
                         live.id = 'allo-blocks-live';
@@ -37071,23 +37195,20 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       }
                       if (doc.__alloBlocksDelegated) return;
                       doc.__alloBlocksDelegated = true;
+                      const announce = (msg) => {
+                        try {
+                          const lr = doc.getElementById('allo-blocks-live');
+                          if (lr) { lr.textContent = ''; setTimeout(() => { lr.textContent = msg; }, 30); }
+                          if (typeof window.parent.addToast === 'function') window.parent.addToast(msg, 'info');
+                        } catch (_) {}
+                      };
+                      const persist = () => {
+                        try { if (typeof window.parent.__alloflowOnPdfPreviewMutated === 'function') window.parent.__alloflowOnPdfPreviewMutated(); } catch (_) {}
+                      };
+                      // ── CLICK DELEGATION (covers remove + structural controls + style controls) ──
                       doc.addEventListener('click', (ev) => {
                         const t = ev.target;
                         if (!t || !t.closest) return;
-                        const announce = (msg) => {
-                          try {
-                            const lr = doc.getElementById('allo-blocks-live');
-                            if (lr) { lr.textContent = ''; setTimeout(() => { lr.textContent = msg; }, 30); }
-                            if (typeof window.addToast === 'function') window.addToast(msg, 'info');
-                            if (typeof window.parent.addToast === 'function') window.parent.addToast(msg, 'info');
-                          } catch (_) {}
-                        };
-                        const persist = () => {
-                          try {
-                            if (typeof window.parent.__alloflowOnPdfPreviewMutated === 'function') window.parent.__alloflowOnPdfPreviewMutated();
-                          } catch (_) {}
-                        };
-                        // Remove block
                         const removeBtn = t.closest('.allo-block-remove');
                         if (removeBtn) {
                           ev.preventDefault();
@@ -37100,156 +37221,416 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           }
                           return;
                         }
-                        // Per-block controls (+/- row/col/item)
                         const ctrlBtn = t.closest('.allo-block-controls button[data-action]');
-                        if (ctrlBtn) {
-                          ev.preventDefault();
-                          const action = ctrlBtn.getAttribute('data-action');
-                          const block = ctrlBtn.closest('[data-allo-block]');
-                          if (!block) return;
-                          const isRubric = block.classList.contains('allo-block-rubric');
-                          if (action === 'add-row') {
-                            const tbody = block.querySelector('tbody');
-                            const headerRow = block.querySelector('thead tr');
-                            if (tbody && headerRow) {
-                              const cols = headerRow.children.length;
-                              const tr = doc.createElement('tr');
-                              for (let i = 0; i < cols; i++) {
-                                if (isRubric && i === 0) {
-                                  const th = doc.createElement('th');
-                                  th.setAttribute('scope', 'row');
-                                  th.textContent = 'New criterion';
-                                  tr.appendChild(th);
-                                } else {
-                                  const td = doc.createElement('td');
-                                  td.textContent = isRubric ? 'Description' : 'Data';
-                                  tr.appendChild(td);
-                                }
+                        if (!ctrlBtn) return;
+                        ev.preventDefault();
+                        const action = ctrlBtn.getAttribute('data-action');
+                        const block = ctrlBtn.closest('[data-allo-block]');
+                        if (!block) return;
+                        const isRubric = block.classList.contains('allo-block-rubric');
+                        // ── Structural: rows / cols / items / steps ──
+                        if (action === 'add-row') {
+                          const tbody = block.querySelector('tbody');
+                          const headerRow = block.querySelector('thead tr');
+                          if (tbody && headerRow) {
+                            const cols = headerRow.children.length;
+                            const tr = doc.createElement('tr');
+                            for (let i = 0; i < cols; i++) {
+                              if (isRubric && i === 0) {
+                                const th = doc.createElement('th');
+                                th.setAttribute('scope', 'row');
+                                th.textContent = 'New criterion';
+                                tr.appendChild(th);
+                              } else {
+                                const td = doc.createElement('td');
+                                td.textContent = isRubric ? 'Description' : 'Data';
+                                tr.appendChild(td);
                               }
-                              tbody.appendChild(tr);
-                              announce('Row added');
                             }
-                          } else if (action === 'remove-row') {
-                            const tbody = block.querySelector('tbody');
-                            if (tbody && tbody.children.length > 1) {
-                              tbody.lastElementChild.remove();
-                              announce('Row removed');
-                            }
-                          } else if (action === 'add-col') {
-                            const headerRow = block.querySelector('thead tr');
-                            const bodyRows = block.querySelectorAll('tbody tr');
-                            if (headerRow) {
-                              const newTh = doc.createElement('th');
-                              newTh.setAttribute('scope', 'col');
-                              newTh.textContent = isRubric ? 'New level' : 'New header';
-                              headerRow.appendChild(newTh);
-                            }
-                            bodyRows.forEach((row) => {
-                              const td = doc.createElement('td');
-                              td.textContent = isRubric ? 'Description' : 'Data';
-                              row.appendChild(td);
-                            });
-                            announce('Column added');
-                          } else if (action === 'remove-col') {
-                            const headerRow = block.querySelector('thead tr');
-                            const bodyRows = block.querySelectorAll('tbody tr');
-                            const minCols = isRubric ? 2 : 1;
-                            if (headerRow && headerRow.children.length > minCols) {
-                              headerRow.lastElementChild.remove();
-                              bodyRows.forEach((row) => { if (row.lastElementChild) row.lastElementChild.remove(); });
-                              announce('Column removed');
-                            }
-                          } else if (action === 'add-column-card') {
-                            const newCol = doc.createElement('div');
-                            newCol.className = 'allo-col';
-                            newCol.textContent = 'New column content';
-                            const ctrls = block.querySelector('.allo-block-controls');
-                            if (ctrls) block.insertBefore(newCol, ctrls); else block.appendChild(newCol);
-                            const count = block.querySelectorAll('.allo-col').length;
+                            tbody.appendChild(tr);
+                            announce('Row added');
+                          }
+                        } else if (action === 'remove-row') {
+                          const tbody = block.querySelector('tbody');
+                          if (tbody && tbody.children.length > 1) { tbody.lastElementChild.remove(); announce('Row removed'); }
+                        } else if (action === 'add-col') {
+                          const headerRow = block.querySelector('thead tr');
+                          const bodyRows = block.querySelectorAll('tbody tr');
+                          if (headerRow) {
+                            const newTh = doc.createElement('th');
+                            newTh.setAttribute('scope', 'col');
+                            newTh.textContent = isRubric ? 'New level' : 'New header';
+                            headerRow.appendChild(newTh);
+                          }
+                          bodyRows.forEach((row) => { const td = doc.createElement('td'); td.textContent = isRubric ? 'Description' : 'Data'; row.appendChild(td); });
+                          announce('Column added');
+                        } else if (action === 'remove-col') {
+                          const headerRow = block.querySelector('thead tr');
+                          const bodyRows = block.querySelectorAll('tbody tr');
+                          const minCols = isRubric ? 2 : 1;
+                          if (headerRow && headerRow.children.length > minCols) {
+                            headerRow.lastElementChild.remove();
+                            bodyRows.forEach((row) => { if (row.lastElementChild) row.lastElementChild.remove(); });
+                            announce('Column removed');
+                          }
+                        } else if (action === 'add-column-card') {
+                          const newCol = doc.createElement('div');
+                          newCol.className = 'allo-col';
+                          newCol.textContent = 'New column content';
+                          const ctrls = block.querySelector('.allo-block-controls');
+                          if (ctrls) block.insertBefore(newCol, ctrls); else block.appendChild(newCol);
+                          const count = block.querySelectorAll('.allo-col').length;
+                          block.style.gridTemplateColumns = 'repeat(' + count + ', minmax(0, 1fr))';
+                          announce('Column added');
+                        } else if (action === 'remove-column-card') {
+                          const cols = block.querySelectorAll('.allo-col');
+                          if (cols.length > 1) {
+                            cols[cols.length - 1].remove();
+                            const count = cols.length - 1;
                             block.style.gridTemplateColumns = 'repeat(' + count + ', minmax(0, 1fr))';
-                            announce('Column added');
-                          } else if (action === 'remove-column-card') {
-                            const cols = block.querySelectorAll('.allo-col');
-                            if (cols.length > 1) {
-                              cols[cols.length - 1].remove();
-                              const count = cols.length - 1;
-                              block.style.gridTemplateColumns = 'repeat(' + count + ', minmax(0, 1fr))';
-                              announce('Column removed');
+                            announce('Column removed');
+                          }
+                        } else if (action === 'add-checklist-item') {
+                          const list = block.querySelector('ul');
+                          if (list) {
+                            const id = 'cl-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                            const li = doc.createElement('li');
+                            const cb = doc.createElement('input'); cb.type = 'checkbox'; cb.id = id;
+                            const lbl = doc.createElement('label'); lbl.setAttribute('for', id); lbl.textContent = 'New task';
+                            li.appendChild(cb); li.appendChild(lbl);
+                            list.appendChild(li);
+                            announce('Checklist item added');
+                          }
+                        } else if (action === 'remove-checklist-item') {
+                          const list = block.querySelector('ul');
+                          if (list && list.children.length > 1) { list.lastElementChild.remove(); announce('Checklist item removed'); }
+                        } else if (action === 'add-step') {
+                          const ol = block.querySelector('ol');
+                          if (ol) {
+                            const num = ol.children.length + 1;
+                            const li = doc.createElement('li');
+                            const span = doc.createElement('span'); span.className = 'allo-step-num'; span.setAttribute('aria-hidden', 'true'); span.textContent = String(num);
+                            const body = doc.createElement('div'); body.className = 'allo-step-body'; body.textContent = 'New step description';
+                            li.appendChild(span); li.appendChild(body); ol.appendChild(li);
+                            announce('Step ' + num + ' added');
+                          }
+                        } else if (action === 'remove-step') {
+                          const ol = block.querySelector('ol');
+                          if (ol && ol.children.length > 1) {
+                            ol.lastElementChild.remove();
+                            Array.from(ol.querySelectorAll('.allo-step-num')).forEach((s, i) => { s.textContent = String(i + 1); });
+                            announce('Step removed');
+                          }
+                        } else if (action === 'add-vocab-example') {
+                          const examplesContainer = block.querySelector('.allo-vocab-examples');
+                          if (examplesContainer) {
+                            const p = doc.createElement('p'); p.className = 'allo-vocab-example'; p.textContent = 'Example: "Another sentence using the word."';
+                            examplesContainer.appendChild(p);
+                            announce('Example added');
+                          }
+                        } else if (action === 'remove-vocab-example') {
+                          const examples = block.querySelectorAll('.allo-vocab-example');
+                          if (examples.length > 1) { examples[examples.length - 1].remove(); announce('Example removed'); }
+                        }
+                        // ── Style: callout style swap ──
+                        else if (action && action.indexOf('callout-style-') === 0) {
+                          const style = action.substring('callout-style-'.length);
+                          ['info', 'warning', 'success', 'note', 'danger'].forEach((s) => block.classList.remove('allo-callout-' + s));
+                          block.classList.add('allo-callout-' + style);
+                          block.setAttribute('data-allo-style', style);
+                          // Also update the strong label heuristically
+                          const strong = block.querySelector(':scope > strong');
+                          const labels = { info: 'Note:', warning: 'Important:', success: 'Tip:', note: 'Notice:', danger: 'Caution:' };
+                          if (strong && labels[style]) strong.textContent = labels[style];
+                          // Update the pressed state
+                          ctrlBtn.parentElement.querySelectorAll('button[data-action^="callout-style-"]').forEach((b) => b.setAttribute('aria-pressed', String(b === ctrlBtn)));
+                          announce('Callout style: ' + style);
+                        }
+                        // ── Style: columns ratio + gap ──
+                        else if (action && action.indexOf('cols-ratio-') === 0) {
+                          const cols = block.querySelectorAll('.allo-col').length;
+                          const ratio = action.substring('cols-ratio-'.length);
+                          const ratioMap = { equal: 'repeat(' + cols + ', minmax(0, 1fr))', '2-1': '2fr 1fr', '1-2': '1fr 2fr', 'narrow-wide': '1fr 3fr', 'wide-narrow': '3fr 1fr' };
+                          if (ratioMap[ratio]) {
+                            block.style.gridTemplateColumns = ratioMap[ratio];
+                            announce('Column ratio: ' + ratio);
+                          }
+                        } else if (action && action.indexOf('cols-gap-') === 0) {
+                          const gap = action.substring('cols-gap-'.length);
+                          const gapMap = { tight: '6px', normal: '16px', wide: '32px' };
+                          if (gapMap[gap]) { block.style.gap = gapMap[gap]; announce('Gap: ' + gap); }
+                        }
+                        // ── Style: list-style for checklist ──
+                        else if (action && action.indexOf('list-style-') === 0) {
+                          const style = action.substring('list-style-'.length);
+                          const list = block.querySelector('ul');
+                          if (list) {
+                            list.setAttribute('data-list-style', style);
+                            ctrlBtn.parentElement.querySelectorAll('button[data-action^="list-style-"]').forEach((b) => b.setAttribute('aria-pressed', String(b === ctrlBtn)));
+                            announce('List style: ' + style);
+                          }
+                        }
+                        // ── Style: numbering style for steps ──
+                        else if (action && action.indexOf('num-style-') === 0) {
+                          const style = action.substring('num-style-'.length);
+                          const ol = block.querySelector('ol');
+                          if (ol) {
+                            ol.setAttribute('data-num-style', style);
+                            const labels = ol.querySelectorAll('.allo-step-num');
+                            labels.forEach((s, i) => {
+                              if (style === 'numeric') s.textContent = String(i + 1);
+                              else if (style === 'alpha') s.textContent = String.fromCharCode(97 + i).toUpperCase();
+                              else if (style === 'roman') {
+                                const r = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'][i] || String(i+1);
+                                s.textContent = r;
+                              }
+                            });
+                            ctrlBtn.parentElement.querySelectorAll('button[data-action^="num-style-"]').forEach((b) => b.setAttribute('aria-pressed', String(b === ctrlBtn)));
+                            announce('Numbering: ' + style);
+                          }
+                        }
+                        // ── Style: accordion default-open toggle ──
+                        else if (action === 'accordion-default-open') {
+                          const isOpen = block.hasAttribute('open');
+                          if (isOpen) { block.removeAttribute('open'); ctrlBtn.setAttribute('aria-pressed', 'false'); announce('Accordion default: closed'); }
+                          else { block.setAttribute('open', ''); ctrlBtn.setAttribute('aria-pressed', 'true'); announce('Accordion default: open'); }
+                        }
+                        // ── Style: data table header style ──
+                        else if (action && action.indexOf('table-header-') === 0) {
+                          const style = action.substring('table-header-'.length);
+                          block.setAttribute('data-header-style', style);
+                          ctrlBtn.parentElement.querySelectorAll('button[data-action^="table-header-"]').forEach((b) => b.setAttribute('aria-pressed', String(b === ctrlBtn)));
+                          announce('Header style: ' + style);
+                        } else if (action === 'table-zebra-toggle') {
+                          const cur = block.getAttribute('data-zebra') || 'on';
+                          const next = cur === 'on' ? 'off' : 'on';
+                          block.setAttribute('data-zebra', next);
+                          ctrlBtn.setAttribute('aria-pressed', String(next === 'on'));
+                          announce('Zebra stripes: ' + next);
+                        }
+                        // ── Style: rubric scale ──
+                        else if (action && action.indexOf('rubric-scale-') === 0) {
+                          const scale = action.substring('rubric-scale-'.length);
+                          const labels = _RUBRIC_SCALES[scale];
+                          if (!labels) return;
+                          const headerRow = block.querySelector('thead tr');
+                          const tbody = block.querySelector('tbody');
+                          if (!headerRow || !tbody) return;
+                          // Rebuild header row keeping first cell ("Criterion")
+                          const firstHeader = headerRow.firstElementChild;
+                          headerRow.innerHTML = '';
+                          headerRow.appendChild(firstHeader);
+                          labels.forEach((label) => { const th = doc.createElement('th'); th.setAttribute('scope', 'col'); th.textContent = label; headerRow.appendChild(th); });
+                          // Adjust each tbody row to match column count
+                          const targetCols = labels.length + 1; // +1 for criterion
+                          Array.from(tbody.querySelectorAll('tr')).forEach((row) => {
+                            while (row.children.length < targetCols) {
+                              const td = doc.createElement('td'); td.textContent = 'Description'; row.appendChild(td);
                             }
-                          } else if (action === 'add-checklist-item') {
-                            const list = block.querySelector('ul');
-                            if (list) {
-                              const id = 'cl-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
-                              const li = doc.createElement('li');
-                              const cb = doc.createElement('input');
-                              cb.type = 'checkbox'; cb.id = id;
-                              const lbl = doc.createElement('label');
-                              lbl.setAttribute('for', id); lbl.textContent = 'New task';
-                              li.appendChild(cb); li.appendChild(lbl);
-                              list.appendChild(li);
-                              announce('Checklist item added');
-                            }
-                          } else if (action === 'remove-checklist-item') {
-                            const list = block.querySelector('ul');
-                            if (list && list.children.length > 1) {
-                              list.lastElementChild.remove();
-                              announce('Checklist item removed');
-                            }
-                          } else if (action === 'add-step') {
-                            const ol = block.querySelector('ol');
-                            if (ol) {
-                              const num = ol.children.length + 1;
-                              const li = doc.createElement('li');
-                              const span = doc.createElement('span');
-                              span.className = 'allo-step-num';
-                              span.setAttribute('aria-hidden', 'true');
-                              span.textContent = String(num);
-                              const body = doc.createElement('div');
-                              body.className = 'allo-step-body';
-                              body.textContent = 'New step description';
-                              li.appendChild(span); li.appendChild(body);
-                              ol.appendChild(li);
-                              announce('Step ' + num + ' added');
-                            }
-                          } else if (action === 'remove-step') {
-                            const ol = block.querySelector('ol');
-                            if (ol && ol.children.length > 1) {
-                              ol.lastElementChild.remove();
-                              // Renumber visible step counts
-                              Array.from(ol.querySelectorAll('.allo-step-num')).forEach((s, i) => { s.textContent = String(i + 1); });
-                              announce('Step removed');
-                            }
+                            while (row.children.length > targetCols) { row.lastElementChild.remove(); }
+                          });
+                          ctrlBtn.parentElement.querySelectorAll('button[data-action^="rubric-scale-"]').forEach((b) => b.setAttribute('aria-pressed', String(b === ctrlBtn)));
+                          announce('Rubric scale: ' + scale);
+                        }
+                        // ── Style: reflection length ──
+                        else if (action && action.indexOf('refl-length-') === 0) {
+                          const len = action.substring('refl-length-'.length);
+                          block.setAttribute('data-length', len);
+                          ctrlBtn.parentElement.querySelectorAll('button[data-action^="refl-length-"]').forEach((b) => b.setAttribute('aria-pressed', String(b === ctrlBtn)));
+                          announce('Reflection length: ' + len);
+                        }
+                        persist();
+                      }, true);
+                      // ── INPUT/CHANGE delegation (Math LaTeX, Code language, Image/Audio URL) ──
+                      doc.addEventListener('input', (ev) => {
+                        const t = ev.target;
+                        if (!t) return;
+                        // Math LaTeX live-render
+                        if (t.classList && t.classList.contains('allo-math-input')) {
+                          const block = t.closest('.allo-block-math');
+                          if (!block) return;
+                          const out = block.querySelector('.allo-math-output');
+                          const status = block.querySelector('.allo-math-status');
+                          const win = doc.defaultView;
+                          if (win && win.katex && out) {
+                            try { win.katex.render(t.value || '', out, { throwOnError: false, displayMode: true }); if (status) status.textContent = 'Rendered'; }
+                            catch (e) { if (out) out.textContent = t.value; if (status) status.textContent = 'Plain'; }
+                          } else {
+                            if (out) out.textContent = t.value || '';
+                            if (status) status.textContent = win && win.katex ? 'Loading…' : 'KaTeX loading…';
                           }
                           persist();
+                        }
+                        // Image URL paste
+                        if (t.classList && t.classList.contains('allo-img-url-input')) {
+                          const block = t.closest('.allo-block-image');
+                          if (!block) return;
+                          const url = t.value.trim();
+                          if (!url) return;
+                          const placeholder = block.querySelector('.allo-img-placeholder');
+                          let img = block.querySelector('img.allo-img-real');
+                          if (!img) {
+                            img = doc.createElement('img');
+                            img.className = 'allo-img-real';
+                            img.alt = '';
+                            if (placeholder) placeholder.replaceWith(img); else block.insertBefore(img, block.firstChild);
+                          }
+                          img.src = url;
+                          announce('Image URL set');
+                          persist();
+                        }
+                        // Audio URL paste
+                        if (t.classList && t.classList.contains('allo-audio-url-input')) {
+                          const block = t.closest('.allo-block-audio');
+                          if (!block) return;
+                          const url = t.value.trim();
+                          const audio = block.querySelector('audio');
+                          if (audio && url) {
+                            audio.src = url;
+                            announce('Audio URL set');
+                            persist();
+                          }
+                        }
+                      }, true);
+                      // ── CHANGE (file uploads, language picker, sentence-frame select, definition lang) ──
+                      doc.addEventListener('change', (ev) => {
+                        const t = ev.target;
+                        if (!t) return;
+                        // Image file upload
+                        if (t.classList && t.classList.contains('allo-img-file-input')) {
+                          const file = t.files && t.files[0]; if (!file) return;
+                          const block = t.closest('.allo-block-image'); if (!block) return;
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const placeholder = block.querySelector('.allo-img-placeholder');
+                            let img = block.querySelector('img.allo-img-real');
+                            if (!img) {
+                              img = doc.createElement('img');
+                              img.className = 'allo-img-real';
+                              img.alt = file.name.replace(/\.[^.]+$/, '');
+                              if (placeholder) placeholder.replaceWith(img); else block.insertBefore(img, block.firstChild);
+                            }
+                            img.src = String(e.target.result || '');
+                            announce('Image uploaded: ' + file.name);
+                            persist();
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                        // Audio file upload
+                        if (t.classList && t.classList.contains('allo-audio-file-input')) {
+                          const file = t.files && t.files[0]; if (!file) return;
+                          const block = t.closest('.allo-block-audio'); if (!block) return;
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const audio = block.querySelector('audio');
+                            if (audio) { audio.src = String(e.target.result || ''); announce('Audio uploaded: ' + file.name); persist(); }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                        // Vocab card image upload
+                        if (t.classList && t.classList.contains('allo-vocab-img-input')) {
+                          const file = t.files && t.files[0]; if (!file) return;
+                          const block = t.closest('.allo-block-vocab'); if (!block) return;
+                          const reader = new FileReader();
+                          reader.onload = (e) => {
+                            const slot = block.querySelector('.allo-vocab-img');
+                            if (slot) {
+                              slot.innerHTML = '';
+                              const img = doc.createElement('img'); img.src = String(e.target.result || ''); img.alt = file.name.replace(/\.[^.]+$/, '');
+                              slot.appendChild(img);
+                              announce('Vocab image uploaded'); persist();
+                            }
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                        // Code language change
+                        if (t.classList && t.classList.contains('allo-code-lang-select')) {
+                          const block = t.closest('.allo-block-code-wrap'); if (!block) return;
+                          const codeEl = block.querySelector('code');
+                          if (codeEl) {
+                            const newLang = t.value || 'plaintext';
+                            codeEl.className = 'language-' + newLang;
+                            _ensurePrism(doc, newLang);
+                            announce('Code language: ' + newLang);
+                            persist();
+                          }
+                        }
+                        // Sentence Frame template change
+                        if (t.classList && t.classList.contains('allo-frame-template-select')) {
+                          const block = t.closest('.allo-block-frame'); if (!block) return;
+                          const tpl = _SENTENCE_FRAMES[t.value];
+                          if (tpl) {
+                            const removeBtn = block.querySelector(':scope > .allo-block-remove');
+                            const picker = block.querySelector(':scope > .allo-frame-template-picker');
+                            block.innerHTML = (removeBtn ? removeBtn.outerHTML : '') + tpl + (picker ? picker.outerHTML : '');
+                            announce('Sentence frame: ' + t.value);
+                            persist();
+                          }
+                        }
+                        // Definition language change
+                        if (t.classList && t.classList.contains('allo-def-lang-select')) {
+                          const block = t.closest('.allo-block-definition'); if (!block) return;
+                          const span = block.querySelector('dt > span');
+                          if (span) { span.setAttribute('lang', t.value); announce('Term language: ' + t.value); persist(); }
                         }
                       }, true);
                     };
 
-                    // ── Block library (21 blocks) ──
                     const _uid = (p) => p + '-' + Date.now() + '-' + Math.floor(Math.random() * 10000);
+
+                    // ── Block library (21 blocks) — each tagged with category + keywords ──
                     const blocks = [
-                      { label: 'Info Box', icon: 'ℹ️', html: '<div class="allo-block allo-block-info" data-allo-block="info" tabindex="0" role="note" aria-label="Information note"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove information block" title="Remove">×</button><strong>Note:</strong> <span>Enter info here</span></div>' },
-                      { label: 'Warning', icon: '⚠️', html: '<div class="allo-block allo-block-warning" data-allo-block="warning" tabindex="0" role="note" aria-label="Warning"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove warning block" title="Remove">×</button><strong>Important:</strong> <span>Enter warning here</span></div>' },
-                      { label: 'Success', icon: '✅', html: '<div class="allo-block allo-block-success" data-allo-block="success" tabindex="0" role="note" aria-label="Tip"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove tip block" title="Remove">×</button><strong>Tip:</strong> <span>Enter tip here</span></div>' },
-                      { label: 'Quote', icon: '💬', html: '<blockquote class="allo-block allo-block-quote" data-allo-block="quote" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove quote block" title="Remove">×</button>"Enter quote here"<cite>— Source</cite></blockquote>' },
-                      { label: 'Columns', icon: '⬛⬛', html: '<div class="allo-block allo-block-columns" data-allo-block="columns" tabindex="0" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove columns block" title="Remove">×</button><div class="allo-col">Column 1 content</div><div class="allo-col">Column 2 content</div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Columns</span><button type="button" data-action="add-column-card" aria-label="Add column">+ Column</button><button type="button" data-action="remove-column-card" aria-label="Remove last column">− Column</button></div></div>' },
-                      { label: 'Divider', icon: '➖', html: '<div class="allo-block allo-block-divider" data-allo-block="divider" tabindex="0" role="separator" aria-label="Section divider"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove divider" title="Remove">×</button><hr /></div>' },
-                      { label: 'Page Break', icon: '📄', html: '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove page break" title="Remove">×</button><span class="allo-pb-label" aria-hidden="true">— Page Break —</span><span class="allo-sr-only">Page break</span></div>' },
-                      { label: 'Checklist', icon: '☑️', html: (() => { const a = _uid('cl'), b = _uid('cl'), c = _uid('cl'); return '<div class="allo-block" data-allo-block="checklist" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove checklist" title="Remove">×</button><ul class="allo-block-checklist" aria-label="Checklist"><li><input type="checkbox" id="' + a + '" /><label for="' + a + '">Task item 1</label></li><li><input type="checkbox" id="' + b + '" /><label for="' + b + '">Task item 2</label></li><li><input type="checkbox" id="' + c + '" /><label for="' + c + '">Task item 3</label></li></ul><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Items</span><button type="button" data-action="add-checklist-item" aria-label="Add task">+ Item</button><button type="button" data-action="remove-checklist-item" aria-label="Remove last task">− Item</button></div></div>'; }) },
-                      { label: 'Data Table', icon: '📊', html: '<div class="allo-block allo-block-table" data-allo-block="table" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove table" title="Remove">×</button><figure><table aria-label="Data table"><caption>Table Title — Edit Me</caption><thead><tr><th scope="col">Header 1</th><th scope="col">Header 2</th><th scope="col">Header 3</th></tr></thead><tbody><tr><td>Data</td><td>Data</td><td>Data</td></tr><tr><td>Data</td><td>Data</td><td>Data</td></tr></tbody></table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Table</span><button type="button" data-action="add-row" aria-label="Add row">+ Row</button><button type="button" data-action="remove-row" aria-label="Remove last row">− Row</button><button type="button" data-action="add-col" aria-label="Add column">+ Column</button><button type="button" data-action="remove-col" aria-label="Remove last column">− Column</button></div></div>' },
-                      { label: 'Image + Alt', icon: '🖼️', html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label="Image with description"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove image" title="Remove">×</button><div class="allo-img-placeholder"><span aria-hidden="true">🖼️</span><br/>Replace this placeholder with an actual image.<br/><em>Use the AI Image Generator panel above, or paste an image URL.</em></div><figcaption>Image description for screen readers — edit this caption</figcaption></figure>' },
-                      { label: 'Definition', icon: '📖', html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd></dl>' },
-                      { label: 'Numbered Steps', icon: '1️⃣', html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">×</button><ol class="allo-block-steps" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step" aria-label="Add step">+ Step</button><button type="button" data-action="remove-step" aria-label="Remove last step">− Step</button></div></div>' },
-                      { label: 'Accordion', icon: '📂', html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">×</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation — let students reveal content at their own pace. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em></div></details>' },
-                      { label: 'Sentence Frame', icon: '🪧', html: '<div class="allo-block allo-block-frame" data-allo-block="sentence-frame" tabindex="0" role="note" aria-label="Sentence frame"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove sentence frame" title="Remove">×</button>I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.</div>' },
-                      { label: 'Objective', icon: '🎯', html: '<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">×</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div></div>' },
-                      { label: 'Vocab Card', icon: '🃏', html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div></div>' },
-                      { label: 'Math Equation', icon: '➗', html: '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Mathematical equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">×</button><span aria-hidden="true">a² + b² = c²</span><span class="allo-sr-only">a squared plus b squared equals c squared</span><span class="allo-math-latex" contenteditable="false">LaTeX: a^2 + b^2 = c^2</span></div>' },
-                      { label: 'Reflection', icon: '✏️', html: '<div class="allo-block allo-block-reflection" data-allo-block="reflection" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">×</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here..."></textarea></div>' },
-                      { label: 'Rubric', icon: '📋', html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove rubric" title="Remove">×</button><table aria-label="Scoring rubric"><caption>Rubric Title — Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 — Exemplary</th><th scope="col">3 — Proficient</th><th scope="col">2 — Developing</th><th scope="col">1 — Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rubric</span><button type="button" data-action="add-row" aria-label="Add criterion row">+ Criterion</button><button type="button" data-action="remove-row" aria-label="Remove last criterion">− Criterion</button><button type="button" data-action="add-col" aria-label="Add level column">+ Level</button><button type="button" data-action="remove-col" aria-label="Remove last level">− Level</button></div></div>' },
-                      { label: 'Audio', icon: '🔊', html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">×</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"><source src="" type="audio/mpeg" />Your browser does not support audio playback.</audio><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>' },
-                      { label: 'Code Block', icon: '💻', html: '<div class="allo-block" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code block" title="Remove">×</button><div class="allo-block-code"><span class="allo-code-lang" aria-label="Programming language">Python</span><pre><code aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div></div>' },
+                      // ── Layout ──
+                      { label: 'Columns', icon: '⬛⬛', category: 'layout', keywords: 'columns grid layout split',
+                        html: '<div class="allo-block allo-block-columns" data-allo-block="columns" tabindex="0" style="grid-template-columns: repeat(2, minmax(0, 1fr));"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove columns" title="Remove">×</button><div class="allo-col">Column 1 content</div><div class="allo-col">Column 2 content</div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Cols</span><button type="button" data-action="add-column-card" aria-label="Add column">+ Col</button><button type="button" data-action="remove-column-card" aria-label="Remove column">− Col</button><span class="allo-control-label">Ratio</span><button type="button" data-action="cols-ratio-equal" aria-pressed="true">Equal</button><button type="button" data-action="cols-ratio-2-1" aria-pressed="false">2:1</button><button type="button" data-action="cols-ratio-1-2" aria-pressed="false">1:2</button><span class="allo-control-label">Gap</span><button type="button" data-action="cols-gap-tight">Tight</button><button type="button" data-action="cols-gap-normal" aria-pressed="true">Normal</button><button type="button" data-action="cols-gap-wide">Wide</button></div></div>' },
+                      { label: 'Divider', icon: '➖', category: 'layout', keywords: 'divider hr separator line',
+                        html: '<div class="allo-block allo-block-divider" data-allo-block="divider" tabindex="0" role="separator" aria-label="Section divider"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove divider" title="Remove">×</button><hr /></div>' },
+                      { label: 'Page Break', icon: '📄', category: 'layout', keywords: 'page break print pagination',
+                        html: '<div class="allo-block allo-block-pagebreak" data-allo-block="pagebreak" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove page break" title="Remove">×</button><span class="allo-pb-label" aria-hidden="true">— Page Break —</span><span class="allo-sr-only">Page break</span></div>' },
+
+                      // ── Content ──
+                      { label: 'Callout', icon: 'ℹ️', category: 'content', keywords: 'info note warning success callout alert tip',
+                        html: '<div class="allo-block allo-callout allo-callout-info" data-allo-block="info" data-allo-style="info" tabindex="0" role="note" aria-label="Callout"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove callout" title="Remove">×</button><strong>Note:</strong> <span>Enter info here</span><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Style</span><button type="button" data-action="callout-style-info" aria-pressed="true">Info</button><button type="button" data-action="callout-style-warning" aria-pressed="false">Warning</button><button type="button" data-action="callout-style-success" aria-pressed="false">Tip</button><button type="button" data-action="callout-style-note" aria-pressed="false">Note</button><button type="button" data-action="callout-style-danger" aria-pressed="false">Danger</button></div></div>' },
+                      { label: 'Quote', icon: '💬', category: 'content', keywords: 'quote blockquote cite',
+                        html: '<blockquote class="allo-block allo-block-quote" data-allo-block="quote" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove quote" title="Remove">×</button>"Enter quote here"<cite>— Source</cite></blockquote>' },
+                      { label: 'Checklist', icon: '☑️', category: 'content', keywords: 'checklist list tasks todo',
+                        html: (() => { const a = _uid('cl'), b = _uid('cl'), c = _uid('cl'); return '<div class="allo-block" data-allo-block="checklist" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove checklist" title="Remove">×</button><ul class="allo-block-checklist" data-list-style="checkbox" aria-label="Checklist"><li><input type="checkbox" id="' + a + '" /><label for="' + a + '">Task item 1</label></li><li><input type="checkbox" id="' + b + '" /><label for="' + b + '">Task item 2</label></li><li><input type="checkbox" id="' + c + '" /><label for="' + c + '">Task item 3</label></li></ul><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Items</span><button type="button" data-action="add-checklist-item">+ Item</button><button type="button" data-action="remove-checklist-item">− Item</button><span class="allo-control-label">Style</span><button type="button" data-action="list-style-checkbox" aria-pressed="true">☑ Check</button><button type="button" data-action="list-style-bullet" aria-pressed="false">• Bullet</button><button type="button" data-action="list-style-ordered" aria-pressed="false">1. Number</button></div></div>'; }) },
+                      { label: 'Numbered Steps', icon: '1️⃣', category: 'content', keywords: 'steps numbered ordered procedure how-to',
+                        html: '<div class="allo-block" data-allo-block="steps" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove steps" title="Remove">×</button><ol class="allo-block-steps" data-num-style="numeric" aria-label="Step-by-step instructions"><li><span class="allo-step-num" aria-hidden="true">1</span><div class="allo-step-body">First step description</div></li><li><span class="allo-step-num" aria-hidden="true">2</span><div class="allo-step-body">Second step description</div></li><li><span class="allo-step-num" aria-hidden="true">3</span><div class="allo-step-body">Third step description</div></li></ol><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Steps</span><button type="button" data-action="add-step">+ Step</button><button type="button" data-action="remove-step">− Step</button><span class="allo-control-label">Numbering</span><button type="button" data-action="num-style-numeric" aria-pressed="true">1, 2, 3</button><button type="button" data-action="num-style-alpha" aria-pressed="false">A, B, C</button><button type="button" data-action="num-style-roman" aria-pressed="false">I, II, III</button></div></div>' },
+                      { label: 'Accordion', icon: '📂', category: 'content', keywords: 'accordion collapsible expand toggle disclosure',
+                        html: '<details class="allo-block allo-block-accordion" data-allo-block="accordion" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove accordion" title="Remove">×</button><summary>Click to expand section title</summary><div class="allo-accordion-body">Hidden content goes here. Great for differentiation. <em>Note: collapsed content does not appear in printed/exported PDFs unless expanded.</em><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Default</span><button type="button" data-action="accordion-default-open" aria-pressed="false">Open by default</button></div></div></details>' },
+                      { label: 'Definition', icon: '📖', category: 'content', keywords: 'definition term vocabulary glossary',
+                        html: '<dl class="allo-block allo-block-definition" data-allo-block="definition" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove definition" title="Remove">×</button><dt><span lang="en">Term</span><span class="allo-def-pron">/prə-nun-see-AY-shun/</span></dt><dd>Definition goes here. Students can reference this for key vocabulary.</dd><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Term Lang</span><select class="allo-def-lang-select" aria-label="Term language"><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="zh">中文</option><option value="ar">العربية</option><option value="la">Latin</option><option value="grc">Greek</option></select></div></dl>' },
+
+                      // ── Educational ──
+                      { label: 'Sentence Frame', icon: '🪧', category: 'educational', keywords: 'sentence frame stem scaffold ell esl',
+                        html: '<div class="allo-block allo-block-frame" data-allo-block="sentence-frame" tabindex="0" role="note" aria-label="Sentence frame"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove sentence frame" title="Remove">×</button>I noticed <span class="allo-frame-blank">_______________</span> because <span class="allo-frame-blank">_______________</span>.<div class="allo-block-controls allo-frame-template-picker" contenteditable="false"><span class="allo-control-label">Template</span><select class="allo-frame-template-select" aria-label="Sentence frame template"><option value="notice-because">I noticed ___ because ___</option><option value="cer">Claim / Evidence / Reasoning</option><option value="agree-disagree">I agree/disagree because ___</option><option value="compare">Compare and contrast</option><option value="cause-effect">When ___, then ___</option><option value="wonder">I wonder why ___</option><option value="sel-feeling">I feel ___ when ___</option><option value="add-on">Adding to what ___ said</option></select></div></div>' },
+                      { label: 'Objective', icon: '🎯', category: 'educational', keywords: 'learning objective goal standard outcome',
+                        html: '<div class="allo-block allo-block-objective" data-allo-block="learning-objective" tabindex="0" role="note" aria-label="Learning objective"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove learning objective" title="Remove">×</button><span class="allo-obj-label">Learning Objective</span><div class="allo-obj-text">By the end of this lesson, students will be able to <em>explain the main idea</em>.</div><div class="allo-obj-meta"><span>Standard: <em>edit me</em></span><span>Bloom\'s: <em>Apply</em></span></div></div>' },
+                      { label: 'Vocab Card', icon: '🃏', category: 'educational', keywords: 'vocabulary card word term definition',
+                        html: '<div class="allo-block allo-block-vocab" data-allo-block="vocab-card" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove vocabulary card" title="Remove">×</button><div class="allo-vocab-img" aria-hidden="true">📖</div><div><p class="allo-vocab-word">Word<span class="allo-vocab-pos">noun</span></p><p class="allo-vocab-pron">/wərd/</p><div class="allo-vocab-examples"><p class="allo-vocab-def">Definition of the word in student-friendly language.</p><p class="allo-vocab-example">Example: "The word in a sentence."</p></div><div class="allo-vocab-audio"><audio controls aria-label="Pronunciation audio"></audio></div></div><div class="allo-block-controls" contenteditable="false" style="grid-column: 1 / -1;"><span class="allo-control-label">Image</span><label class="allo-file-btn" style="font-size:11px;padding:4px 9px;background:#7c3aed;color:white;border-radius:4px;cursor:pointer;font-weight:600;">Upload<input type="file" accept="image/*" class="allo-vocab-img-input" style="display:none" /></label><span class="allo-control-label">Examples</span><button type="button" data-action="add-vocab-example">+ Example</button><button type="button" data-action="remove-vocab-example">− Example</button></div></div>' },
+                      { label: 'Reflection', icon: '✏️', category: 'educational', keywords: 'reflection journal response writing prompt',
+                        html: '<div class="allo-block allo-block-reflection" data-allo-block="reflection" data-length="medium" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove reflection" title="Remove">×</button><div class="allo-refl-prompt">Reflect: What did you learn? What questions do you still have?</div><div class="allo-refl-stems">Try starting with: "I learned..." • "I\'m wondering..." • "This connects to..."</div><textarea class="allo-refl-area" aria-label="Reflection response" placeholder="Write your reflection here..."></textarea><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Length</span><button type="button" data-action="refl-length-short" aria-pressed="false">Short</button><button type="button" data-action="refl-length-medium" aria-pressed="true">Medium</button><button type="button" data-action="refl-length-long" aria-pressed="false">Long</button></div></div>' },
+                      { label: 'Rubric', icon: '📋', category: 'educational', keywords: 'rubric grading criteria scoring assessment',
+                        html: '<div class="allo-block allo-block-rubric" data-allo-block="rubric" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove rubric" title="Remove">×</button><table aria-label="Scoring rubric"><caption>Rubric Title — Edit Me</caption><thead><tr><th scope="col">Criterion</th><th scope="col">4 — Exemplary</th><th scope="col">3 — Proficient</th><th scope="col">2 — Developing</th><th scope="col">1 — Beginning</th></tr></thead><tbody><tr><th scope="row">Criterion 1</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 2</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 3</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr><tr><th scope="row">Criterion 4</th><td>Description</td><td>Description</td><td>Description</td><td>Description</td></tr></tbody></table><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Scale</span><button type="button" data-action="rubric-scale-3pt">3-pt</button><button type="button" data-action="rubric-scale-4pt" aria-pressed="true">4-pt</button><button type="button" data-action="rubric-scale-5pt">5-pt</button><button type="button" data-action="rubric-scale-standards">Standards</button><button type="button" data-action="rubric-scale-ungraded">Glow/Grow</button><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Criterion</button><button type="button" data-action="remove-row">− Criterion</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Level</button><button type="button" data-action="remove-col">− Level</button></div></div>' },
+
+                      // ── Interactive ──
+                      { label: 'Data Table', icon: '📊', category: 'interactive', keywords: 'table data grid spreadsheet',
+                        html: '<div class="allo-block allo-block-table" data-allo-block="table" data-header-style="default" data-zebra="on" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove table" title="Remove">×</button><figure><table aria-label="Data table"><caption>Table Title — Edit Me</caption><thead><tr><th scope="col">Header 1</th><th scope="col">Header 2</th><th scope="col">Header 3</th></tr></thead><tbody><tr><td>Data</td><td>Data</td><td>Data</td></tr><tr><td>Data</td><td>Data</td><td>Data</td></tr></tbody></table></figure><div class="allo-block-controls" contenteditable="false"><span class="allo-control-label">Rows</span><button type="button" data-action="add-row">+ Row</button><button type="button" data-action="remove-row">− Row</button><span class="allo-control-label">Cols</span><button type="button" data-action="add-col">+ Col</button><button type="button" data-action="remove-col">− Col</button><span class="allo-control-label">Header</span><button type="button" data-action="table-header-default" aria-pressed="true">Light</button><button type="button" data-action="table-header-dark">Dark</button><button type="button" data-action="table-header-accent">Accent</button><button type="button" data-action="table-header-minimal">Minimal</button><span class="allo-control-label">Stripes</span><button type="button" data-action="table-zebra-toggle" aria-pressed="true">Zebra</button></div></div>' },
+
+                      // ── Media ──
+                      { label: 'Image', icon: '🖼️', category: 'media', keywords: 'image picture photo media',
+                        html: '<figure class="allo-block allo-block-image" data-allo-block="image" tabindex="0" role="figure" aria-label="Image with description"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove image" title="Remove">×</button><div class="allo-img-placeholder"><span aria-hidden="true">🖼️</span><br/>Upload a file or paste an image URL below.</div><div class="allo-img-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="image/*" class="allo-img-file-input" style="display:none" /></label><input type="url" class="allo-img-url-input" placeholder="https://image.url" aria-label="Image URL" /></div><figcaption>Image description for screen readers — edit this caption</figcaption></figure>' },
+                      { label: 'Audio', icon: '🔊', category: 'media', keywords: 'audio sound music podcast pronunciation',
+                        html: '<div class="allo-block allo-block-audio" data-allo-block="audio" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove audio" title="Remove">×</button><div class="allo-audio-label">Audio</div><audio controls aria-label="Audio recording"></audio><div class="allo-audio-controls" contenteditable="false"><label class="allo-file-btn">Upload<input type="file" accept="audio/*" class="allo-audio-file-input" style="display:none" /></label><input type="url" class="allo-audio-url-input" placeholder="https://audio.url" aria-label="Audio URL" /></div><div class="allo-audio-transcript"><strong>Transcript:</strong> Edit this transcript to match the audio. Always provide a transcript for accessibility.</div></div>' },
+                      { label: 'Math', icon: '➗', category: 'media', keywords: 'math equation latex formula katex',
+                        html: '<div class="allo-block allo-block-math" data-allo-block="math" tabindex="0" role="math" aria-label="Mathematical equation"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove equation" title="Remove">×</button><div class="allo-math-output">a² + b² = c²</div><div class="allo-math-input-wrap" contenteditable="false"><label>LaTeX</label><input type="text" class="allo-math-input" value="a^2 + b^2 = c^2" placeholder="e.g. \\frac{a}{b} or \\int_0^1 x^2 dx" /><span class="allo-math-status">Loading…</span></div></div>' },
+                      { label: 'Code', icon: '💻', category: 'media', keywords: 'code syntax programming snippet',
+                        html: '<div class="allo-block allo-block-code-wrap" data-allo-block="code" tabindex="0"><button type="button" class="allo-block-remove" contenteditable="false" aria-label="Remove code" title="Remove">×</button><div class="allo-code-header" contenteditable="false"><label style="font-size:11px;color:#94a3b8;">Lang:</label><select class="allo-code-lang-select" aria-label="Programming language"><option value="python" selected>Python</option><option value="javascript">JavaScript</option><option value="typescript">TypeScript</option><option value="html">HTML</option><option value="css">CSS</option><option value="java">Java</option><option value="csharp">C#</option><option value="cpp">C++</option><option value="c">C</option><option value="ruby">Ruby</option><option value="go">Go</option><option value="rust">Rust</option><option value="sql">SQL</option><option value="bash">Bash</option><option value="json">JSON</option><option value="markdown">Markdown</option><option value="plaintext">Plain text</option></select></div><pre><code class="language-python" aria-label="Code example"># Example code\nprint("Hello, world!")</code></pre></div>' },
                     ];
+
+                    const _CAT_LABELS = { layout: '🎨 Layout', content: '📝 Content', educational: '🎓 Educational', interactive: '🖱️ Interactive', media: '📷 Media' };
+                    const _CAT_ORDER = ['layout', 'content', 'educational', 'interactive', 'media'];
 
                     const _insertBlock = (block) => {
                       const iframe = pdfPreviewRef.current; if (!iframe) return;
@@ -37261,10 +37642,8 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       if (!sel || sel.rangeCount === 0) {
                         const main = doc.querySelector('main') || doc.body;
                         const range = doc.createRange();
-                        range.selectNodeContents(main);
-                        range.collapse(false);
-                        sel.removeAllRanges();
-                        sel.addRange(range);
+                        range.selectNodeContents(main); range.collapse(false);
+                        sel.removeAllRanges(); sel.addRange(range);
                       }
                       const sentinelId = '__allo_ins_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
                       const sentinel = '<span id="' + sentinelId + '" data-allo-sentinel="1">​</span>';
@@ -37279,6 +37658,24 @@ Return ONLY the plain language summary in ${lang}.`, false);
                           if (!newBlock.hasAttribute('tabindex')) newBlock.setAttribute('tabindex', '-1');
                           setTimeout(() => { try { newBlock.focus({ preventScroll: false }); } catch (e) {} }, 60);
                         }
+                        // Block-specific lazy-load triggers
+                        const blockType = newBlock.getAttribute && newBlock.getAttribute('data-allo-block');
+                        if (blockType === 'math') {
+                          _ensureKatex(doc);
+                          setTimeout(() => {
+                            try {
+                              const inp = newBlock.querySelector('.allo-math-input');
+                              const out = newBlock.querySelector('.allo-math-output');
+                              const status = newBlock.querySelector('.allo-math-status');
+                              if (inp && out && doc.defaultView.katex) {
+                                doc.defaultView.katex.render(inp.value, out, { throwOnError: false, displayMode: true });
+                                if (status) status.textContent = 'Rendered';
+                              }
+                            } catch (_) {}
+                          }, 400);
+                        } else if (blockType === 'code') {
+                          _ensurePrism(doc, 'python');
+                        }
                       }
                       try {
                         const lr = doc.getElementById('allo-blocks-live');
@@ -37288,15 +37685,44 @@ Return ONLY the plain language summary in ${lang}.`, false);
                       try { if (typeof window.__alloflowOnPdfPreviewMutated === 'function') window.__alloflowOnPdfPreviewMutated(); } catch (_) {}
                     };
 
+                    // ── Filter logic ──
+                    const f = (insertBlockFilter || '').toLowerCase().trim();
+                    const visible = f ? blocks.filter(b => b.label.toLowerCase().includes(f) || (b.keywords && b.keywords.toLowerCase().includes(f))) : blocks;
+
                     return (
-                      <div className="grid grid-cols-2 gap-1">
-                        {blocks.map(block => (
-                          <button key={block.label} onClick={() => _insertBlock(block)}
-                            className="text-[11px] font-bold text-slate-600 px-1.5 py-1.5 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left"
-                            aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
-                            {block.icon} {block.label}
-                          </button>
-                        ))}
+                      <div className="space-y-1.5">
+                        <input type="search" value={insertBlockFilter} onChange={e => setInsertBlockFilter(e.target.value)} placeholder={`Search ${blocks.length} blocks…`}
+                          aria-label="Search blocks"
+                          className="w-full text-[11px] px-2 py-1.5 bg-white border border-slate-400 rounded-lg text-slate-700 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none" />
+                        {f && visible.length === 0 && (
+                          <div className="text-[11px] text-slate-500 italic px-2 py-1">No blocks match "{insertBlockFilter}"</div>
+                        )}
+                        {_CAT_ORDER.map(cat => {
+                          const catBlocks = visible.filter(b => b.category === cat);
+                          if (catBlocks.length === 0) return null;
+                          const isOpen = !!insertBlockOpenCats[cat];
+                          return (
+                            <div key={cat}>
+                              <button type="button" onClick={() => setInsertBlockOpenCats(p => ({ ...p, [cat]: !p[cat] }))}
+                                aria-expanded={isOpen} aria-controls={`allo-cat-${cat}`}
+                                className="w-full flex items-center justify-between text-[10px] font-bold text-slate-600 px-1 py-0.5 hover:text-indigo-700 transition-colors uppercase tracking-wider">
+                                <span>{_CAT_LABELS[cat]} <span className="text-slate-400 font-normal">({catBlocks.length})</span></span>
+                                <span aria-hidden="true">{isOpen ? '▾' : '▸'}</span>
+                              </button>
+                              {isOpen && (
+                                <div id={`allo-cat-${cat}`} className="grid grid-cols-2 gap-1 mt-0.5">
+                                  {catBlocks.map(block => (
+                                    <button key={block.label} onClick={() => _insertBlock(block)}
+                                      className="text-[11px] font-bold text-slate-600 px-1.5 py-2 bg-white border border-slate-400 rounded-lg hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-colors text-left min-h-[36px]"
+                                      aria-label={`Insert ${block.label}`} title={`Insert ${block.label}`}>
+                                      {block.icon} {block.label}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })()}
