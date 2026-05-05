@@ -3247,13 +3247,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
           // ═══ GAME OVER SCREEN ═══
           if (gameOver) {
             var rank = getRank(gameScore);
+            var survived = gs.year >= diff.targetYears;
+            // Normalize to Legendary threshold (300) for the donut. Negative scores clamp to 0.
+            var LEGENDARY_THRESHOLD = 300;
+            var donutScore = Math.max(0, Math.min(100, Math.round((gameScore / LEGENDARY_THRESHOLD) * 100)));
+            var donutColor = !survived ? '#ef4444'
+                             : gameScore >= 300 ? '#fbbf24'
+                             : gameScore >= 220 ? '#f97316'
+                             : gameScore >= 150 ? '#22c55e'
+                             : gameScore >= 80 ? '#84cc16'
+                             : '#64748b';
+            var rad = 38, circ = 2 * Math.PI * rad;
+            var dashOff = circ - (donutScore / 100) * circ;
             return h('div', null,
-              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 24, textAlign: 'center', marginBottom: 16 } },
-                h('div', { style: { fontSize: 48, marginBottom: 8 } }, gs.year >= diff.targetYears ? rank.icon : '\uD83D\uDCA5'),
-                h('h3', { style: { margin: '0 0 4px 0', color: gs.year >= diff.targetYears ? '#22c55e' : '#ef4444', fontSize: 22 } }, gs.year >= diff.targetYears ? 'Challenge Complete!' : 'Game Over'),
-                h('div', { style: { fontSize: 16, color: '#f59e0b', marginBottom: 4 } }, rank.name),
-                h('div', { style: { fontSize: 13, color: '#94a3b8', marginBottom: 16, fontStyle: 'italic' } }, rank.desc),
-                h('div', { style: { fontSize: 36, fontWeight: 700, color: '#f97316', marginBottom: 16 } }, gameScore + ' points')
+              h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 18, marginBottom: 16, border: '2px solid ' + donutColor + '88', overflow: 'hidden' } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
+                  // Score donut (% of Legendary threshold)
+                  h('div', { style: { position: 'relative', width: 100, height: 100, flexShrink: 0 } },
+                    h('svg', { viewBox: '0 0 100 100', width: 100, height: 100,
+                      'aria-label': 'Score: ' + gameScore + ' points, ' + donutScore + ' percent of Legendary rank threshold'
+                    },
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 9 }),
+                      h('circle', { cx: 50, cy: 50, r: rad, fill: 'none', stroke: donutColor, strokeWidth: 9, strokeLinecap: 'round',
+                        strokeDasharray: circ, strokeDashoffset: dashOff, transform: 'rotate(-90 50 50)' })
+                    ),
+                    h('div', { style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' } },
+                      h('div', { style: { fontSize: 22, fontWeight: 900, color: donutColor, lineHeight: 1 } }, gameScore),
+                      h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8' } }, 'points')
+                    )
+                  ),
+                  h('div', { style: { flex: 1, minWidth: 220 } },
+                    h('div', { style: { fontSize: 36, marginBottom: 2 }, 'aria-hidden': 'true' }, survived ? rank.icon : '\uD83D\uDCA5'),
+                    h('h3', { style: { margin: '0 0 4px', color: survived ? '#22c55e' : '#ef4444', fontSize: 22, fontWeight: 900, lineHeight: 1.1 } }, survived ? 'Challenge Complete!' : 'Game Over'),
+                    h('div', { style: { fontSize: 15, color: donutColor, fontWeight: 800, marginBottom: 4 } }, rank.name),
+                    h('div', { style: { fontSize: 12, color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.5 } }, rank.desc)
+                  )
+                ),
+                // Rank-progression strip — shows where this score falls across the 5 surviving ranks
+                survived && h('div', { style: { marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(148,163,184,0.2)' } },
+                  h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#94a3b8', marginBottom: 6 } }, 'Rank progression'),
+                  h('div', { style: { display: 'flex', gap: 4, alignItems: 'stretch' } },
+                    [
+                      { name: 'Apprentice', min: 0, color: '#64748b' },
+                      { name: 'Journeyman', min: 80, color: '#84cc16' },
+                      { name: 'Skilled', min: 150, color: '#22c55e' },
+                      { name: 'Master', min: 220, color: '#f97316' },
+                      { name: 'Legendary', min: 300, color: '#fbbf24' }
+                    ].map(function(r, ri, arr) {
+                      var achieved = gameScore >= r.min;
+                      var current = achieved && (ri === arr.length - 1 || gameScore < arr[ri + 1].min);
+                      return h('div', { key: r.name,
+                        style: {
+                          flex: 1, padding: '6px 4px', borderRadius: 6, textAlign: 'center',
+                          background: achieved ? r.color + '33' : 'rgba(148,163,184,0.08)',
+                          border: '1.5px solid ' + (current ? r.color : achieved ? r.color + '55' : 'rgba(148,163,184,0.20)'),
+                          fontSize: 9, fontWeight: 800, color: achieved ? r.color : '#64748b',
+                          letterSpacing: '0.04em', textTransform: 'uppercase',
+                          boxShadow: current ? '0 0 0 1px ' + r.color : 'none'
+                        }
+                      },
+                        h('div', null, r.name),
+                        h('div', { style: { fontSize: 10, fontWeight: 700, opacity: 0.8, marginTop: 2 } }, r.min + '+')
+                      );
+                    })
+                  )
+                )
               ),
 
               // Report card
