@@ -643,6 +643,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (extra) Object.keys(extra).forEach(function(k) { ev[k] = extra[k]; });
     sR.driveEvents.push(ev);
     if (sR.driveEvents.length > 60) sR.driveEvents.shift();
+    // Live-region announcement for screen-reader users on impactful events.
+    // Only the "you did something noteworthy" ones — not every hard-brake.
+    // Severity-gated: severity >= 2 OR crash type. Reuses pushDriveEvent's
+    // own 1.5s per-type cooldown so we don't spam announcements either.
+    if (typeof rrAnnounce === 'function' && (type === 'crash' || (severity || 1) >= 2)) {
+      var srMsg = type === 'crash' ? 'Collision detected.'
+                : type === 'skidLoss' ? 'Skid — lost grip.'
+                : type === 'speedViolation' ? 'Speeding above posted limit.'
+                : type === 'tailgate' ? 'Following too closely.'
+                : type === 'hardBrake' ? 'Hard braking.'
+                : type === 'cyclistClose' ? 'Passed cyclist too closely.'
+                : 'Driving event: ' + type + '.';
+      rrAnnounce(srMsg);
+    }
   }
 
   // Coaching tip dispatch — keyed on event type plus weather (mu) and severity.
@@ -26577,15 +26591,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '8px', color: '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'Simulation-based. Does not replace state-required driver\'s education or road test.')
           ),
           h('button', { onClick: function() {
-            // Print the certificate
+            // Print the certificate. Build the print window via DOM appendChild
+            // instead of document.write — document.write is deprecated, may be
+            // blocked by CSP, and silently breaks in modern environments. Also
+            // null-check window.open: most browsers' default popup blockers
+            // return null and the old code would throw.
             var el = document.getElementById('roadready-certificate');
-            if (el) {
-              var w = window.open('', '_blank');
-              w.document.write('<html><head><title>RoadReady Certificate</title><style>body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8fafc;}</style></head><body>');
-              w.document.write(el.outerHTML);
-              w.document.write('</body></html>');
-              w.document.close();
-              setTimeout(function() { w.print(); }, 500);
+            if (!el) return;
+            var w = window.open('', '_blank');
+            if (!w || !w.document) {
+              addToast('Pop-up blocked — please allow pop-ups for this site to print the certificate.');
+              return;
+            }
+            try {
+              var doc = w.document;
+              doc.title = 'RoadReady Certificate';
+              var style = doc.createElement('style');
+              style.textContent = 'body{margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#f8fafc;}';
+              doc.head.appendChild(style);
+              // Clone the cert node into the popup so the original DOM isn't disturbed.
+              doc.body.appendChild(doc.importNode(el, true));
+              setTimeout(function() {
+                if (w && !w.closed) { try { w.print(); } catch (_) {} }
+              }, 500);
+            } catch (e) {
+              addToast('Could not open print view. Try saving the certificate as a screenshot instead.');
             }
           },
             style: { display: 'block', width: '100%', marginTop: '12px', padding: '12px', borderRadius: '10px', border: 'none', background: '#fbbf24', color: '#78350f', fontSize: '14px', fontWeight: 800, cursor: 'pointer' }
