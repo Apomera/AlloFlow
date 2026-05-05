@@ -296,6 +296,10 @@
     // Phase 2p.17 — print scope. null = full packet via existing print
     // button; { type: 'card', decorationId } = single-decoration card.
     printScope: null,
+    // Phase 2p.18 — cached companion letters keyed by ISO week start
+    // (YYYY-MM-DD of the most recent Sunday). One letter per week,
+    // regeneratable via the Refresh button. Saves Gemini quota.
+    companionLetters: {},
 
     // ── Reflection insights cache ──
     // Holds the last AI-generated summary of journal entries. Cleared on
@@ -1126,6 +1130,156 @@
     }
     if (current > longest) longest = current;
     return { current: current, longest: longest };
+  }
+
+  // ── Companion letter (Phase 2p.18) ──
+  // Generates a personalized "letter from your buddy" — short prose
+  // summarizing the week, in the active species\'s voice. Two paths:
+  //   AI path: callGemini(prompt) → returns letter text
+  //   Fallback: template-based letter from same data, no AI required
+  // Both paths use the SAME aggregation, so behavior is consistent
+  // when AI is unavailable (quota / network / browser config).
+
+  function getWeekKey() {
+    // Most recent Sunday in YYYY-MM-DD format. One letter per week.
+    var now = new Date();
+    var dow = now.getDay();
+    var sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow);
+    return sunday.toISOString().slice(0, 10);
+  }
+
+  function aggregateWeekData(state) {
+    var nowMs = Date.now();
+    var weekAgo = nowMs - 7 * 24 * 60 * 60 * 1000;
+    var earnings = (state.earnings || []).filter(function(e) {
+      return e.date && new Date(e.date).getTime() >= weekAgo;
+    });
+    var poms = earnings.filter(function(e) { return e.source === 'pomodoro' || e.source === 'cycle-bonus'; }).length;
+    var quizzes = earnings.filter(function(e) { return e.source === 'memory-quiz' || e.source === 'reflection-cloze-quiz'; }).length;
+    var walks = earnings.filter(function(e) { return e.source === 'story-walk'; }).length;
+    var refls = (state.journalEntries || []).filter(function(e) {
+      return e.date && new Date(e.date).getTime() >= weekAgo;
+    });
+    var newDecs = (state.decorations || []).filter(function(d) {
+      return !d.isStarter && d.earnedAt && new Date(d.earnedAt).getTime() >= weekAgo;
+    });
+    // Days active this week (deduped)
+    var dayMap = {};
+    earnings.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
+    refls.forEach(function(e) { if (e.date) dayMap[e.date.slice(0, 10)] = true; });
+    var daysActive = Object.keys(dayMap).length;
+    // Mood + subject patterns
+    var moodCounts = {}, subjCounts = {};
+    newDecs.forEach(function(d) {
+      if (d.mood) moodCounts[d.mood] = (moodCounts[d.mood] || 0) + 1;
+      (d.subjects || []).forEach(function(s) { subjCounts[s] = (subjCounts[s] || 0) + 1; });
+    });
+    function topKey(c) {
+      var top = null, n = 0;
+      Object.keys(c).forEach(function(k) { if (c[k] > n) { n = c[k]; top = k; } });
+      return top;
+    }
+    // Top reflection (most recent if any)
+    var lastRefl = refls.length > 0 ? refls[refls.length - 1] : null;
+    // Decoration name list (shorter list for AI prompts)
+    var decLabels = newDecs.map(function(d) { return d.templateLabel || d.template || 'item'; });
+    return {
+      daysActive: daysActive,
+      poms: poms, quizzes: quizzes, walks: walks,
+      reflections: refls.length,
+      newDecorations: newDecs.length,
+      decLabels: decLabels,
+      topMood: topKey(moodCounts),
+      topSubject: topKey(subjCounts),
+      lastReflectionText: lastRefl ? lastRefl.text : null
+    };
+  }
+
+  function composeFallbackLetter(state, agg, species, name) {
+    var sp = getCompanionSpecies(species);
+    var greetings = {
+      cat:    'Hey friend,',
+      fox:    'Hi you,',
+      owl:    'Dear student,',
+      turtle: 'Hello,',
+      dragon: 'HEY!! Best friend!!'
+    };
+    var signoffs = {
+      cat:    '— curled up in the room,\n  ' + (name || 'your buddy'),
+      fox:    '— sneakily proud,\n  ' + (name || 'your buddy'),
+      owl:    '— with quiet appreciation,\n  ' + (name || 'your buddy'),
+      turtle: '— slowly and surely,\n  ' + (name || 'your buddy'),
+      dragon: '— roaring with you,\n  ' + (name || 'your buddy')
+    };
+    var lines = [];
+    lines.push(greetings[species] || 'Hey,');
+    lines.push('');
+    if (agg.daysActive >= 5) lines.push('You showed up ' + agg.daysActive + ' days this week. That\'s a lot.');
+    else if (agg.daysActive >= 1) lines.push('You came by ' + agg.daysActive + ' day' + (agg.daysActive === 1 ? '' : 's') + ' this week.');
+    if (agg.poms > 0) lines.push('We focused ' + agg.poms + ' time' + (agg.poms === 1 ? '' : 's') + ' together.');
+    if (agg.quizzes > 0) lines.push('You passed ' + agg.quizzes + ' memory quiz' + (agg.quizzes === 1 ? '' : 'zes') + '. Real reps.');
+    if (agg.walks > 0) lines.push('We walked ' + agg.walks + ' stor' + (agg.walks === 1 ? 'y' : 'ies') + '. I liked them.');
+    if (agg.newDecorations > 0) {
+      var listed = agg.decLabels.slice(0, 3).join(', ');
+      lines.push('You added ' + agg.newDecorations + ' new decoration' + (agg.newDecorations === 1 ? '' : 's') + (listed ? ' (' + listed + ')' : '') + '.');
+    }
+    if (agg.topMood) {
+      var mo = getMoodOption(agg.topMood);
+      if (mo) lines.push('The mood that showed up most was ' + mo.label.toLowerCase() + '.');
+    }
+    if (agg.topSubject) {
+      for (var si = 0; si < SUBJECT_TAGS.length; si++) {
+        if (SUBJECT_TAGS[si].id === agg.topSubject) {
+          lines.push('We spent extra time on ' + SUBJECT_TAGS[si].label.toLowerCase() + '.');
+          break;
+        }
+      }
+    }
+    if (agg.daysActive === 0) lines.push('Quiet week. That\'s OK too. I\'ll be here.');
+    lines.push('');
+    var closingLines = {
+      cat:    'Quietly proud of you. Keep it gentle.',
+      fox:    'You\'re cleverer than you let on. Onward.',
+      owl:    'Steady work makes deep memory. I see it.',
+      turtle: 'Step by step. Always works.',
+      dragon: 'YOU. ARE. AMAZING. Let\'s do another week!'
+    };
+    lines.push(closingLines[species] || 'Proud of you.');
+    lines.push('');
+    lines.push(signoffs[species] || '— your buddy');
+    return lines.join('\n');
+  }
+
+  function buildLetterPrompt(agg, species, name) {
+    var sp = getCompanionSpecies(species);
+    var voiceHints = {
+      cat:    'Calm, observant, dry. Short sentences. "Hmm." okay.',
+      fox:    'Curious, clever, slightly sly. Suggests with "what if".',
+      owl:    'Wise, deliberate, slow-paced. Considered observations.',
+      turtle: 'Patient, gentle, steady. "Step by step" fits.',
+      dragon: 'Enthusiastic, big-energy, playful. Some exclamation points.'
+    };
+    var voice = voiceHints[species] || 'Friendly, gentle, observational.';
+    var stats = [];
+    stats.push('Days active this week: ' + agg.daysActive);
+    if (agg.poms > 0) stats.push('Pomodoros: ' + agg.poms);
+    if (agg.quizzes > 0) stats.push('Quizzes passed: ' + agg.quizzes);
+    if (agg.walks > 0) stats.push('Story walks: ' + agg.walks);
+    if (agg.reflections > 0) stats.push('Reflections written: ' + agg.reflections);
+    if (agg.newDecorations > 0) stats.push('New decorations placed: ' + agg.newDecorations + (agg.decLabels.length > 0 ? ' (e.g., ' + agg.decLabels.slice(0, 3).join(', ') + ')' : ''));
+    if (agg.topMood) stats.push('Most-tagged mood: ' + agg.topMood);
+    if (agg.topSubject) stats.push('Most-tagged subject: ' + agg.topSubject);
+    return [
+      'You are ' + (name || sp.label) + ', a ' + sp.label.toLowerCase() + ' companion who lives in a student\'s cozy learning room (AlloHaven).',
+      'Voice: ' + voice,
+      'Write a short personal letter (90-160 words) from you to the student, summarizing this past week. Be specific about what they did. Be warm but not gushing. NEVER guilt-trip about missed days. NEVER use streak punishment language. Use plain text — no markdown.',
+      '',
+      'This week\'s data:',
+      stats.join('\n'),
+      agg.lastReflectionText ? '\nA recent reflection they wrote: "' + agg.lastReflectionText.slice(0, 200) + '"' : '',
+      '',
+      'Open with a greeting in your voice. Sign off with your name. Keep it under 160 words. Return ONLY the letter text — no preamble, no JSON, no quotes around it.'
+    ].join('\n');
   }
 
   // ── Seasonal context (Phase 2p.11) ──
@@ -8323,6 +8477,64 @@
       setStateField('companion', next);
     }
 
+    // Companion letter generation (Phase 2p.18)
+    // Idempotent per ISO week — calling multiple times in a week
+    // returns the cached letter unless `force` is true. Uses Gemini
+    // when available, otherwise falls back to the template builder.
+    function generateCompanionLetter(force, onDone) {
+      var c = state.companion;
+      if (!c || !c.species) {
+        if (onDone) onDone({ error: 'no-companion' });
+        return;
+      }
+      var weekKey = getWeekKey();
+      var cached = (state.companionLetters || {})[weekKey];
+      if (cached && cached.text && !force) {
+        if (onDone) onDone({ text: cached.text, fromCache: true });
+        return;
+      }
+      var agg = aggregateWeekData(state);
+      var name = c.name || (getCompanionSpecies(c.species) || {}).label || 'Buddy';
+      var fallback = composeFallbackLetter(state, agg, c.species, name);
+      var callGeminiFn = props.callGemini;
+      if (typeof callGeminiFn !== 'function') {
+        // No AI available — use fallback directly
+        var fbLetter = { text: fallback, generatedAt: new Date().toISOString(), source: 'template' };
+        var newLetters = Object.assign({}, state.companionLetters || {});
+        newLetters[weekKey] = fbLetter;
+        setStateField('companionLetters', newLetters);
+        if (onDone) onDone({ text: fallback, source: 'template' });
+        return;
+      }
+      var prompt = buildLetterPrompt(agg, c.species, name);
+      Promise.resolve()
+        .then(function() { return callGeminiFn(prompt); })
+        .then(function(out) {
+          var text = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          // Strip surrounding quotes if Gemini wrapped the response
+          if ((text.startsWith('"') && text.endsWith('"')) || (text.startsWith('“') && text.endsWith('”'))) {
+            text = text.slice(1, -1).trim();
+          }
+          // Sanity check — reject too-short or empty AI responses
+          if (!text || text.length < 30) {
+            text = fallback;
+          }
+          var letter = { text: text, generatedAt: new Date().toISOString(), source: 'ai' };
+          var newLetters = Object.assign({}, state.companionLetters || {});
+          newLetters[weekKey] = letter;
+          setStateField('companionLetters', newLetters);
+          if (onDone) onDone({ text: text, source: 'ai' });
+        })
+        .catch(function() {
+          // AI failed — fall back to template
+          var fbLetter = { text: fallback, generatedAt: new Date().toISOString(), source: 'template-fallback' };
+          var newLetters = Object.assign({}, state.companionLetters || {});
+          newLetters[weekKey] = fbLetter;
+          setStateField('companionLetters', newLetters);
+          if (onDone) onDone({ text: fallback, source: 'template-fallback' });
+        });
+    }
+
     // Daily treat (Phase 2p.16) — once per calendar day, students can
     // give the companion a treat. Bumps happiness by 2 (capped at 10),
     // fires excited bounce + species-flavored gratitude bubble. Sims-y
@@ -8664,6 +8876,82 @@
       });
     }
 
+    // Companion dreams (Phase 2p.18) — when the companion is sleeping
+    // (Live mode), rotate through dream-fragment bubbles every ~10s.
+    // References recent decorations so dreams feel personal. Cycles
+    // suspended outside Live mode so it doesn\'t pollute Build-mode bubbles.
+    function pickDreamFragment() {
+      var c = state.companion;
+      if (!c || !c.species) return null;
+      var sp = getCompanionSpecies(c.species);
+      var pool = [];
+      // Recent decoration mentions (most personal)
+      var recentDecs = (state.decorations || []).filter(function(d) {
+        return !d.isStarter && d.earnedAt;
+      }).slice(-5);
+      recentDecs.forEach(function(d) {
+        var dl = d.templateLabel || d.template || 'something';
+        pool.push('💭 dreaming of the ' + dl + '...');
+      });
+      // Story walks
+      var walkable = (state.stories || []).filter(function(s) {
+        var v = (s.steps || []).filter(function(stp) { return stp.decorationId && (stp.narrative || '').trim().length > 0; });
+        return v.length >= 3 && (s.title || '').trim().length > 0;
+      });
+      if (walkable.length > 0) {
+        var s = walkable[Math.floor(Math.random() * walkable.length)];
+        pool.push('💭 walking through "' + s.title + '" in a dream...');
+      }
+      // Generic dreams
+      var generic = {
+        cat:    ['💭 dreaming of warm spots and quiet hours...', '💭 a soft snore...', '💭 dreaming of the room from above...'],
+        fox:    ['💭 dreaming of clever things...', '💭 chasing a thought through tall grass...', '💭 a quick foxy snore...'],
+        owl:    ['💭 dreaming of moonlight on books...', '💭 a long quiet hoot in sleep...', '💭 dreaming of stars...'],
+        turtle: ['💭 dreaming of slow rivers...', '💭 a contented sigh...', '💭 dreaming of warm rocks...'],
+        dragon: ['💭 dreaming of GIANT adventures!', '💭 a tiny puff of dream-smoke...', '💭 dreaming of treasure (stories count as treasure)...']
+      };
+      (generic[c.species] || generic.cat).forEach(function(g) { pool.push(g); });
+      if (pool.length === 0) return null;
+      // Avoid repeating the immediately-previous bubble
+      var prev = c.lastBubbleText || '';
+      for (var i = 0; i < pool.length; i++) {
+        var pick = pool[Math.floor(Math.random() * pool.length)];
+        if (pick !== prev) return pick;
+      }
+      return pool[0];
+    }
+
+    // Tick interval — only active while sleeping, rotates the bubble
+    // every 10 seconds so the buddy feels dream-like rather than frozen.
+    useEffect(function() {
+      if (!state.companion || !state.companion.species) return;
+      if (state.roomMode !== 'live') return;
+      // Set a first dream now if no recent bubble
+      var nowMs = Date.now();
+      var lastMs = state.companion.lastBubbleAt
+        ? new Date(state.companion.lastBubbleAt).getTime() : 0;
+      if (nowMs - lastMs > 6000) {
+        var first = pickDreamFragment();
+        if (first) {
+          saveCompanion({
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: first
+          });
+        }
+      }
+      var iv = setInterval(function() {
+        var next = pickDreamFragment();
+        if (next) {
+          saveCompanion({
+            lastBubbleAt: new Date().toISOString(),
+            lastBubbleText: next
+          });
+        }
+      }, 10000);
+      return function() { clearInterval(iv); };
+      // eslint-disable-next-line
+    }, [state.roomMode, state.companion ? state.companion.species : null]);
+
     // ── Story method (Phase 2e) ──
     // Stories are top-level artifacts: an ordered chain of ≥3 decorations
     // with per-step narrative text. Walking a completed story is retrieval
@@ -8817,6 +9105,13 @@
     var blinkTuple = useState(false);
     var blinking = blinkTuple[0];
     var setBlinking = blinkTuple[1];
+    // Phase 2p.18 — letter generation loading state, lifted here so the
+    // weekly-summary modal can reflect it without breaking React\'s
+    // rules-of-hooks (hooks can\'t live inside conditionally-rendered
+    // modal renderers).
+    var letterLoadingTuple = useState(false);
+    var letterLoading = letterLoadingTuple[0];
+    var setLetterLoading = letterLoadingTuple[1];
     var reactingTuple = useState(false);
     var reacting = reactingTuple[0];
     var setReacting = reactingTuple[1];
@@ -13637,6 +13932,51 @@
                 '"' + reflectionText + '"')
             )
           ) : null,
+          // AI letter from the buddy (Phase 2p.18) — generated once per
+          // ISO week and cached in state.companionLetters[weekKey].
+          // Falls back to a template-built letter when AI is unavailable.
+          companion && companion.species ? (function() {
+            var weekKey = getWeekKey();
+            var letter = (state.companionLetters || {})[weekKey];
+            var loading = letterLoading;
+            function handleGenerate(force) {
+              setLetterLoading(true);
+              generateCompanionLetter(force, function() {
+                setLetterLoading(false);
+              });
+            }
+            return h('div', {
+              role: 'region',
+              'aria-label': 'Letter from your buddy',
+              style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px', marginBottom: '14px' }
+            },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '6px', flexWrap: 'wrap', gap: '6px' } },
+                h('span', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                  '✨ Letter from ' + compName),
+                letter ? h('button', {
+                  onClick: function() { handleGenerate(true); },
+                  disabled: loading,
+                  'aria-label': 'Regenerate the letter',
+                  title: 'Refresh — generates a new letter for this week',
+                  style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', opacity: loading ? 0.6 : 1 })
+                }, loading ? '…' : '↻ Refresh') : null
+              ),
+              !letter ? h('div', null,
+                h('p', { style: { fontSize: '12px', color: palette.textDim, marginBottom: '8px', lineHeight: '1.5' } },
+                  compName + ' can write you a personalized letter about your week — short, warm, in their voice.'),
+                h('button', {
+                  onClick: function() { handleGenerate(false); },
+                  disabled: loading,
+                  style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 14px', fontSize: '12px' })
+                }, loading ? 'Writing…' : '✨ Write a letter')
+              ) : h('div', null,
+                h('p', { style: { fontSize: '13px', color: palette.text, lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'Georgia, "Times New Roman", serif' } }, letter.text),
+                h('p', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', margin: '8px 0 0 0' } },
+                  letter.source === 'ai' ? 'Composed with AI · ' : 'Template-built · ',
+                  'cached for this week — refresh anytime')
+              )
+            );
+          })() : null,
           // Quick "new goal" CTA when no active goals exist
           (function() {
             var activeCount = (state.goals || []).filter(function(g) {
