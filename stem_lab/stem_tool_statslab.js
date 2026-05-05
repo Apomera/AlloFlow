@@ -1716,6 +1716,36 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // Topic-accent hero band (swaps with the active mode)
+        (function() {
+          var TAB_META = {
+            home:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '🏠', title: 'Sample datasets + tool overview',           hint: 'Eight pre-loaded datasets cover AP Psych and AP Bio canonical examples — load one to skip data entry.' },
+            wizard:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '🧙', title: 'Pick the right test for your data',          hint: 'Answer 4 questions about your variables. The wizard maps to t-test, ANOVA, chi-square, regression, or non-parametric.' },
+            data:    { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',   icon: '📋', title: 'Enter or paste your data',                    hint: 'Paste from Sheets/Excel, or type by hand. The lab auto-detects two-group vs. paired vs. categorical layouts.' },
+            test:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '⚖️', title: 'Run the test with full transparency',         hint: 'Every formula and intermediate step is shown — no SPSS black box. You see what the test actually computes.' },
+            results: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '📈', title: 'Interpret + AI-graded write-up',              hint: 'Effect-size context + Cohen-band labels. AI grades your interpretation against AP-rubric criteria.' },
+            power:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',   icon: '🔋', title: 'Sample-size + power calculator',              hint: 'How many subjects do you need to detect a real effect? Underpowered studies are why most psych findings fail to replicate.' }
+          };
+          var meta = TAB_META[d.mode] || TAB_META.home;
+          return h('div', {
+            style: {
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0.4) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              borderRadius: 12,
+              padding: '14px 16px',
+              marginBottom: 16,
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 32, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 17, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '4px 0 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // Render the active mode
         d.mode === 'home' && _renderHome(d, upd, loadSample, h),
         d.mode === 'wizard' && _renderWizard(d, upd, h),

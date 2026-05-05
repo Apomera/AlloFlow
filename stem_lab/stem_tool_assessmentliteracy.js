@@ -2077,6 +2077,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (sub === 'justice') return renderCogJustice();
         if (sub === 'flynn') return renderFlynn();
         if (sub === 'neuropsych') return renderNeuropsych();
+        if (sub === 'biasSpotter') return renderBiasSpotter();
 
         // Cognitive submenu
         var subs = [
@@ -2085,7 +2086,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           { id: 'batteries', icon: '\uD83D\uDCD6', label: 'Real Cognitive Batteries', desc: 'WISC-V, WJ-IV, KABC-II, DAS-II, RIAS-2, SB-5, UNIT-2 — what each measures, strengths and weaknesses.' },
           { id: 'justice', icon: '\u2696\uFE0F', label: 'Disability Justice & History', desc: 'Eugenics origins, Larry P., Atkins, processing-speed penalties, ADA accommodations.' },
           { id: 'flynn', icon: '\uD83D\uDCC8', label: 'The Flynn Effect', desc: 'Why average IQ rose ~3 points per decade, why renorming matters, why "my IQ is stable" is only half-true, and the recent evidence for attenuation.' },
-          { id: 'neuropsych', icon: '\uD83E\uDDE0', label: 'Neuropsychology Basics', desc: '6 batteries (NEPSY-II, D-KEFS, WRAML-2, CVLT-C, Luria-Nebraska, NIH Toolbox), 7 neuropsych domains with targeted assessments, neuropsych vs school-psych scope comparison, when to refer out.' }
+          { id: 'neuropsych', icon: '\uD83E\uDDE0', label: 'Neuropsychology Basics', desc: '6 batteries (NEPSY-II, D-KEFS, WRAML-2, CVLT-C, Luria-Nebraska, NIH Toolbox), 7 neuropsych domains with targeted assessments, neuropsych vs school-psych scope comparison, when to refer out.' },
+          { id: 'biasSpotter', icon: '\uD83D\uDD75\uFE0F', label: 'Spot the Bias — interactive', desc: '12 short vignettes. Identify which of 6 validity issues applies to each (linguistic / cultural / outdated norms / construct under-rep / examiner / ceiling-floor). Builds the "what could go wrong with this assessment" reflex.' }
         ];
         return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6' },
           backBtn('menu', null, 'Main menu'),
@@ -2439,6 +2441,189 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         );
       }
 
+      function renderBiasSpotter() {
+        // Six core validity issues. Order matters — used as both labels and answer keys.
+        var ISSUES = [
+          { id: 'linguistic',   label: 'Linguistic bias',           color: '#0ea5e9', icon: '\uD83D\uDDE3\uFE0F', def: 'Test was administered in a language the examinee is not fully fluent in, or item language is too complex for the examinee\'s reading/comprehension level.' },
+          { id: 'cultural',     label: 'Cultural bias',             color: '#a855f7', icon: '\uD83C\uDF0E', def: 'Item content assumes familiarity with cultural references, customs, or environments not shared by the examinee.' },
+          { id: 'outdatedNorms', label: 'Outdated norms',           color: '#f59e0b', icon: '\uD83D\uDCC5', def: 'Test norms are too old to validly compare current performance (Flynn effect, demographic shifts).' },
+          { id: 'underRep',     label: 'Construct under-representation', color: '#22c55e', icon: '\uD83D\uDCD0', def: 'Test samples too narrow a slice of the construct it claims to measure (e.g., "reading" via decoding only).' },
+          { id: 'examiner',     label: 'Examiner / administration effect', color: '#ef4444', icon: '\uD83D\uDC65', def: 'Examiner behavior, rapport, race-of-examiner effects, distractions, or protocol deviations affect the score.' },
+          { id: 'ceilingFloor', label: 'Ceiling / floor effect',    color: '#6366f1', icon: '\uD83D\uDCCF', def: 'Test items don\'t span the examinee\'s true ability range \u2014 score is artificially capped at top or bottom.' }
+        ];
+        // 12 vignettes. `correct` indexes into ISSUES.
+        var VIGNETTES = [
+          { id: 1, scenario: 'A 9-year-old whose home language is Spanish takes the WISC-V Verbal Comprehension subtests in English. She scores in the "Borderline" range (FSIQ ≈ 73). Her teachers describe her as bright and articulate in Spanish.', correct: 0, primary: 'linguistic', secondary: 'underRep', why: 'The test cannot validly measure her verbal reasoning in a language she does not yet speak fluently. AERA/APA/NCME Standard 3.13 explicitly addresses this. A non-verbal battery (e.g., UNIT-2) or a cognitively-equivalent Spanish instrument would be more valid.' },
+          { id: 2, scenario: 'An assessment item shows a place-setting with a knife and fork; the examinee must say what is missing (a spoon). A child raised in a household that primarily eats with chopsticks misses the item.', correct: 1, primary: 'cultural', secondary: null, why: 'The item assumes Western dining-utensil familiarity. The construct (visual reasoning / set completion) gets confounded with cultural exposure. This is a classic example used in cross-cultural assessment training.' },
+          { id: 3, scenario: 'A child takes a cognitive assessment normed in 1997. When re-tested with the same publisher\'s newer version (normed 2022), his Full Scale score appears to drop ~7 points despite no change in actual ability.', correct: 2, primary: 'outdatedNorms', secondary: null, why: 'The Flynn effect: average IQ rises ~3 points per decade as norms update. Old norms over-estimate current performance. NASP recommends never using norms older than ~10\u201312 years for high-stakes decisions like SLD eligibility.' },
+          { id: 4, scenario: 'A "reading achievement" test consists only of phonics-decoding tasks (read aloud isolated words and nonwords). A skilled reader who comprehends well but reads slowly scores below average.', correct: 3, primary: 'underRep', secondary: null, why: 'Reading is a multidimensional construct: decoding, fluency, vocabulary, comprehension. Sampling only decoding under-represents the construct. The score will systematically understate ability for compensated readers and overstate it for word-callers without comprehension.' },
+          { id: 5, scenario: 'A 7-year-old Black child is assessed by a White examiner he has never met. He gives minimal one-word responses. The examiner scores most verbal items as failures and reports a low Verbal Comprehension Index.', correct: 4, primary: 'examiner', secondary: null, why: 'Race-of-examiner effects are documented (Sattler; Fagan & Holland 2007). Without rapport-building and culturally responsive administration, response rate underestimates ability. The score reflects the testing situation, not the construct.' },
+          { id: 6, scenario: 'A highly gifted 6-year-old takes a verbal-comprehension subtest where the highest available item is at the 99th percentile for her age. She gets every item correct.', correct: 5, primary: 'ceilingFloor', secondary: null, why: 'Ceiling effect. Her true ability cannot be measured \u2014 the test ran out of items before she ran out of ability. Score is the floor of "at least the 99th percentile," but no upper bound. Refer to an extended-norms assessment (SB-5 EXIQ, WPPSI/WISC extended norms).' },
+          { id: 7, scenario: 'A Deaf adolescent takes a verbally-administered IQ test through an ASL interpreter. The test is timed; some items rely on phonological awareness; one subtest requires distinguishing rhymes.', correct: 0, primary: 'linguistic', secondary: 'underRep', why: 'Auditory/phonological items cannot be meaningfully translated into ASL. Time pressure compounds the issue \u2014 the interpreter must finish before the timer. Use a Deaf-normed instrument (e.g., UNIT-2, Leiter-3) administered in the examinee\'s native language (ASL).' },
+          { id: 8, scenario: 'Personality inventory item: "I enjoy speaking up at large gatherings." An examinee from a cultural background that values quiet humility marks "strongly disagree" \u2014 not because she lacks confidence, but because the item conflates extraversion with cultural display rules.', correct: 1, primary: 'cultural', secondary: null, why: 'Personality items are particularly vulnerable. Display rules (Matsumoto et al. 2008) shape how traits manifest. The item is operationalizing extraversion through a culturally-loaded behavior. Cross-cultural personality research is a major area of validity work.' },
+          { id: 9, scenario: 'A school psychologist uses a cognitive battery normed in 2008 to support a 2024 SLD eligibility determination because the school district has not yet purchased the updated edition.', correct: 2, primary: 'outdatedNorms', secondary: null, why: 'Norms 16+ years old. NASP guidance is clear: outdated norms cannot anchor high-stakes decisions. The school district\'s budget constraint does not transfer to the validity of the score. Best practice: defer the decision or use an alternate instrument with current norms.' },
+          { id: 10, scenario: 'During administration, the examiner\'s phone rings repeatedly. She apologizes and silences it after the third interruption, but the child has visibly disengaged. Two subtests fall below average; the rest are average.', correct: 4, primary: 'examiner', secondary: null, why: 'Standard administration was violated; attention/engagement were compromised by examiner-controlled distractions. The two affected subtests are not interpretable as estimates of ability. Document the disruption, re-administer the affected subtests at another session, or note the limitation explicitly in the report.' },
+          { id: 11, scenario: 'A "social skills" assessment consists of a single 5-minute structured observation in a clinic testing room. The clinician concludes the child has poor peer interaction skills.', correct: 3, primary: 'underRep', secondary: null, why: 'Social skills are a behavioral construct that varies across settings (clinic vs. school vs. home), partners (peers vs. adults vs. siblings), and tasks. A 5-minute observation in one structured setting cannot represent the construct. Use multi-source/multi-setting assessment (BASC-3 PRS+TRS+SRP, peer rating, observation).' },
+          { id: 12, scenario: 'A child with a severe intellectual disability takes a school-age cognitive battery. Her score is at the lowest possible value the test reports. Two months later she is reassessed; her score is again at that floor, even though her caregivers report meaningful skill gains.', correct: 5, primary: 'ceilingFloor', secondary: null, why: 'Floor effect. The test cannot distinguish her from someone with significantly different abilities at the low end. Real changes are masked. Use an instrument designed for the low end of the distribution (e.g., adaptive scales like Vineland-3, Bayley-4 for younger ages, or extended-norms versions).' }
+        ];
+
+        // State (default to first vignette in canonical order; randomized by seed for variety).
+        var biasSeed = s.alBiasSeed || 1;
+        var biasIdx = s.alBiasIdx == null ? -1 : s.alBiasIdx;
+        var biasAnswered = !!s.alBiasAnswered;
+        var biasPick = s.alBiasPick;
+        var biasScore = s.alBiasScore || 0;
+        var biasRounds = s.alBiasRounds || 0;
+        var biasStreak = s.alBiasStreak || 0;
+        var biasBest = s.alBiasBest || 0;
+        var biasShown = s.alBiasShown || []; // indices already used in this run
+
+        function nextRound() {
+          // Pick a vignette not seen yet; reset shown list when all are used.
+          var pool = [];
+          for (var i = 0; i < VIGNETTES.length; i++) if (biasShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < VIGNETTES.length; j++) pool.push(j); biasShown = []; }
+          var seedNext = ((biasSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd({
+            alBiasSeed: seedNext,
+            alBiasIdx: pick,
+            alBiasAnswered: false,
+            alBiasPick: null,
+            alBiasShown: biasShown.concat([pick])
+          });
+        }
+
+        function answer(issueIdx) {
+          if (biasAnswered) return;
+          var v = VIGNETTES[biasIdx];
+          var correct = issueIdx === v.correct;
+          var newScore = biasScore + (correct ? 1 : 0);
+          var newStreak = correct ? (biasStreak + 1) : 0;
+          var newBest = Math.max(biasBest, newStreak);
+          upd({
+            alBiasAnswered: true,
+            alBiasPick: issueIdx,
+            alBiasScore: newScore,
+            alBiasRounds: biasRounds + 1,
+            alBiasStreak: newStreak,
+            alBiasBest: newBest
+          });
+          if (addToast) addToast(correct ? '\u2705 Correct \u2014 ' + ISSUES[v.correct].label : '\u274C Not the primary issue \u2014 it was ' + ISSUES[v.correct].label, correct ? 'success' : 'info');
+        }
+
+        // Intro state
+        if (biasIdx < 0) {
+          return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
+            backBtn('cognitive', null, 'Cognitive menu'),
+            h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83D\uDD75\uFE0F Spot the Bias'),
+            h('p', { className: 'text-sm text-slate-200 leading-relaxed' }, 'You will see 12 brief assessment vignettes. For each, identify which of six common validity issues is the *primary* concern. After you pick, you will see a coaching block explaining what is happening and what a school psychologist would do about it.'),
+            h('div', { className: 'p-4 rounded-xl bg-slate-800/60 border border-cyan-500/30' },
+              h('div', { className: 'text-sm font-bold text-cyan-200 mb-3' }, 'The six validity issues'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                ISSUES.map(function(iss, ii) {
+                  return h('div', { key: ii,
+                    style: { background: iss.color + '15', border: '1px solid ' + iss.color + '60', borderRadius: 8, padding: '8px 10px' }
+                  },
+                    h('div', { className: 'flex items-center gap-2 mb-1' },
+                      h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, iss.icon),
+                      h('span', { style: { color: iss.color, fontWeight: 800, fontSize: 12 } }, iss.label)
+                    ),
+                    h('div', { className: 'text-xs text-slate-200 leading-relaxed' }, iss.def)
+                  );
+                })
+              )
+            ),
+            h('button', {
+              onClick: nextRound,
+              className: 'w-full py-3 rounded-xl bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
+            }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 12')
+          );
+        }
+
+        var v = VIGNETTES[biasIdx];
+        var isCorrect = biasAnswered && biasPick === v.correct;
+        var pct = biasRounds > 0 ? Math.round((biasScore / biasRounds) * 100) : 0;
+        var allDone = biasShown.length >= VIGNETTES.length && biasAnswered;
+        return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
+          backBtn('cognitive', null, 'Cognitive menu'),
+          h('h2', { className: 'text-2xl font-black text-cyan-200' }, '\uD83D\uDD75\uFE0F Spot the Bias'),
+          // Score header
+          h('div', { className: 'flex flex-wrap gap-3 items-center text-xs' },
+            h('span', { className: 'text-slate-300' }, 'Vignette ', h('strong', { className: 'text-white' }, biasShown.length + (biasAnswered ? '' : ''))),
+            h('span', { className: 'text-slate-300' }, 'Score ', h('strong', { className: 'text-emerald-300' }, biasScore + ' / ' + biasRounds)),
+            biasRounds > 0 && h('span', { className: 'text-slate-300' }, 'Accuracy ', h('strong', { className: 'text-cyan-300' }, pct + '%')),
+            h('span', { className: 'text-slate-300' }, 'Streak ', h('strong', { className: 'text-amber-300' }, biasStreak)),
+            h('span', { className: 'text-slate-300' }, 'Best ', h('strong', { className: 'text-yellow-300' }, biasBest))
+          ),
+          // The vignette
+          h('section', { className: 'p-5 rounded-xl bg-slate-800/60 border-2 border-cyan-500/40' },
+            h('div', { className: 'text-xs font-bold text-cyan-300 uppercase tracking-widest mb-2' }, 'Vignette ' + (biasShown.length) + ' of ' + VIGNETTES.length),
+            h('p', { className: 'text-sm text-slate-100 leading-relaxed' }, v.scenario)
+          ),
+          // 6 issue picker buttons
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the primary validity issue' },
+            ISSUES.map(function(iss, ii) {
+              var picked = biasAnswered && biasPick === ii;
+              var isRight = biasAnswered && ii === v.correct;
+              var bg, border, color;
+              if (biasAnswered) {
+                if (isRight) { bg = 'rgba(34,197,94,0.15)'; border = '#22c55e'; color = '#bbf7d0'; }
+                else if (picked) { bg = 'rgba(239,68,68,0.15)'; border = '#ef4444'; color = '#fecaca'; }
+                else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+              } else {
+                bg = iss.color + '12'; border = iss.color + '60'; color = '#e2e8f0';
+              }
+              return h('button', {
+                key: ii, role: 'radio',
+                'aria-checked': picked ? 'true' : 'false',
+                disabled: biasAnswered,
+                onClick: function() { answer(ii); },
+                style: { padding: '10px 12px', borderRadius: 10, background: bg, color: color, border: '2px solid ' + border, cursor: biasAnswered ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, transition: 'all 0.15s' }
+              },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, iss.icon),
+                  h('span', { style: { color: biasAnswered ? color : iss.color, fontSize: 13, fontWeight: 800 } }, iss.label)
+                ),
+                h('div', { style: { fontSize: 11, fontWeight: 500, color: biasAnswered ? color : '#cbd5e1', lineHeight: 1.45 } }, iss.def)
+              );
+            })
+          ),
+          // Feedback after answering
+          biasAnswered && h('section', {
+            className: 'p-4 rounded-xl',
+            style: { background: isCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.08)', border: '1px solid ' + (isCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)') }
+          },
+            h('div', { className: 'text-sm font-bold mb-2', style: { color: isCorrect ? '#86efac' : '#fca5a5' } },
+              isCorrect ? '\u2705 Correct \u2014 ' + ISSUES[v.correct].label
+                        : '\u274C The primary issue is ' + ISSUES[v.correct].label + (biasPick != null ? ' (you picked ' + ISSUES[biasPick].label + ')' : '')
+            ),
+            h('p', { className: 'text-xs text-slate-100 leading-relaxed mb-2' }, v.why),
+            v.secondary && h('div', { className: 'text-xs text-slate-300 italic mb-2' },
+              'Secondary issue also at play: ', h('strong', { style: { color: ISSUES.filter(function(x) { return x.id === v.secondary; })[0].color } }, ISSUES.filter(function(x) { return x.id === v.secondary; })[0].label)
+            ),
+            allDone
+              ? h('div', { className: 'p-3 rounded-lg bg-cyan-900/30 border border-cyan-500/40 mt-2' },
+                  h('div', { className: 'text-sm font-black text-cyan-200 mb-1' }, '\uD83C\uDFC6 All 12 vignettes complete!'),
+                  h('div', { className: 'text-xs text-slate-100 leading-relaxed' },
+                    'Final score: ', h('strong', { className: 'text-white' }, biasScore + ' / ' + VIGNETTES.length + ' (' + Math.round((biasScore / VIGNETTES.length) * 100) + '%)'),
+                    biasScore === VIGNETTES.length ? ' \u2014 every primary issue spotted. Ready for case-conference work.' :
+                    biasScore >= 10 ? ' \u2014 strong validity reasoning. The misses are usually examiner vs. construct under-rep, the two most-overlapping categories.' :
+                    biasScore >= 7 ? ' \u2014 solid baseline. Re-read the vignettes you missed; bias categories overlap, so naming the *primary* one takes practice.' :
+                    ' \u2014 these distinctions are subtle. Re-read each vignette + coaching block, then retake. Pattern recognition for validity issues comes from many examples.'
+                  ),
+                  h('button', {
+                    onClick: function() { upd({ alBiasIdx: -1, alBiasShown: [], alBiasScore: 0, alBiasRounds: 0, alBiasStreak: 0 }); },
+                    className: 'mt-2 px-4 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-500'
+                  }, '\uD83D\uDD04 Restart')
+                )
+              : h('button', {
+                  onClick: nextRound,
+                  className: 'mt-1 px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-500 focus:outline-none focus:ring-2 ring-cyan-300'
+                }, '\u27A1\uFE0F Next vignette')
+          )
+        );
+      }
       // ─────────────────────────────────────────
       // MODULE 2: PERSONALITY  (PLACEHOLDER — expanded below)
       // ─────────────────────────────────────────
