@@ -66,7 +66,7 @@
   // STUDENT INTERACTION COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
 
-var StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "" }) => {
+const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], currentNickname = "" }) => {
   const { t } = useContext(LanguageContext);
   const adjectives = t("codenames.adjectives") || [];
   const animals = t("codenames.animals") || [];
@@ -144,7 +144,7 @@ var StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], 
     onSubmit(fullName, stats);
     onClose();
   };
-  return /* @__PURE__ */ React.createElement("div", { role: "dialog", "aria-modal": "true", className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-indigo-100 transform transition-all animate-in zoom-in-95 duration-300" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: onClose,
@@ -199,12 +199,12 @@ var StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = [], 
     {
       "aria-label": t("common.close"),
       onClick: onClose,
-      className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-600 hover:text-indigo-600 font-bold py-3 rounded-xl transition-all active:scale-95"
+      className: "w-full bg-white border-2 border-slate-200 text-slate-600 hover:border-indigo-300 hover:text-indigo-600 font-bold py-3 rounded-xl transition-all active:scale-95"
     },
     t("common.cancel")
   ))));
 });
-var DraftFeedbackInterface = React.memo(({
+const DraftFeedbackInterface = React.memo(({
   status = "writing",
   rubricCriteria = [],
   gradingDetails = null,
@@ -271,7 +271,7 @@ var DraftFeedbackInterface = React.memo(({
     )));
   }
   if (status === "mastery") {
-    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-4 -right-12 bg-white border-2 border-yellow-400 text-yellow-800 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md" }, t("mastery.mastery_achieved"))), /* @__PURE__ */ React.createElement("h2", { className: "text-5xl font-black text-slate-800 mb-4 tracking-tight" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-slate-600 mb-8 max-w-2xl mx-auto" }, t("mastery.mastery_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 p-6 rounded-2xl border border-green-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-green-800 font-bold uppercase text-xs mb-2" }, t("mastery.final_score")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-green-600" }, gradingDetails?.score || 100)), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-6 rounded-2xl border border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-indigo-800 font-bold uppercase text-xs mb-2" }, t("mastery.drafts")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-indigo-600" }, draftCount)), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 p-6 rounded-2xl border border-purple-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-purple-800 font-bold uppercase text-xs mb-2" }, t("mastery.xp_earned")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600" }, "+", gradingDetails?.score * 2 || 200))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl border border-slate-400 shadow-sm text-left mb-8 max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-slate-700 flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), " ", t("mastery.teacher_feedback")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic" }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-8 text-center animate-in zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "mb-8 relative inline-block" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-yellow-400 blur-3xl opacity-20 rounded-full animate-pulse" }), /* @__PURE__ */ React.createElement(Trophy, { size: 120, className: "text-yellow-500 fill-yellow-200 relative z-10 drop-shadow-lg mx-auto" }), /* @__PURE__ */ React.createElement("div", { className: "absolute -top-4 -right-12 bg-white border-2 border-yellow-400 text-yellow-600 px-4 py-1 rounded-full font-black text-sm rotate-12 shadow-md" }, t("mastery.mastery_achieved"))), /* @__PURE__ */ React.createElement("h2", { className: "text-5xl font-black text-slate-800 mb-4 tracking-tight" }, t("mastery.excellent_work")), /* @__PURE__ */ React.createElement("p", { className: "text-xl text-slate-600 mb-8 max-w-2xl mx-auto" }, t("mastery.mastery_desc")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 p-6 rounded-2xl border border-green-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-green-800 font-bold uppercase text-xs mb-2" }, t("mastery.final_score")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-green-600" }, gradingDetails?.score || 100)), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 p-6 rounded-2xl border border-indigo-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-indigo-800 font-bold uppercase text-xs mb-2" }, t("mastery.drafts")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-indigo-600" }, draftCount)), /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 p-6 rounded-2xl border border-purple-200" }, /* @__PURE__ */ React.createElement("div", { className: "text-purple-800 font-bold uppercase text-xs mb-2" }, t("mastery.xp_earned")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600" }, "+", gradingDetails?.score * 2 || 200))), gradingDetails?.feedback?.strength && /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl border border-slate-400 shadow-sm text-left mb-8 max-w-3xl mx-auto" }, /* @__PURE__ */ React.createElement("h4", { className: "font-bold text-slate-700 flex items-center gap-2 mb-2" }, /* @__PURE__ */ React.createElement(Star, { size: 16, className: "text-yellow-500 fill-current" }), " ", t("mastery.teacher_feedback")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic" }, '"', gradingDetails.feedback.strength, '"')), /* @__PURE__ */ React.createElement(
       "button",
       {
         "aria-label": t("common.cancel"),
