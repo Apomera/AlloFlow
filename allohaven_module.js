@@ -1334,6 +1334,28 @@
     return { mood: top, color: tints[top] || null, count: topN, total: recent.length };
   }
 
+  // ── Accessory catalog (Phase 2p.22 / 2p.23) ──
+  // Each accessory has an unlock keyed to an achievement id. The
+  // achievement-detection useEffect grants the accessory the moment
+  // its unlock fires (if companion has none). Ordered earliest-game
+  // unlock first so the wizard\'s picker reads naturally.
+  var ACCESSORY_DEFS = [
+    { id: 'bow',    label: 'Bow',    emoji: '🎀', unlockAchievement: 'first-favorite',
+      hint: 'Earned by marking your first favorite decoration.' },
+    { id: 'flower', label: 'Flower', emoji: '🌸', unlockAchievement: 'first-reflection',
+      hint: 'Earned by writing your first reflection.' },
+    { id: 'scarf',  label: 'Scarf',  emoji: '🧣', unlockAchievement: 'streak-30',
+      hint: 'Earned by reaching a 30-day streak.' }
+  ];
+  function isAccessoryUnlocked(state, accessoryId) {
+    var def = null;
+    for (var i = 0; i < ACCESSORY_DEFS.length; i++) {
+      if (ACCESSORY_DEFS[i].id === accessoryId) { def = ACCESSORY_DEFS[i]; break; }
+    }
+    if (!def) return false;
+    return !!((state.achievements || {})[def.unlockAchievement]);
+  }
+
   // ─────────────────────────────────────────────────────────
   // SECTION 4.5: COMPANION CRITTERS + SKILL LEVELS (Phase 2p)
   // ─────────────────────────────────────────────────────────
@@ -2023,8 +2045,9 @@
     var pupilTransform = 'translate(' + px.toFixed(2) + ' ' + py.toFixed(2) + ')';
     var pupilStyle = { transform: pupilTransform, transition: 'transform 220ms cubic-bezier(0.34, 1.4, 0.64, 1)' };
 
-    // Accessory rendering (Phase 2p.22) — bow on the head, position varies
-    // per species. Uses the accent color so it pops against the body palette.
+    // Accessory rendering (Phase 2p.22, extended 2p.23) — bow / flower /
+    // scarf with per-species positioning. All use palette.accent so they
+    // pop against the body color.
     var accessory = animState && animState.accessory;
     function bowAt(cx, cy, scale) {
       // Two triangle "wings" + center knot. cx,cy is the center of the knot.
@@ -2051,17 +2074,118 @@
         h('ellipse', { cx: cx + w * 0.55, cy: cy - h2 * 0.3, rx: 0.8 * s, ry: 1.2 * s, fill: p.secondary, opacity: 0.5 })
       );
     }
-    // Per-species bow position (above the head, sized for fit)
-    function renderAccessory() {
-      if (accessory !== 'bow') return null;
-      switch (speciesId) {
-        case 'cat':    return bowAt(38, 22, 0.85); // off-center, between left ear and head
-        case 'fox':    return bowAt(50, 18, 0.9);  // between the tall triangle ears
-        case 'owl':    return bowAt(50, 22, 1.0);  // top of head, between tufted ears
-        case 'turtle': return bowAt(18, 50, 0.8);  // small, on top of the green head (which is left-side)
-        case 'dragon': return bowAt(50, 22, 0.9);  // between horns
-        default:       return bowAt(50, 22, 1.0);
+    function flowerAt(cx, cy, scale) {
+      // 5-petal rosette: 5 ellipses arranged at 72° increments + center disc
+      var s = scale || 1;
+      var r = 3 * s;             // petal radius (long)
+      var rd = 1.6 * s;          // petal radius (short)
+      var dist = 3.2 * s;        // distance from center to petal center
+      var petals = [];
+      for (var i = 0; i < 5; i++) {
+        var theta = (i / 5) * Math.PI * 2 - Math.PI / 2;
+        var px2 = cx + Math.cos(theta) * dist;
+        var py2 = cy + Math.sin(theta) * dist;
+        var rotDeg = (theta * 180 / Math.PI) + 90; // align petal long axis radially
+        petals.push(h('ellipse', {
+          key: 'petal-' + i,
+          cx: px2, cy: py2, rx: rd, ry: r,
+          fill: p.accent,
+          transform: 'rotate(' + rotDeg.toFixed(2) + ' ' + px2.toFixed(2) + ' ' + py2.toFixed(2) + ')'
+        }));
       }
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        petals,
+        // Center disc (warm tone, picks up secondary palette)
+        h('circle', { cx: cx, cy: cy, r: 1.4 * s, fill: p.secondary }),
+        h('circle', { cx: cx, cy: cy, r: 0.7 * s, fill: p.primary, opacity: 0.6 })
+      );
+    }
+    function scarfAt(cx, cy, width, scale) {
+      // A horizontal arc-band wrapping near the neck/body. width is the
+      // half-width of the band; cx,cy is its center point.
+      var s = scale || 1;
+      var w = width * s;
+      var hh = 4 * s;
+      var hangX = cx + w * 0.7;
+      var hangY = cy + hh * 0.6;
+      return h('g', {
+        className: 'ah-companion-accessory',
+        style: { transformOrigin: cx + 'px ' + cy + 'px' }
+      },
+        // Main wrap — slightly curved bar
+        h('path', {
+          d: 'M ' + (cx - w) + ' ' + cy
+            + ' Q ' + cx + ' ' + (cy + hh * 0.6) + ' '
+            + (cx + w) + ' ' + cy
+            + ' L ' + (cx + w) + ' ' + (cy - hh)
+            + ' Q ' + cx + ' ' + (cy - hh * 0.4) + ' '
+            + (cx - w) + ' ' + (cy - hh) + ' Z',
+          fill: p.accent
+        }),
+        // Tassel hanging on one side
+        h('rect', {
+          x: hangX - 1.2 * s, y: hangY,
+          width: 2.4 * s, height: 5 * s,
+          fill: p.accent
+        }),
+        h('rect', {
+          x: hangX - 1.2 * s, y: hangY + 5 * s,
+          width: 2.4 * s, height: 1.2 * s,
+          fill: p.secondary, opacity: 0.6
+        }),
+        // Lighter stripe along the wrap for dimension
+        h('path', {
+          d: 'M ' + (cx - w * 0.85) + ' ' + (cy - hh * 0.3)
+            + ' Q ' + cx + ' ' + (cy + hh * 0.05) + ' '
+            + (cx + w * 0.85) + ' ' + (cy - hh * 0.3),
+          stroke: p.secondary, strokeWidth: 0.8 * s, fill: 'none', opacity: 0.5
+        })
+      );
+    }
+
+    // Per-species accessory positions. Each species has a different
+    // anchor point that suits its silhouette.
+    var ACC_POS = {
+      bow: {
+        cat:    [38, 22, 0.85], // off-center, between left ear and head
+        fox:    [50, 18, 0.9],  // between the tall triangle ears
+        owl:    [50, 22, 1.0],  // top of head, between tufted ears
+        turtle: [18, 50, 0.8],  // small, on top of the green head (left-side)
+        dragon: [50, 22, 0.9]   // between horns
+      },
+      flower: {
+        cat:    [60, 24, 0.9],  // mirror side of bow position
+        fox:    [38, 22, 0.85], // off to the side of the ears
+        owl:    [38, 30, 0.9],  // tucked beside the eye-disc
+        turtle: [22, 54, 0.7],  // beside the head
+        dragon: [38, 26, 0.85]  // beside one horn
+      },
+      scarf: {
+        cat:    [50, 56, 18, 1.0], // around the body where head meets body
+        fox:    [50, 56, 16, 1.0],
+        owl:    [50, 50, 20, 0.9], // around the head/body transition
+        turtle: [20, 60, 9, 0.9],  // small around the turtle\'s neck
+        dragon: [50, 54, 18, 1.0]  // wraps the dragon\'s neck
+      }
+    };
+    function renderAccessory() {
+      if (!accessory) return null;
+      if (accessory === 'bow') {
+        var b = ACC_POS.bow[speciesId] || ACC_POS.bow.cat;
+        return bowAt(b[0], b[1], b[2] || 1.0);
+      }
+      if (accessory === 'flower') {
+        var f = ACC_POS.flower[speciesId] || ACC_POS.flower.cat;
+        return flowerAt(f[0], f[1], f[2] || 1.0);
+      }
+      if (accessory === 'scarf') {
+        var s = ACC_POS.scarf[speciesId] || ACC_POS.scarf.cat;
+        return scarfAt(s[0], s[1], s[2] || 16, s[3] || 1.0);
+      }
+      return null;
     }
 
     if (speciesId === 'cat') {
@@ -7534,33 +7658,70 @@
             )
           )
         ),
-        // Phase 2p.22 — bow accessory toggle. Visible only after the
-        // student has unlocked it via the "first-favorite" achievement.
-        p.bowUnlocked ? h('div', {
-          style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }
-        },
-          h('div', null,
-            h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text } }, '🎀 Bow accessory'),
-            h('div', { style: { fontSize: '11px', color: palette.textDim, marginTop: '2px' } },
-              draft.accessory === 'bow' ? 'Currently worn — tap to remove' : 'Unlocked from your first favorite')
-          ),
-          h('button', {
-            onClick: function() { setField('accessory', draft.accessory === 'bow' ? null : 'bow'); },
-            'aria-pressed': draft.accessory === 'bow' ? 'true' : 'false',
-            'aria-label': 'Toggle bow accessory',
-            style: {
-              background: draft.accessory === 'bow' ? palette.accent : palette.bg,
-              color: draft.accessory === 'bow' ? palette.onAccent : palette.textDim,
-              border: '1px solid ' + (draft.accessory === 'bow' ? palette.accent : palette.border),
-              borderRadius: '999px',
-              padding: '4px 14px',
-              fontSize: '11px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              fontFamily: 'inherit'
-            }
-          }, draft.accessory === 'bow' ? 'On' : 'Off')
-        ) : null
+        // Phase 2p.22/2p.23 — accessory picker. Shows all UNLOCKED
+        // accessories as a row of pills + a "None" tile. Single-pick.
+        // Locked accessories show a 🔒 with their unlock hint so
+        // students can see what they\'re working toward.
+        (function() {
+          var unlocked = (p.unlockedAccessories && p.unlockedAccessories.length > 0)
+            ? p.unlockedAccessories : (p.bowUnlocked ? ['bow'] : []);
+          // Always render the section if at least one is unlocked OR if
+          // there are locked teasers worth showing
+          var hasAny = unlocked.length > 0;
+          if (!hasAny && !p.showLockedTeasers) return null;
+          return h('div', {
+            role: 'region',
+            'aria-label': 'Accessory picker',
+            style: { padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
+          },
+            h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '8px' } },
+              '🎀 Accessory'),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
+              // None
+              h('button', {
+                onClick: function() { setField('accessory', null); },
+                'aria-pressed': !draft.accessory ? 'true' : 'false',
+                'aria-label': 'No accessory',
+                style: {
+                  background: !draft.accessory ? palette.accent : palette.bg,
+                  color: !draft.accessory ? palette.onAccent : palette.textDim,
+                  border: '1px solid ' + (!draft.accessory ? palette.accent : palette.border),
+                  borderRadius: '999px',
+                  padding: '4px 12px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit'
+                }
+              }, 'None'),
+              // Each accessory — unlocked clickable, locked dimmed with 🔒
+              ACCESSORY_DEFS.map(function(def) {
+                var isUnlocked = unlocked.indexOf(def.id) !== -1;
+                var active = draft.accessory === def.id;
+                return h('button', {
+                  key: 'acc-' + def.id,
+                  onClick: function() { if (isUnlocked) setField('accessory', def.id); },
+                  disabled: !isUnlocked,
+                  'aria-pressed': active ? 'true' : 'false',
+                  'aria-label': def.label + (isUnlocked ? '' : ' (locked: ' + def.hint + ')'),
+                  title: isUnlocked ? def.hint : '🔒 ' + def.hint,
+                  style: {
+                    background: active ? palette.accent : palette.bg,
+                    color: active ? palette.onAccent : (isUnlocked ? palette.text : palette.textMute),
+                    border: '1px solid ' + (active ? palette.accent : palette.border),
+                    borderRadius: '999px',
+                    padding: '4px 12px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: isUnlocked ? 'pointer' : 'not-allowed',
+                    fontFamily: 'inherit',
+                    opacity: isUnlocked ? 1 : 0.55
+                  }
+                }, isUnlocked ? (def.emoji + ' ' + def.label) : ('🔒 ' + def.label));
+              })
+            )
+          );
+        })()
       );
     }
 
@@ -9926,12 +10087,26 @@
           lastBubbleAt: nowIso,
           lastBubbleText: first.emoji + ' ' + first.label + '! ' + first.desc
         };
-        // Phase 2p.22 — auto-grant bow accessory when "first-favorite"
-        // achievement unlocks, if companion has no accessory yet.
-        var unlockedFirstFav = newly.some(function(a) { return a.id === 'first-favorite'; });
-        if (unlockedFirstFav && !state.companion.accessory) {
-          companionPatch.accessory = 'bow';
-          companionPatch.lastBubbleText = '🎀 Found a bow in the room — wearing it for you!';
+        // Phase 2p.22/2p.23 — auto-grant accessories when their
+        // unlock-achievement fires, if companion has none. Bow takes
+        // priority since it\'s the earliest-game unlock; flower next;
+        // scarf the long-term reward.
+        if (!state.companion.accessory) {
+          var grantMap = { 'first-favorite': 'bow', 'first-reflection': 'flower', 'streak-30': 'scarf' };
+          var grantBubble = {
+            'first-favorite':   '🎀 Found a bow in the room — wearing it for you!',
+            'first-reflection': '🌸 Tucked a little flower behind my ear. Thanks for writing.',
+            'streak-30':        '🧣 You\'ve been here 30 days running. Made you a scarf — putting it on.'
+          };
+          // Pick the FIRST newly-unlocked accessory grant (highest priority by order)
+          for (var gi = 0; gi < newly.length; gi++) {
+            var grantId = grantMap[newly[gi].id];
+            if (grantId) {
+              companionPatch.accessory = grantId;
+              companionPatch.lastBubbleText = grantBubble[newly[gi].id];
+              break;
+            }
+          }
         }
         stateUpdates.companion = Object.assign({}, state.companion, companionPatch);
       }
@@ -13944,12 +14119,20 @@
 
     function renderCompanionSetupModal() {
       if (state.activeModal !== 'companion-setup') return null;
-      // Phase 2p.22 — gate bow toggle behind first-favorite achievement
-      var bowUnlocked = !!((state.achievements || {})['first-favorite']);
+      // Phase 2p.22/2p.23 — gate accessory picker behind unlock state
+      var unlockedAccessories = ACCESSORY_DEFS
+        .filter(function(def) { return isAccessoryUnlocked(state, def.id); })
+        .map(function(def) { return def.id; });
+      var bowUnlocked = unlockedAccessories.indexOf('bow') !== -1; // legacy
       return h(CompanionSetupInner, {
         existing: state.companion,
         palette: palette,
         bowUnlocked: bowUnlocked,
+        unlockedAccessories: unlockedAccessories,
+        // Show locked teasers when companion has at least 1 unlocked
+        // (so students can see what\'s next without overwhelming new
+        // companions who haven\'t earned anything yet)
+        showLockedTeasers: unlockedAccessories.length > 0,
         onSave: function(updates) {
           // Preserve skillCelebrations + createdAt from existing if present
           var prev = state.companion || {};
