@@ -1407,21 +1407,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
         ];
 
         function renderTabNav() {
-          return h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 }, role: 'tablist', 'aria-label': 'Fire Ecology sections' },
-            TABS.map(function(tt) {
-              var active = tab === tt.id;
-              return h('button', { key: tt.id,
-                onClick: function() { upd('tab', tt.id); },
-                role: 'tab', 'aria-selected': active,
-                style: {
-                  padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                  background: active ? '#ea580c' : '#1e293b',
-                  color: active ? '#fff' : '#94a3b8',
-                  fontWeight: active ? 700 : 500, fontSize: 13,
-                  transition: 'all 0.2s'
-                }
-              }, tt.icon + ' ' + tt.label);
-            })
+          var TAB_META = {
+            indigenous: { accent: '#fb923c', soft: 'rgba(251,146,60,0.10)', icon: '\uD83C\uDF0D', title: 'Indigenous fire knowledge',                hint: 'Cultural burning predates colonization by 65,000+ years across Australia, North America, and Africa. Western fire science is finally reading what Indigenous practitioners always knew.' },
+            ecosystems: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF32', title: 'Fire-adapted ecosystems',               hint: 'Some ecosystems NEED fire to function \u2014 longleaf pine, sequoia, chaparral, prairie. Cones that only open in heat (serotiny). Suppress fire and the ecosystem dies.' },
+            simulator:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFAE', title: 'Forest simulator',                       hint: 'Cellular-automaton fire spread \u2014 each cell tracks fuel load + moisture + slope. Watch how a single ignition becomes a megafire when fuels accumulate.' },
+            burnPlan:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCCB', title: 'Burn planner \u2014 cultural burn safety', hint: 'Indigenous + modern burn planners read temperature, humidity, wind, and fuel moisture together. Score \u2265 85 = GO; 60\u201385 = CAUTION; <60 = NO-GO.' },
+            science:    { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\uD83D\uDD2C', title: 'Fire science \u2014 the chemistry',       hint: 'The fire triangle: fuel + oxygen + heat. Combustion is exothermic oxidation. Flashover = the moment ambient air reaches ignition temperature \u2014 catastrophic.' },
+            smokeSeeds: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDF3A', title: 'Smoke + seeds',                          hint: 'Many plants need smoke chemicals (karrikins) to germinate. Fire-followers (whispering bells, fire poppies) bloom only in burned ground; seed banks wait decades.' },
+            watershed:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCA7', title: 'Fire + watersheds',                     hint: 'Burn scars trigger debris flows. Hydrophobic soils after high-severity burns can shed water like pavement. Post-fire flooding kills more people than the fire itself in some events.' },
+            caseStudies: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCF0', title: 'Case studies',                        hint: 'Camp Fire (2018), Black Saturday (2009), Carr Fire (2018), Kincade (2019). Each is a master class in what suppression-only management produces.' },
+            carbon:     { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\u2601\uFE0F',  title: 'Wildfire carbon ledger',                  hint: 'Wildfire is carbon-neutral over decades \u2014 trees regrow, sequester. But MEGAFIRES release decades of stored carbon in days, and warmer climate slows regrowth. Net-positive emitter.' },
+            beavers:    { accent: '#92400e', soft: 'rgba(146,64,14,0.10)',  icon: '\uD83E\uDDAB', title: 'Beavers vs fire',                       hint: 'Beaver wetlands act as fire breaks \u2014 wet meadows resist burning. Reintroducing beavers reduces fire intensity for free. Cheaper than mechanical fuel-thinning.' },
+            game:       { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAE', title: 'Firekeeper Challenge \u2014 100-year game', hint: 'You manage a forest for 100 years. Cultural burns, prescribed burns, beaver dams, thinning, native seeds. Random events test your wisdom under uncertainty.' },
+            quiz:       { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83C\uDFC6', title: 'Fire ecology quiz',                     hint: 'Multi-choice items spanning ecology, chemistry, Indigenous knowledge, watersheds, and policy. Each question links back to the simulator + case studies.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.indigenous;
+          var heroBand = h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+              marginBottom: 12
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+          return h('div', null,
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 }, role: 'tablist', 'aria-label': 'Fire Ecology sections' },
+              TABS.map(function(tt) {
+                var active = tab === tt.id;
+                return h('button', { key: tt.id,
+                  onClick: function() { upd('tab', tt.id); },
+                  role: 'tab', 'aria-selected': active,
+                  style: {
+                    padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                    background: active ? '#ea580c' : '#1e293b',
+                    color: active ? '#fff' : '#94a3b8',
+                    fontWeight: active ? 700 : 500, fontSize: 13,
+                    transition: 'all 0.2s'
+                  }
+                }, tt.icon + ' ' + tt.label);
+              })
+            ),
+            heroBand
           );
         }
 

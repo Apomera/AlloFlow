@@ -384,6 +384,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ring: 'ring-amber-500/40'
           },
           {
+            id: 'homologySleuth', title: 'Homology vs Analogy', icon: '🦴',
+            subtitle: '10 trait pairs — same origin or same function',
+            desc: 'For each pair of structures, decide: homologous (same evolutionary origin, often different function — like human arm vs whale flipper) or analogous (same function, different origin — like bird wing vs butterfly wing). The signature distinction for inferring common descent.',
+            color: 'from-cyan-500 to-blue-700',
+            ring: 'ring-cyan-500/40'
+          },
+          {
             id: 'capstone', title: 'Capstone Project', icon: '🎓',
             subtitle: 'Predict, run, reflect',
             desc: 'A guided 4-step research project. Pick a real-world scenario, predict the outcome, run the matching simulation, then write up your findings. Generates a print-ready lab report.',
@@ -5595,6 +5602,192 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
+      // HOMOLOGY VS ANALOGY SLEUTH (net-new mini-game)
+      // 10 paired structures; player picks homologous (shared origin, often
+      // different function) or analogous (same function, independent origin —
+      // convergent evolution). The single most important inferential reflex
+      // for reading evolutionary trees.
+      // ─────────────────────────────────────────────────────
+      function HomologySleuth() {
+        var TYPES = [
+          { id: 'homologous', label: 'Homologous',  color: '#16a34a', icon: '🦴',
+            def: 'Same evolutionary ORIGIN — inherited from a common ancestor — even if function differs. Internal structure (bones, embryo) is the diagnostic.' },
+          { id: 'analogous',  label: 'Analogous',   color: '#0ea5e9', icon: '🦋',
+            def: 'Same FUNCTION — but independently evolved from different ancestral structures (convergent evolution). Surface similarity, different inside.' }
+        ];
+        var V = [
+          { id: 1, pair: 'Human arm vs whale flipper', correct: 'homologous',
+            why: 'Both have humerus, radius, ulna, carpals, metacarpals, phalanges. Same bones, dramatically different jobs (manipulation vs propulsion). The textbook example of homology — shared tetrapod common ancestor ~370 million years ago.' },
+          { id: 2, pair: 'Bird wing vs butterfly wing', correct: 'analogous',
+            why: 'Both fly. But bird wing = modified vertebrate forelimb (humerus, radius, ulna, fused digits). Butterfly wing = epithelial outgrowth on thorax with chitinous veins, no bones. Independent solutions to the same physics problem.' },
+          { id: 3, pair: 'Bat wing vs whale flipper', correct: 'homologous',
+            why: 'Both are mammalian forelimbs with the same bones (humerus, radius, ulna, carpals, phalanges). Bat = elongated digits supporting membrane; whale = shortened digits in fluke. Different functions (flight vs swimming) from the SAME ancestral tetrapod limb.' },
+          { id: 4, pair: 'Octopus eye vs human eye', correct: 'analogous',
+            why: 'Camera-eye anatomy in both: lens, retina, iris. But cephalopods and vertebrates last shared an eyeless common ancestor ~600 million years ago. Eyes evolved independently — convergent evolution under similar selection (focus light onto a sensor).' },
+          { id: 5, pair: 'Shark dorsal fin vs dolphin dorsal fin', correct: 'analogous',
+            why: 'Same job (stability while swimming), different origins. Shark = cartilaginous fish, fin supported by ceratotrichia. Dolphin = mammal, fin supported by connective tissue (no bones in dorsal fin specifically). Convergent for streamlined swimming.' },
+          { id: 6, pair: 'Cactus spine vs rose thorn', correct: 'analogous',
+            why: 'Both are sharp protective structures, but cactus spines are MODIFIED LEAVES (each spine arises from an areole — a bud) while rose thorns are MODIFIED EPIDERMIS (skin outgrowths from the stem). Same function, different ancestral organs.' },
+          { id: 7, pair: 'Vestigial whale pelvic bones vs functional dog pelvis', correct: 'homologous',
+            why: 'Whales descended from terrestrial mammals (~50 mya — Pakicetus and friends). Modern whales retain vestigial pelvic bones from those ancestors — sometimes used as anchor points for reproductive muscles. Same bones as dog pelvis, lost their original function. Strong evidence of common descent.' },
+          { id: 8, pair: 'Hummingbird hover-flight vs hummingbird-moth hover-flight', correct: 'analogous',
+            why: 'Both hover at flowers and drink nectar with long tongues — but hummingbird = bird (vertebrate, feathered wings, hollow bones), hummingbird moth = insect (exoskeleton, chitinous wings, no bones). Convergent evolution under the same nectar-feeding niche pressure.' },
+          { id: 9, pair: 'Wolf canine teeth vs vampire bat canine teeth', correct: 'homologous',
+            why: 'Both are mammalian canines from the same ancestral mammalian dentition. Wolf = piercing/tearing meat; vampire bat = piercing skin to access blood. Same homologous tooth specialized for different food sources. Mammalian dental homology is one of the strongest cross-clade inheritance signatures.' },
+          { id: 10, pair: 'Insect wing vs bird wing', correct: 'analogous',
+            why: 'Insects and vertebrates last shared an ancestor before either had wings. Insect wings evolved from epithelial outgrowths on the thorax (or possibly modified gill structures); bird wings evolved from modified theropod-dinosaur forelimbs. Two completely independent paths to powered flight.' }
+        ];
+
+        var hsIdx = d.hsIdx == null ? -1 : d.hsIdx;
+        var hsSeed = d.hsSeed || 1;
+        var hsAns = !!d.hsAns;
+        var hsPick = d.hsPick;
+        var hsScore = d.hsScore || 0;
+        var hsRounds = d.hsRounds || 0;
+        var hsStreak = d.hsStreak || 0;
+        var hsBest = d.hsBest || 0;
+        var hsShown = d.hsShown || [];
+
+        function startHs() {
+          var pool = [];
+          for (var i = 0; i < V.length; i++) if (hsShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); hsShown = []; }
+          var seedNext = ((hsSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('hsSeed', seedNext);
+          upd('hsIdx', pick);
+          upd('hsAns', false);
+          upd('hsPick', null);
+          upd('hsShown', hsShown.concat([pick]));
+        }
+        function pickHs(typeId) {
+          if (hsAns) return;
+          var v = V[hsIdx];
+          var correct = typeId === v.correct;
+          var newScore = hsScore + (correct ? 1 : 0);
+          var newStreak = correct ? (hsStreak + 1) : 0;
+          var newBest = Math.max(hsBest, newStreak);
+          upd('hsAns', true);
+          upd('hsPick', typeId);
+          upd('hsScore', newScore);
+          upd('hsRounds', hsRounds + 1);
+          upd('hsStreak', newStreak);
+          upd('hsBest', newBest);
+        }
+
+        if (hsIdx < 0) {
+          return h('div', { className: 'p-6 max-w-3xl mx-auto' },
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); }, className: 'mb-4 text-sm font-bold text-slate-700 hover:text-slate-900' }, '← Back to EvoLab menu'),
+            h('h1', { className: 'text-3xl font-black text-cyan-700 mb-2' }, '🦴 Homology vs Analogy'),
+            h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-4' },
+              '10 pairs of structures. For each, decide: HOMOLOGOUS (shared evolutionary origin — same ancestral structure even if function differs) or ANALOGOUS (same function but independently evolved — convergent evolution). The single most important inferential reflex for reading evolutionary trees.'
+            ),
+            h('div', { className: 'p-4 rounded-2xl bg-cyan-50 border-2 border-cyan-300 mb-4' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-widest text-cyan-800 mb-2' }, 'The two types'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                TYPES.map(function(t) {
+                  return h('div', { key: t.id, style: { padding: '10px 12px', borderRadius: 8, background: t.color + '15', border: '1px solid ' + t.color + '55' } },
+                    h('div', { className: 'flex items-center gap-2 mb-1' },
+                      h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, t.icon),
+                      h('span', { style: { color: t.color, fontWeight: 800, fontSize: 13 } }, t.label)
+                    ),
+                    h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, t.def)
+                  );
+                })
+              )
+            ),
+            h('button', {
+              onClick: startHs,
+              className: 'w-full px-5 py-3 rounded-xl bg-cyan-600 text-white font-bold hover:bg-cyan-700 focus:outline-none focus:ring-2 ring-cyan-400'
+            }, '🦴 Start — pair 1 of 10')
+          );
+        }
+
+        var v = V[hsIdx];
+        var pickedCorrect = hsAns && hsPick === v.correct;
+        var pct = hsRounds > 0 ? Math.round((hsScore / hsRounds) * 100) : 0;
+        var allDone = hsShown.length >= V.length && hsAns;
+        var correctType = TYPES.filter(function(t) { return t.id === v.correct; })[0];
+        var pickedType = hsPick ? TYPES.filter(function(t) { return t.id === hsPick; })[0] : null;
+
+        return h('div', { className: 'p-6 max-w-3xl mx-auto' },
+          h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); }, className: 'mb-4 text-sm font-bold text-slate-700 hover:text-slate-900' }, '← Back to EvoLab menu'),
+          h('h1', { className: 'text-3xl font-black text-cyan-700 mb-2' }, '🦴 Homology vs Analogy'),
+          h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-600 mb-4' },
+            h('span', null, 'Pair ', h('strong', { className: 'text-slate-800' }, hsShown.length)),
+            h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, hsScore + ' / ' + hsRounds)),
+            hsRounds > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
+            h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, hsStreak)),
+            h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, hsBest))
+          ),
+          h('section', { className: 'p-5 rounded-2xl bg-cyan-50 border-2 border-cyan-300 mb-4' },
+            h('div', { className: 'text-xs font-bold uppercase tracking-widest text-cyan-700 mb-2' }, 'Pair ' + hsShown.length + ' of ' + V.length),
+            h('p', { className: 'text-base text-slate-800 leading-relaxed font-bold' }, v.pair)
+          ),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4', role: 'radiogroup', 'aria-label': 'Pick the relationship type' },
+            TYPES.map(function(t) {
+              var picked = hsAns && hsPick === t.id;
+              var isRight = hsAns && t.id === v.correct;
+              var bg, border, color;
+              if (hsAns) {
+                if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+              } else {
+                bg = t.color + '12'; border = t.color + '60'; color = '#1e293b';
+              }
+              return h('button', {
+                key: t.id, role: 'radio',
+                'aria-checked': picked ? 'true' : 'false',
+                'aria-label': t.label,
+                disabled: hsAns,
+                onClick: function() { pickHs(t.id); },
+                style: { padding: '14px 16px', borderRadius: 12, background: bg, color: color, border: '2px solid ' + border, cursor: hsAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 13, minHeight: 80, transition: 'all 0.15s' }
+              },
+                h('div', { className: 'flex items-center gap-2 mb-2' },
+                  h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, t.icon),
+                  h('span', { style: { color: hsAns ? color : t.color, fontSize: 15, fontWeight: 800 } }, t.label)
+                ),
+                h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.5, color: hsAns ? color : '#475569' } }, t.def)
+              );
+            })
+          ),
+          hsAns && h('section', {
+            className: 'p-4 rounded-2xl',
+            style: {
+              background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+              border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+            }
+          },
+            h('div', { className: 'text-sm font-bold mb-2', style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+              pickedCorrect
+                ? '✅ Correct — ' + correctType.label
+                : '❌ The relationship is ' + correctType.label + (pickedType ? ' (you picked ' + pickedType.label + ')' : '')
+            ),
+            h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
+            allDone
+              ? h('div', { className: 'p-3 rounded-lg bg-cyan-100 border border-cyan-300' },
+                  h('div', { className: 'text-sm font-black text-cyan-900 mb-1' }, '🏆 All 10 pairs complete'),
+                  h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
+                    'Final: ', h('strong', null, hsScore + ' / ' + V.length + ' (' + Math.round((hsScore / V.length) * 100) + '%)'),
+                    hsScore === V.length ? ' — ready to read evolutionary trees and spot convergent evolution in the wild.' :
+                    hsScore >= 8 ? ' — strong inferential reasoning. The most-confused pairs are usually the convergent-eye ones (octopus vs human) and the modified-organ-of-origin ones (cactus spine = leaf, rose thorn = epidermis).' :
+                    ' — these distinctions take practice. The diagnostic question: "do they share an ancestor with the SAME structure?" Yes = homologous. No = analogous. Re-read the rationales, then retake.'
+                  ),
+                  h('button', {
+                    onClick: function() { upd('hsIdx', -1); upd('hsShown', []); upd('hsScore', 0); upd('hsRounds', 0); upd('hsStreak', 0); },
+                    className: 'mt-3 px-4 py-1.5 rounded-lg bg-cyan-600 text-white font-bold text-xs hover:bg-cyan-700'
+                  }, '🔄 Restart')
+                )
+              : h('button', {
+                  onClick: startHs,
+                  className: 'px-4 py-2 rounded-lg bg-cyan-600 text-white font-bold text-sm hover:bg-cyan-700 focus:outline-none focus:ring-2 ring-cyan-400'
+                }, '➡️ Next pair')
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // CAPSTONE PROJECT
       // ─────────────────────────────────────────────────────
       // Students pick a real-world evolutionary scenario, predict outcomes,
@@ -6617,6 +6810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (view === 'discoveryTimeline') return h(DiscoveryTimeline);
       if (view === 'misconceptions') return h(MisconceptionsQuiz);
       if (view === 'selectionSleuth') return h(SelectionSleuth);
+      if (view === 'homologySleuth') return h(HomologySleuth);
       if (view === 'capstone') return h(CapstoneProject);
       if (view === 'curriculumGuide') return h(CurriculumGuide);
       if (view === 'moduleMap') return h(ModuleMap);
