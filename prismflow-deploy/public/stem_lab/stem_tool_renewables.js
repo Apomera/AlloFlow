@@ -32,6 +32,23 @@ window.StemLab = window.StemLab || {
   renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; } }
 };
 
+// ── RenewablesLab keyframes (mastery celebration) ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('renewables-celeb-css')) return;
+  var st = document.createElement('style');
+  st.id = 'renewables-celeb-css';
+  st.textContent = [
+    '@keyframes renewables-celeb-rise {',
+    '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+    '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'))) {
 
 (function() {
@@ -1373,7 +1390,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       var view = d.view || 'menu';
       var modulesVisited = d.modulesVisited || {};
       var badges = d.badges || {};
+      var quizMastery = d.quizMastery || {};
       var quizState = d.quizState || { idx: 0, score: 0, answered: false, lastChoice: null };
+
+      // ── Hydration + Canvas-survival persistence ──
+      // Window slot wins over localStorage on mount (host's handleLoadProject
+      // populates the slot from a project JSON load). The StemLab host's
+      // localStorage block does not include renewablesLab, so without this
+      // every reload wipes badges + module visits + quiz mastery.
+      var React = ctx.React;
+      var _renHydrated = React.useRef(false);
+      if (!_renHydrated.current) {
+        _renHydrated.current = true;
+        try {
+          var winState = (typeof window !== 'undefined' && window.__alloflowRenewablesLab) || null;
+          var lsState = null;
+          try { lsState = JSON.parse(localStorage.getItem('renewablesLab.state.v1') || 'null'); } catch (e) {}
+          var seed = winState || lsState || null;
+          if (seed && typeof seed === 'object') {
+            var merge = {};
+            if (seed.badges && d.badges === undefined) merge.badges = seed.badges;
+            if (seed.modulesVisited && d.modulesVisited === undefined) merge.modulesVisited = seed.modulesVisited;
+            if (seed.quizMastery && d.quizMastery === undefined) merge.quizMastery = seed.quizMastery;
+            if (Object.keys(merge).length > 0) {
+              Object.keys(merge).forEach(function (k) { upd(k, merge[k]); });
+            }
+          }
+        } catch (e) {}
+      }
+
+      // First-correct celebration state (auto-clears after 3.5s).
+      var _renCeleb = React.useState(null);
+      var renCeleb = _renCeleb[0];
+      var setRenCeleb = _renCeleb[1];
+
+      // Mirror persistent state to window slot + localStorage.
+      React.useEffect(function () {
+        try {
+          var snapshot = {
+            badges: d.badges || {},
+            modulesVisited: d.modulesVisited || {},
+            quizMastery: d.quizMastery || {},
+            _ts: Date.now()
+          };
+          window.__alloflowRenewablesLab = snapshot;
+          try { localStorage.setItem('renewablesLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+        } catch (e) {}
+      }, [d.badges, d.modulesVisited, d.quizMastery]);
+
+      // Hot-reload from project-JSON load mid-session.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowRenewablesLab || {};
+            if (w.badges) upd('badges', w.badges);
+            if (w.modulesVisited) upd('modulesVisited', w.modulesVisited);
+            if (w.quizMastery) upd('quizMastery', w.quizMastery);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-renewableslab-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-renewableslab-restored', onRestore); };
+      }, []);
 
       // Sim state defaults
       var simWindV = d.simWindV != null ? d.simWindV : 8;        // m/s
@@ -1576,6 +1653,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
         { id: 'myths',       icon: '🧐',     label: 'Myths busted',      desc: '7 common misconceptions, sourced corrections.' },
         // Assessment
         { id: 'quiz',        icon: '📝',     label: '18-question quiz',  desc: 'Test your understanding of all sources.' },
+        { id: 'mastery',     icon: '🏅',     label: 'Energy Mastery',     desc: 'Cross-attempt log of every quiz question you have nailed, rolled up by source.' },
+        { id: 'siteSelector', icon: '🕵️',  label: 'Site Selector',     desc: '10 location profiles. For each, pick the best renewable from 8 options (rooftop solar / utility solar / onshore wind / offshore wind / hydro / geothermal / wave-tidal / biomass). Maine + global scenarios; tests siting reasoning.' },
         { id: 'resources',   icon: '📚',     label: 'Resources',         desc: 'Every org cited in this tool.' }
       ];
 
@@ -1633,6 +1712,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             h('strong', { style: { color: T.text } }, 'Climate Explorer'),
             ' for the policy + mix-design side.'),
           startHereCard(),
+          // ── Energy Mastery summary tile (clickable → Mastery view) ──
+          (function () {
+            var mastery2 = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+            var totalQ2 = QUIZ.length;
+            var masteredCount2 = QUIZ.filter(function (q) { return !!mastery2[q.id]; }).length;
+            var pct2 = totalQ2 > 0 ? Math.round((masteredCount2 / totalQ2) * 100) : 0;
+            return h('button', {
+              onClick: function () { upd('view', 'mastery'); },
+              'aria-label': 'Open Energy Mastery — ' + masteredCount2 + ' of ' + totalQ2 + ' quiz questions mastered',
+              'data-rn-focusable': true,
+              style: {
+                width: '100%', textAlign: 'left', cursor: 'pointer',
+                padding: 14, marginBottom: 14, borderRadius: 12,
+                background: 'linear-gradient(110deg, rgba(16,185,129,0.10) 0%, rgba(6,182,212,0.18) 50%, rgba(99,102,241,0.10) 100%)',
+                border: '1px solid ' + T.accent + '88',
+                color: T.text, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { textAlign: 'center', minWidth: 90 } },
+                h('div', { style: { fontSize: 26, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, masteredCount2 + ' / ' + totalQ2),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'Mastered')
+              ),
+              h('div', { style: { flex: 1, minWidth: 200 } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 4 } }, '🏅 Energy Source Mastery'),
+                h('div', { style: { height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden', marginBottom: 5 }, 'aria-hidden': 'true' },
+                  h('div', { style: { width: pct2 + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
+                ),
+                h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } },
+                  masteredCount2 === 0 ? 'Take the 18-question quiz — every question you nail the first time locks in here permanently.'
+                  : masteredCount2 === totalQ2 ? '🏆 Full coverage — every quiz question mastered.'
+                  : pct2 + '% of the quiz bank mastered. ' + (totalQ2 - masteredCount2) + ' to go.'
+                )
+              ),
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 22, color: T.accentHi, fontWeight: 900, flexShrink: 0 } }, '→')
+            );
+          })(),
           h('div', { role: 'list',
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 } },
             MENU_TILES.map(function(tile) {
@@ -2269,6 +2384,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                     answered: true,
                     lastChoice: i
                   });
+                  // ── Quiz Mastery: per-question first-correct log ──
+                  // Quiz scores reset between attempts; mastery sticks. Each
+                  // question is keyed by its stable id. First-correct fires
+                  // a celebration overlay.
+                  if (isCorrect) {
+                    var prevMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+                    var existingEntry = prevMastery[q.id];
+                    var nowIso = new Date().toISOString();
+                    var nextMastery = Object.assign({}, prevMastery);
+                    if (existingEntry) {
+                      nextMastery[q.id] = Object.assign({}, existingEntry, {
+                        lastCorrectAt: nowIso,
+                        correctCount: (existingEntry.correctCount || 0) + 1
+                      });
+                    } else {
+                      nextMastery[q.id] = {
+                        firstCorrectAt: nowIso,
+                        lastCorrectAt: nowIso,
+                        correctCount: 1,
+                        icon: q.icon
+                      };
+                      try { setRenCeleb({ icon: q.icon, stem: q.stem, total: Object.keys(nextMastery).length, at: Date.now() }); } catch (e) {}
+                      try { setTimeout(function () { setRenCeleb(null); }, 3500); } catch (e) {}
+                    }
+                    upd('quizMastery', nextMastery);
+                  }
                   rnAnnounce(isCorrect ? 'Correct!' : 'Not quite. ' + q.why);
                 },
                 style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 6, borderRadius: 8, background: bg, border: '2px solid ' + bd, color: T.text, fontSize: 13, cursor: quizState.answered ? 'default' : 'pointer' }
@@ -2284,6 +2425,204 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             },
             style: btnPrimary({ width: '100%' }) }, qIdx + 1 >= QUIZ.length ? '🏁 See results' : 'Next question →'),
           footer()
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // SITE SELECTOR (net-new mini-game)
+      // 10 location profiles; player picks the best renewable energy source
+      // from 7 options. Tests siting reasoning — what resource matches the
+      // location's wind, solar, water, geology, and waste constraints. Mix
+      // of Maine-specific + global scenarios.
+      // ─────────────────────────────────────────
+      function renderSiteSelector() {
+        var SOURCES = [
+          { id: 'roofPv',      label: 'Rooftop solar PV',     color: '#f59e0b', icon: '☀️',
+            def: 'Distributed, residential or commercial rooftop. ~5 kW typical. Payback 6-12 yrs. Limited by roof area + orientation.' },
+          { id: 'utilPv',      label: 'Utility solar farm',   color: '#fbbf24', icon: '🌞',
+            def: 'Centralized PV at scale (10-500 MW+). Needs flat open land + grid interconnect. Cheapest electricity in history per kWh.' },
+          { id: 'onshore',     label: 'Onshore wind',         color: '#22c55e', icon: '🌬️',
+            def: 'Land turbines, typically 2-5 MW each. Needs sustained 6-9 m/s winds + open terrain. Largest cumulative renewable installed in US.' },
+          { id: 'offshore',    label: 'Offshore wind',        color: '#0284c7', icon: '🌊',
+            def: 'Marine turbines, typically 8-15 MW each. Higher capacity factor than onshore (~50% vs 35%); higher install cost. Continental shelf siting.' },
+          { id: 'hydro',       label: 'Hydropower',           color: '#0ea5e9', icon: '💧',
+            def: 'Stored gravitational energy of water via dam or run-of-river. Needs vertical drop + steady flow. Dispatchable (unlike most renewables).' },
+          { id: 'geothermal',  label: 'Geothermal',           color: '#dc2626', icon: '🌋',
+            def: 'Earth-internal heat (volcanic / hot-springs zones for power; ground-source heat pumps work everywhere for heating/cooling).' },
+          { id: 'waveTidal',   label: 'Wave / Tidal',         color: '#06b6d4', icon: '🌀',
+            def: 'Marine kinetic energy. Tidal streams predictable for decades. Less mature; high marine-environment cost.' },
+          { id: 'biomass',     label: 'Biomass / biogas',     color: '#84cc16', icon: '🌾',
+            def: 'Combustion of wood waste, agricultural residues, or anaerobic digestion of organic matter to methane. Best where waste streams already exist.' }
+        ];
+        var V = [
+          { id: 1, location: 'Aroostook County potato farm in northern Maine. Large flat fields, regular winds 6-9 m/s, no major rivers nearby, good (but not exceptional) sunlight. Looking for utility-scale generation that can be sited on existing farmland with minimal disruption.', correct: 'onshore',
+            why: 'Open flat land + sustained wind speeds in the right range = canonical onshore wind. Aroostook is part of Maine\'s wind-energy expansion plans. Farms can lease land to wind developers and continue farming around the turbines (~99% of land remains usable). Solar would also work but uses more land per MW.' },
+          { id: 2, location: 'Coastal Bath, Maine. Strong tidal currents twice daily through narrow inlet (Kennebec River mouth). Existing maritime industrial infrastructure (Bath Iron Works). Looking for a pilot-scale dispatchable renewable.', correct: 'waveTidal',
+            why: 'Tidal currents are highly predictable (decades in advance) — a major advantage for grid integration. Narrow inlets concentrate current speeds. Maine is one of a few US states with viable tidal-current resources. Existing maritime infrastructure (BIW) means trained workforce + dock access. Still pre-commercial in most US markets but Bath is a leading pilot site.' },
+          { id: 3, location: 'Reykjavík metropolitan area, Iceland. Active volcanic geology, abundant hot springs at 200°C+. ~80% of homes already heated this way. Looking to expand power generation capacity.', correct: 'geothermal',
+            why: 'Iceland sits on the Mid-Atlantic Ridge — one of the most geothermally active places on Earth. ~30% of Iceland\'s electricity is geothermal; ~85% of homes use geothermal heat. The high-temperature volcanic-zone resource enables both power generation (flash steam) and direct-use heating. Geothermal heat pumps work everywhere; full geothermal POWER plants need this kind of resource.' },
+          { id: 4, location: 'Single-family home in Phoenix, Arizona. South-facing roof with 600 sq ft of usable area. ~300 sunny days/yr. Homeowner wants to reduce a $250/mo electric bill. Wants distributed (own-the-equipment) solution.', correct: 'roofPv',
+            why: 'Hot dry climate + south-facing roof + high electric bill = textbook rooftop solar PV case. ~6 kW system covers most household consumption; payback 5-8 years in Arizona with current incentives. Compared to utility solar: rooftop is more expensive per kWh but the homeowner captures the savings directly + has resilience.' },
+          { id: 5, location: 'Maine paper mill with year-round wood-product byproducts (sawdust, bark, scrap chips). Existing steam-turbine infrastructure for process heat. Looking to displace fuel oil currently used for boiler.', correct: 'biomass',
+            why: 'Co-located waste stream + existing combustion infrastructure = ideal biomass case. The mill already burns fuel; switching to wood waste turns a disposal cost into an energy revenue. Maine paper industry has been doing this since the 1980s. Net carbon benefit depends on whether the wood is genuine waste vs grown for fuel.' },
+          { id: 6, location: 'Mountain canyon in Pacific Northwest. Steady year-round flow from snowmelt. Existing reservoir 200 ft above downstream powerhouse site. Project will be dispatchable and serve grid balancing.', correct: 'hydro',
+            why: 'Vertical drop (head) + steady flow = classic hydropower. The dispatchability is the key advantage: unlike wind/solar, hydro can be ramped up/down in minutes to balance grid demand. PNW hydro is ~60% of regional electricity. New dam construction is rare now (environmental impact + best sites already taken); pumped-storage hydro retrofits are growing.' },
+          { id: 7, location: 'Mojave Desert, southern California. Several thousand acres of flat undeveloped land. 320+ sunny days per year. Existing 500 kV transmission line crosses the property. Investor seeks utility-scale clean generation.', correct: 'utilPv',
+            why: 'Best solar resource in the contiguous US + cheap flat land + transmission interconnect = utility-scale solar farm. Modern utility PV beats every other generation source on cost per MWh. Mojave hosts some of the largest solar installations in the world. Compare to rooftop: utility PV is ~50% cheaper per kWh but the homeowner captures none of the savings.' },
+          { id: 8, location: 'North Sea continental shelf, 30 km off the UK coast. Constant strong winds (10+ m/s annual average). Water depth ~30 m (within fixed-foundation range). Existing offshore-wind installation expanding capacity.', correct: 'offshore',
+            why: 'Strong sustained winds (much higher than onshore averages) + shallow continental shelf = offshore wind heartland. Capacity factors are 50%+ vs ~35% for onshore. The North Sea hosts the world\'s largest offshore wind installations. Higher CapEx than onshore wind (marine construction is expensive) but higher output per turbine offsets it.' },
+          { id: 9, location: 'Vermont single-family home. Existing electric baseboard heat costs $400/mo in winter. Modest sunshine (lower than Arizona). Homeowner has $30k budget for a renewable + heat-pump combo.', correct: 'roofPv',
+            why: 'Even in lower-sun climates, rooftop solar makes sense when paired with a heat pump (replacing inefficient electric resistance heat). The combo: solar PV (~5 kW) + air-source heat pump can cut heating costs by 60-70% AND offset most household electricity. Vermont and Maine both have strong policy incentives for this stack. Geothermal heat pumps (GSHPs) are even better but cost 2-3x more upfront.' },
+          { id: 10, location: 'Pacific Northwest sawmill complex producing 50,000 tons/year of wood-product residues. Currently paying landfill fees to dispose of bark + sawdust. Local utility offers $0.08/kWh purchase contract for renewable power.', correct: 'biomass',
+            why: 'Existing waste stream that costs money to dispose of + utility willing to buy the resulting power = biomass economics work. Sawmills, paper mills, and lumber operations are the canonical US biomass sites. Pellet exports to Europe + on-site power generation are both common. Like #5, the carbon math depends on whether the wood is genuine waste.' }
+        ];
+
+        var rsIdx = d.rsIdx == null ? -1 : d.rsIdx;
+        var rsSeed = d.rsSeed || 1;
+        var rsAns = !!d.rsAns;
+        var rsPick = d.rsPick;
+        var rsScore = d.rsScore || 0;
+        var rsRounds = d.rsRounds || 0;
+        var rsStreak = d.rsStreak || 0;
+        var rsBest = d.rsBest || 0;
+        var rsShown = d.rsShown || [];
+
+        function startRs() {
+          var pool = [];
+          for (var i = 0; i < V.length; i++) if (rsShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); rsShown = []; }
+          var seedNext = ((rsSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('rsSeed', seedNext);
+          upd('rsIdx', pick);
+          upd('rsAns', false);
+          upd('rsPick', null);
+          upd('rsShown', rsShown.concat([pick]));
+        }
+        function pickRs(srcId) {
+          if (rsAns) return;
+          var v = V[rsIdx];
+          var correct = srcId === v.correct;
+          var newScore = rsScore + (correct ? 1 : 0);
+          var newStreak = correct ? (rsStreak + 1) : 0;
+          var newBest = Math.max(rsBest, newStreak);
+          upd('rsAns', true);
+          upd('rsPick', srcId);
+          upd('rsScore', newScore);
+          upd('rsRounds', rsRounds + 1);
+          upd('rsStreak', newStreak);
+          upd('rsBest', newBest);
+        }
+
+        if (rsIdx < 0) {
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('🕵️ Site Selector'),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '10 location profiles — pick the best renewable'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'For each location, pick the best renewable energy source from 8 options. Vignettes mix Maine-specific (Aroostook wind, Bath tidal, paper-mill biomass) and global (Iceland geothermal, Mojave utility PV, North Sea offshore wind, PNW hydro). Coaching cites the resource match + the trade-offs against alternatives.')
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The 8 renewable sources'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                SOURCES.map(function(s) {
+                  return h('div', { key: s.id, style: { padding: '8px 10px', borderRadius: 8, background: s.color + '15', border: '1px solid ' + s.color + '55' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                      h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, s.icon),
+                      h('span', { style: { color: s.color, fontWeight: 800, fontSize: 12 } }, s.label)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, s.def)
+                  );
+                })
+              )
+            ),
+            h('button', {
+              onClick: startRs,
+              style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+            }, '🕵️ Start — site 1 of 10')
+          );
+        }
+
+        var v = V[rsIdx];
+        var pickedCorrect = rsAns && rsPick === v.correct;
+        var pct = rsRounds > 0 ? Math.round((rsScore / rsRounds) * 100) : 0;
+        var allDone = rsShown.length >= V.length && rsAns;
+        var correctSrc = SOURCES.filter(function(s) { return s.id === v.correct; })[0];
+        var pickedSrc = rsPick ? SOURCES.filter(function(s) { return s.id === rsPick; })[0] : null;
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🕵️ Site Selector'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.dim, marginBottom: 12 } },
+            h('span', null, 'Site ', h('strong', { style: { color: T.text } }, rsShown.length)),
+            h('span', null, 'Score ', h('strong', { style: { color: T.good || '#22c55e' } }, rsScore + ' / ' + rsRounds)),
+            rsRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link || '#0ea5e9' } }, pct + '%')),
+            h('span', null, 'Streak ', h('strong', { style: { color: T.warm || '#f59e0b' } }, rsStreak)),
+            h('span', null, 'Best ', h('strong', { style: { color: T.accentHi || '#fbbf24' } }, rsBest))
+          ),
+          h('section', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent + '88', marginBottom: 12 } },
+            h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Site ' + rsShown.length + ' of ' + V.length),
+            h('p', { style: { margin: 0, color: T.text, fontSize: 13, lineHeight: 1.55 } }, v.location)
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the best renewable for this site' },
+            SOURCES.map(function(s) {
+              var picked = rsAns && rsPick === s.id;
+              var isRight = rsAns && s.id === v.correct;
+              var bg, border, color;
+              if (rsAns) {
+                if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
+                else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
+                else { bg = T.cardAlt; border = T.border; color = T.dim; }
+              } else {
+                bg = s.color + '15'; border = s.color + '55'; color = T.text;
+              }
+              return h('button', { key: s.id, role: 'radio',
+                'aria-checked': picked ? 'true' : 'false',
+                'aria-label': s.label,
+                disabled: rsAns,
+                onClick: function() { pickRs(s.id); },
+                style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: rsAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 70, transition: 'all 0.15s' }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                  h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, s.icon),
+                  h('span', { style: { color: rsAns ? color : s.color, fontSize: 12, fontWeight: 800 } }, s.label)
+                ),
+                h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: rsAns ? color : T.muted } }, s.def)
+              );
+            })
+          ),
+          rsAns && h('section', {
+            style: {
+              marginTop: 12, padding: '12px 14px', borderRadius: 10,
+              background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+              border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+            }
+          },
+            h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+              pickedCorrect
+                ? '✅ Correct — ' + correctSrc.label
+                : '❌ Best fit is ' + correctSrc.label + (pickedSrc ? ' (you picked ' + pickedSrc.label + ')' : '')
+            ),
+            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
+            allDone
+              ? h('div', { style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 sites complete'),
+                  h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.5 } },
+                    'Final: ', h('strong', null, rsScore + ' / ' + V.length + ' (' + Math.round((rsScore / V.length) * 100) + '%)'),
+                    rsScore === V.length ? ' — every siting decision correct. Ready for actual project siting work.' :
+                    rsScore >= 8 ? ' — strong siting reasoning. The most-confused pair is usually rooftop vs utility solar (homeowner-distributed vs centralized) and onshore vs offshore wind (cost vs capacity factor trade-off).' :
+                    rsScore >= 6 ? ' — solid baseline. Reflexes worth building: open flat windy = onshore wind, sunny + transmission line = utility solar, existing waste stream = biomass, dispatchability needed = hydro.' :
+                    ' — these decisions take practice. Re-read the rationales on misses; siting is fundamentally about matching the resource to the location\'s natural endowments.'
+                  ),
+                  h('button', {
+                    onClick: function() { upd('rsIdx', -1); upd('rsShown', []); upd('rsScore', 0); upd('rsRounds', 0); upd('rsStreak', 0); },
+                    style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, '🔄 Restart')
+                )
+              : h('button', {
+                  onClick: startRs,
+                  style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                }, '➡️ Next site')
+          )
         );
       }
 
@@ -4105,39 +4444,192 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
       }
 
       // ─────────────────────────────────────────
-      // VIEW ROUTER
+      // SOURCE MASTERY VIEW — cross-attempt log of quiz questions correctly
+      // answered, rolled up into the eight source-module clusters.
+      // Mirrors the BirdLab life list / OpticsLab AP-mastery pattern.
       // ─────────────────────────────────────────
-      switch (view) {
-        case 'solarPv':      return renderSolarPv();
-        case 'wind':         return renderWind();
-        case 'hydro':        return renderHydro();
-        case 'geothermal':   return renderGeo();
-        case 'solarThermal': return renderSolarThermal();
-        case 'waveTidal':    return renderWaveTidal();
-        case 'biomass':      return renderBiomass();
-        case 'storage':      return renderStorage();
-        case 'compare':      return renderCompare();
-        case 'mix':          return renderMix();
-        case 'homePayback':  return renderHomePayback();
-        case 'heatPump':     return renderHeatPump();
-        case 'plants':       return renderPlantTour();
-        case 'hydrogen':     return renderHydrogen();
-        case 'justice':      return renderJustice();
-        case 'teacher':      return renderTeacher();
-        case 'takeAction':   return renderTakeAction();
-        case 'printPack':    return renderPrintPack();
-        case 'glossary':     return renderGlossary();
-        case 'myths':        return renderMyths();
-        case 'nuclear':      return renderNuclear();
-        case 'aiPractice':   return renderAiPractice();
-        case 'diagrams':     return renderDiagrams();
-        case 'smartGrid':    return renderSmartGrid();
-        case 'careers':      return renderCareers();
-        case 'quiz':         return renderQuiz();
-        case 'resources':    return renderResources();
-        case 'menu':
-        default:             return renderMenu();
+      function renderRenewablesMastery() {
+        var mastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+        var totalQ = QUIZ.length;
+        var masteredQs = QUIZ.filter(function (q) { return !!mastery[q.id]; });
+        var masteredCount = masteredQs.length;
+        var pctOverall = totalQ > 0 ? Math.round((masteredCount / totalQ) * 100) : 0;
+        // Map quiz icon → source cluster. The 18 questions cluster cleanly
+        // by their icon since each one is anchored to a specific source.
+        var ICON_TO_CLUSTER = {
+          '☀️': 'solarPv',  '🌬️': 'wind',     '🌊': 'hydro',     '🌋': 'geothermal',
+          '🔆': 'solarThermal', '🌀': 'waveTidal', '🌾': 'biomass',  '🔋': 'storage',
+          '🦆': 'mix',      '🌐': 'mix',     '💨': 'hydrogen',  '🏠': 'homePayback', '⚖️': 'justice'
+        };
+        var CLUSTERS = [
+          { id: 'solarPv',      label: '☀️ Solar PV',          color: '#fbbf24' },
+          { id: 'wind',         label: '🌬️ Wind',              color: '#06b6d4' },
+          { id: 'hydro',        label: '🌊 Hydropower',        color: '#0ea5e9' },
+          { id: 'geothermal',   label: '🌋 Geothermal',        color: '#dc2626' },
+          { id: 'solarThermal', label: '🔆 Solar Thermal',     color: '#f59e0b' },
+          { id: 'waveTidal',    label: '🌀 Wave & Tidal',      color: '#3b82f6' },
+          { id: 'biomass',      label: '🌾 Biomass & Biogas',  color: '#84cc16' },
+          { id: 'storage',      label: '🔋 Storage',           color: '#a855f7' },
+          { id: 'mix',          label: '🌐 Grid + Mix',        color: '#22c55e' },
+          { id: 'hydrogen',     label: '💨 Hydrogen',          color: '#0891b2' },
+          { id: 'homePayback',  label: '🏠 Heat pumps + home', color: '#10b981' },
+          { id: 'justice',      label: '⚖️ Climate justice',  color: '#8b5cf6' }
+        ];
+        function fmtDate(iso) {
+          if (!iso) return '';
+          try {
+            var dd = new Date(iso);
+            return dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          } catch (e) { return iso.substring(0, 10); }
+        }
+        var clusterStats = CLUSTERS.map(function (c) {
+          var qs = QUIZ.filter(function (q) { return ICON_TO_CLUSTER[q.icon] === c.id; });
+          var done = qs.filter(function (q) { return !!mastery[q.id]; });
+          return { cluster: c, questions: qs, doneCount: done.length };
+        }).filter(function (cs) { return cs.questions.length > 0; });
+        return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
+          backBar('🏅 Energy Mastery'),
+          // Hero
+          h('div', { style: { padding: 18, borderRadius: 14, marginBottom: 14,
+                              background: 'linear-gradient(135deg, ' + T.cardAlt + ' 0%, ' + T.card + ' 100%)',
+                              border: '2px solid ' + T.accent } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
+              h('div', { style: { textAlign: 'center', minWidth: 110 } },
+                h('div', { style: { fontSize: 38, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, masteredCount + ' / ' + totalQ),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
+              ),
+              h('div', { style: { flex: 1, minWidth: 240 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+                  h('h3', { style: { margin: 0, fontSize: 17, color: T.text, fontWeight: 800 } }, 'Energy Source Mastery')
+                ),
+                h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                  'Every quiz question you nail at least once locks in here permanently. Quiz attempts give you per-attempt scores; this view shows what you have demonstrated across every attempt — by source.'
+                ),
+                h('div', { style: { height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
+                  h('div', { style: { width: pctOverall + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
+                ),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4, fontWeight: 700 } },
+                  pctOverall === 100 ? '🏆 Full coverage — every source mastered'
+                  : masteredCount === 0 ? 'Take the 18-question quiz to start building mastery'
+                  : pctOverall + '% complete · ' + (totalQ - masteredCount) + ' to go'
+                )
+              )
+            )
+          ),
+          // Per-cluster cards
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 } },
+            clusterStats.map(function (cs) {
+              var pct = cs.questions.length > 0 ? Math.round((cs.doneCount / cs.questions.length) * 100) : 0;
+              var statusLabel = cs.doneCount === 0 ? 'Untouched'
+                : cs.doneCount === cs.questions.length ? '✓ All mastered'
+                : cs.doneCount + ' / ' + cs.questions.length;
+              var statusColor = cs.doneCount === 0 ? T.dim
+                : cs.doneCount === cs.questions.length ? T.ok
+                : cs.cluster.color;
+              return h('div', { key: cs.cluster.id,
+                style: { padding: 12, borderRadius: 12, background: T.card,
+                         border: '1px solid ' + (cs.doneCount > 0 ? cs.cluster.color + 'aa' : T.border) }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: T.text, flex: 1 } }, cs.cluster.label),
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: statusColor } }, statusLabel)
+                ),
+                h('div', { style: { height: 5, background: T.cardAlt, borderRadius: 3, overflow: 'hidden', marginBottom: 8 }, 'aria-hidden': 'true' },
+                  h('div', { style: { width: pct + '%', height: '100%', background: cs.cluster.color, transition: 'width 0.3s' } })
+                ),
+                h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+                  cs.questions.map(function (q) {
+                    var entry = mastery[q.id];
+                    var done = !!entry;
+                    return h('li', { key: q.id,
+                      style: { display: 'flex', alignItems: 'flex-start', gap: 6,
+                               fontSize: 11, color: done ? T.muted : T.dim, lineHeight: 1.45 }
+                    },
+                      h('span', { 'aria-hidden': 'true', style: { color: done ? T.ok : T.dim, fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                      h('span', { style: { flex: 1, minWidth: 0 } },
+                        q.stem.length > 80 ? q.stem.substring(0, 77) + '…' : q.stem,
+                        done && entry.firstCorrectAt && h('span', { style: { color: T.dim, fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
+                      )
+                    );
+                  })
+                )
+              );
+            })
+          ),
+          h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
+            h('button', { 'data-rn-focusable': true,
+              onClick: function () { upd({ view: 'quiz', quizState: { idx: 0, score: 0, answered: false, lastChoice: null } }); },
+              style: btnPrimary({ width: '100%' })
+            }, masteredCount === 0 ? '📝 Take the 18-question quiz to start'
+              : masteredCount === totalQ ? '🏆 All mastered — re-attempt to reinforce'
+              : '📝 Take another quiz attempt — fill in gaps')
+          ),
+          footer()
+        );
       }
+
+      // First-correct celebration overlay (renders on top of any view).
+      function renCelebOverlay() {
+        if (!renCeleb) return null;
+        return h('div', {
+          role: 'status', 'aria-live': 'assertive',
+          style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+                   zIndex: 9999, pointerEvents: 'none',
+                   animation: 'renewables-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+        },
+          h('div', { style: { background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #6366f1 100%)',
+                              color: '#fff', padding: '14px 22px', borderRadius: 16,
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.35)', border: '4px solid #fff',
+                              display: 'flex', alignItems: 'center', gap: 12 } },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, renCeleb.icon),
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Concept locked in'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, renCeleb.stem.length > 90 ? (renCeleb.stem.substring(0, 87) + '…') : renCeleb.stem),
+              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, renCeleb.total + ' / ' + QUIZ.length + ' questions mastered')
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────
+      // VIEW ROUTER — wraps view in a fragment with the celebration overlay.
+      // ─────────────────────────────────────────
+      var viewBody;
+      switch (view) {
+        case 'solarPv':      viewBody = renderSolarPv(); break;
+        case 'wind':         viewBody = renderWind(); break;
+        case 'hydro':        viewBody = renderHydro(); break;
+        case 'geothermal':   viewBody = renderGeo(); break;
+        case 'solarThermal': viewBody = renderSolarThermal(); break;
+        case 'waveTidal':    viewBody = renderWaveTidal(); break;
+        case 'biomass':      viewBody = renderBiomass(); break;
+        case 'storage':      viewBody = renderStorage(); break;
+        case 'compare':      viewBody = renderCompare(); break;
+        case 'mix':          viewBody = renderMix(); break;
+        case 'homePayback':  viewBody = renderHomePayback(); break;
+        case 'heatPump':     viewBody = renderHeatPump(); break;
+        case 'plants':       viewBody = renderPlantTour(); break;
+        case 'hydrogen':     viewBody = renderHydrogen(); break;
+        case 'justice':      viewBody = renderJustice(); break;
+        case 'teacher':      viewBody = renderTeacher(); break;
+        case 'takeAction':   viewBody = renderTakeAction(); break;
+        case 'printPack':    viewBody = renderPrintPack(); break;
+        case 'glossary':     viewBody = renderGlossary(); break;
+        case 'myths':        viewBody = renderMyths(); break;
+        case 'nuclear':      viewBody = renderNuclear(); break;
+        case 'aiPractice':   viewBody = renderAiPractice(); break;
+        case 'diagrams':     viewBody = renderDiagrams(); break;
+        case 'smartGrid':    viewBody = renderSmartGrid(); break;
+        case 'careers':      viewBody = renderCareers(); break;
+        case 'quiz':         viewBody = renderQuiz(); break;
+        case 'resources':    viewBody = renderResources(); break;
+        case 'mastery':      viewBody = renderRenewablesMastery(); break;
+        case 'siteSelector': viewBody = renderSiteSelector(); break;
+        case 'menu':
+        default:             viewBody = renderMenu(); break;
+      }
+      return React.createElement(React.Fragment, null, renCelebOverlay(), viewBody);
       } catch(e) {
         console.error('[Renewables] render error', e);
         return ctx.React.createElement('div', { style: { padding: 16, color: '#fde2e2', background: '#7f1d1d', borderRadius: 8 } },

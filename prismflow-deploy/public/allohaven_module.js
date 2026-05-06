@@ -395,12 +395,13 @@
     // true — previous Print Packet behavior preserved when nobody
     // touches the options.
     printOptions: {
-      companion:    true,
-      achievements: true,
-      goals:        true,
-      memoryDecks:  true,
-      stories:      true,
-      journals:     true
+      companion:      true,
+      achievements:   true,
+      goals:          true,
+      memoryDecks:    true,
+      stories:        true,
+      journals:       true,
+      bossEncounters: true   // Phase 3b.history
     },
 
     // ── Arcade (Phase 3a) ──
@@ -415,7 +416,15 @@
     arcade: {
       minutesPerToken: 5,         // teacher-configurable conversion rate
       session: null               // { modeId, startedAt, minutes, endsAt }
-    }
+    },
+
+    // ── Boss Encounter history (Phase 3b.history) ──
+    // Records of completed Boss Encounter sessions. Plugin emits a
+    // record at win/loss/expire via ctx.onEncounterRecord; AlloHaven
+    // appends here. Capped at the most recent 20 records to keep
+    // state size bounded. Surfaces in a Past Encounters modal +
+    // an opt-in section of the print packet for IEP / parent review.
+    bossEncounters: []
   };
 
   // ─────────────────────────────────────────────────────────
@@ -9068,6 +9077,13 @@
         // tab shouldn't hold the user hostage to a non-existent timer.
         merged.arcade.session = null;
       }
+      // Phase 3b.history — Boss Encounter records.
+      if (!Array.isArray(merged.bossEncounters)) {
+        merged.bossEncounters = [];
+      } else if (merged.bossEncounters.length > 20) {
+        // Keep the most recent 20; older records discarded on load.
+        merged.bossEncounters = merged.bossEncounters.slice(-20);
+      }
       return merged;
     });
     var state = stateTuple[0];
@@ -13988,6 +14004,22 @@
       addToast(msg);
     }
 
+    // Phase 3b.history — record an encounter outcome to state. Capped at
+    // 20 records (most-recent-wins). Plugins call this via ctx.onEncounterRecord
+    // when an encounter ends in win/loss/expired/forfeit. The record is the
+    // plugin's choice of fields; AlloHaven just appends + caps.
+    function recordEncounter(record) {
+      if (!record || typeof record !== 'object') return;
+      // Stamp identity + saved-at time so the record is self-contained.
+      var stamped = Object.assign({}, record, {
+        id: record.id || ('be-' + Date.now() + '-' + Math.floor(Math.random() * 1000)),
+        savedAt: new Date().toISOString()
+      });
+      var next = (state.bossEncounters || []).concat([stamped]);
+      if (next.length > 20) next = next.slice(-20);
+      setStateField('bossEncounters', next);
+    }
+
     function renderArcadeHubModal() {
       if (state.activeModal !== 'arcade') return null;
       var modes = (window.AlloHavenArcade && window.AlloHavenArcade.getRegisteredModes())
@@ -14083,6 +14115,35 @@
               state.tokens + ' 🪙  ·  up to ' + (state.tokens * mpt) + ' minutes')
           ),
 
+          // Past Encounters link (Phase 3b.history) — only shown when
+          // there's something to look back at. Anchored above the modes
+          // list so it doesn't compete with the active games.
+          (state.bossEncounters || []).length > 0 ? h('button', {
+            onClick: function() {
+              setStateMulti({ activeModal: 'past-encounters', generateContext: null });
+            },
+            'aria-label': 'View past Boss Encounters',
+            style: {
+              display: 'flex', alignItems: 'center', gap: '8px',
+              width: '100%',
+              background: 'transparent',
+              border: '1px dashed ' + palette.border,
+              borderRadius: '8px',
+              padding: '8px 12px',
+              fontSize: '12px',
+              color: palette.textDim,
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              marginBottom: '14px',
+              textAlign: 'left'
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '18px' } }, '📜'),
+            h('span', { style: { flex: 1 } },
+              'Past encounters · ' + state.bossEncounters.length + ' record' + (state.bossEncounters.length === 1 ? '' : 's')),
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, '→')
+          ) : null,
+
           // Modes list
           modes.length === 0 ? h('div', {
             style: {
@@ -14104,6 +14165,9 @@
                 onLaunch: function(minutes) { return launchArcadeMode(mode.id, minutes); },
                 onClose: close,
                 onEndSession: function(reason) { return endArcadeSession(reason || 'forfeit'); },
+                // Phase 3b.history — plugin calls this with an encounter
+                // record at win/loss/expired/forfeit. AlloHaven persists.
+                onEncounterRecord: function(record) { return recordEncounter(record); },
                 callImagen: props.callImagen,
                 callGemini: props.callGemini,
                 callTTS: props.callTTS,
@@ -14171,6 +14235,273 @@
               );
             })
           )
+        )
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // PAST ENCOUNTERS (Phase 3b.history) — list of completed Boss
+    // Encounter sessions with quick stats, opens onto a per-encounter
+    // detail view. Triggered from the Arcade hub (Phase 3b.history)
+    // and from the Print Packet section toggle.
+    // ─────────────────────────────────────────────────
+    function renderPastEncountersModal() {
+      if (state.activeModal !== 'past-encounters') return null;
+      var encounters = (state.bossEncounters || []).slice().reverse(); // most recent first
+      var ctxFromGenerate = state.generateContext || {};
+      var detailId = ctxFromGenerate.encounterId || null;
+      var detail = detailId ? encounters.filter(function (e) { return e.id === detailId; })[0] : null;
+
+      function close() {
+        setStateMulti({ activeModal: null, generateContext: null });
+      }
+      function openDetail(id) {
+        setStateMulti({ activeModal: 'past-encounters', generateContext: { encounterId: id } });
+      }
+      function backToList() {
+        setStateMulti({ activeModal: 'past-encounters', generateContext: null });
+      }
+      function clearAll() {
+        if (typeof window !== 'undefined' && window.confirm) {
+          if (!window.confirm('Clear all ' + encounters.length + ' past encounter records? This can\'t be undone.')) return;
+        }
+        setStateField('bossEncounters', []);
+        addToast('Past encounters cleared.');
+      }
+
+      function outcomeChip(outcome) {
+        var styleByOutcome = {
+          'won':     { bg: '#16a34a22', border: '#16a34a', label: 'Won' },
+          'lost':    { bg: palette.surface, border: palette.border, label: 'Boss escaped' },
+          'expired': { bg: palette.surface, border: palette.border, label: 'Time-up' },
+          'forfeit': { bg: palette.surface, border: palette.border, label: 'Left early' }
+        };
+        var s = styleByOutcome[outcome] || { bg: palette.surface, border: palette.border, label: outcome };
+        return h('span', {
+          style: {
+            background: s.bg,
+            border: '1px solid ' + s.border,
+            borderRadius: '999px',
+            padding: '2px 10px',
+            fontSize: '10px',
+            fontWeight: 700,
+            color: palette.text,
+            letterSpacing: '0.04em'
+          }
+        }, s.label);
+      }
+
+      // Detail view
+      if (detail) {
+        var dateStr = detail.savedAt ? new Date(detail.savedAt).toLocaleString() : '?';
+        var elapsedMin = (detail.endedAt && detail.startedAt)
+          ? Math.max(1, Math.round((new Date(detail.endedAt).getTime() - new Date(detail.startedAt).getTime()) / 60000))
+          : null;
+        return h('div', {
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-label': 'Past encounter detail',
+          onClick: function (e) { if (e.target === e.currentTarget) close(); },
+          style: {
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.55)', zIndex: 175,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '20px'
+          }
+        },
+          h('div', {
+            style: {
+              background: palette.bg, border: '1px solid ' + palette.border,
+              borderRadius: '14px', padding: '24px',
+              maxWidth: '600px', width: '100%', maxHeight: '88vh',
+              overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+            }
+          },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+              h('button', {
+                onClick: backToList,
+                style: { background: 'transparent', color: palette.textDim, border: 'none', padding: '4px 0', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
+              }, '← Back to list'),
+              h('button', {
+                onClick: close,
+                'aria-label': 'Close',
+                style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+              }, '✕')
+            ),
+            h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '14px' } },
+              detail.bossImageBase64 ? h('img', {
+                src: detail.bossImageBase64,
+                alt: 'Concept Guardian for ' + detail.topic,
+                style: { width: '96px', height: '96px', objectFit: 'cover', borderRadius: '10px', border: '1px solid ' + palette.border, flexShrink: 0 }
+              }) : h('div', {
+                'aria-hidden': 'true',
+                style: { width: '96px', height: '96px', flexShrink: 0, fontSize: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
+              }, '🐉'),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontSize: '16px', fontWeight: 800, color: palette.text, marginBottom: '4px' } },
+                  detail.topic || 'Untitled topic'),
+                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' } },
+                  outcomeChip(detail.outcome)
+                ),
+                h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.5' } },
+                  dateStr,
+                  elapsedMin ? ' · ' + elapsedMin + ' min' : '',
+                  ' · ' + (detail.roundsPlayed || 0) + ' Spark' + (detail.roundsPlayed === 1 ? '' : 's'),
+                  ' · ' + (detail.criticalCount || 0) + ' critical'
+                )
+              )
+            ),
+            // Summary stats row
+            h('div', {
+              style: {
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '8px',
+                padding: '10px 12px', background: palette.surface, border: '1px solid ' + palette.border,
+                borderRadius: '8px', marginBottom: '14px'
+              }
+            },
+              h('div', null,
+                h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Final HP'),
+                h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text, fontVariantNumeric: 'tabular-nums' } },
+                  (typeof detail.bossHpFinal === 'number' ? detail.bossHpFinal : '?') + ' / ' + (detail.bossHpStart || '?'))
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Damage'),
+                h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text, fontVariantNumeric: 'tabular-nums' } }, detail.totalDamage || 0)
+              ),
+              h('div', null,
+                h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' } }, 'Transforms'),
+                h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text, fontVariantNumeric: 'tabular-nums' } }, detail.transformCount || 0)
+              )
+            ),
+            // Strongest Spark callout
+            detail.strongestSpark ? h('div', {
+              style: { padding: '10px 12px', background: palette.surface, border: '1.5px solid ' + palette.accent, borderRadius: '10px', marginBottom: '14px' }
+            },
+              h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } },
+                '✨ Strongest Spark · score ' + detail.strongestSpark.score),
+              h('div', { style: { fontSize: '12px', color: palette.text, marginBottom: '4px' } },
+                detail.strongestSpark.cardName + ' · ' + detail.strongestSpark.verb),
+              h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.45' } },
+                '"' + (detail.strongestSpark.justification || '') + '"')
+            ) : null,
+            // Per-turn history
+            (detail.history || []).length > 0 ? h('div', null,
+              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+                'Per-turn detail'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                detail.history.map(function (turn, i) {
+                  return h('div', {
+                    key: 'pe-turn-' + i,
+                    style: { padding: '8px 10px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', fontSize: '11px' }
+                  },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '2px' } },
+                      h('span', { style: { fontWeight: 700, color: palette.text } },
+                        'R' + turn.round + ' · ' + (turn.cardName || '?') + ' · ' + (turn.verb || '?')),
+                      h('span', { style: { color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+                        'score ' + turn.score + ' · -' + (turn.damage || 0) + ' HP')
+                    ),
+                    turn.justification ? h('div', { style: { color: palette.textDim, fontStyle: 'italic', lineHeight: '1.4' } },
+                      '"' + turn.justification + '"') : null
+                  );
+                })
+              )
+            ) : null
+          )
+        );
+      }
+
+      // List view
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Past Boss Encounters',
+        onClick: function (e) { if (e.target === e.currentTarget) close(); },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '600px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+              '🐉 Past Boss Encounters'),
+            h('button', {
+              onClick: close,
+              'aria-label': 'Close',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', { style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', margin: '0 0 14px 0', lineHeight: '1.5' } },
+            'Each completed encounter is saved here. The most recent 20 are kept. Click any to see per-turn detail.'),
+          encounters.length === 0
+            ? h('div', {
+                style: { padding: '32px 20px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center' }
+              },
+              h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '🌫️'),
+              h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+                'No past encounters yet. Open the Arcade and play a Boss Encounter to start tracking.')
+            )
+            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+              encounters.map(function (enc) {
+                var dateStr = enc.savedAt ? new Date(enc.savedAt).toLocaleDateString() : '?';
+                return h('button', {
+                  key: 'enc-' + enc.id,
+                  onClick: function () { openDetail(enc.id); },
+                  style: {
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '10px',
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    textAlign: 'left',
+                    color: palette.text,
+                    width: '100%'
+                  }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px' } },
+                    enc.bossImageBase64 ? h('img', {
+                      src: enc.bossImageBase64,
+                      alt: '',
+                      style: { width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', border: '1px solid ' + palette.border, flexShrink: 0 }
+                    }) : h('span', { 'aria-hidden': 'true', style: { fontSize: '22px', flexShrink: 0, width: '40px', textAlign: 'center' } }, '🐉'),
+                    h('div', { style: { flex: 1, minWidth: 0 } },
+                      h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+                        enc.topic || 'Untitled topic'),
+                      h('div', { style: { fontSize: '10px', color: palette.textDim, display: 'flex', gap: '8px', flexWrap: 'wrap' } },
+                        h('span', null, dateStr),
+                        h('span', null, (enc.roundsPlayed || 0) + ' Sparks'),
+                        (enc.criticalCount || 0) > 0 ? h('span', null, '✨ ' + enc.criticalCount) : null
+                      )
+                    ),
+                    outcomeChip(enc.outcome)
+                  )
+                );
+              })
+            ),
+          // Footer — clear-all (lives outside the list so it's never accidental)
+          encounters.length > 0 ? h('div', {
+            style: { display: 'flex', justifyContent: 'flex-end', marginTop: '14px' }
+          },
+            h('button', {
+              onClick: clearAll,
+              style: {
+                background: 'transparent', color: palette.textMute,
+                border: '1px solid ' + palette.border, borderRadius: '8px',
+                padding: '6px 12px', fontSize: '11px', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'inherit'
+              }
+            }, 'Clear all')
+          ) : null
         )
       );
     }
@@ -19406,6 +19737,7 @@
       renderCompanionPhrasesModal(),
       renderPrintOptionsModal(),
       renderArcadeHubModal(),
+      renderPastEncountersModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard(),
       // Print packet — portaled to body so the @media print rule's
