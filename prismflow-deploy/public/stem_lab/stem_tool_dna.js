@@ -1028,6 +1028,40 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ═══ TOPIC HERO BAND (per-tab) ═══
+        (function() {
+          var TAB_META = {
+            build:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDEC', title: 'Build a DNA strand',          hint: 'Pick a sequence \u2014 the complementary strand fills in via base pairing (A\u2013T, G\u2013C). Real DNA is built like this constantly.' },
+            replicate:  { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '\uD83D\uDD00', title: 'DNA replication',              hint: 'Helicase unwinds the helix; DNA polymerase reads each template strand and lays down its complement. Semiconservative \u2014 each daughter has one old + one new strand.' },
+            transcribe: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCDD', title: 'Transcription \u2014 DNA \u2192 mRNA', hint: 'RNA polymerase reads the template strand. Same complementary rules but T \u2192 U. Output: a single-stranded mRNA copy ready to leave the nucleus.' },
+            translate:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: 'Translation \u2014 mRNA \u2192 protein', hint: 'Ribosome reads codons (3 bases at a time). Each codon \u2192 one amino acid. The genetic code is read in non-overlapping triplets, no commas.' },
+            mutate:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83E\uDDA0', title: 'Mutations',                     hint: 'Point mutations: silent (no protein change), missense (one AA different), nonsense (premature stop). Frameshifts (insertion/deletion) are usually catastrophic.' },
+            crispr:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\u2702\uFE0F',  title: 'CRISPR-Cas9 editing',          hint: 'Guide RNA points Cas9 to a 20-base target. Cas9 cuts both strands. Cell repair pathways either knock out the gene or insert a template you provide.' },
+            protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: 'Protein structure',            hint: 'Primary (sequence) \u2192 secondary (\u03B1-helix, \u03B2-sheet) \u2192 tertiary (3D fold) \u2192 quaternary (multi-subunit). One amino acid swap can break the fold.' },
+            forensics:  { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDD0D', title: 'DNA forensics',                hint: 'STR profiling: 13\u201320 short-tandem-repeat loci. Probability of a random match across all loci is roughly one in a billion. Used in CODIS, paternity, and crime labs.' },
+            challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: 'Daily challenge',              hint: 'A new DNA puzzle every session. Translate, identify the mutation, find the ORF, or solve a forensic case. Streak counter tracks daily wins.' },
+            battle:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F',  title: 'Codon battle',                 hint: 'Speed-translation duel. Decode codons fast against a timer. Tests whether the genetic code is in your head, not just your reference card.' },
+            learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',         hint: 'Codon table, base-pairing rules, key terms (ORF, intron, exon, promoter, repressor) \u2014 the cheat sheet you keep coming back to.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.build;
+          return h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══════════════════════════════════════════
         // BUILD TAB
         // ═══════════════════════════════════════════
