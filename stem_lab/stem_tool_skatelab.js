@@ -2639,6 +2639,32 @@ window.StemLab = window.StemLab || {
           modeBtn('halfpipe', 'Halfpipe', '🛹'),
           modeBtn('gap', 'Gap Jump', '🦘')
         ),
+
+        // Topic-accent hero band per mode
+        (function() {
+          var MODE_META = {
+            halfpipe: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🛹', title: 'Halfpipe — energy conservation in a curved track', hint: 'Drop in: gravitational PE → KE at the bottom. Rise on the other side: KE → PE again. Friction + air drag bleed energy each cycle, so air height decreases unless the rider pumps. Pumping = doing work against gravity at the right phase.' },
+            gap:      { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🦘', title: 'Gap jump — projectile motion + landing physics', hint: 'Once airborne, x and y are independent: x = v·cosθ·t, y = v·sinθ·t − ½gt². Landing speed depends on the height differential, not the horizontal distance. Steeper landing slope = lower impact force = safer.' }
+          };
+          var meta = MODE_META[d.mode] || MODE_META.halfpipe;
+          return h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+              marginBottom: 12
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
         // Lesson card — surfaces the active scenario's teach text plus
         // its 3 questions. Dismissible. Renders only when a scenario
         // has been loaded (activeScenarioId set).
