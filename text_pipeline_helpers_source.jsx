@@ -322,6 +322,177 @@ const generateBibliographyString = (metadata, citationStyle = 'Links Only', titl
     return bib;
 };
 
+// processGrounding inserts citation markers ⁽¹⁾⁽²⁾ into AI-generated text using
+// Gemini's groundingSupports + groundingChunks metadata, then optionally appends
+// a Verified Sources bibliography. Two paths:
+//   (a) hasSupports=false → fall back to one citation cluster per paragraph
+//   (b) hasSupports=true → use endIndex offsets, walk past trailing punctuation
+//       and existing markdown links, snap to sentence end (non-JSON) so the
+//       cite reads as "...claim.[¹]" not "...cl[¹]aim."
+// Pure: no React state, no DOM. Depends on filterEducationalSources +
+// generateBibliographyString (in this module) and toSuperscript (file head).
+const processGrounding = (text, metadata, citationStyle = 'Links Only', isJson = false, includeBibliography = true) => {
+    if (!metadata) return text;
+    const hasChunks = metadata.groundingChunks && metadata.groundingChunks.length > 0;
+    const hasSupports = metadata.groundingSupports && metadata.groundingSupports.length > 0;
+    if (!hasChunks) return text;
+    let newText = text;
+    const chunks = filterEducationalSources(metadata.groundingChunks);
+    if (chunks.length === 0) return text;
+    if (!hasSupports) {
+        const paragraphs = text.split(/\n\n+/);
+        const citationsPerParagraph = Math.max(1, Math.ceil(chunks.length / paragraphs.length));
+        let chunkIdx = 0;
+        newText = paragraphs.map((para, pIdx) => {
+            if (!para.trim() || para.trim().startsWith('#')) return para;
+            const citationsForPara = [];
+            for (let i = 0; i < citationsPerParagraph && chunkIdx < chunks.length; i++, chunkIdx++) {
+                const chunk = chunks[chunkIdx];
+                const uri = chunk?.web?.uri;
+                const label = `⁽${toSuperscript(chunkIdx + 1)}⁾`;
+                citationsForPara.push(uri ? `[${label}](${uri})` : label);
+            }
+            if (citationsForPara.length === 0) return para;
+            const trimmed = para.trimEnd();
+            const marker = ' ' + citationsForPara.join(' ');
+            return trimmed + marker;
+        }).join('\n\n');
+        if (includeBibliography) {
+            newText += generateBibliographyString(metadata, citationStyle);
+        }
+        return newText;
+    }
+    let supports = metadata.groundingSupports.map(s => ({ ...s, adjustedIndex: s.segment.endIndex }));
+    if (!isJson) {
+        supports.forEach(support => {
+            let idx = support.adjustedIndex;
+            if (idx === undefined) return;
+            let lineStart = text.lastIndexOf('\n', idx - 1);
+            if (lineStart === -1) lineStart = 0;
+            else lineStart += 1;
+            let lineEnd = text.indexOf('\n', idx);
+            if (lineEnd === -1) lineEnd = text.length;
+            const lineContent = text.substring(lineStart, lineEnd);
+            const isList = /^[\s]*([-*•]|\d+\.)/.test(lineContent);
+            const isDefinition = /^[\s]*(\*\*|').+?(\*\*|'):/.test(lineContent) || /^[\s]*[^:\n]+:/.test(lineContent);
+            if (isList || isDefinition) {
+                 let newIdx = lineEnd;
+                 while (newIdx > lineStart && /\s/.test(text[newIdx - 1])) {
+                     newIdx--;
+                 }
+                 support.adjustedIndex = newIdx;
+            }
+        });
+    }
+    const insertionMap = new Map();
+    supports.forEach(support => {
+        if (!support.groundingChunkIndices || support.groundingChunkIndices.length === 0) return;
+        let idx = support.adjustedIndex;
+        const originalLen = text.length;
+        if (idx !== undefined && idx <= originalLen) {
+            while (idx < originalLen && /[\wÀ-ÿ]/.test(text[idx])) {
+                idx++;
+            }
+            if (idx < originalLen && text[idx] === ']') {
+                    if (idx + 1 < originalLen && text[idx+1] === '(') {
+                        let tempIdx = idx + 2;
+                        let openParens = 1;
+                        while (tempIdx < originalLen && openParens > 0) {
+                            if (text[tempIdx] === '(') openParens++;
+                            if (text[tempIdx] === ')') openParens--;
+                            tempIdx++;
+                        }
+                        idx = tempIdx;
+                    }
+            }
+            let scanning = true;
+            while (scanning && idx < originalLen) {
+                const char = text[idx];
+                if (isJson && char === '"') {
+                    if (idx === 0 || text[idx-1] !== '') {
+                        scanning = false;
+                        break;
+                    }
+                }
+                if (/[.,;!?:)\]'"”’“*#_]/.test(char)) {
+                    idx++;
+                } else if (char === ' ') {
+                    let nextIdx = idx + 1;
+                    while (nextIdx < originalLen && text[nextIdx] === ' ') nextIdx++;
+                    if (nextIdx < originalLen && /[.,;!?:)\]'"”’“*#_]/.test(text[nextIdx])) {
+                        idx = nextIdx;
+                    } else {
+                        scanning = false;
+                    }
+                } else {
+                    scanning = false;
+                }
+            }
+            if (!isJson) {
+                const lineEnd = text.indexOf('\n', idx);
+                const searchBoundary = lineEnd === -1 ? originalLen : lineEnd;
+                let sentenceEndIdx = idx;
+                while (sentenceEndIdx < searchBoundary) {
+                    const char = text[sentenceEndIdx];
+                    if (/[.!?]/.test(char)) {
+                        const nextChar = text[sentenceEndIdx + 1];
+                        if (!nextChar || /[\s\n"')}\]]/.test(nextChar)) {
+                            let finalIdx = sentenceEndIdx + 1;
+                            while (finalIdx < searchBoundary && /['"")}\]_*]/.test(text[finalIdx])) {
+                                finalIdx++;
+                            }
+                            idx = finalIdx;
+                            break;
+                        }
+                    }
+                    sentenceEndIdx++;
+                }
+            }
+            if (isJson) {
+                const charAtPos = text[idx];
+                if (/[\s,}\]]/.test(charAtPos)) {
+                    let backTrack = idx - 1;
+                    while (backTrack >= 0 && /\s/.test(text[backTrack])) {
+                        backTrack--;
+                    }
+                    if (backTrack >= 0 && text[backTrack] === '"') {
+                        idx = backTrack;
+                    }
+                }
+            }
+            if (!isJson) {
+                let lineStart = text.lastIndexOf('\n', idx - 1);
+                if (lineStart === -1) lineStart = 0;
+                else lineStart += 1;
+                const linePrefix = text.substring(lineStart, idx);
+                if (/^\s*#/.test(linePrefix)) {
+                    return;
+                }
+            }
+            if (!insertionMap.has(idx)) {
+                insertionMap.set(idx, new Set());
+            }
+            const set = insertionMap.get(idx);
+            support.groundingChunkIndices.forEach(i => set.add(i));
+        }
+    });
+    const sortedInsertions = Array.from(insertionMap.entries()).sort((a, b) => b[0] - a[0]);
+    sortedInsertions.forEach(([idx, chunkIndicesSet]) => {
+        const chunkIndices = Array.from(chunkIndicesSet).sort((a, b) => a - b);
+        const marker = chunkIndices.map(i => {
+            const chunk = chunks[i];
+            const uri = chunk?.web?.uri;
+            const label = `⁽${toSuperscript(i + 1)}⁾`;
+            return uri ? `[${label}](${uri})` : label;
+        }).join(' ');
+        newText = newText.slice(0, idx) + marker + newText.slice(idx);
+    });
+    if (includeBibliography) {
+        newText += generateBibliographyString(metadata, citationStyle);
+    }
+    return newText;
+};
+
 const parseTaggedContent = (text) => {
     if (!text) return [];
     text = text.replace(/<([nvad])>([^<]*?)(?=<[nvad]>|<\/|\n|$)/g, (match, tag, content) => {
@@ -655,6 +826,7 @@ const createTextPipelineHelpers = () => ({
   normalizeCitationPlacement,
   filterEducationalSources,
   generateBibliographyString,
+  processGrounding,
   parseTaggedContent,
   DOM_TO_TOOL_ID_MAP,
 });
