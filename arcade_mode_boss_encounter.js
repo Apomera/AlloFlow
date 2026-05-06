@@ -506,6 +506,52 @@
     // watcher, forfeit branch in exitEncounter).
     var encounterRecordedRef = useRef(false);
 
+    // Phase 3b.full.c — shared session-doc state for class encounters.
+    // Captures the full sessions/{code} doc snapshot. Plugin reads
+    // bossEncounter.submissions to compute shared HP + participant count.
+    // null when not in class mode.
+    var classSessionStateTuple = useState(null);
+    var classSessionState = classSessionStateTuple[0];
+    var setClassSessionState = classSessionStateTuple[1];
+    useEffect(function () {
+      if (!isClassMode) return;
+      if (typeof ctx.sessionSubscribe !== 'function') return;
+      var unsubscribe = ctx.sessionSubscribe(function (data) {
+        setClassSessionState(data);
+      });
+      return typeof unsubscribe === 'function' ? unsubscribe : function () {};
+      // eslint-disable-next-line
+    }, []);
+
+    // Derived class-encounter view (null in solo mode):
+    //   submissions: array of submission objects sorted by submittedAt
+    //   sumDamage:   total damage dealt by all participants
+    //   participants: distinct nickname count
+    //   sharedHp:    BOSS_HP_START - sumDamage (clamped at 0)
+    //   sessionStatus: 'open' | 'completed' | undefined
+    var classView = (function () {
+      if (!isClassMode || !classSessionState) return null;
+      var be = classSessionState.bossEncounter || {};
+      var submissionsMap = be.submissions || {};
+      var subList = Object.keys(submissionsMap).map(function (k) {
+        return Object.assign({ id: k }, submissionsMap[k] || {});
+      }).sort(function (a, b) {
+        return (a.submittedAt || '').localeCompare(b.submittedAt || '');
+      });
+      var sumDamage = subList.reduce(function (s, sub) { return s + (sub.damage || 0); }, 0);
+      var nickSet = {};
+      subList.forEach(function (sub) { if (sub.nickname) nickSet[sub.nickname] = true; });
+      var participants = Object.keys(nickSet).length;
+      var sharedHp = Math.max(0, BOSS_HP_START - sumDamage);
+      return {
+        submissions: subList,
+        sumDamage: sumDamage,
+        participants: participants,
+        sharedHp: sharedHp,
+        sessionStatus: be.status
+      };
+    })();
+
     // Phase 3b.voice — voice justification state. Two engines exposed:
     //   'webspeech': live capture (initWebSpeechCapture) appends to the
     //     textarea as the student speaks. Free, browser-native, but
@@ -1008,21 +1054,56 @@
       setLastResult(entry);
       setHp(newHp);
       setSubmitting(false);
+      // Phase 3b.full.c — in class mode, also write the submission to
+      // the session doc so all participants see shared HP fall. The
+      // local hp state stays for solo + as an optimistic-update echo;
+      // class-mode HP rendering reads from classView.sharedHp instead.
+      if (isClassMode && typeof ctx.sessionUpdate === 'function') {
+        var subId = 'sub-' + (ctx.studentNickname || 'anon').replace(/\s+/g, '_') + '-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        var subFields = {};
+        subFields[subId] = {
+          nickname: ctx.studentNickname || 'anon',
+          cardName: entry.cardName,
+          cardSource: entry.cardSource,
+          cardTier: entry.cardTier,
+          verb: entry.verb,
+          justification: entry.justification,
+          score: entry.score,
+          ackText: entry.ackText,
+          followUp: entry.followUp,
+          damage: entry.damage,
+          healed: entry.healed,
+          submittedAt: new Date().toISOString()
+        };
+        try {
+          ctx.sessionUpdate({
+            bossEncounter: { submissions: subFields }
+          }).catch(function () { /* best-effort */ });
+        } catch (e) { /* ignore */ }
+      }
       if (willTransform) {
         applyVisualSparkTransform(pickedCard, pickedVerb, parsed);
       }
 
-      if (newHp <= 0) {
+      // Phase 3b.full.c — local HP only authoritative in solo mode.
+      // In class mode, win condition is computed from the snapshot
+      // (sum of all participants' damages) by the useEffect watcher.
+      if (!isClassMode && newHp <= 0) {
         emitEncounterRecord('won', newHp);
         publishClassEncounterEnd('won');
         setPhase('won');
         return;
       }
-      // Advance round
+      // Advance round. In solo mode, round overflow ends the encounter.
+      // In class mode, an individual's round overflow ends THEIR turn-
+      // taking but doesn't end the class encounter — they transition to
+      // 'lost' locally (no further submissions) while peers play on.
+      // We DON'T call publishClassEncounterEnd here because individual
+      // round-out is not a group decision.
       var nextRound = round + 1;
       if (nextRound > MAX_ROUNDS) {
         emitEncounterRecord('lost', newHp);
-        publishClassEncounterEnd('lost');
+        if (!isClassMode) publishClassEncounterEnd('lost');
         setPhase('lost');
         return;
       }
@@ -1105,6 +1186,35 @@
       // eslint-disable-next-line
     }, [ctx.session, phase]);
 
+    // Phase 3b.full.c — class-mode terminal-phase detection from session
+    // snapshot. Two trigger conditions:
+    //   1. Shared HP drops to 0 → 'won' (every participant who's still
+    //      in 'play' transitions; each emits their own encounter record)
+    //   2. Host marks bossEncounter.status = 'completed' (e.g. via the
+    //      teacher controls from 3b.full.e or via host's local exit) →
+    //      whoever is still in 'play' transitions to the host's outcome
+    useEffect(function () {
+      if (!isClassMode || !classView) return;
+      if (phase !== 'play') return;
+      if (classView.sharedHp <= 0) {
+        emitEncounterRecord('won', 0);
+        // Host also marks the session encounter completed; students
+        // skip publish because publishClassEncounterEnd is host-only.
+        publishClassEncounterEnd('won');
+        setPhase('won');
+        return;
+      }
+      if (classView.sessionStatus === 'completed') {
+        var hostOutcome = (classSessionState && classSessionState.bossEncounter && classSessionState.bossEncounter.endedOutcome) || 'lost';
+        // If we already met the win condition locally, that wins; else
+        // adopt the host's outcome.
+        var localOutcome = (classView.sharedHp <= 0) ? 'won' : hostOutcome;
+        emitEncounterRecord(localOutcome, classView.sharedHp);
+        setPhase(localOutcome === 'won' ? 'won' : 'lost');
+      }
+      // eslint-disable-next-line
+    }, [classView && classView.sharedHp, classView && classView.sessionStatus, phase]);
+
     function exitEncounter() {
       // Phase 3b.history — only record forfeits if we actually got into
       // play. Topic-input cancellations don't count as encounters.
@@ -1118,7 +1228,10 @@
     }
 
     // ── Render ─────────────────────────────────────────────────────────
-    var hpPct = Math.max(0, Math.min(100, Math.round((hp / BOSS_HP_START) * 100)));
+    // Phase 3b.full.c — in class mode, HP comes from the shared session
+    // doc (sum of all participants' damages). Solo uses local hp state.
+    var displayHp = isClassMode && classView ? classView.sharedHp : hp;
+    var hpPct = Math.max(0, Math.min(100, Math.round((displayHp / BOSS_HP_START) * 100)));
     var topRow = h('div', {
       style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }
     },
@@ -1309,17 +1422,50 @@
         h('div', { style: { flex: 1, minWidth: 0 } },
           h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '4px' } }, 'Concept Guardian: ' + topic),
           h('div', {
-            'aria-label': 'Boss HP ' + hp + ' of ' + BOSS_HP_START,
+            'aria-label': 'Boss HP ' + displayHp + ' of ' + BOSS_HP_START,
             style: { height: '12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '999px', overflow: 'hidden', marginBottom: '4px' }
           },
             h('div', { style: { width: hpPct + '%', height: '100%', background: palette.accent, transition: 'width 320ms ease' } })
           ),
           h('div', { style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
-            hp + ' / ' + BOSS_HP_START + ' HP · Round ' + round + ' / ' + MAX_ROUNDS),
+            displayHp + ' / ' + BOSS_HP_START + ' HP · Round ' + round + ' / ' + MAX_ROUNDS
+            + (isClassMode && classView ? ' · 🌐 ' + classView.participants + ' participant' + (classView.participants === 1 ? '' : 's') : '')
+          ),
           bossErr ? h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginTop: '2px' } },
             '(Guardian art unavailable; encounter continues)') : null
         )
       ),
+      // Phase 3b.full.c — class-mode peer feed. Last 5 submissions from
+      // ANY participant, newest at the top. Lets students see each
+      // other's Sparks landing in real time without exposing too much.
+      // Hidden in solo mode.
+      isClassMode && classView && classView.submissions.length > 0 ? h('div', {
+        style: {
+          padding: '8px 10px',
+          background: palette.bg,
+          border: '1px solid ' + palette.border,
+          borderRadius: '8px',
+          marginBottom: '12px'
+        }
+      },
+        h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } },
+          '🌐 Class Sparks · last ' + Math.min(5, classView.submissions.length) + ' of ' + classView.submissions.length),
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px', color: palette.textDim } },
+          classView.submissions.slice(-5).reverse().map(function (s) {
+            var icon = s.score >= 18 ? '✨' : s.score >= 11 ? '💡' : '🌫️';
+            return h('div', {
+              key: 'cs-' + s.id,
+              style: { display: 'flex', gap: '6px', alignItems: 'baseline' }
+            },
+              h('span', { 'aria-hidden': 'true' }, icon),
+              h('strong', { style: { color: palette.text } }, s.nickname || 'anon'),
+              h('span', null, ' · ' + (s.cardName || '?') + ' · ' + (s.verb || '?')),
+              h('span', { style: { fontVariantNumeric: 'tabular-nums', color: palette.textMute } },
+                ' · ' + s.score + (s.damage ? ' · -' + s.damage + ' HP' : ''))
+            );
+          })
+        )
+      ) : null,
       // Last-result feedback strip
       lastResult ? h('div', {
         role: 'status',
