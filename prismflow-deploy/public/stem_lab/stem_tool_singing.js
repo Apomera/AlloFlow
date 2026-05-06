@@ -4491,6 +4491,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               }, tab.icon + ' ' + tab.label);
             })),
 
+          // ── Topic-accent hero band (per tab) ──
+          (function() {
+            var TAB_META = {
+              pitch:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🎯', title: 'Pitch Detective',           hint: 'Sing into the mic; the lab tracks frequency in real time. Trained singers hold pitch within ±5 cents (1/20th of a semitone) — that is what perfect-pitch matching looks like.' },
+              range:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎹', title: 'Vocal Range — your tessitura', hint: 'Most untrained voices span 1.5–2 octaves; trained classical singers reach 3+. Range expansion is mostly about REGISTER blending, not just stretching higher and lower.' },
+              vibrato:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🌊', title: 'Vibrato Lab',                hint: 'Healthy vibrato: 5–7 Hz oscillation, ~60–100 cents wide. Slower = wobble; faster = tremor. Vibrato is a function of relaxed breath support, not a separate technique.' },
+              intervals: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🎵', title: 'Interval Singer — ear training', hint: 'Major 3rd vs minor 3rd is the single most-confused interval pair for beginners. Mnemonics: M3 = "Oh when the saints," m3 = "Greensleeves." Builds relative pitch.' },
+              warmups:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '❤️', title: 'Warm-ups',                  hint: 'Lip trills + sirens before any sustained singing. 5–10 minutes of low-intensity warm-up halves the risk of vocal-fold strain. Skipping warm-ups is the #1 cause of preventable vocal injury.' },
+              sightread: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '🎼', title: 'Sight reading',              hint: 'Solfège (do-re-mi) > letter names for sight-singing because the syllables encode interval relationships, not just pitch labels. Movable do beats fixed do for tonal music.' }
+            };
+            var meta = TAB_META[activeTab] || TAB_META.pitch;
+            return h('div', {
+              className: 'mt-2',
+              style: {
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
           // Quest summary
           renderQuestSummary(),
 
