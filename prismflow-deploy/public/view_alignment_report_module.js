@@ -97,6 +97,20 @@
           })
         )
       ),
+      // Reading-level harvest from analysis items
+      v.readingLevels && v.readingLevels.length > 0 && React.createElement('div', { className: 'p-3 bg-slate-50 border border-slate-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-slate-700 mb-2 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '📖'),
+          ' Reading levels (from analyzed source texts)'),
+        React.createElement('ul', { className: 'space-y-1 text-sm text-slate-800' },
+          v.readingLevels.map(function (r, i) {
+            return React.createElement('li', { key: i, className: 'flex items-start gap-2' },
+              React.createElement('span', { className: 'text-xs px-2 py-0.5 bg-slate-200 text-slate-800 rounded font-semibold whitespace-nowrap' }, r.range),
+              r.explanation && React.createElement('span', { className: 'text-xs text-slate-600' }, r.explanation.slice(0, 240))
+            );
+          })
+        )
+      ),
       v.recommendations && v.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-3' },
         React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Heuristic recommendations:'),
         React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
@@ -140,6 +154,111 @@
     );
   }
 
+  function EngagementSection(p) {
+    var e = p.eng;
+    if (!e) return null;
+    var dok = e.dokDistribution || {};
+    var modPresent = e.multimodalCoverage && e.multimodalCoverage.present || [];
+    var modMissing = e.multimodalCoverage && e.multimodalCoverage.missing || [];
+    return React.createElement(ComprehensiveSection, { icon: '🎯', title: 'Engagement variety', status: e.status },
+      // Top stat row
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, e.distinctTypeCount),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Distinct artifact types')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, e.totalArtifacts),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Total artifacts')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, Math.round((e.diversityScore || 0) * 100) + '%'),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Diversity score')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, modPresent.length + '/4'),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Modalities present')
+        )
+      ),
+      // Distinct types chips
+      e.distinctTypes && e.distinctTypes.length > 0 && React.createElement('div', { className: 'mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-slate-700 mb-1' }, 'Artifact types in this curriculum:'),
+        React.createElement('div', { className: 'flex flex-wrap gap-1' },
+          e.distinctTypes.map(function (t, i) {
+            return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-indigo-100 text-indigo-900 rounded' }, t);
+          })
+        )
+      ),
+      // Modalities row
+      React.createElement('div', { className: 'mb-3 grid grid-cols-1 md:grid-cols-2 gap-2' },
+        React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-emerald-800 mb-1' }, 'Modalities present:'),
+          React.createElement('div', { className: 'flex flex-wrap gap-1' },
+            modPresent.length > 0 ? modPresent.map(function (m, i) {
+              return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded' }, m);
+            }) : React.createElement('span', { className: 'text-xs text-slate-500 italic' }, '(none)')
+          )
+        ),
+        React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-rose-800 mb-1' }, 'Modalities missing:'),
+          React.createElement('div', { className: 'flex flex-wrap gap-1' },
+            modMissing.length > 0 ? modMissing.map(function (m, i) {
+              return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-rose-100 text-rose-900 rounded' }, m);
+            }) : React.createElement('span', { className: 'text-xs text-emerald-700' }, 'all four covered')
+          )
+        )
+      ),
+      // DOK bar
+      e.dokTotal > 0 && React.createElement('div', { className: 'mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-slate-700 mb-1' },
+          'Quiz DOK distribution (' + e.dokTotal + ' items, Webb\'s framework):'),
+        React.createElement('div', { className: 'flex h-6 w-full rounded overflow-hidden border border-slate-200' },
+          (dok.L1 || 0) > 0 && React.createElement('div', { style: { width: dok.L1 + '%', backgroundColor: '#fde68a' }, className: 'flex items-center justify-center text-[10px] font-bold text-amber-900', title: 'L1 Recall: ' + dok.L1 + '%' }, dok.L1 > 8 ? 'L1 ' + dok.L1 + '%' : ''),
+          (dok.L2 || 0) > 0 && React.createElement('div', { style: { width: dok.L2 + '%', backgroundColor: '#86efac' }, className: 'flex items-center justify-center text-[10px] font-bold text-green-900', title: 'L2 Skill/Concept: ' + dok.L2 + '%' }, dok.L2 > 8 ? 'L2 ' + dok.L2 + '%' : ''),
+          (dok.L3 || 0) > 0 && React.createElement('div', { style: { width: dok.L3 + '%', backgroundColor: '#93c5fd' }, className: 'flex items-center justify-center text-[10px] font-bold text-blue-900', title: 'L3 Strategic Thinking: ' + dok.L3 + '%' }, dok.L3 > 8 ? 'L3 ' + dok.L3 + '%' : ''),
+          (dok.L4 || 0) > 0 && React.createElement('div', { style: { width: dok.L4 + '%', backgroundColor: '#c4b5fd' }, className: 'flex items-center justify-center text-[10px] font-bold text-purple-900', title: 'L4 Extended Thinking: ' + dok.L4 + '%' }, dok.L4 > 8 ? 'L4 ' + dok.L4 + '%' : ''),
+          (dok.unknown || 0) > 0 && React.createElement('div', { style: { width: dok.unknown + '%', backgroundColor: '#cbd5e1' }, className: 'flex items-center justify-center text-[10px] text-slate-700', title: 'Unknown: ' + dok.unknown + '%' }, dok.unknown > 8 ? '?' : '')
+        )
+      ),
+      // Scaffold counts
+      React.createElement('div', { className: 'mb-3 grid grid-cols-3 gap-2 text-center text-xs' },
+        React.createElement('div', { className: 'p-2 bg-slate-50 rounded' },
+          React.createElement('div', { className: 'font-bold text-slate-800' }, e.scaffoldCounts && e.scaffoldCounts.sentenceFrames || 0),
+          React.createElement('div', { className: 'text-slate-600' }, 'sentence frames')
+        ),
+        React.createElement('div', { className: 'p-2 bg-slate-50 rounded' },
+          React.createElement('div', { className: 'font-bold text-slate-800' }, e.scaffoldCounts && e.scaffoldCounts.simplifiedTexts || 0),
+          React.createElement('div', { className: 'text-slate-600' }, 'simplified texts')
+        ),
+        React.createElement('div', { className: 'p-2 bg-slate-50 rounded' },
+          React.createElement('div', { className: 'font-bold text-slate-800' }, e.scaffoldCounts && e.scaffoldCounts.leveledGlossary || 0),
+          React.createElement('div', { className: 'text-slate-600' }, 'leveled glossaries')
+        )
+      ),
+      // Heuristic recommendations
+      e.recommendations && e.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Heuristic recommendations:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
+          e.recommendations.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      // LLM review
+      e.llmReview && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🤖'), ' UDL + DOK review (AI)'),
+        e.llmReview.narrative && React.createElement('p', { className: 'text-sm text-indigo-900 mb-2' }, e.llmReview.narrative),
+        e.llmReview.dokAssessment && React.createElement('p', { className: 'text-sm text-indigo-900 mb-2 italic' }, '"' + e.llmReview.dokAssessment + '"'),
+        e.llmReview.formatGaps && e.llmReview.formatGaps.length > 0 && React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' }, 'Suggested format additions:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            e.llmReview.formatGaps.map(function (g, i) { return React.createElement('li', { key: i }, g); })
+          )
+        )
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic' }, e.notes || '')
+    );
+  }
+
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
@@ -150,9 +269,10 @@
         React.createElement('h2', { className: 'text-2xl font-black text-slate-800 uppercase tracking-tight mb-1' },
           'Comprehensive Curriculum Audit'),
         React.createElement('p', { className: 'text-sm text-slate-600' },
-          'Multi-dimensional analysis beyond standards alignment. Each dimension evaluates the curriculum against a specific quality lens.')
+          'Multi-dimensional analysis beyond standards alignment. Each dimension evaluates the curriculum against a specific quality lens. Hybrid: deterministic computation + AI review.')
       ),
-      c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary })
+      c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary }),
+      c.engagement && React.createElement(EngagementSection, { eng: c.engagement })
     );
   }
 

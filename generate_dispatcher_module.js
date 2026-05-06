@@ -41,6 +41,152 @@ function gradeBandExpectations(grade) {
   return                 { tier2: 30, tier3: 22, band: 'College' };
 }
 
+// ─── Plan O: Harvest existing audit signals from artifacts ─────────────
+// AlloFlow already produces audit-shaped data inside individual artifacts
+// (analysis items contain reading-level bands + accuracy ratings; simplified
+// items contain readability shifts; quiz items contain DOK levels). The
+// comprehensive audit should USE these signals rather than re-derive them.
+function harvestExistingAuditSignals(artifacts) {
+  const out = {
+    readingLevels: [],         // from analysis items: ranges + explanations
+    accuracyRatings: [],       // from analysis items: rating + reason + counts
+    simplifiedShifts: [],      // from simplified items: original vs simplified delta
+    dokLevels: [],             // from quiz items: per-question DOK
+    quizCounts: { total: 0, mcq: 0, reflection: 0 },
+    scaffoldCounts: { sentenceFrames: 0, simplifiedTexts: 0, leveledGlossary: 0 },
+    multimodal: { text: false, image: false, audio: false, interactive: false },
+    distinctTypes: new Set(),
+  };
+  artifacts.forEach(item => {
+    if (!item || !item.type) return;
+    out.distinctTypes.add(item.type);
+    const d = item.data;
+    if (!d) return;
+    if (item.type === 'analysis') {
+      out.multimodal.text = true;
+      if (d.readingLevel && d.readingLevel.range) {
+        out.readingLevels.push({
+          range: String(d.readingLevel.range),
+          explanation: String(d.readingLevel.explanation || ''),
+        });
+      }
+      if (d.accuracy && d.accuracy.rating) {
+        out.accuracyRatings.push({
+          rating: String(d.accuracy.rating),
+          reason: String(d.accuracy.reason || ''),
+          discrepancyCount: Array.isArray(d.accuracy.discrepancies) ? d.accuracy.discrepancies.length : 0,
+          verifiedFactCount: Array.isArray(d.accuracy.verifiedFacts) ? d.accuracy.verifiedFacts.length : 0,
+        });
+      }
+    } else if (item.type === 'simplified') {
+      out.scaffoldCounts.simplifiedTexts++;
+      out.multimodal.text = true;
+      // Simplified data shape varies; record what we can.
+      if (typeof d === 'object' && d) {
+        const original = d.originalText || d.original || '';
+        const simplified = d.simplifiedText || d.text || (typeof d === 'string' ? d : '');
+        if (original && simplified) {
+          const origWords = (original.match(/\S+/g) || []).length;
+          const simpWords = (simplified.match(/\S+/g) || []).length;
+          out.simplifiedShifts.push({
+            originalWords: origWords,
+            simplifiedWords: simpWords,
+            ratio: origWords > 0 ? +(simpWords / origWords).toFixed(2) : null,
+            targetGrade: d.targetGrade || d.grade || null,
+          });
+        }
+      }
+    } else if (item.type === 'quiz' && d.questions) {
+      out.multimodal.interactive = true;
+      out.quizCounts.total += d.questions.length;
+      d.questions.forEach(q => {
+        if (q && q.dok) out.dokLevels.push(String(q.dok));
+        if (q && q.type === 'reflection') out.quizCounts.reflection++;
+        else out.quizCounts.mcq++;
+      });
+    } else if (item.type === 'sentence-frames') {
+      out.scaffoldCounts.sentenceFrames++;
+      out.multimodal.text = true;
+    } else if (item.type === 'glossary') {
+      out.multimodal.text = true;
+      // Tiered glossary entries (with definitionLevel) count as scaffolds
+      if (Array.isArray(d) && d.some(g => g && (g.definitionLevel || g.tier))) {
+        out.scaffoldCounts.leveledGlossary++;
+      }
+    } else if (item.type === 'image' || item.type === 'concept-sort') {
+      out.multimodal.image = true;
+    } else if (item.type === 'adventure' || item.type === 'persona') {
+      out.multimodal.interactive = true;
+      out.multimodal.text = true;
+    }
+  });
+  return out;
+}
+
+// ─── Plan O Step 2: Engagement variety (deterministic + LLM review) ────
+function computeEngagementVariety(harvest, artifacts) {
+  const distinctTypeCount = harvest.distinctTypes.size;
+  const totalArtifacts = artifacts.length;
+  // Diversity score: 0-1, where 1 = perfect balance across many types
+  const diversity = totalArtifacts > 0
+    ? Math.min(1, distinctTypeCount / Math.max(3, Math.min(7, totalArtifacts)))
+    : 0;
+
+  // DOK distribution as percentages
+  const dokDist = { L1: 0, L2: 0, L3: 0, L4: 0, unknown: 0 };
+  harvest.dokLevels.forEach(level => {
+    const m = String(level).match(/[1-4]/);
+    if (!m) { dokDist.unknown++; return; }
+    dokDist['L' + m[0]]++;
+  });
+  const dokTotal = harvest.dokLevels.length;
+  const dokPercent = {};
+  if (dokTotal > 0) {
+    ['L1','L2','L3','L4','unknown'].forEach(k => {
+      dokPercent[k] = Math.round((dokDist[k] / dokTotal) * 100);
+    });
+  }
+
+  // Multi-modal coverage
+  const modalitiesPresent = ['text','image','audio','interactive'].filter(m => harvest.multimodal[m]);
+
+  // Status logic
+  let status = 'Aligned';
+  const recommendations = [];
+  if (distinctTypeCount < 3) {
+    status = 'Partially Aligned';
+    recommendations.push(`Only ${distinctTypeCount} artifact type(s) present. Consider adding at least 2 more formats (e.g., visual organizer, sentence frames, quiz, leveled text) for engagement variety.`);
+  }
+  if (modalitiesPresent.length < 2) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push(`Only ${modalitiesPresent.length} modality present (${modalitiesPresent.join(', ') || 'none'}). UDL recommends multiple means of representation; add image/visual or interactive elements.`);
+  }
+  if (dokTotal > 0 && dokDist.L1 / dokTotal > 0.8) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push(`Quiz DOK skews heavily to recall (Level 1: ${dokPercent.L1}%). Add Level 2-3 questions that require application or strategic thinking.`);
+  }
+  if (harvest.scaffoldCounts.sentenceFrames + harvest.scaffoldCounts.simplifiedTexts === 0 && totalArtifacts >= 3) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('No scaffolds detected (sentence frames, simplified text, leveled glossary). Consider adding scaffolds to support diverse learners.');
+  }
+
+  return {
+    status,
+    diversityScore: +diversity.toFixed(2),
+    distinctTypeCount,
+    distinctTypes: Array.from(harvest.distinctTypes),
+    totalArtifacts,
+    dokDistribution: dokPercent,
+    dokTotal,
+    quizCounts: harvest.quizCounts,
+    scaffoldCounts: harvest.scaffoldCounts,
+    multimodalCoverage: { present: modalitiesPresent, missing: ['text','image','audio','interactive'].filter(m => !harvest.multimodal[m]) },
+    simplifiedShiftSamples: harvest.simplifiedShifts.slice(0, 4),
+    recommendations,
+    notes: 'Counts are deterministic; format-balance recommendations are heuristic. The LLM review provides contextual judgment.',
+  };
+}
+
 function collectAuditText(artifacts) {
   const out = { text: '', glossaryTerms: [] };
   artifacts.forEach(item => {
@@ -1681,15 +1827,17 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              metaInfo = `Comprehensive audit (no target standards)`;
          }
 
-         // ---- Plan O Step 1: Vocabulary fit (deterministic + LLM review) ----
-         // Deterministic Tier 1/2/3 classification across all source text +
-         // glossary entries, then a focused Gemini call reviews the
-         // classifications and writes contextual recommendations. The LLM's
-         // role is to CATCH MISCLASSIFICATIONS (the heuristic flags
-         // "tomorrow" as Tier 2; LLM corrects to Tier 1) and to write
-         // grade-and-topic-specific suggestions.
+         // ---- Plan O Step 1+2: Comprehensive dimensions ---------------------
+         // Step 1: Vocabulary fit (deterministic + LLM review) + reading-level
+         //   harvest from analysis items.
+         // Step 2: Engagement variety (deterministic counts of distinct
+         //   artifact types + DOK distribution + scaffolds + multi-modal
+         //   coverage, plus LLM review).
+         const auditHarvest = harvestExistingAuditSignals(artifactsToAudit);
          try {
              const vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
+             // Enrich vocabulary with reading-level harvest from analysis items
+             vocabFit.readingLevels = auditHarvest.readingLevels;
              content.comprehensive = content.comprehensive || {};
              content.comprehensive.vocabulary = vocabFit;
 
@@ -1715,6 +1863,33 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              }
          } catch (vocabErr) {
              warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr);
+         }
+
+         // ---- Plan O Step 2: Engagement variety -----------------------------
+         try {
+             const engagement = computeEngagementVariety(auditHarvest, artifactsToAudit);
+             content.comprehensive = content.comprehensive || {};
+             content.comprehensive.engagement = engagement;
+
+             try {
+                 const engagementGradeBand = (content.comprehensive && content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
+                 const engagementReviewPrompt = `You are an expert in UDL (Universal Design for Learning) and Webb's Depth of Knowledge framework. Review the engagement-variety profile of this curriculum.\n\nDeterministic stats:\n- Distinct artifact types: ${engagement.distinctTypeCount} (${engagement.distinctTypes.join(', ')})\n- Total artifacts: ${engagement.totalArtifacts}\n- Diversity score: ${engagement.diversityScore} (0=single type, 1=balanced)\n- DOK distribution (% of quiz items, ${engagement.dokTotal} total): L1=${engagement.dokDistribution.L1 || 0}%, L2=${engagement.dokDistribution.L2 || 0}%, L3=${engagement.dokDistribution.L3 || 0}%, L4=${engagement.dokDistribution.L4 || 0}%, unknown=${engagement.dokDistribution.unknown || 0}%\n- Scaffolds: ${engagement.scaffoldCounts.sentenceFrames} sentence-frames sets, ${engagement.scaffoldCounts.simplifiedTexts} simplified texts, ${engagement.scaffoldCounts.leveledGlossary} leveled glossaries\n- Modalities present: ${engagement.multimodalCoverage.present.join(', ') || '(none)'}\n- Modalities missing: ${engagement.multimodalCoverage.missing.join(', ') || '(none)'}\n- Grade band: ${engagementGradeBand}\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether engagement variety is appropriate for the grade band and what is most needed.\n2. "formatGaps": array of 1-3 specific format additions that would most improve engagement (e.g., "add a Visual Organizer to give visual learners a non-text path through the content", "add a brief Adventure scenario for kinesthetic engagement"). Each entry should be a sentence.\n3. "dokAssessment": ONE sentence on whether the DOK balance is appropriate (e.g., "DOK skews recall-heavy; add 2-3 application-level questions" or "DOK distribution is well-balanced for ${engagementGradeBand}"). If dokTotal is 0, say "No quiz items present to evaluate DOK."\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
+                 const engagementReviewResult = await callGemini(engagementReviewPrompt, true);
+                 try {
+                     const review = JSON.parse(cleanJson(engagementReviewResult));
+                     content.comprehensive.engagement.llmReview = {
+                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                         formatGaps: Array.isArray(review.formatGaps) ? review.formatGaps.slice(0, 5) : [],
+                         dokAssessment: typeof review.dokAssessment === 'string' ? review.dokAssessment : '',
+                     };
+                 } catch (parseErr) {
+                     warnLog('[Alignment] Engagement LLM review parse failed:', parseErr);
+                 }
+             } catch (llmErr) {
+                 warnLog('[Alignment] Engagement LLM review call failed:', llmErr);
+             }
+         } catch (engErr) {
+             warnLog('[Alignment] Engagement variety computation failed:', engErr);
          }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
