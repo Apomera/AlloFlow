@@ -51,13 +51,26 @@
   // Each Spark verb shapes the AI grader's framing of the action; mechanically
   // they all roll the same 1–20 score, but the verb gives the student a way to
   // declare INTENT before justifying.
+  //
+  // The `editPrompt` field is used by Phase 3b.5 for image-to-image scene
+  // transformation on critical Sparks (score 18-20). Injected into a larger
+  // prompt that ties the transformation back to the topic + card.
   var SPARK_VERBS = [
-    { id: 'illuminate', label: 'Illuminate', emoji: '💡', hint: 'Reveal something hidden about the topic.' },
-    { id: 'connect',    label: 'Connect',    emoji: '🔗', hint: 'Bridge this card to a different idea or example.' },
-    { id: 'transform',  label: 'Transform',  emoji: '✨', hint: 'Show how applying this card changes the situation.' },
-    { id: 'support',    label: 'Support',    emoji: '🛡️', hint: 'Defend a claim or build up an idea.' },
-    { id: 'challenge',  label: 'Challenge',  emoji: '⚡', hint: 'Push back on an assumption or test the topic.' }
+    { id: 'illuminate', label: 'Illuminate', emoji: '💡', hint: 'Reveal something hidden about the topic.',
+      editPrompt: 'brighter, with warm light emerging from within, hidden details revealed' },
+    { id: 'connect',    label: 'Connect',    emoji: '🔗', hint: 'Bridge this card to a different idea or example.',
+      editPrompt: 'with new threads of glowing light linking outward, connecting to surrounding ideas' },
+    { id: 'transform',  label: 'Transform',  emoji: '✨', hint: 'Show how applying this card changes the situation.',
+      editPrompt: 'mid-metamorphosis, evolving, taking on a new form while keeping its identity' },
+    { id: 'support',    label: 'Support',    emoji: '🛡️', hint: 'Defend a claim or build up an idea.',
+      editPrompt: 'stronger and more defined, with steady inner glow, foundations visible' },
+    { id: 'challenge',  label: 'Challenge',  emoji: '⚡', hint: 'Push back on an assumption or test the topic.',
+      editPrompt: 'with internal structure being clarified, layers parted to show what\'s inside' }
   ];
+
+  // Cap on image-to-image transforms per encounter so API cost stays bounded
+  // even if the student lands many critical Sparks.
+  var MAX_VISUAL_TRANSFORMS = 4;
 
   // Encounter constants — tunable in subsequent commits.
   var BOSS_HP_START = 60;
@@ -231,6 +244,16 @@
     var lastResult = lastResultTuple[0];
     var setLastResult = lastResultTuple[1];
 
+    // Phase 3b.5 — image-to-image scene transformation on critical Sparks.
+    // 'transforming' tracks an in-flight edit so the UI can show a glow.
+    // 'transformCount' caps total edits per encounter (cost guard).
+    var transformingTuple = useState(false);
+    var transforming = transformingTuple[0];
+    var setTransforming = transformingTuple[1];
+    var transformCountTuple = useState(0);
+    var transformCount = transformCountTuple[0];
+    var setTransformCount = transformCountTuple[1];
+
     // Generate boss image when topic submitted
     function beginEncounter() {
       var t = (topic || '').trim();
@@ -376,6 +399,54 @@
       } catch (e) { return defaults; }
     }
 
+    // Phase 3b.5 — fire-and-forget image-to-image edit on critical Sparks.
+    // Non-blocking: turn flow continues immediately; the new boss image
+    // replaces the old one when the edit resolves. If the edit fails or
+    // takes too long, we silently keep the prior image — visual is a
+    // celebratory bonus, not a blocker.
+    function applyVisualSparkTransform(card, verb, parsed) {
+      if (parsed.score < 18) return;                      // only criticals trigger
+      if (transformCount >= MAX_VISUAL_TRANSFORMS) return; // cost guard
+      if (!bossImage) return;                              // nothing to transform
+      if (typeof window.callGeminiImageEdit !== 'function') return;
+      var verbDef = SPARK_VERBS.filter(function (v) { return v.id === verb.id; })[0] || verb;
+      var verbEdit = verbDef.editPrompt || 'transformed by an idea, with a subtle inner change visible';
+      var cardName = card.templateLabel || card.template || 'an idea';
+      // Strip the data:image/...;base64, prefix that callImagen returns;
+      // callGeminiImageEdit can take either form but the bare base64 is
+      // safer across deployments.
+      var rawBase64 = bossImage;
+      var prefixMatch = rawBase64.match(/^data:[^;]+;base64,(.+)$/);
+      if (prefixMatch) rawBase64 = prefixMatch[1];
+
+      var editPrompt = 'The same Concept Guardian for "' + topic + '", ' + verbEdit
+        + '. The Guardian was just sparked by the concept of "' + cardName
+        + '". Maintain the same character, pose, and overall composition; '
+        + 'show only the transformation. No text, no labels, single subject.';
+
+      setTransforming(true);
+      setTransformCount(transformCount + 1);
+      // Don't await — let the turn proceed, swap image in when ready.
+      Promise.resolve(window.callGeminiImageEdit(editPrompt, rawBase64))
+        .then(function (result) {
+          var newImg = (typeof result === 'string') ? result
+            : (result && result.imageBase64) ? result.imageBase64
+            : null;
+          if (newImg) {
+            // Ensure data URI prefix for <img> rendering
+            if (newImg.indexOf('data:') !== 0) {
+              newImg = 'data:image/png;base64,' + newImg;
+            }
+            setBossImage(newImg);
+          }
+          setTransforming(false);
+        })
+        .catch(function () {
+          // Silent fail — visual transformation is decorative
+          setTransforming(false);
+        });
+    }
+
     function applySpark(parsed) {
       var score = parsed.score || 1;
       // Damage curve:
@@ -386,6 +457,13 @@
       var damage = score < 11 ? 0 : (score >= 18 ? score : (score - 5));
       var healed = score >= 18; // future: class HP regen
       var newHp = Math.max(0, hp - damage);
+      // Phase 3b.5 — fire image-to-image transform for critical Sparks.
+      // Capture the played card + verb for the helper before we clear the
+      // turn-UI state below.
+      var willTransform = healed
+        && transformCount < MAX_VISUAL_TRANSFORMS
+        && bossImage
+        && typeof window.callGeminiImageEdit === 'function';
       var entry = {
         round: round,
         cardId: pickedCard.id,
@@ -396,13 +474,17 @@
         ackText: parsed.ackText,
         followUp: parsed.followUp,
         damage: damage,
-        healed: healed
+        healed: healed,
+        willTransform: willTransform
       };
       var nextHistory = history.concat([entry]);
       setHistory(nextHistory);
       setLastResult(entry);
       setHp(newHp);
       setSubmitting(false);
+      if (willTransform) {
+        applyVisualSparkTransform(pickedCard, pickedVerb, parsed);
+      }
 
       if (newHp <= 0) {
         setPhase('won');
@@ -573,23 +655,47 @@
       }
     },
       topRow,
-      // Boss panel — image + HP bar
+      // Boss panel — image + HP bar. When transforming, the image gets a
+      // glowing accent border + a small overlay label, so the student can
+      // see the Spark IS landing visually even while the API call resolves.
       h('div', {
         style: {
           display: 'flex', gap: '12px', alignItems: 'center',
           padding: '10px', background: palette.bg,
-          border: '1px solid ' + palette.border, borderRadius: '8px',
-          marginBottom: '12px'
+          border: '1px solid ' + (transforming ? palette.accent : palette.border),
+          borderRadius: '8px',
+          marginBottom: '12px',
+          boxShadow: transforming ? ('0 0 16px ' + (palette.accent || '#60a5fa') + '88') : 'none',
+          transition: 'box-shadow 320ms ease, border-color 320ms ease'
         }
       },
-        bossImage ? h('img', {
-          src: bossImage,
-          alt: 'Concept Guardian for ' + topic,
-          style: { width: '72px', height: '72px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0, border: '1px solid ' + palette.border }
-        }) : h('div', {
-          'aria-hidden': 'true',
-          style: { width: '72px', height: '72px', flexShrink: 0, fontSize: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
-        }, '🐉'),
+        h('div', {
+          style: {
+            position: 'relative',
+            width: '72px', height: '72px', flexShrink: 0
+          }
+        },
+          bossImage ? h('img', {
+            src: bossImage,
+            alt: 'Concept Guardian for ' + topic,
+            style: { width: '72px', height: '72px', objectFit: 'cover', borderRadius: '8px', border: '1px solid ' + palette.border, display: 'block' }
+          }) : h('div', {
+            'aria-hidden': 'true',
+            style: { width: '72px', height: '72px', fontSize: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
+          }, '🐉'),
+          transforming ? h('div', {
+            'aria-live': 'polite',
+            'aria-label': 'Spark transforming the Guardian',
+            style: {
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(0,0,0,0.45)',
+              borderRadius: '8px',
+              fontSize: '18px',
+              animation: 'none'
+            }
+          }, '✨') : null
+        ),
         h('div', { style: { flex: 1, minWidth: 0 } },
           h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '4px' } }, 'Concept Guardian: ' + topic),
           h('div', {
@@ -621,7 +727,8 @@
         h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
           (lastResult.score >= 18 ? '✨ Critical Spark · ' : lastResult.score >= 11 ? '💡 Spark landed · ' : '🌫️ Spark fizzled · ')
           + 'score ' + lastResult.score + ' / 20 · '
-          + (lastResult.damage > 0 ? lastResult.damage + ' damage' : 'no damage')),
+          + (lastResult.damage > 0 ? lastResult.damage + ' damage' : 'no damage')
+          + (lastResult.willTransform ? ' · 🎨 transforming the Guardian' : '')),
         lastResult.ackText ? h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.5', marginBottom: lastResult.followUp ? '4px' : 0 } },
           lastResult.ackText) : null,
         lastResult.followUp ? h('div', { style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', lineHeight: '1.45' } },
