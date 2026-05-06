@@ -4233,6 +4233,37 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ── Mode-accent hero band (sport-flavored, dark-themed) ──
+        (function() {
+          var MODE_META = {
+            pitching:   { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '⚾', title: "Pitcher's Mound \u2014 60 ft 6 in to home plate",     hint: '6 grips, 6 trajectories. Fastball straight; curve drops via topspin; slider breaks late; splitter dies; sinker bores in; changeup deceives. Magnus force IS real \u2014 spin axis decides everything.' },
+            freethrow:  { accent: '#f97316', soft: 'rgba(249,115,22,0.14)', icon: '🏀', title: 'Free Throw \u2014 15 ft from line to hoop',          hint: 'Same line, same 23cm rim, very different shooters. Shaq career 52%, Steph Curry 91%. Soft arc, backspin, knees-into-shot \u2014 muscle memory you build one shot at a time.' },
+            freekick:   { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',  icon: '⚽', title: 'Free Kick \u2014 22m + a 4-defender wall',          hint: 'Beckham knuckle, Roberto Carlos banana, Messi top-bin. Magnus = the curl. Hit the seam off-center, side-spin bends it around the wall, into the corner the keeper can\u2019t reach.' },
+            fieldgoal:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '🏈', title: 'Field Goal \u2014 18.5 ft wide, 10 ft up',          hint: 'Justin Tucker has hit 66+ yds. From 30 yd a pro hits ~95%; from 50+ it drops fast. Wind and the snap matter as much as leg power. Loneliest position on the field.' },
+            bowling:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '🏏', title: "Bowler's Crease \u2014 22 yd to the stumps",       hint: 'Yorker at the toes, bouncer at the chest, off-cutter that nips, googly that turns the wrong way. Fast bowlers hit 95+ mph and the ball BOUNCES \u2014 Test cricket\u2019s purest weapon.' },
+            golf:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '⛳', title: 'Golf Tee Shot \u2014 driver to wedge',                  hint: 'Driver carries 250+ yd; sand wedge 85. Backspin keeps the ball aloft (lift); topspin runs out fast. ~6 sec in the air. Smash factor 1.50 = the ceiling. Find the fairway.' },
+            volleyball: { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)', icon: '🏐', title: "Server's Line \u2014 over a 2.43m net, in 9\u00d79m",   hint: 'Jump-serve > 70 mph. Float serve has NO spin \u2014 the wake destabilizes mid-flight, divers and dips unpredictably. Top-spin jump serve = the receiving line\u2019s nightmare.' }
+          };
+          var meta = MODE_META[d.mode] || MODE_META.pitching;
+          return h('div', {
+            style: {
+              margin: '0 0 14px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ── Scenarios ──
         // One-click teaching demos. Each pill snaps mode + preset +
         // gravity + wind into a configured setup. Useful as a warm-up

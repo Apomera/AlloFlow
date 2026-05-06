@@ -14006,6 +14006,29 @@
       addToast(msg);
     }
 
+    // Phase 3b.full.e — token grant for arcade rewards (currently only
+    // class-encounter wins). Adds to state.tokens + appends an earnings
+    // entry. Plugins de-dup via metadata.encounterStartedAt — checking
+    // state.earnings for an existing entry with matching source +
+    // encounterStartedAt before calling. Capped at +50 tokens per call
+    // so a misconfigured plugin can't drain or balloon the balance.
+    function awardTokens(amount, source, metadata) {
+      var amt = Math.max(1, Math.min(50, Math.floor(Number(amount) || 0)));
+      if (amt < 1) return;
+      var sourceTag = (source || 'arcade-reward').toString().slice(0, 40);
+      var entry = {
+        source: sourceTag,
+        tokens: amt,
+        date: new Date().toISOString(),
+        metadata: metadata && typeof metadata === 'object' ? metadata : {}
+      };
+      setStateMulti({
+        tokens: state.tokens + amt,
+        earnings: state.earnings.concat([entry])
+      });
+      addToast('🪙 +' + amt + ' tokens · ' + sourceTag);
+    }
+
     // Phase 3b.history — record an encounter outcome to state. Capped at
     // 20 records (most-recent-wins). Plugins call this via ctx.onEncounterRecord
     // when an encounter ends in win/loss/expired/forfeit. The record is the
@@ -14170,6 +14193,15 @@
                 // Phase 3b.history — plugin calls this with an encounter
                 // record at win/loss/expired/forfeit. AlloHaven persists.
                 onEncounterRecord: function(record) { return recordEncounter(record); },
+                // Phase 3b.full.e — plugin calls this to grant tokens for
+                // arcade rewards (e.g. class-encounter wins). Plugin
+                // de-dups via metadata before calling. AlloHaven persists
+                // via the standard earnings log.
+                onAwardTokens: function(amount, source, metadata) { return awardTokens(amount, source, metadata); },
+                // Earnings log read-only — plugin needs this to dedup
+                // claims (e.g. "have I already received this encounter's
+                // reward?") without re-deriving from raw state.
+                getEarnings: function() { return (state.earnings || []).slice(); },
                 callImagen: props.callImagen,
                 callGemini: props.callGemini,
                 callTTS: props.callTTS,

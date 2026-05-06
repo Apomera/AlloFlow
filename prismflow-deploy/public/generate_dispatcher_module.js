@@ -1789,9 +1789,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              throw new Error("Failed to parse Scaffolds JSON. The AI response was not valid.");
          }
       } else if (type === 'alignment-report') {
-         if (targetStandards.length === 0) {
-             throw new Error("Please add at least one target standard in the settings before generating a report.");
-         }
+         // Plan O Step 1.5: ungated. The audit runs even without target standards
+         // — the standards-alignment LLM call is skipped (see line 1935 below)
+         // and the comprehensive dimensions still produce a meaningful report.
          const artifactsToAudit = history.filter(h =>
              h.type !== 'alignment-report' &&
              h.type !== 'udl-advice' &&
