@@ -47,7 +47,7 @@
     { key: 'preview',      label: 'Preview as student', icon: '👁️',  ready: true  },
     { key: 'keyboard',     label: 'Keyboard tour',      icon: '⌨️',  ready: true  },
     { key: 'audit',        label: 'Audit',              icon: '🔍', ready: true  },
-    { key: 'screenreader', label: 'Screen reader',      icon: '🔊', ready: false },
+    { key: 'screenreader', label: 'Screen reader',      icon: '🔊', ready: true  },
     { key: 'simulators',   label: 'Simulators',         icon: '👓', ready: false },
   ];
 
@@ -985,7 +985,353 @@
     );
   }
 
-  // ----- Coming-soon stub for phases 4-5 -------------------------------------
+  // ----- Phase 4: Screen-reader announcement preview -------------------------
+
+  // Map an HTML tag (or role attr) to the role a screen reader would announce.
+  // Not exhaustive, but covers the common cases. Falls back to null for
+  // semantically-neutral tags (div, span) which we then skip in the walkthrough.
+  function getScreenReaderRole(el) {
+    var explicit = el.getAttribute('role');
+    if (explicit) {
+      // Friendlier label for some common ARIA roles
+      var aliases = { 'button': 'button', 'link': 'link', 'navigation': 'navigation', 'main': 'main', 'banner': 'banner', 'contentinfo': 'content info', 'complementary': 'complementary', 'region': 'region', 'tab': 'tab', 'tabpanel': 'tab panel', 'tablist': 'tab list', 'dialog': 'dialog', 'alert': 'alert', 'menu': 'menu', 'menuitem': 'menu item', 'progressbar': 'progress bar', 'slider': 'slider' };
+      return aliases[explicit] || explicit;
+    }
+    var tag = el.tagName.toLowerCase();
+    if (tag === 'a') return el.hasAttribute('href') ? 'link' : null;
+    if (tag === 'button') return 'button';
+    if (tag === 'select') return 'combo box';
+    if (tag === 'textarea') return 'edit, multi-line';
+    if (tag === 'input') {
+      var type = (el.type || 'text').toLowerCase();
+      var inputRoles = { text: 'edit', email: 'edit, email', password: 'edit, password', search: 'search field', tel: 'edit, telephone', url: 'edit, URL', number: 'spin button', checkbox: 'checkbox', radio: 'radio button', submit: 'button', reset: 'button', button: 'button', range: 'slider', date: 'edit, date', time: 'edit, time' };
+      return inputRoles[type] || 'edit';
+    }
+    if (tag === 'img') {
+      var alt = el.getAttribute('alt');
+      if (alt === '') return null; // decorative
+      return 'graphic';
+    }
+    if (tag === 'h1') return 'heading level 1';
+    if (tag === 'h2') return 'heading level 2';
+    if (tag === 'h3') return 'heading level 3';
+    if (tag === 'h4') return 'heading level 4';
+    if (tag === 'h5') return 'heading level 5';
+    if (tag === 'h6') return 'heading level 6';
+    if (tag === 'nav') return 'navigation';
+    if (tag === 'main') return 'main';
+    if (tag === 'header') return 'banner';
+    if (tag === 'footer') return 'content info';
+    if (tag === 'aside') return 'complementary';
+    if (tag === 'section') return el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') ? 'region' : null;
+    if (tag === 'article') return 'article';
+    return null;
+  }
+
+  function getScreenReaderName(el) {
+    var ariaLabel = el.getAttribute('aria-label');
+    if (ariaLabel && ariaLabel.trim()) return ariaLabel.trim();
+    var labelledBy = el.getAttribute('aria-labelledby');
+    if (labelledBy) {
+      var ids = labelledBy.split(/\s+/);
+      var labelText = ids.map(function (id) {
+        var labelEl = document.getElementById(id);
+        return labelEl ? labelEl.textContent.trim() : '';
+      }).filter(Boolean).join(' ');
+      if (labelText) return labelText;
+    }
+    if (el.tagName.toLowerCase() === 'img') {
+      return el.getAttribute('alt') || '';
+    }
+    if (el.tagName.toLowerCase() === 'input') {
+      // For inputs, the label is usually a separate <label> element with for=
+      var id = el.getAttribute('id');
+      if (id) {
+        var lbl = document.querySelector('label[for="' + CSS.escape(id) + '"]');
+        if (lbl) return lbl.textContent.trim();
+      }
+      // Or wrapping label
+      var wrappingLabel = el.closest('label');
+      if (wrappingLabel) return wrappingLabel.textContent.trim();
+      var ph = el.getAttribute('placeholder');
+      if (ph) return ph + ' (placeholder)';
+      return '';
+    }
+    var text = (el.textContent || '').trim().replace(/\s+/g, ' ');
+    if (text) return text.slice(0, 200);
+    var title = el.getAttribute('title');
+    if (title) return title;
+    return '';
+  }
+
+  function getScreenReaderState(el) {
+    var states = [];
+    if (el.disabled) states.push('disabled');
+    if (el.required || el.getAttribute('aria-required') === 'true') states.push('required');
+    if (el.checked) states.push('checked');
+    if (el.type === 'checkbox' && !el.checked) states.push('not checked');
+    if (el.type === 'radio' && !el.checked) states.push('not selected');
+    var expanded = el.getAttribute('aria-expanded');
+    if (expanded === 'true') states.push('expanded');
+    else if (expanded === 'false') states.push('collapsed');
+    var pressed = el.getAttribute('aria-pressed');
+    if (pressed === 'true') states.push('pressed');
+    else if (pressed === 'false') states.push('not pressed');
+    var selected = el.getAttribute('aria-selected');
+    if (selected === 'true') states.push('selected');
+    var hidden = el.getAttribute('aria-hidden');
+    if (hidden === 'true') return null; // skip aria-hidden elements entirely
+    return states.length > 0 ? states.join(', ') : '';
+  }
+
+  function composeAnnouncement(el) {
+    var role = getScreenReaderRole(el);
+    if (!role) return null;
+    var state = getScreenReaderState(el);
+    if (state === null) return null; // aria-hidden
+    var name = getScreenReaderName(el);
+    var parts = [];
+    if (name) parts.push(name);
+    parts.push(role);
+    if (state) parts.push(state);
+    return parts.join(', ');
+  }
+
+  function buildScreenReaderQueue(excludeContainerSelector) {
+    var excludeContainer = excludeContainerSelector ? document.querySelector(excludeContainerSelector) : null;
+    function inExcluded(el) { return excludeContainer ? excludeContainer.contains(el) : false; }
+
+    // Collect semantic + interactive elements; document order matches reading order.
+    var selector = [
+      'h1, h2, h3, h4, h5, h6',
+      'nav, main, header, footer, aside, article',
+      'section[aria-label], section[aria-labelledby]',
+      '[role="region"], [role="navigation"], [role="main"], [role="banner"], [role="contentinfo"], [role="complementary"], [role="dialog"], [role="alert"], [role="tablist"], [role="tab"], [role="tabpanel"]',
+      'a[href]',
+      'button:not([disabled])',
+      'input:not([disabled]):not([type="hidden"])',
+      'select:not([disabled])',
+      'textarea:not([disabled])',
+      '[contenteditable="true"]',
+      'img[alt]:not([alt=""])',
+      '[role="img"]',
+    ].join(', ');
+
+    var els = Array.from(document.querySelectorAll(selector)).filter(function (el) {
+      if (inExcluded(el)) return false;
+      if (!isElementVisible(el)) return false;
+      // Skip elements inside an aria-hidden ancestor
+      var ancestor = el.parentElement;
+      while (ancestor && ancestor !== document.body) {
+        if (ancestor.getAttribute('aria-hidden') === 'true') return false;
+        ancestor = ancestor.parentElement;
+      }
+      return true;
+    });
+
+    // Deduplicate (an element might match multiple selectors via role + tag)
+    var seen = new Set();
+    els = els.filter(function (el) {
+      if (seen.has(el)) return false;
+      seen.add(el);
+      return true;
+    });
+
+    return els.map(function (el, i) {
+      var text = composeAnnouncement(el);
+      return text ? { index: i, el: el, text: text, tag: el.tagName.toLowerCase() } : null;
+    }).filter(Boolean);
+  }
+
+  // Highlight an element on the page with a colored outline. Returns a
+  // cleanup function that restores the original outline.
+  function highlightForScreenReader(el) {
+    var origOutline = el.style.outline;
+    var origOffset = el.style.outlineOffset;
+    el.style.outline = '3px solid #f59e0b';
+    el.style.outlineOffset = '2px';
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+    return function unhighlight() {
+      el.style.outline = origOutline;
+      el.style.outlineOffset = origOffset;
+    };
+  }
+
+  function ScreenReaderTab(props) {
+    var addToast = props.addToast;
+
+    var queue$ = useState(null);
+    var queue = queue$[0], setQueue = queue$[1];
+
+    var playingIndex$ = useState(null);
+    var playingIndex = playingIndex$[0], setPlayingIndex = playingIndex$[1];
+
+    var rate$ = useState(1.0);
+    var rate = rate$[0], setRate = rate$[1];
+
+    // Stop any in-progress announcements when the tab unmounts
+    useEffect(function () {
+      return function () {
+        try {
+          if (window.speechSynthesis) window.speechSynthesis.cancel();
+        } catch (_) {}
+      };
+    }, []);
+
+    var ttsAvailable = typeof window.speechSynthesis !== 'undefined';
+
+    function buildQueue() {
+      try {
+        var items = buildScreenReaderQueue('[aria-label="Accessibility Lab"]');
+        setQueue(items);
+        addToast && addToast('Built ' + items.length + ' announcements (headings, landmarks, links, controls, and images with alt text).', 'info');
+      } catch (err) {
+        addToast && addToast('Failed to build queue: ' + (err && err.message), 'error');
+      }
+    }
+
+    function speakOne(item, onEnd) {
+      if (!ttsAvailable) {
+        addToast && addToast('Browser speech synthesis not available.', 'error');
+        onEnd && onEnd();
+        return;
+      }
+      try { window.speechSynthesis.cancel(); } catch (_) {}
+      var utter = new SpeechSynthesisUtterance(item.text);
+      utter.rate = rate;
+      utter.pitch = 1.0;
+      utter.lang = (document.documentElement.lang || 'en-US');
+      utter.onend = onEnd;
+      utter.onerror = onEnd;
+      window.speechSynthesis.speak(utter);
+    }
+
+    function playAll() {
+      if (!queue || queue.length === 0) return;
+      if (!ttsAvailable) {
+        addToast && addToast('Browser speech synthesis not available.', 'error');
+        return;
+      }
+      var i = 0;
+      var stopped = false;
+      var unhighlight = null;
+      function next() {
+        if (stopped || i >= queue.length) {
+          if (unhighlight) { unhighlight(); unhighlight = null; }
+          setPlayingIndex(null);
+          return;
+        }
+        if (unhighlight) { unhighlight(); unhighlight = null; }
+        var item = queue[i];
+        setPlayingIndex(i);
+        unhighlight = highlightForScreenReader(item.el);
+        speakOne(item, function () {
+          i++;
+          next();
+        });
+      }
+      // expose stop via closure on the global flag
+      window.__alloflowSrStopAll = function () {
+        stopped = true;
+        try { window.speechSynthesis.cancel(); } catch (_) {}
+        if (unhighlight) { unhighlight(); unhighlight = null; }
+        setPlayingIndex(null);
+      };
+      next();
+    }
+
+    function stopAll() {
+      if (window.__alloflowSrStopAll) {
+        window.__alloflowSrStopAll();
+        delete window.__alloflowSrStopAll;
+      } else {
+        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
+        setPlayingIndex(null);
+      }
+    }
+
+    function playOne(i) {
+      if (!queue) return;
+      stopAll();
+      var item = queue[i];
+      var unhighlight = highlightForScreenReader(item.el);
+      setPlayingIndex(i);
+      speakOne(item, function () {
+        unhighlight();
+        setPlayingIndex(null);
+      });
+    }
+
+    return e('div', { className: 'flex flex-col gap-4' },
+      e('div', null,
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Screen-reader announcement preview'),
+        e('p', { className: 'text-sm text-slate-600 mt-1' },
+          "Build the list of what a screen reader would announce while moving through the page in reading order, then listen. Headings, landmarks, links, form controls, and images with alt text are included. The lab modal itself is excluded. Uses your browser's built-in speech synthesis (the same kind of TTS engine real screen readers use, so the audio quality is representative of what students actually hear).")
+      ),
+
+      !ttsAvailable && e('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-sm text-amber-900' },
+        'Your browser does not expose the Web Speech API. Try Chrome, Edge, or Firefox. The list will still build; you just will not hear the audio.'
+      ),
+
+      // Action buttons
+      e('div', { className: 'flex gap-2 flex-wrap items-center' },
+        e('button', {
+          onClick: buildQueue,
+          className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
+        }, queue ? 'Re-scan page' : '🔊 Build announcement queue'),
+        queue && queue.length > 0 && e('button', {
+          onClick: playingIndex !== null ? stopAll : playAll,
+          className: 'px-4 py-2 text-sm font-semibold border border-emerald-600 ' +
+            (playingIndex !== null ? 'bg-emerald-600 text-white' : 'text-emerald-700 hover:bg-emerald-50') +
+            ' rounded',
+        }, playingIndex !== null ? '⏹ Stop' : '▶ Play all'),
+        queue && e('label', { className: 'text-xs text-slate-700 flex items-center gap-2' },
+          'Speed: ', e('input', {
+            type: 'range', min: '0.5', max: '2.0', step: '0.1',
+            value: rate, onChange: function (ev) { setRate(parseFloat(ev.target.value)); },
+            className: 'w-24',
+          }), e('span', { className: 'font-mono w-10' }, rate.toFixed(1) + 'x'))
+      ),
+
+      !queue && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
+        'Click "Build announcement queue" to scan the page (excluding this lab) for everything a screen reader would announce: headings, landmarks, links, buttons, form controls, and images with alt text. You can then play the whole queue or any single item.'
+      ),
+
+      queue && queue.length === 0 && e('div', { className: 'p-6 text-center bg-amber-50 rounded-lg border border-amber-300 text-sm text-amber-900' },
+        'No announceable elements found. The page might be empty, or the visible content is all behind aria-hidden, or all the elements lack both a role and an accessible name. This is itself a problem worth investigating.'
+      ),
+
+      queue && queue.length > 0 && e('div', { className: 'flex flex-col gap-2' },
+        e('div', { className: 'text-xs text-slate-600 mb-1' },
+          queue.length + ' announcements queued. Click any item to hear it. The element is highlighted on the page while it speaks.'),
+        e('div', { className: 'border border-slate-200 rounded max-h-96 overflow-y-auto bg-white' },
+          queue.map(function (item, i) {
+            var isPlaying = playingIndex === i;
+            return e('div', {
+              key: i,
+              className: 'flex items-start gap-2 p-2 border-b border-slate-100 ' + (isPlaying ? 'bg-amber-50' : 'hover:bg-slate-50'),
+            },
+              e('button', {
+                onClick: function () { playOne(i); },
+                disabled: !ttsAvailable,
+                className: 'shrink-0 w-7 h-7 rounded-full ' + (isPlaying ? 'bg-amber-500 text-white' : 'bg-slate-200 text-slate-700 hover:bg-slate-300') + ' flex items-center justify-center text-xs font-bold disabled:opacity-50',
+                title: 'Play this announcement',
+                'aria-label': 'Play announcement ' + (i + 1),
+              }, isPlaying ? '▶' : (i + 1)),
+              e('div', { className: 'flex-1 min-w-0' },
+                e('div', { className: 'text-xs text-slate-500 font-mono' }, '<' + item.tag + '>'),
+                e('div', { className: 'text-sm text-slate-800' }, item.text)
+              )
+            );
+          })
+        ),
+        e('div', { className: 'text-xs text-slate-500 italic mt-2' },
+          'Tip: try playing the whole queue with your eyes closed. That is a meaningful approximation of how a student using a screen reader navigates the page. If the announcements feel disorienting or skip critical content, that is a problem to fix.')
+      )
+    );
+  }
+
+  // ----- Coming-soon stub for phase 5 ----------------------------------------
 
   function ComingSoon(props) {
     return e('div', { className: 'p-10 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300' },
@@ -1053,7 +1399,7 @@
           tab === 'preview'      ? e(PreviewTab, props) :
           tab === 'keyboard'     ? e(KeyboardTab, props) :
           tab === 'audit'        ? e(AuditTab, props) :
-          tab === 'screenreader' ? e(ComingSoon, { icon: '🔊', title: 'Screen-reader announcement preview', description: "Plays back exactly what a screen reader would announce while a student worked through the lesson, using AlloFlow's text-to-speech. Coming in Phase 4." }) :
+          tab === 'screenreader' ? e(ScreenReaderTab, props) :
           e(ComingSoon, { icon: '👓', title: 'Disability simulators', description: 'Toggleable filters for low-vision blur, color-blindness (deutan/protan/tritan), dyslexia simulation, and motor-impairment delay. Each with a teacher-friendly explainer of who experiences this. Coming in Phase 5.' })
         )
       )
