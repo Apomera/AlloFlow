@@ -14194,7 +14194,18 @@
                   var gc = props.generatedContent;
                   if (gc && gc.type === 'glossary' && Array.isArray(gc.data)) return gc.data;
                   return [];
-                })()
+                })(),
+                // Phase 3b.full — live-session bindings. sessionCode is
+                // null when not in a live session (most of the time);
+                // non-null + a Firestore db handle means the plugin can
+                // implement multi-student modes via onSnapshot. studentNickname
+                // is the per-device codename (e.g. 'Clever Dolphin'); isHost
+                // is true for the teacher who launched the session.
+                sessionCode: props.sessionCode || null,
+                studentNickname: props.studentNickname || '',
+                isHost: !!props.isHost,
+                firestoreDb: props.firestoreDb || null,
+                firestoreAppId: props.firestoreAppId || null
               };
               // Default card if mode doesn't supply its own render. If it
               // does, the mode owns the entire card UI.

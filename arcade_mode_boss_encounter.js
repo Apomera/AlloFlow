@@ -146,6 +146,31 @@
             'Pick a topic. Draw cards from your room. Spark each card by justifying how it fits the topic — the boss takes damage when your justifications land. Solo mode for now; live class mode is on the way.')
         )
       ),
+      // Phase 3b.full — in-session hint. Visible when AlloFlow is
+      // currently in a live session. The class-mode mechanic itself
+      // ships in 3b.full.b/c/d; this hint validates the prop chain.
+      ctx.sessionCode ? h('div', {
+        role: 'status',
+        style: {
+          display: 'flex', alignItems: 'center', gap: '8px',
+          padding: '6px 10px',
+          background: (palette.bg || '#0f172a') + 'aa',
+          border: '1px dashed ' + (palette.accent || '#60a5fa'),
+          borderRadius: '8px',
+          fontSize: '11px',
+          color: palette.textDim || '#cbd5e1',
+          marginBottom: '10px',
+          lineHeight: '1.4'
+        }
+      },
+        h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, '🌐'),
+        h('span', { style: { flex: 1 } },
+          'In live session ', h('strong', null, ctx.sessionCode), '. ',
+          ctx.isHost
+            ? 'Class-vs-AI mode is on the way; for now solo encounters work.'
+            : 'Joined as ' + (ctx.studentNickname || 'a student') + '. Class-vs-AI mode coming soon.'
+        )
+      ) : null,
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         h('div', { style: { fontSize: '11px', color: palette.textMute || '#a3a3a3', flex: 1 } },
           deckSize >= 3
