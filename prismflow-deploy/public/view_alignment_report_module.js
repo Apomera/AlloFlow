@@ -475,7 +475,25 @@
   function ReadinessScoreCard(p) {
     var o = p.overall;
     if (!o) return null;
-    var score = o.score || 0;
+    var score = typeof o.score === 'number' ? o.score : 0;
+    var dimEvaluated = typeof o.dimensionsEvaluated === 'number' ? o.dimensionsEvaluated : 0;
+
+    // Empty-state: no comprehensive dimensions ran, render an informative
+    // fallback rather than a misleading 0 / 100 score.
+    if (dimEvaluated === 0) {
+      return React.createElement('div', {
+        className: 'p-6 rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 mb-8 text-center'
+      },
+        React.createElement('div', { className: 'text-4xl mb-2', 'aria-hidden': 'true' }, '📊'),
+        React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-500 mb-1' },
+          'Curriculum Readiness Score'),
+        React.createElement('div', { className: 'text-lg font-bold text-slate-700 mb-2' },
+          'Not enough artifacts to compute'),
+        React.createElement('p', { className: 'text-sm text-slate-600 max-w-md mx-auto' },
+          'Generate a few artifacts (analysis, glossary, quiz, sentence frames, etc.) before running the audit to get a meaningful readiness score.')
+      );
+    }
+
     // Color band by score
     var band, ringColor, bgColor, textColor;
     if (o.blockingIssues && o.blockingIssues.length > 0) {

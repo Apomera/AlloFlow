@@ -13840,6 +13840,174 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'alignment-report') {
           if (!isTeacher) return '';
           const reports = item.data.reports || [];
+          // Plan O: render the comprehensive block in print/PDF/HTML exports too.
+          const comprehensiveHTML = (() => {
+              const comp = item.data.comprehensive;
+              if (!comp || !comp.overall || comp.overall.dimensionsEvaluated === 0) return '';
+              const o = comp.overall;
+              const score = typeof o.score === 'number' ? o.score : 0;
+              let bgColor, ringColor, textColor;
+              if (o.blockingIssues && o.blockingIssues.length > 0) { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; }
+              else if (score >= 90) { bgColor = '#ecfdf5'; ringColor = '#059669'; textColor = '#065f46'; }
+              else if (score >= 70) { bgColor = '#f7fee7'; ringColor = '#65a30d'; textColor = '#365314'; }
+              else if (score >= 50) { bgColor = '#fffbeb'; ringColor = '#d97706'; textColor = '#92400e'; }
+              else { bgColor = '#fef2f2'; ringColor = '#dc2626'; textColor = '#991b1b'; }
+              const statusBadge = (status) => {
+                  const bg = status === 'Aligned' ? '#dcfce7' : status === 'Not Aligned' ? '#fee2e2' : '#fef3c7';
+                  const fg = status === 'Aligned' ? '#166534' : status === 'Not Aligned' ? '#991b1b' : '#92400e';
+                  return `<span style="font-size:0.7em; font-weight:700; text-transform:uppercase; padding:3px 8px; background:${bg}; color:${fg}; border-radius:4px; white-space:nowrap;">${status || 'N/A'}</span>`;
+              };
+              const labelMap = { vocabulary: 'Vocab', engagement: 'Engagement', accessibility: 'Access', udl: 'UDL', accuracy: 'Accuracy' };
+              const dimChips = ['vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'].map(dim => {
+                  const dimData = (o.dimensionScores || {})[dim];
+                  if (!dimData) return '';
+                  const pct = (o.perDimensionPercent || {})[dim] || 0;
+                  const chipBg = dimData.status === 'Aligned' ? '#dcfce7' : dimData.status === 'Not Aligned' ? '#fee2e2' : '#fef3c7';
+                  const chipFg = dimData.status === 'Aligned' ? '#166534' : dimData.status === 'Not Aligned' ? '#991b1b' : '#92400e';
+                  return `<span style="display:inline-block; margin:2px 4px 2px 0; padding:3px 10px; background:${chipBg}; color:${chipFg}; border-radius:999px; font-size:0.75em; font-weight:600;">${labelMap[dim] || dim} ${pct}%</span>`;
+              }).join('');
+              const banner = `
+                  <div style="background:${bgColor}; border:2px solid ${ringColor}; border-radius:12px; padding:16px; margin-bottom:20px; page-break-inside: avoid;">
+                      <div style="display:flex; align-items:center; gap:20px;">
+                          <div style="flex-shrink:0; width:84px; height:84px; border-radius:50%; border:6px solid ${ringColor}; display:flex; align-items:center; justify-content:center; font-size:1.6em; font-weight:900; color:${textColor};">${score}</div>
+                          <div style="flex:1; min-width:0;">
+                              <div style="font-size:0.7em; font-weight:bold; text-transform:uppercase; letter-spacing:0.05em; color:${textColor}; opacity:0.7; margin-bottom:4px;">Curriculum Readiness Score</div>
+                              <div style="font-size:1.1em; font-weight:900; color:${textColor}; margin-bottom:8px;">${o.label || ''}</div>
+                              <div>${dimChips}</div>
+                              ${o.blockingIssues && o.blockingIssues.length > 0 ? `
+                                  <div style="margin-top:8px; padding:6px 8px; background:white; border:1px solid #fca5a5; border-radius:4px; font-size:0.8em;">
+                                      <strong style="color:#991b1b;">Blocking issues:</strong>
+                                      <ul style="margin:4px 0 0 18px; color:#991b1b;">
+                                          ${o.blockingIssues.map(b => `<li><strong>${b.dimension}:</strong> ${b.issue}</li>`).join('')}
+                                      </ul>
+                                  </div>` : ''}
+                          </div>
+                      </div>
+                      ${o.notes ? `<div style="margin-top:8px; font-size:0.75em; font-style:italic; color:${textColor}; opacity:0.65;">${o.notes}</div>` : ''}
+                  </div>`;
+              const recList = (items) => items && items.length ? `
+                  <div style="background:#fffbeb; border:1px solid #fde68a; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em;">
+                      <strong style="color:#92400e;">Heuristic recommendations:</strong>
+                      <ul style="margin:4px 0 0 18px; color:#92400e;">${items.slice(0, 5).map(r => `<li>${r}</li>`).join('')}</ul>
+                  </div>` : '';
+              const llmBlock = (review, label) => review ? `
+                  <div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;">
+                      <strong>${label} (AI):</strong>
+                      ${review.narrative ? `<p style="margin:4px 0;">${review.narrative}</p>` : ''}
+                      ${review.fixes && review.fixes.length ? `<div><em>Suggested fixes:</em><ul style="margin:4px 0 0 18px;">${review.fixes.slice(0, 5).map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
+                  </div>` : '';
+              const v = comp.vocabulary;
+              const vocabHTML = v ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Vocabulary fit</h4>
+                          ${statusBadge(v.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${v.totalWords}</strong> total words</td>
+                              <td style="padding:4px;"><strong>${v.tier2Count}</strong> Tier 2 (expected ~${v.expected && v.expected.tier2})</td>
+                              <td style="padding:4px;"><strong>${v.tier3Count}</strong> Tier 3 (expected ~${v.expected && v.expected.tier3})</td>
+                              <td style="padding:4px;"><strong>${v.glossaryTermsCount}</strong> glossary terms</td>
+                          </tr>
+                      </table>
+                      ${recList(v.recommendations)}
+                      ${llmBlock(v.llmReview, 'Literacy-coach review')}
+                      ${v.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${v.notes}</div>` : ''}
+                  </div>` : '';
+              const e = comp.engagement;
+              const engHTML = e ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Engagement variety</h4>
+                          ${statusBadge(e.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${e.distinctTypeCount}</strong> distinct types</td>
+                              <td style="padding:4px;"><strong>${e.totalArtifacts}</strong> total artifacts</td>
+                              <td style="padding:4px;"><strong>${Math.round((e.diversityScore || 0) * 100)}%</strong> diversity</td>
+                              <td style="padding:4px;"><strong>${(e.multimodalCoverage && e.multimodalCoverage.present || []).length}/4</strong> modalities</td>
+                          </tr>
+                      </table>
+                      ${recList(e.recommendations)}
+                      ${llmBlock(e.llmReview, 'UDL + DOK review')}
+                      ${e.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${e.notes}</div>` : ''}
+                  </div>` : '';
+              const ax = comp.accessibility;
+              const accHTML = ax ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Content accessibility</h4>
+                          ${statusBadge(ax.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${ax.totalImages}</strong> images</td>
+                              <td style="padding:4px;"><strong>${ax.altCoveragePct === null ? 'n/a' : ax.altCoveragePct + '%'}</strong> alt-text coverage</td>
+                              <td style="padding:4px;"><strong>${ax.colorOnlyCount}</strong> color-only refs</td>
+                              <td style="padding:4px;"><strong>${ax.longestUnbrokenPassage}</strong> longest passage (words)</td>
+                          </tr>
+                      </table>
+                      ${recList(ax.recommendations)}
+                      ${llmBlock(ax.llmReview, 'Accessibility-specialist review')}
+                      ${ax.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${ax.notes}</div>` : ''}
+                  </div>` : '';
+              const u = comp.udl;
+              const renderPillar = (pillar, pillarTitle) => pillar ? `
+                  <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:8px 10px; border-radius:6px; margin-bottom:6px; font-size:0.85em;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                          <strong>${pillarTitle}</strong>
+                          ${statusBadge(pillar.status)}
+                      </div>
+                      ${pillar.evidence ? `<div style="margin-bottom:2px;"><em>Evidence:</em> ${pillar.evidence}</div>` : ''}
+                      ${pillar.gaps ? `<div style="margin-bottom:2px;"><em>Gaps:</em> ${pillar.gaps}</div>` : ''}
+                      ${pillar.recommendation ? `<div><em>Recommendation:</em> ${pillar.recommendation}</div>` : ''}
+                  </div>` : '';
+              const udlHTML = u ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">UDL principles (CAST Guidelines v3.0)</h4>
+                          ${statusBadge(u.status)}
+                      </div>
+                      ${renderPillar(u.representation, 'Representation')}
+                      ${renderPillar(u.engagement, 'Engagement')}
+                      ${renderPillar(u.actionExpression, 'Action & Expression')}
+                      ${u.overallNarrative ? `<div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;"><strong>UDL synthesis (AI):</strong> ${u.overallNarrative}</div>` : ''}
+                      ${u.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${u.notes}</div>` : ''}
+                  </div>` : '';
+              const acc = comp.accuracy;
+              const accCounts = (acc && acc.accuracyRatingCounts) || { high: 0, medium: 0, low: 0 };
+              const accuracyHTML = acc ? `
+                  <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
+                      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                          <h4 style="margin:0; font-size:1em; color:#334155;">Content accuracy</h4>
+                          ${statusBadge(acc.status)}
+                      </div>
+                      <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
+                          <tr>
+                              <td style="padding:4px;"><strong>${acc.totalAnalyses}</strong> analyses</td>
+                              <td style="padding:4px;"><strong>${acc.totalVerifiedFacts}</strong> verified facts</td>
+                              <td style="padding:4px;"><strong>${acc.totalDiscrepancies}</strong> discrepancies</td>
+                              <td style="padding:4px;"><strong>${accCounts.high}H/${accCounts.medium}M/${accCounts.low}L</strong> rating mix</td>
+                          </tr>
+                      </table>
+                      ${recList(acc.recommendations)}
+                      ${llmBlock(acc.llmReview, 'Fact-checker review')}
+                      ${acc.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${acc.notes}</div>` : ''}
+                  </div>` : '';
+              return `
+                  <div style="margin-top:24px; padding-top:16px; border-top:3px solid #6366f1;">
+                      <h3 style="margin:0 0 4px 0; font-size:1.15em; color:#1e293b;">Comprehensive Curriculum Audit</h3>
+                      <p style="margin:0 0 12px 0; font-size:0.85em; color:#64748b;">Multi-dimensional analysis beyond standards alignment. Hybrid: deterministic computation + AI review.</p>
+                      ${banner}
+                      ${vocabHTML}
+                      ${engHTML}
+                      ${accHTML}
+                      ${udlHTML}
+                      ${accuracyHTML}
+                  </div>`;
+          })();
           return `
               <div class="section" id="${item.id}">
                   <div class="resource-header">${title} (${item.meta})</div>
@@ -13883,6 +14051,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>
                       </div>
                   `).join('')}
+                  ${comprehensiveHTML}
               </div>
           `;
       }

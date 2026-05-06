@@ -1933,6 +1933,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          `;
          // ---- Standards alignment (LLM): only if standards are provided -----
          if (targetStandards.length > 0) {
+             setGenerationStep && setGenerationStep('Auditing standards alignment...');
              const result = await callGemini(prompt, true);
              try {
                  content = JSON.parse(cleanJson(result));
@@ -1965,6 +1966,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          //   artifact types + DOK distribution + scaffolds + multi-modal
          //   coverage, plus LLM review).
          const auditHarvest = harvestExistingAuditSignals(artifactsToAudit);
+         setGenerationStep && setGenerationStep('Analyzing vocabulary fit...');
          try {
              const vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
              // Enrich vocabulary with reading-level harvest from analysis items
@@ -1997,6 +1999,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          }
 
          // ---- Plan O Step 2: Engagement variety -----------------------------
+         setGenerationStep && setGenerationStep('Evaluating engagement variety...');
          try {
              const engagement = computeEngagementVariety(auditHarvest, artifactsToAudit);
              content.comprehensive = content.comprehensive || {};
@@ -2024,6 +2027,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          }
 
          // ---- Plan O Step 3: Content accessibility (heuristic + LLM) -------
+         setGenerationStep && setGenerationStep('Scanning content accessibility...');
          try {
              const accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, gradeLevel);
              content.comprehensive = content.comprehensive || {};
@@ -2058,6 +2062,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          // Pure LLM judgment, but seeded with the deterministic harvest from
          // Step 2 so the model has factual ground (which modalities are
          // present, scaffold counts, distinct artifact types, reading levels).
+         setGenerationStep && setGenerationStep('Evaluating UDL principles...');
          try {
              const udlGradeBand = (content.comprehensive && content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
              const modPresent = auditHarvest.multimodal || {};
@@ -2099,6 +2104,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
 
          // ---- Plan O Step 5: Content accuracy (harvest + LLM review) -------
          // Aggregates existing analysis.accuracy data + LLM interpretation.
+         setGenerationStep && setGenerationStep('Verifying content accuracy...');
          try {
              const accuracy = computeContentAccuracy(auditHarvest);
              content.comprehensive = content.comprehensive || {};
@@ -2126,6 +2132,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          }
 
          // ---- Plan O Step 6: Curriculum Readiness Score (roll-up) -----------
+         setGenerationStep && setGenerationStep('Computing curriculum readiness score...');
          try {
              const readiness = computeReadinessScore(content.comprehensive);
              if (readiness) {

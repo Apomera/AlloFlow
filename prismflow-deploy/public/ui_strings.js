@@ -3357,8 +3357,8 @@
         "teacher_guide_header": "Teacher Guide"
   },
   "alignment": {
-    "title": "Standard Alignment Report",
-      "generate": "Generate Standard Alignment Report",
+    "title": "Curriculum Audit",
+      "generate": "Generate Curriculum Audit",
         "warning": "Please add at least one target standard in the settings.",
           "audit_report": "Audit Report",
             "cognitive_demand": "Cognitive Demand (DOK)",
