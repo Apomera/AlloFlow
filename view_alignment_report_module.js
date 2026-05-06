@@ -391,6 +391,87 @@
     );
   }
 
+  function AccuracySection(p) {
+    var a = p.acc;
+    if (!a) return null;
+    var counts = a.accuracyRatingCounts || { high: 0, medium: 0, low: 0 };
+    return React.createElement(ComprehensiveSection, { icon: '✅', title: 'Content accuracy', status: a.status },
+      // Top stat row
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, a.totalAnalyses),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Analyses run')
+        ),
+        React.createElement('div', { className: 'p-3 bg-emerald-50 rounded text-center border border-emerald-200' },
+          React.createElement('div', { className: 'text-2xl font-bold text-emerald-800' }, a.totalVerifiedFacts),
+          React.createElement('div', { className: 'text-xs text-emerald-700' }, 'Verified facts')
+        ),
+        React.createElement('div', {
+          className: 'p-3 rounded text-center ' + (a.totalDiscrepancies > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')
+        },
+          React.createElement('div', { className: 'text-2xl font-bold ' + (a.totalDiscrepancies > 0 ? 'text-rose-800' : 'text-slate-800') }, a.totalDiscrepancies),
+          React.createElement('div', { className: 'text-xs ' + (a.totalDiscrepancies > 0 ? 'text-rose-700' : 'text-slate-600') }, 'Discrepancies')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' },
+            counts.high + 'H/' + counts.medium + 'M/' + counts.low + 'L'),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Rating mix')
+        )
+      ),
+      // Sample verifications
+      a.sampleVerifications && a.sampleVerifications.length > 0 && React.createElement('details', { className: 'mb-3 bg-slate-50 border border-slate-200 rounded p-3' },
+        React.createElement('summary', { className: 'cursor-pointer text-sm font-semibold text-slate-800' },
+          'Per-analysis details (' + a.sampleVerifications.length + ')'),
+        React.createElement('ul', { className: 'mt-2 space-y-2' },
+          a.sampleVerifications.map(function (s, i) {
+            var ratingColor = (s.rating || '').toLowerCase().indexOf('high') >= 0 ? 'emerald' :
+                              (s.rating || '').toLowerCase().indexOf('low') >= 0 ? 'rose' : 'amber';
+            return React.createElement('li', { key: i, className: 'p-2 bg-white border border-slate-200 rounded' },
+              React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+                React.createElement('span', {
+                  className: 'text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-' + ratingColor + '-100 text-' + ratingColor + '-800'
+                }, s.rating || 'Unknown'),
+                React.createElement('span', { className: 'text-xs text-slate-600' },
+                  s.verifiedFactCount + ' verified, ' + s.discrepancyCount + ' discrepanc' + (s.discrepancyCount === 1 ? 'y' : 'ies'))
+              ),
+              s.reason && React.createElement('p', { className: 'text-xs text-slate-700' }, s.reason)
+            );
+          })
+        )
+      ),
+      // Heuristic recommendations
+      a.recommendations && a.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Heuristic recommendations:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
+          a.recommendations.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      // LLM review with claims to verify
+      a.llmReview && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🤖'),
+          ' Fact-checker review (AI)'),
+        a.llmReview.narrative && React.createElement('p', { className: 'text-sm text-indigo-900 mb-3' }, a.llmReview.narrative),
+        a.llmReview.claimsToVerify && a.llmReview.claimsToVerify.length > 0 && React.createElement('div', { className: 'mb-3' },
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' },
+            'Specific claims to double-check:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            a.llmReview.claimsToVerify.map(function (c, i) {
+              return React.createElement('li', { key: i, className: 'italic' }, '"' + c + '"');
+            })
+          )
+        ),
+        a.llmReview.fixes && a.llmReview.fixes.length > 0 && React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' }, 'Suggested improvements:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            a.llmReview.fixes.map(function (f, i) { return React.createElement('li', { key: i }, f); })
+          )
+        )
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic' }, a.notes || '')
+    );
+  }
+
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
@@ -406,7 +487,8 @@
       c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary }),
       c.engagement && React.createElement(EngagementSection, { eng: c.engagement }),
       c.accessibility && React.createElement(AccessibilitySection, { access: c.accessibility }),
-      c.udl && React.createElement(UdlSection, { udl: c.udl })
+      c.udl && React.createElement(UdlSection, { udl: c.udl }),
+      c.accuracy && React.createElement(AccuracySection, { acc: c.accuracy })
     );
   }
 

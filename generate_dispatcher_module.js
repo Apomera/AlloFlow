@@ -187,6 +187,58 @@ function computeEngagementVariety(harvest, artifacts) {
   };
 }
 
+// ─── Plan O Step 5: Content accuracy (harvest + LLM review) ────────────
+// AlloFlow already runs accuracy verification when teachers analyze source
+// text — analysis.accuracy contains rating + reason + discrepancies +
+// verifiedFacts (with citations). We aggregate those signals and add an
+// LLM review pass that interprets across analyses + flags claims still
+// needing verification in non-analysis artifacts (quiz answers, glossary
+// defs, lesson-plan facts).
+function computeContentAccuracy(harvest) {
+  const ratings = harvest.accuracyRatings || [];
+  const totalAnalyses = ratings.length;
+  let highCount = 0, mediumCount = 0, lowCount = 0;
+  let totalVerifiedFacts = 0, totalDiscrepancies = 0;
+  ratings.forEach(r => {
+    const rating = String(r.rating || '').toLowerCase();
+    if (rating.indexOf('high') >= 0) highCount++;
+    else if (rating.indexOf('low') >= 0 || rating.indexOf('poor') >= 0) lowCount++;
+    else mediumCount++;
+    totalVerifiedFacts += r.verifiedFactCount || 0;
+    totalDiscrepancies += r.discrepancyCount || 0;
+  });
+  // Status logic
+  let status = 'Aligned';
+  const recommendations = [];
+  if (totalAnalyses === 0) {
+    status = 'Aligned';
+    recommendations.push('No source-text analysis has been run yet. Run "Analyze Source Text" on the lesson source to surface AI-verified facts and any discrepancies.');
+  } else {
+    if (lowCount > 0) {
+      status = 'Not Aligned';
+      recommendations.push(`${lowCount} analysis flagged the source content as Low accuracy. Review the discrepancies in those analyses and revise the source before sharing with students.`);
+    }
+    if (totalDiscrepancies > 0) {
+      if (status !== 'Not Aligned') status = 'Partially Aligned';
+      recommendations.push(`${totalDiscrepancies} factual discrepancy${totalDiscrepancies === 1 ? '' : 'ies'} flagged across the analyses. Review and either correct the source or remove the affected sections.`);
+    }
+    if (mediumCount > 0 && status === 'Aligned') {
+      status = 'Partially Aligned';
+      recommendations.push(`${mediumCount} analysis returned Medium accuracy. Consider adding citations or rephrasing claims that the AI could not fully verify.`);
+    }
+  }
+  return {
+    status,
+    totalAnalyses,
+    accuracyRatingCounts: { high: highCount, medium: mediumCount, low: lowCount },
+    totalVerifiedFacts,
+    totalDiscrepancies,
+    sampleVerifications: ratings.slice(0, 5),
+    recommendations,
+    notes: 'Aggregated from analyze-source-text accuracy passes. Each analysis already runs Google-Search-grounded verification when generated; this section aggregates those results across the curriculum.',
+  };
+}
+
 function collectAuditText(artifacts) {
   const out = { text: '', glossaryTerms: [] };
   artifacts.forEach(item => {
@@ -1964,6 +2016,34 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              }
          } catch (udlErr) {
              warnLog('[Alignment] UDL evaluation failed:', udlErr);
+         }
+
+         // ---- Plan O Step 5: Content accuracy (harvest + LLM review) -------
+         // Aggregates existing analysis.accuracy data + LLM interpretation.
+         try {
+             const accuracy = computeContentAccuracy(auditHarvest);
+             content.comprehensive = content.comprehensive || {};
+             content.comprehensive.accuracy = accuracy;
+
+             try {
+                 const accGradeBand = (content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
+                 const accuracyReviewPrompt = `You are a fact-checking editor reviewing a curriculum's content accuracy. The lesson's source text was previously analyzed and AI-graded for accuracy.\n\nDeterministic harvest from analysis items:\n- Total analyses run: ${accuracy.totalAnalyses}\n- Accuracy ratings: ${accuracy.accuracyRatingCounts.high} High, ${accuracy.accuracyRatingCounts.medium} Medium, ${accuracy.accuracyRatingCounts.low} Low\n- Total verified facts: ${accuracy.totalVerifiedFacts}\n- Total discrepancies flagged: ${accuracy.totalDiscrepancies}\n- Grade band: ${accGradeBand}\n\nSample analysis verifications (first 3):\n${accuracy.sampleVerifications.slice(0, 3).map((s, i) => `  ${i+1}. Rating: ${s.rating}, ${s.verifiedFactCount} verified, ${s.discrepancyCount} discrepancies. Reason: "${(s.reason || '').slice(0, 200)}"`).join('\n') || '(no analyses available)'}\n\nFull source excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accuracy. If no analyses have been run, explicitly suggest running "Analyze Source Text" before deploying this curriculum.\n2. "claimsToVerify": array of 1-4 specific factual claims in NON-analysis artifacts (quiz questions, glossary definitions, lesson-plan facts) that a teacher should double-check. Each entry should be the actual claim quoted or paraphrased. Focus on claims with measurable risk (specific dates, numbers, named people/places, scientific assertions).\n3. "fixes": array of 1-3 actionable suggestions for improving accuracy ("add citations to the quiz answers", "verify the dates in the timeline against a primary source", etc.).\n\nReturn ONLY a single valid JSON object with exactly these three fields. No prose outside the JSON.`;
+                 const accReviewResult = await callGemini(accuracyReviewPrompt, true);
+                 try {
+                     const review = JSON.parse(cleanJson(accReviewResult));
+                     content.comprehensive.accuracy.llmReview = {
+                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                         claimsToVerify: Array.isArray(review.claimsToVerify) ? review.claimsToVerify.slice(0, 6) : [],
+                         fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 5) : [],
+                     };
+                 } catch (parseErr) {
+                     warnLog('[Alignment] Accuracy LLM review parse failed:', parseErr);
+                 }
+             } catch (llmErr) {
+                 warnLog('[Alignment] Accuracy LLM review call failed:', llmErr);
+             }
+         } catch (accuracyErr) {
+             warnLog('[Alignment] Content accuracy computation failed:', accuracyErr);
          }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
