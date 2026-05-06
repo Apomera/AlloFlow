@@ -754,9 +754,12 @@ window.SelHub = window.SelHub || {
               roles.map(function(role) {
                 var isExpanded = expandedRole === role.id;
                 var isSelected = selectedRoles.indexOf(role.id) !== -1;
-                return h('div', {                   key: role.id,
-                  style: { padding: 14, borderRadius: 12, background: isSelected ? '#1e293b' : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : '#334155'), cursor: 'pointer', transition: 'all 0.2s' },
-                  onClick: function() {
+                return h('div', Object.assign({
+                  key: role.id,
+                  'aria-label': role.name + (isExpanded ? ' (collapse)' : ' (expand)'),
+                  'aria-expanded': isExpanded ? 'true' : 'false',
+                  style: { padding: 14, borderRadius: 12, background: isSelected ? '#1e293b' : '#0f172a', border: '1px solid ' + (isSelected ? ACCENT + '88' : '#334155'), cursor: 'pointer', transition: 'all 0.2s' }
+                }, a11yClick(function() {
                     upd('expandedRole', isExpanded ? null : role.id);
                     if (soundEnabled) sfxClick();
                     logPractice('role_explore', role.id);
@@ -770,8 +773,7 @@ window.SelHub = window.SelHub || {
                       if (!found) allExplored = false;
                     });
                     if (allExplored) tryAwardBadge('all_roles');
-                  }
-                },
+                })),
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 10 } },
                     h('span', { style: { fontSize: 24 } }, role.emoji),
                     h('div', { style: { flex: 1 } },
@@ -865,10 +867,12 @@ window.SelHub = window.SelHub || {
                   style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: coachLoading ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
                 }, coachLoading ? 'Thinking...' : '\u2728 AI Coach')
               ),
-              // AI response
-              coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
-                h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+              // AI response \u2014 always-rendered live region so SR users get notified
+              h('div', { role: 'region', 'aria-label': 'Team coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
+                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
+                  h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Team Coach'),
+                  h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+                )
               )
             ),
 
@@ -1127,9 +1131,11 @@ window.SelHub = window.SelHub || {
                 disabled: coachLoading,
                 style: { padding: '8px 18px', borderRadius: 8, border: 'none', background: coachLoading ? '#334155' : '#6366f1', color: '#fff', fontWeight: 600, fontSize: 12, cursor: coachLoading ? 'default' : 'pointer' }
               }, coachLoading ? 'Thinking...' : '\u2728 Ask Coach'),
-              coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
-                h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
-                h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+              h('div', { role: 'region', 'aria-label': 'Coach response', 'aria-live': 'polite', 'aria-busy': coachLoading ? 'true' : 'false' },
+                coachResponse && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 10, background: '#0f172a', border: '1px solid #6366f144' } },
+                  h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6, fontWeight: 700 } }, '\u2728 Coach Says'),
+                  h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7, whiteSpace: 'pre-wrap' } }, coachResponse)
+                )
               )
             ),
 

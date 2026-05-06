@@ -867,14 +867,16 @@ window.SelHub = window.SelHub || {
                 Sparkles ? h(Sparkles, { size: 14 }) : '\u2728',
                 aiLoading ? 'Thinking...' : 'Get personalized advice'
               ),
-              aiAdvice && h('div', {
-                style: { marginTop: 12, padding: 12, borderRadius: 10, background: zone.color + '11', border: '1px solid ' + zone.color + '33', fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 }
-              },
-                h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
-                  h('span', null, '\u2728'),
-                  h('span', { style: { fontWeight: 700, fontSize: 11, color: zone.color } }, 'AI Counselor')
-                ),
-                aiAdvice
+              h('div', { role: 'region', 'aria-label': 'AI counselor advice', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+                aiAdvice && h('div', {
+                  style: { marginTop: 12, padding: 12, borderRadius: 10, background: zone.color + '11', border: '1px solid ' + zone.color + '33', fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
+                    h('span', { 'aria-hidden': 'true' }, '\u2728'),
+                    h('span', { style: { fontWeight: 700, fontSize: 11, color: zone.color } }, 'AI Counselor')
+                  ),
+                  aiAdvice
+                )
               )
             );
           })

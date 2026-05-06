@@ -283,7 +283,7 @@ window.SelHub = window.SelHub || {
               'aria-selected': a ? 'true' : 'false',
               'aria-label': t.label,
               onClick: function() { upd('activeTab', t.id); if (soundOn) sfxClick(); },
-              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#cffafe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + CYAN + ', #0e7490)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : '#94a3b8', fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
+              style: { padding: '6px 14px', borderRadius: '10px', border: a ? 'none' : '1px solid ' + (explored ? '#cffafe' : 'transparent'), background: a ? 'linear-gradient(135deg, ' + CYAN + ', #0e7490)' : explored ? 'rgba(8,145,178,0.06)' : 'transparent', color: a ? '#fff' : explored ? CYAN_DARK : '#475569', fontWeight: a ? 700 : 500, fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap', boxShadow: a ? '0 3px 12px rgba(8,145,178,0.35), inset 0 1px 0 rgba(255,255,255,0.2)' : 'none' }
             }, h('span', { 'aria-hidden': 'true' }, t.icon), t.label,
               explored && !a ? h('span', { style: { width: '5px', height: '5px', borderRadius: '50%', background: '#67e8f9', marginLeft: '2px' } }) : null
             );
@@ -313,7 +313,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '20px' } },
             h('div', { style: { fontSize: '52px', marginBottom: '8px' } }, '🗺️'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Map Your EF'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Five domains, two questions each. Honest answers point to which strategies will help YOU most.')
+            h('p', { style: { fontSize: '13px', color: '#475569', margin: 0 } }, 'Five domains, two questions each. Honest answers point to which strategies will help YOU most.')
           ),
 
           // Questions
@@ -325,7 +325,7 @@ window.SelHub = window.SelHub || {
                   h('span', { style: { fontSize: '22px' } }, dom.icon),
                   h('h4', { style: { fontSize: '14px', fontWeight: 800, color: CYAN_DARK, margin: 0 } }, dom.label)
                 ),
-                h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: '0 0 10px', fontStyle: 'italic' } }, dom.desc),
+                h('p', { style: { fontSize: '11px', color: '#475569', margin: '0 0 10px', fontStyle: 'italic' } }, dom.desc),
                 dom.items.map(function(stmt, qi) {
                   return h('div', { key: qi, style: { marginBottom: '10px' } },
                     h('p', { style: { fontSize: '13px', color: '#374151', margin: '0 0 6px', lineHeight: 1.5 } }, stmt),
@@ -342,7 +342,7 @@ window.SelHub = window.SelHub || {
                             upd('mapAnswers', nm);
                             if (soundOn) sfxClick();
                           },
-                          style: { flex: 1, padding: '6px 4px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', border: sel ? '2px solid ' + CYAN : '1px solid #e5e7eb', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#94a3b8' }
+                          style: { flex: 1, padding: '6px 4px', fontSize: '11px', fontWeight: 700, borderRadius: '6px', cursor: 'pointer', border: sel ? '2px solid ' + CYAN : '1px solid #e5e7eb', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#475569' }
                         }, lbl);
                       })
                     )
@@ -366,14 +366,14 @@ window.SelHub = window.SelHub || {
                 h('span', { style: { fontSize: '20px' } }, dom.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: '13px', fontWeight: 800, color: CYAN_DARK } }, (ri + 1) + '. ' + dom.label + ' (score: ' + s + '/6)'),
-                  h('div', { style: { fontSize: '11px', color: '#94a3b8', marginTop: '2px' } }, dom.pitch)
+                  h('div', { style: { fontSize: '11px', color: '#475569', marginTop: '2px' } }, dom.pitch)
                 ),
                 h('span', { style: { fontSize: '14px', color: CYAN } }, '→')
               );
             })
           ),
 
-          !allAnswered && h('p', { style: { fontSize: '11px', color: '#94a3b8', textAlign: 'center', fontStyle: 'italic' } }, 'Answered: ' + answeredQs + ' / ' + totalQs)
+          !allAnswered && h('p', { style: { fontSize: '11px', color: '#475569', textAlign: 'center', fontStyle: 'italic' } }, 'Answered: ' + answeredQs + ' / ' + totalQs)
         );
       }
 
@@ -387,7 +387,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '🚀'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Get Started'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Six strategies for the moment between "I should start" and "I am starting."')
+            h('p', { style: { fontSize: '13px', color: '#475569', margin: 0 } }, 'Six strategies for the moment between "I should start" and "I am starting."')
           ),
           // Strategy selector pills
           h('div', { style: { display: 'flex', gap: '4px', overflowX: 'auto', marginBottom: '14px', paddingBottom: '4px' } },
@@ -397,7 +397,7 @@ window.SelHub = window.SelHub || {
                 key: s.id,
                 'aria-label': s.title,
                 onClick: function() { upd('initIdx', i); if (soundOn) sfxClick(); },
-                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
+                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#475569', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
               }, s.icon + ' ' + s.title);
             })
           ),
@@ -431,7 +431,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: '36px', fontWeight: 800, color: fiveMinDone ? '#16a34a' : CYAN_DARK, fontVariantNumeric: 'tabular-nums', marginBottom: '6px' } },
                 Math.floor(fiveMinSeconds / 60) + ':' + String(fiveMinSeconds % 60).padStart(2, '0')
               ),
-              h('p', { style: { fontSize: '11px', color: '#94a3b8', margin: '0 0 10px' } }, fiveMinDone ? '5 minutes done. Stop now or keep going.' : 'Just keep going. The timer is doing the deciding.'),
+              h('p', { style: { fontSize: '11px', color: '#475569', margin: '0 0 10px' } }, fiveMinDone ? '5 minutes done. Stop now or keep going.' : 'Just keep going. The timer is doing the deciding.'),
               h('button', {
                 onClick: function() {
                   upd('fiveMinStart', 0);
@@ -465,9 +465,9 @@ window.SelHub = window.SelHub || {
             savedNotes.length > 0 && h('div', { style: { marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' } },
               savedNotes.slice(0, 5).map(function(n) {
                 return h('div', { key: n.id, style: { background: CYAN_LIGHT, padding: '8px 10px', borderRadius: '8px', fontSize: '12px', color: CYAN_DARK, position: 'relative' } },
-                  h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '2px' } }, n.date),
+                  h('div', { style: { fontSize: '10px', color: '#475569', marginBottom: '2px' } }, n.date),
                   h('p', { style: { margin: 0, lineHeight: 1.5 } }, n.text),
-                  h('button', { onClick: function() { upd('savedNotes', savedNotes.filter(function(s) { return s.id !== n.id; })); }, 'aria-label': 'Delete note', style: { position: 'absolute', top: '4px', right: '4px', background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '12px' } }, '✕')
+                  h('button', { onClick: function() { upd('savedNotes', savedNotes.filter(function(s) { return s.id !== n.id; })); }, 'aria-label': 'Delete note', style: { position: 'absolute', top: '4px', right: '4px', background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', fontSize: '12px' } }, '✕')
                 );
               })
             )
@@ -483,7 +483,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '🧠'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Hold It'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Working-memory tools. The brain is for thinking, not storing.')
+            h('p', { style: { fontSize: '13px', color: '#475569', margin: 0 } }, 'Working-memory tools. The brain is for thinking, not storing.')
           ),
           h('div', { style: { display: 'flex', gap: '4px', overflowX: 'auto', marginBottom: '14px', paddingBottom: '4px' } },
             HOLD_STRATEGIES.map(function(s, i) {
@@ -492,7 +492,7 @@ window.SelHub = window.SelHub || {
                 key: s.id,
                 'aria-label': s.title,
                 onClick: function() { upd('holdIdx', i); if (soundOn) sfxClick(); },
-                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#94a3b8', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
+                style: { flexShrink: 0, padding: '8px 12px', borderRadius: '8px', border: sel ? '2px solid ' + CYAN : '1px solid #cffafe', background: sel ? CYAN_LIGHT : '#fff', color: sel ? CYAN_DARK : '#475569', fontSize: '11px', fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }
               }, s.icon + ' ' + s.title);
             })
           ),
@@ -529,7 +529,7 @@ window.SelHub = window.SelHub || {
               h('button', {
                 onClick: function() { upd('brainDump', ''); },
                 disabled: !brainDump,
-                style: { padding: '8px 12px', background: 'transparent', color: '#94a3b8', border: '1px solid #e5e7eb', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump ? 'pointer' : 'not-allowed' }
+                style: { padding: '8px 12px', background: 'transparent', color: '#475569', border: '1px solid #e5e7eb', borderRadius: '8px', fontWeight: 700, fontSize: '12px', cursor: brainDump ? 'pointer' : 'not-allowed' }
               }, 'Clear')
             ),
             brainDumps.length > 0 && h('div', { style: { marginTop: '12px' } },
@@ -537,7 +537,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' } },
                 brainDumps.slice(0, 10).map(function(b) {
                   return h('div', { key: b.id, style: { background: '#f8fafc', padding: '8px 10px', borderRadius: '8px', fontSize: '12px', color: '#374151' } },
-                    h('div', { style: { fontSize: '10px', color: '#94a3b8', marginBottom: '2px' } }, b.date),
+                    h('div', { style: { fontSize: '10px', color: '#475569', marginBottom: '2px' } }, b.date),
                     h('p', { style: { margin: 0, lineHeight: 1.5, whiteSpace: 'pre-wrap' } }, b.text.length > 200 ? b.text.slice(0, 200) + '…' : b.text)
                   );
                 })
@@ -565,7 +565,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '📐'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Backward Planning'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Start from the deadline. Walk back. Each chunk should be one hour or less.')
+            h('p', { style: { fontSize: '13px', color: '#475569', margin: 0 } }, 'Start from the deadline. Walk back. Each chunk should be one hour or less.')
           ),
           // Goal
           h('label', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, display: 'block', marginBottom: '4px' } }, 'The goal'),
@@ -586,7 +586,7 @@ window.SelHub = window.SelHub || {
           }),
           // Chunks
           h('label', { style: { fontSize: '12px', fontWeight: 700, color: CYAN_DARK, display: 'block', marginBottom: '4px' } }, 'The chunks (in order)'),
-          h('p', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', margin: '0 0 8px' } }, 'Last chunk = the deadline. First chunk = today. Each chunk should be one sit-down session, ≤1 hour.'),
+          h('p', { style: { fontSize: '11px', color: '#475569', fontStyle: 'italic', margin: '0 0 8px' } }, 'Last chunk = the deadline. First chunk = today. Each chunk should be one sit-down session, ≤1 hour.'),
           planChunks.map(function(ch, ci) {
             return h('div', { key: ci, style: { display: 'flex', gap: '6px', marginBottom: '6px' } },
               h('span', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', width: '28px', height: '32px', background: CYAN_LIGHT, color: CYAN_DARK, borderRadius: '6px', fontSize: '12px', fontWeight: 800, flexShrink: 0 } }, ci + 1),
@@ -613,12 +613,12 @@ window.SelHub = window.SelHub || {
           // Schedule output
           schedule.length > 0 && h('div', { style: { background: 'linear-gradient(135deg, #ecfeff, #cffafe)', border: '2px solid ' + CYAN, borderRadius: '14px', padding: '14px' } },
             h('h4', { style: { fontSize: '13px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 10px' } }, '🗓️ Your schedule'),
-            h('p', { style: { fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', margin: '0 0 10px' } }, 'Goal: ' + (planGoal || '(name your goal above)')),
+            h('p', { style: { fontSize: '11px', color: '#475569', fontStyle: 'italic', margin: '0 0 10px' } }, 'Goal: ' + (planGoal || '(name your goal above)')),
             schedule.map(function(s, si) {
               var isLast = si === schedule.length - 1;
               var dt = s.due.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
               return h('div', { key: si, style: { display: 'flex', gap: '10px', alignItems: 'center', padding: '8px 10px', background: '#fff', borderRadius: '8px', marginBottom: '6px', border: isLast ? '2px solid ' + CYAN : '1px solid #e5e7eb' } },
-                h('div', { style: { fontSize: '11px', fontWeight: 800, color: isLast ? CYAN : '#94a3b8', flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
+                h('div', { style: { fontSize: '11px', fontWeight: 800, color: isLast ? CYAN : '#475569', flexShrink: 0, minWidth: '90px' } }, dt + (isLast ? ' (deadline)' : '')),
                 h('div', { style: { fontSize: '13px', color: '#374151' } }, s.chunk)
               );
             }),
@@ -648,7 +648,7 @@ window.SelHub = window.SelHub || {
           h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
             h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '⏱️'),
             h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'Time'),
-            h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Calibrate your inner clock. Then work in 25-minute chunks.')
+            h('p', { style: { fontSize: '13px', color: '#475569', margin: 0 } }, 'Calibrate your inner clock. Then work in 25-minute chunks.')
           ),
           // Estimation game
           h('div', { style: { background: '#fff', border: '2px solid #cffafe', borderRadius: '14px', padding: '16px', marginBottom: '14px' } },
@@ -667,7 +667,7 @@ window.SelHub = window.SelHub || {
                   min: '1', max: '600',
                   style: { width: '80px', border: '1px solid #cffafe', borderRadius: '6px', padding: '8px', fontSize: '14px', textAlign: 'center', boxSizing: 'border-box' }
                 }),
-                h('span', { style: { fontSize: '13px', color: '#94a3b8' } }, 'minutes'),
+                h('span', { style: { fontSize: '13px', color: '#475569' } }, 'minutes'),
                 h('button', {
                   onClick: function() {
                     if (!timeGuess) return;
@@ -736,7 +736,7 @@ window.SelHub = window.SelHub || {
             h('div', { style: { textAlign: 'center', marginBottom: '16px' } },
               h('div', { style: { fontSize: '52px', marginBottom: '4px' } }, '🤖'),
               h('h3', { style: { fontSize: '18px', fontWeight: 800, color: CYAN_DARK, margin: '0 0 4px' } }, 'EF Coach'),
-              h('p', { style: { fontSize: '13px', color: '#94a3b8', margin: 0 } }, 'Tell me what is hard right now. I will name the EF domain and give you ONE thing to try.')
+              h('p', { style: { fontSize: '13px', color: '#475569', margin: 0 } }, 'Tell me what is hard right now. I will name the EF domain and give you ONE thing to try.')
             ),
             coachHistory.length > 0 && h('div', {
               role: 'log', 'aria-label': 'Coach conversation', 'aria-live': 'polite',
@@ -767,7 +767,7 @@ window.SelHub = window.SelHub || {
                     if (window.SelHub && window.SelHub.safeCoach) {
                       window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
                     } else {
-                      callGemini(p, true).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
+                      callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
                     }
                   }
                 },
@@ -786,7 +786,7 @@ window.SelHub = window.SelHub || {
                   if (window.SelHub && window.SelHub.safeCoach) {
                     window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
                   } else {
-                    callGemini(p, true).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
+                    callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
                   }
                 },
                 disabled: coachLoading || !coachInput.trim() || !callGemini,
@@ -795,7 +795,7 @@ window.SelHub = window.SelHub || {
               }, coachLoading ? '⏳' : '→')
             ),
             coachHistory.length === 0 && h('div', { style: { marginTop: '14px' } },
-              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '6px' } }, 'Try one of these:'),
+              h('div', { style: { fontSize: '11px', fontWeight: 600, color: '#475569', marginBottom: '6px' } }, 'Try one of these:'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px' } },
                 [
                   'I have a project due Friday and I cannot start',

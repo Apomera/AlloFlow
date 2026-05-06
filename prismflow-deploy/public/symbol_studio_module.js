@@ -1370,11 +1370,50 @@
     var cellMediaRef = useRef(null);
     var recordCellAudio = useCallback(function (id) {
       if (cellRecording === id) {
-        // Stop recording
-        if (cellMediaRef.current) { cellMediaRef.current.stop(); cellMediaRef.current = null; }
+        // Stop recording — works for both inline MR (.stop()) and shared
+        // controller (.stop()).
+        if (cellMediaRef.current) {
+          try { cellMediaRef.current.stop(); } catch (e) { /* ignore */ }
+          cellMediaRef.current = null;
+        }
         setCellRecording(null);
         return;
       }
+      // Phase 3v.MR — shared module path with inline fallback
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+        var ctrl = window.AlloFlowVoice.recordAudioBlob({
+          maxDurationMs: 10 * 1000, // 10s cap, matches legacy
+          preferredMimeType: 'audio/webm;codecs=opus',
+          onError: function () {
+            if (addToast) addToast('Microphone access denied', 'error');
+            setCellRecording(null);
+          }
+        });
+        if (!ctrl.supported) {
+          if (addToast) addToast('Recording not supported in this browser.', 'error');
+          return;
+        }
+        cellMediaRef.current = ctrl;
+        setCellRecording(id);
+        ctrl.result.then(function (rec) {
+          if (rec && rec.base64) {
+            // rec.base64 is a full data URI; legacy stored full data URI too
+            setBoardWords(function (prev) {
+              return prev.map(function (w) {
+                return w.id === id ? Object.assign({}, w, { audioData: rec.base64 }) : w;
+              });
+            });
+            if (addToast) addToast('🎙️ Audio recorded for cell!', 'success');
+          }
+          if (cellMediaRef.current === ctrl) cellMediaRef.current = null;
+          setCellRecording(null);
+        }).catch(function () {
+          if (cellMediaRef.current === ctrl) cellMediaRef.current = null;
+          setCellRecording(null);
+        });
+        return;
+      }
+      // Inline fallback (pre-3v.MR behavior, identical)
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
         setCellRecording(id);
         var chunks = [];

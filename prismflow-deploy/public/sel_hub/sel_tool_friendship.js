@@ -171,6 +171,7 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var onSafetyFlag = ctx.onSafetyFlag || null;
@@ -382,10 +383,9 @@ window.SelHub = window.SelHub || {
             steps.map(function(s, i) {
               var isCurrent = i === repairIdx % steps.length;
               return h('button', {
-                key: i, role: 'button', tabIndex: 0,
+                key: i,
                 'aria-label': 'Step ' + (i + 1) + ': ' + s.step + (isCurrent ? ' (current)' : ''),
                 onClick: function() { upd('repairIdx', i); if (soundEnabled) sfxClick(); },
-                onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); upd('repairIdx', i); } },
                 style: { width: '36px', height: '36px', borderRadius: '50%', border: isCurrent ? '3px solid ' + AMBER : '2px solid #e5e7eb', background: isCurrent ? AMBER : '#fff', color: isCurrent ? '#fff' : '#374151', fontWeight: 700, fontSize: '13px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }
               }, i + 1);
             })
@@ -423,9 +423,12 @@ window.SelHub = window.SelHub || {
           ),
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '12px' } },
             truths.map(function(truth, i) {
-              return h('div', { key: i, style: { background: i === endingIdx ? '#fff8f0' : '#fff', border: i === endingIdx ? '2px solid #fdba74' : '1px solid #e5e7eb', borderRadius: '14px', padding: '16px', cursor: 'pointer', transition: 'all 0.15s' },
-                onClick: function() { upd('endingIdx', i); if (soundEnabled) sfxClick(); }
-              },
+              return h('div', Object.assign({
+                key: i,
+                'aria-label': truth,
+                'aria-pressed': i === endingIdx ? 'true' : 'false',
+                style: { background: i === endingIdx ? '#fff8f0' : '#fff', border: i === endingIdx ? '2px solid #fdba74' : '1px solid #e5e7eb', borderRadius: '14px', padding: '16px', cursor: 'pointer', transition: 'all 0.15s' }
+              }, a11yClick(function() { upd('endingIdx', i); if (soundEnabled) sfxClick(); })),
                 h('p', { style: { fontSize: '14px', lineHeight: 1.7, color: '#374151', margin: 0, fontStyle: i === endingIdx ? 'normal' : 'italic' } }, truth)
               );
             })
@@ -478,7 +481,7 @@ window.SelHub = window.SelHub || {
                   if (window.SelHub && window.SelHub.safeCoach) {
                     window.SelHub.safeCoach({ studentMessage: userMsg, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
                   } else {
-                    callGemini(prompt, true).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
+                    callGemini(prompt, false).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Practiced friendship skills!'); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But here\u2019s what I know: the fact that you\u2019re thinking about how to be a better friend means you already are one.' }]), coachLoading: false }); });
                   }
                 }
               },
@@ -497,7 +500,7 @@ window.SelHub = window.SelHub || {
                 if (window.SelHub && window.SelHub.safeCoach) {
                   window.SelHub.safeCoach({ studentMessage: userMsg, toolId: 'friendship', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: newHist }).then(function(result) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
                 } else {
-                  callGemini(prompt, true).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
+                  callGemini(prompt, false).then(function(r) { upd({ coachHistory: newHist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting, but I believe in you. The courage to think about friendship is itself an act of friendship.' }]), coachLoading: false }); });
                 }
               },
               disabled: coachLoading || !coachInput.trim() || !callGemini,

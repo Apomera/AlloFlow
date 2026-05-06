@@ -2908,6 +2908,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'renewablesLab', icon: '\u26A1', label: 'Renewables Lab',
+                desc: 'How each renewable source actually generates electricity. Live sliders for solar PV, wind (Betz limit + cube of wind speed), hydro (head x flow), geothermal (depth x gradient), CSP, wave/tidal, biomass, and storage. Cited to NREL, IEA, IRENA.',
+                color: 'green', ready: true
+              },
+              {
                 id: 'fireEcology', icon: '\uD83D\uDD25', label: 'Fire Ecology & Indigenous Stewardship',
                 desc: 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
                 color: 'orange', ready: true
@@ -2916,6 +2921,11 @@
                 id: 'aquarium', icon: '🐠', label: 'Aquaculture & Ocean Lab',
                 desc: 'Manage aquarium tanks, simulate sustainable fishing, and explore marine ecosystems. Water chemistry, population dynamics and species studies.',
                 color: 'cyan', ready: true
+              },
+              {
+                id: 'petsLab', icon: '🐾', label: 'Science of Pets Lab',
+                desc: 'Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses. Service & support animals. Cross-species training that assumes BehaviorLab\'s operant theory.',
+                color: 'amber', ready: true
               },
               {
                 id: 'decomposer', icon: '🧫', label: t('stem.tools_menu.decomposer'), desc: t('stem.tools_menu.break_materials_into_elements'),
@@ -3094,6 +3104,66 @@
                 desc: 'Air Traffic Control simulator — manage approaching aircraft, solve rate problems, and learn the math behind aviation safety.',
                 color: 'emerald', ready: true
               },
+              {
+                id: 'throwlab', icon: '⚾', label: 'ThrowLab: Sports Physics',
+                desc: 'Pitcher\'s Mound: dial spin, speed, and release point and watch the Magnus + drag integrator shape the ball\'s path. 6 pitch types. Hot-Hand streaks + Rookie/Pro tiers.',
+                color: 'amber', ready: true
+              },
+              {
+                id: 'playlab', icon: '🏈', label: 'PlayLab: Strategy on the Field',
+                desc: 'Football + soccer play design: drag-to-place routes, animated simulation, Coach Mode coverage analysis, drills + saved plays. Built for athletic kids.',
+                color: 'lime', ready: true
+              },
+              {
+                id: 'skatelab', icon: '🛹', label: 'SkateLab: Skate + BMX Physics',
+                desc: 'The physics that lands a 720: kickflips, halfpipe pumps, gap jumps. Energy conservation + angular momentum, made for kids who learn through tricks.',
+                color: 'amber', ready: true
+              },
+              {
+                id: 'firstResponse', icon: '🚑', label: 'First Response Lab',
+                desc: 'Recognize + respond to medical emergencies. Hands-only CPR rhythm trainer, AED walkthrough, Stop the Bleed, choking, seizure, stroke, anaphylaxis. Disability-affirming peer response. Maine 911 + text-to-911. Educational only.',
+                color: 'rose', ready: true
+              },
+              {
+                id: 'autoRepair', icon: '🔧', label: 'Auto Repair Shop',
+                desc: 'Diagnose + fix a vehicle: OBD-II codes, fluid / sound / visual diagnosis, 7 step-by-step repairs (oil, brakes, alternator, tires, A/C, timing belt). Maine vocational pathways + ASE certification info. Pairs with RoadReady.',
+                color: 'slate', ready: true
+              },
+              {
+                id: 'weldLab', icon: '🔥', label: 'WeldLab: Welding & Metal Joining',
+                desc: 'MIG / TIG / Stick / Oxy-Fuel processes, heat-input physics, weld-bead geometry, defect ID, AWS welding symbols, OSHA-aligned PPE. Maine career pathways (Bath Iron Works, EMCC, AWS cert ladder).',
+                color: 'orange', ready: true
+              },
+              {
+                id: 'nutritionLab', icon: '🥗', label: 'NutritionLab: Nutrition Science',
+                desc: 'Adolescent-safe nutrition science: macros, micros, food labels, metabolism, digestion, food + mental health, eating-disorder awareness. Physiology-first framing — NOT weight-loss. Sources: USDA / NIH / Harvard / AAP / NEDA.',
+                color: 'green', ready: true
+              },
+              {
+                id: 'evoLab', icon: '🧬', label: 'EvoLab: Evolution',
+                desc: 'Evolution + natural selection: Selection Sandbox, Galápagos Beak Lab, Phylogenetic Tree Builder, plus quick labs on Hardy-Weinberg, genetic drift, common ancestry, evolution misconceptions. Maine wildlife examples.',
+                color: 'emerald', ready: true
+              },
+              {
+                id: 'statsLab', icon: '📊', label: 'Statistics Lab',
+                desc: 'Inferential statistics: t-tests, ANOVA, correlation, regression, chi-square, non-parametric, power analysis. AP Psych / AP Bio focus. Transparent computation, plain-English results, APA write-ups, AI interpretation grader.',
+                color: 'sky', ready: true
+              },
+              {
+                id: 'learningLab', icon: '🧠', label: 'Learning Lab: How Learning Works',
+                desc: 'Bloom\'s Taxonomy, UDL framework, metacognition, cognitive load, spaced repetition + retrieval practice, study strategies that actually work, neuromyth debunking. Cited primary sources (Dunlosky 2013, Pashler 2008, Sweller 1988, CAST UDL 3.0).',
+                color: 'indigo', ready: true
+              },
+              {
+                id: 'llmLiteracy', icon: '🧠', label: 'AI Literacy Lab',
+                desc: 'How LLMs actually work, when they fail, how to prompt well, and when to use AI as a scaffold vs. let it substitute for your thinking.',
+                color: 'violet', ready: true
+              },
+              {
+                id: 'assessmentLiteracy', icon: '📊', label: 'Assessment Literacy Lab',
+                desc: 'How cognitive, personality, career, and employer tests actually work. Build mock batteries, critique pseudoscience, coach yourself ethically for hiring tests.',
+                color: 'fuchsia', ready: true
+              },
 
               { id: '_cat_Strategy', icon: '', label: '⚔️ Strategy Games', desc: '', color: 'slate', category: true },
               { id: 'spaceColony', label: 'Kepler Colony', icon: '\uD83D\uDE80', desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.', color: 'indigo', ready: true },
@@ -3198,9 +3268,132 @@
             var _cardIndex = 0;
             // Tool count summary
             var _toolCount = _filteredTools.filter(function(t2) { return !t2.category; }).length;
+            // ── Mastery Atlas: cross-tool engagement dashboard ──
+            // Reads each tool's persistent window slot (with localStorage
+            // fallback) and renders a single dashboard tile per tool that
+            // has the mastery primitive wired in. Surfaces 10 simultaneous
+            // engagement counts so kids see their full STEM Lab progress at
+            // a glance and can jump straight into the tool with one click.
+            // Only shows tools where the user has mastered ≥1 item, so the
+            // atlas stays out of the way for first-time visitors.
+            var _readSlot = function (slotName, lsKey) {
+              var win = null, ls = null;
+              try { win = (typeof window !== 'undefined' && window[slotName]) || null; } catch (e) {}
+              try { ls = JSON.parse(localStorage.getItem(lsKey) || 'null'); } catch (e) {}
+              return win || ls || null;
+            };
+            var _atlasCardCount = function (state, getCount) {
+              if (!state) return 0;
+              try { return getCount(state) || 0; } catch (e) { return 0; }
+            };
+            var _atlasEntries = [
+              { id: 'birdLab', icon: '🪶', label: 'BirdLab Life List',
+                color: '#10b981', accent: 'rgba(16,185,129,0.15)',
+                slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
+                count: function () { var s = _readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'); if (!s) return 0; var ll = (s.lifeList || s); return Object.keys(ll || {}).length; } },
+              { id: 'petsLab', icon: '🐾', label: 'PetsLab Decoder',
+                color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
+                slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
+                count: function () { var s = _readSlot('__alloflowPetsLab', 'petsLab.state.v1'); return s && s.decoderMastery ? Object.keys(s.decoderMastery).length : 0; } },
+              { id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
+                color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
+                slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,
+                count: function () { var s = _readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'statsLab', icon: '📊', label: 'StatsLab AP',
+                color: '#a855f7', accent: 'rgba(168,85,247,0.15)',
+                slot: '__alloflowStatsLab', lsKey: 'statsLab.state.v1', total: 25,
+                count: function () { var s = _readSlot('__alloflowStatsLab', 'statsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'weldLab', icon: '🔥', label: "Welder's Catalog",
+                color: '#dc2626', accent: 'rgba(220,38,38,0.15)',
+                slot: '__alloflowWeldLab', lsKey: 'weldLab.defectCatalog.v1', total: 6,
+                count: function () { var s = _readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'); if (!s) return 0; var cat = (s.defectCatalog || s); return Object.keys(cat || {}).length; } },
+              { id: 'renewablesLab', icon: '☀️', label: 'Energy Mastery',
+                color: '#22c55e', accent: 'rgba(34,197,94,0.15)',
+                slot: '__alloflowRenewablesLab', lsKey: 'renewablesLab.state.v1', total: 18,
+                count: function () { var s = _readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'firstResponse', icon: '🚑', label: 'Responder Mastery',
+                color: '#ef4444', accent: 'rgba(239,68,68,0.15)',
+                slot: '__alloflowFirstResponse', lsKey: 'firstResponse.state.v1', total: 10,
+                count: function () { var s = _readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'); return s && s.faMastery ? Object.keys(s.faMastery).length : 0; } },
+              { id: 'throwlab', icon: '⚾', label: 'Pitch Locker',
+                color: '#7c3aed', accent: 'rgba(124,58,237,0.15)',
+                slot: '__alloflowThrowLab', lsKey: 'throwlab.state.v1', total: 6,
+                count: function () { var s = _readSlot('__alloflowThrowLab', 'throwlab.state.v1'); return s && s.pitchLocker ? Object.keys(s.pitchLocker).length : 0; } },
+              { id: 'playlab', icon: '🏈', label: 'Play Catalog',
+                color: '#fb923c', accent: 'rgba(251,146,60,0.15)',
+                slot: '__alloflowPlayLab', lsKey: 'playlab.state.v1', total: 13,
+                count: function () { var s = _readSlot('__alloflowPlayLab', 'playlab.state.v1'); return s && s.playCatalog ? Object.keys(s.playCatalog).length : 0; } },
+              { id: 'roadReady', icon: '🚗', label: 'Permit Mastery',
+                color: '#fbbf24', accent: 'rgba(251,191,36,0.15)',
+                slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1', total: 185,
+                count: function () { var s = _readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'); if (!s) return 0; var pm = (s.permitMastery || s); return Object.keys(pm || {}).length; } },
+              { id: 'assessmentLiteracy', icon: '🔍', label: 'Junk-Science',
+                color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
+                slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
+                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } }
+            ];
+            var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
+            var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
             return /*#__PURE__*/React.createElement("div", {
               className: "max-w-3xl mx-auto animate-in fade-in duration-200"
             },
+          // ── Mastery Atlas (only shows when at least one tool has progress) ──
+          _atlasActive.length > 0 && /*#__PURE__*/React.createElement("div", {
+            role: 'region',
+            'aria-label': 'STEM Lab Mastery Atlas — ' + _atlasTotal + ' total items mastered across ' + _atlasActive.length + ' tools',
+            className: "mb-4 rounded-2xl p-4 border-2",
+            style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #312e81 100%)', borderColor: 'rgba(99,102,241,0.50)' }
+          },
+            /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" },
+              /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2" },
+                /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+                /*#__PURE__*/React.createElement("h3", { className: "text-base font-black text-amber-300 m-0" }, "Your Mastery Atlas"),
+                /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-300 font-mono ml-1" }, _atlasTotal + ' items locked in')
+              ),
+              /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-400 italic" }, "Click any tool to jump back in")
+            ),
+            /*#__PURE__*/React.createElement("div", {
+              className: "grid gap-2",
+              style: { gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }
+            },
+              _atlasActive.map(function (entry) {
+                var pct = entry.total > 0 ? Math.round((entry.current / entry.total) * 100) : 0;
+                var isFull = entry.current >= entry.total;
+                return /*#__PURE__*/React.createElement("button", {
+                  key: entry.id,
+                  onClick: function () { setStemLabTool(entry.id); announceToSR && announceToSR('Opening ' + entry.label); },
+                  'aria-label': entry.label + ': ' + entry.current + ' of ' + entry.total + ' mastered. Click to open.',
+                  className: "text-left p-3 rounded-xl border transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-400",
+                  style: {
+                    background: entry.accent,
+                    borderColor: entry.color + '88',
+                    color: '#f1f5f9',
+                    cursor: 'pointer'
+                  }
+                },
+                  /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 20 } }, entry.icon),
+                    /*#__PURE__*/React.createElement("div", { className: "flex-1 min-w-0" },
+                      /*#__PURE__*/React.createElement("div", { className: "text-[12px] font-black truncate", style: { color: '#f1f5f9' } }, entry.label),
+                      /*#__PURE__*/React.createElement("div", { className: "text-[10px] font-mono", style: { color: entry.color } },
+                        entry.current + ' / ' + entry.total + (isFull ? ' 🏆' : '')
+                      )
+                    )
+                  ),
+                  /*#__PURE__*/React.createElement("div", {
+                    className: "h-1.5 rounded-full overflow-hidden",
+                    style: { background: 'rgba(15,23,42,0.6)' },
+                    'aria-hidden': 'true'
+                  },
+                    /*#__PURE__*/React.createElement("div", {
+                      className: "h-full transition-all",
+                      style: { width: pct + '%', background: entry.color }
+                    })
+                  )
+                );
+              })
+            )
+          ),
           // Search input
           /*#__PURE__*/React.createElement("div", { className: "mb-4 relative" },
             /*#__PURE__*/React.createElement("input", {
@@ -4135,7 +4328,7 @@
             probability: true, protractor: true, volume: true,
             // Science
             anatomy: true, aquarium: true, brainAtlas: true, cell: true,
-            chemBalance: true, climateExplorer: true, companionPlanting: true,
+            chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, molecule: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
@@ -4159,6 +4352,21 @@
             roadReady: true,
             bikeLab: true,
             atcTower: true,
+            throwlab: true,
+            playlab: true,
+            // Apr 30 catch-up: 10 production-ready tools that had built JS files
+            // and were loading via toolModules but were NEVER given menu tiles or
+            // plugin-only flags — so they were completely invisible. Adding both.
+            skatelab: true,
+            firstResponse: true,
+            autoRepair: true,
+            weldLab: true,
+            nutritionLab: true,
+            evoLab: true,
+            statsLab: true,
+            learningLab: true,
+            llmLiteracy: true,
+            assessmentLiteracy: true,
             musicSynth: true,
             beehive: true,
             echolocation: true,

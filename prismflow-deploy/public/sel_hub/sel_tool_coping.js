@@ -556,6 +556,7 @@ window.SelHub = window.SelHub || {
     desc: 'Explore and practice coping strategies \u2014 breathing, grounding, movement, and more.',
     color: 'teal',
     category: 'self-management',
+    cleanup: function() { stopBreathTimer(); stopMoveTimer(); },
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;

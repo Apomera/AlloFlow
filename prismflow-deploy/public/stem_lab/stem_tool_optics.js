@@ -11,6 +11,21 @@
     return;
   }
 
+  // ── OpticsLab keyframes (concept-mastery celebration) ──
+  if (typeof document !== 'undefined' && !document.getElementById('opticslab-celeb-css')) {
+    var _opStyle = document.createElement('style');
+    _opStyle.id = 'opticslab-celeb-css';
+    _opStyle.textContent = [
+      '@keyframes opticslab-celeb-rise {',
+      '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+      '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+      '}'
+    ].join('');
+    if (document.head) document.head.appendChild(_opStyle);
+  }
+
   // ──────────────────────────────────────────────────────────────────
   // CSS INJECTIONS — focus rings, motion-reduce, ARIA live region
   // ──────────────────────────────────────────────────────────────────
@@ -2006,6 +2021,76 @@
           '🔆 Initializing Optics Lab...');
       }
       var d = labToolData.opticsLab;
+
+      // ── Concept-mastery state + Canvas-survival persistence ──
+      // The StemLab host's localStorage block does not include opticsLab, so
+      // the tool resets every reload by default. Layer our own:
+      //   1. Hydration: window slot (set by host's handleLoadProject) →
+      //      localStorage → existing host state (whichever is freshest).
+      //   2. Mirror: every change to mastery-related fields writes back out
+      //      to the window slot + localStorage, and the host's executeSaveFile
+      //      picks up the window slot to ride the project JSON (the only
+      //      layer that survives Canvas sandbox sessions).
+      //   3. Restore listener: a project-JSON load mid-session dispatches an
+      //      event we react to without remount.
+      var _opMasteryHydratedRef = React.useRef(false);
+      if (!_opMasteryHydratedRef.current) {
+        _opMasteryHydratedRef.current = true;
+        try {
+          var winState = (typeof window !== 'undefined' && window.__alloflowOpticsLab) || null;
+          var lsState = null;
+          try { lsState = JSON.parse(localStorage.getItem('opticsLab.state.v1') || 'null'); } catch (e) {}
+          var seed = winState || lsState || null;
+          if (seed && typeof seed === 'object') {
+            var merge = {};
+            if (seed.quizMastery && !d.quizMastery) merge.quizMastery = seed.quizMastery;
+            if (seed.quizCompletedCount != null && !d.quizCompletedCount) merge.quizCompletedCount = seed.quizCompletedCount;
+            if (Object.keys(merge).length > 0) {
+              setLabToolData(function (prev) {
+                return Object.assign({}, prev, { opticsLab: Object.assign({}, prev.opticsLab, merge) });
+              });
+            }
+          }
+        } catch (e) {}
+      }
+
+      // First-correct-on-question celebration. Mirrors the PetsLab decoder
+      // and BirdLab lifer pattern: brand-new mastered question fires a
+      // top-of-screen toast for ~3.2s, then auto-clears.
+      var _opCelebState = React.useState(null);
+      var opCeleb = _opCelebState[0];
+      var setOpCeleb = _opCelebState[1];
+
+      // Mirror mastery-relevant slice to window slot + localStorage.
+      React.useEffect(function () {
+        try {
+          var snapshot = {
+            quizMastery: d.quizMastery || {},
+            quizCompletedCount: d.quizCompletedCount || 0,
+            _ts: Date.now()
+          };
+          window.__alloflowOpticsLab = snapshot;
+          try { localStorage.setItem('opticsLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+        } catch (e) {}
+      }, [d.quizMastery, d.quizCompletedCount]);
+
+      // Hot-reload from a project-JSON load mid-session.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowOpticsLab || {};
+            setLabToolData(function (prev) {
+              var patch = {};
+              if (w.quizMastery) patch.quizMastery = w.quizMastery;
+              if (w.quizCompletedCount != null) patch.quizCompletedCount = w.quizCompletedCount;
+              return Object.assign({}, prev, { opticsLab: Object.assign({}, prev.opticsLab, patch) });
+            });
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-opticslab-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-opticslab-restored', onRestore); };
+      }, []);
+
       function upd(k, v) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev);
@@ -2085,7 +2170,8 @@
             { id: 'diffraction', label: '〰 Diffraction', desc: 'Single-slit + grating' },
             { id: 'polarization', label: '↕ Polarization', desc: "Malus's law" },
             { id: 'sleuth', label: '🕵️ Sleuth', desc: 'Predict image from setup' },
-            { id: 'quiz', label: '📝 Quiz', desc: 'AP exam practice' }
+            { id: 'quiz', label: '📝 Quiz', desc: 'AP exam practice' },
+            { id: 'mastery', label: '🏅 Mastery', desc: 'Concept progress + which questions you have nailed' }
           ].map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
@@ -2144,7 +2230,40 @@
           calc: _renderPolarizationCalc(d, upd, h)
         }),
         d.mode === 'sleuth' && _renderSleuthPanel(d, upd, h, addToast),
-        d.mode === 'quiz' && _renderQuizPanel(d, upd, h, addToast, awardXP)
+        d.mode === 'quiz' && _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb),
+        d.mode === 'mastery' && _renderMasteryPanel(d, upd, h),
+        // Concept-mastery celebration overlay — fixed-position, top of screen,
+        // self-clears after 3.5s. Renders on top of any view.
+        opCeleb && h('div', {
+          role: 'status',
+          'aria-live': 'assertive',
+          style: {
+            position: 'fixed', top: 80, left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999, pointerEvents: 'none',
+            animation: 'opticslab-celeb-rise 3.5s ease-out forwards',
+            maxWidth: 480
+          }
+        },
+          h('div', {
+            style: {
+              background: 'linear-gradient(135deg, #0ea5e9 0%, #6366f1 50%, #a855f7 100%)',
+              color: '#fff',
+              padding: '14px 22px',
+              borderRadius: 16,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+              border: '4px solid #fff',
+              display: 'flex', alignItems: 'center', gap: 12
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🏅'),
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Concept locked in'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, opCeleb.question.length > 90 ? (opCeleb.question.substring(0, 87) + '…') : opCeleb.question),
+              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, opCeleb.total + ' / 30 quiz questions mastered')
+            )
+          )
+        )
       );
     }
   });
@@ -2153,6 +2272,10 @@
   // HOME PANEL — welcome + sample problem library + topic shortcuts
   // ──────────────────────────────────────────────────────────────────
   function _renderHome(d, upd, h) {
+    var _hMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+    var _hMasteredCount = AP_OPTICS_QUIZ.filter(function (q) { return !!_hMastery[q.q]; }).length;
+    var _hTotal = AP_OPTICS_QUIZ.length;
+    var _hPct = _hTotal > 0 ? Math.round((_hMasteredCount / _hTotal) * 100) : 0;
     return h('div', null,
       h('div', {
         style: {
@@ -2165,6 +2288,38 @@
         h('p', { style: { margin: 0, fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } },
           'Pick a sample problem below — each loads the parameters into the right tab and primes the simulation. Or jump straight into a topic at the top to explore on your own. Every panel pairs a draggable visualization with a calculator that shows the math step-by-step.'
         )
+      ),
+      // ── AP Concept Mastery summary tile ──
+      // Surfaces cumulative quiz progress on the home dashboard. Click jumps
+      // to the dedicated Mastery tab. Suppresses on-students who have not
+      // yet attempted a quiz with a "start here" CTA instead.
+      h('button', {
+        onClick: function () { upd('mode', 'mastery'); },
+        'aria-label': 'Open AP concept mastery — ' + _hMasteredCount + ' of ' + _hTotal + ' questions mastered',
+        style: {
+          width: '100%', textAlign: 'left', cursor: 'pointer',
+          padding: 14, marginBottom: 16, borderRadius: 12,
+          background: 'linear-gradient(110deg, rgba(14,165,233,0.12) 0%, rgba(99,102,241,0.18) 50%, rgba(168,85,247,0.12) 100%)',
+          border: '1px solid rgba(99,102,241,0.50)',
+          display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+        }
+      },
+        h('div', { style: { textAlign: 'center', minWidth: 90 } },
+          h('div', { style: { fontSize: 26, fontWeight: 900, color: '#a5b4fc', lineHeight: 1 } }, _hMasteredCount + ' / ' + _hTotal),
+          h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'AP mastered')
+        ),
+        h('div', { style: { flex: 1, minWidth: 200 } },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 4 } }, '🏅 Concept Mastery'),
+          h('div', { style: { height: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 3, overflow: 'hidden', marginBottom: 5 }, 'aria-hidden': 'true' },
+            h('div', { style: { width: _hPct + '%', height: '100%', background: 'linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7)', transition: 'width 0.3s' } })
+          ),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } },
+            _hMasteredCount === 0 ? 'Take the AP quiz — every question you answer correctly the first time locks in here permanently.'
+            : _hMasteredCount === _hTotal ? '🏆 Full coverage — all 30 AP optics questions mastered.'
+            : _hPct + '% of the AP optics question bank mastered. ' + (_hTotal - _hMasteredCount) + ' to go.'
+          )
+        ),
+        h('span', { 'aria-hidden': 'true', style: { fontSize: 22, color: '#a5b4fc', fontWeight: 900, flexShrink: 0 } }, '→')
       ),
       // Sample problem library
       h('div', { style: { marginBottom: 18 } },
@@ -2581,7 +2736,159 @@
   // ──────────────────────────────────────────────────────────────────
   // QUIZ PANEL — 5-question AP-style multiple choice
   // ──────────────────────────────────────────────────────────────────
-  function _renderQuizPanel(d, upd, h, addToast, awardXP) {
+  // ──────────────────────────────────────────────────────────────────
+  // CONCEPT MASTERY PANEL — cross-attempt log of AP quiz questions the
+  // student has answered correctly at least once, rolled up into the six
+  // main AP Physics 2 optics concepts. Mirrors the BirdLab life list +
+  // PetsLab decoder mastery pattern: per-attempt scores reset; mastery
+  // accumulates forever.
+  // ──────────────────────────────────────────────────────────────────
+  function _renderMasteryPanel(d, upd, h) {
+    var mastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+    var totalQuestions = AP_OPTICS_QUIZ.length;
+    var masteredQuestions = AP_OPTICS_QUIZ.filter(function (q) { return !!mastery[q.q]; });
+    var masteredCount = masteredQuestions.length;
+    var pctOverall = totalQuestions > 0 ? Math.round((masteredCount / totalQuestions) * 100) : 0;
+
+    // Six main AP topics — universal/dispersion/sign_convention/em_spectrum
+    // are cross-cutting tags rolled into "Synthesis".
+    var CONCEPTS = [
+      { id: 'reflection',   label: '🪞 Reflection',   color: '#0ea5e9', tagMatch: function (tags) { return tags.indexOf('reflection') !== -1; } },
+      { id: 'refraction',   label: '🌊 Refraction + TIR', color: '#06b6d4', tagMatch: function (tags) { return tags.indexOf('refraction') !== -1 || tags.indexOf('tir') !== -1; } },
+      { id: 'lenses',       label: '🔍 Lenses',       color: '#8b5cf6', tagMatch: function (tags) { return tags.indexOf('lenses') !== -1; } },
+      { id: 'interference', label: '✨ Interference', color: '#f59e0b', tagMatch: function (tags) { return tags.indexOf('interference') !== -1 && tags.indexOf('diffraction') === -1; } },
+      { id: 'diffraction',  label: '〰 Diffraction',  color: '#ec4899', tagMatch: function (tags) { return tags.indexOf('diffraction') !== -1 || tags.indexOf('grating') !== -1; } },
+      { id: 'polarization', label: '↕ Polarization',  color: '#10b981', tagMatch: function (tags) { return tags.indexOf('polarization') !== -1; } },
+      { id: 'synthesis',    label: '🧠 Synthesis',    color: '#94a3b8', tagMatch: function (tags) {
+        // Cross-cutting: only count questions whose ONLY non-universal tag is in this synthesis bucket.
+        if (tags.indexOf('reflection') !== -1 || tags.indexOf('refraction') !== -1 || tags.indexOf('tir') !== -1) return false;
+        if (tags.indexOf('lenses') !== -1 || tags.indexOf('interference') !== -1) return false;
+        if (tags.indexOf('diffraction') !== -1 || tags.indexOf('grating') !== -1) return false;
+        if (tags.indexOf('polarization') !== -1) return false;
+        return true;
+      } }
+    ];
+
+    function fmtDate(iso) {
+      if (!iso) return '';
+      try {
+        var dd = new Date(iso);
+        return dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } catch (e) { return iso.substring(0, 10); }
+    }
+
+    var conceptStats = CONCEPTS.map(function (c) {
+      var qs = AP_OPTICS_QUIZ.filter(function (q) { return c.tagMatch(q.tags || []); });
+      var done = qs.filter(function (q) { return !!mastery[q.q]; });
+      return { concept: c, questions: qs, doneCount: done.length };
+    });
+
+    return h('section', {
+      'aria-label': 'AP optics concept mastery',
+      style: { marginTop: 4 }
+    },
+      // Hero summary
+      h('div', {
+        style: {
+          padding: 18, borderRadius: 14, marginBottom: 14,
+          background: 'linear-gradient(135deg, rgba(14,165,233,0.18) 0%, rgba(99,102,241,0.18) 50%, rgba(168,85,247,0.18) 100%)',
+          border: '2px solid rgba(99,102,241,0.55)'
+        }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
+          h('div', { style: { textAlign: 'center', minWidth: 110 } },
+            h('div', { style: { fontSize: 38, fontWeight: 900, color: '#a5b4fc', lineHeight: 1 } }, masteredCount + ' / ' + totalQuestions),
+            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
+          ),
+          h('div', { style: { flex: 1, minWidth: 240 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+              h('h3', { style: { margin: 0, fontSize: 17, color: '#e2e8f0', fontWeight: 800 } }, 'Concept Mastery')
+            ),
+            h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } },
+              'Every AP quiz question you answer correctly at least once locks in here. Quiz scores reset between attempts; mastery is permanent. Build coverage across all six concepts before exam day.'
+            ),
+            h('div', { style: { height: 8, background: 'rgba(15,23,42,0.5)', borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
+              h('div', { style: { width: pctOverall + '%', height: '100%', background: 'linear-gradient(90deg, #0ea5e9, #6366f1, #a855f7)', transition: 'width 0.3s' } })
+            ),
+            h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontWeight: 700 } },
+              pctOverall === 100 ? '🏆 All 30 questions mastered — full AP coverage' :
+              masteredCount === 0 ? 'Start the quiz to begin building mastery' :
+              pctOverall + '% complete · ' + (totalQuestions - masteredCount) + ' to go'
+            )
+          )
+        )
+      ),
+      // Per-concept cards
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 } },
+        conceptStats.map(function (cs) {
+          var pct = cs.questions.length > 0 ? Math.round((cs.doneCount / cs.questions.length) * 100) : 0;
+          var statusLabel = cs.doneCount === 0 ? 'Untouched'
+            : cs.doneCount === cs.questions.length ? '✓ All mastered'
+            : cs.doneCount + ' / ' + cs.questions.length;
+          var statusColor = cs.doneCount === 0 ? '#64748b'
+            : cs.doneCount === cs.questions.length ? '#22c55e'
+            : cs.concept.color;
+          return h('div', {
+            key: cs.concept.id,
+            style: {
+              padding: 12, borderRadius: 12,
+              background: 'rgba(15,23,42,0.6)',
+              border: '1px solid ' + (cs.doneCount > 0 ? cs.concept.color + 'aa' : 'rgba(148,163,184,0.25)')
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', flex: 1 } }, cs.concept.label),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: statusColor } }, statusLabel)
+            ),
+            h('div', { style: { height: 5, background: 'rgba(15,23,42,0.8)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }, 'aria-hidden': 'true' },
+              h('div', { style: { width: pct + '%', height: '100%', background: cs.concept.color, transition: 'width 0.3s' } })
+            ),
+            // Per-question dots
+            h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+              cs.questions.map(function (q, i) {
+                var entry = mastery[q.q];
+                var done = !!entry;
+                return h('li', {
+                  key: i,
+                  style: {
+                    display: 'flex', alignItems: 'flex-start', gap: 6,
+                    fontSize: 11,
+                    color: done ? '#cbd5e1' : '#64748b',
+                    lineHeight: 1.45
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#475569', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                  h('span', { style: { flex: 1, minWidth: 0 } },
+                    q.q.length > 80 ? q.q.substring(0, 77) + '…' : q.q,
+                    done && entry.firstCorrectAt && h('span', { style: { color: '#64748b', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
+                  )
+                );
+              })
+            )
+          );
+        })
+      ),
+      // CTA
+      h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px dashed rgba(168,85,247,0.50)' } },
+        h('button', {
+          onClick: function () { upd({ mode: 'quiz', quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
+          style: {
+            padding: '10px 18px', width: '100%',
+            background: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+            color: '#fff', border: 'none', borderRadius: 8,
+            fontSize: 13, fontWeight: 800, cursor: 'pointer'
+          }
+        },
+          masteredCount === 0 ? '📝 Take your first AP quiz attempt'
+          : masteredCount === totalQuestions ? '📝 Re-attempt the quiz to reinforce'
+          : '📝 Take another quiz attempt — fill in gaps'
+        )
+      )
+    );
+  }
+
+  function _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb) {
     if (!d.quizQuestions) {
       return h('div', null,
         h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '📝 AP exam practice quiz'),
@@ -2681,10 +2988,49 @@
               return;
             }
             var correct = 0;
+            // ── Concept Mastery: per-question first-correct log ──
+            // Each question is keyed by its text (stable across reshuffles
+            // and unique within the bank). Quiz score is per-attempt;
+            // mastery sticks across attempts.
+            var prevMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+            var nextMastery = Object.assign({}, prevMastery);
+            var newlyMasteredQ = null;
+            var nowIso = new Date().toISOString();
             for (var qi = 0; qi < d.quizQuestions.length; qi++) {
-              if (ans[qi] === d.quizQuestions[qi].correct) correct++;
+              var q = d.quizQuestions[qi];
+              var isCorrect = ans[qi] === q.correct;
+              if (isCorrect) {
+                correct++;
+                var key = q.q;
+                var existingEntry = nextMastery[key];
+                if (existingEntry) {
+                  nextMastery[key] = Object.assign({}, existingEntry, {
+                    lastCorrectAt: nowIso,
+                    correctCount: (existingEntry.correctCount || 0) + 1
+                  });
+                } else {
+                  nextMastery[key] = {
+                    firstCorrectAt: nowIso,
+                    lastCorrectAt: nowIso,
+                    correctCount: 1,
+                    tags: q.tags || []
+                  };
+                  // Keep just the FIRST newly-mastered question of this
+                  // attempt for the celebration overlay (avoids stacking).
+                  if (!newlyMasteredQ) newlyMasteredQ = { question: q.q, tags: q.tags || [] };
+                }
+              }
             }
-            upd({ quizSubmitted: true, quizCorrect: correct, quizCompletedCount: (d.quizCompletedCount || 0) + 1 });
+            upd({
+              quizSubmitted: true,
+              quizCorrect: correct,
+              quizCompletedCount: (d.quizCompletedCount || 0) + 1,
+              quizMastery: nextMastery
+            });
+            if (newlyMasteredQ && typeof setOpCeleb === 'function') {
+              try { setOpCeleb({ question: newlyMasteredQ.question, tags: newlyMasteredQ.tags, total: Object.keys(nextMastery).length, at: Date.now() }); } catch (e) {}
+              try { setTimeout(function () { setOpCeleb(null); }, 3500); } catch (e) {}
+            }
             if (awardXP) awardXP(correct * 5, 'OpticsLab — quiz: ' + correct + '/5', 'opticsLab');
             if (addToast) addToast('Quiz scored: ' + correct + ' / ' + d.quizQuestions.length, correct >= 4 ? 'success' : 'info');
             opAnnounce('Quiz score: ' + correct + ' out of ' + d.quizQuestions.length);

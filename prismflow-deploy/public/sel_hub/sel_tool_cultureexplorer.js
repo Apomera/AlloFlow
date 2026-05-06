@@ -1597,8 +1597,8 @@ window.SelHub = window.SelHub || {
           ),
 
           // Loading
-          aiLoading && !cultureData && h('div', {  className: 'bg-cyan-50 border border-cyan-200 rounded-2xl p-12 text-center' },
-            h('div', {  className: 'text-4xl mb-3 animate-pulse' }, '\uD83C\uDF0D'),
+          aiLoading && !cultureData && h('div', { role: 'status', 'aria-live': 'polite', 'aria-busy': 'true', className: 'bg-cyan-50 border border-cyan-200 rounded-2xl p-12 text-center' },
+            h('div', { className: 'text-4xl mb-3 animate-pulse', 'aria-hidden': 'true' }, '\uD83C\uDF0D'),
             h('p', { className: 'text-cyan-700 font-bold' }, 'Discovering ' + selectedCulture + '...')
           ),
 

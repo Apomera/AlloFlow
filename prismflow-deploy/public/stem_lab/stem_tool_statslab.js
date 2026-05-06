@@ -8,6 +8,23 @@
 // sample datasets.
 // ═══════════════════════════════════════════
 
+// ── StatsLab keyframes (concept-mastery celebration) ──
+(function () {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('statslab-celeb-css')) return;
+  var st = document.createElement('style');
+  st.id = 'statslab-celeb-css';
+  st.textContent = [
+    '@keyframes statslab-celeb-rise {',
+    '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+    '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══ Defensive StemLab guard ═══
 window.StemLab = window.StemLab || {
   _registry: {},
@@ -1451,6 +1468,67 @@ window.StemLab = window.StemLab || {
           '📊 Initializing Statistics Lab...');
       }
       var d = labToolData.statsLab;
+
+      // ── Concept-mastery state + Canvas-survival persistence ──
+      // The StemLab host's localStorage block does not include statsLab,
+      // so the tool resets every reload by default. Layer our own:
+      // window slot → localStorage → existing host state, plus a project-
+      // JSON ride-along (the only layer that survives Canvas sandboxing).
+      var _slMasteryHydratedRef = React.useRef(false);
+      if (!_slMasteryHydratedRef.current) {
+        _slMasteryHydratedRef.current = true;
+        try {
+          var winState = (typeof window !== 'undefined' && window.__alloflowStatsLab) || null;
+          var lsState = null;
+          try { lsState = JSON.parse(localStorage.getItem('statsLab.state.v1') || 'null'); } catch (e) {}
+          var seed = winState || lsState || null;
+          if (seed && typeof seed === 'object') {
+            var merge = {};
+            if (seed.quizMastery && !d.quizMastery) merge.quizMastery = seed.quizMastery;
+            if (seed.quizCompletedCount != null && !d.quizCompletedCount) merge.quizCompletedCount = seed.quizCompletedCount;
+            if (Object.keys(merge).length > 0) {
+              setLabToolData(function (prev) {
+                return Object.assign({}, prev, { statsLab: Object.assign({}, prev.statsLab, merge) });
+              });
+            }
+          }
+        } catch (e) {}
+      }
+
+      // First-correct-on-question celebration (mirrors Optics + Pets pattern).
+      var _slCelebState = React.useState(null);
+      var slCeleb = _slCelebState[0];
+      var setSlCeleb = _slCelebState[1];
+
+      // Mirror mastery slice to window slot + localStorage.
+      React.useEffect(function () {
+        try {
+          var snapshot = {
+            quizMastery: d.quizMastery || {},
+            quizCompletedCount: d.quizCompletedCount || 0,
+            _ts: Date.now()
+          };
+          window.__alloflowStatsLab = snapshot;
+          try { localStorage.setItem('statsLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+        } catch (e) {}
+      }, [d.quizMastery, d.quizCompletedCount]);
+
+      // Hot-reload from project-JSON load mid-session.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowStatsLab || {};
+            setLabToolData(function (prev) {
+              var patch = {};
+              if (w.quizMastery) patch.quizMastery = w.quizMastery;
+              if (w.quizCompletedCount != null) patch.quizCompletedCount = w.quizCompletedCount;
+              return Object.assign({}, prev, { statsLab: Object.assign({}, prev.statsLab, patch) });
+            });
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-statslab-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-statslab-restored', onRestore); };
+      }, []);
       function upd(k, v) {
         setLabToolData(function(prev) {
           var next = Object.assign({}, prev);
@@ -1695,7 +1773,8 @@ window.StemLab = window.StemLab || {
             { id: 'data', label: '📋 Data', desc: 'Enter / paste data' },
             { id: 'test', label: '⚖️ Test', desc: 'Choose + run a test' },
             { id: 'results', label: '📈 Results', desc: 'View results + AI grade' },
-            { id: 'power', label: '🔋 Power', desc: 'Sample size calc' }
+            { id: 'power', label: '🔋 Power', desc: 'Sample size calc' },
+            { id: 'mastery', label: '🏅 Mastery', desc: 'AP-quiz concept progress' }
           ].map(function(tab) {
             var sel = d.mode === tab.id;
             return h('button', {
@@ -1751,8 +1830,40 @@ window.StemLab = window.StemLab || {
         d.mode === 'wizard' && _renderWizard(d, upd, h),
         d.mode === 'data' && _renderData(d, upd, h, addToast),
         d.mode === 'test' && _renderTest(d, upd, runTest, h, addToast),
-        d.mode === 'results' && _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP),
-        d.mode === 'power' && _renderPower(d, upd, h, addToast)
+        d.mode === 'results' && _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP, setSlCeleb),
+        d.mode === 'power' && _renderPower(d, upd, h, addToast),
+        d.mode === 'mastery' && _renderStatsMasteryPanel(d, upd, h),
+        // Concept-mastery celebration overlay — same shape as Optics/Pets/BirdLab.
+        slCeleb && h('div', {
+          role: 'status',
+          'aria-live': 'assertive',
+          style: {
+            position: 'fixed', top: 80, left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 9999, pointerEvents: 'none',
+            animation: 'statslab-celeb-rise 3.5s ease-out forwards',
+            maxWidth: 480
+          }
+        },
+          h('div', {
+            style: {
+              background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%)',
+              color: '#fff',
+              padding: '14px 22px',
+              borderRadius: 16,
+              boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+              border: '4px solid #fff',
+              display: 'flex', alignItems: 'center', gap: 12
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🏅'),
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Concept locked in'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, slCeleb.question.length > 90 ? (slCeleb.question.substring(0, 87) + '…') : slCeleb.question),
+              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, slCeleb.total + ' / ' + AP_QUIZ_BANK.length + ' AP questions mastered')
+            )
+          )
+        )
       );
     }
   });
@@ -1761,7 +1872,40 @@ window.StemLab = window.StemLab || {
   // HOME panel — sample datasets gallery
   // ──────────────────────────────────────────────────────────────────
   function _renderHome(d, upd, loadSample, h) {
+    var _hMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+    var _hMasteredCount = AP_QUIZ_BANK.filter(function (q) { return !!_hMastery[q.q]; }).length;
+    var _hTotal = AP_QUIZ_BANK.length;
+    var _hPct = _hTotal > 0 ? Math.round((_hMasteredCount / _hTotal) * 100) : 0;
     return h('div', null,
+      // ── AP Concept Mastery summary tile (clickable → Mastery tab) ──
+      h('button', {
+        onClick: function () { upd('mode', 'mastery'); },
+        'aria-label': 'Open AP statistics concept mastery — ' + _hMasteredCount + ' of ' + _hTotal + ' questions mastered',
+        style: {
+          width: '100%', textAlign: 'left', cursor: 'pointer',
+          padding: 14, marginBottom: 16, borderRadius: 12,
+          background: 'linear-gradient(110deg, rgba(99,102,241,0.12) 0%, rgba(168,85,247,0.18) 50%, rgba(236,72,153,0.12) 100%)',
+          border: '1px solid rgba(168,85,247,0.50)',
+          display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+        }
+      },
+        h('div', { style: { textAlign: 'center', minWidth: 90 } },
+          h('div', { style: { fontSize: 26, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, _hMasteredCount + ' / ' + _hTotal),
+          h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 3 } }, 'AP mastered')
+        ),
+        h('div', { style: { flex: 1, minWidth: 200 } },
+          h('div', { style: { fontSize: 13, fontWeight: 800, color: '#e2e8f0', marginBottom: 4 } }, '🏅 AP Stats Concept Mastery'),
+          h('div', { style: { height: 6, background: 'rgba(15,23,42,0.55)', borderRadius: 3, overflow: 'hidden', marginBottom: 5 }, 'aria-hidden': 'true' },
+            h('div', { style: { width: _hPct + '%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)', transition: 'width 0.3s' } })
+          ),
+          h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } },
+            _hMasteredCount === 0 ? 'Run any test on the Test tab, then take the AP quiz on Results — every question you nail locks in here permanently.'
+            : _hMasteredCount === _hTotal ? '🏆 Full AP coverage — all ' + _hTotal + ' quiz questions mastered.'
+            : _hPct + '% of the AP quiz bank mastered. ' + (_hTotal - _hMasteredCount) + ' to go.'
+          )
+        ),
+        h('span', { 'aria-hidden': 'true', style: { fontSize: 22, color: '#d8b4fe', fontWeight: 900, flexShrink: 0 } }, '→')
+      ),
       h('div', {
         style: {
           background: 'rgba(99,102,241,0.10)',
@@ -2637,7 +2781,160 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   // RESULTS panel — numeric + plain-English + APA + show-the-math + AI grader
   // ──────────────────────────────────────────────────────────────────
-  function _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP) {
+  // ──────────────────────────────────────────────────────────────────
+  // CONCEPT MASTERY PANEL — cross-attempt log of AP quiz questions the
+  // student has answered correctly at least once, rolled up into AP Stats
+  // concept clusters. Mirrors the BirdLab life list / PetsLab decoder /
+  // OpticsLab pattern: per-attempt scores reset; mastery accumulates.
+  // ──────────────────────────────────────────────────────────────────
+  function _renderStatsMasteryPanel(d, upd, h) {
+    var mastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+    var totalQuestions = AP_QUIZ_BANK.length;
+    var masteredQuestions = AP_QUIZ_BANK.filter(function (q) { return !!mastery[q.q]; });
+    var masteredCount = masteredQuestions.length;
+    var pctOverall = totalQuestions > 0 ? Math.round((masteredCount / totalQuestions) * 100) : 0;
+
+    // Five conceptual clusters covering the AP-Stats / AP-Psych curriculum.
+    // "Test selection" rolls up the test_id + post_hoc tags.
+    var CONCEPTS = [
+      { id: 'inference',  label: '🧠 Inference logic',  color: '#a855f7',
+        tagMatch: function (tags) { return tags.indexOf('p_value') !== -1 || tags.indexOf('type_error') !== -1 || tags.indexOf('ci') !== -1; } },
+      { id: 'effect',     label: '📏 Effect size + power', color: '#22c55e',
+        tagMatch: function (tags) { return tags.indexOf('effect_size') !== -1 || tags.indexOf('power') !== -1; } },
+      { id: 'tests',      label: '⚖️ Test selection',  color: '#0ea5e9',
+        tagMatch: function (tags) { return tags.indexOf('test_id') !== -1 || tags.indexOf('post_hoc') !== -1; } },
+      { id: 'correlation',label: '📈 Correlation + regression', color: '#f59e0b',
+        tagMatch: function (tags) { return tags.indexOf('pearson') !== -1 || tags.indexOf('correlation') !== -1 || tags.indexOf('regression') !== -1; } },
+      { id: 'design',     label: '🧪 Study design',     color: '#ec4899',
+        tagMatch: function (tags) { return tags.indexOf('design') !== -1 || tags.indexOf('sampling') !== -1 || tags.indexOf('confound') !== -1; } },
+      { id: 'descriptive',label: '📊 Distributions + descriptives', color: '#14b8a6',
+        tagMatch: function (tags) { return tags.indexOf('distribution') !== -1 || tags.indexOf('descriptive') !== -1 || tags.indexOf('central_tendency') !== -1 || tags.indexOf('variability') !== -1; } }
+    ];
+
+    function fmtDate(iso) {
+      if (!iso) return '';
+      try {
+        var dd = new Date(iso);
+        return dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      } catch (e) { return iso.substring(0, 10); }
+    }
+
+    var conceptStats = CONCEPTS.map(function (c) {
+      var qs = AP_QUIZ_BANK.filter(function (q) { return c.tagMatch(q.tags || []); });
+      var done = qs.filter(function (q) { return !!mastery[q.q]; });
+      return { concept: c, questions: qs, doneCount: done.length };
+    }).filter(function (cs) { return cs.questions.length > 0; }); // hide empty concepts
+
+    // Questions not captured by any concept (mostly cross-cutting "universal" tagged items).
+    var uncategorizedQs = AP_QUIZ_BANK.filter(function (q) {
+      return !CONCEPTS.some(function (c) { return c.tagMatch(q.tags || []); });
+    });
+
+    return h('section', {
+      'aria-label': 'AP statistics concept mastery',
+      style: { marginTop: 4 }
+    },
+      // Hero
+      h('div', {
+        style: {
+          padding: 18, borderRadius: 14, marginBottom: 14,
+          background: 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(168,85,247,0.18) 50%, rgba(236,72,153,0.18) 100%)',
+          border: '2px solid rgba(168,85,247,0.55)'
+        }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
+          h('div', { style: { textAlign: 'center', minWidth: 110 } },
+            h('div', { style: { fontSize: 38, fontWeight: 900, color: '#d8b4fe', lineHeight: 1 } }, masteredCount + ' / ' + totalQuestions),
+            h('div', { style: { fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Quiz questions mastered')
+          ),
+          h('div', { style: { flex: 1, minWidth: 240 } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+              h('h3', { style: { margin: 0, fontSize: 17, color: '#e2e8f0', fontWeight: 800 } }, 'AP Stats Concept Mastery')
+            ),
+            h('p', { style: { margin: '0 0 8px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.55 } },
+              'Every AP quiz question you answer correctly at least once locks in here permanently. Quiz attempts give you per-attempt scores; this view shows what is locked in across every attempt you have ever taken.'
+            ),
+            h('div', { style: { height: 8, background: 'rgba(15,23,42,0.5)', borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
+              h('div', { style: { width: pctOverall + '%', height: '100%', background: 'linear-gradient(90deg, #6366f1, #a855f7, #ec4899)', transition: 'width 0.3s' } })
+            ),
+            h('div', { style: { fontSize: 10, color: '#94a3b8', marginTop: 4, fontWeight: 700 } },
+              pctOverall === 100 ? '🏆 Full coverage — every AP question mastered'
+              : masteredCount === 0 ? 'Run any test, then take the 5-question quiz on the Results tab'
+              : pctOverall + '% complete · ' + (totalQuestions - masteredCount) + ' to go'
+            )
+          )
+        )
+      ),
+      // Concept cards
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 10 } },
+        conceptStats.map(function (cs) {
+          var pct = cs.questions.length > 0 ? Math.round((cs.doneCount / cs.questions.length) * 100) : 0;
+          var statusLabel = cs.doneCount === 0 ? 'Untouched'
+            : cs.doneCount === cs.questions.length ? '✓ All mastered'
+            : cs.doneCount + ' / ' + cs.questions.length;
+          var statusColor = cs.doneCount === 0 ? '#64748b'
+            : cs.doneCount === cs.questions.length ? '#22c55e'
+            : cs.concept.color;
+          return h('div', {
+            key: cs.concept.id,
+            style: {
+              padding: 12, borderRadius: 12,
+              background: 'rgba(15,23,42,0.6)',
+              border: '1px solid ' + (cs.doneCount > 0 ? cs.concept.color + 'aa' : 'rgba(148,163,184,0.25)')
+            }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+              h('div', { style: { fontSize: 14, fontWeight: 800, color: '#e2e8f0', flex: 1 } }, cs.concept.label),
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: statusColor } }, statusLabel)
+            ),
+            h('div', { style: { height: 5, background: 'rgba(15,23,42,0.8)', borderRadius: 3, overflow: 'hidden', marginBottom: 8 }, 'aria-hidden': 'true' },
+              h('div', { style: { width: pct + '%', height: '100%', background: cs.concept.color, transition: 'width 0.3s' } })
+            ),
+            h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 4 } },
+              cs.questions.map(function (q, i) {
+                var entry = mastery[q.q];
+                var done = !!entry;
+                return h('li', {
+                  key: i,
+                  style: {
+                    display: 'flex', alignItems: 'flex-start', gap: 6,
+                    fontSize: 11,
+                    color: done ? '#cbd5e1' : '#64748b',
+                    lineHeight: 1.45
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { color: done ? '#22c55e' : '#475569', fontWeight: 700, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                  h('span', { style: { flex: 1, minWidth: 0 } },
+                    q.q.length > 80 ? q.q.substring(0, 77) + '…' : q.q,
+                    done && entry.firstCorrectAt && h('span', { style: { color: '#64748b', fontSize: 10, marginLeft: 6, fontStyle: 'italic' } }, '· ' + fmtDate(entry.firstCorrectAt))
+                  )
+                );
+              })
+            )
+          );
+        })
+      ),
+      // CTA
+      h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: 'rgba(168,85,247,0.10)', border: '1px dashed rgba(168,85,247,0.50)' } },
+        h('button', {
+          onClick: function () { upd({ mode: 'results', quizQuestions: null, quizAnswers: [], quizSubmitted: false }); },
+          style: {
+            padding: '10px 18px', width: '100%',
+            background: 'linear-gradient(135deg, #a855f7, #7e22ce)',
+            color: '#fff', border: 'none', borderRadius: 8,
+            fontSize: 13, fontWeight: 800, cursor: 'pointer'
+          }
+        },
+          masteredCount === 0 ? '⚖️ Run a test, then take the AP quiz to start'
+          : masteredCount === totalQuestions ? '🏆 All mastered — re-attempt to reinforce'
+          : '📝 Open Results to take another quiz attempt'
+        )
+      )
+    );
+  }
+
+  function _renderResults(d, upd, h, addToast, gradeInterpretation, awardXP, setSlCeleb) {
     var r = d.lastResult;
     if (!r) {
       return h('div', {
@@ -3259,10 +3556,46 @@ window.StemLab = window.StemLab || {
                 return;
               }
               var correct = 0;
+              // ── Concept Mastery: per-question first-correct log ──
+              // Each quiz question keyed by text (stable, unique within bank).
+              // Quiz score is per-attempt; mastery sticks across attempts.
+              var prevMastery = (d.quizMastery && typeof d.quizMastery === 'object') ? d.quizMastery : {};
+              var nextMastery = Object.assign({}, prevMastery);
+              var newlyMasteredQ = null;
+              var nowIso = new Date().toISOString();
               for (var qi = 0; qi < d.quizQuestions.length; qi++) {
-                if (ans[qi] === d.quizQuestions[qi].correct) correct++;
+                var q = d.quizQuestions[qi];
+                var isCorrect = ans[qi] === q.correct;
+                if (isCorrect) {
+                  correct++;
+                  var key = q.q;
+                  var existingEntry = nextMastery[key];
+                  if (existingEntry) {
+                    nextMastery[key] = Object.assign({}, existingEntry, {
+                      lastCorrectAt: nowIso,
+                      correctCount: (existingEntry.correctCount || 0) + 1
+                    });
+                  } else {
+                    nextMastery[key] = {
+                      firstCorrectAt: nowIso,
+                      lastCorrectAt: nowIso,
+                      correctCount: 1,
+                      tags: q.tags || []
+                    };
+                    if (!newlyMasteredQ) newlyMasteredQ = { question: q.q, tags: q.tags || [] };
+                  }
+                }
               }
-              upd({ quizSubmitted: true, quizCorrect: correct, quizCompletedCount: (d.quizCompletedCount || 0) + 1 });
+              upd({
+                quizSubmitted: true,
+                quizCorrect: correct,
+                quizCompletedCount: (d.quizCompletedCount || 0) + 1,
+                quizMastery: nextMastery
+              });
+              if (newlyMasteredQ && typeof setSlCeleb === 'function') {
+                try { setSlCeleb({ question: newlyMasteredQ.question, tags: newlyMasteredQ.tags, total: Object.keys(nextMastery).length, at: Date.now() }); } catch (e) {}
+                try { setTimeout(function () { setSlCeleb(null); }, 3500); } catch (e) {}
+              }
               if (awardXP) awardXP(correct * 5, 'StatsLab — quiz: ' + correct + '/5', 'statsLab');
               if (addToast) addToast('Quiz scored: ' + correct + ' / ' + d.quizQuestions.length, correct >= 4 ? 'success' : 'info');
               slAnnounce('Quiz score: ' + correct + ' out of ' + d.quizQuestions.length);

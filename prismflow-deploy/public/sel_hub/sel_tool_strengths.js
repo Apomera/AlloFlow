@@ -2160,11 +2160,13 @@ window.SelHub = window.SelHub || {
                   'I\'m your AI Strengths Coach. Ask me about your strengths, how to use them, or how to grow in areas that matter to you.'
                 )
               ),
-              aiResponse ? h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 16, fontSize: 13, lineHeight: 1.6, color: '#fde68a' } },
-                h('div', { style: { fontSize: 10, color: '#f59e0b', fontWeight: 'bold', marginBottom: 4 } }, '\uD83E\uDD16 Strengths Coach'),
-                aiResponse,
-                callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: '#f59e0b', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
-              ) : null,
+              h('div', { role: 'region', 'aria-label': 'Strengths coach response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+                aiResponse ? h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)', marginBottom: 16, fontSize: 13, lineHeight: 1.6, color: '#fde68a' } },
+                  h('div', { style: { fontSize: 10, color: '#f59e0b', fontWeight: 'bold', marginBottom: 4 } }, '\uD83E\uDD16 Strengths Coach'),
+                  aiResponse,
+                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: '#f59e0b', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
+                ) : null
+              ),
               h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', value: aiInput, onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter' && aiInput.trim()) askAI(); }, placeholder: band === 'elementary' ? 'Ask me about your strengths...' : 'Ask about your strengths, growth areas, or how to apply them...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
                 h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#f59e0b', color: '#0f172a', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')

@@ -1502,7 +1502,10 @@ window.SelHub = window.SelHub || {
             })
           ),
           // Active card
-          !rtRevealed && h('div', {             onClick: function() {
+          !rtRevealed && h('div', Object.assign({
+            'aria-label': 'Reveal right: ' + curRt.title,
+            style: { padding: 24, borderRadius: 16, background: '#0f172a', border: '2px dashed ' + ACCENT_MED, cursor: 'pointer', textAlign: 'center' }
+          }, a11yClick(function() {
               upd('rtRevealed', true);
               if (!rtViewedSet[curRt.id]) {
                 var newSet = Object.assign({}, rtViewedSet);
@@ -1515,10 +1518,7 @@ window.SelHub = window.SelHub || {
                 if (Object.keys(newSet).length >= rtCards.length) tryAwardBadge('rights_all');
               }
               if (soundEnabled) sfxReveal();
-            },
-            style: { padding: 24, borderRadius: 16, background: '#0f172a', border: '2px dashed ' + ACCENT_MED, cursor: 'pointer', textAlign: 'center' },
-            role: 'button', tabIndex: 0
-          },
+          })),
             h('div', { style: { fontSize: 40, marginBottom: 8 } }, curRt.icon),
             h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } }, curRt.title),
             h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, curRt.right),

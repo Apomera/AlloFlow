@@ -527,6 +527,7 @@ window.SelHub = window.SelHub || {
     desc: 'Guided breathing, body scans, grounding, and gratitude \u2014 find your calm.',
     color: 'purple',
     category: 'self-management',
+    cleanup: function() { stopBreathTimer(); stopScanTimer(); },
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -1558,10 +1559,11 @@ window.SelHub = window.SelHub || {
           meditationIdx === -1 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             scripts.map(function(script, i) {
               var isFav = !!meditationFavs[script.id];
-              return h('div', {                 key: script.id,
-                style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' },
-                onClick: function() { upd('meditationIdx', i); if (soundEnabled) sfxClick(); }
-              },
+              return h('div', Object.assign({
+                key: script.id,
+                'aria-label': 'Open meditation: ' + script.name,
+                style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' }
+              }, a11yClick(function() { upd('meditationIdx', i); if (soundEnabled) sfxClick(); })),
                 h('div', { style: { fontSize: 32, flexShrink: 0 } }, script.emoji),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, script.name),

@@ -170,6 +170,64 @@
       });
       var savedStations = _savedStations[0]; var setSavedStations = _savedStations[1];
 
+      // ── Engagement state: daily streak + per-tool usage counts ──
+      // Persistence model:
+      //   1. localStorage works in normal browsers AND within a single
+      //      Canvas session — but Canvas wipes localStorage between sessions.
+      //   2. The host's executeSaveFile / handleLoadProject pipeline picks up
+      //      `window.__alloflowSelEngagement` and serializes it into the
+      //      project JSON, which IS preserved across Canvas sessions.
+      //   3. On mount we prefer the window slot (means a project was just
+      //      loaded), then fall back to localStorage. We mirror every change
+      //      back to both so the next save round-trip and the next session
+      //      both work.
+      function _selReadInitial() {
+        try {
+          if (typeof window !== 'undefined' && window.__alloflowSelEngagement) {
+            return window.__alloflowSelEngagement;
+          }
+        } catch (e) {}
+        var streak = { count: 0, longest: 0, lastDate: null };
+        var toolUsage = {};
+        try {
+          var rawS = JSON.parse(localStorage.getItem('alloflow_sel_streak') || '{}');
+          streak = { count: rawS.count || 0, longest: rawS.longest || 0, lastDate: rawS.lastDate || null };
+        } catch (e) {}
+        try {
+          toolUsage = JSON.parse(localStorage.getItem('alloflow_sel_tool_usage') || '{}') || {};
+        } catch (e) {}
+        return { streak: streak, toolUsage: toolUsage };
+      }
+      var _selInitial = _selReadInitial();
+      var _selStreak = React.useState(_selInitial.streak || { count: 0, longest: 0, lastDate: null });
+      var selStreak = _selStreak[0]; var setSelStreak = _selStreak[1];
+
+      var _selToolUsage = React.useState(_selInitial.toolUsage || {});
+      var selToolUsage = _selToolUsage[0]; var setSelToolUsage = _selToolUsage[1];
+
+      // Mirror state changes to the window slot so the host save flow can
+      // serialize it into the project JSON. The _ts stamp lets the host
+      // skip emitting a SEL block when nothing has changed.
+      React.useEffect(function () {
+        try {
+          window.__alloflowSelEngagement = { streak: selStreak, toolUsage: selToolUsage, _ts: Date.now() };
+        } catch (e) {}
+      }, [selStreak, selToolUsage]);
+
+      // Hot-reload from a project JSON load mid-session: misc_handlers
+      // dispatches this event after writing window.__alloflowSelEngagement.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowSelEngagement || {};
+            if (w.streak) setSelStreak(w.streak);
+            if (w.toolUsage) setSelToolUsage(w.toolUsage);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-sel-engagement-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-sel-engagement-restored', onRestore); };
+      }, []);
+
       var _activeStationId = React.useState(null);
       var activeStationId = _activeStationId[0]; var setActiveStationId = _activeStationId[1];
       var activeStation = (function () {
@@ -203,6 +261,37 @@
       React.useEffect(function () {
         try { localStorage.setItem('alloflow_sel_station_progress', JSON.stringify(questProgress)); } catch (e) {}
       }, [questProgress]);
+
+      // ── Daily streak tick ──
+      // When the SEL Hub opens on a new calendar day, increment the streak
+      // (or reset to 1 if the gap is > 1 day). Same-day re-opens are no-ops.
+      React.useEffect(function () {
+        if (!showSelHub) return;
+        var today = new Date().toDateString();
+        if (selStreak.lastDate === today) return;
+        var newCount = 1;
+        if (selStreak.lastDate) {
+          var diffMs = new Date(today).getTime() - new Date(selStreak.lastDate).getTime();
+          var diffDays = Math.round(diffMs / 86400000);
+          if (diffDays === 1) newCount = (selStreak.count || 0) + 1;
+        }
+        var next = { count: newCount, longest: Math.max(newCount, selStreak.longest || 0), lastDate: today };
+        setSelStreak(next);
+        try { localStorage.setItem('alloflow_sel_streak', JSON.stringify(next)); } catch (e) {}
+      }, [showSelHub]);
+
+      // Helper: record a tool-open event so we can surface "Continue" and
+      // "New" indicators. Called from the tool-card click handler.
+      function trackToolOpen(toolId) {
+        if (!toolId) return;
+        setSelToolUsage(function (prev) {
+          var prior = prev[toolId] || { count: 0 };
+          var next = Object.assign({}, prev);
+          next[toolId] = { count: (prior.count || 0) + 1, lastUsed: Date.now() };
+          try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(next)); } catch (e) {}
+          return next;
+        });
+      }
 
       // Sync activeStation prop from parent (e.g. resource-history click).
       React.useEffect(function () {
@@ -694,6 +783,60 @@
               )
             );
           })(),
+          // \u2500\u2500 Daily Streak + Continue Where You Left Off \u2500\u2500
+          // Pulls from localStorage-backed selStreak / selToolUsage.
+          // Streak chip surfaces only when count >= 2 (avoids "1-day streak"
+          // noise on first visit). Continue card shows the most recently
+          // opened tool if it was used within the last 7 days AND the user
+          // isn't already in a pathway/station view.
+          (function () {
+            var showStreak = (selStreak.count || 0) >= 2;
+            var continueTool = null;
+            if (!activePathway && !activeStation) {
+              var bestId = null; var bestTime = 0; var weekAgo = Date.now() - 7 * 86400000;
+              Object.keys(selToolUsage).forEach(function (k) {
+                var u = selToolUsage[k];
+                if (u && u.lastUsed && u.lastUsed > bestTime && u.lastUsed > weekAgo) { bestTime = u.lastUsed; bestId = k; }
+              });
+              if (bestId) {
+                continueTool = _allSelTools.find(function (t) { return t.id === bestId && !t.category; }) || null;
+              }
+            }
+            if (!showStreak && !continueTool) return null;
+            return h('div', {
+              style: { marginBottom: 12, padding: '10px 14px', borderRadius: 12, background: 'linear-gradient(135deg, #f59e0b15, #ec489915)', border: '1px solid #f59e0b33', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
+                showStreak && h('div', {
+                  role: 'status',
+                  'aria-label': selStreak.count + '-day SEL streak. Longest: ' + (selStreak.longest || selStreak.count) + ' days.',
+                  style: { display: 'flex', alignItems: 'center', gap: 6, padding: '4px 10px', borderRadius: 16, background: '#fff7ed', border: '1px solid #fed7aa' }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, '\uD83D\uDD25'),
+                  h('span', { style: { fontSize: 12, fontWeight: 800, color: '#c2410c' } }, selStreak.count + '-day streak'),
+                  (selStreak.longest > selStreak.count) && h('span', { style: { fontSize: 10, color: '#9a3412', fontWeight: 600 } }, '\u00B7 best ' + selStreak.longest)
+                ),
+                continueTool && h('div', { style: { fontSize: 12, color: _t.textMuted } },
+                  h('span', { style: { fontWeight: 700, color: _t.text } }, '\uD83D\uDC4B Welcome back. '),
+                  'Continue with ',
+                  h('span', { style: { fontWeight: 700, color: _t.text } }, continueTool.label),
+                  '?'
+                )
+              ),
+              continueTool && h('button', {
+                onClick: function () {
+                  trackToolOpen(continueTool.id);
+                  setSelHubTool(continueTool.id);
+                  announceToSR('Resumed ' + continueTool.label);
+                },
+                'aria-label': 'Continue with ' + continueTool.label,
+                style: { padding: '6px 14px', borderRadius: 10, background: '#f59e0b', color: '#fff', border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }
+              },
+                h('span', { 'aria-hidden': 'true' }, continueTool.icon),
+                'Continue \u2192'
+              )
+            );
+          })(),
           // Search bar
           h('div', { style: { marginBottom: 12 } },
             h('input', {
@@ -965,6 +1108,7 @@
                 key: tool.id,
                 onClick: function() {
                   if (isRegistered) {
+                    trackToolOpen(tool.id);
                     setSelHubTool(tool.id);
                     announceToSR('Opened ' + tool.label);
                     // Track pathway progress
@@ -989,8 +1133,20 @@
                 onMouseLeave: function(e) { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, width: '100%' } },
-                  h('span', { style: { fontSize: 24 } }, tool.icon),
-                  h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text } }, tool.label)
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, tool.icon),
+                  h('span', { style: { fontSize: 14, fontWeight: 700, color: _t.text, flex: 1 } }, tool.label),
+                  // Usage indicator: "New" pill on tools never opened, dot count on used.
+                  // Hidden from SR (already in aria-label of the card if needed).
+                  isRegistered && (function () {
+                    var u = selToolUsage[tool.id];
+                    if (!u || !u.count) {
+                      return h('span', { 'aria-hidden': 'true', style: { fontSize: 9, fontWeight: 800, padding: '2px 6px', borderRadius: 8, background: cardColor, color: '#fff', letterSpacing: '0.05em' } }, 'NEW');
+                    }
+                    if (u.count >= 5) {
+                      return h('span', { 'aria-hidden': 'true', title: u.count + ' visits', style: { fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 8, background: cardColor + '22', color: cardColor } }, '★');
+                    }
+                    return h('span', { 'aria-hidden': 'true', title: u.count + (u.count === 1 ? ' visit' : ' visits'), style: { fontSize: 9, color: cardColor, letterSpacing: '1px' } }, '•'.repeat(Math.min(u.count, 4)));
+                  })()
                 ),
                 h('p', { style: { margin: 0, fontSize: 11, color: _t.textMuted, lineHeight: 1.4 } }, tool.desc),
                 tool.recommendedRange && h('span', {
@@ -1115,13 +1271,26 @@
           if (!window.__selPluginComponents) window.__selPluginComponents = {};
           if (!window.__selPluginComponents[selHubTool]) {
             window.__selPluginComponents[selHubTool] = function SelPluginBridge(props) {
+              // On unmount (or toolId change), invoke the registered tool's
+              // cleanup if it defined one. Opt-in: tools without `cleanup` are
+              // unaffected. Used by tools with module-scope timers (e.g.
+              // mindfulness breath pacer, coping PMR/movement) to clear
+              // intervals so they don't keep firing after a tool switch.
+              React.useEffect(function() {
+                return function() {
+                  var entry = window.SelHub && window.SelHub._registry && window.SelHub._registry[props._toolId];
+                  if (entry && typeof entry.cleanup === 'function') {
+                    try { entry.cleanup(); } catch (e) { console.warn('[SelHub] cleanup error for ' + props._toolId, e); }
+                  }
+                };
+              }, [props._toolId]);
               return window.SelHub.renderTool(props._toolId, props._ctx);
             };
           }
           toolContent = React.createElement(window.__selPluginComponents[selHubTool], { key: 'sel-plugin-' + selHubTool, _toolId: selHubTool, _ctx: _ctx });
         } catch(e) {
           console.error('[SelHub] Plugin render error for ' + selHubTool, e);
-          toolContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
+          toolContent = h('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
             h('p', { style: { fontSize: 32, marginBottom: 12 } }, '\u26A0\uFE0F'),
             h('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + selHubTool),
             h('p', { style: { fontSize: 12, color: _t.textMuted, marginBottom: 16 } }, e.message || 'Unknown error'),
@@ -1135,8 +1304,8 @@
 
       // ── Loading state (tool selected but plugin not yet loaded) ──
       if (selHubTool && !toolContent) {
-        toolContent = h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } }, style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
-          h('div', { role: 'button', tabIndex: 0, onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.target.click(); } },
+        toolContent = h('div', { style: { padding: 60, textAlign: 'center', color: _t.textMuted } },
+          h('div', { 'aria-hidden': 'true',
             style: {
               fontSize: 40, marginBottom: 16,
               animation: _reduceMotion ? 'none' : 'pulse 2s ease-in-out infinite'

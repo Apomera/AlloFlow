@@ -1317,15 +1317,20 @@ window.SelHub = window.SelHub || {
                   })(),
                   // Steps
                   (goal.steps || []).map(function(step, si) {
-                    return h('div', {  key: si, onClick: function() { toggleStep(goal.id, si); }, style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: step.done ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', transition: 'all 0.15s' } },
-                      h('span', { style: { fontSize: 14 } }, step.done ? '\u2705' : '\u2B1C'),
+                    return h('div', Object.assign({
+                      key: si,
+                      'aria-label': (step.done ? 'Mark incomplete: ' : 'Mark complete: ') + step.text,
+                      'aria-pressed': step.done ? 'true' : 'false',
+                      style: { display: 'flex', alignItems: 'center', gap: 8, padding: '6px 8px', marginBottom: 4, borderRadius: 6, background: step.done ? 'rgba(52,211,153,0.08)' : 'rgba(255,255,255,0.02)', cursor: 'pointer', transition: 'all 0.15s' }
+                    }, a11yClick(function() { toggleStep(goal.id, si); })),
+                      h('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, step.done ? '\u2705' : '\u2B1C'),
                       h('span', { style: { fontSize: 12, color: step.done ? '#6ee7b7' : '#cbd5e1', textDecoration: step.done ? 'line-through' : 'none' } }, step.text)
                     );
                   }),
                   // Add step input
                   h('div', { style: { display: 'flex', gap: 6, marginTop: 6 } },
                     h('input', { type: 'text', 'aria-label': 'Add a goal step', placeholder: band === 'elementary' ? 'Add a step...' : 'Add a step toward this goal...', onKeyDown: function(e) { if (e.key === 'Enter' && e.target.value.trim()) { addStep(goal.id, e.target.value); e.target.value = ''; } }, style: { flex: 1, padding: '6px 8px', borderRadius: 6, border: '1px solid rgba(99,102,241,0.15)', background: 'rgba(15,23,42,0.4)', color: '#e2e8f0', fontSize: 11 } }),
-                    h('button', { 'aria-label': '} },', onClick: function() { var inp = document.querySelector('[placeholder*="step"]'); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '+')
+                    h('button', { 'aria-label': 'Add step', onClick: function() { var inp = document.querySelector('[placeholder*="step"]'); if (inp && inp.value.trim()) { addStep(goal.id, inp.value); inp.value = ''; } }, style: { padding: '6px 10px', borderRadius: 6, background: 'rgba(99,102,241,0.15)', color: '#a5b4fc', border: 'none', fontSize: 11, fontWeight: 'bold', cursor: 'pointer' } }, '+')
                   )
                 );
               }),
@@ -1764,11 +1769,13 @@ window.SelHub = window.SelHub || {
                   'AI Goal Coach \u2014 get personalized advice on setting, tracking, and achieving your goals.'
                 )
               ),
-              aiResponse ? h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 16, fontSize: 13, lineHeight: 1.6, color: '#c7d2fe' } },
-                h('div', { style: { fontSize: 10, color: '#818cf8', fontWeight: 'bold', marginBottom: 4 } }, '\uD83E\uDD16 Goal Coach'),
-                aiResponse,
-                callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: '#818cf8', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
-              ) : null,
+              h('div', { role: 'region', 'aria-label': 'Goal coach response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+                aiResponse ? h('div', { style: { padding: 14, borderRadius: 12, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)', marginBottom: 16, fontSize: 13, lineHeight: 1.6, color: '#c7d2fe' } },
+                  h('div', { style: { fontSize: 10, color: '#818cf8', fontWeight: 'bold', marginBottom: 4 } }, '\uD83E\uDD16 Goal Coach'),
+                  aiResponse,
+                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: '#818cf8', fontSize: 10, cursor: 'pointer' } }, '\uD83D\uDD0A Read aloud') : null
+                ) : null
+              ),
               h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', { type: 'text', value: aiInput, 'aria-label': 'Ask the goal coach', onChange: function(e) { upd({ aiInput: e.target.value }); }, onKeyDown: function(e) { if (e.key === 'Enter') askAI(); }, placeholder: 'Ask about your goals...', style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.2)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', fontSize: 12 } }),
                 h('button', { onClick: askAI, disabled: aiLoading, style: { padding: '10px 16px', borderRadius: 8, background: '#6366f1', color: '#fff', border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' } }, aiLoading ? '\u23F3' : '\u2191')
@@ -1776,7 +1783,7 @@ window.SelHub = window.SelHub || {
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 12 } },
                 (band === 'elementary' ? ['How do I start?', 'I\'m stuck on my goal', 'Make my goal easier', 'Give me a fun challenge'] :
                  ['Break my goal into smaller steps', 'I keep procrastinating', 'Is my goal realistic?', 'How do I stay motivated?', 'Help me reframe my goal as SMART']).map(function(q) {
-                  return h('button', { 'aria-label': '5px 10px', key: q, onClick: function() { upd({ aiInput: q }); }, style: { padding: '5px 10px', borderRadius: 20, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, cursor: 'pointer' } }, q);
+                  return h('button', { 'aria-label': q, key: q, onClick: function() { upd({ aiInput: q }); }, style: { padding: '5px 10px', borderRadius: 20, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)', color: '#a5b4fc', fontSize: 10, cursor: 'pointer' } }, q);
                 })
               )
             ) : null,

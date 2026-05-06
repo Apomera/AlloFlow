@@ -3268,9 +3268,132 @@
             var _cardIndex = 0;
             // Tool count summary
             var _toolCount = _filteredTools.filter(function(t2) { return !t2.category; }).length;
+            // ── Mastery Atlas: cross-tool engagement dashboard ──
+            // Reads each tool's persistent window slot (with localStorage
+            // fallback) and renders a single dashboard tile per tool that
+            // has the mastery primitive wired in. Surfaces 10 simultaneous
+            // engagement counts so kids see their full STEM Lab progress at
+            // a glance and can jump straight into the tool with one click.
+            // Only shows tools where the user has mastered ≥1 item, so the
+            // atlas stays out of the way for first-time visitors.
+            var _readSlot = function (slotName, lsKey) {
+              var win = null, ls = null;
+              try { win = (typeof window !== 'undefined' && window[slotName]) || null; } catch (e) {}
+              try { ls = JSON.parse(localStorage.getItem(lsKey) || 'null'); } catch (e) {}
+              return win || ls || null;
+            };
+            var _atlasCardCount = function (state, getCount) {
+              if (!state) return 0;
+              try { return getCount(state) || 0; } catch (e) { return 0; }
+            };
+            var _atlasEntries = [
+              { id: 'birdLab', icon: '🪶', label: 'BirdLab Life List',
+                color: '#10b981', accent: 'rgba(16,185,129,0.15)',
+                slot: '__alloflowBirdLab', lsKey: 'birdLab.lifeList.v1', total: 15,
+                count: function () { var s = _readSlot('__alloflowBirdLab', 'birdLab.lifeList.v1'); if (!s) return 0; var ll = (s.lifeList || s); return Object.keys(ll || {}).length; } },
+              { id: 'petsLab', icon: '🐾', label: 'PetsLab Decoder',
+                color: '#f59e0b', accent: 'rgba(245,158,11,0.15)',
+                slot: '__alloflowPetsLab', lsKey: 'petsLab.state.v1', total: 27,
+                count: function () { var s = _readSlot('__alloflowPetsLab', 'petsLab.state.v1'); return s && s.decoderMastery ? Object.keys(s.decoderMastery).length : 0; } },
+              { id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
+                color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
+                slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,
+                count: function () { var s = _readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'statsLab', icon: '📊', label: 'StatsLab AP',
+                color: '#a855f7', accent: 'rgba(168,85,247,0.15)',
+                slot: '__alloflowStatsLab', lsKey: 'statsLab.state.v1', total: 25,
+                count: function () { var s = _readSlot('__alloflowStatsLab', 'statsLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'weldLab', icon: '🔥', label: "Welder's Catalog",
+                color: '#dc2626', accent: 'rgba(220,38,38,0.15)',
+                slot: '__alloflowWeldLab', lsKey: 'weldLab.defectCatalog.v1', total: 6,
+                count: function () { var s = _readSlot('__alloflowWeldLab', 'weldLab.defectCatalog.v1'); if (!s) return 0; var cat = (s.defectCatalog || s); return Object.keys(cat || {}).length; } },
+              { id: 'renewablesLab', icon: '☀️', label: 'Energy Mastery',
+                color: '#22c55e', accent: 'rgba(34,197,94,0.15)',
+                slot: '__alloflowRenewablesLab', lsKey: 'renewablesLab.state.v1', total: 18,
+                count: function () { var s = _readSlot('__alloflowRenewablesLab', 'renewablesLab.state.v1'); return s && s.quizMastery ? Object.keys(s.quizMastery).length : 0; } },
+              { id: 'firstResponse', icon: '🚑', label: 'Responder Mastery',
+                color: '#ef4444', accent: 'rgba(239,68,68,0.15)',
+                slot: '__alloflowFirstResponse', lsKey: 'firstResponse.state.v1', total: 10,
+                count: function () { var s = _readSlot('__alloflowFirstResponse', 'firstResponse.state.v1'); return s && s.faMastery ? Object.keys(s.faMastery).length : 0; } },
+              { id: 'throwlab', icon: '⚾', label: 'Pitch Locker',
+                color: '#7c3aed', accent: 'rgba(124,58,237,0.15)',
+                slot: '__alloflowThrowLab', lsKey: 'throwlab.state.v1', total: 6,
+                count: function () { var s = _readSlot('__alloflowThrowLab', 'throwlab.state.v1'); return s && s.pitchLocker ? Object.keys(s.pitchLocker).length : 0; } },
+              { id: 'playlab', icon: '🏈', label: 'Play Catalog',
+                color: '#fb923c', accent: 'rgba(251,146,60,0.15)',
+                slot: '__alloflowPlayLab', lsKey: 'playlab.state.v1', total: 13,
+                count: function () { var s = _readSlot('__alloflowPlayLab', 'playlab.state.v1'); return s && s.playCatalog ? Object.keys(s.playCatalog).length : 0; } },
+              { id: 'roadReady', icon: '🚗', label: 'Permit Mastery',
+                color: '#fbbf24', accent: 'rgba(251,191,36,0.15)',
+                slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1', total: 185,
+                count: function () { var s = _readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'); if (!s) return 0; var pm = (s.permitMastery || s); return Object.keys(pm || {}).length; } },
+              { id: 'assessmentLiteracy', icon: '🔍', label: 'Junk-Science',
+                color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
+                slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
+                count: function () { var s = _readSlot('__alloflowAssessmentLiteracy', 'assessmentLiteracy.state.v1'); return s && s.junkMastery ? Object.keys(s.junkMastery).length : 0; } }
+            ];
+            var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
+            var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
             return /*#__PURE__*/React.createElement("div", {
               className: "max-w-3xl mx-auto animate-in fade-in duration-200"
             },
+          // ── Mastery Atlas (only shows when at least one tool has progress) ──
+          _atlasActive.length > 0 && /*#__PURE__*/React.createElement("div", {
+            role: 'region',
+            'aria-label': 'STEM Lab Mastery Atlas — ' + _atlasTotal + ' total items mastered across ' + _atlasActive.length + ' tools',
+            className: "mb-4 rounded-2xl p-4 border-2",
+            style: { background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #312e81 100%)', borderColor: 'rgba(99,102,241,0.50)' }
+          },
+            /*#__PURE__*/React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" },
+              /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2" },
+                /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+                /*#__PURE__*/React.createElement("h3", { className: "text-base font-black text-amber-300 m-0" }, "Your Mastery Atlas"),
+                /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-300 font-mono ml-1" }, _atlasTotal + ' items locked in')
+              ),
+              /*#__PURE__*/React.createElement("span", { className: "text-[11px] text-slate-400 italic" }, "Click any tool to jump back in")
+            ),
+            /*#__PURE__*/React.createElement("div", {
+              className: "grid gap-2",
+              style: { gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }
+            },
+              _atlasActive.map(function (entry) {
+                var pct = entry.total > 0 ? Math.round((entry.current / entry.total) * 100) : 0;
+                var isFull = entry.current >= entry.total;
+                return /*#__PURE__*/React.createElement("button", {
+                  key: entry.id,
+                  onClick: function () { setStemLabTool(entry.id); announceToSR && announceToSR('Opening ' + entry.label); },
+                  'aria-label': entry.label + ': ' + entry.current + ' of ' + entry.total + ' mastered. Click to open.',
+                  className: "text-left p-3 rounded-xl border transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-amber-400",
+                  style: {
+                    background: entry.accent,
+                    borderColor: entry.color + '88',
+                    color: '#f1f5f9',
+                    cursor: 'pointer'
+                  }
+                },
+                  /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                    /*#__PURE__*/React.createElement("span", { 'aria-hidden': 'true', style: { fontSize: 20 } }, entry.icon),
+                    /*#__PURE__*/React.createElement("div", { className: "flex-1 min-w-0" },
+                      /*#__PURE__*/React.createElement("div", { className: "text-[12px] font-black truncate", style: { color: '#f1f5f9' } }, entry.label),
+                      /*#__PURE__*/React.createElement("div", { className: "text-[10px] font-mono", style: { color: entry.color } },
+                        entry.current + ' / ' + entry.total + (isFull ? ' 🏆' : '')
+                      )
+                    )
+                  ),
+                  /*#__PURE__*/React.createElement("div", {
+                    className: "h-1.5 rounded-full overflow-hidden",
+                    style: { background: 'rgba(15,23,42,0.6)' },
+                    'aria-hidden': 'true'
+                  },
+                    /*#__PURE__*/React.createElement("div", {
+                      className: "h-full transition-all",
+                      style: { width: pct + '%', background: entry.color }
+                    })
+                  )
+                );
+              })
+            )
+          ),
           // Search input
           /*#__PURE__*/React.createElement("div", { className: "mb-4 relative" },
             /*#__PURE__*/React.createElement("input", {

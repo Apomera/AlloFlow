@@ -521,6 +521,7 @@ var createContentEngine = function(deps) {
                  Plan a comprehensive educational article.
                  Topic: "${effTopic}"
                  Target Audience: ${effGrade}
+                 ${effStandards ? `Standards Coverage Required: "${effStandards}". The section headings must cover the content + skills these standards mandate, not just the topic at large. If a standard names a specific cognitive move (e.g. compare, evaluate, cite evidence, analyze structure), at least one heading should set up that move directly.` : ''}
                  Total Target Word Count: ${targetWords} words.
                  Task: Create a structured outline with exactly ${numChunks} distinct section headings that cover the topic in depth.
                  Return ONLY a JSON array of strings (the headings).
@@ -613,6 +614,7 @@ var createContentEngine = function(deps) {
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
                    ` : ''}
                    This is a single self-contained article — write an engaging opening AND a summary conclusion. No section heading — the article stands on its own.
+                   ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly so a student reading it sees the skill in action.` : ''}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
                    1. CITATION REQUIREMENT: Include inline citations throughout. Every paragraph should have at least one citation.
@@ -660,6 +662,7 @@ You MUST:
   • Cover genuinely NEW ground specific to "${sectionTitle}"
   • Assume the reader has just finished reading the prior sections
 `}
+                   ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly when this section's content makes it natural to do so.` : ''}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
                    1. CITATION REQUIREMENT (section ${i + 1} of ${sections.length}): Include inline citations throughout this section.

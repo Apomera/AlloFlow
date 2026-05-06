@@ -104,6 +104,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '  0%, 100% { box-shadow: 0 0 0 0 rgba(5,150,105,0.55); }',
       '  50%      { box-shadow: 0 0 0 8px rgba(5,150,105,0); }',
       '}',
+      // Lifer celebration: rises in from above, holds, fades out at the end.
+      // Auto-cleared by setTimeout in handleBirdClick after 3.2s.
+      '@keyframes birdlab-lifer-rise {',
+      '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+      '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  85%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+      '}',
+      '@media (prefers-reduced-motion: reduce) {',
+      '  [style*="birdlab-lifer-rise"] { animation: none !important; transform: translate(-50%, 0%) !important; }',
+      '}',
       // Movement signature classes — applied to bird SVG groups
       '.birdlab-perch-bob   { animation: birdlab-perch-bob 1.6s ease-in-out infinite; }',
       '.birdlab-flit        { animation: birdlab-flit 2.4s ease-in-out infinite; }',
@@ -2055,12 +2066,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         _hydratedRef.current = true;
         var savedBadges = lsGet('birdLab.badges.v1', null);
         if (savedBadges && d.blBadges === undefined) upd('blBadges', savedBadges);
+        // Life list: per-species first-seen log, persists across habitats.
+        // Window-slot mirror handles Canvas-session loss (host save/load
+        // will pick this up the same way SEL Hub engagement does).
+        var savedLifeList = null;
+        try {
+          if (typeof window !== 'undefined' && window.__alloflowBirdLab && window.__alloflowBirdLab.lifeList) {
+            savedLifeList = window.__alloflowBirdLab.lifeList;
+          }
+        } catch (e) {}
+        if (!savedLifeList) savedLifeList = lsGet('birdLab.lifeList.v1', null);
+        if (savedLifeList && d.blLifeList === undefined) upd('blLifeList', savedLifeList);
       }
 
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['ispy','fieldMarks','beakFeet','calls','habitatMatch','maineBirds','migration','citizenScience','conservation','fieldObs','photoId','compare'];
+      // Lifer celebration state — fires the moment a brand-new species is
+      // identified. One-shot per identification; cleared after the toast
+      // animation. Separate from badges (which gate by view-visit, not by
+      // unique species).
+      var liferCelebration_state = useState(null);
+      var liferCelebration = liferCelebration_state[0], setLiferCelebration = liferCelebration_state[1];
+
+      // Mirror BirdLab's persistent state to a window slot so the host's
+      // executeSaveFile can serialize it into the project JSON (which is the
+      // only persistence layer that survives Canvas sandbox sessions —
+      // localStorage gets wiped between Canvas sessions). The host's
+      // handleLoadProject reverses the flow and dispatches a restore event
+      // so an open BirdLab tool re-hydrates without remount.
+      useEffect(function () {
+        try {
+          var current = window.__alloflowBirdLab || {};
+          window.__alloflowBirdLab = Object.assign({}, current, {
+            lifeList: d.blLifeList || current.lifeList || {},
+            badges: d.blBadges || current.badges || {},
+            _ts: Date.now()
+          });
+        } catch (e) {}
+      }, [d.blLifeList, d.blBadges]);
+
+      // Hot-reload from a project-JSON load mid-session.
+      useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowBirdLab || {};
+            if (w.lifeList) upd('blLifeList', w.lifeList);
+            if (w.badges) upd('blBadges', w.badges);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-birdlab-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-birdlab-restored', onRestore); };
+      }, []);
+
+      var BADGE_IDS = ['ispy','fieldMarks','beakFeet','calls','habitatMatch','maineBirds','migration','citizenScience','conservation','fieldObs','photoId','compare','lifeList'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -2658,6 +2717,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               )
             );
           })(),
+          // ── Life List summary tile ──
+          // Persistent count of unique species the student has identified
+          // across every habitat. The dominant engagement mechanic in real
+          // birding — "did I see something new today?". Clicking opens the
+          // dedicated Life List view (also reachable as its own module).
+          (function () {
+            var ll = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
+            var allKeys = Object.keys(BIRDS);
+            var spottedCount = Object.keys(ll).length;
+            var pct = allKeys.length > 0 ? Math.round((spottedCount / allKeys.length) * 100) : 0;
+            var mostRecentKey = null;
+            var mostRecentTs = 0;
+            Object.keys(ll).forEach(function (k) {
+              var ts = new Date(ll[k].lastSeen || ll[k].firstSeen).getTime();
+              if (ts > mostRecentTs) { mostRecentTs = ts; mostRecentKey = k; }
+            });
+            var mostRecentName = (mostRecentKey && BIRDS[mostRecentKey]) ? BIRDS[mostRecentKey].name : null;
+            var ctaLabel = spottedCount === 0
+              ? 'Start your life list →'
+              : (spottedCount === allKeys.length ? 'Complete! Review your list →' : 'Open life list →');
+            return h('button', {
+              onClick: function () { goto('lifeList'); },
+              'aria-label': 'Open your bird life list. ' + spottedCount + ' of ' + allKeys.length + ' species identified.',
+              className: 'w-full mb-5 rounded-2xl border-2 border-emerald-400 shadow-md text-left transition hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-4 ring-emerald-500/40 birdlab-card-lift overflow-hidden',
+              style: { background: 'linear-gradient(110deg, #ecfdf5 0%, #d1fae5 50%, #fef3c7 100%)' }
+            },
+              h('div', { className: 'p-4 flex items-center gap-4 flex-wrap' },
+                h('div', { className: 'flex-shrink-0 text-center', style: { minWidth: 86 } },
+                  h('div', { className: 'text-3xl font-black text-emerald-800 leading-none' }, spottedCount + ' / ' + allKeys.length),
+                  h('div', { className: 'text-[9px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, 'Life List')
+                ),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { 'aria-hidden': true, className: 'text-xl' }, '📔'),
+                    h('h3', { className: 'text-base font-black text-slate-800' }, 'Your personal birder log')
+                  ),
+                  // Progress bar
+                  h('div', { className: 'h-2 bg-white/60 rounded-full overflow-hidden mb-1.5', 'aria-hidden': true },
+                    h('div', { className: 'h-full bg-emerald-500 transition-all', style: { width: pct + '%' } })
+                  ),
+                  h('p', { className: 'text-xs text-slate-700 leading-snug' },
+                    spottedCount === 0
+                      ? 'Identify any bird in I-Spy to add your first lifer. Real birders keep this list their whole lives.'
+                      : (mostRecentName
+                        ? 'Most recent: ' + mostRecentName + '. Keep building.'
+                        : 'Keep spotting to build your list.')
+                  )
+                ),
+                h('span', { 'aria-hidden': true, className: 'text-2xl text-emerald-700 font-black flex-shrink-0' }, '→')
+              ),
+              h('div', { className: 'px-4 py-2 bg-white/60 border-t border-emerald-300 text-xs text-emerald-900 font-bold' },
+                ctaLabel
+              )
+            );
+          })(),
           // Framing banner
           h('div', { className: 'mb-6 p-4 rounded-2xl bg-emerald-50 border-2 border-emerald-300' },
             h('div', { className: 'flex items-start gap-3' },
@@ -2738,7 +2852,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           setFoundByHabitat(nextByHabitat);
           upd('foundByHabitat', nextByHabitat);
           setPicked(species);
-          announce('Identified: ' + species.name);
+
+          // ── Life list tracking: detect new lifer + record habitat sighting ──
+          // The life list persists across habitats; if a kid spots a chickadee
+          // in three different habitats, that's still one lifer (with three
+          // habitat-sighting counts). First-lifer event fires a celebration
+          // that's separate from the per-habitat "you found one" toast.
+          var prevLifeList = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
+          var existing = prevLifeList[bird.species];
+          var isNewLifer = !existing;
+          var nowIso = new Date().toISOString();
+          var nextEntry;
+          if (isNewLifer) {
+            var firstHabitats = {}; firstHabitats[habitatId] = 1;
+            nextEntry = { firstSeen: nowIso, firstHabitat: habitatId, lastSeen: nowIso, habitats: firstHabitats };
+          } else {
+            var nextHabitats = Object.assign({}, existing.habitats || {});
+            nextHabitats[habitatId] = (nextHabitats[habitatId] || 0) + 1;
+            nextEntry = Object.assign({}, existing, { lastSeen: nowIso, habitats: nextHabitats });
+          }
+          var nextLifeList = Object.assign({}, prevLifeList);
+          nextLifeList[bird.species] = nextEntry;
+          upd('blLifeList', nextLifeList);
+          try { lsSet('birdLab.lifeList.v1', nextLifeList); } catch (e) {}
+          try {
+            window.__alloflowBirdLab = window.__alloflowBirdLab || {};
+            window.__alloflowBirdLab.lifeList = nextLifeList;
+            window.__alloflowBirdLab._ts = Date.now();
+          } catch (e) {}
+
+          if (isNewLifer) {
+            // Surface the celebration UI for ~3.2s, then auto-clear.
+            setLiferCelebration({ species: species, habitatId: habitatId, at: Date.now() });
+            try { setTimeout(function () { setLiferCelebration(null); }, 3200); } catch (e) {}
+            announce('New lifer! ' + species.name + ' added to your life list.');
+          } else {
+            announce('Identified: ' + species.name);
+          }
         }
 
         // ARIA label for whole habitat (changes as birds get found)
@@ -2746,8 +2896,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
         var allHabitatIds = ['forest', 'marsh', 'backyard', 'coast', 'mountain'];
 
+        var lifeListNow = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
+        var totalSpecies = Object.keys(BIRDS).length;
+        var liferCount = Object.keys(lifeListNow).length;
+
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🔍', title: 'I-Spy Bird Spotter — ' + habitat.name }),
+          // ── Lifer celebration overlay (one-shot, 3.2s, prefers-reduced-motion-aware via existing CSS) ──
+          liferCelebration && h('div', {
+            role: 'status',
+            'aria-live': 'assertive',
+            className: 'fixed top-20 left-1/2 z-50 -translate-x-1/2 pointer-events-none',
+            style: { animation: 'birdlab-lifer-rise 3.2s ease-out forwards' }
+          },
+            h('div', { className: 'bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-3' },
+              h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '🎉'),
+              h('div', null,
+                h('div', { className: 'text-[10px] font-black uppercase tracking-widest opacity-90' }, 'New lifer'),
+                h('div', { className: 'text-lg font-black leading-tight' }, liferCelebration.species.name),
+                h('div', { className: 'text-xs opacity-95 italic' }, 'Added to your life list (' + (Object.keys(d.blLifeList || {}).length) + ' / ' + totalSpecies + ')')
+              )
+            )
+          ),
           h('div', { className: 'p-4 max-w-6xl mx-auto space-y-4' },
             // Habitat picker (tab strip)
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow p-3' },
@@ -9366,6 +9536,163 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
+      // ─────────────────────────────────────────────────────
+      // LIFE LIST VIEW — every species the student has identified, across
+      // every habitat. The dominant engagement mechanic in real birding:
+      // checking off birds you've personally seen.
+      // ─────────────────────────────────────────────────────
+      function LifeListView() {
+        var lifeList = (d.blLifeList && typeof d.blLifeList === 'object') ? d.blLifeList : {};
+        var allSpeciesKeys = Object.keys(BIRDS).sort(function (a, b) {
+          return BIRDS[a].name.localeCompare(BIRDS[b].name);
+        });
+        var spottedKeys = allSpeciesKeys.filter(function (k) { return !!lifeList[k]; });
+        var unseenKeys = allSpeciesKeys.filter(function (k) { return !lifeList[k]; });
+        var habitatLabel = function (hid) {
+          return (HABITATS[hid] && HABITATS[hid].name) || hid;
+        };
+        var fmtDate = function (iso) {
+          if (!iso) return '';
+          try {
+            var d2 = new Date(iso);
+            return d2.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          } catch (e) { return iso.substring(0, 10); }
+        };
+        var sortedSpotted = spottedKeys.slice().sort(function (a, b) {
+          return new Date(lifeList[b].lastSeen || lifeList[b].firstSeen).getTime()
+               - new Date(lifeList[a].lastSeen || lifeList[a].firstSeen).getTime();
+        });
+        var firstLifer = spottedKeys.length > 0
+          ? spottedKeys.slice().sort(function (a, b) {
+              return new Date(lifeList[a].firstSeen).getTime() - new Date(lifeList[b].firstSeen).getTime();
+            })[0]
+          : null;
+        var totalSightings = 0;
+        spottedKeys.forEach(function (k) {
+          var habs = lifeList[k].habitats || {};
+          Object.keys(habs).forEach(function (hid) { totalSightings += (habs[hid] || 0); });
+        });
+        var renderSpeciesCard = function (k, isSpotted) {
+          var sp = BIRDS[k];
+          if (!sp) return null;
+          var entry = lifeList[k];
+          var habitatChips = entry && entry.habitats ? Object.keys(entry.habitats) : [];
+          return h('li', {
+            key: k,
+            className: 'rounded-xl border-2 p-3 transition flex items-start gap-3 ' +
+              (isSpotted ? 'bg-white border-emerald-300 shadow-sm' : 'bg-slate-50 border-slate-200 opacity-75')
+          },
+            // Species silhouette (de-saturated when not yet spotted)
+            h('div', {
+              'aria-hidden': 'true',
+              className: 'flex-shrink-0',
+              style: {
+                width: 56, height: 56, borderRadius: '50%',
+                background: isSpotted ? 'rgba(16,185,129,0.12)' : '#e2e8f0',
+                border: '2px solid ' + (isSpotted ? '#10b981' : '#cbd5e1'),
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                filter: isSpotted ? 'none' : 'grayscale(100%) opacity(0.55)'
+              }
+            },
+              h('svg', { viewBox: '0 0 30 30', style: { width: 44, height: 44 } },
+                h('g', { transform: 'translate(2, 2)' }, sp.svg(h))
+              )
+            ),
+            h('div', { className: 'flex-1 min-w-0' },
+              h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                h('h3', { className: 'text-sm font-black ' + (isSpotted ? 'text-slate-800' : 'text-slate-600') }, sp.name),
+                isSpotted
+                  ? h('span', { className: 'text-[10px] font-mono text-emerald-700' }, '✓ ' + fmtDate(entry.firstSeen))
+                  : h('span', { className: 'text-[10px] font-mono uppercase tracking-wider text-slate-500' }, 'Not yet spotted')
+              ),
+              h('div', { className: 'text-[11px] italic text-slate-700 mb-1' }, sp.sciName || ''),
+              isSpotted && h('div', { className: 'flex flex-wrap gap-1 mt-1' },
+                habitatChips.map(function (hid) {
+                  return h('span', {
+                    key: hid,
+                    className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300'
+                  }, '🌿 ' + habitatLabel(hid) + (entry.habitats[hid] > 1 ? ' ×' + entry.habitats[hid] : ''));
+                })
+              )
+            )
+          );
+        };
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '📔', title: 'Life List' }),
+          h('div', { className: 'p-4 max-w-4xl mx-auto space-y-4' },
+            // Hero: counts + first lifer
+            h('div', {
+              className: 'rounded-2xl border-2 border-emerald-300 shadow-lg overflow-hidden',
+              style: { background: 'linear-gradient(135deg, #d1fae5 0%, #fef3c7 60%, #fde68a 100%)' }
+            },
+              h('div', { className: 'p-5 flex items-center gap-5 flex-wrap' },
+                h('div', { className: 'flex-shrink-0 text-center' },
+                  h('div', { className: 'text-5xl font-black text-emerald-800', 'aria-label': spottedKeys.length + ' of ' + allSpeciesKeys.length + ' species spotted' },
+                    spottedKeys.length + ' / ' + allSpeciesKeys.length
+                  ),
+                  h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, 'species spotted')
+                ),
+                h('div', { className: 'flex-1 min-w-0 space-y-1' },
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '🪶'),
+                    h('h2', { className: 'text-xl font-black text-slate-800' }, 'Your Life List')
+                  ),
+                  h('p', { className: 'text-sm text-slate-700 leading-snug' },
+                    'Every species you identify across every habitat lands here. Real birders keep a life list their whole lives — yours starts now.'
+                  ),
+                  h('div', { className: 'flex flex-wrap gap-2 pt-1' },
+                    h('span', { className: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/70 border border-emerald-300 text-emerald-900' },
+                      '👁 ' + totalSightings + ' total sighting' + (totalSightings === 1 ? '' : 's')
+                    ),
+                    firstLifer && h('span', { className: 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/70 border border-amber-300 text-amber-900' },
+                      '🥇 First lifer: ' + BIRDS[firstLifer].name
+                    )
+                  )
+                ),
+                spottedKeys.length === 0 && h('div', { className: 'flex-shrink-0' },
+                  h('button', {
+                    onClick: function () { goto('ispy'); },
+                    className: 'px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-black text-sm shadow focus:outline-none focus:ring-4 ring-emerald-500/40'
+                  }, 'Start spotting →')
+                )
+              )
+            ),
+            // Spotted list
+            spottedKeys.length > 0 && h('section', { 'aria-labelledby': 'lifelist-spotted-h' },
+              h('h2', { id: 'lifelist-spotted-h', className: 'text-base font-black text-slate-800 mb-2 flex items-center gap-2' },
+                h('span', { 'aria-hidden': 'true' }, '✓'),
+                'Spotted (' + spottedKeys.length + ')',
+                h('span', { className: 'text-[11px] font-normal text-slate-700 italic' }, '— most recent first')
+              ),
+              h('ul', { className: 'space-y-2 list-none p-0' },
+                sortedSpotted.map(function (k) { return renderSpeciesCard(k, true); })
+              )
+            ),
+            // Unseen list
+            unseenKeys.length > 0 && h('section', { 'aria-labelledby': 'lifelist-unseen-h' },
+              h('h2', { id: 'lifelist-unseen-h', className: 'text-base font-black text-slate-700 mb-2 flex items-center gap-2 mt-4' },
+                h('span', { 'aria-hidden': 'true' }, '🔎'),
+                'Still to find (' + unseenKeys.length + ')'
+              ),
+              h('ul', { className: 'space-y-2 list-none p-0' },
+                unseenKeys.map(function (k) { return renderSpeciesCard(k, false); })
+              )
+            ),
+            // CTAs
+            h('div', { className: 'flex flex-wrap gap-2 pt-2' },
+              h('button', {
+                onClick: function () { goto('ispy'); },
+                className: 'px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-emerald-500/40'
+              }, '🔍 Open I-Spy'),
+              h('button', {
+                onClick: function () { goto('compare'); },
+                className: 'px-4 py-2 rounded-xl bg-violet-700 hover:bg-violet-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-violet-500/40'
+              }, '🔁 Compare two species')
+            )
+          )
+        );
+      }
+
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'ispy') return h(ISpyHabitat);
@@ -9380,6 +9707,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       if (view === 'conservation') return h(ConservationCareers);
       if (view === 'photoId') return h(BirdPhotoID);
       if (view === 'compare') return h(CompareLab);
+      if (view === 'lifeList') return h(LifeListView);
       return h(MainMenu);
     }
   });

@@ -1769,7 +1769,7 @@ window.SelHub = window.SelHub || {
               })(),
 
               // AI Insight
-              h('div', { style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { role: 'region', 'aria-label': 'AI-powered mood insight', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
                 h('div', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, marginBottom: 8 } }, '\uD83E\uDD16 AI-Powered Insight'),
                 aiInsight ? h('div', null,
                   h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, aiInsight),
@@ -1778,7 +1778,7 @@ window.SelHub = window.SelHub || {
                     style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer' }
                   }, '\uD83D\uDD0A Read aloud')
                 ) :
-                h('button', { 'aria-label': 'thoughtful and empowering',
+                h('button', { 'aria-label': aiLoading ? 'Generating insight\u2026' : 'Generate AI insight',
                   onClick: function() {
                     if (!callGemini || aiLoading || checkIns.length < 2) {
                       if (checkIns.length < 2) addToast('Need at least 2 check-ins for AI insights!', 'warning');

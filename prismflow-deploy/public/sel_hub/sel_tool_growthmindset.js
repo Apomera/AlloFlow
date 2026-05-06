@@ -786,7 +786,7 @@ window.SelHub = window.SelHub || {
                       onSafetyFlag: onSafetyFlag
                     });
                   } : function() {
-                    return callGemini(prompt, true).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                    return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
                   };
                   safeSend().then(function(result) {
                     upd({
@@ -838,7 +838,7 @@ window.SelHub = window.SelHub || {
                     onSafetyFlag: onSafetyFlag
                   });
                 } : function() {
-                  return callGemini(prompt, true).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
                 };
                 safeSend().then(function(result) {
                   upd({

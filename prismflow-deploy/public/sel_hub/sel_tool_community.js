@@ -1813,9 +1813,11 @@ window.SelHub = window.SelHub || {
                 band === 'middle' ? 'Ask about cultural identity, allyship, navigating differences, or any topic you\'re curious about.' :
                 'Explore questions about intersectionality, systemic issues, cultural humility, advocacy strategies, or any cultural topic.'
               ),
-              aiResponse && h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 10, fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
-                aiResponse,
-                callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer', display: 'block' } }, '\uD83D\uDD0A Read aloud') : null
+              h('div', { role: 'region', 'aria-label': 'Community AI response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+                aiResponse && h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 10, fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
+                  aiResponse,
+                  callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer', display: 'block' } }, '\uD83D\uDD0A Read aloud') : null
+                )
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
                 h('input', {

@@ -221,7 +221,7 @@
 
     // Run coach + safety assessment in parallel
     return Promise.all([
-      callGemini(opts.coachPrompt, true).catch(function() { return null; }),
+      callGemini(opts.coachPrompt, false).catch(function() { return null; }),
       window.SelHub.assessSafety(msg, band, toolId, callGemini)
     ]).then(function(results) {
       var response = results[0];

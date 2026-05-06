@@ -1077,9 +1077,10 @@ window.SelHub = window.SelHub || {
               className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-2'
             }, aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan'),
 
-            // Display action plan
-            actionPlan && actionPlan.steps && h('div', { className: 'mt-4 space-y-3' },
-              actionPlan.steps.map(function(step, i) {
+            // Display action plan — always-rendered live region so screen readers
+            // announce arrival even before the plan exists. aria-busy flips during load.
+            h('div', { role: 'region', 'aria-label': 'Civic action plan', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', className: 'mt-4 space-y-3' },
+              actionPlan && actionPlan.steps && actionPlan.steps.map(function(step, i) {
                 return h('div', { key: i, className: 'bg-white rounded-xl border border-teal-200 p-3' },
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'bg-teal-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0' }, i + 1),

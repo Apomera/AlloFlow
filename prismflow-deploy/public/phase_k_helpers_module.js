@@ -780,6 +780,18 @@ const executeSaveFile = (deps) => {
   }
   const filename = saveFileName.trim().endsWith(".json") ? saveFileName.trim() : `${saveFileName.trim()}.json`;
   let dataStr = "";
+  const selEngagement = typeof window !== "undefined" && window.__alloflowSelEngagement || null;
+  const birdLab = typeof window !== "undefined" && window.__alloflowBirdLab || null;
+  const petsLab = typeof window !== "undefined" && window.__alloflowPetsLab || null;
+  const opticsLab = typeof window !== "undefined" && window.__alloflowOpticsLab || null;
+  const statsLab = typeof window !== "undefined" && window.__alloflowStatsLab || null;
+  const weldLab = typeof window !== "undefined" && window.__alloflowWeldLab || null;
+  const renewablesLab = typeof window !== "undefined" && window.__alloflowRenewablesLab || null;
+  const firstResponse = typeof window !== "undefined" && window.__alloflowFirstResponse || null;
+  const throwlab = typeof window !== "undefined" && window.__alloflowThrowLab || null;
+  const playlab = typeof window !== "undefined" && window.__alloflowPlayLab || null;
+  const roadReady = typeof window !== "undefined" && window.__alloflowRoadReady || null;
+  const assessmentLiteracy = typeof window !== "undefined" && window.__alloflowAssessmentLiteracy || null;
   if (saveType === "teacher") {
     dataStr = JSON.stringify({
       mode: isIndependentMode ? "independent" : "teacher",
@@ -793,7 +805,19 @@ const executeSaveFile = (deps) => {
       surveyResponses,
       fidelityLog,
       sessionCounter,
-      externalCBMScores
+      externalCBMScores,
+      selEngagement,
+      birdLab,
+      petsLab,
+      opticsLab,
+      statsLab,
+      weldLab,
+      renewablesLab,
+      firstResponse,
+      throwlab,
+      playlab,
+      roadReady,
+      assessmentLiteracy
     }, null, 2);
   } else {
     const studentHistory = history.filter((item) => !["udl-advice", "brainstorm"].includes(item.type));
@@ -871,6 +895,18 @@ const executeSaveFile = (deps) => {
       fidelityLog,
       sessionCounter,
       externalCBMScores,
+      selEngagement,
+      birdLab,
+      petsLab,
+      opticsLab,
+      statsLab,
+      weldLab,
+      renewablesLab,
+      firstResponse,
+      throwlab,
+      playlab,
+      roadReady,
+      assessmentLiteracy,
       timestamp: /* @__PURE__ */ new Date()
     }, null, 2);
     if (adventureState.turnCount > 0 || adventureState.xp > 0) {
