@@ -7020,6 +7020,26 @@
                 fontFamily: 'inherit'
               }
             }, '💾 Save image') : null,
+            // Export deck (Phase 2p.35) — flashcards → Anki CSV,
+            // others → plain text. Only shown when linkedContent exists.
+            typeof p.onExportDeck === 'function' && decoration.linkedContent ? h('button', {
+              onClick: p.onExportDeck,
+              'aria-label': 'Export this deck as a file',
+              title: decoration.linkedContent.type === 'flashcards'
+                ? 'Export as Anki-compatible CSV (also imports into Quizlet, Sheets, etc.)'
+                : 'Export as plain text — printable, shareable, paste anywhere',
+              style: {
+                background: 'transparent',
+                border: '1px solid ' + palette.border,
+                color: palette.textDim,
+                borderRadius: '8px',
+                padding: '4px 10px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                fontFamily: 'inherit'
+              }
+            }, '📤 Export deck') : null,
             // Voice note (Phase 2p.15)
             typeof p.onSaveVoiceNote === 'function' ? h('button', {
               onClick: function() { setVoicePanelOpen(!voicePanelOpen); },
@@ -11423,6 +11443,96 @@
       img.src = d.imageBase64;
     }
 
+    // Export a decoration's memory deck (Phase 2p.35). Format is chosen
+    // by content type:
+    //   - flashcards → CSV with Front/Back/Tags columns (Anki-compatible,
+    //     also imports cleanly into Quizlet, Google Sheets, etc.)
+    //   - acronym / notes / image-link → plain-text Q&A or readable form
+    // Triggers a download. No state mutation — pure read + download.
+    function exportDeckAs(decorationId) {
+      var d = (state.decorations || []).filter(function(x) { return x.id === decorationId; })[0];
+      if (!d || !d.linkedContent) {
+        addToast('Nothing to export.');
+        return;
+      }
+      var lc = d.linkedContent;
+      var label = (d.templateLabel || d.template || 'deck').toString();
+      var subjectLabels = (d.subjects || []).map(function(sid) {
+        var t = getSubjectTag(sid);
+        return t ? t.label.replace(/\s+/g, '_') : sid;
+      });
+      // CSV-quote helper (RFC4180 — wrap in quotes, escape internal quotes)
+      function csvField(s) {
+        var t = (s == null ? '' : String(s));
+        if (/[",\r\n]/.test(t)) return '"' + t.replace(/"/g, '""') + '"';
+        return t;
+      }
+      var content = '';
+      var ext = 'txt';
+      var mime = 'text/plain;charset=utf-8';
+
+      if (lc.type === 'flashcards' && lc.data && Array.isArray(lc.data.cards)) {
+        // Anki-compatible CSV: Front,Back,Tags
+        ext = 'csv';
+        mime = 'text/csv;charset=utf-8';
+        var tagBase = ['allohaven', label.replace(/\s+/g, '_')]
+          .concat(subjectLabels)
+          .filter(function(t) { return t && t.length > 0; })
+          .join(' ');
+        content = 'Front,Back,Tags\n';
+        lc.data.cards.forEach(function(card) {
+          content += csvField(card.front || '') + ','
+                  +  csvField(card.back || '') + ','
+                  +  csvField(tagBase) + '\n';
+        });
+      } else if (lc.type === 'acronym' && lc.data) {
+        var letters = (lc.data.letters || '').toUpperCase();
+        var meanings = lc.data.meanings || [];
+        content = 'Acronym: ' + letters + '\n';
+        if (lc.data.context) content += 'Context: ' + lc.data.context + '\n';
+        content += '\n';
+        letters.split('').forEach(function(letter, i) {
+          content += letter + ' — ' + (meanings[i] || '____________') + '\n';
+        });
+      } else if (lc.type === 'notes' && lc.data) {
+        content = 'Notes for: ' + label + '\n\n';
+        content += (lc.data.text || '');
+        // If cloze blanks exist, list answers at the bottom for printing
+        var clozeAnswers = extractClozeAnswers(lc.data.text || '');
+        if (clozeAnswers.length > 0) {
+          content += '\n\n--- Cloze answers ---\n';
+          clozeAnswers.forEach(function(a, i) {
+            content += (i + 1) + '. ' + a + '\n';
+          });
+        }
+      } else if (lc.type === 'image-link' && lc.data) {
+        var tgt = state.decorations.filter(function(dec) { return dec.id === lc.data.targetDecorationId; })[0];
+        var tgtLabel = tgt ? (tgt.templateLabel || tgt.template || 'item') : '(removed item)';
+        content = 'Image link: ' + label + ' → ' + tgtLabel + '\n';
+        if (lc.data.association) content += '\n"' + lc.data.association + '"\n';
+      } else {
+        addToast('This deck type can\'t be exported yet.');
+        return;
+      }
+
+      try {
+        var blob = new Blob([content], { type: mime });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        var safeLabel = label.replace(/[^a-z0-9]+/gi, '-').toLowerCase().slice(0, 30) || 'deck';
+        var stamp = new Date().toISOString().slice(0, 10);
+        a.href = url;
+        a.download = 'allohaven-' + safeLabel + '-' + stamp + '.' + ext;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function() { URL.revokeObjectURL(url); }, 2000);
+        addToast('📤 Deck exported as ' + ext.toUpperCase() + '.');
+      } catch (err) {
+        addToast('Export failed. Try a different browser.');
+      }
+    }
+
     // AI generation — calls props.callImagen with the constructed prompt.
     // Token deduction happens HERE (3 tokens), before the call. If the
     // generation fails, the token IS refunded (separate path from
@@ -15349,6 +15459,11 @@
         onExportCard: function() {
           // Phase 2p.33 — render decoration to a canvas + download as PNG.
           exportDecorationAsImage(decorationId);
+        },
+        onExportDeck: function() {
+          // Phase 2p.35 — export the linkedContent as CSV (flashcards)
+          // or plain text (other types).
+          exportDeckAs(decorationId);
         }
       });
     }
