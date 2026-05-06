@@ -112,7 +112,9 @@
     var ctx = props.ctx;
     var palette = ctx.palette;
     var session = ctx.session;
-    var deckSize = (ctx.decorations || []).length;
+    var decoSize = (ctx.decorations || []).length;
+    var glossSize = (ctx.glossaryEntries || []).length;
+    var deckSize = decoSize + glossSize;
     var disabled = !!session; // an encounter (or another mode) is running
     var minutesAsked = 10;
     var tokensCost = Math.ceil(minutesAsked / (ctx.minutesPerToken || 5));
@@ -121,7 +123,7 @@
     function handleLaunch() {
       if (disabled) return;
       if (deckSize < 3) {
-        ctx.addToast('You need at least 3 decorations in your room to play. Earn a few first.');
+        ctx.addToast('You need at least 3 cards to play (decorations + active glossary). Generate a glossary or earn a few decorations first.');
         return;
       }
       ctx.onLaunch(minutesAsked);
@@ -147,8 +149,11 @@
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         h('div', { style: { fontSize: '11px', color: palette.textMute || '#a3a3a3', flex: 1 } },
           deckSize >= 3
-            ? deckSize + ' card' + (deckSize === 1 ? '' : 's') + ' ready in your deck'
-            : 'Need ' + (3 - deckSize) + ' more decoration' + (3 - deckSize === 1 ? '' : 's') + ' to start'
+            ? (decoSize + ' decoration' + (decoSize === 1 ? '' : 's')
+                + (glossSize > 0 ? ' + ' + glossSize + ' unit card' + (glossSize === 1 ? '' : 's') : '')
+                + ' ready')
+            : ('Need ' + (3 - deckSize) + ' more card' + (3 - deckSize === 1 ? '' : 's')
+                + ' (decorations or glossary) to start')
         ),
         h('button', {
           onClick: handleLaunch,
@@ -180,15 +185,58 @@
   // ── Active encounter component ─────────────────────────────────────
   // All hooks live here so they run unconditionally on every render of
   // this component instance.
+
+  // Build a unified card shape from a heterogeneous source. Used by the
+  // deck-construction useMemo to fold decorations + glossary entries
+  // into one array of card-shaped objects the encounter renders.
+  function decorationToCard(d) {
+    return {
+      id: 'card-deco-' + d.id,
+      source: 'decoration',
+      name: d.templateLabel || d.template || 'card',
+      imageBase64: d.imageBase64 || null,
+      conceptDef: (d.studentReflection || '').trim() || null,
+      tier: null,
+      raw: d
+    };
+  }
+  function glossaryEntryToCard(g, idx) {
+    var img = g.image || null;
+    if (img && img.indexOf('data:') !== 0 && img.length > 200) {
+      // bare base64 — add the prefix so the <img> renders
+      img = 'data:image/png;base64,' + img;
+    }
+    return {
+      id: 'card-gloss-' + (g.term || ('idx-' + idx)).replace(/\s+/g, '-').toLowerCase() + '-' + idx,
+      source: 'glossary',
+      name: g.term || 'concept',
+      imageBase64: img,
+      conceptDef: g.def || null,
+      tier: g.tier || null,
+      raw: g
+    };
+  }
+
   function BossEncounterMain(props) {
     var React = window.React;
     var h = React.createElement;
     var useState = React.useState;
     var useEffect = React.useEffect;
     var useRef = React.useRef;
+    var useMemo = React.useMemo;
 
     var ctx = props.ctx;
     var palette = ctx.palette;
+
+    // Phase 3b.glossary — unified deck. Decorations + glossary entries
+    // become card-shaped objects. The deck is computed once per
+    // encounter (this component's lifetime); ctx.decorations and
+    // ctx.glossaryEntries are stable for the duration of the session.
+    var deck = useMemo(function () {
+      var decoCards = (ctx.decorations || []).map(decorationToCard);
+      var glossCards = (ctx.glossaryEntries || []).map(glossaryEntryToCard);
+      return decoCards.concat(glossCards);
+    }, []); // eslint-disable-line
 
     // Encounter state machine: 'topic' | 'gen-boss' | 'play' | 'won' | 'lost' | 'expired'
     var phaseTuple = useState('topic');
@@ -284,7 +332,7 @@
     }
 
     function drawHand() {
-      var pool = (ctx.decorations || []).slice();
+      var pool = deck.slice();
       // Shuffle (Fisher-Yates)
       for (var i = pool.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
@@ -294,10 +342,10 @@
     }
 
     function discardAndDraw(playedCardId) {
-      // Remove the played card; refill from the rest of the deck.
-      var pool = (ctx.decorations || []).filter(function (d) {
-        if (d.id === playedCardId) return false;
-        return !hand.some(function (h) { return h.id === d.id; });
+      // Remove the played card; refill from the rest of the unified deck.
+      var pool = deck.filter(function (c) {
+        if (c.id === playedCardId) return false;
+        return !hand.some(function (existing) { return existing.id === c.id; });
       });
       // Shuffle remainder
       for (var i = pool.length - 1; i > 0; i--) {
@@ -326,11 +374,15 @@
       setSubmitting(true);
 
       // Build rubric prompt — uses voice_module's helper if available, else
-      // inlines a simpler prompt as fallback.
+      // inlines a simpler prompt as fallback. The unified card shape
+      // (Phase 3b.glossary) makes cardSource + conceptDef + tier all
+      // first-class in the rubric — the AI grader sees the same anchor
+      // whether the card is a personal decoration or a unit glossary entry.
       var rubric = {
         bossTopic: topic,
-        cardName: pickedCard.templateLabel || pickedCard.template || 'card',
-        cardSource: 'decoration',
+        cardName: pickedCard.name,
+        cardSource: pickedCard.source,                  // 'decoration' | 'glossary'
+        conceptDef: pickedCard.conceptDef || '',
         tier: pickedCard.tier || 'Tier 2',
         actionVerb: pickedVerb.label
       };
@@ -352,7 +404,8 @@
         prompt = [
           'Score this student\'s justification for a card play in an educational game.',
           'Topic: ' + topic,
-          'Card: ' + (pickedCard.templateLabel || 'card'),
+          'Card: ' + pickedCard.name + ' (' + pickedCard.source + (pickedCard.tier ? ', tier: ' + pickedCard.tier : '') + ')',
+          pickedCard.conceptDef ? 'Concept definition: ' + pickedCard.conceptDef : null,
           'Action: ' + pickedVerb.label,
           'Justification: ' + text,
           '',
@@ -363,7 +416,7 @@
           '',
           'Respond with ONLY valid JSON, no surrounding prose, no markdown fences:',
           '{ "score": <int 1-20>, "ackText": "1 short supportive sentence", "followUp": "1 short follow-up question" }'
-        ].join('\n');
+        ].filter(function (l) { return l !== null; }).join('\n');
       }
 
       ctx.callGemini(prompt).then(function (raw) {
@@ -411,7 +464,7 @@
       if (typeof window.callGeminiImageEdit !== 'function') return;
       var verbDef = SPARK_VERBS.filter(function (v) { return v.id === verb.id; })[0] || verb;
       var verbEdit = verbDef.editPrompt || 'transformed by an idea, with a subtle inner change visible';
-      var cardName = card.templateLabel || card.template || 'an idea';
+      var cardName = card.name || 'an idea';
       // Strip the data:image/...;base64, prefix that callImagen returns;
       // callGeminiImageEdit can take either form but the bare base64 is
       // safer across deployments.
@@ -467,7 +520,9 @@
       var entry = {
         round: round,
         cardId: pickedCard.id,
-        cardName: pickedCard.templateLabel || pickedCard.template || 'card',
+        cardName: pickedCard.name,
+        cardSource: pickedCard.source,
+        cardTier: pickedCard.tier || null,
         verb: pickedVerb.label,
         justification: justification,
         score: score,
@@ -742,14 +797,15 @@
         : h('div', { style: { display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px', marginBottom: '12px' } },
           hand.map(function (card) {
             var picked = pickedCard && pickedCard.id === card.id;
-            var name = card.templateLabel || card.template || 'card';
+            var isUnit = card.source === 'glossary';
             return h('button', {
               key: 'hc-' + card.id,
               onClick: function () { setPickedCard(picked ? null : card); },
               'aria-pressed': picked ? 'true' : 'false',
+              'aria-label': card.name + (isUnit ? ' (unit card)' : '') + (card.tier ? ', ' + card.tier : ''),
               style: {
                 flexShrink: 0,
-                width: '88px',
+                width: '92px',
                 background: picked ? palette.accent : palette.bg,
                 color: picked ? palette.onAccent : palette.text,
                 border: '1.5px solid ' + (picked ? palette.accent : palette.border),
@@ -757,13 +813,32 @@
                 padding: '6px',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
-                textAlign: 'center'
+                textAlign: 'center',
+                position: 'relative'
               }
             },
+              // Source badge — top-left for unit (glossary) cards
+              isUnit ? h('span', {
+                'aria-hidden': 'true',
+                style: {
+                  position: 'absolute', top: '4px', left: '4px',
+                  fontSize: '10px',
+                  background: 'rgba(0,0,0,0.55)',
+                  color: '#fff',
+                  padding: '1px 4px',
+                  borderRadius: '4px',
+                  letterSpacing: '0.04em',
+                  pointerEvents: 'none'
+                }
+              }, '📖') : null,
               card.imageBase64
-                ? h('img', { src: card.imageBase64, alt: name, style: { width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', marginBottom: '4px' } })
-                : h('div', { 'aria-hidden': 'true', style: { width: '100%', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', background: palette.surface, borderRadius: '4px', marginBottom: '4px' } }, '🎴'),
-              h('div', { style: { fontSize: '10px', fontWeight: 700, lineHeight: '1.2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, name)
+                ? h('img', { src: card.imageBase64, alt: card.name, style: { width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', marginBottom: '4px' } })
+                : h('div', { 'aria-hidden': 'true', style: { width: '100%', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', background: palette.surface, borderRadius: '4px', marginBottom: '4px' } },
+                  isUnit ? '📖' : '🎴'),
+              h('div', { style: { fontSize: '10px', fontWeight: 700, lineHeight: '1.2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, card.name),
+              card.tier ? h('div', {
+                style: { fontSize: '8px', color: picked ? palette.onAccent : palette.textMute, fontStyle: 'italic', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+              }, card.tier) : null
             );
           })
         ),
@@ -804,7 +879,7 @@
           id: 'be-just',
           value: justification,
           onChange: function (e) { setJustification(e.target.value); },
-          placeholder: 'How does your "' + (pickedCard.templateLabel || 'card') + '" ' + pickedVerb.label.toLowerCase() + ' the topic of "' + topic + '"?',
+          placeholder: 'How does your "' + pickedCard.name + '" ' + pickedVerb.label.toLowerCase() + ' the topic of "' + topic + '"?',
           rows: 3,
           'aria-label': 'Card-play justification',
           disabled: submitting,

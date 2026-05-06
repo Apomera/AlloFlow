@@ -40978,10 +40978,17 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     onClose: () => setIsAlloHavenOpen(false),
                     callImagen,
                     callGemini,
+                    callGeminiImageEdit,
                     callTTS,
                     selectedVoice,
                     addToast,
                     disableAnimations,
+                    // Phase 3b.glossary — pass active lesson glossary so the
+                    // Boss Encounter arcade plugin can offer unit cards
+                    // alongside personal decorations. AlloHaven derives the
+                    // entries (only when type === 'glossary') and exposes
+                    // them via the arcade ctx.
+                    generatedContent,
                 });
             }
             return (

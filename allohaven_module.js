@@ -14023,6 +14023,9 @@
                 callGemini: props.callGemini,
                 callTTS: props.callTTS,
                 callGeminiAudio: props.callGeminiAudio || null,
+                callGeminiImageEdit: props.callGeminiImageEdit
+                  || (typeof window !== 'undefined' ? window.callGeminiImageEdit : null)
+                  || null,
                 addToast: addToast,
                 toolData: props.toolData || {},
                 setStemLabTool: props.setStemLabTool || null,
@@ -14032,7 +14035,15 @@
                 // starter pieces by default since those are visual
                 // welcome gifts, not learning artifacts.
                 decorations: (state.decorations || []).filter(function(d) { return !d.isStarter; }),
-                companion: state.companion || null
+                companion: state.companion || null,
+                // Phase 3b.glossary — current lesson glossary if one is
+                // loaded. Plugins (e.g. Boss Encounter) treat these as
+                // unit cards alongside personal decorations.
+                glossaryEntries: (function() {
+                  var gc = props.generatedContent;
+                  if (gc && gc.type === 'glossary' && Array.isArray(gc.data)) return gc.data;
+                  return [];
+                })()
               };
               // Default card if mode doesn't supply its own render. If it
               // does, the mode owns the entire card UI.
