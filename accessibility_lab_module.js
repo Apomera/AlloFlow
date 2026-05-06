@@ -38,12 +38,14 @@
   var e = React.createElement;
   var useState = React.useState;
   var useMemo = React.useMemo;
+  var useEffect = React.useEffect;
+  var useRef = React.useRef;
 
   // ----- Constants ------------------------------------------------------------
 
   var TABS = [
     { key: 'preview',      label: 'Preview as student', icon: '👁️',  ready: true  },
-    { key: 'keyboard',     label: 'Keyboard tour',      icon: '⌨️',  ready: false },
+    { key: 'keyboard',     label: 'Keyboard tour',      icon: '⌨️',  ready: true  },
     { key: 'audit',        label: 'Audit',              icon: '🔍', ready: false },
     { key: 'screenreader', label: 'Screen reader',      icon: '🔊', ready: false },
     { key: 'simulators',   label: 'Simulators',         icon: '👓', ready: false },
@@ -369,7 +371,345 @@
     );
   }
 
-  // ----- Coming-soon stub for phases 2-5 -------------------------------------
+  // ----- Phase 2: Keyboard accessibility audit + tab-order overlay -----------
+
+  // Selectors that capture the standard set of keyboard-focusable elements.
+  // Excludes [tabindex="-1"] which is intentionally non-focusable.
+  var FOCUSABLE_SELECTOR = [
+    'a[href]',
+    'button:not([disabled])',
+    'input:not([disabled]):not([type="hidden"])',
+    'select:not([disabled])',
+    'textarea:not([disabled])',
+    '[tabindex]:not([tabindex="-1"])',
+    '[contenteditable="true"]',
+  ].join(', ');
+
+  function getElementLabel(el) {
+    var aria = el.getAttribute('aria-label');
+    if (aria) return aria;
+    var labelledBy = el.getAttribute('aria-labelledby');
+    if (labelledBy) {
+      var labelEl = document.getElementById(labelledBy);
+      if (labelEl) return labelEl.textContent.trim().slice(0, 80);
+    }
+    var title = el.getAttribute('title');
+    if (title) return title;
+    var text = (el.textContent || '').trim().replace(/\s+/g, ' ');
+    if (text) return text.slice(0, 80);
+    var placeholder = el.getAttribute('placeholder');
+    if (placeholder) return '[' + placeholder + ']';
+    var name = el.getAttribute('name');
+    if (name) return '[name=' + name + ']';
+    return '<' + el.tagName.toLowerCase() + '>';
+  }
+
+  function isElementVisible(el) {
+    if (!el) return false;
+    var rect = el.getBoundingClientRect();
+    if (rect.width === 0 && rect.height === 0) return false;
+    var style = window.getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return false;
+    return true;
+  }
+
+  function scanKeyboardAccessibility(excludeContainerSelector) {
+    var excludeContainer = excludeContainerSelector ? document.querySelector(excludeContainerSelector) : null;
+
+    function isInExcludedContainer(el) {
+      return excludeContainer ? excludeContainer.contains(el) : false;
+    }
+
+    // Focusable elements
+    var allFocusable = Array.from(document.querySelectorAll(FOCUSABLE_SELECTOR))
+      .filter(function (el) { return !isInExcludedContainer(el) && isElementVisible(el); });
+
+    // Tab order: positive tabindex first (in order), then DOM order with tabindex 0 or attribute absent
+    var withPositive = allFocusable.filter(function (el) { return parseInt(el.getAttribute('tabindex') || '0', 10) > 0; });
+    var withZeroOrNone = allFocusable.filter(function (el) { return parseInt(el.getAttribute('tabindex') || '0', 10) <= 0; });
+    withPositive.sort(function (a, b) {
+      return parseInt(a.getAttribute('tabindex'), 10) - parseInt(b.getAttribute('tabindex'), 10);
+    });
+    var orderedFocusable = withPositive.concat(withZeroOrNone);
+
+    // Suspicious "fake buttons": div/span with cursor:pointer that aren't keyboard-accessible
+    var allClickyDivs = Array.from(document.querySelectorAll('div, span'));
+    var suspicious = allClickyDivs.filter(function (el) {
+      if (isInExcludedContainer(el) || !isElementVisible(el)) return false;
+      var style = window.getComputedStyle(el);
+      if (style.cursor !== 'pointer') return false;
+      if (el.tabIndex >= 0) return false;
+      if (el.matches('a, button, [role="button"]')) return false;
+      // Skip if a parent is a button/link (probably decorative inside)
+      var parent = el.parentElement;
+      while (parent && parent !== document.body) {
+        if (parent.matches('a, button, [role="button"]')) return false;
+        parent = parent.parentElement;
+      }
+      return true;
+    });
+
+    // Positive tabindex (anti-pattern: breaks natural tab order)
+    var positiveTabindex = withPositive;
+
+    // Missing accessible name on focusable elements
+    var noLabel = orderedFocusable.filter(function (el) {
+      var label = getElementLabel(el);
+      return !label || label.startsWith('<') || label === '[name=]';
+    });
+
+    return {
+      total: orderedFocusable.length,
+      orderedFocusable: orderedFocusable,
+      suspicious: suspicious,
+      positiveTabindex: positiveTabindex,
+      noLabel: noLabel,
+    };
+  }
+
+  // Render numbered overlay badges for each focusable element. Returns a
+  // cleanup function that removes the overlays.
+  function renderTabOrderOverlay(orderedFocusable) {
+    var overlayContainer = document.createElement('div');
+    overlayContainer.id = 'alloflow-a11y-tab-order-overlay';
+    overlayContainer.setAttribute('aria-hidden', 'true');
+    overlayContainer.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:55;';
+    document.body.appendChild(overlayContainer);
+
+    function position() {
+      overlayContainer.innerHTML = '';
+      orderedFocusable.forEach(function (el, i) {
+        var rect = el.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) return;
+        var badge = document.createElement('div');
+        badge.style.cssText = [
+          'position:absolute',
+          'top:' + (rect.top + window.scrollY - 12) + 'px',
+          'left:' + (rect.left + window.scrollX - 12) + 'px',
+          'min-width:24px',
+          'height:24px',
+          'padding:0 6px',
+          'background:#dc2626',
+          'color:#ffffff',
+          'border:2px solid #ffffff',
+          'border-radius:12px',
+          'font:bold 12px system-ui, sans-serif',
+          'display:flex',
+          'align-items:center',
+          'justify-content:center',
+          'box-shadow:0 2px 6px rgba(0,0,0,0.3)',
+          'pointer-events:none',
+        ].join(';');
+        badge.textContent = String(i + 1);
+        overlayContainer.appendChild(badge);
+
+        var outline = document.createElement('div');
+        outline.style.cssText = [
+          'position:absolute',
+          'top:' + (rect.top + window.scrollY - 2) + 'px',
+          'left:' + (rect.left + window.scrollX - 2) + 'px',
+          'width:' + (rect.width + 4) + 'px',
+          'height:' + (rect.height + 4) + 'px',
+          'border:2px solid #dc2626',
+          'border-radius:4px',
+          'pointer-events:none',
+          'opacity:0.5',
+        ].join(';');
+        overlayContainer.appendChild(outline);
+      });
+    }
+
+    position();
+    var resizeListener = function () { position(); };
+    window.addEventListener('scroll', resizeListener, true);
+    window.addEventListener('resize', resizeListener);
+
+    return function cleanup() {
+      window.removeEventListener('scroll', resizeListener, true);
+      window.removeEventListener('resize', resizeListener);
+      if (overlayContainer.parentNode) overlayContainer.parentNode.removeChild(overlayContainer);
+    };
+  }
+
+  function KeyboardTab(props) {
+    var addToast = props.addToast;
+
+    var scanResult$ = useState(null);
+    var scanResult = scanResult$[0], setScanResult = scanResult$[1];
+
+    var showOverlay$ = useState(false);
+    var showOverlay = showOverlay$[0], setShowOverlay = showOverlay$[1];
+
+    var cleanupRef = useRef(null);
+
+    // Cleanup overlay when component unmounts or showOverlay flips off
+    useEffect(function () {
+      return function () {
+        if (cleanupRef.current) {
+          cleanupRef.current();
+          cleanupRef.current = null;
+        }
+      };
+    }, []);
+
+    useEffect(function () {
+      if (showOverlay && scanResult && scanResult.orderedFocusable) {
+        cleanupRef.current = renderTabOrderOverlay(scanResult.orderedFocusable);
+      } else if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      return function () {
+        if (cleanupRef.current) {
+          cleanupRef.current();
+          cleanupRef.current = null;
+        }
+      };
+    }, [showOverlay, scanResult]);
+
+    function handleScan() {
+      try {
+        // Exclude the lab modal itself from the scan so we audit the
+        // underlying app surface, not our own UI.
+        var result = scanKeyboardAccessibility('[aria-label="Accessibility Lab"]');
+        setScanResult(result);
+        addToast && addToast(
+          'Keyboard scan: ' + result.total + ' focusable elements, ' +
+          (result.suspicious.length + result.positiveTabindex.length + result.noLabel.length) + ' issues',
+          'info'
+        );
+      } catch (err) {
+        addToast && addToast('Keyboard scan failed: ' + (err && err.message), 'error');
+      }
+    }
+
+    function handleFocusElement(el) {
+      try {
+        el.focus();
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (err) { /* ignore */ }
+    }
+
+    return e('div', { className: 'flex flex-col gap-4' },
+      e('div', null,
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Keyboard accessibility audit'),
+        e('p', { className: 'text-sm text-slate-600 mt-1' },
+          'Scan the underlying lesson view for keyboard-accessible elements. Identifies tab order, "fake buttons" (divs with cursor:pointer that aren\'t keyboard-reachable), positive tabindex anti-patterns, and elements missing accessible names.')
+      ),
+
+      // Action buttons
+      e('div', { className: 'flex gap-2 flex-wrap' },
+        e('button', {
+          onClick: handleScan,
+          className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700',
+        }, scanResult ? 'Re-scan' : '🔍 Run keyboard scan'),
+        scanResult && e('button', {
+          onClick: function () { setShowOverlay(!showOverlay); },
+          className: 'px-4 py-2 text-sm font-semibold border border-indigo-600 text-indigo-700 rounded hover:bg-indigo-50',
+        }, showOverlay ? '🔢 Hide tab-order overlay' : '🔢 Show tab-order overlay')
+      ),
+
+      showOverlay && e('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900' },
+        'Tab-order overlay is active. Numbered red badges show the tab sequence on the page behind this lab. Close the lab or click the toggle above to hide.'
+      ),
+
+      !scanResult && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
+        'Click "Run keyboard scan" to audit the current view. The lab modal itself is excluded from the scan; what gets audited is the underlying app surface (the lesson, sidebar, controls, etc. behind the lab).'
+      ),
+
+      scanResult && e('div', { className: 'flex flex-col gap-3' },
+        // Summary
+        e('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
+          e('div', { className: 'p-3 bg-slate-50 border border-slate-200 rounded text-center' },
+            e('div', { className: 'text-2xl font-bold text-slate-800' }, scanResult.total),
+            e('div', { className: 'text-xs text-slate-600' }, 'Focusable elements')
+          ),
+          e('div', {
+            className: 'p-3 border rounded text-center ' + (scanResult.suspicious.length > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-300')
+          },
+            e('div', { className: 'text-2xl font-bold ' + (scanResult.suspicious.length > 0 ? 'text-amber-800' : 'text-emerald-800') }, scanResult.suspicious.length),
+            e('div', { className: 'text-xs ' + (scanResult.suspicious.length > 0 ? 'text-amber-700' : 'text-emerald-700') }, 'Fake buttons')
+          ),
+          e('div', {
+            className: 'p-3 border rounded text-center ' + (scanResult.positiveTabindex.length > 0 ? 'bg-amber-50 border-amber-300' : 'bg-emerald-50 border-emerald-300')
+          },
+            e('div', { className: 'text-2xl font-bold ' + (scanResult.positiveTabindex.length > 0 ? 'text-amber-800' : 'text-emerald-800') }, scanResult.positiveTabindex.length),
+            e('div', { className: 'text-xs ' + (scanResult.positiveTabindex.length > 0 ? 'text-amber-700' : 'text-emerald-700') }, 'Positive tabindex')
+          ),
+          e('div', {
+            className: 'p-3 border rounded text-center ' + (scanResult.noLabel.length > 0 ? 'bg-rose-50 border-rose-300' : 'bg-emerald-50 border-emerald-300')
+          },
+            e('div', { className: 'text-2xl font-bold ' + (scanResult.noLabel.length > 0 ? 'text-rose-800' : 'text-emerald-800') }, scanResult.noLabel.length),
+            e('div', { className: 'text-xs ' + (scanResult.noLabel.length > 0 ? 'text-rose-700' : 'text-emerald-700') }, 'Missing names')
+          )
+        ),
+
+        // Tab-order list
+        scanResult.total > 0 && e('details', { className: 'bg-slate-50 border border-slate-200 rounded p-3' },
+          e('summary', { className: 'cursor-pointer font-semibold text-sm text-slate-800' },
+            'Tab order (' + scanResult.total + ' elements)'),
+          e('ol', { className: 'mt-2 max-h-64 overflow-y-auto pl-6 text-xs space-y-1' },
+            scanResult.orderedFocusable.map(function (el, i) {
+              return e('li', { key: i, className: 'text-slate-700' },
+                e('button', {
+                  onClick: function () { handleFocusElement(el); },
+                  className: 'text-left hover:text-indigo-700 hover:underline',
+                }, '<' + el.tagName.toLowerCase() + '> ', e('span', { className: 'text-slate-500' }, getElementLabel(el)))
+              );
+            })
+          )
+        ),
+
+        // Issues
+        scanResult.suspicious.length > 0 && e('details', { className: 'bg-amber-50 border border-amber-300 rounded p-3' },
+          e('summary', { className: 'cursor-pointer font-semibold text-sm text-amber-900' },
+            '⚠ Fake buttons (' + scanResult.suspicious.length + ')'),
+          e('p', { className: 'text-xs text-amber-800 mt-1' },
+            'Elements with cursor:pointer that look clickable but cannot be reached by keyboard. Common cause: a div with onClick instead of a real <button>. Fix: convert to <button>, OR add tabindex="0" + role="button" + keyboard event handlers.'),
+          e('ul', { className: 'mt-2 max-h-48 overflow-y-auto pl-5 text-xs list-disc space-y-1' },
+            scanResult.suspicious.slice(0, 30).map(function (el, i) {
+              return e('li', { key: i, className: 'text-amber-900' },
+                e('button', {
+                  onClick: function () { handleFocusElement(el); },
+                  className: 'text-left hover:underline',
+                }, '<' + el.tagName.toLowerCase() + '> ', getElementLabel(el).slice(0, 80))
+              );
+            })
+          )
+        ),
+
+        scanResult.positiveTabindex.length > 0 && e('details', { className: 'bg-amber-50 border border-amber-300 rounded p-3' },
+          e('summary', { className: 'cursor-pointer font-semibold text-sm text-amber-900' },
+            '⚠ Positive tabindex (' + scanResult.positiveTabindex.length + ')'),
+          e('p', { className: 'text-xs text-amber-800 mt-1' },
+            'Elements with tabindex > 0 break natural document tab order and confuse keyboard users. Fix: use tabindex="0" (default order) or rely on default focusability for buttons/links.')
+        ),
+
+        scanResult.noLabel.length > 0 && e('details', { className: 'bg-rose-50 border border-rose-300 rounded p-3' },
+          e('summary', { className: 'cursor-pointer font-semibold text-sm text-rose-900' },
+            '🔴 Missing accessible names (' + scanResult.noLabel.length + ')'),
+          e('p', { className: 'text-xs text-rose-800 mt-1' },
+            'Focusable elements without text, aria-label, aria-labelledby, or title. Screen reader users would hear only the tag name, e.g., "button" with no context. Fix: add aria-label or visible text.'),
+          e('ul', { className: 'mt-2 max-h-48 overflow-y-auto pl-5 text-xs list-disc space-y-1' },
+            scanResult.noLabel.slice(0, 30).map(function (el, i) {
+              return e('li', { key: i, className: 'text-rose-900' },
+                e('button', {
+                  onClick: function () { handleFocusElement(el); },
+                  className: 'text-left hover:underline',
+                }, '<' + el.tagName.toLowerCase() + '>')
+              );
+            })
+          )
+        ),
+
+        // Tip
+        e('div', { className: 'text-xs text-slate-500 italic mt-2' },
+          'Tip: navigate the page behind the lab using only Tab, Shift+Tab, Enter, and Esc. Click on any element name in the lists above to focus it (the page will scroll if needed).')
+      )
+    );
+  }
+
+  // ----- Coming-soon stub for phases 3-5 -------------------------------------
 
   function ComingSoon(props) {
     return e('div', { className: 'p-10 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300' },
@@ -435,7 +775,7 @@
         // Body
         e('div', { className: 'flex-1 overflow-y-auto px-5 py-4' },
           tab === 'preview'      ? e(PreviewTab, props) :
-          tab === 'keyboard'     ? e(ComingSoon, { icon: '⌨️', title: 'Keyboard navigation walkthrough', description: 'Forces tab-only navigation and highlights every focusable element in order. Identifies focus traps, missing focus indicators, and keyboard-inaccessible elements. Coming in Phase 2.' }) :
+          tab === 'keyboard'     ? e(KeyboardTab, props) :
           tab === 'audit'        ? e(ComingSoon, { icon: '🔍', title: 'Live in-app accessibility audit', description: 'Runs axe-core against the current view and surfaces violations in plain language framed by student impact, with teacher-friendly fix suggestions. Coming in Phase 3.' }) :
           tab === 'screenreader' ? e(ComingSoon, { icon: '🔊', title: 'Screen-reader announcement preview', description: "Plays back exactly what a screen reader would announce while a student worked through the lesson, using AlloFlow's text-to-speech. Coming in Phase 4." }) :
           e(ComingSoon, { icon: '👓', title: 'Disability simulators', description: 'Toggleable filters for low-vision blur, color-blindness (deutan/protan/tritan), dyslexia simulation, and motor-impairment delay. Each with a teacher-friendly explainer of who experiences this. Coming in Phase 5.' })
