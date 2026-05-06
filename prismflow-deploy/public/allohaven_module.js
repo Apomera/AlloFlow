@@ -6850,6 +6850,42 @@
         setVoiceError('Voice recording isn\'t supported on this browser.');
         return;
       }
+      // Phase 3v.MR — shared module path. recordAudioBlob handles MIME
+      // negotiation, mic-tracks cleanup, base64 conversion, and the
+      // 30s auto-stop (via maxDurationMs). The legacy 250ms tick UI
+      // is preserved via the onTick callback. Inline fallback below
+      // for race-tolerance / older deployed bundles.
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+        var ctrl = window.AlloFlowVoice.recordAudioBlob({
+          maxDurationMs: 30 * 1000,
+          preferredMimeType: 'audio/webm;codecs=opus',
+          onTick: function(ms) {
+            setRecordSeconds(Math.floor(ms / 1000));
+          },
+          onError: function(err) {
+            setVoiceError((err && err.message) || 'Could not record.');
+            setVoiceMode('idle');
+          }
+        });
+        if (!ctrl.supported) {
+          setVoiceError('Voice recording isn\'t supported on this browser.');
+          return;
+        }
+        mediaRecorderRef.current = ctrl;
+        setRecordSeconds(0);
+        setVoiceMode('recording');
+        ctrl.result.then(function(rec) {
+          if (!rec || !rec.base64) { setVoiceMode('idle'); return; }
+          setRecorded({ base64: rec.base64, durationMs: rec.durationMs });
+          setVoiceMode('preview');
+        }).catch(function(err) {
+          if (err && err.message === 'cancelled') { setVoiceMode('idle'); return; }
+          setVoiceError((err && err.message) || 'Could not save the recording. Try again.');
+          setVoiceMode('idle');
+        });
+        return;
+      }
+      // Inline fallback (pre-3v.MR behavior, identical)
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function(stream) {
         recordedChunksRef.current = [];
         // Prefer webm/opus; fall back to default if unsupported
@@ -6902,7 +6938,16 @@
         recordTimerRef.current = null;
       }
       var rec = mediaRecorderRef.current;
-      if (rec && rec.state === 'recording') {
+      if (!rec) return;
+      // Shared controller: has isRecording() + stop()
+      if (typeof rec.isRecording === 'function') {
+        if (rec.isRecording()) {
+          try { rec.stop(); } catch (e) {}
+        }
+        return;
+      }
+      // Inline MediaRecorder: state-check before stop
+      if (rec.state === 'recording') {
         try { rec.stop(); } catch (e) {}
       }
     }

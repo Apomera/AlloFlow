@@ -1610,6 +1610,35 @@ return React.createElement("div", {
     })
   ),
 
+  // ── Topic-accent hero band (per tab) ──
+  (function() {
+    var TAB_META = {
+      titrate:    { accent: '#38bdf8', soft: 'rgba(56,189,248,0.10)', icon: '\uD83E\uDDEA', title: 'Titrate \u2014 find the equivalence point',  hint: 'Add titrant drop-by-drop until indicator changes color. Equivalence point = stoichiometric balance; endpoint = where indicator switches. They are not exactly the same.' },
+      challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded titrations',           hint: 'Match real-world unknowns by titrating to within \u00b10.05 mL of theoretical. Tracks accuracy + speed; AP Chem-aligned scoring.' },
+      incidents:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: 'Safety drills \u2014 what could go wrong',     hint: 'Burette explodes, acid-burns spill, indicator added too early. Practice the right response sequence before it matters in a real lab.' },
+      equipment:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: 'Equipment \u2014 burette, flask, pipette',     hint: 'Burette tolerance 0.05 mL; volumetric flask 0.10 mL; pipette 0.02 mL. Precision class A vs B doubles tolerance. Calibration matters more than students realize.' },
+      molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082',     hint: 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.' }
+    };
+    var meta = TAB_META[labTab] || TAB_META.titrate;
+    return React.createElement('div', {
+      style: {
+        margin: '12px 0',
+        padding: '12px 14px',
+        borderRadius: 12,
+        background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+        border: '1px solid ' + meta.accent + '55',
+        borderLeft: '4px solid ' + meta.accent,
+        display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+      }
+    },
+      React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+      React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+        React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+        React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+      )
+    );
+  })(),
+
 
 
   // ── Preset Buttons (visible on titrate tab) ──
