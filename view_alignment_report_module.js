@@ -602,15 +602,27 @@
 
   function ComprehensiveBlock(p) {
     var c = p.comp;
+    var onApplyFixes = p.onApplyFixes;
     if (!c) return null;
     return React.createElement('div', {
       className: 'mt-12 pt-8 border-t-4 border-indigo-500 max-w-4xl mx-auto'
     },
-      React.createElement('div', { className: 'mb-6' },
-        React.createElement('h2', { className: 'text-2xl font-black text-slate-800 uppercase tracking-tight mb-1' },
-          'Comprehensive Curriculum Audit'),
-        React.createElement('p', { className: 'text-sm text-slate-600' },
-          'Multi-dimensional analysis beyond standards alignment. Each dimension evaluates the curriculum against a specific quality lens. Hybrid: deterministic computation + AI review.')
+      React.createElement('div', { className: 'mb-6 flex items-start justify-between gap-4 flex-wrap' },
+        React.createElement('div', { className: 'min-w-0' },
+          React.createElement('h2', { className: 'text-2xl font-black text-slate-800 uppercase tracking-tight mb-1' },
+            'Comprehensive Curriculum Audit'),
+          React.createElement('p', { className: 'text-sm text-slate-600' },
+            'Multi-dimensional analysis beyond standards alignment. Each dimension evaluates the curriculum against a specific quality lens. Hybrid: deterministic computation + AI review.')
+        ),
+        typeof onApplyFixes === 'function' && c.overall && (c.overall.dimensionsEvaluated || 0) > 0 && React.createElement('button', {
+          type: 'button',
+          onClick: onApplyFixes,
+          className: 'flex-shrink-0 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2',
+          title: 'Open Audit Remediator: review and apply fixes for the issues this audit found',
+        },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🛠️'),
+          ' Apply suggested fixes'
+        )
       ),
       c.overall && React.createElement(ReadinessScoreCard, { overall: c.overall }),
       c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary }),
@@ -768,7 +780,7 @@
     className: "bg-indigo-50 p-4 rounded-lg text-sm text-indigo-900 leading-relaxed border border-indigo-100 font-medium"
   }, report.adminRecommendation || "No recommendation was generated for this standard."))), idx < (generatedContent?.data?.reports?.length || 0) - 1 && /*#__PURE__*/React.createElement("hr", {
     className: "my-8 border-slate-300"
-  }))), comprehensive && React.createElement(ComprehensiveBlock, { comp: comprehensive }));
+  }))), comprehensive && React.createElement(ComprehensiveBlock, { comp: comprehensive, onApplyFixes: props.onApplyFixes }));
 }
 
   window.AlloModules = window.AlloModules || {};
