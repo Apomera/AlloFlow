@@ -1520,6 +1520,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         // ════════════════════════════════════════
         var mediaRecorderRef = React.useRef(null);
         var recordedChunksRef = React.useRef([]);
+        // Phase 3v.MR.oratory — handle to the shared voice_module recorder
+        // controller when AlloVoice.recordAudioBlob is available. The
+        // analyser/source/audioCtx refs above remain caller-owned in both
+        // the shared path and the inline fallback.
+        var recorderControllerRef = React.useRef(null);
 
         var savedRecordingsState = React.useState([]); // [{blobUrl, timestamp, duration, pitchData, volumeData}]
         var savedRecordings = savedRecordingsState[0];
@@ -1635,6 +1640,164 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         var startRecording = React.useCallback(function() {
           if (isRecording) return;
           setMicError(null);
+
+          // Phase 3v.MR.oratory — prefer the shared voice_module recorder
+          // when available. The analyser pipeline is wired inside onStream
+          // so prosody analysis attaches to the same MediaStream the
+          // recorder will consume. AudioContext + source + analyser stay
+          // caller-owned (we close them in stopRecording / cleanup);
+          // stream + MediaRecorder lifecycle are owned by the controller.
+          var AlloVoice = window.AlloVoice;
+          if (AlloVoice && typeof AlloVoice.recordAudioBlob === 'function') {
+            var controller;
+            try {
+              controller = AlloVoice.recordAudioBlob({
+                maxDurationMs: 60 * 60 * 1000, // 1h cap; oratory was uncapped before
+                preferredMimeType: 'audio/webm;codecs=opus',
+                onStream: function(stream) {
+                  var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                  audioCtxRef.current = audioCtx;
+                  var source = audioCtx.createMediaStreamSource(stream);
+                  sourceRef.current = source;
+                  var analyser = audioCtx.createAnalyser();
+                  analyser.fftSize = 4096;
+                  source.connect(analyser);
+                  analyserRef.current = analyser;
+
+                  setIsRecording(true);
+                  recordingStartRef.current = Date.now();
+                  syllableCountRef.current = 0;
+                  syllableTimestampsRef.current = [];
+                  lastAmplitudeRef.current = 0;
+                  pauseStartRef.current = null;
+                  totalPauseTimeRef.current = 0;
+                  totalSpeechTimeRef.current = 0;
+                  pauseEventsRef.current = [];
+                  syllableIntervalsRef.current = [];
+
+                  if (!sessionStartTime) {
+                    upd('sessionStartTime', Date.now());
+                  }
+
+                  if (announceToSR) announceToSR('Microphone active. Speak now to see your prosody visualized.');
+
+                  var bufLen = analyser.fftSize;
+                  var buf = new Float32Array(bufLen);
+                  var freqBuf = new Float32Array(analyser.frequencyBinCount);
+                  var sampleRate = audioCtx.sampleRate;
+                  var pauseThresholdMs = 300;
+                  var wasSpeaking = false;
+                  var lastSyllableTs = 0;
+
+                  function analyzeLoop() {
+                    analyser.getFloatTimeDomainData(buf);
+                    var rms = calculateRMS(buf);
+                    var db = rmsToDb(rms);
+                    var pitch = autoCorrelate(buf, sampleRate);
+
+                    analyser.getFloatFrequencyData(freqBuf);
+                    var formants = findFormants(freqBuf, sampleRate);
+                    if (formants.f1 > 0 && formants.f2 > 0 && rms > 0.02) {
+                      setCurrentF1(formants.f1);
+                      setCurrentF2(formants.f2);
+                      setVowelTrail(function(prev) {
+                        var next = prev.concat([{ f1: formants.f1, f2: formants.f2 }]);
+                        if (next.length > 80) next = next.slice(-80);
+                        return next;
+                      });
+                    }
+
+                    setCurrentPitch(pitch);
+                    setCurrentDb(db);
+
+                    setPitchHistory(function(prev) {
+                      var next = prev.concat([pitch]);
+                      if (next.length > 300) next = next.slice(-300);
+                      return next;
+                    });
+
+                    setVolumeHistory(function(prev) {
+                      var next = prev.concat([db]);
+                      if (next.length > 300) next = next.slice(-300);
+                      return next;
+                    });
+
+                    var currentAmplitude = rms;
+                    var syllableThreshold = 0.04;
+                    var prevAmp = lastAmplitudeRef.current;
+                    if (currentAmplitude > syllableThreshold && prevAmp <= syllableThreshold) {
+                      syllableCountRef.current += 1;
+                      var syllTs = Date.now();
+                      syllableTimestampsRef.current.push(syllTs);
+                      if (lastSyllableTs > 0) {
+                        syllableIntervalsRef.current.push(syllTs - lastSyllableTs);
+                      }
+                      lastSyllableTs = syllTs;
+                    }
+                    lastAmplitudeRef.current = currentAmplitude;
+
+                    var now = Date.now();
+                    var windowMs = 10000;
+                    var recentSyllables = syllableTimestampsRef.current.filter(function(ts) { return now - ts < windowMs; });
+                    var wordsInWindow = recentSyllables.length / 1.5;
+                    var estimatedWpm = Math.round(wordsInWindow * (60000 / windowMs));
+                    setCurrentWpm(estimatedWpm);
+
+                    var isSilent = rms < 0.015;
+                    if (isSilent) {
+                      if (wasSpeaking) {
+                        pauseStartRef.current = now;
+                        wasSpeaking = false;
+                      }
+                      if (pauseStartRef.current && (now - pauseStartRef.current) > pauseThresholdMs) {
+                        setIsPaused(true);
+                        setPauseDuration((now - pauseStartRef.current) / 1000);
+                      }
+                    } else {
+                      if (!wasSpeaking && pauseStartRef.current) {
+                        var pDur = (now - pauseStartRef.current) / 1000;
+                        totalPauseTimeRef.current += (now - pauseStartRef.current);
+                        if (pDur >= 0.3) {
+                          var pType = 'normal';
+                          if (pDur > 2.0) pType = 'block';
+                          else if (pDur > 0.5) pType = 'extended';
+                          pauseEventsRef.current.push({ type: pType, duration: pDur });
+                        }
+                        pauseStartRef.current = null;
+                      }
+                      wasSpeaking = true;
+                      setIsPaused(false);
+                      setPauseDuration(0);
+                      totalSpeechTimeRef.current = now - (recordingStartRef.current || now) - totalPauseTimeRef.current;
+                    }
+
+                    var totalElapsed = now - (recordingStartRef.current || now);
+                    if (totalElapsed > 1000) {
+                      var currentPauseTime = totalPauseTimeRef.current + (pauseStartRef.current ? (now - pauseStartRef.current) : 0);
+                      setPauseRatio(currentPauseTime / totalElapsed);
+                    }
+
+                    animFrameRef.current = requestAnimationFrame(analyzeLoop);
+                  }
+
+                  analyzeLoop();
+                },
+                onError: function(err) {
+                  console.error('[Oratory] Mic error (shared):', err);
+                  setMicError((err && err.message) || 'Could not access microphone. Please allow microphone permissions and try again.');
+                  if (announceToSR) announceToSR('Microphone access denied. Please allow microphone permissions.');
+                }
+              });
+            } catch (sharedErr) {
+              console.warn('[Oratory] Shared recorder threw at construct; falling through to inline:', sharedErr);
+              controller = null;
+            }
+            if (controller) {
+              recorderControllerRef.current = controller;
+              return;
+            }
+            // else: fall through to inline path below
+          }
 
           navigator.mediaDevices.getUserMedia({ audio: true })
             .then(function(stream) {
@@ -1817,6 +1980,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             animFrameRef.current = null;
           }
 
+          // Phase 3v.MR.oratory — shared-recorder path. Stream + recorder
+          // are owned by the controller; we only clean up our caller-owned
+          // analyser graph here. The .result promise resolves with the
+          // recorded blob; we attach the saved-recordings handler now so
+          // pitchHistory / volumeHistory closures see the latest values.
+          if (recorderControllerRef.current) {
+            var controller = recorderControllerRef.current;
+            recorderControllerRef.current = null;
+            var savedPitchData = pitchHistory.slice();
+            var savedVolumeData = volumeHistory.slice();
+            try { controller.stop(); } catch(e) { /* ignore */ }
+            controller.result.then(function(result) {
+              if (result && result.blob) {
+                var blobUrl = URL.createObjectURL(result.blob);
+                var duration = Math.round((result.durationMs || 0) / 1000);
+                var newRecording = {
+                  blobUrl: blobUrl,
+                  timestamp: Date.now(),
+                  duration: duration,
+                  pitchData: savedPitchData,
+                  volumeData: savedVolumeData
+                };
+                setSavedRecordings(function(prev) {
+                  var next = prev.concat([newRecording]);
+                  if (next.length > 3) {
+                    URL.revokeObjectURL(next[0].blobUrl);
+                    next = next.slice(-3);
+                  }
+                  return next;
+                });
+              }
+            }).catch(function(err) {
+              // Cancelled or errored — no recording to save.
+              if (err && err.message && err.message !== 'cancelled') {
+                console.warn('[Oratory] Shared recorder result error:', err);
+              }
+            });
+
+            if (sourceRef.current) {
+              try { sourceRef.current.disconnect(); } catch(e) { /* ignore */ }
+              sourceRef.current = null;
+            }
+            if (audioCtxRef.current) {
+              audioCtxRef.current.close().catch(function() {});
+              audioCtxRef.current = null;
+            }
+            analyserRef.current = null;
+            setIsRecording(false);
+
+            if (recordingStartRef.current) {
+              var elapsedShared = Math.round((Date.now() - recordingStartRef.current) / 1000);
+              upd('sessionTimeSpent', (sessionTimeSpent || 0) + elapsedShared);
+            }
+
+            if (announceToSR) announceToSR('Microphone stopped.');
+            return;
+          }
+
           // Enhancement 1: Stop MediaRecorder and save recording
           if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
             try {
@@ -1880,6 +2101,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         React.useEffect(function() {
           return function() {
             if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+            // Phase 3v.MR.oratory — cancel the shared recorder controller
+            // (releases mic + drops the in-flight blob without saving).
+            if (recorderControllerRef.current) {
+              try { recorderControllerRef.current.cancel(); } catch(e) { /* ignore */ }
+              recorderControllerRef.current = null;
+            }
             if (streamRef.current) {
               streamRef.current.getTracks().forEach(function(track) { track.stop(); });
             }

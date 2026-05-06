@@ -292,11 +292,16 @@
   //   onLevel(level0to1): fires per audio level update (deferred —
   //     needs Web Audio analyser; stubbed for now to keep this commit small).
   //   onError(err): fires on recording error (mic denied, etc.).
+  //   onStream(stream): fires once getUserMedia resolves, before the
+  //     MediaRecorder is constructed. Callers who need raw stream access
+  //     (e.g. Oratory's prosody analyser) wire AudioContext + AnalyserNode
+  //     inside this callback. Stream lifecycle is owned by recordAudioBlob;
+  //     callers must close their own AudioContext when result resolves.
   //
   // Returns:
   //   { stop(), cancel(), isRecording(), result, mimeType, supported }
   //
-  // .result resolves with { base64, mimeType, durationMs }.
+  // .result resolves with { base64, blob, mimeType, durationMs, size, stopReason }.
   // .cancel() ends without resolving (rejects with 'cancelled').
   function recordAudioBlob(opts) {
     opts = opts || {};
@@ -369,6 +374,13 @@
       }
       navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
         stream = s;
+        // Fire onStream BEFORE constructing the MediaRecorder so callers
+        // (e.g. Oratory) can wire AudioContext + AnalyserNode against the
+        // raw stream. We swallow callback errors so a misbehaving observer
+        // can't break the recording path.
+        if (typeof opts.onStream === 'function') {
+          try { opts.onStream(stream); } catch (e) { /* ignore observer error */ }
+        }
         var mime = pickMime();
         try {
           rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
@@ -398,6 +410,7 @@
           blobToBase64(blob).then(function (base64) {
             resolveResult({
               base64: base64,
+              blob: blob,
               mimeType: actualMime,
               durationMs: durationMs,
               size: blob.size,
@@ -884,7 +897,7 @@
     _phase: '3v.4',
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference',
-      'recordAudioBlob',
+      'recordAudioBlob', 'recordAudioBlob.onStream', 'recordAudioBlob.result.blob',
       'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'subscribeToVoiceProgress',
       'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse'
     ]
