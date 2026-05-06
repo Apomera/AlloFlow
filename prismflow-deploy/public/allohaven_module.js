@@ -9054,7 +9054,8 @@
       // with true so older saves get the full packet by default.
       var printDefaults = {
         companion: true, achievements: true, goals: true,
-        memoryDecks: true, stories: true, journals: true
+        memoryDecks: true, stories: true, journals: true,
+        bossEncounters: true
       };
       if (!merged.printOptions || typeof merged.printOptions !== 'object') {
         merged.printOptions = Object.assign({}, printDefaults);
@@ -13932,12 +13933,13 @@
     // just reflections for a therapy session, etc.).
     // ─────────────────────────────────────────────────
     var PRINT_SECTION_DEFS = [
-      { id: 'companion',    emoji: '🌿', label: 'Companion + skills',    hint: 'Critter, name, skill levels, longest streak.' },
-      { id: 'achievements', emoji: '🏆', label: 'Achievements',          hint: 'Recent unlocks + total progress.' },
-      { id: 'goals',        emoji: '🎯', label: 'Goals',                 hint: 'Active and completed goals with metric progress.' },
-      { id: 'memoryDecks',  emoji: '📖', label: 'Memory decks',          hint: 'Flashcards, acronyms, notes attached to decorations.' },
-      { id: 'stories',      emoji: '📜', label: 'Stories',               hint: 'Walkable story chains across decorations.' },
-      { id: 'journals',     emoji: '📝', label: 'Recent reflections',    hint: 'The last several journal entries.' }
+      { id: 'companion',      emoji: '🌿', label: 'Companion + skills',    hint: 'Critter, name, skill levels, longest streak.' },
+      { id: 'achievements',   emoji: '🏆', label: 'Achievements',          hint: 'Recent unlocks + total progress.' },
+      { id: 'goals',          emoji: '🎯', label: 'Goals',                 hint: 'Active and completed goals with metric progress.' },
+      { id: 'memoryDecks',    emoji: '📖', label: 'Memory decks',          hint: 'Flashcards, acronyms, notes attached to decorations.' },
+      { id: 'stories',        emoji: '📜', label: 'Stories',               hint: 'Walkable story chains across decorations.' },
+      { id: 'journals',       emoji: '📝', label: 'Recent reflections',    hint: 'The last several journal entries.' },
+      { id: 'bossEncounters', emoji: '🐉', label: 'Boss Encounters',       hint: 'Past arcade encounters with strongest justification per session.' }
     ];
     // ─────────────────────────────────────────────────
     // ARCADE HUB (Phase 3a) — token-time-gated launcher for modes
@@ -14192,7 +14194,18 @@
                   var gc = props.generatedContent;
                   if (gc && gc.type === 'glossary' && Array.isArray(gc.data)) return gc.data;
                   return [];
-                })()
+                })(),
+                // Phase 3b.full — live-session bindings. sessionCode is
+                // null when not in a live session (most of the time);
+                // non-null + a Firestore db handle means the plugin can
+                // implement multi-student modes via onSnapshot. studentNickname
+                // is the per-device codename (e.g. 'Clever Dolphin'); isHost
+                // is true for the teacher who launched the session.
+                sessionCode: props.sessionCode || null,
+                studentNickname: props.studentNickname || '',
+                isHost: !!props.isHost,
+                firestoreDb: props.firestoreDb || null,
+                firestoreAppId: props.firestoreAppId || null
               };
               // Default card if mode doesn't supply its own render. If it
               // does, the mode owns the entire card UI.
@@ -19652,6 +19665,33 @@
             );
           })
         ) : null,
+        // Boss Encounters (Phase 3b.history) — paper-friendly summary of
+        // recent encounters with strongest justification per session.
+        // Useful in IEP / parent review packets as evidence of concept-
+        // articulation work.
+        (state.printOptions && state.printOptions.bossEncounters === false) ? null :
+        ((state.bossEncounters || []).length > 0 ? h('div', { style: sectionStyle },
+          h('h2', { style: sectionTitleStyle }, '🐉 Boss Encounters · ' + state.bossEncounters.length + ' recent'),
+          state.bossEncounters.slice().reverse().slice(0, 8).map(function (enc) {
+            var dateStr = enc.savedAt ? new Date(enc.savedAt).toLocaleDateString() : '?';
+            var outcomeLabel = enc.outcome === 'won' ? 'Won'
+                            : enc.outcome === 'lost' ? 'Boss escaped'
+                            : enc.outcome === 'expired' ? 'Time-up'
+                            : enc.outcome === 'forfeit' ? 'Left early'
+                            : enc.outcome;
+            return h('div', { key: 'pbe-' + enc.id, className: 'ah-print-section', style: { marginBottom: '12px', padding: '8px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+              h('p', { style: { fontSize: '12px', fontWeight: 700, color: '#000', marginBottom: '2px', margin: 0 } },
+                (enc.topic || 'Untitled topic') + ' · ' + outcomeLabel),
+              h('p', { style: smallMetaStyle },
+                dateStr + ' · ' + (enc.roundsPlayed || 0) + ' Sparks · '
+                + (enc.criticalCount || 0) + ' critical · '
+                + (enc.totalDamage || 0) + ' damage'),
+              enc.strongestSpark ? h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginTop: '4px', margin: '4px 0 0 0' }) },
+                '✨ Strongest Spark (score ' + enc.strongestSpark.score + ', ' + (enc.strongestSpark.cardName || '?') + ' · ' + (enc.strongestSpark.verb || '?') + '): "'
+                + (enc.strongestSpark.justification || '') + '"') : null
+            );
+          })
+        ) : null),
         // Footer
         h('div', { style: { marginTop: '24px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
           'AlloHaven · cozy-room learning portfolio · printed ' + dateStr,
