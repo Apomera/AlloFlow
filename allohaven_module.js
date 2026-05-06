@@ -1035,6 +1035,63 @@
       }
     }
   ];
+  // Goal templates (Phase 2p.36) — pre-built, ready-to-launch goals.
+  // Lower friction for students (or clinicians scaffolding a student)
+  // who want to start a goal without choosing metric + target + dates
+  // from scratch. Each template clones into a real goal record on
+  // selection; students can still rename + tweak in the goal builder
+  // before it locks in.
+  var GOAL_TEMPLATES = [
+    {
+      id: 'focus-week',  emoji: '🍅',
+      title: 'Focus this week',
+      hint: '5 finished Pomodoros in 7 days',
+      metric: 'pomodoros', targetCount: 5, days: 7
+    },
+    {
+      id: 'reflect-daily', emoji: '📝',
+      title: 'Reflection week',
+      hint: '5 journal entries in 7 days',
+      metric: 'reflections', targetCount: 5, days: 7
+    },
+    {
+      id: 'memory-week', emoji: '✓',
+      title: 'Memory work',
+      hint: '4 quizzes passed in 14 days',
+      metric: 'quizzes-passed', targetCount: 4, days: 14
+    },
+    {
+      id: 'build-corner', emoji: '🌿',
+      title: 'Build a corner',
+      hint: '5 decorations in 14 days',
+      metric: 'decorations-placed', targetCount: 5, days: 14
+    },
+    {
+      id: 'story-walker', emoji: '📜',
+      title: 'Story walker',
+      hint: '3 story walks in 7 days',
+      metric: 'walks', targetCount: 3, days: 7
+    },
+    {
+      id: 'token-saver', emoji: '🪙',
+      title: 'Token saver',
+      hint: 'Earn 30 tokens in 14 days',
+      metric: 'tokens-earned', targetCount: 30, days: 14
+    },
+    {
+      id: 'focus-deep', emoji: '🍅',
+      title: 'Deep focus month',
+      hint: '12 Pomodoros in 30 days',
+      metric: 'pomodoros', targetCount: 12, days: 30
+    },
+    {
+      id: 'mastery-month', emoji: '🧠',
+      title: 'Solid mastery',
+      hint: '10 quizzes passed in 30 days',
+      metric: 'quizzes-passed', targetCount: 10, days: 30
+    }
+  ];
+
   function getGoalMetric(id) {
     for (var i = 0; i < GOAL_METRICS.length; i++) {
       if (GOAL_METRICS[i].id === id) return GOAL_METRICS[i];
@@ -9795,6 +9852,34 @@
       });
     }
 
+    // Create a goal pre-populated from a template (Phase 2p.36). Drops
+    // the student into the goal-builder modal so they can rename it /
+    // adjust dates if needed before committing. The goal record is
+    // already in state by then so a closed builder leaves it active.
+    function createGoalFromTemplate(template) {
+      if (!template) return;
+      var startDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
+      var endDate = new Date(startDate.getTime() + (template.days || 7) * 24 * 60 * 60 * 1000);
+      var newGoal = {
+        id: 'g-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        title: template.title,
+        metric: template.metric,
+        targetCount: template.targetCount,
+        startDate: startDate.toISOString().slice(0, 10),
+        endDate: endDate.toISOString().slice(0, 10),
+        completedAt: null,
+        notes: '',
+        templateId: template.id
+      };
+      setStateMulti({
+        goals: state.goals.concat([newGoal]),
+        activeModal: 'goal-builder',
+        generateContext: { goalId: newGoal.id, fromTemplate: true }
+      });
+      addToast('🎯 Started: ' + template.title);
+    }
+
     function updateGoal(goalId, updates) {
       var newGoals = state.goals.map(function(g) {
         if (g.id !== goalId) return g;
@@ -16378,10 +16463,60 @@
           h('p', {
             style: { fontSize: '12px', color: palette.textDim, marginBottom: '14px', lineHeight: '1.5', fontStyle: 'italic' }
           }, 'Time-boxed targets you can review with a parent, teacher, or clinician. Pomodoros, reflections, quizzes, walks, decorations, or tokens — pick one. Completing a goal earns +3 bonus tokens.'),
+
+          // Template strip (Phase 2p.36) — pre-built ready-to-launch goals
+          // for low-friction starting. Click → goal pre-filled + builder
+          // opens for any final tweaks.
+          h('div', { style: { marginBottom: '14px' } },
+            h('div', {
+              style: {
+                fontSize: '11px', color: palette.textMute,
+                fontWeight: 700, textTransform: 'uppercase',
+                letterSpacing: '0.06em', marginBottom: '8px'
+              }
+            }, '⚡ Quick start'),
+            h('div', {
+              role: 'list',
+              'aria-label': 'Goal templates',
+              style: {
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+                gap: '8px'
+              }
+            },
+              GOAL_TEMPLATES.map(function(t) {
+                return h('button', {
+                  key: 'gt-' + t.id,
+                  role: 'listitem',
+                  onClick: function() { createGoalFromTemplate(t); },
+                  'aria-label': t.title + ' — ' + t.hint,
+                  title: t.hint,
+                  style: {
+                    background: palette.surface,
+                    border: '1px solid ' + palette.border,
+                    borderRadius: '8px',
+                    padding: '10px 12px',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: 'inherit',
+                    color: palette.text,
+                    transition: 'border-color 140ms ease, background 140ms ease'
+                  }
+                },
+                  h('div', { style: { display: 'flex', gap: '8px', alignItems: 'baseline', marginBottom: '2px' } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: '18px' } }, t.emoji),
+                    h('span', { style: { fontSize: '13px', fontWeight: 700 } }, t.title)
+                  ),
+                  h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.4' } }, t.hint)
+                );
+              })
+            )
+          ),
+
           h('button', {
             onClick: createGoal,
             style: Object.assign({}, primaryBtnStyle(palette), { width: '100%', marginBottom: '14px', padding: '10px' })
-          }, '+ New goal'),
+          }, '+ New goal (from scratch)'),
 
           goals.length === 0 ? h('div', {
             style: {
