@@ -9696,19 +9696,59 @@
       setStateField('journalEntries', newJournal);
     }
 
-    // ── Web Speech API hook for voice-to-text ──
-    // Feature-detected once at component setup. Not a React hook; just a
-    // ref-based controller so each modal-instance can start/stop a
-    // recognition session without re-instantiating SpeechRecognition.
+    // ── Web Speech API for voice-to-text (Phase 3v.M migration) ──
+    // Delegates to the shared window.AlloFlowVoice.initWebSpeechCapture
+    // when available; falls back to inline construction otherwise so the
+    // voice-note + reflection paths still work even if voice_module.js
+    // hasn't loaded yet (race-tolerant by design — voice_module loads via
+    // the same loadModule chain as AlloHaven, but order isn't guaranteed
+    // on first paint).
+    //
+    // Behavior preserved exactly: continuous=true, interimResults=false,
+    // lang='en-US', isRecording flag clears on error or natural end.
+    // The speechRecRef now holds either a SpeechRecognition instance
+    // (legacy path) or an AlloFlowVoice controller (shared path); both
+    // expose .stop().
     var speechRecRef = useRef(null);
     var isRecordingTuple = useState(false);
     var isRecording = isRecordingTuple[0];
     var setIsRecording = isRecordingTuple[1];
-    var speechSupported = (typeof window !== 'undefined') &&
-      !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    var speechSupported = (function() {
+      if (typeof window === 'undefined') return false;
+      // Prefer the shared module's capability check when present
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.getCapabilities === 'function') {
+        try { return !!window.AlloFlowVoice.getCapabilities().webSpeech; } catch (e) {}
+      }
+      return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    })();
 
     function startVoiceCapture(onTranscript) {
       if (!speechSupported) return;
+      // Shared-module path
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+        var controller = window.AlloFlowVoice.initWebSpeechCapture({
+          lang: 'en-US',
+          continuous: true,
+          interimResults: false,
+          onTranscript: function(text) {
+            if (text && typeof onTranscript === 'function') onTranscript(text);
+          },
+          onError: function(e) {
+            console.warn('[AlloHaven] speech recognition error:', e);
+            setIsRecording(false);
+          },
+          onEnd: function() {
+            setIsRecording(false);
+          }
+        });
+        if (!controller.supported) return;
+        if (controller.start()) {
+          speechRecRef.current = controller;
+          setIsRecording(true);
+        }
+        return;
+      }
+      // Inline fallback (pre-3v.M behavior, identical)
       try {
         var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
         var rec = new SR();
