@@ -78,6 +78,7 @@
   var MAX_ROUNDS = 8;                     // hard cap so encounters end gracefully
   var HAND_SIZE = 5;                      // cards visible at once in hand
   var CLASS_ROUND_DURATION_MS = 90 * 1000;  // Phase 3b.full.d — D&D-style round window
+  var CLASS_REWARD_TOKENS = 5;              // Phase 3b.full.e — group-contingency reward on win
 
   function register() {
     window.AlloHavenArcade.registerMode('boss-encounter', {
@@ -506,6 +507,12 @@
     // (won/lost branches in applySpark, expired branch in the session
     // watcher, forfeit branch in exitEncounter).
     var encounterRecordedRef = useRef(false);
+    // Phase 3b.full.e — guard so we claim the class reward at most once
+    // per encounter even if multiple snapshots fire after status flips
+    // to completed. A second guard checks the earnings log for an
+    // existing class-encounter-win entry with the same encounterStartedAt
+    // metadata so the claim survives reload.
+    var rewardClaimedRef = useRef(false);
 
     // Phase 3b.full.c — shared session-doc state for class encounters.
     // Captures the full sessions/{code} doc snapshot. Plugin reads
@@ -668,18 +675,37 @@
     // Mark the session encounter completed when the host's encounter
     // ends (any terminal phase). Students who haven't joined yet won't
     // see a stale "Join" prompt; future encounters can overwrite cleanly.
+    // Phase 3b.full.e — when outcome is 'won', also write classRewardTokens
+    // so all participants see the reward in their snapshot and claim
+    // locally (deduped via the earnings log).
     function publishClassEncounterEnd(outcome) {
       if (!isClassHost) return;
       if (typeof ctx.sessionUpdate !== 'function') return;
+      var fields = {
+        status: 'completed',
+        endedOutcome: outcome || 'completed',
+        endedAt: new Date().toISOString()
+      };
+      if (outcome === 'won') {
+        fields.classRewardTokens = CLASS_REWARD_TOKENS;
+      }
       try {
-        ctx.sessionUpdate({
-          bossEncounter: {
-            status: 'completed',
-            endedOutcome: outcome || 'completed',
-            endedAt: new Date().toISOString()
-          }
-        }).catch(function () { /* ignore */ });
+        ctx.sessionUpdate({ bossEncounter: fields }).catch(function () { /* ignore */ });
       } catch (e) { /* ignore */ }
+    }
+
+    // Same as above but also handles the host's own end-encounter +
+    // emits the local encounter record so the host's history captures
+    // it. Used by the End Encounter teacher button (which doesn't go
+    // through applySpark / the round-overflow path).
+    function publishClassEncounterEndWithReward(outcome) {
+      if (!isClassHost) return;
+      // Local record for host
+      emitEncounterRecord(outcome, classView ? classView.sharedHp : hp);
+      publishClassEncounterEnd(outcome);
+      // Local phase transition — the snapshot useEffect will catch up,
+      // but setting it immediately makes the host's UI snappy.
+      setPhase(outcome === 'won' ? 'won' : 'lost');
     }
 
     // Phase 3b.full.b — students joining a class encounter skip the
@@ -1270,6 +1296,49 @@
       // eslint-disable-next-line
     }, [isClassHost, phase, classView && classView.roundEndsAtMs, nowTick]);
 
+    // Phase 3b.full.e — group reward claim. Watches the snapshot for an
+    // ended encounter with classRewardTokens > 0; if we haven't claimed
+    // for THIS encounter (matched by host's startedAt timestamp), calls
+    // ctx.onAwardTokens. Per-claim dedup via:
+    //   1. rewardClaimedRef (in-memory guard for this component instance)
+    //   2. ctx.getEarnings() check for an existing entry with the same
+    //      class-encounter-win source + matching metadata.encounterStartedAt
+    //      (survives reload — token grant is recorded in earnings log)
+    useEffect(function () {
+      if (!isClassMode) return;
+      if (rewardClaimedRef.current) return;
+      if (!classSessionState || !classSessionState.bossEncounter) return;
+      var be = classSessionState.bossEncounter;
+      if (be.status !== 'completed') return;
+      if (be.endedOutcome !== 'won') return;
+      if (!be.classRewardTokens || be.classRewardTokens < 1) return;
+      var encounterKey = be.startedAt || 'unknown';
+      // Earnings-log dedup
+      if (typeof ctx.getEarnings === 'function') {
+        var prior = ctx.getEarnings().some(function (e) {
+          return e
+            && e.source === 'class-encounter-win'
+            && e.metadata
+            && e.metadata.encounterStartedAt === encounterKey;
+        });
+        if (prior) {
+          rewardClaimedRef.current = true; // already claimed via earlier visit
+          return;
+        }
+      }
+      rewardClaimedRef.current = true;
+      if (typeof ctx.onAwardTokens === 'function') {
+        ctx.onAwardTokens(be.classRewardTokens, 'class-encounter-win', {
+          encounterStartedAt: encounterKey,
+          topic: be.topic || '',
+          hostNickname: be.hostNickname || '',
+          role: classMode.role
+        });
+      }
+      // eslint-disable-next-line
+    }, [classSessionState && classSessionState.bossEncounter && classSessionState.bossEncounter.status,
+        classSessionState && classSessionState.bossEncounter && classSessionState.bossEncounter.classRewardTokens]);
+
     // Phase 3b.full.c — class-mode terminal-phase detection from session
     // snapshot. Two trigger conditions:
     //   1. Shared HP drops to 0 → 'won' (every participant who's still
@@ -1426,6 +1495,27 @@
           phase === 'won' ? 'Your Sparks brought clarity. The topic glows.'
           : 'No shame — the topic is still yours to think about. Try again any time.'
         ),
+        // Phase 3b.full.e — group reward callout, only on class-mode wins.
+        // Reflects the ACTUAL grant if rewardClaimedRef has flipped this
+        // session, OR the upcoming grant if the snapshot just landed
+        // and the claim effect hasn't yet fired.
+        (isClassMode && phase === 'won' && classView && classSessionState && classSessionState.bossEncounter && classSessionState.bossEncounter.classRewardTokens > 0)
+          ? h('div', {
+              style: {
+                padding: '10px 12px',
+                background: (palette.success || '#16a34a') + '22',
+                border: '1px solid ' + (palette.success || palette.accent),
+                borderRadius: '10px',
+                marginBottom: '14px',
+                textAlign: 'center'
+              }
+            },
+              h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } },
+                '🪙 +' + classSessionState.bossEncounter.classRewardTokens + ' tokens · class win bonus'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', marginTop: '2px' } },
+                'Every participant in this encounter earned the same bonus.')
+            )
+          : null,
         bestPlay ? h('div', {
           style: { padding: '10px 12px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '14px' }
         },
@@ -1462,6 +1552,69 @@
       }
     },
       topRow,
+      // Phase 3b.full.e — host control toolbar. Visible only to the
+      // teacher who created the class encounter. Skip Round force-
+      // advances (writes new currentRound + roundStartedAt). End
+      // Encounter marks status=completed with current shared HP
+      // determining outcome (won if HP=0, lost otherwise). The
+      // snapshot useEffect propagates terminal phase to all
+      // participants.
+      isClassHost && classView && classView.sessionStatus === 'open' ? h('div', {
+        style: {
+          display: 'flex', gap: '8px', flexWrap: 'wrap',
+          padding: '8px 10px',
+          background: palette.bg,
+          border: '1px dashed ' + palette.accent,
+          borderRadius: '8px',
+          marginBottom: '10px'
+        }
+      },
+        h('span', {
+          style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginRight: 'auto', alignSelf: 'center' }
+        }, '🎓 Teacher controls'),
+        h('button', {
+          onClick: function () {
+            if (!classView) return;
+            var nextRound = (classView.currentRound || 1) + 1;
+            if (nextRound > (classView.maxRounds || MAX_ROUNDS)) {
+              ctx.addToast('Already at the last round.');
+              return;
+            }
+            try {
+              ctx.sessionUpdate({
+                bossEncounter: {
+                  currentRound: nextRound,
+                  roundStartedAt: new Date().toISOString()
+                }
+              }).catch(function () { /* best-effort */ });
+              ctx.addToast('⏭ Skipped to round ' + nextRound);
+            } catch (e) { /* ignore */ }
+          },
+          style: {
+            background: 'transparent', color: palette.text,
+            border: '1px solid ' + palette.border, borderRadius: '8px',
+            padding: '4px 10px', fontSize: '11px', fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit'
+          }
+        }, '⏭ Skip round'),
+        h('button', {
+          onClick: function () {
+            if (!classView) return;
+            // Outcome: won if HP already 0, otherwise host-call ends
+            // it as 'lost' (the class didn't quite make it). The
+            // snapshot useEffect transitions everyone to the right
+            // local phase from there.
+            var outcome = classView.sharedHp <= 0 ? 'won' : 'lost';
+            publishClassEncounterEndWithReward(outcome);
+          },
+          style: {
+            background: 'transparent', color: '#dc2626',
+            border: '1px solid #dc2626', borderRadius: '8px',
+            padding: '4px 10px', fontSize: '11px', fontWeight: 600,
+            cursor: 'pointer', fontFamily: 'inherit'
+          }
+        }, '🏁 End encounter')
+      ) : null,
       // Boss panel — image + HP bar. When transforming, the image gets a
       // glowing accent border + a small overlay label, so the student can
       // see the Spark IS landing visually even while the API call resolves.
