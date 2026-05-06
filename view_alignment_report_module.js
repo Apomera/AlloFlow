@@ -472,6 +472,116 @@
     );
   }
 
+  function ReadinessScoreCard(p) {
+    var o = p.overall;
+    if (!o) return null;
+    var score = o.score || 0;
+    // Color band by score
+    var band, ringColor, bgColor, textColor;
+    if (o.blockingIssues && o.blockingIssues.length > 0) {
+      band = 'rose'; ringColor = '#dc2626'; bgColor = '#fef2f2'; textColor = '#991b1b';
+    } else if (score >= 90) {
+      band = 'emerald'; ringColor = '#059669'; bgColor = '#ecfdf5'; textColor = '#065f46';
+    } else if (score >= 70) {
+      band = 'lime'; ringColor = '#65a30d'; bgColor = '#f7fee7'; textColor = '#365314';
+    } else if (score >= 50) {
+      band = 'amber'; ringColor = '#d97706'; bgColor = '#fffbeb'; textColor = '#92400e';
+    } else {
+      band = 'rose'; ringColor = '#dc2626'; bgColor = '#fef2f2'; textColor = '#991b1b';
+    }
+
+    var dimScores = o.perDimensionPercent || {};
+    var dimLabels = {
+      vocabulary: 'Vocab',
+      engagement: 'Engagement',
+      accessibility: 'Access',
+      udl: 'UDL',
+      accuracy: 'Accuracy',
+    };
+
+    return React.createElement('div', {
+      className: 'p-6 rounded-2xl border-2 mb-8 shadow-md',
+      style: { backgroundColor: bgColor, borderColor: ringColor }
+    },
+      React.createElement('div', { className: 'flex flex-col md:flex-row items-center gap-6' },
+        // Score circle
+        React.createElement('div', {
+          className: 'relative flex-shrink-0',
+          style: { width: '120px', height: '120px' }
+        },
+          React.createElement('svg', {
+            viewBox: '0 0 120 120',
+            style: { width: '120px', height: '120px' },
+            'aria-hidden': 'true',
+          },
+            React.createElement('circle', {
+              cx: 60, cy: 60, r: 52,
+              fill: 'none', stroke: '#e2e8f0', strokeWidth: 10,
+            }),
+            React.createElement('circle', {
+              cx: 60, cy: 60, r: 52,
+              fill: 'none', stroke: ringColor, strokeWidth: 10,
+              strokeDasharray: (Math.PI * 2 * 52).toFixed(2),
+              strokeDashoffset: ((Math.PI * 2 * 52) * (1 - score / 100)).toFixed(2),
+              strokeLinecap: 'round',
+              transform: 'rotate(-90 60 60)',
+              style: { transition: 'stroke-dashoffset 800ms ease-out' },
+            }),
+            React.createElement('text', {
+              x: 60, y: 64, textAnchor: 'middle',
+              fontSize: 32, fontWeight: 900,
+              fill: textColor, fontFamily: 'system-ui, sans-serif',
+            }, score),
+            React.createElement('text', {
+              x: 60, y: 86, textAnchor: 'middle',
+              fontSize: 11, fontWeight: 600,
+              fill: textColor, fontFamily: 'system-ui, sans-serif',
+              opacity: 0.7,
+            }, '/ 100')
+          )
+        ),
+        // Label + per-dimension chips
+        React.createElement('div', { className: 'flex-1 min-w-0' },
+          React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1', style: { color: textColor, opacity: 0.7 } },
+            'Curriculum Readiness Score'),
+          React.createElement('div', { className: 'text-xl font-black mb-3', style: { color: textColor } }, o.label || ''),
+          // Per-dimension status chips
+          React.createElement('div', { className: 'flex flex-wrap gap-2' },
+            ALL_DIMENSIONS_FOR_RENDER.map(function (dim) {
+              var dimData = (o.dimensionScores || {})[dim];
+              if (!dimData) return null;
+              var pct = dimScores[dim] || 0;
+              var chipColor = dimData.status === 'Aligned' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' :
+                              dimData.status === 'Not Aligned' ? 'bg-rose-100 text-rose-800 border-rose-300' :
+                              'bg-amber-100 text-amber-800 border-amber-300';
+              return React.createElement('div', {
+                key: dim,
+                className: 'flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full border ' + chipColor,
+              },
+                React.createElement('span', null, dimLabels[dim] || dim),
+                React.createElement('span', { className: 'font-bold' }, pct + '%')
+              );
+            })
+          ),
+          o.blockingIssues && o.blockingIssues.length > 0 && React.createElement('div', { className: 'mt-3 p-2 bg-white border border-rose-300 rounded text-xs' },
+            React.createElement('div', { className: 'font-bold text-rose-900 mb-1' }, '🔴 Blocking issues (must fix before Pass):'),
+            React.createElement('ul', { className: 'list-disc ml-5 text-rose-900 space-y-1' },
+              o.blockingIssues.map(function (b, i) {
+                return React.createElement('li', { key: i },
+                  React.createElement('span', { className: 'font-semibold' }, b.dimension + ': '),
+                  b.issue
+                );
+              })
+            )
+          )
+        )
+      ),
+      React.createElement('div', { className: 'mt-3 text-[11px] italic', style: { color: textColor, opacity: 0.65 } }, o.notes || '')
+    );
+  }
+
+  var ALL_DIMENSIONS_FOR_RENDER = ['vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
+
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
@@ -484,6 +594,7 @@
         React.createElement('p', { className: 'text-sm text-slate-600' },
           'Multi-dimensional analysis beyond standards alignment. Each dimension evaluates the curriculum against a specific quality lens. Hybrid: deterministic computation + AI review.')
       ),
+      c.overall && React.createElement(ReadinessScoreCard, { overall: c.overall }),
       c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary }),
       c.engagement && React.createElement(EngagementSection, { eng: c.engagement }),
       c.accessibility && React.createElement(AccessibilitySection, { access: c.accessibility }),

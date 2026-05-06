@@ -239,6 +239,85 @@ function computeContentAccuracy(harvest) {
   };
 }
 
+// ─── Plan O Step 6: Combined Pass/Revise + Curriculum Readiness Score ──
+// Rolls all comprehensive-audit dimensions into a single 0-100 readiness
+// score + overall status + blocking-issues list. Equal weighting across
+// the 5 dimensions for v1.
+const STATUS_POINTS = { 'Aligned': 20, 'Partially Aligned': 12, 'Not Aligned': 0 };
+const ALL_DIMENSIONS = ['vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
+const DIMENSION_LABELS = {
+  vocabulary: 'Vocabulary fit',
+  engagement: 'Engagement variety',
+  accessibility: 'Content accessibility',
+  udl: 'UDL principles',
+  accuracy: 'Content accuracy',
+};
+
+function computeReadinessScore(comprehensive) {
+  if (!comprehensive) return null;
+  let totalScore = 0;
+  let dimensionsEvaluated = 0;
+  const dimensionScores = {};
+  const blockingIssues = [];
+
+  ALL_DIMENSIONS.forEach(dim => {
+    const data = comprehensive[dim];
+    if (!data) return;
+    dimensionsEvaluated++;
+    const status = data.status || 'Partially Aligned';
+    const points = (typeof STATUS_POINTS[status] === 'number') ? STATUS_POINTS[status] : 12;
+    totalScore += points;
+    dimensionScores[dim] = { status, points };
+    if (status === 'Not Aligned') {
+      // Pull a representative issue per blocked dimension
+      let issue = '';
+      if (dim === 'vocabulary' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      else if (dim === 'engagement' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      else if (dim === 'accessibility' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      else if (dim === 'udl' && data.overallNarrative) issue = data.overallNarrative;
+      else if (dim === 'accuracy' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      blockingIssues.push({ dimension: DIMENSION_LABELS[dim], issue });
+    }
+  });
+
+  // Normalize to 0-100. If only some dimensions evaluated, scale by what's there.
+  const maxPossible = dimensionsEvaluated * 20;
+  const normalizedScore = maxPossible > 0 ? Math.round((totalScore / maxPossible) * 100) : 0;
+
+  // Overall status thresholds
+  let overallStatus, overallLabel;
+  if (blockingIssues.length > 0) {
+    overallStatus = 'Revise';
+    overallLabel = 'Revise — critical issues';
+  } else if (normalizedScore >= 90) {
+    overallStatus = 'Pass';
+    overallLabel = 'Pass — ready to deploy';
+  } else if (normalizedScore >= 70) {
+    overallStatus = 'Pass with notes';
+    overallLabel = 'Pass with notes — minor improvements suggested';
+  } else if (normalizedScore >= 50) {
+    overallStatus = 'Revise';
+    overallLabel = 'Revise — multiple dimensions need work';
+  } else {
+    overallStatus = 'Revise';
+    overallLabel = 'Revise — significant gaps across dimensions';
+  }
+
+  return {
+    score: normalizedScore,
+    status: overallStatus,
+    label: overallLabel,
+    dimensionsEvaluated,
+    dimensionScores,
+    blockingIssues,
+    perDimensionPercent: Object.keys(dimensionScores).reduce((acc, dim) => {
+      acc[dim] = Math.round((dimensionScores[dim].points / 20) * 100);
+      return acc;
+    }, {}),
+    notes: 'Equal weighting across 5 comprehensive dimensions. Score is a guide; review the per-dimension findings for context. Any "Not Aligned" dimension blocks an automatic Pass regardless of overall score.',
+  };
+}
+
 function collectAuditText(artifacts) {
   const out = { text: '', glossaryTerms: [] };
   artifacts.forEach(item => {
@@ -2044,6 +2123,17 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              }
          } catch (accuracyErr) {
              warnLog('[Alignment] Content accuracy computation failed:', accuracyErr);
+         }
+
+         // ---- Plan O Step 6: Curriculum Readiness Score (roll-up) -----------
+         try {
+             const readiness = computeReadinessScore(content.comprehensive);
+             if (readiness) {
+                 content.comprehensive = content.comprehensive || {};
+                 content.comprehensive.overall = readiness;
+             }
+         } catch (rollupErr) {
+             warnLog('[Alignment] Readiness score computation failed:', rollupErr);
          }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
