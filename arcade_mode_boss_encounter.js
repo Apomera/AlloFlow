@@ -1224,27 +1224,39 @@
     // Phase 3b.history — build a self-contained encounter record + emit
     // it to the host. Dedup'd via encounterRecordedRef so multiple end
     // paths can call this without producing duplicate records.
+    //
+    // Phase 3b.full.f follow-up — in class mode, reconcile against the
+    // Firestore submissions (filtered to my nickname) so any teacher
+    // upgrades made during the encounter land in the saved record. Each
+    // Firestore submission carries originalScore + teacherAdjusted when
+    // it has been edited; both fields propagate through to the print
+    // packet's audit-trail rendering. Solo mode stays on local history.
     function buildEncounterRecord(outcome, finalHpOverride) {
-      var sortedHistory = history.slice().sort(function (a, b) { return (b.score || 0) - (a.score || 0); });
-      var strongest = sortedHistory[0] || null;
-      var totalDamage = history.reduce(function (s, e) { return s + (e.damage || 0); }, 0);
-      var criticalCount = history.filter(function (e) { return (e.score || 0) >= 18; }).length;
-      var sessionStartedAt = (ctx.session && ctx.session.startedAt) || new Date().toISOString();
-      return {
-        topic: topic,
-        outcome: outcome,
-        startedAt: sessionStartedAt,
-        endedAt: new Date().toISOString(),
-        roundsPlayed: history.length,
-        roundsMax: MAX_ROUNDS,
-        totalDamage: totalDamage,
-        criticalCount: criticalCount,
-        bossHpStart: BOSS_HP_START,
-        bossHpFinal: typeof finalHpOverride === 'number' ? finalHpOverride : hp,
-        bossImageBase64: bossImage,
-        transformCount: transformCount,
-        // Per-turn detail — drop the willTransform flag (internal-only)
-        history: history.map(function (e) {
+      var sourceHistory;
+      if (isClassMode && classView && classView.submissions) {
+        var myNick = ctx.studentNickname || 'anon';
+        sourceHistory = classView.submissions
+          .filter(function (s) { return s.nickname === myNick; })
+          .map(function (s) {
+            var entry = {
+              round: s.round,
+              cardName: s.cardName,
+              cardSource: s.cardSource || 'decoration',
+              cardTier: s.cardTier || null,
+              verb: s.verb,
+              justification: s.justification,
+              score: s.score,
+              ackText: s.ackText,
+              followUp: s.followUp,
+              damage: s.damage,
+              healed: s.healed
+            };
+            if (typeof s.originalScore === 'number') entry.originalScore = s.originalScore;
+            if (s.teacherAdjusted) entry.teacherAdjusted = true;
+            return entry;
+          });
+      } else {
+        sourceHistory = history.map(function (e) {
           return {
             round: e.round,
             cardName: e.cardName,
@@ -1258,14 +1270,40 @@
             damage: e.damage,
             healed: e.healed
           };
-        }),
-        strongestSpark: strongest ? {
+        });
+      }
+      var sortedHistory = sourceHistory.slice().sort(function (a, b) { return (b.score || 0) - (a.score || 0); });
+      var strongest = sortedHistory[0] || null;
+      var totalDamage = sourceHistory.reduce(function (s, e) { return s + (e.damage || 0); }, 0);
+      var criticalCount = sourceHistory.filter(function (e) { return (e.score || 0) >= 18; }).length;
+      var sessionStartedAt = (ctx.session && ctx.session.startedAt) || new Date().toISOString();
+      var strongestRecord = null;
+      if (strongest) {
+        strongestRecord = {
           round: strongest.round,
           cardName: strongest.cardName,
           verb: strongest.verb,
           score: strongest.score,
           justification: strongest.justification
-        } : null
+        };
+        if (typeof strongest.originalScore === 'number') strongestRecord.originalScore = strongest.originalScore;
+        if (strongest.teacherAdjusted) strongestRecord.teacherAdjusted = true;
+      }
+      return {
+        topic: topic,
+        outcome: outcome,
+        startedAt: sessionStartedAt,
+        endedAt: new Date().toISOString(),
+        roundsPlayed: sourceHistory.length,
+        roundsMax: MAX_ROUNDS,
+        totalDamage: totalDamage,
+        criticalCount: criticalCount,
+        bossHpStart: BOSS_HP_START,
+        bossHpFinal: typeof finalHpOverride === 'number' ? finalHpOverride : hp,
+        bossImageBase64: bossImage,
+        transformCount: transformCount,
+        history: sourceHistory,
+        strongestSpark: strongestRecord
       };
     }
     function emitEncounterRecord(outcome, finalHpOverride) {
