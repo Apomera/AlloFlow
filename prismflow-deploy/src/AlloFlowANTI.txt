@@ -143,6 +143,31 @@ function _upgradeFirestoreSync() {
 }
 window._upgradeFirestoreSync = _upgradeFirestoreSync;
 
+// Shim for safety_checker_module.js. The CDN module upgrades this via
+// _upgradeSafetyChecker() after load. Pass-through methods that return
+// no flags so any code running before module load degrades safely
+// (no false positives, no thrown errors).
+let SafetyContentChecker = {
+    patterns: {},
+    check: function() { return []; },
+    getSeverity: function() { return 'medium'; },
+    getCategoryLabel: function(c) { return c; },
+    aiCheck: async function() { return; }
+};
+function _upgradeSafetyChecker() {
+    if (window.SafetyContentChecker && typeof window.SafetyContentChecker.check === 'function') {
+        SafetyContentChecker = window.SafetyContentChecker;
+        // Also patch window.__alloShared so consumers like
+        // sel_safety_layer.js (which reads window.__alloShared.SafetyContentChecker
+        // at call time) get the upgraded checker. Without this patch, the
+        // __alloShared entry frozen at file-parse time keeps pointing to the
+        // pass-through shim and silent-fails to flag content.
+        if (window.__alloShared) window.__alloShared.SafetyContentChecker = SafetyContentChecker;
+        console.log('[SafetyChecker] Monolith shim upgraded from CDN module.');
+    }
+}
+window._upgradeSafetyChecker = _upgradeSafetyChecker;
+
 let safeJsonParse = (text) => { try { return text ? JSON.parse(text) : null; } catch { return null; } };
 let cleanJson = (text) => (text || '').replace(/^```json\s*|\s*```$/g, '').trim();
 let calculateTextEntropy = () => 1;
@@ -705,108 +730,11 @@ const isRtlLang = (languageName) => {
 const getContentDirection = (languageName) => {
     return isRtlLang(languageName) ? 'rtl' : 'ltr';
 };
-const SafetyContentChecker = {
-    patterns: {
-        self_harm: /\b(hurt myself|kill myself|suicide|want to die|end it all|self.?harm|cutting myself|don't want to live)\b/i,
-        harm_to_others: /\b(hurt (him|her|them|someone)|kill (him|her|them|someone|you)|bring a (gun|weapon|knife)|shoot|attack|bomb)\b/i,
-        bullying: /\b(hate (him|her|them|you)|loser|stupid|ugly|fat|worthless|kill yourself|nobody likes)\b/i,
-        inappropriate_language: /\b(fuck|shit|damn|bitch|ass|dick|cock|pussy|slut|whore|n[i1]gg[ae3]r|f[a4]g)\b/i,
-        concerning_content: /\b(abuse|molest|rape|touch me|scared of|hit me|hurt me|locked in|won't let me|secret|don't tell)\b/i,
-        off_task_gaming: /\b(fortnite|minecraft|roblox|among us|pokemon|call of duty|valorant|apex|gta|fifa|playstation|xbox|nintendo|twitch|discord|tiktok|youtube|instagram|snapchat)\b/i,
-        off_task_social: /\b(boyfriend|girlfriend|crush|dating|party|hangout|skip class|skip school|boring|hate school|hate this|so bored|don't care|whatever|this is dumb|this is stupid|waste of time)\b/i,
-        gibberish: /^[^a-zA-Z]*$|(.)\1{4,}|^[a-z]{1,2}$|asdf|qwer|zxcv|lol{3,}|haha{4,}|bruh{3,}/i
-    },
-    check(text) {
-        if (!text || typeof text !== 'string') return [];
-        const flags = [];
-        const lowerText = text.toLowerCase();
-        for (const [category, pattern] of Object.entries(this.patterns)) {
-            const match = lowerText.match(pattern);
-            if (match) {
-                flags.push({
-                    category,
-                    match: match[0],
-                    severity: this.getSeverity(category),
-                    timestamp: new Date().toISOString()
-                });
-            }
-        }
-        return flags;
-    },
-    getSeverity(category) {
-        const severityMap = {
-            self_harm: 'critical',
-            harm_to_others: 'critical',
-            bullying: 'high',
-            inappropriate_language: 'medium',
-            concerning_content: 'high',
-            off_task_gaming: 'low',
-            off_task_social: 'low',
-            gibberish: 'low',
-            behavioral_rushing: 'medium',
-            behavioral_idle: 'low',
-            behavioral_repetitive: 'low',
-        };
-        return severityMap[category] || 'medium';
-    },
-    getCategoryLabel(category, t) {
-        const labelMap = {
-            self_harm: t('class_analytics.flag_self_harm'),
-            harm_to_others: t('class_analytics.flag_harm_others'),
-            bullying: t('class_analytics.flag_bullying'),
-            inappropriate_language: t('class_analytics.flag_inappropriate'),
-            concerning_content: t('class_analytics.flag_concerning'),
-            off_task_gaming: '🎮 Off-Task (Gaming/Media)',
-            off_task_social: '💬 Off-Task (Social/Disengaged)',
-            gibberish: '🔤 Gibberish Input',
-            behavioral_rushing: '⚡ Quiz Rushing',
-            behavioral_idle: '💤 Extended Inactivity',
-            behavioral_repetitive: '🔁 Repetitive Answers',
-        };
-        return labelMap[category] || category;
-    },
-    async aiCheck(text, source, apiKey, onFlag) {
-        if (!text || text.length < 5 || (!apiKey && !_isCanvasEnv)) return;
-        const regexFlags = this.check(text);
-        if (regexFlags.some(f => f.severity === 'critical')) return;
-        try {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.safety}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
-            const resp = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: `You are a K-12 student safety classifier for an educational platform. Analyze this student message and respond with ONLY a JSON object. Be sensitive to context — educational discussions about difficult topics (history, health) are NOT flags.
-Student message: "${text.substring(0, 500)}"
-Respond ONLY with this JSON (no markdown, no explanation):
-{"safe": true/false, "category": "none|self_harm|harm_to_others|bullying|inappropriate|off_task|concerning", "confidence": 0.0-1.0, "reason": "brief explanation"}` }] }],
-                    generationConfig: { temperature: 0.1, maxOutputTokens: 100 }
-                })
-            });
-            if (!resp.ok) return;
-            const data = await resp.json();
-            const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) return;
-            const result = JSON.parse(jsonMatch[0]);
-            const isCriticalCategory = ['self_harm', 'harm_to_others'].includes(result.category);
-            const confidenceThreshold = isCriticalCategory ? 0.5 : 0.6;
-            if (!result.safe && result.confidence > confidenceThreshold && result.category !== 'none') {
-                const flag = {
-                    category: `ai_${result.category}`,
-                    match: result.reason || 'AI-detected concern',
-                    severity: isCriticalCategory ? 'critical' : 'medium',
-                    source: source,
-                    context: text.substring(0, 100),
-                    timestamp: new Date().toISOString(),
-                    aiGenerated: true,
-                    confidence: result.confidence
-                };
-                if (onFlag) onFlag(flag);
-            }
-        } catch (e) {
-        }
-    }
-};
+// SafetyContentChecker body extracted to safety_checker_module.js. Top-level
+// shim at file head (~line 145) gets upgraded on CDN load via
+// _upgradeSafetyChecker(). The upgrade callback also patches
+// window.__alloShared.SafetyContentChecker so sel_safety_layer.js (which
+// reads __alloShared at call time) sees the upgraded checker.
 window.__alloShared = {
   db, appId,
   safeGetItem, safeSetItem, warnLog, SafetyContentChecker,
@@ -4755,91 +4683,92 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/firestore_sync_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/allohaven_module.js');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('AlloHaven', './allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/accessibility_lab_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/story_stage_module.js');
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/view_adventure_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/export_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4850,7 +4779,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5fdc25d/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
