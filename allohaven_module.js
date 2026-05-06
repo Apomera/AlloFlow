@@ -14205,7 +14205,12 @@
                 studentNickname: props.studentNickname || '',
                 isHost: !!props.isHost,
                 firestoreDb: props.firestoreDb || null,
-                firestoreAppId: props.firestoreAppId || null
+                firestoreAppId: props.firestoreAppId || null,
+                // Phase 3b.full.b — host-encapsulated Firestore I/O. Plugins
+                // call these instead of touching the SDK directly. Both no-op
+                // when no session is active.
+                sessionSubscribe: typeof props.sessionSubscribe === 'function' ? props.sessionSubscribe : function() { return function() {}; },
+                sessionUpdate: typeof props.sessionUpdate === 'function' ? props.sessionUpdate : function() { return Promise.resolve(); }
               };
               // Default card if mode doesn't supply its own render. If it
               // does, the mode owns the entire card UI.

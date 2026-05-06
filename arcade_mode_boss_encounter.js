@@ -106,9 +106,15 @@
   }
 
   // ── Launcher card ──────────────────────────────────────────────────
+  // Phase 3b.full.b — adds class-mode branches when the user is in a
+  // live AlloFlow session. Host (teacher) sees "Start class encounter";
+  // students see "Join class encounter: [topic]" when host has created
+  // one. Solo mode remains the default everyone-can-play path.
   function BossLauncherCard(props) {
     var React = window.React;
     var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
     var ctx = props.ctx;
     var palette = ctx.palette;
     var session = ctx.session;
@@ -120,12 +126,79 @@
     var tokensCost = Math.ceil(minutesAsked / (ctx.minutesPerToken || 5));
     var canAfford = ctx.tokens >= tokensCost && deckSize >= 3;
 
+    // ── Class-mode subscription ─────────────────────────────────────
+    // When in a live session, subscribe to the session doc so we can
+    // surface an active class encounter (host has started one) or
+    // detect that no encounter is active.
+    var sessionStateTuple = useState(null);
+    var sessionState = sessionStateTuple[0];
+    var setSessionState = sessionStateTuple[1];
+    useEffect(function () {
+      if (!ctx.sessionCode || typeof ctx.sessionSubscribe !== 'function') return;
+      var unsubscribe = ctx.sessionSubscribe(function (data) {
+        setSessionState(data);
+      });
+      return typeof unsubscribe === 'function' ? unsubscribe : function () {};
+    }, [ctx.sessionCode]);
+
+    var classEncounter = sessionState && sessionState.bossEncounter;
+    var hasOpenClassEncounter = !!(classEncounter && classEncounter.status === 'open');
+    var isInSession = !!ctx.sessionCode;
+
+    // Solo launch — existing behavior, unchanged
     function handleLaunch() {
       if (disabled) return;
       if (deckSize < 3) {
         ctx.addToast('You need at least 3 cards to play (decorations + active glossary). Generate a glossary or earn a few decorations first.');
         return;
       }
+      // Clear any class-mode sentinel from a prior launch
+      window.__alloHavenBossClassMode = null;
+      ctx.onLaunch(minutesAsked);
+    }
+
+    // Class encounter — host creation path
+    function handleStartClassEncounter() {
+      if (disabled) return;
+      if (deckSize < 3) {
+        ctx.addToast('You need at least 3 cards to play (decorations + active glossary).');
+        return;
+      }
+      if (typeof ctx.sessionUpdate !== 'function') {
+        ctx.addToast('Class mode unavailable — Firestore plumbing missing.');
+        return;
+      }
+      // Sentinel that BossEncounterMain reads on mount to know it should
+      // run the encounter in HOST class mode (write topic+boss to session
+      // doc once they're chosen, instead of keeping them local-only).
+      window.__alloHavenBossClassMode = {
+        role: 'host',
+        hostNickname: ctx.studentNickname || 'Teacher',
+        startedAt: new Date().toISOString()
+      };
+      ctx.onLaunch(minutesAsked);
+    }
+
+    // Class encounter — student join path
+    function handleJoinClassEncounter() {
+      if (disabled) return;
+      if (!classEncounter) {
+        ctx.addToast('No class encounter is active right now.');
+        return;
+      }
+      if (deckSize < 3) {
+        ctx.addToast('You need at least 3 cards to play.');
+        return;
+      }
+      // Sentinel for student join — encounter data sourced from session.
+      window.__alloHavenBossClassMode = {
+        role: 'student',
+        hostNickname: classEncounter.hostNickname || 'Teacher',
+        joinFromSession: true,
+        encounterTopic: classEncounter.topic,
+        encounterBossImage: classEncounter.bossImageBase64 || null,
+        startedAt: new Date().toISOString()
+      };
       ctx.onLaunch(minutesAsked);
     }
 
@@ -146,31 +219,115 @@
             'Pick a topic. Draw cards from your room. Spark each card by justifying how it fits the topic — the boss takes damage when your justifications land. Solo mode for now; live class mode is on the way.')
         )
       ),
-      // Phase 3b.full — in-session hint. Visible when AlloFlow is
-      // currently in a live session. The class-mode mechanic itself
-      // ships in 3b.full.b/c/d; this hint validates the prop chain.
-      ctx.sessionCode ? h('div', {
-        role: 'status',
-        style: {
-          display: 'flex', alignItems: 'center', gap: '8px',
-          padding: '6px 10px',
-          background: (palette.bg || '#0f172a') + 'aa',
-          border: '1px dashed ' + (palette.accent || '#60a5fa'),
-          borderRadius: '8px',
-          fontSize: '11px',
-          color: palette.textDim || '#cbd5e1',
-          marginBottom: '10px',
-          lineHeight: '1.4'
+      // ── Class-mode strip (Phase 3b.full.b) ─────────────────────────
+      // Visible when in a live session. Shows different UX per role:
+      //   - Host, no encounter active: "Start class encounter" CTA
+      //   - Host, encounter active: status banner ("Your class encounter
+      //     is active — students can join")
+      //   - Student, no encounter active: "Waiting for your teacher" hint
+      //   - Student, encounter active: prominent "🌐 Join: [topic]" CTA
+      isInSession ? (function () {
+        if (ctx.isHost) {
+          if (hasOpenClassEncounter) {
+            return h('div', {
+              role: 'status',
+              style: {
+                padding: '10px 12px',
+                background: (palette.bg || '#0f172a') + 'aa',
+                border: '1.5px solid ' + (palette.accent || '#60a5fa'),
+                borderRadius: '8px',
+                marginBottom: '10px',
+                fontSize: '12px',
+                color: palette.text || '#e2e8f0',
+                lineHeight: '1.45'
+              }
+            },
+              h('div', { style: { fontWeight: 700, marginBottom: '2px' } },
+                '🌐 Class encounter active · ' + (classEncounter.topic || 'untitled')),
+              h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1' } },
+                'Students in session ' + ctx.sessionCode + ' can now join from their AlloHaven Arcades.')
+            );
+          }
+          // Host, no active encounter — Start CTA
+          return h('button', {
+            onClick: handleStartClassEncounter,
+            disabled: disabled || !canAfford,
+            'aria-label': 'Start a class-vs-AI encounter for session ' + ctx.sessionCode,
+            style: {
+              display: 'flex', gap: '12px', alignItems: 'center',
+              width: '100%',
+              padding: '10px 12px',
+              background: 'transparent',
+              border: '1.5px dashed ' + (palette.accent || '#60a5fa'),
+              borderRadius: '8px',
+              cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+              color: palette.text || '#e2e8f0',
+              textAlign: 'left',
+              marginBottom: '10px',
+              opacity: (disabled || !canAfford) ? 0.6 : 1
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, '🌐'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Start class encounter'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginTop: '2px' } },
+                'Pick a topic; students in session ' + ctx.sessionCode + ' can join. Same ' + tokensCost + ' 🪙 cost.')
+            )
+          );
         }
-      },
-        h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, '🌐'),
-        h('span', { style: { flex: 1 } },
-          'In live session ', h('strong', null, ctx.sessionCode), '. ',
-          ctx.isHost
-            ? 'Class-vs-AI mode is on the way; for now solo encounters work.'
-            : 'Joined as ' + (ctx.studentNickname || 'a student') + '. Class-vs-AI mode coming soon.'
-        )
-      ) : null,
+        // Student
+        if (hasOpenClassEncounter) {
+          return h('button', {
+            onClick: handleJoinClassEncounter,
+            disabled: disabled || !canAfford,
+            'aria-label': 'Join the class encounter on ' + (classEncounter.topic || 'untitled'),
+            style: {
+              display: 'flex', gap: '12px', alignItems: 'center',
+              width: '100%',
+              padding: '10px 12px',
+              background: (palette.accent || '#60a5fa') + '22',
+              border: '1.5px solid ' + (palette.accent || '#60a5fa'),
+              borderRadius: '8px',
+              cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+              color: palette.text || '#e2e8f0',
+              textAlign: 'left',
+              marginBottom: '10px',
+              opacity: (disabled || !canAfford) ? 0.6 : 1
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '22px' } }, '🌐'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } },
+                'Join class encounter: ' + (classEncounter.topic || 'untitled')),
+              h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginTop: '2px' } },
+                (classEncounter.hostNickname ? classEncounter.hostNickname + ' is hosting. ' : '')
+                + 'Same ' + tokensCost + ' 🪙 cost. Solo still works below.')
+            )
+          );
+        }
+        // Student, no encounter — small waiting hint
+        return h('div', {
+          role: 'status',
+          style: {
+            display: 'flex', alignItems: 'center', gap: '8px',
+            padding: '6px 10px',
+            background: (palette.bg || '#0f172a') + 'aa',
+            border: '1px dashed ' + (palette.border || '#334155'),
+            borderRadius: '8px',
+            fontSize: '11px',
+            color: palette.textDim || '#cbd5e1',
+            marginBottom: '10px',
+            lineHeight: '1.4'
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '14px' } }, '🌐'),
+          h('span', { style: { flex: 1 } },
+            'In session ', h('strong', null, ctx.sessionCode), '. ',
+            'Waiting for your teacher to start a class encounter. Solo works any time.')
+        );
+      })() : null,
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
         h('div', { style: { fontSize: '11px', color: palette.textMute || '#a3a3a3', flex: 1 } },
           deckSize >= 3
@@ -201,7 +358,7 @@
           : disabled ? 'Another game running'
           : !canAfford && deckSize < 3 ? 'Need 3+ cards'
           : !canAfford ? 'Need ' + tokensCost + ' 🪙'
-          : 'Start · ' + tokensCost + ' 🪙'
+          : (isInSession ? 'Solo · ' : 'Start · ') + tokensCost + ' 🪙'
         )
       )
     );
@@ -263,16 +420,32 @@
       return decoCards.concat(glossCards);
     }, []); // eslint-disable-line
 
+    // Phase 3b.full.b — class-mode sentinel snapshot. Captured ONCE on
+    // mount (sentinel cleared after read so re-mounts don't re-trigger).
+    // Drives the encounter's initial state: solo (default), host
+    // creating a class encounter, or student joining one.
+    var classModeRef = useRef(null);
+    if (classModeRef.current === null) {
+      classModeRef.current = window.__alloHavenBossClassMode || { role: null };
+      window.__alloHavenBossClassMode = null; // one-shot
+    }
+    var classMode = classModeRef.current;
+    var isClassHost = classMode.role === 'host';
+    var isClassStudent = classMode.role === 'student';
+    var isClassMode = isClassHost || isClassStudent;
+
     // Encounter state machine: 'topic' | 'gen-boss' | 'play' | 'won' | 'lost' | 'expired'
-    var phaseTuple = useState('topic');
+    // Students joining a class encounter skip 'topic' + 'gen-boss' and
+    // start in 'play' with topic + boss image from the host's session doc.
+    var phaseTuple = useState(isClassStudent ? 'play' : 'topic');
     var phase = phaseTuple[0];
     var setPhase = phaseTuple[1];
 
-    var topicTuple = useState('');
+    var topicTuple = useState(isClassStudent ? (classMode.encounterTopic || '') : '');
     var topic = topicTuple[0];
     var setTopic = topicTuple[1];
 
-    var bossImageTuple = useState(null);
+    var bossImageTuple = useState(isClassStudent ? (classMode.encounterBossImage || null) : null);
     var bossImage = bossImageTuple[0];
     var setBossImage = bossImageTuple[1];
 
@@ -377,6 +550,7 @@
       }
       if (typeof ctx.callImagen !== 'function') {
         // Graceful degradation — proceed with no boss image
+        publishClassEncounterStart(t, null);
         setPhase('play');
         drawHand();
         return;
@@ -387,15 +561,63 @@
       ctx.callImagen(prompt).then(function (result) {
         var img = (typeof result === 'string') ? result : (result && result.imageBase64);
         if (img) setBossImage(img);
+        publishClassEncounterStart(t, img || null);
         setPhase('play');
         drawHand();
       }).catch(function (err) {
         // Boss image is decorative; proceed without it
         setBossErr((err && err.message) || 'Could not generate boss art.');
+        publishClassEncounterStart(t, null);
         setPhase('play');
         drawHand();
       });
     }
+
+    // Phase 3b.full.b — host writes the encounter to the session doc on
+    // start so students can see "Join class encounter: [topic]" in their
+    // own AlloHaven Arcades. No-op for solo + student-join paths.
+    function publishClassEncounterStart(topicText, bossImg) {
+      if (!isClassHost) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      try {
+        ctx.sessionUpdate({
+          bossEncounter: {
+            topic: topicText,
+            bossImageBase64: bossImg || null,
+            hostNickname: classMode.hostNickname || 'Teacher',
+            status: 'open',
+            startedAt: classMode.startedAt || new Date().toISOString()
+          }
+        }).catch(function () { /* ignore — best-effort */ });
+        ctx.addToast('🌐 Class encounter live. Students can join.');
+      } catch (e) { /* ignore */ }
+    }
+    // Mark the session encounter completed when the host's encounter
+    // ends (any terminal phase). Students who haven't joined yet won't
+    // see a stale "Join" prompt; future encounters can overwrite cleanly.
+    function publishClassEncounterEnd(outcome) {
+      if (!isClassHost) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      try {
+        ctx.sessionUpdate({
+          bossEncounter: {
+            status: 'completed',
+            endedOutcome: outcome || 'completed',
+            endedAt: new Date().toISOString()
+          }
+        }).catch(function () { /* ignore */ });
+      } catch (e) { /* ignore */ }
+    }
+
+    // Phase 3b.full.b — students joining a class encounter skip the
+    // topic + gen-boss phases (they came from the host's session doc).
+    // Draw their hand on mount so they can play immediately.
+    useEffect(function () {
+      if (isClassStudent && phase === 'play') {
+        drawHand();
+      }
+      // eslint-disable-next-line
+    }, []);
 
     function drawHand() {
       var pool = deck.slice();
@@ -792,6 +1014,7 @@
 
       if (newHp <= 0) {
         emitEncounterRecord('won', newHp);
+        publishClassEncounterEnd('won');
         setPhase('won');
         return;
       }
@@ -799,6 +1022,7 @@
       var nextRound = round + 1;
       if (nextRound > MAX_ROUNDS) {
         emitEncounterRecord('lost', newHp);
+        publishClassEncounterEnd('lost');
         setPhase('lost');
         return;
       }
@@ -875,6 +1099,7 @@
       // user/host forced an end). Treat as expired.
       if (!ctx.session) {
         emitEncounterRecord('expired');
+        publishClassEncounterEnd('expired');
         setPhase('expired');
       }
       // eslint-disable-next-line
@@ -885,6 +1110,7 @@
       // play. Topic-input cancellations don't count as encounters.
       if (phase === 'play') {
         emitEncounterRecord('forfeit');
+        publishClassEncounterEnd('forfeit');
       }
       // End the arcade session early
       if (typeof ctx.onEndSession === 'function') ctx.onEndSession('forfeit');
@@ -896,10 +1122,13 @@
     var topRow = h('div', {
       style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }
     },
-      h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, '🐉'),
+      h('span', { 'aria-hidden': 'true', style: { fontSize: '24px' } }, isClassMode ? '🌐' : '🐉'),
       h('div', { style: { flex: 1, minWidth: 0 } },
-        h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } }, 'Boss Encounter · ' + (topic || '...')),
-        h('div', { style: { fontSize: '11px', color: palette.textDim } }, phase === 'play' ? ('Round ' + round + ' of ' + MAX_ROUNDS) : phase)
+        h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } },
+          (isClassMode ? 'Class Encounter' : 'Boss Encounter') + ' · ' + (topic || '...')),
+        h('div', { style: { fontSize: '11px', color: palette.textDim } },
+          isClassStudent && classMode.hostNickname ? (classMode.hostNickname + ' · ') : '',
+          phase === 'play' ? ('Round ' + round + ' of ' + MAX_ROUNDS) : phase)
       ),
       h('button', {
         onClick: exitEncounter,
