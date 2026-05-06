@@ -17394,6 +17394,129 @@
             })
           ),
 
+          // ── Voice Quality picker (Phase 3v.2) ──
+          // Shared preference across AlloFlow voice surfaces. Reads/writes
+          // window.AlloFlowVoice.savePreference. Engines that haven't shipped
+          // yet (Whisper, Gemini multimodal) are present in the picker but
+          // gated/labeled as 'coming soon' — saves a future-compatible value
+          // so today's chosen mode is honored when those engines land.
+          (function() {
+            if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.loadPreference !== 'function') {
+              return null;
+            }
+            var prefs = window.AlloFlowVoice.loadPreference();
+            var caps = (typeof window.AlloFlowVoice.getCapabilities === 'function')
+              ? window.AlloFlowVoice.getCapabilities()
+              : { webSpeech: false, mediaRecorder: false, webGPU: false, indexedDB: false, whisperLoaded: false };
+            // The four engines + their availability (today vs. coming soon)
+            var engineDefs = [
+              { id: 'auto',       label: 'Auto',                    emoji: '🎚️', desc: 'Pick the best available engine automatically.', ready: true },
+              { id: 'best',       label: 'Best (Whisper)',          emoji: '🎙️', desc: 'In-browser local model. Highest quality. Coming in Phase 3v.3 (75–500 MB download).', ready: false },
+              { id: 'gemini',     label: 'Gemini multimodal audio', emoji: '✨',  desc: 'Highest quality per-call. Coming in Phase 3v.4. Audio uploaded to Google.', ready: false },
+              { id: 'fast',       label: 'Fast (Web Speech)',       emoji: '⚡', desc: 'Free, native browser. Audio routes through Google in Chrome. Available now.', ready: caps.webSpeech },
+              { id: 'off',        label: 'Off',                     emoji: '🔇', desc: 'Disable voice input across AlloFlow. Mic buttons hide; text input only.', ready: true }
+            ];
+            var current = prefs.engine || 'auto';
+            return h('div', null,
+              h('div', {
+                style: { fontSize: '13px', color: palette.textDim, marginTop: '18px', marginBottom: '6px', fontWeight: 600 }
+              }, 'Voice quality'),
+              h('p', {
+                style: { fontSize: '11px', color: palette.textMute, marginTop: 0, marginBottom: '10px', lineHeight: '1.5' }
+              }, 'Shared across all AlloFlow voice features (reflections, voice notes, future arcade card-play). Engines marked “coming soon” save your choice now and activate when shipped.'),
+              h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+                engineDefs.map(function(eng) {
+                  var active = current === eng.id;
+                  var disabled = !eng.ready && eng.id !== 'auto'; // auto always selectable
+                  return h('button', {
+                    key: 've-' + eng.id,
+                    onClick: function() {
+                      if (disabled) {
+                        addToast('🎙️ ' + eng.label + ' — saved your choice; will activate when this engine ships.');
+                      }
+                      try {
+                        window.AlloFlowVoice.savePreference({ engine: eng.id });
+                        // Force re-render so the active state updates
+                        setStateField('arcade', Object.assign({}, state.arcade));
+                      } catch (err) {
+                        addToast('Could not save voice preference.');
+                      }
+                    },
+                    'aria-pressed': active ? 'true' : 'false',
+                    'aria-label': eng.label + (disabled ? ' (coming soon)' : ''),
+                    style: {
+                      display: 'flex', alignItems: 'flex-start', gap: '10px',
+                      padding: '10px 12px',
+                      background: active ? palette.surface : 'transparent',
+                      border: '1.5px solid ' + (active ? palette.accent : palette.border),
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      textAlign: 'left',
+                      color: palette.text,
+                      opacity: disabled ? 0.85 : 1
+                    }
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: '20px', flexShrink: 0 } }, eng.emoji),
+                    h('div', { style: { flex: 1, minWidth: 0 } },
+                      h('div', { style: { fontSize: '13px', fontWeight: 700, marginBottom: '2px' } },
+                        eng.label,
+                        !eng.ready ? h('span', {
+                          style: {
+                            marginLeft: '8px', fontSize: '10px', fontWeight: 600,
+                            padding: '1px 6px', borderRadius: '999px',
+                            background: palette.surface, color: palette.textMute,
+                            border: '1px solid ' + palette.border
+                          }
+                        }, 'coming soon') : null
+                      ),
+                      h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.4' } }, eng.desc)
+                    )
+                  );
+                })
+              ),
+              // Whisper tier sub-picker — only shown when 'best' is selected.
+              // Saves the tier for when 3v.3 lands.
+              (current === 'best') ? h('div', {
+                style: { marginTop: '8px', paddingLeft: '12px', borderLeft: '2px solid ' + palette.border }
+              },
+                h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+                  'Whisper model size'),
+                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
+                  [
+                    { id: 'tiny',  label: 'Tiny · 75 MB',   note: 'fastest, runs on any laptop' },
+                    { id: 'base',  label: 'Base · 150 MB',  note: 'balanced (recommended)' },
+                    { id: 'small', label: 'Small · 500 MB', note: 'best, needs WebGPU' }
+                  ].map(function(tier) {
+                    var tactive = (prefs.whisperTier || 'tiny') === tier.id;
+                    return h('button', {
+                      key: 'vt-' + tier.id,
+                      onClick: function() {
+                        try {
+                          window.AlloFlowVoice.savePreference({ whisperTier: tier.id });
+                          setStateField('arcade', Object.assign({}, state.arcade));
+                        } catch (err) { /* ignore */ }
+                      },
+                      'aria-pressed': tactive ? 'true' : 'false',
+                      title: tier.note,
+                      style: {
+                        background: tactive ? palette.accent : 'transparent',
+                        color: tactive ? palette.onAccent : palette.text,
+                        border: '1.5px solid ' + (tactive ? palette.accent : palette.border),
+                        borderRadius: '999px',
+                        padding: '4px 12px',
+                        fontSize: '11px',
+                        fontWeight: tactive ? 700 : 600,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit'
+                      }
+                    }, tier.label);
+                  })
+                )
+              ) : null
+            );
+          })(),
+
           // ── Arcade time-budget (Phase 3a) ──
           // Tokens convert to play time at this rate. Teacher- (or
           // self-) configurable so a class can scale arcade access.

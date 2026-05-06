@@ -1717,6 +1717,196 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ' — $95 consult, 24/7. Often faster than driving to ER and they\'ll triage whether home observation is enough or vet is needed. ',
             h('strong', null, 'Pet Poison Helpline: (855) 764-7661'),
             ' is an alternative.')),
+
+        // ─── TOXIC FOODS SLEUTH (net-new mini-game) ───
+        // 10 vignettes; player picks the species at risk from 5 options.
+        // Tests the discrimination between commonly-confused cases (chocolate
+        // vs xylitol, lily-cat vs grape-dog, avocado vs teflon-fume birds).
+        // Lifts data from the 8 toxic foods reference card above + safe distractors.
+        (function() {
+          var TFS_OPTIONS = [
+            { id: 'safe',        label: 'Safe for both',     color: '#22c55e', icon: '✅', def: 'No documented toxicity for either dogs or cats at typical exposure.' },
+            { id: 'toxicDogs',   label: 'Toxic — dogs',      color: '#dc2626', icon: '🐕', def: 'Primarily affects dogs (cats may be theoretical risk but not the canonical poisoning case).' },
+            { id: 'toxicCats',   label: 'Toxic — cats',      color: '#a855f7', icon: '🐈', def: 'Primarily affects cats (dogs less commonly affected).' },
+            { id: 'toxicBirds',  label: 'Toxic — birds',     color: '#0ea5e9', icon: '🦜', def: 'Primarily affects birds (often fatal; respiratory or cardiac mechanism).' },
+            { id: 'toxicMulti',  label: 'Toxic — multiple', color: '#f59e0b', icon: '⚠️', def: 'Toxic to multiple species — dogs + cats both at risk, sometimes ferrets and birds too.' }
+          ];
+          var TFS_VIGNETTES = [
+            { id: 1, food: 'Dark chocolate (~1 oz)', icon: '🍫', correct: 'toxicMulti',
+              why: 'Theobromine + caffeine. Dogs metabolize theobromine very slowly (canonical poisoning case), but cats, ferrets, AND birds are also at risk. Dark chocolate is far worse than milk; baker\'s chocolate is the worst.' },
+            { id: 2, food: 'Easter lily petals + pollen', icon: '🌸', correct: 'toxicCats',
+              why: 'CATS only at clinical risk. ALL parts of true lilies (Lilium spp.) cause acute kidney failure in cats — even pollen brushed off on fur and groomed off. Dogs are essentially unaffected.' },
+            { id: 3, food: 'Sugar-free gum (xylitol)', icon: '🧪', correct: 'toxicDogs',
+              why: 'Xylitol triggers massive insulin release in dogs → hypoglycemia + liver failure. As little as 1–2 pieces of gum can poison a small dog. Cats are largely unaffected because their insulin response differs.' },
+            { id: 4, food: 'Grapes / raisins (any amount)', icon: '🍇', correct: 'toxicDogs',
+              why: 'Tartaric acid (ASPCA 2021) causes acute kidney failure in dogs, unpredictably — even tiny amounts can kill. Cats theoretical but no confirmed cases. Treat ANY ingestion in a dog as emergency.' },
+            { id: 5, food: 'Cooked onions in food scraps', icon: '🧅', correct: 'toxicMulti',
+              why: 'N-propyl disulfide damages red blood cells in BOTH dogs and cats → hemolytic anemia. Cats are MORE sensitive than dogs. Cooking does NOT inactivate. Garlic and leeks (same Allium family) work the same way.' },
+            { id: 6, food: 'Avocado flesh + skin', icon: '🥑', correct: 'toxicBirds',
+              why: 'Persin causes cardiac muscle damage in BIRDS — can kill within 24 hours. Parrots, cockatiels, and canaries are especially vulnerable. Dogs and cats are relatively tolerant of avocado flesh (the pit is a GI obstruction risk, but not chemically toxic).' },
+            { id: 7, food: 'Overheated nonstick (Teflon) pan fumes', icon: '🍳', correct: 'toxicBirds',
+              why: 'Polymer fumes from PTFE > 500°F kill BIRDS in MINUTES — respiratory system shuts down. Cats and dogs are not at clinical risk. Why pet birds should never be in the kitchen during cooking. Same risk: scented candles, aerosol cleaners, cigarette smoke.' },
+            { id: 8, food: 'A handful of macadamia nuts', icon: '🥜', correct: 'toxicDogs',
+              why: 'Mechanism unknown but causes weakness, tremors, hyperthermia, hind-limb ataxia in DOGS within 12 hours. Cats are unaffected. Usually self-resolves but distressing. ~2 g/kg toxic dose.' },
+            { id: 9, food: 'Plain cooked chicken (boneless, unseasoned)', icon: '🍗', correct: 'safe',
+              why: 'Plain protein, no Allium seasoning, no bones (cooked bones splinter). Safe for both dogs and cats — and a common ER vet recommendation as a bland diet for upset stomachs.' },
+            { id: 10, food: 'Raw carrot sticks', icon: '🥕', correct: 'safe',
+              why: 'Carrots are safe and even beneficial (low-calorie chewing) for dogs and cats. Some cats ignore them entirely, but no toxicity. Crunchy texture also helps with dental plaque in dogs.' }
+          ];
+
+          var tfsIdx = d.tfsIdx == null ? -1 : d.tfsIdx;
+          var tfsSeed = d.tfsSeed || 1;
+          var tfsAns = !!d.tfsAns;
+          var tfsPick = d.tfsPick;
+          var tfsScore = d.tfsScore || 0;
+          var tfsRounds = d.tfsRounds || 0;
+          var tfsStreak = d.tfsStreak || 0;
+          var tfsBest = d.tfsBest || 0;
+          var tfsShown = d.tfsShown || [];
+          var tfsOpen = !!d.tfsOpen;
+
+          function startTfs() {
+            var pool = [];
+            for (var i = 0; i < TFS_VIGNETTES.length; i++) if (tfsShown.indexOf(i) < 0) pool.push(i);
+            if (pool.length === 0) { pool = []; for (var j = 0; j < TFS_VIGNETTES.length; j++) pool.push(j); tfsShown = []; }
+            var seedNext = ((tfsSeed * 16807 + 11) % 2147483647) || 7;
+            var pick = pool[seedNext % pool.length];
+            upd('tfsSeed', seedNext);
+            upd('tfsIdx', pick);
+            upd('tfsAns', false);
+            upd('tfsPick', null);
+            upd('tfsShown', tfsShown.concat([pick]));
+          }
+          function pickTfs(optId) {
+            if (tfsAns) return;
+            var v = TFS_VIGNETTES[tfsIdx];
+            var correct = optId === v.correct;
+            var newScore = tfsScore + (correct ? 1 : 0);
+            var newStreak = correct ? (tfsStreak + 1) : 0;
+            var newBest = Math.max(tfsBest, newStreak);
+            upd('tfsAns', true);
+            upd('tfsPick', optId);
+            upd('tfsScore', newScore);
+            upd('tfsRounds', tfsRounds + 1);
+            upd('tfsStreak', newStreak);
+            upd('tfsBest', newBest);
+          }
+
+          return h('div', { style: { padding: 14, marginTop: 14, borderRadius: 10, background: T.card, border: '2px solid ' + T.accent + '88' } },
+            h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '🕵️'),
+                h('div', null,
+                  h('div', { style: { color: T.accentHi, fontSize: 14, fontWeight: 900 } }, 'Toxic Foods Sleuth'),
+                  h('div', { style: { color: T.dim, fontSize: 11, fontStyle: 'italic' } }, '10 vignettes — pick the species at risk. Builds the "could this kill the pet?" reflex.')
+                )
+              ),
+              h('button', {
+                onClick: function() { upd('tfsOpen', !tfsOpen); },
+                style: { padding: '6px 12px', borderRadius: 8, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accent, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, tfsOpen ? 'Hide ▴' : 'Play →')
+            ),
+            tfsOpen && h('div', { style: { marginTop: 12 } },
+              tfsIdx < 0
+                ? h('div', { style: { textAlign: 'center', padding: '12px 8px' } },
+                    h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
+                      '10 food + species vignettes. For each, pick which species (if any) is at primary risk. After picking, a coaching block names what makes this species the canonical poisoning case and what the others would or would not experience.'),
+                    h('button', {
+                      onClick: startTfs,
+                      style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#0f172a', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+                    }, '🕵️ Start — vignette 1 of 10')
+                  )
+                : (function() {
+                    var v = TFS_VIGNETTES[tfsIdx];
+                    var pickedCorrect = tfsAns && tfsPick === v.correct;
+                    var pct = tfsRounds > 0 ? Math.round((tfsScore / tfsRounds) * 100) : 0;
+                    var allDone = tfsShown.length >= TFS_VIGNETTES.length && tfsAns;
+                    return h('div', null,
+                      // Score header
+                      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: T.dim, marginBottom: 8 } },
+                        h('span', null, 'Vignette ', h('strong', { style: { color: T.text } }, tfsShown.length)),
+                        h('span', null, 'Score ', h('strong', { style: { color: T.ok } }, tfsScore + ' / ' + tfsRounds)),
+                        tfsRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link } }, pct + '%')),
+                        h('span', null, 'Streak ', h('strong', { style: { color: T.warm } }, tfsStreak)),
+                        h('span', null, 'Best ', h('strong', { style: { color: T.accentHi } }, tfsBest))
+                      ),
+                      // Vignette card
+                      h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '2px solid ' + T.accent + '60', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+                        h('div', { style: { fontSize: 36, flexShrink: 0 }, 'aria-hidden': 'true' }, v.icon),
+                        h('div', { style: { flex: 1, minWidth: 200 } },
+                          h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Vignette ' + tfsShown.length + ' of ' + TFS_VIGNETTES.length),
+                          h('div', { style: { fontSize: 14, fontWeight: 700, color: T.text } }, v.food)
+                        )
+                      ),
+                      // 5 picker buttons
+                      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the species at risk' },
+                        TFS_OPTIONS.map(function(opt) {
+                          var picked = tfsAns && tfsPick === opt.id;
+                          var isRight = tfsAns && opt.id === v.correct;
+                          var bg, border, color;
+                          if (tfsAns) {
+                            if (isRight) { bg = 'rgba(34,197,94,0.15)'; border = T.ok; color = '#bbf7d0'; }
+                            else if (picked) { bg = 'rgba(239,68,68,0.15)'; border = T.danger; color = '#fecaca'; }
+                            else { bg = T.cardAlt; border = T.border; color = T.dim; }
+                          } else {
+                            bg = opt.color + '20'; border = opt.color + '60'; color = T.text;
+                          }
+                          return h('button', {
+                            key: opt.id, role: 'radio',
+                            'aria-checked': picked ? 'true' : 'false',
+                            'aria-label': opt.label,
+                            disabled: tfsAns,
+                            onClick: function() { pickTfs(opt.id); },
+                            style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: tfsAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 60, transition: 'all 0.15s' }
+                          },
+                            h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                              h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, opt.icon),
+                              h('span', { style: { color: tfsAns ? color : opt.color, fontSize: 12, fontWeight: 800 } }, opt.label)
+                            ),
+                            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: tfsAns ? color : T.muted } }, opt.def)
+                          );
+                        })
+                      ),
+                      // Feedback
+                      tfsAns && h('div', {
+                        style: {
+                          marginTop: 10, padding: '10px 12px', borderRadius: 8,
+                          background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+                          border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+                        }
+                      },
+                        h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 4, color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+                          pickedCorrect
+                            ? '✅ Correct — ' + (TFS_OPTIONS.filter(function(x) { return x.id === v.correct; })[0]).label
+                            : '❌ It was ' + (TFS_OPTIONS.filter(function(x) { return x.id === v.correct; })[0]).label + (tfsPick ? ' (you picked ' + (TFS_OPTIONS.filter(function(x) { return x.id === tfsPick; })[0]).label + ')' : '')
+                        ),
+                        h('p', { style: { color: T.text, fontSize: 12, lineHeight: 1.55, margin: '0 0 8px' } }, v.why),
+                        allDone
+                          ? h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent } },
+                              h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 vignettes complete'),
+                              h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } },
+                                'Final: ', h('strong', null, tfsScore + ' / ' + TFS_VIGNETTES.length + ' (' + Math.round((tfsScore / TFS_VIGNETTES.length) * 100) + '%)'),
+                                tfsScore === TFS_VIGNETTES.length ? ' — every species-specific risk correctly identified. Save the ASPCA poison control number above to your phone now.' :
+                                tfsScore >= 8 ? ' — strong species-discrimination reasoning. The most-confused pair is usually grapes vs onions (one is dogs-only, the other affects both).' :
+                                tfsScore >= 6 ? ' — solid baseline. The discriminator to remember: lily kills CATS only; xylitol/grapes/macadamia kill DOGS; teflon/avocado kill BIRDS; chocolate + onions affect ALL.' :
+                                ' — these patterns matter at 2 AM when a kid texts you "my dog ate X." Save the poison control number AND retake.'
+                              ),
+                              h('button', {
+                                onClick: function() { upd('tfsIdx', -1); upd('tfsShown', []); upd('tfsScore', 0); upd('tfsRounds', 0); upd('tfsStreak', 0); },
+                                style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                              }, '🔄 Restart')
+                            )
+                          : h('button', {
+                              onClick: startTfs,
+                              style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                            }, '➡️ Next vignette')
+                      )
+                    );
+                  })()
+            )
+          );
+        })(),
+
         footer());
     }
 
