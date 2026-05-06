@@ -14539,7 +14539,8 @@
                       h('div', { style: { fontSize: '10px', color: palette.textDim, display: 'flex', gap: '8px', flexWrap: 'wrap' } },
                         h('span', null, dateStr),
                         h('span', null, (enc.roundsPlayed || 0) + ' Sparks'),
-                        (enc.criticalCount || 0) > 0 ? h('span', null, '✨ ' + enc.criticalCount) : null
+                        (enc.criticalCount || 0) > 0 ? h('span', null, '✨ ' + enc.criticalCount) : null,
+                        (enc.transformCount || 0) > 0 ? h('span', { 'aria-label': enc.transformCount + ' visual transform' + (enc.transformCount === 1 ? '' : 's') }, '🎨 ' + enc.transformCount) : null
                       )
                     ),
                     outcomeChip(enc.outcome)
@@ -19731,7 +19732,8 @@
               h('p', { style: smallMetaStyle },
                 dateStr + ' · ' + (enc.roundsPlayed || 0) + ' Sparks · '
                 + (enc.criticalCount || 0) + ' critical · '
-                + (enc.totalDamage || 0) + ' damage'),
+                + (enc.totalDamage || 0) + ' damage'
+                + ((enc.transformCount || 0) > 0 ? ' · ' + enc.transformCount + ' visual transform' + (enc.transformCount === 1 ? '' : 's') : '')),
               enc.strongestSpark ? h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginTop: '4px', margin: '4px 0 0 0' }) },
                 '✨ Strongest Spark (score ' + enc.strongestSpark.score
                 + (enc.strongestSpark.teacherAdjusted && typeof enc.strongestSpark.originalScore === 'number'
