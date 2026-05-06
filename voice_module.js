@@ -229,13 +229,197 @@
   // These are documented placeholders so call sites can already check
   // capability today; concrete implementations land in 3v.2 / 3v.3 / 3v.4.
 
+  // ── recordAudioBlob ───────────────────────────────────────────────
+  // Unified MediaRecorder pipeline. Returns a controller object whose
+  // .result property is a Promise resolving when recording stops
+  // (either via .stop() or maxDurationMs auto-stop).
+  //
+  // opts (all optional):
+  //   maxDurationMs: hard cap (default 60_000). Auto-stops at this point.
+  //   preferredMimeType: 'audio/webm;codecs=opus' (default).
+  //     Falls back through 'audio/webm', 'audio/mp4', then browser default.
+  //   onTick(elapsedMs): fires every ~100ms while recording.
+  //   onLevel(level0to1): fires per audio level update (deferred —
+  //     needs Web Audio analyser; stubbed for now to keep this commit small).
+  //   onError(err): fires on recording error (mic denied, etc.).
+  //
+  // Returns:
+  //   { stop(), cancel(), isRecording(), result, mimeType, supported }
+  //
+  // .result resolves with { base64, mimeType, durationMs }.
+  // .cancel() ends without resolving (rejects with 'cancelled').
   function recordAudioBlob(opts) {
-    // Phase 3v.2 — unified MediaRecorder pipeline.
-    // Will return a Promise<{ base64, mimeType, durationMs }>.
-    if (typeof console !== 'undefined') {
-      console.warn('[Voice] recordAudioBlob not yet implemented (Phase 3v.2). Use inline MediaRecorder for now.');
+    opts = opts || {};
+    var caps = getCapabilities();
+    if (!caps.mediaRecorder) {
+      return {
+        supported: false,
+        isRecording: function () { return false; },
+        stop: function () { /* noop */ },
+        cancel: function () { /* noop */ },
+        result: Promise.reject(new Error('MediaRecorder not supported in this browser'))
+      };
     }
-    return Promise.reject(new Error('voice.recordAudioBlob not yet implemented'));
+
+    var maxDurationMs = typeof opts.maxDurationMs === 'number' ? opts.maxDurationMs : 60000;
+    var preferredMime = opts.preferredMimeType || 'audio/webm;codecs=opus';
+    var fallbackChain = [preferredMime, 'audio/webm', 'audio/mp4', ''];
+
+    var stream = null;
+    var rec = null;
+    var chunks = [];
+    var startedAt = 0;
+    var stopReason = null;            // 'stop' | 'auto' | 'cancel' | null
+    var tickInterval = null;
+    var maxDurationTimer = null;
+    var isRec = false;
+    var resolveResult, rejectResult;
+
+    var resultPromise = new Promise(function (res, rej) {
+      resolveResult = res;
+      rejectResult = rej;
+    });
+
+    function pickMime() {
+      for (var i = 0; i < fallbackChain.length; i++) {
+        var m = fallbackChain[i];
+        if (m === '' || (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(m))) {
+          return m;
+        }
+      }
+      return '';
+    }
+
+    function cleanup() {
+      if (tickInterval) { clearInterval(tickInterval); tickInterval = null; }
+      if (maxDurationTimer) { clearTimeout(maxDurationTimer); maxDurationTimer = null; }
+      if (stream) {
+        try {
+          stream.getTracks().forEach(function (t) { try { t.stop(); } catch (e) { /* ignore */ } });
+        } catch (e) { /* ignore */ }
+        stream = null;
+      }
+    }
+
+    function blobToBase64(blob) {
+      return new Promise(function (res, rej) {
+        var reader = new FileReader();
+        reader.onloadend = function () { res(reader.result); };
+        reader.onerror = function () { rej(new Error('Could not read audio blob')); };
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    function startInternal() {
+      if (typeof navigator === 'undefined' || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        var err = new Error('Microphone access not available in this browser');
+        if (typeof opts.onError === 'function') opts.onError(err);
+        rejectResult(err);
+        return;
+      }
+      navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
+        stream = s;
+        var mime = pickMime();
+        try {
+          rec = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+        } catch (constructErr) {
+          // Some browsers reject the explicit mimeType; retry with default.
+          try { rec = new MediaRecorder(stream); }
+          catch (fallbackErr) {
+            cleanup();
+            if (typeof opts.onError === 'function') opts.onError(fallbackErr);
+            rejectResult(fallbackErr);
+            return;
+          }
+        }
+        rec.ondataavailable = function (ev) {
+          if (ev.data && ev.data.size > 0) chunks.push(ev.data);
+        };
+        rec.onstop = function () {
+          var durationMs = Date.now() - startedAt;
+          var actualMime = (rec && rec.mimeType) || mime || 'audio/webm';
+          var blob = new Blob(chunks, { type: actualMime });
+          cleanup();
+          isRec = false;
+          if (stopReason === 'cancel') {
+            rejectResult(new Error('cancelled'));
+            return;
+          }
+          blobToBase64(blob).then(function (base64) {
+            resolveResult({
+              base64: base64,
+              mimeType: actualMime,
+              durationMs: durationMs,
+              size: blob.size,
+              stopReason: stopReason || 'stop'
+            });
+          }).catch(function (err) {
+            rejectResult(err);
+          });
+        };
+        rec.onerror = function (ev) {
+          if (typeof opts.onError === 'function') opts.onError(ev);
+        };
+        startedAt = Date.now();
+        isRec = true;
+        try { rec.start(100); /* request a chunk every 100ms */ }
+        catch (e) {
+          // Some browsers reject the timeslice arg; retry without
+          try { rec.start(); } catch (e2) {
+            cleanup();
+            if (typeof opts.onError === 'function') opts.onError(e2);
+            rejectResult(e2);
+            return;
+          }
+        }
+        // Tick callback for elapsed-time UI
+        if (typeof opts.onTick === 'function') {
+          tickInterval = setInterval(function () {
+            try { opts.onTick(Date.now() - startedAt); } catch (err) { /* ignore */ }
+          }, 100);
+        }
+        // Auto-stop at max duration
+        maxDurationTimer = setTimeout(function () {
+          if (isRec) { stopReason = 'auto'; try { rec.stop(); } catch (e) { /* ignore */ } }
+        }, maxDurationMs);
+      }).catch(function (err) {
+        cleanup();
+        var msg = (err && err.name === 'NotAllowedError')
+          ? 'Microphone access denied. Enable it in your browser settings to use voice input.'
+          : (err && err.message) || 'Could not start microphone';
+        var wrapped = new Error(msg);
+        wrapped.original = err;
+        if (typeof opts.onError === 'function') opts.onError(wrapped);
+        rejectResult(wrapped);
+      });
+    }
+
+    function stopExternal() {
+      if (!isRec || !rec) return;
+      stopReason = 'stop';
+      try { rec.stop(); } catch (e) { /* ignore */ }
+    }
+
+    function cancelExternal() {
+      if (!isRec) return;
+      stopReason = 'cancel';
+      try { if (rec) rec.stop(); } catch (e) { /* ignore */ }
+      cleanup();
+    }
+
+    // Kick off the capture; the controller is returned synchronously
+    // so the caller can stop/cancel even before the mic permission
+    // resolves.
+    startInternal();
+
+    return {
+      supported: true,
+      isRecording: function () { return isRec; },
+      stop: stopExternal,
+      cancel: cancelExternal,
+      result: resultPromise,
+      mimeType: preferredMime
+    };
   }
 
   function transcribeAudio(audioBase64, opts) {
@@ -273,11 +457,11 @@
     gradeAudioJustification: gradeAudioJustification,
 
     // Phase / version markers — let callers detect what's actually wired.
-    _phase: '3v.1',
-    _shipped: ['initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference']
+    _phase: '3v.2',
+    _shipped: ['initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference', 'recordAudioBlob']
   };
 
   if (typeof console !== 'undefined') {
-    console.log('[Voice] AlloFlowVoice loaded — phase 3v.1');
+    console.log('[Voice] AlloFlowVoice loaded — phase 3v.2');
   }
 })();
