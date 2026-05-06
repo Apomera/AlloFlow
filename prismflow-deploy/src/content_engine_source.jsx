@@ -405,7 +405,11 @@ var createContentEngine = function(deps) {
     // Dialogue mode uses a bespoke JSON output schema + dialogue-plan pre-step
     // (see single-call path below) and cannot route through the multi-chunk
     // pipeline. Narrative (prose) has no such constraint — it rides along.
-    const isDialogueMode = effTone === 'Narrative';
+    // Earlier versions gated dialogue on 'Narrative' but the user-facing label
+    // is "Engaging Narrative" — that surprised users into seeing a JSON dialogue
+    // script when they expected a story. 'Dialogue' is now the explicit tone
+    // for the dialogue/JSON path; 'Narrative' falls through to prose.
+    const isDialogueMode = effTone === 'Dialogue';
     const isNarrativeMode = effTone === 'Narrative' || effTone === 'Engaging Narrative';
     // Prompt helpers hoisted up: the single-section (N=1) branch of the
     // multi-chunk pipeline merges these into its section prompt to preserve
@@ -1196,27 +1200,38 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           text = String(result || "");
       }
       if (isDialogueMode && text) {
-        try {
-          const dialogueData = safeJsonParse(text);
-          if (dialogueData && dialogueData.dialogue && Array.isArray(dialogueData.dialogue)) {
-            let formattedScript = '';
-            if (dialogueData.title) {
-              formattedScript += `# ${dialogueData.title}\n\n`;
-            }
-            if (dialogueData.setting) {
-              formattedScript += `*${dialogueData.setting}*\n\n`;
-            }
-            const learnerName = dialogueData.characters?.learner?.name || 'LEARNER';
-            const guideName = dialogueData.characters?.guide?.name || 'GUIDE';
-            for (const line of dialogueData.dialogue) {
-              const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
-              const action = line.action ? ` ${line.action}` : '';
-              formattedScript += `**${speakerName}:**${action} ${line.line}\n\n`;
-            }
-            text = formattedScript.trim();
+        const dialogueData = (() => {
+          try { return safeJsonParse(text); } catch (e) { return null; }
+        })();
+        if (dialogueData && dialogueData.dialogue && Array.isArray(dialogueData.dialogue)) {
+          let formattedScript = '';
+          if (dialogueData.title) {
+            formattedScript += `# ${dialogueData.title}\n\n`;
           }
-        } catch (parseErr) {
-          warnLog("Dialogue JSON parsing failed, using raw text:", parseErr);
+          if (dialogueData.setting) {
+            formattedScript += `*${dialogueData.setting}*\n\n`;
+          }
+          const learnerName = dialogueData.characters?.learner?.name || 'LEARNER';
+          const guideName = dialogueData.characters?.guide?.name || 'GUIDE';
+          for (const line of dialogueData.dialogue) {
+            const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
+            const action = line.action ? ` ${line.action}` : '';
+            formattedScript += `**${speakerName}:**${action} ${line.line}\n\n`;
+          }
+          text = formattedScript.trim();
+        } else {
+          // Parse failed — preserve the dialogue lines but strip JSON syntax
+          // so the user sees readable text instead of `# { "title": ... }`.
+          // Keeps the LLM's actual content; signals via toast that the user
+          // can regenerate if it looks rough.
+          warnLog("Dialogue JSON parsing failed; flattening raw text.");
+          try { addToast("Dialogue formatting hit a snag — showing raw text. Try regenerating if it looks rough.", "info"); } catch (_) {}
+          text = text
+            .replace(/^[\s{[]+/, '')
+            .replace(/[\s}\]]+$/, '')
+            .replace(/^\s*"[^"]+"\s*:\s*/gm, '')
+            .replace(/",?\s*$/gm, '')
+            .trim();
         }
       }
       if (effIncludeCitations && text) {
