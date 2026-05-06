@@ -92,13 +92,29 @@
       mediaRecorder: false,
       webGPU: false,
       indexedDB: false,
-      whisperLoaded: false   // flipped true by 3v.3 once @xenova/transformers loads a model
+      whisperLoaded: false,
+      whisperLoadedTier: null,
+      dynamicImport: false
     };
     if (typeof window === 'undefined') return caps;
     caps.webSpeech = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
     caps.mediaRecorder = typeof window.MediaRecorder !== 'undefined';
     caps.webGPU = !!(navigator && navigator.gpu);
     caps.indexedDB = typeof window.indexedDB !== 'undefined';
+    // dynamic import() availability — needed for the @xenova/transformers
+    // ESM CDN load. Roughly equivalent to "modern evergreen browser".
+    try {
+      // Construct (don't invoke) a function whose body uses dynamic import
+      // syntax. If the engine's parser doesn't support it, the Function
+      // constructor throws SyntaxError. This keeps voice_module.js parseable
+      // in older environments while still detecting modern capability.
+      new Function('u', 'return import(u)');
+      caps.dynamicImport = true;
+    } catch (e) {
+      caps.dynamicImport = false;
+    }
+    caps.whisperLoaded = !!whisperPipeline;
+    caps.whisperLoadedTier = whisperLoadedTier;
     return caps;
   }
 
@@ -422,13 +438,213 @@
     };
   }
 
-  function transcribeAudio(audioBase64, opts) {
-    // Phase 3v.3 + 3v.4 — routes audio to the configured engine.
-    // Returns a Promise<{ transcript, engine, durationMs }>.
-    if (typeof console !== 'undefined') {
-      console.warn('[Voice] transcribeAudio not yet implemented (Phase 3v.3+).');
+  // ── Whisper integration (Phase 3v.3) ───────────────────────────────
+  // Lazy-loads @xenova/transformers from a CDN ESM build the first time
+  // a Whisper-tier engine is invoked. Caches the loaded pipeline + the
+  // model files (transformers.js stores the model weights in IndexedDB
+  // automatically). Subsequent transcription calls are offline-capable
+  // once the model is cached.
+  //
+  // Audio handling: we pass the data URI directly to the transcriber.
+  // Internally transformers.js decodes via Web Audio + resamples to
+  // 16 kHz mono (Whisper's expected input). No manual resampling needed.
+
+  var TRANSFORMERS_CDN = 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2';
+  var transformersModulePromise = null;
+  var whisperPipeline = null;
+  var whisperLoadingPromise = null;
+  var whisperLoadedTier = null;
+  var progressObservers = [];
+
+  function notifyProgress(payload) {
+    for (var i = 0; i < progressObservers.length; i++) {
+      try { progressObservers[i](payload); } catch (e) { /* ignore observer errors */ }
     }
-    return Promise.reject(new Error('voice.transcribeAudio not yet implemented'));
+  }
+
+  // Subscribe to Whisper load + transcription progress events.
+  // Returns an unsubscribe function. Events:
+  //   { phase: 'transformers-fetch' }
+  //   { phase: 'model-fetch-progress', file, progress (0-100), loaded, total }
+  //   { phase: 'model-loaded', tier }
+  //   { phase: 'model-error', tier, error }
+  //   { phase: 'transcribe-start', tier }
+  //   { phase: 'transcribe-done', tier, transcript }
+  function subscribeToVoiceProgress(cb) {
+    if (typeof cb !== 'function') return function () {};
+    progressObservers.push(cb);
+    return function () {
+      var idx = progressObservers.indexOf(cb);
+      if (idx !== -1) progressObservers.splice(idx, 1);
+    };
+  }
+
+  // Dynamic-import shim — wraps the import() call in a Function constructor
+  // so this file itself parses cleanly on browsers that don't support
+  // dynamic-import syntax. Without this, voice_module.js would throw
+  // SyntaxError at parse time on older browsers and the whole module
+  // would fail to load.
+  function dynamicImport(url) {
+    try {
+      var fn = new Function('u', 'return import(u)');
+      return fn(url);
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  }
+
+  function loadTransformersModule() {
+    if (transformersModulePromise) return transformersModulePromise;
+    notifyProgress({ phase: 'transformers-fetch' });
+    // Dynamic ESM import via the shim. jsdelivr is widely allowlisted
+    // in education contexts; if a CSP blocks it the rejection bubbles
+    // up cleanly with a Web Speech / text fallback path available.
+    transformersModulePromise = dynamicImport(TRANSFORMERS_CDN + '/+esm')
+      .catch(function (err) {
+        transformersModulePromise = null; // allow retry
+        throw err;
+      });
+    return transformersModulePromise;
+  }
+
+  function loadWhisperModel(tier) {
+    tier = tier || 'tiny';
+    if (whisperPipeline && whisperLoadedTier === tier) {
+      return Promise.resolve(whisperPipeline);
+    }
+    // If a different tier is already loaded, drop it; we don't keep
+    // multiple models in memory.
+    if (whisperLoadingPromise && whisperLoadedTier === tier) {
+      return whisperLoadingPromise;
+    }
+    whisperPipeline = null;
+    whisperLoadedTier = tier;
+    whisperLoadingPromise = loadTransformersModule().then(function (transformers) {
+      var modelId = 'Xenova/whisper-' + tier + '.en';
+      return transformers.pipeline('automatic-speech-recognition', modelId, {
+        quantized: true,
+        progress_callback: function (p) {
+          // p.status: 'progress' | 'done' | 'ready' | 'initiate' | 'download'
+          // p.file, p.progress, p.loaded, p.total
+          notifyProgress({
+            phase: 'model-fetch-progress',
+            tier: tier,
+            file: p && p.file,
+            status: p && p.status,
+            progress: typeof p.progress === 'number' ? p.progress : null,
+            loaded: p && p.loaded,
+            total: p && p.total
+          });
+        }
+      });
+    }).then(function (pipe) {
+      whisperPipeline = pipe;
+      notifyProgress({ phase: 'model-loaded', tier: tier });
+      return pipe;
+    }).catch(function (err) {
+      whisperLoadingPromise = null;
+      whisperLoadedTier = null;
+      notifyProgress({ phase: 'model-error', tier: tier, error: err });
+      throw err;
+    });
+    return whisperLoadingPromise;
+  }
+
+  // Public preloader — call this from Settings UI when user clicks
+  // "Load Whisper" so the model fetches without performing a transcribe.
+  function preloadWhisper(tier) {
+    return loadWhisperModel(tier);
+  }
+
+  function isWhisperLoaded(tier) {
+    if (!whisperPipeline) return false;
+    if (tier && whisperLoadedTier !== tier) return false;
+    return true;
+  }
+
+  function getLoadedWhisperTier() {
+    return whisperLoadedTier;
+  }
+
+  // ── transcribeAudio ───────────────────────────────────────────────
+  // Routes audio to the configured engine. Phase 3v.3 wires the
+  // Whisper path; Web Speech is reachable via initWebSpeechCapture
+  // for live continuous transcription; Gemini multimodal arrives in
+  // 3v.4. The 'auto' engine picks the first available in this order:
+  //   loaded Whisper → Gemini (when shipped) → Web Speech.
+  //
+  // opts:
+  //   engine: 'auto' | 'whisper' | 'webspeech' (overrides preference)
+  //   tier:   'tiny' | 'base' | 'small' (Whisper model tier)
+  //   lang:   'en-US' (default)
+  //
+  // Returns Promise<{ transcript, engine, durationMs, audioMimeType? }>.
+  function transcribeAudio(audioBase64, opts) {
+    opts = opts || {};
+    var prefs = loadPreference();
+    var engine = opts.engine || prefs.engine || 'auto';
+    var tier = opts.tier || prefs.whisperTier || 'tiny';
+    if (!audioBase64) {
+      return Promise.reject(new Error('No audio data provided'));
+    }
+
+    function runWhisper() {
+      var startedAt = Date.now();
+      return loadWhisperModel(tier).then(function (transcriber) {
+        notifyProgress({ phase: 'transcribe-start', tier: tier });
+        return transcriber(audioBase64, {
+          language: 'english',
+          task: 'transcribe',
+          return_timestamps: false
+        });
+      }).then(function (output) {
+        var text = (output && output.text) ? output.text.trim() : '';
+        notifyProgress({ phase: 'transcribe-done', tier: tier, transcript: text });
+        return {
+          transcript: text,
+          engine: 'whisper-' + tier,
+          durationMs: Date.now() - startedAt
+        };
+      });
+    }
+
+    // 'whisper' or 'best' explicitly requests Whisper.
+    if (engine === 'whisper' || engine === 'best') {
+      return runWhisper();
+    }
+
+    // 'auto' — prefer Whisper if a model is already loaded; otherwise
+    // fail back to indicating that an inline live transcription path
+    // (initWebSpeechCapture) should be used by the caller. We do NOT
+    // auto-download a Whisper model on auto — that would surprise users
+    // with a 75–500 MB fetch.
+    if (engine === 'auto') {
+      if (isWhisperLoaded()) return runWhisper();
+      return Promise.reject(new Error(
+        'Whisper not loaded. Use initWebSpeechCapture for live transcription, ' +
+        'or call preloadWhisper(tier) first to download the model.'
+      ));
+    }
+
+    if (engine === 'gemini') {
+      return Promise.reject(new Error('Gemini multimodal audio not yet shipped (Phase 3v.4)'));
+    }
+
+    if (engine === 'fast' || engine === 'webspeech') {
+      // Web Speech API doesn't transcribe a stored blob — it only does
+      // live capture. Direct callers to initWebSpeechCapture for that
+      // surface; this transcribeAudio function is for stored audio.
+      return Promise.reject(new Error(
+        'Web Speech API does not support transcribing stored audio. ' +
+        'Use initWebSpeechCapture for live transcription instead.'
+      ));
+    }
+
+    if (engine === 'off') {
+      return Promise.reject(new Error('Voice input is set to Off in Settings.'));
+    }
+
+    return Promise.reject(new Error('Unknown engine: ' + engine));
   }
 
   function gradeAudioJustification(audioBase64, rubric, opts) {
@@ -451,17 +667,29 @@
     savePreference: savePreference,
     defaultPreference: defaultPreference,
 
-    // Phase 3v.2+ — stubs
+    // Phase 3v.2 — shipped
     recordAudioBlob: recordAudioBlob,
+
+    // Phase 3v.3 — shipped
     transcribeAudio: transcribeAudio,
+    preloadWhisper: preloadWhisper,
+    isWhisperLoaded: isWhisperLoaded,
+    getLoadedWhisperTier: getLoadedWhisperTier,
+    subscribeToVoiceProgress: subscribeToVoiceProgress,
+
+    // Phase 3v.4+ — stubs
     gradeAudioJustification: gradeAudioJustification,
 
     // Phase / version markers — let callers detect what's actually wired.
-    _phase: '3v.2',
-    _shipped: ['initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference', 'recordAudioBlob']
+    _phase: '3v.3',
+    _shipped: [
+      'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference',
+      'recordAudioBlob',
+      'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'subscribeToVoiceProgress'
+    ]
   };
 
   if (typeof console !== 'undefined') {
-    console.log('[Voice] AlloFlowVoice loaded — phase 3v.2');
+    console.log('[Voice] AlloFlowVoice loaded — phase 3v.3');
   }
 })();
