@@ -755,6 +755,33 @@ window.StemLab = window.StemLab || {
               })
             ),
 
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                explore:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)', icon: '\uD83D\uDCCF', title: 'Explore \u2014 the visual home for number sense',  hint: 'Numbers as positions on a line, not just symbols. Negatives mirror across zero. Fractions sit BETWEEN integers; decimals are the same idea finer-grained. Common Core 2.MD.6, 3.NF.2, 6.NS.6.' },
+                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '\uD83C\uDFAF', title: 'Challenges \u2014 estimate, locate, compare',          hint: 'Where does 7/8 sit? What about \u22122.4? Estimation builds magnitude sense. Studies (Siegler 2009) show number-line precision predicts later math success better than rote facts.' },
+                skipcount:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDD22', title: 'Skip Count \u2014 the bridge to multiplication',     hint: '2, 4, 6, 8\u2026 = the 2 times table walking. Skip counting by 5s and 10s pre-builds money and time. Counting backward by 3s pre-builds subtraction and division. The line shows the rhythm.' }
+              };
+              var meta = TAB_META[tab] || TAB_META.explore;
+              return h('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // Active tab
             tab === 'explore' && renderExplore(),
             tab === 'challenges' && renderChallenges(),

@@ -1019,6 +1019,41 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            build:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Build \u2014 the double helix from 4 letters',         hint: 'A pairs with T (2 bonds), G with C (3). Watson + Crick + Franklin (1953) cracked the structure from X-ray crystallography. The shape itself encodes how DNA copies and reads.' },
+            replicate:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD00', title: 'Replicate \u2014 unzip, copy, rezip',                      hint: 'Helicase splits the strands; DNA polymerase synthesizes complements. Semi-conservative: each new helix has one old strand + one new. Meselson & Stahl proved it 1958.' },
+            transcribe: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCDD', title: 'Transcribe \u2014 DNA \u2192 mRNA in the nucleus',          hint: 'RNA polymerase reads one DNA strand 3\u2032\u21925\u2032 and builds RNA 5\u2032\u21923\u2032. Same letters except T becomes U. mRNA carries the recipe out to the ribosomes \u2014 the central dogma\u2019s first arrow.' },
+            translate:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD2C', title: 'Translate \u2014 mRNA \u2192 protein at the ribosome',     hint: '64 codons \u2192 20 amino acids (the genetic code is redundant). AUG starts; UAA/UAG/UGA stop. tRNA reads codons, charges them with the right amino acid, peptide bond forms.' },
+            mutate:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDA0', title: 'Mutate \u2014 substitution, insertion, deletion',          hint: 'Point mutation: one letter swapped. Insertion/deletion: frameshift, the entire downstream protein is garbled. Sickle-cell is a single A\u2192T \u2014 one letter, lifelong consequence.' },
+            crispr:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2702',         title: 'CRISPR \u2014 the precision edit',                      hint: 'Bacterial immune system, repurposed. Cas9 enzyme + guide RNA = molecular scissors. Doudna + Charpentier won the 2020 Nobel. First CRISPR therapy (sickle-cell) FDA-approved Dec 2023.' },
+            protein:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83E\uDDEA', title: 'Protein \u2014 fold, function, malfunction',              hint: 'Sequence determines structure determines function. Hemoglobin carries O\u2082, antibodies recognize, enzymes catalyze. AlphaFold (2020) predicted ~200M structures \u2014 a problem that took 50 years, cracked in 18 months.' },
+            forensics:  { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDD0D', title: 'Forensics \u2014 STR profiling + DNA evidence',           hint: 'CODIS uses 20 short tandem repeat (STR) loci. Match probability is one-in-quadrillions when all loci agree. Innocence Project: 245+ wrongful convictions overturned by post-conviction DNA testing.' },
+            challenge:  { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',                          hint: 'Practice transcription, translation, mutation classification. AP Bio Big Idea 3.A.1: DNA, sometimes RNA, is the primary source of heritable information. NGSS HS-LS3-1.' },
+            battle:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\u2694',         title: 'Battle \u2014 head-to-head retrieval',                  hint: 'Retrieval-practice gamified. Speed builds automaticity \u2014 once codon-table lookups are automatic, your working memory is free for higher-order thinking like predicting mutation impact.' },
+            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn \u2014 the central dogma + history',                hint: 'DNA \u2192 RNA \u2192 protein \u2014 with retroviruses (HIV) running it backward via reverse transcriptase. Crick coined \u201Cdogma\u201D in 1957; he later said he meant it as a hypothesis, not scripture.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.build;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ BADGE BAR ═══
         h("div", { className: "flex items-center gap-1 flex-wrap" },
           h("span", { className: "text-[11px] font-bold text-slate-600 mr-1" }, "\uD83C\uDFC6 " + earnedBadgeCount + "/" + DNA_BADGES.length),
