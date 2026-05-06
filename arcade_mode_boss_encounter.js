@@ -77,6 +77,7 @@
   var ROUND_TIME_MS = 90 * 1000;          // 90s per round (D&D-style window)
   var MAX_ROUNDS = 8;                     // hard cap so encounters end gracefully
   var HAND_SIZE = 5;                      // cards visible at once in hand
+  var CLASS_ROUND_DURATION_MS = 90 * 1000;  // Phase 3b.full.d — D&D-style round window
 
   function register() {
     window.AlloHavenArcade.registerMode('boss-encounter', {
@@ -523,12 +524,12 @@
       // eslint-disable-next-line
     }, []);
 
-    // Derived class-encounter view (null in solo mode):
-    //   submissions: array of submission objects sorted by submittedAt
-    //   sumDamage:   total damage dealt by all participants
-    //   participants: distinct nickname count
-    //   sharedHp:    BOSS_HP_START - sumDamage (clamped at 0)
-    //   sessionStatus: 'open' | 'completed' | undefined
+    // Derived class-encounter view (null in solo mode). Phase 3b.full.c
+    // shipped submissions / sumDamage / participants / sharedHp; this
+    // commit (3b.full.d) extends with round state (currentRound,
+    // roundStartedAt, roundDurationMs, roundEndsAt) and 'I've submitted
+    // this round' detection so the UI can disable the submit button
+    // appropriately.
     var classView = (function () {
       if (!isClassMode || !classSessionState) return null;
       var be = classSessionState.bossEncounter || {};
@@ -543,12 +544,32 @@
       subList.forEach(function (sub) { if (sub.nickname) nickSet[sub.nickname] = true; });
       var participants = Object.keys(nickSet).length;
       var sharedHp = Math.max(0, BOSS_HP_START - sumDamage);
+
+      // Round state
+      var currentRound = typeof be.currentRound === 'number' ? be.currentRound : 1;
+      var roundDurationMs = typeof be.roundDurationMs === 'number' ? be.roundDurationMs : CLASS_ROUND_DURATION_MS;
+      var roundStartedAtMs = be.roundStartedAt ? new Date(be.roundStartedAt).getTime() : 0;
+      var roundEndsAtMs = roundStartedAtMs ? roundStartedAtMs + roundDurationMs : 0;
+      var maxRounds = typeof be.maxRounds === 'number' ? be.maxRounds : MAX_ROUNDS;
+
+      // Has THIS user submitted in the current round?
+      var myNickname = ctx.studentNickname || 'anon';
+      var hasSubmittedThisRound = subList.some(function (s) {
+        return s.nickname === myNickname && s.round === currentRound;
+      });
+
       return {
         submissions: subList,
         sumDamage: sumDamage,
         participants: participants,
         sharedHp: sharedHp,
-        sessionStatus: be.status
+        sessionStatus: be.status,
+        currentRound: currentRound,
+        roundDurationMs: roundDurationMs,
+        roundStartedAtMs: roundStartedAtMs,
+        roundEndsAtMs: roundEndsAtMs,
+        maxRounds: maxRounds,
+        hasSubmittedThisRound: hasSubmittedThisRound
       };
     })();
 
@@ -622,6 +643,8 @@
     // Phase 3b.full.b — host writes the encounter to the session doc on
     // start so students can see "Join class encounter: [topic]" in their
     // own AlloHaven Arcades. No-op for solo + student-join paths.
+    // Phase 3b.full.d — also seed round state (currentRound, roundStartedAt,
+    // roundDurationMs) so all participants share a synchronized timer.
     function publishClassEncounterStart(topicText, bossImg) {
       if (!isClassHost) return;
       if (typeof ctx.sessionUpdate !== 'function') return;
@@ -632,7 +655,11 @@
             bossImageBase64: bossImg || null,
             hostNickname: classMode.hostNickname || 'Teacher',
             status: 'open',
-            startedAt: classMode.startedAt || new Date().toISOString()
+            startedAt: classMode.startedAt || new Date().toISOString(),
+            currentRound: 1,
+            roundStartedAt: new Date().toISOString(),
+            roundDurationMs: CLASS_ROUND_DURATION_MS,
+            maxRounds: MAX_ROUNDS
           }
         }).catch(function () { /* ignore — best-effort */ });
         ctx.addToast('🌐 Class encounter live. Students can join.');
@@ -1073,6 +1100,10 @@
           followUp: entry.followUp,
           damage: entry.damage,
           healed: entry.healed,
+          // Phase 3b.full.d — tag with the round number from the shared
+          // session state so the host's auto-advance + per-round
+          // 'already submitted' detection both work correctly.
+          round: classView ? classView.currentRound : 1,
           submittedAt: new Date().toISOString()
         };
         try {
@@ -1185,6 +1216,59 @@
       }
       // eslint-disable-next-line
     }, [ctx.session, phase]);
+
+    // Phase 3b.full.d — countdown ticker so the per-round timer re-renders
+    // smoothly even when no Firestore snapshot has fired. setInterval
+    // bumps a local nowTick counter every second; the render reads
+    // classView.roundEndsAtMs - Date.now() to compute remaining seconds.
+    var nowTickTuple = useState(0);
+    var nowTick = nowTickTuple[0];
+    var setNowTick = nowTickTuple[1];
+    useEffect(function () {
+      if (!isClassMode || phase !== 'play') return;
+      var iv = setInterval(function () { setNowTick(function (t) { return t + 1; }); }, 1000);
+      return function () { clearInterval(iv); };
+      // eslint-disable-next-line
+    }, [isClassMode, phase]);
+
+    // Phase 3b.full.d — host auto-advances rounds. When the current
+    // round's timer expires, host writes currentRound++ + a fresh
+    // roundStartedAt to the session doc. After MAX_ROUNDS, the host
+    // ends the encounter with outcome 'lost' (or 'won' if HP already 0
+    // — that branch is handled by the snapshot useEffect below).
+    // Students never write round state — only host.
+    useEffect(function () {
+      if (!isClassHost) return;
+      if (phase !== 'play') return;
+      if (!classView) return;
+      if (classView.sessionStatus !== 'open') return;
+      if (!classView.roundEndsAtMs) return;
+      var msLeft = classView.roundEndsAtMs - Date.now();
+      if (msLeft > 100) return; // not yet expired
+      // Round expired — advance or end
+      var nextRound = (classView.currentRound || 1) + 1;
+      if (nextRound > (classView.maxRounds || MAX_ROUNDS)) {
+        // Out of rounds. If shared HP > 0, encounter ends 'lost' for
+        // the class. The snapshot useEffect propagates to all
+        // participants once the host writes status=completed.
+        if (classView.sharedHp > 0) {
+          publishClassEncounterEnd('lost');
+        }
+        // If sharedHp <= 0, the snapshot useEffect already set 'won' —
+        // don't overwrite that with 'lost'.
+        return;
+      }
+      // Advance round
+      try {
+        ctx.sessionUpdate({
+          bossEncounter: {
+            currentRound: nextRound,
+            roundStartedAt: new Date().toISOString()
+          }
+        }).catch(function () { /* best-effort */ });
+      } catch (e) { /* ignore */ }
+      // eslint-disable-next-line
+    }, [isClassHost, phase, classView && classView.roundEndsAtMs, nowTick]);
 
     // Phase 3b.full.c — class-mode terminal-phase detection from session
     // snapshot. Two trigger conditions:
@@ -1428,8 +1512,16 @@
             h('div', { style: { width: hpPct + '%', height: '100%', background: palette.accent, transition: 'width 320ms ease' } })
           ),
           h('div', { style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
-            displayHp + ' / ' + BOSS_HP_START + ' HP · Round ' + round + ' / ' + MAX_ROUNDS
-            + (isClassMode && classView ? ' · 🌐 ' + classView.participants + ' participant' + (classView.participants === 1 ? '' : 's') : '')
+            (function () {
+              if (isClassMode && classView) {
+                var roundLabel = 'Round ' + classView.currentRound + ' / ' + classView.maxRounds;
+                var remainMs = Math.max(0, classView.roundEndsAtMs - Date.now());
+                var remainSec = Math.ceil(remainMs / 1000);
+                var participantsLabel = '🌐 ' + classView.participants + ' participant' + (classView.participants === 1 ? '' : 's');
+                return displayHp + ' / ' + BOSS_HP_START + ' HP · ' + roundLabel + ' · ' + remainSec + 's left · ' + participantsLabel;
+              }
+              return displayHp + ' / ' + BOSS_HP_START + ' HP · Round ' + round + ' / ' + MAX_ROUNDS;
+            })()
           ),
           bossErr ? h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginTop: '2px' } },
             '(Guardian art unavailable; encounter continues)') : null
@@ -1700,23 +1792,35 @@
             }, voiceError) : null
           );
         })(),
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' } },
-          h('div', { style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
-            (justification || '').trim().length + ' chars'),
-          h('button', {
-            onClick: submitSpark,
-            disabled: submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10,
-            style: {
-              background: (submitting || voiceMode !== 'idle') ? palette.surface : palette.accent,
-              color: (submitting || voiceMode !== 'idle') ? palette.textMute : palette.onAccent,
-              border: 'none', borderRadius: '8px',
-              padding: '8px 18px', fontSize: '13px', fontWeight: 700,
-              cursor: (submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10) ? 'not-allowed' : 'pointer',
-              opacity: (submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10) ? 0.5 : 1,
-              fontFamily: 'inherit'
-            }
-          }, submitting ? 'Sparking…' : '✨ Cast Spark')
-        )
+        // Phase 3b.full.d — once-per-round in class mode. If the user
+        // has already submitted this round, the Cast Spark button
+        // becomes a "Spark cast — waiting for next round" indicator.
+        (function () {
+          var alreadyThisRound = isClassMode && classView && classView.hasSubmittedThisRound;
+          var disabled = submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10 || alreadyThisRound;
+          return h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' } },
+            h('div', { style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
+              alreadyThisRound
+                ? '✨ Spark cast this round — waiting for round ' + ((classView.currentRound || 1) + 1)
+                : (justification || '').trim().length + ' chars'),
+            h('button', {
+              onClick: submitSpark,
+              disabled: disabled,
+              style: {
+                background: disabled ? palette.surface : palette.accent,
+                color: disabled ? palette.textMute : palette.onAccent,
+                border: 'none', borderRadius: '8px',
+                padding: '8px 18px', fontSize: '13px', fontWeight: 700,
+                cursor: disabled ? 'not-allowed' : 'pointer',
+                opacity: disabled ? 0.5 : 1,
+                fontFamily: 'inherit'
+              }
+            },
+              submitting ? 'Sparking…'
+              : alreadyThisRound ? '✓ Cast'
+              : '✨ Cast Spark')
+          );
+        })()
       ) : pickedCard ? h('p', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic' } },
         'Pick how you\'ll Spark this card.'
       ) : null
