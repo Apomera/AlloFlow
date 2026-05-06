@@ -302,6 +302,12 @@
     var transformCount = transformCountTuple[0];
     var setTransformCount = transformCountTuple[1];
 
+    // Phase 3b.history — guard so we emit at most one encounter record per
+    // session even if the end logic is touched from multiple paths
+    // (won/lost branches in applySpark, expired branch in the session
+    // watcher, forfeit branch in exitEncounter).
+    var encounterRecordedRef = useRef(false);
+
     // Phase 3b.voice — voice justification state. Two engines exposed:
     //   'webspeech': live capture (initWebSpeechCapture) appends to the
     //     textarea as the student speaks. Free, browser-native, but
@@ -760,12 +766,14 @@
       }
 
       if (newHp <= 0) {
+        emitEncounterRecord('won', newHp);
         setPhase('won');
         return;
       }
       // Advance round
       var nextRound = round + 1;
       if (nextRound > MAX_ROUNDS) {
+        emitEncounterRecord('lost', newHp);
         setPhase('lost');
         return;
       }
@@ -777,7 +785,82 @@
       setJustification('');
     }
 
+    // Phase 3b.history — build a self-contained encounter record + emit
+    // it to the host. Dedup'd via encounterRecordedRef so multiple end
+    // paths can call this without producing duplicate records.
+    function buildEncounterRecord(outcome, finalHpOverride) {
+      var sortedHistory = history.slice().sort(function (a, b) { return (b.score || 0) - (a.score || 0); });
+      var strongest = sortedHistory[0] || null;
+      var totalDamage = history.reduce(function (s, e) { return s + (e.damage || 0); }, 0);
+      var criticalCount = history.filter(function (e) { return (e.score || 0) >= 18; }).length;
+      var sessionStartedAt = (ctx.session && ctx.session.startedAt) || new Date().toISOString();
+      return {
+        topic: topic,
+        outcome: outcome,
+        startedAt: sessionStartedAt,
+        endedAt: new Date().toISOString(),
+        roundsPlayed: history.length,
+        roundsMax: MAX_ROUNDS,
+        totalDamage: totalDamage,
+        criticalCount: criticalCount,
+        bossHpStart: BOSS_HP_START,
+        bossHpFinal: typeof finalHpOverride === 'number' ? finalHpOverride : hp,
+        bossImageBase64: bossImage,
+        transformCount: transformCount,
+        // Per-turn detail — drop the willTransform flag (internal-only)
+        history: history.map(function (e) {
+          return {
+            round: e.round,
+            cardName: e.cardName,
+            cardSource: e.cardSource || 'decoration',
+            cardTier: e.cardTier || null,
+            verb: e.verb,
+            justification: e.justification,
+            score: e.score,
+            ackText: e.ackText,
+            followUp: e.followUp,
+            damage: e.damage,
+            healed: e.healed
+          };
+        }),
+        strongestSpark: strongest ? {
+          round: strongest.round,
+          cardName: strongest.cardName,
+          verb: strongest.verb,
+          score: strongest.score,
+          justification: strongest.justification
+        } : null
+      };
+    }
+    function emitEncounterRecord(outcome, finalHpOverride) {
+      if (encounterRecordedRef.current) return;
+      encounterRecordedRef.current = true;
+      if (typeof ctx.onEncounterRecord !== 'function') return;
+      try {
+        ctx.onEncounterRecord(buildEncounterRecord(outcome, finalHpOverride));
+      } catch (e) { /* ignore */ }
+    }
+
+    // Phase 3b.history — watch for the arcade session ending (timer
+    // expiry) while we're still mid-play. The host's endArcadeSession
+    // clears ctx.session; this effect fires the 'expired' record.
+    useEffect(function () {
+      if (phase !== 'play') return;
+      // Once session disappears mid-play, the timer expired (or
+      // user/host forced an end). Treat as expired.
+      if (!ctx.session) {
+        emitEncounterRecord('expired');
+        setPhase('expired');
+      }
+      // eslint-disable-next-line
+    }, [ctx.session, phase]);
+
     function exitEncounter() {
+      // Phase 3b.history — only record forfeits if we actually got into
+      // play. Topic-input cancellations don't count as encounters.
+      if (phase === 'play') {
+        emitEncounterRecord('forfeit');
+      }
       // End the arcade session early
       if (typeof ctx.onEndSession === 'function') ctx.onEndSession('forfeit');
       ctx.onClose();
