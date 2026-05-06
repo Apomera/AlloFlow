@@ -915,8 +915,51 @@
       if (w) { w.document.open(); w.document.write(html); w.document.close(); }
     }, [script, storyTitle, performerName, sceneImage, pages, pageImages]);
 
-    // ── Recording ──
+    // ── Recording (Phase 3v.MR shared-module routed) ──
     var startRecording = useCallback(async function () {
+      // Shared-module path
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+        var ctrl = window.AlloFlowVoice.recordAudioBlob({
+          maxDurationMs: 15 * 60 * 1000, // generous cap; performances run long
+          preferredMimeType: 'audio/webm;codecs=opus',
+          onError: function (err) {
+            addToast && addToast('Microphone access denied. Please allow microphone to record.', 'error');
+            setIsRecording(false);
+          }
+        });
+        if (!ctrl.supported) {
+          addToast && addToast('Recording not supported in this browser.', 'error');
+          return;
+        }
+        mediaRecorderRef.current = ctrl;
+        setIsRecording(true);
+        addToast && addToast('Recording started — read your lines!', 'info');
+        ctrl.result.then(function (rec) {
+          if (!rec || !rec.base64) { setIsRecording(false); return; }
+          // Reconstruct a Blob URL so callers that play back via
+          // <audio src=blob:...> get the same flavor as the legacy path.
+          fetch(rec.base64).then(function (r) { return r.blob(); }).then(function (blob) {
+            var url = URL.createObjectURL(blob);
+            setRecordingUrl(url);
+            setRecordedChunks([blob]); // single-chunk array shape
+            addToast && addToast('Recording saved!', 'success');
+            if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
+            setIsRecording(false);
+          }).catch(function () {
+            // Fallback: use the data URI directly as the URL
+            setRecordingUrl(rec.base64);
+            setRecordedChunks([]);
+            addToast && addToast('Recording saved!', 'success');
+            if (handleScoreUpdate) handleScoreUpdate(15, 'LitLab Recording', 'storystage-record-' + (storyTitle || 'untitled'));
+            setIsRecording(false);
+          });
+        }).catch(function (err) {
+          if (err && err.message === 'cancelled') { setIsRecording(false); return; }
+          setIsRecording(false);
+        });
+        return;
+      }
+      // Inline fallback (pre-3v.MR behavior, identical)
       try {
         var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         var mr = new MediaRecorder(stream);
@@ -941,8 +984,18 @@
     }, [storyTitle, handleScoreUpdate, addToast]);
 
     var stopRecording = useCallback(function () {
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
-        mediaRecorderRef.current.stop();
+      var rec = mediaRecorderRef.current;
+      if (!rec) { setIsRecording(false); return; }
+      // Shared controller: has isRecording() + stop()
+      if (typeof rec.isRecording === 'function') {
+        if (rec.isRecording()) {
+          try { rec.stop(); } catch (e) { /* ignore */ }
+        }
+        // setIsRecording(false) happens after the result Promise resolves
+        return;
+      }
+      if (rec.state !== 'inactive') {
+        rec.stop();
       }
       setIsRecording(false);
     }, []);

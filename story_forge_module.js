@@ -102,11 +102,38 @@ const escapeHtml = (str) => {
 const useAudioRecorder = () => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
+  const sharedResultPromiseRef = useRef(null); // Phase 3v.MR — shared-path result promise
   const chunksRef = useRef([]);
   const startRecording = async () => {
+    // Phase 3v.MR — shared module path with inline fallback. The shared
+    // controller exposes result as a Promise that resolves on stop().
+    // We store the promise on a ref so stopRecording can await it.
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.recordAudioBlob === 'function') {
+      const ctrl = window.AlloFlowVoice.recordAudioBlob({
+        // No maxDurationMs — caller drives stop. The shared default
+        // (60s) would change behavior for callers that expect arbitrary
+        // length recording. Use a generous 10-minute cap as a safety net.
+        maxDurationMs: 10 * 60 * 1000,
+        preferredMimeType: 'audio/webm;codecs=opus',
+        onError: (err) => {
+          console.warn('Microphone access denied:', err);
+          setIsRecording(false);
+        }
+      });
+      if (!ctrl.supported) {
+        console.warn('MediaRecorder not supported');
+        return;
+      }
+      mediaRecorderRef.current = ctrl;
+      sharedResultPromiseRef.current = ctrl.result;
+      setIsRecording(true);
+      return;
+    }
+    // Inline fallback (pre-3v.MR behavior, identical)
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
+      sharedResultPromiseRef.current = null;
       chunksRef.current = [];
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) chunksRef.current.push(event.data);
@@ -120,6 +147,37 @@ const useAudioRecorder = () => {
   const stopRecording = () => {
     return new Promise((resolve) => {
       if (!mediaRecorderRef.current) return resolve(null);
+      // Shared-module path: controller has isRecording() + .result Promise
+      if (sharedResultPromiseRef.current && typeof mediaRecorderRef.current.isRecording === 'function') {
+        const ctrl = mediaRecorderRef.current;
+        const promise = sharedResultPromiseRef.current;
+        try { ctrl.stop(); } catch (e) { /* ignore */ }
+        promise.then(async (rec) => {
+          if (!rec || !rec.base64) { setIsRecording(false); return resolve(null); }
+          const dataUri = rec.base64;
+          const bare = dataUri.split(',')[1] || dataUri;
+          const mimeType = rec.mimeType || 'audio/webm';
+          // Reconstruct a Blob URL via fetch() so callers that revoke
+          // it later (or pipe it into <audio src=blob:...>) get the
+          // same blob-URL flavor the legacy path produced.
+          let url;
+          try {
+            const blob = await fetch(dataUri).then((r) => r.blob());
+            url = URL.createObjectURL(blob);
+          } catch (e) {
+            // If fetch on a data URI fails for any reason, the data URI
+            // itself works as <audio src> in modern browsers.
+            url = dataUri;
+          }
+          setIsRecording(false);
+          resolve({ url, base64: bare, mimeType });
+        }).catch(() => {
+          setIsRecording(false);
+          resolve(null);
+        });
+        return;
+      }
+      // Inline-fallback path
       mediaRecorderRef.current.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: "audio/webm" });
         const url = URL.createObjectURL(blob);
