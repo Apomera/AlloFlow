@@ -389,6 +389,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             color: 'from-blue-600 to-indigo-700',
             ring: 'ring-blue-600/40',
             ready: true
+          },
+          {
+            id: 'processSleuth', title: 'Process Sleuth', icon: '🕵️',
+            subtitle: '10 vignettes — pick the right process',
+            desc: '10 real-world welding scenarios. For each, pick the correct process from MIG / TIG / Stick / FCAW / Resistance. Vignettes target the canonical decisions: stainless food-service, structural outdoor in wind, aluminum boat hull, sanitary brewery pipe, cast-iron engine block crack, automotive sheet metal, agricultural repair on rusty steel.',
+            color: 'from-amber-600 to-orange-700',
+            ring: 'ring-amber-600/40',
+            ready: true
           }
         ];
 
@@ -3445,6 +3453,207 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           ring: 'ring-rose-500/40'
         }
       };
+      // ─────────────────────────────────────────────────────
+      // PROCESS SLEUTH (net-new mini-game)
+      // 10 vignettes; player picks the right welding process from 5 options.
+      // Tests the AWS / vocational-school canonical decision: which process for
+      // which job? Driven by material, joint, position, and setting (shop vs
+      // outdoor, dirty vs clean, thin vs thick).
+      // ─────────────────────────────────────────────────────
+      function ProcessSleuth() {
+        var PROCESSES = [
+          { id: 'mig',  label: 'MIG (GMAW)',          color: '#0ea5e9', icon: '⚡',
+            def: 'Wire-fed, gas-shielded. Fast, high deposition. Sensitive to wind. Shop favorite for steel + aluminum + stainless.' },
+          { id: 'tig',  label: 'TIG (GTAW)',          color: '#a855f7', icon: '✨',
+            def: 'Tungsten electrode + filler rod, gas-shielded. Slow, clean, precise. Best for thin material, stainless, aluminum, sanitary work.' },
+          { id: 'stick', label: 'Stick (SMAW)',       color: '#dc2626', icon: '🔥',
+            def: 'Coated electrode that melts into the puddle. Wind-tolerant, no gas needed, cuts through rust + mill scale. Pipeline + structural + farm.' },
+          { id: 'fcaw', label: 'Flux-cored (FCAW)',   color: '#f59e0b', icon: '🌀',
+            def: 'Wire with flux inside. Like MIG but no external gas needed (self-shielded) or with gas. High deposition. Outdoor-tolerant.' },
+          { id: 'spot', label: 'Resistance / Spot',   color: '#16a34a', icon: '⚙️',
+            def: 'Two electrodes squeeze + electrify thin sheet. Fast, automatable. Automotive body assembly + appliance manufacturing.' }
+        ];
+        var V = [
+          { id: 1, scenario: 'Stainless steel sheet metal, 16-gauge (thin), butt joint, flat position. Custom food-service equipment for a Maine restaurant kitchen.', correct: 'tig',
+            why: 'TIG\'s low heat input + clean argon shielding + no slag is mandatory for food-service stainless. Visible weld bead must look professional + sanitary. MIG works but produces more spatter; stick is too dirty for food-service spec.' },
+          { id: 2, scenario: 'Mild steel structural beam, outdoor on a windy job site in coastal Maine. Vertical-up position. Connecting two I-beams.', correct: 'stick',
+            why: 'Stick (SMAW) is wind-tolerant — shielding gas would be blown away in any breeze, ruining MIG/TIG welds. Coated electrode generates its own shielding atmosphere as it burns. AWS-rated structural electrodes (E7018) are stick. Pipeline + structural is canonical stick territory.' },
+          { id: 3, scenario: 'Aluminum boat hull repair, 1/4" plate, shop environment, butt joint. Local lobster boat back in for spring.', correct: 'mig',
+            why: 'Aluminum MIG with argon shielding gas + spool gun (or push-pull torch) is the production-standard. TIG also works for aluminum but is much slower. For a 1/4" plate hull repair, MIG\'s speed wins — TIG would be reserved for thinner-gauge work or visible-quality applications.' },
+          { id: 4, scenario: 'Mild steel pipeline construction, 1/4" wall pipe, outdoor field conditions, all-position welding (root + fill + cap). Critical pipeline weld.', correct: 'fcaw',
+            why: 'Modern pipeline welding uses Stick for the root pass (E6010 cellulosic) and FCAW for fill + cap (high deposition rate). Both are wind-tolerant. FCAW is the right answer for the bulk of weld metal deposited; stick alone is the older method.' },
+          { id: 5, scenario: 'Thin sheet metal automotive body repair (22-gauge / 0.030"), butt joint, shop conditions. Replacing rusted-out fender on a customer\'s pickup.', correct: 'mig',
+            why: 'Short-circuit transfer MIG is the canonical autobody process. Low heat input minimizes warping on thin sheet. TIG also works but is much slower; stick burns through 22-gauge instantly. Spot welding is for production assembly, not single-vehicle repair.' },
+          { id: 6, scenario: 'Stainless steel pipe for a Maine craft brewery, 90° elbow joint, sanitary requirement (no porosity, no contamination). Small-diameter tubing, flat to horizontal positions.', correct: 'tig',
+            why: 'Sanitary stainless welding requires TIG with argon backside purge to prevent oxidation on the pipe interior (which would harbor bacteria + ruin food-grade certification). MIG produces too much spatter for sanitary work. Brewery + dairy + pharma all use TIG-with-purge as the spec.' },
+          { id: 7, scenario: 'Cast iron engine block, single 4" crack from freeze damage, field repair on a 1980s tractor. Customer needs it back working tomorrow.', correct: 'stick',
+            why: 'Cast iron is challenging — it cracks if cooled too fast and resists fusion with steel filler. Field repair = stick with a nickel-rod electrode (like ENi-Cl). Stick handles dirty cast surfaces and lets you control heat input via slow stringer beads + peening. MIG/TIG cast-iron repair exists but isn\'t practical in the field.' },
+          { id: 8, scenario: 'Heavy structural steel I-beam fabrication shop, 3/4" plate, fillet welds, indoor production. Bath Iron Works-style ship hull section.', correct: 'fcaw',
+            why: 'FCAW (especially gas-shielded FCAW with 75/25 argon-CO₂) is the workhorse of heavy production fabrication: high deposition rate (5-15 lbs/hr vs 2-4 for stick), good penetration on thick plate, indoor wind-shielding works fine. Bath Iron Works runs FCAW on most ship hull plate.' },
+          { id: 9, scenario: 'Automotive assembly line, joining two pieces of 18-gauge sheet steel for a vehicle frame. Process must complete in under 1 second per joint, robot-automated, thousands of joints per shift.', correct: 'spot',
+            why: 'Resistance / spot welding is the only process that meets sub-second cycle times at this scale. Robots squeeze the two electrodes through the sheets, current flows, fusion happens at the contact point in <500 ms. No filler, no gas, no flux. Used on every car body in production today.' },
+          { id: 10, scenario: 'Mild steel farm-equipment frame repair on an old hay rake. Surface has heavy mill scale + flaking rust. Outdoor barn conditions, no shielding-gas cylinder available.', correct: 'stick',
+            why: 'Stick with E6011 electrode handles dirty / rusty / painted surfaces — the cellulose coating burns aggressively enough to dig through contamination. No gas cylinder needed (electrode coating provides shielding). Outdoor-tolerant. This is why stick endures despite slower deposition: it works in conditions where nothing else will.' }
+        ];
+
+        var psIdx = d.psIdx == null ? -1 : d.psIdx;
+        var psSeed = d.psSeed || 1;
+        var psAns = !!d.psAns;
+        var psPick = d.psPick;
+        var psScore = d.psScore || 0;
+        var psRounds = d.psRounds || 0;
+        var psStreak = d.psStreak || 0;
+        var psBest = d.psBest || 0;
+        var psShown = d.psShown || [];
+
+        function startPs() {
+          var pool = [];
+          for (var i = 0; i < V.length; i++) if (psShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); psShown = []; }
+          var seedNext = ((psSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('psSeed', seedNext);
+          upd('psIdx', pick);
+          upd('psAns', false);
+          upd('psPick', null);
+          upd('psShown', psShown.concat([pick]));
+        }
+        function pickPs(processId) {
+          if (psAns) return;
+          var v = V[psIdx];
+          var correct = processId === v.correct;
+          var newScore = psScore + (correct ? 1 : 0);
+          var newStreak = correct ? (psStreak + 1) : 0;
+          var newBest = Math.max(psBest, newStreak);
+          upd('psAns', true);
+          upd('psPick', processId);
+          upd('psScore', newScore);
+          upd('psRounds', psRounds + 1);
+          upd('psStreak', newStreak);
+          upd('psBest', newBest);
+        }
+
+        if (psIdx < 0) {
+          return h('div', { className: 'min-h-screen bg-slate-50' },
+            h(BackBar, { icon: '🕵️', title: 'Process Sleuth' }),
+            h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
+              h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-5' },
+                h('h2', { className: 'text-lg font-black text-amber-900 mb-2' }, '10 welding scenarios — pick the right process'),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                  'For each scenario, pick the welding process from MIG / TIG / Stick / FCAW / Resistance. Coaching after each pick names what makes this process the right choice and what would make a different process fit instead.')
+              ),
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-3' }, 'The five processes'),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                  PROCESSES.map(function(pr) {
+                    return h('div', { key: pr.id, style: { padding: '8px 10px', borderRadius: 8, background: pr.color + '15', border: '1px solid ' + pr.color + '55' } },
+                      h('div', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, pr.icon),
+                        h('span', { style: { color: pr.color, fontWeight: 800, fontSize: 12 } }, pr.label)
+                      ),
+                      h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, pr.def)
+                    );
+                  })
+                )
+              ),
+              h('button', {
+                onClick: startPs,
+                className: 'w-full px-5 py-3 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+              }, '🕵️ Start — vignette 1 of 10')
+            )
+          );
+        }
+
+        var v = V[psIdx];
+        var pickedCorrect = psAns && psPick === v.correct;
+        var pct = psRounds > 0 ? Math.round((psScore / psRounds) * 100) : 0;
+        var allDone = psShown.length >= V.length && psAns;
+        var correctProc = PROCESSES.filter(function(p) { return p.id === v.correct; })[0];
+        var pickedProc = psPick ? PROCESSES.filter(function(p) { return p.id === psPick; })[0] : null;
+
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '🕵️', title: 'Process Sleuth' }),
+          h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
+            // Score header
+            h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-700' },
+              h('span', null, 'Vignette ', h('strong', { className: 'text-slate-900' }, psShown.length)),
+              h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, psScore + ' / ' + psRounds)),
+              psRounds > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
+              h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, psStreak)),
+              h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, psBest))
+            ),
+            // Vignette
+            h('section', { className: 'p-5 rounded-2xl bg-amber-50 border-2 border-amber-300' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-widest text-amber-700 mb-2' }, 'Vignette ' + psShown.length + ' of ' + V.length),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario)
+            ),
+            // 5 process picker buttons
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the right welding process' },
+              PROCESSES.map(function(pr) {
+                var picked = psAns && psPick === pr.id;
+                var isRight = psAns && pr.id === v.correct;
+                var bg, border, color;
+                if (psAns) {
+                  if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                  else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                  else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+                } else {
+                  bg = pr.color + '12'; border = pr.color + '60'; color = '#1e293b';
+                }
+                return h('button', {
+                  key: pr.id, role: 'radio',
+                  'aria-checked': picked ? 'true' : 'false',
+                  'aria-label': pr.label,
+                  disabled: psAns,
+                  onClick: function() { pickPs(pr.id); },
+                  style: { padding: '12px 14px', borderRadius: 12, background: bg, color: color, border: '2px solid ' + border, cursor: psAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 70, transition: 'all 0.15s' }
+                },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, pr.icon),
+                    h('span', { style: { color: psAns ? color : pr.color, fontSize: 13, fontWeight: 800 } }, pr.label)
+                  ),
+                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: psAns ? color : '#475569' } }, pr.def)
+                );
+              })
+            ),
+            // Feedback
+            psAns && h('section', {
+              className: 'p-4 rounded-2xl',
+              style: {
+                background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+                border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+              }
+            },
+              h('div', { className: 'text-sm font-bold mb-2', style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+                pickedCorrect
+                  ? '✅ Correct — ' + correctProc.label
+                  : '❌ The right process is ' + correctProc.label + (pickedProc ? ' (you picked ' + pickedProc.label + ')' : '')
+              ),
+              h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
+              allDone
+                ? h('div', { className: 'p-3 rounded-lg bg-amber-100 border border-amber-300' },
+                    h('div', { className: 'text-sm font-black text-amber-900 mb-1' }, '🏆 All 10 vignettes complete'),
+                    h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
+                      'Final: ', h('strong', null, psScore + ' / ' + V.length + ' (' + Math.round((psScore / V.length) * 100) + '%)'),
+                      psScore === V.length ? ' — every process call correct. Ready for AWS SENSE Module 1 process selection.' :
+                      psScore >= 8 ? ' — strong process reasoning. The most-confused pair is usually MIG vs FCAW (both wire-fed) and MIG vs TIG for stainless (depends on visible-quality requirement).' :
+                      psScore >= 6 ? ' — solid baseline. The four reflexes worth building: outdoor + wind = stick or FCAW (no gas), thin + clean + visible = TIG, fast + shop + steel = MIG, dirty + cast + rusty = stick.' :
+                      ' — these distinctions are the daily decisions of every working welder. Re-read the rationales on misses, then retake.'
+                    ),
+                    h('button', {
+                      onClick: function() { upd('psIdx', -1); upd('psShown', []); upd('psScore', 0); upd('psRounds', 0); upd('psStreak', 0); },
+                      className: 'mt-3 px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs hover:bg-amber-700'
+                    }, '🔄 Restart')
+                  )
+                : h('button', {
+                    onClick: startPs,
+                    className: 'px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+                  }, '➡️ Next vignette')
+            )
+          )
+        );
+      }
+
       // Optimal weld parameters — these are the "in spec" targets per process
       // for typical mild-steel structural work.
       var SPEED_OPTIMAL = { V: 22, A: 180 };
@@ -3757,6 +3966,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       if (view === 'careerPaths') return h(CareerPathways);
       if (view === 'underwater') return h(UnderwaterLab);
       if (view === 'speedChallenge') return h(SpeedChallenge);
+      if (view === 'processSleuth') return h(ProcessSleuth);
       return h(MainMenu);
     }
   });
