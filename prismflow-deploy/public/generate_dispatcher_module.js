@@ -1918,6 +1918,53 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          } catch (accErr) {
              warnLog('[Alignment] Accessibility computation failed:', accErr);
          }
+
+         // ---- Plan O Step 4: UDL principles (LLM with deterministic priors) -
+         // Three-pillar evaluation per CAST UDL Guidelines v3.0:
+         //   - Multiple Means of Representation
+         //   - Multiple Means of Engagement
+         //   - Multiple Means of Action & Expression
+         // Pure LLM judgment, but seeded with the deterministic harvest from
+         // Step 2 so the model has factual ground (which modalities are
+         // present, scaffold counts, distinct artifact types, reading levels).
+         try {
+             const udlGradeBand = (content.comprehensive && content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
+             const modPresent = auditHarvest.multimodal || {};
+             const scaffoldCounts = auditHarvest.scaffoldCounts || {};
+             const distinctTypes = Array.from(auditHarvest.distinctTypes || []);
+             const udlPrompt = `You are a CAST-trained UDL specialist evaluating a curriculum against the three Universal Design for Learning principles (CAST UDL Guidelines v3.0). Each principle has its own pillar. Rate each pillar individually, not the curriculum as a whole.\n\nCurriculum profile (deterministic):\n- Distinct artifact types: ${distinctTypes.join(', ') || '(none)'}\n- Modalities: text=${!!modPresent.text}, image=${!!modPresent.image}, audio=${!!modPresent.audio}, interactive=${!!modPresent.interactive}\n- Scaffolds: ${scaffoldCounts.sentenceFrames || 0} sentence-frame sets, ${scaffoldCounts.simplifiedTexts || 0} simplified texts, ${scaffoldCounts.leveledGlossary || 0} leveled glossaries\n- Reading levels: ${(auditHarvest.readingLevels || []).map(r => r.range).join('; ') || '(none)'}\n- Grade band: ${udlGradeBand}\n\nSource excerpt (first 2500 chars):\n"""\n${(comprehensiveContext || '').slice(0, 2500)}\n"""\n\nFor EACH UDL pillar, evaluate using these prompts:\n\n1. REPRESENTATION (how is content presented?). Multiple ways to access the same content? Visual + auditory + text + interactive? Customizable display? Vocabulary support? Activate background knowledge? Highlight patterns?\n\n2. ENGAGEMENT (why do learners invest effort?). Choices/autonomy? Authenticity, relevance, cultural responsiveness? Optimal challenge with scaffolds? Sustained-effort supports (goal-setting, feedback, self-reflection)?\n\n3. ACTION & EXPRESSION (how do learners demonstrate what they know?). Multiple ways to respond (writing, speaking, drawing, building, performing)? Tools and assistive-tech support? Goal-setting and progress-monitoring scaffolds?\n\nReturn ONLY a single valid JSON object:\n{\n  "representation": { "status": "Aligned"|"Partially Aligned"|"Not Aligned", "evidence": "...", "gaps": "...", "recommendation": "ONE sentence" },\n  "engagement":     { "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "actionExpression":{ "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "overallNarrative": "ONE paragraph (2-3 sentences) summarizing UDL alignment and naming the most pressing pillar to strengthen",\n  "overallStatus": "Aligned"|"Partially Aligned"|"Not Aligned"\n}\n\nNo prose outside the JSON. No markdown fences. No trailing commas.`;
+             const udlResult = await callGemini(udlPrompt, true);
+             try {
+                 const udl = JSON.parse(cleanJson(udlResult));
+                 const pillarShape = function (p) {
+                     const safe = p && typeof p === 'object' ? p : {};
+                     return {
+                         status: typeof safe.status === 'string' ? safe.status : 'Partially Aligned',
+                         evidence: typeof safe.evidence === 'string' ? safe.evidence : '',
+                         gaps: typeof safe.gaps === 'string' ? safe.gaps : '',
+                         recommendation: typeof safe.recommendation === 'string' ? safe.recommendation : '',
+                     };
+                 };
+                 content.comprehensive = content.comprehensive || {};
+                 content.comprehensive.udl = {
+                     status: typeof udl.overallStatus === 'string' ? udl.overallStatus : 'Partially Aligned',
+                     overallNarrative: typeof udl.overallNarrative === 'string' ? udl.overallNarrative : '',
+                     representation: pillarShape(udl.representation),
+                     engagement: pillarShape(udl.engagement),
+                     actionExpression: pillarShape(udl.actionExpression),
+                     priorsUsed: {
+                         distinctTypes: distinctTypes,
+                         modalitiesPresent: ['text','image','audio','interactive'].filter(function (m) { return !!modPresent[m]; }),
+                         scaffoldCounts: scaffoldCounts,
+                     },
+                     notes: 'Per CAST UDL Guidelines v3.0. Each pillar evaluated against the deterministic curriculum profile + LLM judgment of the source content.',
+                 };
+             } catch (parseErr) {
+                 warnLog('[Alignment] UDL LLM parse failed:', parseErr);
+             }
+         } catch (udlErr) {
+             warnLog('[Alignment] UDL evaluation failed:', udlErr);
+         }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
          const effectiveCount = configOverride.timelineCount || timelineItemCount;

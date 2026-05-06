@@ -335,6 +335,62 @@
     );
   }
 
+  function UdlPillar(p) {
+    var pillar = p.pillar;
+    if (!pillar) return null;
+    return React.createElement('div', { className: 'p-3 bg-white border border-slate-200 rounded mb-2' },
+      React.createElement('div', { className: 'flex items-center justify-between mb-2' },
+        React.createElement('h4', { className: 'font-bold text-sm text-slate-800 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true', className: 'text-lg' }, p.icon),
+          ' ', p.title),
+        React.createElement('span', {
+          className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + statusBadgeClass(pillar.status)
+        }, pillar.status || 'N/A')
+      ),
+      pillar.evidence && React.createElement('div', { className: 'mb-2' },
+        React.createElement('div', { className: 'text-[11px] font-semibold text-emerald-800 uppercase tracking-wider' }, 'Evidence'),
+        React.createElement('p', { className: 'text-sm text-slate-700' }, pillar.evidence)
+      ),
+      pillar.gaps && React.createElement('div', { className: 'mb-2' },
+        React.createElement('div', { className: 'text-[11px] font-semibold text-rose-800 uppercase tracking-wider' }, 'Gaps'),
+        React.createElement('p', { className: 'text-sm text-slate-700' }, pillar.gaps)
+      ),
+      pillar.recommendation && React.createElement('div', null,
+        React.createElement('div', { className: 'text-[11px] font-semibold text-indigo-800 uppercase tracking-wider' }, 'Recommendation'),
+        React.createElement('p', { className: 'text-sm text-slate-700' }, pillar.recommendation)
+      )
+    );
+  }
+
+  function UdlSection(p) {
+    var u = p.udl;
+    if (!u) return null;
+    var priors = u.priorsUsed || {};
+    return React.createElement(ComprehensiveSection, { icon: '🌐', title: 'UDL principles (CAST Guidelines v3.0)', status: u.status },
+      // Priors banner
+      React.createElement('div', { className: 'mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700' },
+        React.createElement('span', { className: 'font-semibold' }, 'Priors used: '),
+        (priors.modalitiesPresent || []).length, ' modalities (',
+        (priors.modalitiesPresent || []).join(', ') || 'none', '), ',
+        (priors.distinctTypes || []).length, ' distinct artifact types, ',
+        ((priors.scaffoldCounts && priors.scaffoldCounts.sentenceFrames) || 0) + ((priors.scaffoldCounts && priors.scaffoldCounts.simplifiedTexts) || 0) + ((priors.scaffoldCounts && priors.scaffoldCounts.leveledGlossary) || 0),
+        ' scaffolds.'
+      ),
+      // Three pillars
+      React.createElement(UdlPillar, { pillar: u.representation, title: 'Representation', icon: '👁️' }),
+      React.createElement(UdlPillar, { pillar: u.engagement, title: 'Engagement', icon: '✨' }),
+      React.createElement(UdlPillar, { pillar: u.actionExpression, title: 'Action & Expression', icon: '✍️' }),
+      // Overall narrative
+      u.overallNarrative && React.createElement('div', { className: 'mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-1 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🤖'),
+          ' UDL specialist synthesis (AI)'),
+        React.createElement('p', { className: 'text-sm text-indigo-900' }, u.overallNarrative)
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic mt-2' }, u.notes || '')
+    );
+  }
+
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
@@ -349,7 +405,8 @@
       ),
       c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary }),
       c.engagement && React.createElement(EngagementSection, { eng: c.engagement }),
-      c.accessibility && React.createElement(AccessibilitySection, { access: c.accessibility })
+      c.accessibility && React.createElement(AccessibilitySection, { access: c.accessibility }),
+      c.udl && React.createElement(UdlSection, { udl: c.udl })
     );
   }
 
