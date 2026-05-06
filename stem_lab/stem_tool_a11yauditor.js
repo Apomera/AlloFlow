@@ -433,6 +433,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            audit:      { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)',  icon: '\uD83D\uDD0D', title: 'Audit \u2014 paste it, see what breaks',         hint: 'AI runs a WCAG 2.1 AA pass against URL / HTML / PDF / screenshot / social / gov input. Common findings: missing alt text (1.1.1), color contrast under 4.5:1 (1.4.3), keyboard traps (2.1.1), unlabeled inputs (3.3.2).' },
+            learn:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',   icon: '\uD83D\uDCD6', title: 'Learn \u2014 the four POUR principles',         hint: 'Perceivable, Operable, Understandable, Robust. Every WCAG criterion maps to one of these. Disability is a mismatch between body and environment, never a property of the person.' },
+            knowbility: { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\u267F',         title: 'Knowbility \u2014 the field\u2019s veterans',     hint: 'Knowbility (Austin TX, est. 1999) runs OpenAIR \u2014 the world\u2019s longest-running accessibility hackathon \u2014 and trains pros via AccessU. They wrote much of the playbook every modern auditor uses.' },
+            action:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2696\uFE0F', title: 'Take Action \u2014 advocacy in practice',          hint: 'You don\u2019t need a lawyer to file an ADA Title II / III complaint. Department of Justice (ada.gov), Section 508 (section508.gov), and state AG offices all accept civilian complaints \u2014 and inaccessible gov sites are illegal.' },
+            history:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83D\uDCCA', title: 'History \u2014 your audit trail',                hint: 'Past audits saved here so you can track which sites improved (or regressed) over time. Aggregate metrics let you make a sharable case to school IT or a vendor.' },
+            badges:     { accent: '#ca8a04', soft: 'rgba(202,138,4,0.10)',   icon: '\uD83C\uDFC5', title: 'Badges \u2014 audit milestones',                  hint: 'First Audit, 5 Audits, 10 Audits, Critical Issue Hunter, POUR Master, etc. Recognition for the unglamorous work of catching issues *before* they reach disabled users.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.audit;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ AUDIT TAB ═══
         tab === 'audit' && h('div', { className: 'space-y-4' },
 
