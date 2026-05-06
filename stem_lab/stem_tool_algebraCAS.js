@@ -779,6 +779,33 @@
           ),
           badgeBar,
           tabBar,
+          (function() {
+            var TAB_META = {
+              solve:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '🔍', title: 'Solve — algebra step-by-step',         hint: 'Linear, quadratic, factoring, system, simplify. AI shows every step + names the property used (distributive, combining like terms, FOIL). Common AP / SAT / Algebra-1 problems all reduce to ~8 transformations.' },
+              practice: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🎯', title: 'Practice — graded drills',             hint: 'Multi-difficulty problem sets. Each problem has step-grading: even if the final answer is wrong, you get credit for correct intermediate steps. Builds the habit of writing math, not just guessing.' },
+              builder:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '🧱', title: 'Builder — design your own equation',   hint: 'Pick variables + operations + target value; system generates an algebra problem matching your design. Useful for teachers building worksheets and for students reverse-engineering "what makes a problem hard."' },
+              scale:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '⚖️', title: 'Scale — visual algebra balance',       hint: 'Drag weights onto a balance to model x + 3 = 7 visually. The single most useful intuition for early algebra — equations are scales, not blanks to fill in. Whatever you do to one side, do to the other.' },
+              tutor:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '🤖', title: 'Tutor — ask AI for help',              hint: 'Ask the tutor about any algebra concept or stuck-step. Tutor knows your grade band, recent attempts, and the active problem. Best for "why didn\'t my approach work?" questions.' }
+            };
+            var meta = TAB_META[tab] || TAB_META.solve;
+            return h('div', {
+              style: {
+                margin: '0 0 12px',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: MUTED || '#64748b', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
           tab === 'solve' ? renderSolve() : null,
           tab === 'practice' ? renderPractice() : null,
           tab === 'builder' ? renderBuilder() : null,
