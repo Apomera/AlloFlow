@@ -44,7 +44,8 @@
   }
   function ComprehensiveSection(p) {
     return React.createElement('div', {
-      className: 'bg-white p-6 rounded-xl border border-slate-300 shadow-sm mb-6'
+      id: p.id || undefined,
+      className: 'bg-white p-6 rounded-xl border border-slate-300 shadow-sm mb-6 scroll-mt-4'
     },
       React.createElement('div', { className: 'flex items-center justify-between mb-4 pb-3 border-b border-slate-200' },
         React.createElement('h3', { className: 'font-bold text-slate-800 flex items-center gap-2 text-lg' },
@@ -68,7 +69,7 @@
     var scaleNote = (v.expected && v.expected.scale && v.expected.scale > 1.5)
       ? '(rescaled ×' + v.expected.scale + ' for bundle size)'
       : '';
-    return React.createElement(ComprehensiveSection, { icon: '📚', title: 'Vocabulary fit', status: v.status },
+    return React.createElement(ComprehensiveSection, { id: 'audit-vocabulary', icon: '📚', title: 'Vocabulary fit', status: v.status },
       React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
         React.createElement('div', {
           className: 'p-3 bg-slate-50 rounded text-center',
@@ -181,7 +182,7 @@
     var dok = e.dokDistribution || {};
     var modPresent = e.multimodalCoverage && e.multimodalCoverage.present || [];
     var modMissing = e.multimodalCoverage && e.multimodalCoverage.missing || [];
-    return React.createElement(ComprehensiveSection, { icon: '🎯', title: 'Engagement variety', status: e.status },
+    return React.createElement(ComprehensiveSection, { id: 'audit-engagement', icon: '🎯', title: 'Engagement variety', status: e.status },
       // Top stat row
       React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
         React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
@@ -284,7 +285,7 @@
     var a = p.access;
     if (!a) return null;
     var altPctColor = a.altCoveragePct === null ? 'slate' : a.altCoveragePct >= 80 ? 'emerald' : a.altCoveragePct >= 50 ? 'amber' : 'rose';
-    return React.createElement(ComprehensiveSection, { icon: '♿', title: 'Content accessibility', status: a.status },
+    return React.createElement(ComprehensiveSection, { id: 'audit-accessibility', icon: '♿', title: 'Content accessibility', status: a.status },
       // Top stat row
       React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
         React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
@@ -387,7 +388,7 @@
     var u = p.udl;
     if (!u) return null;
     var priors = u.priorsUsed || {};
-    return React.createElement(ComprehensiveSection, { icon: '🌐', title: 'UDL principles (CAST Guidelines v3.0)', status: u.status },
+    return React.createElement(ComprehensiveSection, { id: 'audit-udl', icon: '🌐', title: 'UDL principles (CAST Guidelines v3.0)', status: u.status },
       // Priors banner
       React.createElement('div', { className: 'mb-3 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700' },
         React.createElement('span', { className: 'font-semibold' }, 'Priors used: '),
@@ -416,7 +417,7 @@
     var a = p.acc;
     if (!a) return null;
     var counts = a.accuracyRatingCounts || { high: 0, medium: 0, low: 0 };
-    return React.createElement(ComprehensiveSection, { icon: '✅', title: 'Content accuracy', status: a.status },
+    return React.createElement(ComprehensiveSection, { id: 'audit-accuracy', icon: '✅', title: 'Content accuracy', status: a.status },
       // Top stat row
       React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
         React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
@@ -601,9 +602,20 @@
     };
     // Priority 0: blocking issues from readiness-score roll-up (Not Aligned dimensions)
     var overall = comprehensive.overall;
+    // Reverse-lookup: blocking issues store dimension as a label string ("Content accessibility")
+    // — map back to keys ('accessibility') so links resolve.
+    var labelToKey = {
+      'Vocabulary fit': 'vocabulary',
+      'Engagement variety': 'engagement',
+      'Content accessibility': 'accessibility',
+      'UDL principles': 'udl',
+      'Content accuracy': 'accuracy',
+    };
     if (overall && Array.isArray(overall.blockingIssues)) {
       overall.blockingIssues.forEach(function (b) {
-        if (b && b.issue) all.push({ priority: 0, dimension: b.dimension || 'Critical', text: b.issue });
+        if (!b || !b.issue) return;
+        var dimLabelStr = b.dimension || 'Critical';
+        all.push({ priority: 0, dimension: dimLabelStr, dimensionKey: labelToKey[dimLabelStr] || null, text: b.issue });
       });
     }
     ALL_DIMENSIONS_FOR_RENDER.forEach(function (dim) {
@@ -612,21 +624,21 @@
       var priority = d.status === 'Not Aligned' ? 1 : 2;
       var label = dimLabel[dim] || dim;
       if (Array.isArray(d.recommendations)) d.recommendations.forEach(function (r) {
-        if (typeof r === 'string') all.push({ priority: priority, dimension: label, text: r });
+        if (typeof r === 'string') all.push({ priority: priority, dimension: label, dimensionKey: dim, text: r });
       });
       if (d.llmReview) {
         if (Array.isArray(d.llmReview.fixes)) d.llmReview.fixes.forEach(function (r) {
-          if (typeof r === 'string') all.push({ priority: priority, dimension: label, text: r });
+          if (typeof r === 'string') all.push({ priority: priority, dimension: label, dimensionKey: dim, text: r });
         });
         if (Array.isArray(d.llmReview.formatGaps)) d.llmReview.formatGaps.forEach(function (r) {
-          if (typeof r === 'string') all.push({ priority: priority, dimension: label, text: r });
+          if (typeof r === 'string') all.push({ priority: priority, dimension: label, dimensionKey: dim, text: r });
         });
         if (Array.isArray(d.llmReview.recommendations)) d.llmReview.recommendations.forEach(function (r) {
-          if (typeof r === 'string') all.push({ priority: priority + 0.5, dimension: label, text: 'Add Tier 2 word: "' + r + '"' });
+          if (typeof r === 'string') all.push({ priority: priority + 0.5, dimension: label, dimensionKey: dim, text: 'Add Tier 2 word: "' + r + '"' });
         });
       }
     });
-    // UDL pillar recommendations
+    // UDL pillar recommendations — all anchor to the single UDL card
     if (comprehensive.udl && !comprehensive.udl.computeFailed) {
       ['representation', 'engagement', 'actionExpression'].forEach(function (pillar) {
         var p = comprehensive.udl[pillar];
@@ -635,6 +647,7 @@
           all.push({
             priority: p.status === 'Not Aligned' ? 1 : 2,
             dimension: 'UDL · ' + pname,
+            dimensionKey: 'udl',
             text: p.recommendation,
           });
         }
@@ -727,14 +740,41 @@
           'Top ' + topRecs.length + ' suggested fix' + (topRecs.length === 1 ? '' : 'es')),
         React.createElement('ol', { className: 'space-y-1.5 ml-1' },
           topRecs.map(function (r, i) {
-            var prClass = r.priority <= 0.5 ? 'bg-rose-100 text-rose-900 border-rose-300' :
-                          r.priority <= 1.5 ? 'bg-amber-100 text-amber-900 border-amber-300' :
-                          'bg-slate-100 text-slate-800 border-slate-300';
+            var prClass = r.priority <= 0.5 ? 'bg-rose-100 text-rose-900 border-rose-300 hover:bg-rose-200' :
+                          r.priority <= 1.5 ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200' :
+                          'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200';
+            // Polish #3: when the rec carries a dimensionKey, render the chip as an
+            // anchor that smooth-scrolls to the matching dimension card. Falls back
+            // to a plain span when no dimensionKey is available (e.g., generic blocking
+            // issue with an unrecognized dimension label).
+            var chipChildren = [
+              React.createElement('span', { key: 'lbl' }, r.dimension),
+              r.dimensionKey ? React.createElement('span', { key: 'arr', 'aria-hidden': 'true', className: 'opacity-60' }, ' ↓') : null,
+            ];
+            var chip = r.dimensionKey
+              ? React.createElement('a', {
+                  href: '#audit-' + r.dimensionKey,
+                  className: 'flex-shrink-0 inline-flex items-center justify-center text-[10px] font-bold uppercase px-2 py-0.5 rounded border no-underline transition-colors ' + prClass,
+                  style: { minWidth: '90px', textAlign: 'center' },
+                  title: 'Jump to ' + r.dimension + ' card',
+                  onClick: function (ev) {
+                    var el = document.getElementById('audit-' + r.dimensionKey);
+                    if (el) {
+                      ev.preventDefault();
+                      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      // Brief flash to visually anchor the user's eye.
+                      el.style.transition = 'box-shadow 800ms ease-out';
+                      el.style.boxShadow = '0 0 0 4px rgba(99, 102, 241, 0.4)';
+                      setTimeout(function () { el.style.boxShadow = ''; }, 1200);
+                    }
+                  },
+                }, chipChildren)
+              : React.createElement('span', {
+                  className: 'flex-shrink-0 text-[10px] font-bold uppercase px-2 py-0.5 rounded border ' + prClass,
+                  style: { minWidth: '90px', textAlign: 'center' },
+                }, r.dimension);
             return React.createElement('li', { key: i, className: 'flex items-start gap-2 text-sm' },
-              React.createElement('span', {
-                className: 'flex-shrink-0 text-[10px] font-bold uppercase px-2 py-0.5 rounded border ' + prClass,
-                style: { minWidth: '90px', textAlign: 'center' },
-              }, r.dimension),
+              chip,
               React.createElement('span', { className: 'text-slate-800', style: { color: statusClr.text } }, r.text)
             );
           })
