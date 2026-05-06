@@ -107,7 +107,7 @@
     className: "text-sm font-black text-amber-800"
   }, "\uD83D\uDCDD Pre-Activity Review"), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] text-amber-700/90"
-  }, "Edit categories and items before students play. AI outputs sometimes need tweaks.")), /*#__PURE__*/React.createElement("div", {
+  }, t('concept_sort.pre_activity_help') || 'Edit categories and items before students play. AI outputs sometimes need tweaks.')), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 flex-wrap"
   }, (generatedContent?.data.items || []).some(it => it && it.image) && /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-2 bg-white/80 border border-amber-200 rounded-full px-2 py-1",
@@ -136,14 +136,14 @@
     "aria-label": "Reset image size to default"
   }, "reset")), typeof setConceptSortAutoRemoveWords === 'function' && /*#__PURE__*/React.createElement("label", {
     className: "flex items-center gap-1.5 bg-white/80 border border-amber-200 rounded-full px-2.5 py-1 cursor-pointer text-[10px] font-bold text-amber-800 uppercase tracking-wider",
-    title: "Run an image-to-image edit after each generation to remove leftover text/labels"
+    title: t('concept_sort.auto_remove_tooltip') || 'Run an image-to-image edit after each generation to remove leftover text/labels'
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: !!conceptSortAutoRemoveWords,
     onChange: e => setConceptSortAutoRemoveWords(!!e.target.checked),
     className: "accent-amber-600",
-    "aria-label": "Auto-remove text from generated images"
-  }), "Auto-remove text"), /*#__PURE__*/React.createElement("span", {
+    "aria-label": t('concept_sort.auto_remove_aria') || 'Auto-remove text from generated images'
+  }), t('concept_sort.auto_remove_label') || 'Auto-remove text'), /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] font-bold text-amber-800 bg-white/80 border border-amber-200 rounded-full px-2 py-0.5"
   }, (generatedContent?.data.categories || []).length, " categories \xB7 ", (generatedContent?.data.items || []).length, " items"))), (generatedContent?.data.categories || []).map(cat => {
     const catItems = (generatedContent?.data.items || []).filter(item => item.categoryId === cat.id);

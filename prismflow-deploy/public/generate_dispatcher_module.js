@@ -289,6 +289,11 @@ function computeReadinessScore(comprehensive) {
   ALL_DIMENSIONS.forEach(dim => {
     const data = comprehensive[dim];
     if (!data) return;
+    // Skip placeholder failures from the readiness math but still surface them in the report.
+    if (data.computeFailed) {
+      dimensionScores[dim] = { status: 'Compute failed', points: 0, computeFailed: true };
+      return;
+    }
     dimensionsEvaluated++;
     const status = data.status || 'Partially Aligned';
     const points = (typeof STATUS_POINTS[status] === 'number') ? STATUS_POINTS[status] : 12;
@@ -345,12 +350,22 @@ function computeReadinessScore(comprehensive) {
 }
 
 function collectAuditText(artifacts) {
-  const out = { text: '', glossaryTerms: [] };
+  // sourceText  = primary lesson text only (analysis.originalText, falls back to simplified).
+  //               Used for the teacher-facing "word count" so it matches their intuition.
+  // text        = bundle of EVERY artifact's content, used for tier classification across
+  //               the whole curriculum (so we catch academic vocab in glossary defs, quiz, etc.).
+  // glossaryTerms = explicit glossary entries (always Tier 3).
+  const out = { text: '', sourceText: '', glossaryTerms: [] };
+  let analysisText = '';
+  let simplifiedText = '';
   artifacts.forEach(item => {
     const d = item.data;
     if (!d) return;
     if (item.type === 'analysis') {
-      if (d.originalText) out.text += String(d.originalText) + ' ';
+      if (d.originalText) {
+        analysisText = String(d.originalText);
+        out.text += analysisText + ' ';
+      }
       if (Array.isArray(d.concepts)) out.text += d.concepts.join(' ') + ' ';
     } else if (item.type === 'glossary' && Array.isArray(d)) {
       d.forEach(g => {
@@ -380,18 +395,26 @@ function collectAuditText(artifacts) {
         if (b && Array.isArray(b.items)) out.text += b.items.join(' ') + ' ';
       });
     } else if (item.type === 'simplified' && typeof d === 'string') {
+      simplifiedText = d;
       out.text += d + ' ';
     } else if (item.type === 'simplified' && d && d.text) {
-      out.text += String(d.text) + ' ';
+      simplifiedText = String(d.text);
+      out.text += simplifiedText + ' ';
     }
   });
+  // Resolve sourceText: prefer the analysis.originalText (true source), else simplified.
+  out.sourceText = analysisText || simplifiedText || '';
   return out;
 }
 
 function computeVocabularyFit(artifacts, gradeLevel) {
-  const { text, glossaryTerms } = collectAuditText(artifacts);
+  const { text, sourceText, glossaryTerms } = collectAuditText(artifacts);
+  // sourceWords: count of words in the primary source text only (matches teacher intuition).
+  // auditedTextWords: count across the full bundle (every artifact's content).
+  const sourceWordList = (sourceText.toLowerCase().match(/[a-z]{3,}/g)) || [];
+  const sourceWords = sourceWordList.length;
   const words = (text.toLowerCase().match(/[a-z]{3,}/g)) || [];
-  const totalWords = words.length;
+  const auditedTextWords = words.length;
   const uniqueSet = new Set(words);
   const tier3Set = new Set(glossaryTerms);
 
@@ -412,7 +435,22 @@ function computeVocabularyFit(artifacts, gradeLevel) {
   });
 
   const gradeNum = parseGradeLevelToNum(gradeLevel);
-  const expected = gradeBandExpectations(gradeNum);
+  const baseExpected = gradeBandExpectations(gradeNum);
+  // Beck/McKeown norms are calibrated to a single ~1500-word text. The audited bundle
+  // can be 3-5x larger when it includes simplified text + lesson plan + quiz + glossary.
+  // Rescale tier expectations proportionally so 5th-grade Solar System bundle (~4400 words)
+  // doesn't compare against single-text norms.
+  const TYPICAL_SINGLE_TEXT_WORDS = 1500;
+  const scale = auditedTextWords > 0 ? Math.max(1, auditedTextWords / TYPICAL_SINGLE_TEXT_WORDS) : 1;
+  const expected = {
+    tier2: Math.round(baseExpected.tier2 * scale),
+    tier3: Math.round(baseExpected.tier3 * scale),
+    band: baseExpected.band,
+    gradeBand: baseExpected.band,
+    scale: Number(scale.toFixed(2)),
+    perTextTier2: baseExpected.tier2,
+    perTextTier3: baseExpected.tier3,
+  };
   const recommendations = [];
   let status = 'Aligned';
 
@@ -427,23 +465,25 @@ function computeVocabularyFit(artifacts, gradeLevel) {
     if (status === 'Aligned') status = 'Partially Aligned';
     recommendations.push(`Tier 3 domain vocabulary is light (~${tier3} unique vs ~${expected.tier3} expected). Add ${Math.max(2, expected.tier3 - tier3)} more glossary terms specific to the topic.`);
   }
-  if (totalWords < 200 && artifacts.length > 0) {
+  if (sourceWords < 200 && artifacts.length > 0) {
     recommendations.push('Source text is short (<200 words). Vocabulary signal may be unreliable; consider expanding the source material before relying on this audit.');
   }
 
   return {
     status,
-    totalWords,
+    sourceWords,
+    auditedTextWords,
+    totalWords: auditedTextWords, // legacy alias for backward compat with old saved audits
     uniqueWords: uniqueSet.size,
     tier1Count: tier1,
     tier2Count: tier2,
     tier3Count: tier3,
     glossaryTermsCount: glossaryTerms.length,
-    expected: { tier2: expected.tier2, tier3: expected.tier3, gradeBand: expected.band },
+    expected,
     tier2Examples,
     tier3Examples,
     recommendations,
-    notes: 'Heuristic classification using word length + glossary detection + Tier 3 suffix patterns. Not a substitute for manual vocabulary review.',
+    notes: 'sourceWords = primary source text only (matches teacher intuition); auditedTextWords = across the full curriculum bundle (used for tier classification). Tier expectations scaled to bundle size (×' + Number(scale.toFixed(2)) + ').',
   };
 }
 
@@ -1993,30 +2033,51 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          content.comprehensive = content.comprehensive || {};
 
          // ---- Sync deterministic compute (Steps 1, 2, 3, 5 stats) -----------
+         // On compute failure, write a placeholder marker so the teacher sees
+         // "Couldn't compute" instead of the dimension silently disappearing.
+         const failedPlaceholder = (label, err) => ({
+             status: 'Compute failed',
+             computeFailed: true,
+             error: err && err.message ? String(err.message).slice(0, 240) : 'Unknown error',
+             notes: label + ' could not be computed for this audit. The error has been logged. Try regenerating the audit; if the problem persists, check the artifacts have the expected shape.',
+         });
+
          let vocabFit = null;
          try {
              vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
              vocabFit.readingLevels = auditHarvest.readingLevels;
              content.comprehensive.vocabulary = vocabFit;
-         } catch (vocabErr) { warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr); }
+         } catch (vocabErr) {
+             warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr);
+             content.comprehensive.vocabulary = failedPlaceholder('Vocabulary', vocabErr);
+         }
 
          let engagement = null;
          try {
              engagement = computeEngagementVariety(auditHarvest, artifactsToAudit);
              content.comprehensive.engagement = engagement;
-         } catch (engErr) { warnLog('[Alignment] Engagement variety computation failed:', engErr); }
+         } catch (engErr) {
+             warnLog('[Alignment] Engagement variety computation failed:', engErr);
+             content.comprehensive.engagement = failedPlaceholder('Engagement variety', engErr);
+         }
 
          let accessibility = null;
          try {
              accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, gradeLevel);
              content.comprehensive.accessibility = accessibility;
-         } catch (accErr) { warnLog('[Alignment] Accessibility computation failed:', accErr); }
+         } catch (accErr) {
+             warnLog('[Alignment] Accessibility computation failed:', accErr);
+             content.comprehensive.accessibility = failedPlaceholder('Content accessibility', accErr);
+         }
 
          let accuracy = null;
          try {
              accuracy = computeContentAccuracy(auditHarvest);
              content.comprehensive.accuracy = accuracy;
-         } catch (accuracyErr) { warnLog('[Alignment] Content accuracy computation failed:', accuracyErr); }
+         } catch (accuracyErr) {
+             warnLog('[Alignment] Content accuracy computation failed:', accuracyErr);
+             content.comprehensive.accuracy = failedPlaceholder('Content accuracy', accuracyErr);
+         }
 
          // Shared grade band derived once for all dimensions
          const dimGradeBand = (vocabFit && vocabFit.expected && vocabFit.expected.gradeBand) || gradeLevel;
@@ -2052,7 +2113,26 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              const cached = _auditLLMCache.get(fp);
              if (cached) { content.comprehensive.engagement.llmReview = cached; return; }
              try {
-                 const prompt = `You are an expert in UDL (Universal Design for Learning) and Webb's Depth of Knowledge framework. Review the engagement-variety profile of this curriculum.\n\nDeterministic stats:\n- Distinct artifact types: ${engagement.distinctTypeCount} (${engagement.distinctTypes.join(', ')})\n- Total artifacts: ${engagement.totalArtifacts}\n- Diversity score: ${engagement.diversityScore} (0=single type, 1=balanced)\n- DOK distribution (% of quiz items, ${engagement.dokTotal} total): L1=${engagement.dokDistribution.L1 || 0}%, L2=${engagement.dokDistribution.L2 || 0}%, L3=${engagement.dokDistribution.L3 || 0}%, L4=${engagement.dokDistribution.L4 || 0}%, unknown=${engagement.dokDistribution.unknown || 0}%\n- Scaffolds: ${engagement.scaffoldCounts.sentenceFrames} sentence-frames sets, ${engagement.scaffoldCounts.simplifiedTexts} simplified texts, ${engagement.scaffoldCounts.leveledGlossary} leveled glossaries\n- Modalities present: ${engagement.multimodalCoverage.present.join(', ') || '(none)'}\n- Modalities missing: ${engagement.multimodalCoverage.missing.join(', ') || '(none)'}\n- Grade band: ${dimGradeBand}\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether engagement variety is appropriate for the grade band and what is most needed.\n2. "formatGaps": array of 1-3 specific format additions that would most improve engagement (e.g., "add a Visual Organizer to give visual learners a non-text path through the content", "add a brief Adventure scenario for kinesthetic engagement"). Each entry should be a sentence.\n3. "dokAssessment": ONE sentence on whether the DOK balance is appropriate (e.g., "DOK skews recall-heavy; add 2-3 application-level questions" or "DOK distribution is well-balanced for ${dimGradeBand}"). If dokTotal is 0, say "No quiz items present to evaluate DOK."\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
+                 // DOK fallback: when engagement.dokTotal === 0 BUT a quiz exists in the
+                 // artifacts (i.e., the quiz generator didn't tag DOK levels), pass the
+                 // actual quiz questions to the LLM so it can estimate DOK rather than
+                 // falsely report "no quiz items." Verified bug from Solar System audit.
+                 const quizItem = artifactsToAudit.find(function (h) { return h && h.type === 'quiz' && h.data; });
+                 const hasQuiz = !!(quizItem && quizItem.data && Array.isArray(quizItem.data.questions) && quizItem.data.questions.length > 0);
+                 const needsDokFallback = hasQuiz && (engagement.dokTotal === 0 || !engagement.dokTotal);
+                 const quizSnippet = needsDokFallback
+                     ? quizItem.data.questions.slice(0, 12).map(function (q, i) {
+                         var qt = (q && (q.question || q.text)) ? String(q.question || q.text) : '';
+                         return (i + 1) + '. ' + qt.slice(0, 220);
+                       }).join('\n')
+                     : '';
+                 const dokFallbackBlock = needsDokFallback
+                     ? '\n\nDOK FALLBACK NEEDED: This quiz has ' + quizItem.data.questions.length + ' questions but no DOK metadata. Estimate DOK distribution from the question stems below. Return percentages summing to 100. Examples:\n' + quizSnippet
+                     : '';
+                 const dokInstruction = needsDokFallback
+                     ? '3. "dokAssessment": ONE sentence on the estimated DOK distribution from the questions above (e.g., "Estimated ~70% L1 recall, ~25% L2, ~5% L3; add 2-3 strategic-thinking items").\n4. "estimatedDokDistribution": object with percentage estimates {"L1": int, "L2": int, "L3": int, "L4": int} based on the questions above (must sum to 100).'
+                     : '3. "dokAssessment": ONE sentence on whether the DOK balance is appropriate (e.g., "DOK skews recall-heavy; add 2-3 application-level questions" or "DOK distribution is well-balanced for ' + dimGradeBand + '"). If dokTotal is 0, say "No quiz items present to evaluate DOK."';
+                 const prompt = `You are an expert in UDL (Universal Design for Learning) and Webb's Depth of Knowledge framework. Review the engagement-variety profile of this curriculum.\n\nDeterministic stats:\n- Distinct artifact types: ${engagement.distinctTypeCount} (${engagement.distinctTypes.join(', ')})\n- Total artifacts: ${engagement.totalArtifacts}\n- Diversity score: ${engagement.diversityScore} (0=single type, 1=balanced)\n- DOK distribution (% of quiz items, ${engagement.dokTotal} total): L1=${engagement.dokDistribution.L1 || 0}%, L2=${engagement.dokDistribution.L2 || 0}%, L3=${engagement.dokDistribution.L3 || 0}%, L4=${engagement.dokDistribution.L4 || 0}%, unknown=${engagement.dokDistribution.unknown || 0}%\n- Scaffolds: ${engagement.scaffoldCounts.sentenceFrames} sentence-frames sets, ${engagement.scaffoldCounts.simplifiedTexts} simplified texts, ${engagement.scaffoldCounts.leveledGlossary} leveled glossaries\n- Modalities present: ${engagement.multimodalCoverage.present.join(', ') || '(none)'}\n- Modalities missing: ${engagement.multimodalCoverage.missing.join(', ') || '(none)'}\n- Grade band: ${dimGradeBand}${dokFallbackBlock}\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether engagement variety is appropriate for the grade band and what is most needed.\n2. "formatGaps": array of 1-3 specific format additions that would most improve engagement (e.g., "add a Visual Organizer to give visual learners a non-text path through the content", "add a brief Adventure scenario for kinesthetic engagement"). Each entry should be a sentence.\n${dokInstruction}\n\nReturn ONLY a single valid JSON object with exactly these fields.`;
                  const result = await callGemini(prompt, true);
                  const review = JSON.parse(cleanJson(result));
                  const reviewShape = {
@@ -2060,6 +2140,21 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                      formatGaps: Array.isArray(review.formatGaps) ? review.formatGaps.slice(0, 5) : [],
                      dokAssessment: typeof review.dokAssessment === 'string' ? review.dokAssessment : '',
                  };
+                 // If LLM estimated DOK distribution as fallback, attach it to engagement directly
+                 // so the render shows the bar chart instead of "no quiz items."
+                 if (needsDokFallback && review.estimatedDokDistribution && typeof review.estimatedDokDistribution === 'object') {
+                     const est = review.estimatedDokDistribution;
+                     const safeNum = function (v) { return typeof v === 'number' && v >= 0 ? Math.round(v) : 0; };
+                     content.comprehensive.engagement.dokDistribution = {
+                         L1: safeNum(est.L1),
+                         L2: safeNum(est.L2),
+                         L3: safeNum(est.L3),
+                         L4: safeNum(est.L4),
+                         unknown: 0,
+                     };
+                     content.comprehensive.engagement.dokTotal = quizItem.data.questions.length;
+                     content.comprehensive.engagement.dokSource = 'llm-estimated';
+                 }
                  content.comprehensive.engagement.llmReview = reviewShape;
                  _auditLLMCache.set(fp, reviewShape);
              } catch (e) { warnLog('[Alignment] Engagement LLM review failed:', e); }
@@ -2119,7 +2214,17 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                  };
                  content.comprehensive.udl = udlShape;
                  _auditLLMCache.set(fp, udlShape);
-             } catch (e) { warnLog('[Alignment] UDL evaluation failed:', e); }
+             } catch (e) {
+                 warnLog('[Alignment] UDL evaluation failed:', e);
+                 if (!content.comprehensive.udl) {
+                     content.comprehensive.udl = {
+                         status: 'Compute failed',
+                         computeFailed: true,
+                         error: e && e.message ? String(e.message).slice(0, 240) : 'UDL LLM call failed or response could not be parsed.',
+                         notes: 'UDL principles evaluation could not complete. The error has been logged. Try regenerating the audit.',
+                     };
+                 }
+             }
          })();
 
          const accuracyTask = accuracy ? (async () => {
