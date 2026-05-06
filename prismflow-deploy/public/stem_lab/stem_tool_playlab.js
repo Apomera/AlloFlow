@@ -3508,6 +3508,32 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ── Sport-accent hero band (sport-flavored, dark-themed) ──
+        (function() {
+          var SPORT_META = {
+            football: { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)', icon: '🏈', title: 'American Football \u2014 chess at 4.4 yds/sec',  hint: '11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense \u2014 and good QBs read the answer pre-snap.' },
+            soccer:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)', icon: '⚽', title: 'Soccer \u2014 the beautiful game, on a 105\u00d768m grid', hint: '4-3-3 vs 4-4-2 vs 3-5-2. Pep\u2019s positional play, Klopp\u2019s gegenpress, Italian catenaccio. Width creates space, the 10 finds it, the false-9 drops to make it. Tactics are the second player.' }
+          };
+          var meta = SPORT_META[d.sport || 'football'] || SPORT_META.football;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ── Scenarios ──
         // One-click teaching demos. Each pill snaps sport + play/concept +
         // coverage/shape (and optionally LOS for football) into a
