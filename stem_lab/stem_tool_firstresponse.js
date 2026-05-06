@@ -462,6 +462,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         { id: 'choking', icon: '😬', label: 'Choking', desc: 'Infant, child, adult, pregnant, alone.', ready: true },
         { id: 'disabilityAware', icon: '♾️', label: 'Disability-aware response', desc: 'Deaf/HoH, autistic, epilepsy, hidden disability.', ready: true },
         { id: 'scenarios', icon: '🎭', label: 'Scenario sim', desc: 'Multi-step branching emergency decisions.', ready: true },
+        { id: 'firstAction', icon: '🎯', label: 'First Action Sleuth', desc: '10 vignettes. Pick the FIRST action from 6 options (call EMS, CPR, AED, pressure, abdominal thrusts, recovery position). Builds the decision reflex.', ready: true },
         { id: 'aiPractice', icon: '🤖', label: 'AI Practice', desc: 'Novel scenes — you write the response, AI critiques.', ready: true },
         { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every org cited in this tool. Tap to call or visit.', ready: true }
       ];
@@ -2570,6 +2571,208 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       }
 
       // ─────────────────────────────────────────
+      // FIRST ACTION SLEUTH (net-new mini-game)
+      // 10 vignettes. Player picks the FIRST action from 6 options. Frame is
+      // explicitly "decision practice" — the consent gate already established
+      // this is educational, not a substitute for certification. Coaching after
+      // each answer cites why this is the first action and what NOT to do
+      // first (the most-common confusion).
+      // ─────────────────────────────────────────
+      function renderFirstActionSleuth() {
+        var ACTIONS = [
+          { id: 'callEMS',  label: 'Call 911',                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
+          { id: 'cpr',      label: 'Start CPR',                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
+          { id: 'aed',      label: 'Apply AED',                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
+          { id: 'pressure', label: 'Direct pressure',           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
+          { id: 'heimlich', label: 'Abdominal thrusts',         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
+          { id: 'recovery', label: 'Recovery position',         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
+        ];
+        var VIGNETTES = [
+          { id: 1, scenario: 'A coworker collapses in the office. They are unresponsive, not breathing, and have no pulse. You are alone with them. Your phone is in your pocket.', correct: 'callEMS',
+            why: 'Single-rescuer adult cardiac arrest: call 911 FIRST so EMS + AED are dispatched while you start CPR. Adult sudden cardiac arrest is usually a heart-rhythm problem; defibrillation is the highest-value intervention and needs EMS en route.' },
+          { id: 2, scenario: 'A 7-year-old has just been pulled from a backyard pool. Not breathing, no pulse. You are alone — no one else is around to call.', correct: 'cpr',
+            why: 'Pediatric drowning is a respiratory cause. AHA guidance: do 2 minutes of CPR FIRST, then call 911 if still alone. Restoring oxygenation matters more than EMS dispatch in the first 2 minutes for kids who arrested from drowning.' },
+          { id: 3, scenario: 'Someone has a deep cut on their thigh. Bright red blood is gushing — visible pumping with their heartbeat. They are conscious.', correct: 'pressure',
+            why: 'Pulsing bright red = arterial bleed. First action is direct pressure with whatever cloth is at hand. Tourniquet only if pressure cannot stop the bleed within ~5 minutes. Call 911 next, but pressure first to stop blood loss.' },
+          { id: 4, scenario: 'A friend at dinner suddenly stands up, hands clutching their throat. They cannot speak, cough, or breathe. Eyes wide, panicked.', correct: 'heimlich',
+            why: 'Universal choking sign + complete airway obstruction = abdominal thrusts immediately. Time matters — brain damage starts in 4–6 minutes without oxygen. Do not slap their back if they are conscious and standing — current AHA guidance is abdominal thrusts first for adults.' },
+          { id: 5, scenario: 'You have been doing CPR on an adult cardiac arrest for 90 seconds. A bystander runs over with an AED, already unboxed, pads ready. The patient still has no pulse.', correct: 'aed',
+            why: 'AED FIRST as soon as it is available and pads are ready. Defibrillation within the first 3–5 minutes after collapse is the single most powerful intervention for adult cardiac arrest. Pause compressions only as long as the AED needs to analyze + shock; resume immediately after.' },
+          { id: 6, scenario: 'A student just had a 90-second seizure. The seizure has stopped. They are now breathing normally on their own but are still unconscious. No injuries from the fall.', correct: 'recovery',
+            why: 'Post-seizure (postictal) phase. Breathing is normal — no CPR needed. Place in recovery position to keep airway open and prevent aspiration if they vomit. Stay with them, monitor breathing. Most seizures do NOT require 911 unless: lasts >5 min, second seizure, injury, first-ever, or pregnancy/diabetes.' },
+          { id: 7, scenario: 'A neighbor is suddenly slurring their speech. The right side of their face is drooping. They cannot lift their right arm. Symptoms started 15 minutes ago.', correct: 'callEMS',
+            why: 'FAST-positive (Face, Arm, Speech, Time) = stroke until proven otherwise. This is the most time-critical call in adult medicine — every minute of delay = ~2 million neurons lost. Get EMS dispatched NOW. Do not drive them yourself; ambulance can pre-notify the stroke team.' },
+          { id: 8, scenario: 'An adult is clutching their chest, sweating, pale. They say they have crushing chest pain that has lasted 20 minutes and is radiating to their left arm.', correct: 'callEMS',
+            why: 'Classic heart attack presentation. Call 911 FIRST. Aspirin (chewed, not swallowed) is appropriate next step if no allergy and EMS confirms — but EMS dispatch is first. Time = muscle for a heart in this state.' },
+          { id: 9, scenario: 'You find an unresponsive adult slumped against a wall. Their breathing is regular and slow. No injuries you can see. No medication bottles around.', correct: 'recovery',
+            why: 'Unresponsive but BREATHING normally. CPR is not needed. Recovery position protects the airway. Call 911 next — unresponsiveness in an otherwise healthy adult needs medical evaluation (overdose, stroke, hypoglycemia, post-seizure are all possibilities).' },
+          { id: 10, scenario: 'An adult with known asthma is having a severe attack. They cannot speak in full sentences. Their inhaler is empty. They are still conscious, sitting forward, working hard to breathe.', correct: 'callEMS',
+            why: 'Severe asthma + unable to speak full sentences + empty rescue inhaler = imminent respiratory failure. Call 911 first; EMS carries albuterol nebulizers and steroids. Help them sit upright, leaning slightly forward (the position they instinctively chose). Do not have them lie down.' }
+        ];
+
+        // State
+        var faIdx = d.faIdx == null ? -1 : d.faIdx;
+        var faSeed = d.faSeed || 1;
+        var faAnswered = !!d.faAnswered;
+        var faPick = d.faPick;
+        var faScore = d.faScore || 0;
+        var faRounds = d.faRounds || 0;
+        var faStreak = d.faStreak || 0;
+        var faBest = d.faBest || 0;
+        var faShown = d.faShown || [];
+
+        function nextRound() {
+          var pool = [];
+          for (var i = 0; i < VIGNETTES.length; i++) if (faShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < VIGNETTES.length; j++) pool.push(j); faShown = []; }
+          var seedNext = ((faSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('faSeed', seedNext);
+          upd('faIdx', pick);
+          upd('faAnswered', false);
+          upd('faPick', null);
+          upd('faShown', faShown.concat([pick]));
+        }
+        function answer(actionId) {
+          if (faAnswered) return;
+          var v = VIGNETTES[faIdx];
+          var correct = actionId === v.correct;
+          var newScore = faScore + (correct ? 1 : 0);
+          var newStreak = correct ? (faStreak + 1) : 0;
+          var newBest = Math.max(faBest, newStreak);
+          upd('faAnswered', true);
+          upd('faPick', actionId);
+          upd('faScore', newScore);
+          upd('faRounds', faRounds + 1);
+          upd('faStreak', newStreak);
+          upd('faBest', newBest);
+          frAnnounce(correct ? 'Correct: ' + (ACTIONS.filter(function(x) { return x.id === v.correct; })[0]).label : 'Not quite');
+        }
+
+        // Intro
+        if (faIdx < 0) {
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('🎯 First Action Sleuth'),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '🎯 Pick the FIRST action — 10 vignettes'),
+              h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.'),
+              h('p', { style: { margin: 0, color: T.dim, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
+                'In a real emergency, call 911. In Maine, you can text 911 if you cannot speak.')
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The six first actions'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+                ACTIONS.map(function(a) {
+                  return h('div', { key: a.id,
+                    style: { padding: '8px 10px', borderRadius: 8, background: a.color + '15', border: '1px solid ' + a.color + '55' }
+                  },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                      h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, a.icon),
+                      h('span', { style: { color: a.color, fontWeight: 800, fontSize: 12 } }, a.label)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, a.def)
+                  );
+                })
+              )
+            ),
+            h('button', { 'data-fr-focusable': true,
+              onClick: nextRound,
+              style: btnPrimary({ width: '100%', textAlign: 'center', padding: '12px 18px' })
+            }, '🎯 Start — vignette 1 of 10')
+          );
+        }
+
+        var v = VIGNETTES[faIdx];
+        var pickedCorrect = faAnswered && faPick === v.correct;
+        var pct = faRounds > 0 ? Math.round((faScore / faRounds) * 100) : 0;
+        var allDone = faShown.length >= VIGNETTES.length && faAnswered;
+        var correctAction = ACTIONS.filter(function(x) { return x.id === v.correct; })[0];
+        var pickedAction = faPick ? ACTIONS.filter(function(x) { return x.id === faPick; })[0] : null;
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🎯 First Action Sleuth'),
+          // Score header
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.muted, marginBottom: 12 } },
+            h('span', null, 'Vignette ', h('strong', { style: { color: T.text } }, faShown.length)),
+            h('span', null, 'Score ', h('strong', { style: { color: T.ok } }, faScore + ' / ' + faRounds)),
+            faRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link } }, pct + '%')),
+            h('span', null, 'Streak ', h('strong', { style: { color: T.warn } }, faStreak)),
+            h('span', null, 'Best ', h('strong', { style: { color: T.accentHi } }, faBest))
+          ),
+          // The vignette
+          h('section', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent + '88', marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Vignette ' + faShown.length + ' of ' + VIGNETTES.length),
+            h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.55 } }, v.scenario)
+          ),
+          // 6 action picker buttons
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the first action' },
+            ACTIONS.map(function(a) {
+              var picked = faAnswered && faPick === a.id;
+              var isRight = faAnswered && a.id === v.correct;
+              var bg, border, color;
+              if (faAnswered) {
+                if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = T.ok; color = '#bbf7d0'; }
+                else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = T.danger; color = '#fecaca'; }
+                else { bg = T.cardAlt; border = T.border; color = T.dim; }
+              } else {
+                bg = a.color + '15'; border = a.color + '60'; color = T.text;
+              }
+              return h('button', { key: a.id, 'data-fr-focusable': true,
+                role: 'radio',
+                'aria-checked': picked ? 'true' : 'false',
+                disabled: faAnswered,
+                onClick: function() { answer(a.id); },
+                style: { padding: '12px 14px', borderRadius: 10, background: bg, color: color, border: '2px solid ' + border, cursor: faAnswered ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 64, transition: 'all 0.15s' }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                  h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, a.icon),
+                  h('span', { style: { color: faAnswered ? color : a.color, fontSize: 13, fontWeight: 800 } }, a.label)
+                ),
+                h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: faAnswered ? color : T.muted } }, a.def)
+              );
+            })
+          ),
+          // Feedback
+          faAnswered && h('section', {
+            style: {
+              marginTop: 14,
+              padding: 14,
+              borderRadius: 12,
+              background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.08)',
+              border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+            }
+          },
+            h('div', { style: { fontSize: 14, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+              pickedCorrect
+                ? '✅ Correct — ' + correctAction.label
+                : '❌ The first action is ' + correctAction.label + (pickedAction ? ' (you picked ' + pickedAction.label + ')' : '')
+            ),
+            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 13, lineHeight: 1.55 } }, v.why),
+            allDone
+              ? h('div', { style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.accent } },
+                  h('div', { style: { fontSize: 14, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 vignettes complete'),
+                  h('div', { style: { fontSize: 12, color: T.text, lineHeight: 1.5 } },
+                    'Final: ', h('strong', null, faScore + ' / ' + VIGNETTES.length + ' (' + Math.round((faScore / VIGNETTES.length) * 100) + '%)'),
+                    faScore === VIGNETTES.length ? ' — every first action correct. The next step is hands-on certification with Red Cross or AHA.' :
+                    faScore >= 8 ? ' — strong decision reflex. The most-confused pair is usually adult cardiac arrest (call first) vs pediatric drowning (CPR first) — different protocols for different etiologies.' :
+                    faScore >= 6 ? ' — solid baseline. Re-read the rationales on misses; the call-911-first vs start-CPR-first distinction is the main reflex to build.' :
+                    ' — these decisions take practice. Re-read the six action defs + each vignette rationale, then retake. Real certification (Red Cross, AHA) drills this until it is automatic.'
+                  ),
+                  h('button', { 'data-fr-focusable': true,
+                    onClick: function() { upd('faIdx', -1); upd('faShown', []); upd('faScore', 0); upd('faRounds', 0); upd('faStreak', 0); },
+                    style: Object.assign(btnPrimary({ marginTop: 10, padding: '8px 14px', fontSize: 12 }), {})
+                  }, '🔄 Restart')
+                )
+              : h('button', { 'data-fr-focusable': true,
+                  onClick: nextRound,
+                  style: btnPrimary({ marginTop: 4, padding: '10px 16px', fontSize: 13 })
+                }, '➡️ Next vignette')
+          ),
+          disclaimerFooter()
+        );
+      }
+
+      // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
       // Consent gate blocks every view EXCEPT 'resources' (emergencies always
@@ -2585,6 +2788,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         case 'choking':         return renderChoking();
         case 'disabilityAware': return renderDisabilityAware();
         case 'scenarios':       return renderScenarios();
+        case 'firstAction':     return renderFirstActionSleuth();
         case 'aiPractice':      return renderAiPractice();
         case 'resources':       return renderResources();
         case 'menu':
