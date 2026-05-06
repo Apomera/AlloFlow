@@ -32,9 +32,101 @@
   var AlertCircle = _lazyIcon('AlertCircle');
   var Sparkles = _lazyIcon('Sparkles');
 
+  // ─── Plan O: Comprehensive section renderers ───────────────────────────
+  // Each dimension (vocabulary, engagement, accessibility, udl, content
+  // accuracy) renders as a card with status + body content.
+  function statusBadgeClass(status) {
+    if (status === 'Aligned')   return 'bg-green-100 text-green-700';
+    if (status === 'Not Aligned') return 'bg-red-100 text-red-700';
+    return 'bg-orange-100 text-orange-700';
+  }
+  function ComprehensiveSection(p) {
+    return React.createElement('div', {
+      className: 'bg-white p-6 rounded-xl border border-slate-300 shadow-sm mb-6'
+    },
+      React.createElement('div', { className: 'flex items-center justify-between mb-4 pb-3 border-b border-slate-200' },
+        React.createElement('h3', { className: 'font-bold text-slate-800 flex items-center gap-2 text-lg' },
+          React.createElement('span', { 'aria-hidden': 'true' }, p.icon),
+          ' ', p.title
+        ),
+        React.createElement('span', {
+          className: 'text-[11px] uppercase font-bold px-2 py-1 rounded ' + statusBadgeClass(p.status)
+        }, p.status || 'N/A')
+      ),
+      p.children
+    );
+  }
+
+  function VocabularySection(p) {
+    var v = p.vocab;
+    if (!v) return null;
+    return React.createElement(ComprehensiveSection, { icon: '📚', title: 'Vocabulary fit', status: v.status },
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, v.totalWords),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Total words')
+        ),
+        React.createElement('div', { className: 'p-3 bg-blue-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-blue-800' }, v.tier2Count),
+          React.createElement('div', { className: 'text-xs text-blue-700' }, 'Tier 2 (academic)'),
+          React.createElement('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'expected ~' + (v.expected && v.expected.tier2))
+        ),
+        React.createElement('div', { className: 'p-3 bg-purple-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-purple-800' }, v.tier3Count),
+          React.createElement('div', { className: 'text-xs text-purple-700' }, 'Tier 3 (domain)'),
+          React.createElement('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'expected ~' + (v.expected && v.expected.tier3))
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, v.glossaryTermsCount),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Glossary terms')
+        )
+      ),
+      v.tier2Examples && v.tier2Examples.length > 0 && React.createElement('div', { className: 'mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-blue-800 mb-1' }, 'Tier 2 examples found:'),
+        React.createElement('div', { className: 'flex flex-wrap gap-1' },
+          v.tier2Examples.map(function (w, i) {
+            return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded' }, w);
+          })
+        )
+      ),
+      v.tier3Examples && v.tier3Examples.length > 0 && React.createElement('div', { className: 'mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-purple-800 mb-1' }, 'Tier 3 examples found:'),
+        React.createElement('div', { className: 'flex flex-wrap gap-1' },
+          v.tier3Examples.map(function (w, i) {
+            return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-purple-100 text-purple-900 rounded' }, w);
+          })
+        )
+      ),
+      v.recommendations && v.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-2' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Recommendations:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
+          v.recommendations.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic' }, v.notes || '')
+    );
+  }
+
+  function ComprehensiveBlock(p) {
+    var c = p.comp;
+    if (!c) return null;
+    return React.createElement('div', {
+      className: 'mt-12 pt-8 border-t-4 border-indigo-500 max-w-4xl mx-auto'
+    },
+      React.createElement('div', { className: 'mb-6' },
+        React.createElement('h2', { className: 'text-2xl font-black text-slate-800 uppercase tracking-tight mb-1' },
+          'Comprehensive Curriculum Audit'),
+        React.createElement('p', { className: 'text-sm text-slate-600' },
+          'Multi-dimensional analysis beyond standards alignment. Each dimension evaluates the curriculum against a specific quality lens.')
+      ),
+      c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary })
+    );
+  }
+
   function AlignmentReportView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
+  var comprehensive = generatedContent && generatedContent.data && generatedContent.data.comprehensive;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-8 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10"
   }, generatedContent.data.reports.map((report, idx) => /*#__PURE__*/React.createElement("div", {
@@ -178,7 +270,7 @@
     className: "bg-indigo-50 p-4 rounded-lg text-sm text-indigo-900 leading-relaxed border border-indigo-100 font-medium"
   }, report.adminRecommendation || "No recommendation was generated for this standard."))), idx < (generatedContent?.data?.reports?.length || 0) - 1 && /*#__PURE__*/React.createElement("hr", {
     className: "my-8 border-slate-300"
-  }))));
+  }))), comprehensive && React.createElement(ComprehensiveBlock, { comp: comprehensive }));
 }
 
   window.AlloModules = window.AlloModules || {};

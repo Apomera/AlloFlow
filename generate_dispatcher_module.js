@@ -5,6 +5,145 @@ if (window.AlloModules && window.AlloModules.GenDispatcherModule) { console.log(
 // handleGenerate (2,286 lines) — the resource-generation dispatcher.
 // Switch-on-type router for simplified/glossary/quiz/outline/image/etc.
 
+// ─── Plan O Step 1: Vocabulary fit (deterministic) ──────────────────────
+// Common 7+ letter words that should NOT count as Tier 2 academic vocab.
+// Beck/McKeown defines Tier 2 as "high-utility academic words found across
+// disciplines"; Tier 1 is everyday common vocab. This list catches false
+// positives where word-length alone would misclassify a common word.
+const COMMON_LONGER_WORDS = new Set([
+  'another','because','between','through','without','thought','everyone','anything','everything','something','sometimes','somewhere','anywhere','believe','remember','important','different','together','morning','evening','country','children','friends','family','brother','sister','parents','teacher','student','teacher','school','student','question','answer','really','always','already','almost','beautiful','people','around','before','during','should','would','could','little','really','yourself','myself','himself','herself','themselves','about','above','across','against','behind','beside','beyond','underneath','tomorrow','yesterday','probably','possibly','definitely','certainly','therefore','however','because','though','although','whether','whenever','wherever','whatever','whichever','suddenly','quickly','slowly','carefully','actually','finally','exactly','maybe','perhaps','quite','everyone','someone','nobody','nothing','everywhere','anywhere','sometimes','always','usually','sometimes','never','wanted','seemed','looked','started','stopped','asked','helped','jumped','walked','talked','played','laughed','smiled','cried','watched','listened','followed','answered','planted','painted','reached','turned','opened','closed','picked','dropped','pulled','pushed','rolled','tossed','grabbed','knocked','shouted','whispered','laughed','climbed','crawled','floated','marched'
+]);
+// Suffixes that strongly indicate Tier 3 (domain-specific) vocabulary.
+const TIER3_SUFFIX_RE = /(?:tion|sion|ology|ography|ography|osis|itis|emia|ase|ative|ation|ical|graphic|metric|phobia|trophy|stitial|chrom|sphere|morph|fluence|mission|version|ception|ulation)$/;
+
+function parseGradeLevelToNum(g) {
+  if (!g) return 4;
+  const s = String(g).toLowerCase();
+  if (/kinder|kg|^k\b/.test(s)) return 0;
+  const m = s.match(/(\d+)/);
+  if (m) {
+    const n = parseInt(m[1], 10);
+    if (n <= 12) return n;
+  }
+  if (/college|under-?grad/.test(s)) return 13;
+  if (/grad/.test(s)) return 14;
+  return 4;
+}
+
+function gradeBandExpectations(grade) {
+  // Approximate Beck/McKeown norms for academic vocabulary load per ~500-word
+  // lesson, scaled by grade band. Values are conservative starting points;
+  // teachers can override when interpreting.
+  if (grade <= 2)  return { tier2: 4,  tier3: 2,  band: 'K-2'    };
+  if (grade <= 5)  return { tier2: 8,  tier3: 5,  band: '3-5'    };
+  if (grade <= 8)  return { tier2: 14, tier3: 9,  band: '6-8'    };
+  if (grade <= 12) return { tier2: 22, tier3: 15, band: '9-12'   };
+  return                 { tier2: 30, tier3: 22, band: 'College' };
+}
+
+function collectAuditText(artifacts) {
+  const out = { text: '', glossaryTerms: [] };
+  artifacts.forEach(item => {
+    const d = item.data;
+    if (!d) return;
+    if (item.type === 'analysis') {
+      if (d.originalText) out.text += String(d.originalText) + ' ';
+      if (Array.isArray(d.concepts)) out.text += d.concepts.join(' ') + ' ';
+    } else if (item.type === 'glossary' && Array.isArray(d)) {
+      d.forEach(g => {
+        if (g.term)       out.glossaryTerms.push(String(g.term).toLowerCase());
+        if (g.def)        out.text += String(g.def) + ' ';
+        if (g.definition) out.text += String(g.definition) + ' ';
+      });
+    } else if (item.type === 'lesson-plan') {
+      ['directInstruction','guidedPractice','independentPractice','closure','essentialQuestion'].forEach(k => {
+        if (d[k]) out.text += String(d[k]) + ' ';
+      });
+      if (Array.isArray(d.objectives)) out.text += d.objectives.join(' ') + ' ';
+    } else if (item.type === 'quiz' && d.questions) {
+      d.questions.forEach(q => {
+        if (q.question) out.text += String(q.question) + ' ';
+        if (q.text)     out.text += String(q.text) + ' ';
+        if (Array.isArray(q.options)) out.text += q.options.join(' ') + ' ';
+      });
+    } else if (item.type === 'sentence-frames') {
+      if (Array.isArray(d.items)) d.items.forEach(i => i && i.text && (out.text += i.text + ' '));
+      if (typeof d === 'string') out.text += d + ' ';
+      if (d.text) out.text += String(d.text) + ' ';
+    } else if (item.type === 'outline') {
+      if (d.main) out.text += String(d.main) + ' ';
+      if (Array.isArray(d.branches)) d.branches.forEach(b => {
+        if (b && b.title) out.text += String(b.title) + ' ';
+        if (b && Array.isArray(b.items)) out.text += b.items.join(' ') + ' ';
+      });
+    } else if (item.type === 'simplified' && typeof d === 'string') {
+      out.text += d + ' ';
+    } else if (item.type === 'simplified' && d && d.text) {
+      out.text += String(d.text) + ' ';
+    }
+  });
+  return out;
+}
+
+function computeVocabularyFit(artifacts, gradeLevel) {
+  const { text, glossaryTerms } = collectAuditText(artifacts);
+  const words = (text.toLowerCase().match(/[a-z]{3,}/g)) || [];
+  const totalWords = words.length;
+  const uniqueSet = new Set(words);
+  const tier3Set = new Set(glossaryTerms);
+
+  let tier1 = 0, tier2 = 0, tier3 = 0;
+  const tier2Examples = [];
+  const tier3Examples = [];
+
+  uniqueSet.forEach(word => {
+    if (tier3Set.has(word) || (word.length >= 9 && TIER3_SUFFIX_RE.test(word))) {
+      tier3++;
+      if (tier3Examples.length < 8) tier3Examples.push(word);
+    } else if (word.length >= 7 && !COMMON_LONGER_WORDS.has(word)) {
+      tier2++;
+      if (tier2Examples.length < 8) tier2Examples.push(word);
+    } else {
+      tier1++;
+    }
+  });
+
+  const gradeNum = parseGradeLevelToNum(gradeLevel);
+  const expected = gradeBandExpectations(gradeNum);
+  const recommendations = [];
+  let status = 'Aligned';
+
+  if (tier2 < expected.tier2 * 0.5) {
+    status = 'Partially Aligned';
+    recommendations.push(`Tier 2 academic vocabulary is light for grade band ${expected.band} (~${tier2} unique vs ~${expected.tier2} expected). Consider adding cross-curricular academic words such as "examine", "evidence", "consequence", "framework", "interpret".`);
+  } else if (tier2 > expected.tier2 * 2.5) {
+    status = 'Partially Aligned';
+    recommendations.push(`Tier 2 vocabulary load is heavy for grade band ${expected.band} (~${tier2} unique vs ~${expected.tier2} expected). May overwhelm; consider simpler synonyms or adding sentence-frame scaffolds.`);
+  }
+  if (tier3 < expected.tier3 * 0.5) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push(`Tier 3 domain vocabulary is light (~${tier3} unique vs ~${expected.tier3} expected). Add ${Math.max(2, expected.tier3 - tier3)} more glossary terms specific to the topic.`);
+  }
+  if (totalWords < 200 && artifacts.length > 0) {
+    recommendations.push('Source text is short (<200 words). Vocabulary signal may be unreliable; consider expanding the source material before relying on this audit.');
+  }
+
+  return {
+    status,
+    totalWords,
+    uniqueWords: uniqueSet.size,
+    tier1Count: tier1,
+    tier2Count: tier2,
+    tier3Count: tier3,
+    glossaryTermsCount: glossaryTerms.length,
+    expected: { tier2: expected.tier2, tier3: expected.tier3, gradeBand: expected.band },
+    tier2Examples,
+    tier3Examples,
+    recommendations,
+    notes: 'Heuristic classification using word length + glossary detection + Tier 3 suffix patterns. Not a substitute for manual vocabulary review.',
+  };
+}
+
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
   const { gradeLevel, outlineType, visualStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts, standardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
@@ -1531,6 +1670,17 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                  warnLog("Alignment Report Parse Error (attempt 2):", retryErr);
                  throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
              }
+         }
+         // ---- Plan O Step 1: Vocabulary fit (deterministic) ------------------
+         // Compute a Tier 1/2/3 vocabulary classification across all source text +
+         // glossary entries, compare to grade-level expectations (Beck/McKeown
+         // norms), and surface as a new "comprehensive" section on the report.
+         try {
+             const vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
+             content.comprehensive = content.comprehensive || {};
+             content.comprehensive.vocabulary = vocabFit;
+         } catch (vocabErr) {
+             warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr);
          }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
