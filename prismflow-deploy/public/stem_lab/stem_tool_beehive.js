@@ -8705,6 +8705,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-300')) },
                   h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
               })),
+
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                beekeeper: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)', icon: '🧑‍🌾', title: 'Beekeeper — manage a real colony', hint: '11 educational views (anatomy, physics, life cycle, waggle dance, thermoreg, honey chem) + a live colony to inspect, feed, and treat for varroa. Most US hobbyist beekeepers lose ~40% of colonies per winter — the science here is what reduces that.' },
+                queen:     { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '👑', title: 'Queen RTS — strategy from the throne',   hint: 'You are the queen. Allocate workers to forage, nurse, build, defend. Pheromone signals propagate through the hive — the colony is a single super-organism, not a collection of individuals. Hives without a queen die in 3 weeks.' },
+                drone:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🚀', title: 'Drone flight — pollinator aerodynamics', hint: 'Fly a worker bee through a meadow, collecting nectar + pollen. Wings beat at ~200 Hz; flight uses the leading-edge vortex (same trick fighter jets use at high angle of attack). Foragers visit ~1,000 flowers per trip.' }
+              };
+              var meta = MODE_META[viewMode] || MODE_META.beekeeper;
+              return h('div', {
+                className: 'mt-2',
+                style: {
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '3px 0 0', color: dk ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
             // View selector: educational canvas views (beekeeper only).
             // Wraps on narrow screens. Keyboard 1–9 also switch views.
             // position:relative + z-index lifts tabs above the global AlloBot avatar (which was overlapping tabs like "Waggle Dance").
