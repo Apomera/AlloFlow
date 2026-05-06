@@ -302,10 +302,58 @@ const createGeminiAPI = deps => {
       throw err;
     }
   };
+  // callGeminiAudio (Phase 3v.4 / 3b.voice) — multimodal audio analysis.
+  // Sends audio + text prompt to Gemini in a single request; returns the
+  // model's text response. Used by voice_module.js's transcribeAudio
+  // (engine='gemini') and gradeAudioJustification (single-call audio
+  // → transcript + score + ack + follow-up).
+  //
+  // Strips the "data:audio/...;base64," prefix recordAudioBlob leaves on
+  // the data URI; updates mimeType from the prefix when present so the
+  // caller can pass either form.
+  const callGeminiAudio = async (prompt, base64Audio, opts = {}) => {
+    let mimeType = opts.mimeType || 'audio/webm';
+    let cleanData = base64Audio || '';
+    const m = cleanData.match(/^data:([^;]+);base64,(.+)$/);
+    if (m) { mimeType = m[1] || mimeType; cleanData = m[2]; }
+    const model = GEMINI_MODELS.flash;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+    const payload = {
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inlineData: { mimeType, data: cleanData } }
+        ]
+      }],
+      generationConfig: { maxOutputTokens: 4096 }
+    };
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!response.ok) {
+        const errText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Gemini audio API error ${response.status}: ${errText}`);
+      }
+      const data = await response.json();
+      const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const blockReason = data.candidates?.[0]?.finishReason || data.promptFeedback?.blockReason;
+      if (!text && blockReason) {
+        throw new Error(`No text generated from audio. Reason: ${blockReason}`);
+      }
+      return text;
+    } catch (err) {
+      console.error('[Audio] error:', err.message || err);
+      throw err;
+    }
+  };
   return {
     callGemini,
     callGeminiImageEdit,
-    callGeminiVision
+    callGeminiVision,
+    callGeminiAudio
   };
 };
 

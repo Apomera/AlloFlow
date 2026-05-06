@@ -187,6 +187,7 @@ window._upgradeUtilsPure = _upgradeUtilsPure;
 let callGemini = async (prompt) => { console.warn('[callGemini] Fallback — CDN module not loaded'); return ''; };
 let callGeminiVision = async () => { console.warn('[callGeminiVision] Fallback — CDN module not loaded'); return ''; };
 let callGeminiImageEdit = async () => { console.warn('[callGeminiImageEdit] Fallback — CDN module not loaded'); return null; };
+let callGeminiAudio = async () => { console.warn('[callGeminiAudio] Fallback — CDN module not loaded'); return ''; };
 function _upgradeGeminiAPI() {
     const factory = window.AlloModules && window.AlloModules.createGeminiAPI;
     if (!factory) return;
@@ -198,10 +199,12 @@ function _upgradeGeminiAPI() {
     callGemini = api.callGemini;
     callGeminiVision = api.callGeminiVision;
     callGeminiImageEdit = api.callGeminiImageEdit;
+    if (typeof api.callGeminiAudio === 'function') callGeminiAudio = api.callGeminiAudio;
     if (typeof window !== 'undefined') {
         window.callGemini = callGemini;
         window.callGeminiVision = callGeminiVision;
         window.callGeminiImageEdit = callGeminiImageEdit;
+        window.callGeminiAudio = callGeminiAudio;
     }
     console.log('[GeminiAPI] Monolith shim upgraded from CDN module.');
 }
@@ -40979,6 +40982,7 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     callImagen,
                     callGemini,
                     callGeminiImageEdit,
+                    callGeminiAudio,
                     callTTS,
                     selectedVoice,
                     addToast,

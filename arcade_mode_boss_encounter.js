@@ -302,6 +302,41 @@
     var transformCount = transformCountTuple[0];
     var setTransformCount = transformCountTuple[1];
 
+    // Phase 3b.voice — voice justification state. Two engines exposed:
+    //   'webspeech': live capture (initWebSpeechCapture) appends to the
+    //     textarea as the student speaks. Free, browser-native, but
+    //     Chrome routes audio through Google.
+    //   'whisper' / 'gemini': record-then-transcribe via recordAudioBlob
+    //     + transcribeAudio. Whisper is on-device once cached; Gemini is
+    //     server-side per call but no model download.
+    // The active path is selected by the saved Voice Quality preference;
+    // 'auto' picks Whisper if loaded, else Gemini, else Web Speech.
+    var voiceModeTuple = useState('idle');     // 'idle' | 'webspeech-live' | 'recording' | 'transcribing'
+    var voiceMode = voiceModeTuple[0];
+    var setVoiceMode = voiceModeTuple[1];
+    var voiceElapsedTuple = useState(0);
+    var voiceElapsed = voiceElapsedTuple[0];
+    var setVoiceElapsed = voiceElapsedTuple[1];
+    var voiceErrorTuple = useState(null);
+    var voiceError = voiceErrorTuple[0];
+    var setVoiceError = voiceErrorTuple[1];
+    // Refs to the active capture controller — stop() is callable any time.
+    var voiceRecorderRef = useRef(null);
+    var voiceLiveRef = useRef(null);
+    // Cleanup on unmount: stop any active capture.
+    useEffect(function () {
+      return function () {
+        if (voiceRecorderRef.current) {
+          try { voiceRecorderRef.current.cancel(); } catch (e) { /* ignore */ }
+          voiceRecorderRef.current = null;
+        }
+        if (voiceLiveRef.current) {
+          try { voiceLiveRef.current.stop(); } catch (e) { /* ignore */ }
+          voiceLiveRef.current = null;
+        }
+      };
+    }, []);
+
     // Generate boss image when topic submitted
     function beginEncounter() {
       var t = (topic || '').trim();
@@ -355,6 +390,189 @@
       var keepers = hand.filter(function (c) { return c.id !== playedCardId; });
       var refill = pool.slice(0, HAND_SIZE - keepers.length);
       setHand(keepers.concat(refill));
+    }
+
+    // ── Voice capture helpers (Phase 3b.voice) ────────────────────────
+    function resolveVoiceEngine() {
+      if (!window.AlloFlowVoice) return 'off';
+      var prefs = window.AlloFlowVoice.loadPreference
+        ? window.AlloFlowVoice.loadPreference()
+        : { engine: 'auto' };
+      var engine = prefs.engine || 'auto';
+      var caps = window.AlloFlowVoice.getCapabilities
+        ? window.AlloFlowVoice.getCapabilities()
+        : { webSpeech: false, mediaRecorder: false, whisperLoaded: false };
+      if (engine === 'auto') {
+        if (caps.whisperLoaded) return 'whisper';
+        if (typeof ctx.callGeminiAudio === 'function') return 'gemini';
+        if (caps.webSpeech) return 'webspeech';
+        return 'off';
+      }
+      // Map UI labels to internal engine ids
+      if (engine === 'best') engine = 'whisper';
+      if (engine === 'fast') engine = 'webspeech';
+      // Validate availability; fall back to webspeech if a chosen engine
+      // isn't actually wired in this session
+      if (engine === 'whisper' && !caps.whisperLoaded) {
+        return caps.webSpeech ? 'webspeech' : 'off';
+      }
+      if (engine === 'gemini' && typeof ctx.callGeminiAudio !== 'function') {
+        return caps.webSpeech ? 'webspeech' : 'off';
+      }
+      if (engine === 'webspeech' && !caps.webSpeech) {
+        return 'off';
+      }
+      return engine;
+    }
+
+    function startWebSpeechLive() {
+      if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.initWebSpeechCapture !== 'function') {
+        ctx.addToast('Voice capture not supported in this browser.');
+        return;
+      }
+      // Live mode appends transcripts to the textarea as the student speaks.
+      var startingText = (justification || '').trim();
+      var lastFinal = '';
+      var controller = window.AlloFlowVoice.initWebSpeechCapture({
+        lang: 'en-US',
+        continuous: true,
+        interimResults: false,
+        onTranscript: function (text) {
+          // Append final transcripts; Web Speech fires onresult per chunk.
+          var trimmed = (text || '').trim();
+          if (!trimmed || trimmed === lastFinal) return;
+          lastFinal = trimmed;
+          setJustification(function (prev) {
+            var existing = (prev || '').trim();
+            // Add a space between existing text and new chunk.
+            return existing ? existing + ' ' + trimmed : trimmed;
+          });
+        },
+        onError: function (e) {
+          setVoiceError(e && e.error ? e.error : 'Voice error');
+          stopVoiceLive();
+        },
+        onEnd: function () {
+          // Browser may end the session on its own (silence timeout);
+          // bring the UI back to idle.
+          if (voiceLiveRef.current === controller) {
+            voiceLiveRef.current = null;
+            setVoiceMode('idle');
+          }
+        }
+      });
+      if (!controller.supported) {
+        ctx.addToast('Voice capture not supported in this browser.');
+        return;
+      }
+      var ok = controller.start();
+      if (!ok) {
+        ctx.addToast('Could not start voice capture.');
+        return;
+      }
+      voiceLiveRef.current = controller;
+      setVoiceError(null);
+      setVoiceMode('webspeech-live');
+    }
+
+    function stopVoiceLive() {
+      if (voiceLiveRef.current) {
+        try { voiceLiveRef.current.stop(); } catch (e) { /* ignore */ }
+        voiceLiveRef.current = null;
+      }
+      setVoiceMode('idle');
+    }
+
+    function startRecordAndTranscribe(engine) {
+      if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.recordAudioBlob !== 'function') {
+        ctx.addToast('Audio recording not available.');
+        return;
+      }
+      setVoiceError(null);
+      setVoiceElapsed(0);
+      var controller = window.AlloFlowVoice.recordAudioBlob({
+        maxDurationMs: 60 * 1000,
+        onTick: function (ms) { setVoiceElapsed(ms); },
+        onError: function (err) {
+          setVoiceError((err && err.message) || 'Recording failed');
+          voiceRecorderRef.current = null;
+          setVoiceMode('idle');
+        }
+      });
+      if (!controller.supported) {
+        ctx.addToast('Microphone not supported in this browser.');
+        return;
+      }
+      voiceRecorderRef.current = controller;
+      setVoiceMode('recording');
+      // When the controller's result resolves (user clicked stop, OR maxDurationMs
+      // auto-stop fired), kick off transcription.
+      controller.result.then(function (rec) {
+        voiceRecorderRef.current = null;
+        if (!rec || !rec.base64) { setVoiceMode('idle'); return; }
+        setVoiceMode('transcribing');
+        var transOpts = {
+          engine: engine,
+          mimeType: rec.mimeType || 'audio/webm',
+          callGeminiAudio: ctx.callGeminiAudio
+        };
+        return window.AlloFlowVoice.transcribeAudio(rec.base64, transOpts);
+      }).then(function (out) {
+        if (!out) return;
+        var transcript = (out.transcript || '').trim();
+        if (!transcript) {
+          setVoiceError('No speech detected — try recording again.');
+          setVoiceMode('idle');
+          return;
+        }
+        setJustification(function (prev) {
+          var existing = (prev || '').trim();
+          return existing ? existing + ' ' + transcript : transcript;
+        });
+        setVoiceMode('idle');
+      }).catch(function (err) {
+        if (err && err.message === 'cancelled') {
+          setVoiceMode('idle');
+          return;
+        }
+        setVoiceError((err && err.message) || 'Transcription failed');
+        setVoiceMode('idle');
+      });
+    }
+
+    function startVoice() {
+      var engine = resolveVoiceEngine();
+      if (engine === 'off') {
+        ctx.addToast('Voice input is off in Settings → Voice quality.');
+        return;
+      }
+      if (engine === 'webspeech') {
+        startWebSpeechLive();
+        return;
+      }
+      startRecordAndTranscribe(engine);
+    }
+
+    function stopVoice() {
+      if (voiceMode === 'webspeech-live') {
+        stopVoiceLive();
+        return;
+      }
+      if (voiceMode === 'recording' && voiceRecorderRef.current) {
+        try { voiceRecorderRef.current.stop(); } catch (e) { /* ignore */ }
+      }
+    }
+
+    function cancelVoice() {
+      if (voiceMode === 'webspeech-live') {
+        stopVoiceLive();
+        return;
+      }
+      if (voiceRecorderRef.current) {
+        try { voiceRecorderRef.current.cancel(); } catch (e) { /* ignore */ }
+        voiceRecorderRef.current = null;
+      }
+      setVoiceMode('idle');
     }
 
     function submitSpark() {
@@ -898,19 +1116,120 @@
             marginBottom: '8px'
           }
         }),
+        // Phase 3b.voice — mic toolbar above the chars-counter row
+        (function() {
+          var prefs = (window.AlloFlowVoice && typeof window.AlloFlowVoice.loadPreference === 'function')
+            ? window.AlloFlowVoice.loadPreference()
+            : { engine: 'auto' };
+          if (prefs.engine === 'off') return null;
+          var resolved = resolveVoiceEngine();
+          if (resolved === 'off') return null;
+          var labelByEngine = {
+            'whisper':   '🎙️ Voice (Whisper · on-device)',
+            'gemini':    '🎙️ Voice (Gemini multimodal)',
+            'webspeech': '🎙️ Voice (live)'
+          };
+          var idleLabel = labelByEngine[resolved] || '🎙️ Voice';
+          var elapsedSec = Math.floor((voiceElapsed || 0) / 1000);
+          var maxSec = 60;
+          return h('div', {
+            style: {
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '8px 10px',
+              background: palette.bg,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              marginBottom: '8px',
+              flexWrap: 'wrap'
+            }
+          },
+            // Primary mic button — toggles based on current voice mode
+            voiceMode === 'idle' ? h('button', {
+              onClick: startVoice,
+              disabled: submitting,
+              style: {
+                background: 'transparent',
+                color: palette.accent,
+                border: '1.5px solid ' + palette.accent,
+                borderRadius: '999px',
+                padding: '6px 12px',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: submitting ? 'not-allowed' : 'pointer',
+                fontFamily: 'inherit',
+                opacity: submitting ? 0.5 : 1
+              }
+            }, idleLabel)
+            : voiceMode === 'webspeech-live' ? h('button', {
+              onClick: stopVoiceLive,
+              'aria-label': 'Stop voice capture',
+              style: {
+                background: '#dc2626', color: '#fff',
+                border: 'none', borderRadius: '999px',
+                padding: '6px 14px', fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'inherit',
+                animation: 'ah-record-pulse 1.6s ease-in-out infinite'
+              }
+            }, '⏹ Stop · listening live')
+            : voiceMode === 'recording' ? h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
+              h('button', {
+                onClick: stopVoice,
+                'aria-label': 'Stop and transcribe',
+                style: {
+                  background: '#dc2626', color: '#fff',
+                  border: 'none', borderRadius: '999px',
+                  padding: '6px 14px', fontSize: '12px', fontWeight: 700,
+                  cursor: 'pointer', fontFamily: 'inherit',
+                  animation: 'ah-record-pulse 1.6s ease-in-out infinite'
+                }
+              }, '⏹ Stop & transcribe'),
+              h('button', {
+                onClick: cancelVoice,
+                'aria-label': 'Cancel recording',
+                style: {
+                  background: 'transparent', color: palette.textMute,
+                  border: '1px solid ' + palette.border, borderRadius: '999px',
+                  padding: '4px 10px', fontSize: '11px', fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'inherit'
+                }
+              }, '✕ Cancel'),
+              h('span', {
+                'aria-live': 'polite',
+                style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums', marginLeft: '4px' }
+              }, elapsedSec + 's / ' + maxSec + 's')
+            )
+            : voiceMode === 'transcribing' ? h('span', {
+              'aria-live': 'polite',
+              style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic' }
+            }, '✨ Transcribing…')
+            : null,
+            // Engine status hint — small, far-right, non-blocking
+            voiceMode === 'idle' ? h('span', {
+              style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginLeft: 'auto' }
+            },
+              resolved === 'whisper' ? 'Audio stays on this device.'
+              : resolved === 'gemini' ? 'Audio uploaded to Google.'
+              : 'Speech routes through the browser.'
+            ) : null,
+            voiceError ? h('span', {
+              role: 'alert',
+              style: { fontSize: '11px', color: '#dc2626', fontStyle: 'italic', flexBasis: '100%' }
+            }, voiceError) : null
+          );
+        })(),
         h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' } },
           h('div', { style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
             (justification || '').trim().length + ' chars'),
           h('button', {
             onClick: submitSpark,
-            disabled: submitting || (justification || '').trim().length < 10,
+            disabled: submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10,
             style: {
-              background: submitting ? palette.surface : palette.accent,
-              color: submitting ? palette.textMute : palette.onAccent,
+              background: (submitting || voiceMode !== 'idle') ? palette.surface : palette.accent,
+              color: (submitting || voiceMode !== 'idle') ? palette.textMute : palette.onAccent,
               border: 'none', borderRadius: '8px',
               padding: '8px 18px', fontSize: '13px', fontWeight: 700,
-              cursor: (submitting || (justification || '').trim().length < 10) ? 'not-allowed' : 'pointer',
-              opacity: (submitting || (justification || '').trim().length < 10) ? 0.5 : 1,
+              cursor: (submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10) ? 'not-allowed' : 'pointer',
+              opacity: (submitting || voiceMode !== 'idle' || (justification || '').trim().length < 10) ? 0.5 : 1,
               fontFamily: 'inherit'
             }
           }, submitting ? 'Sparking…' : '✨ Cast Spark')
