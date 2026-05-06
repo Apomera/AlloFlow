@@ -1409,6 +1409,36 @@ const d = labToolData.wave;
 
             ),
 
+            // ── Topic-accent hero band per wave mode ──
+            (function() {
+              var MODE_META = {
+                free:         { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83C\uDF0A', title: 'Free Wave \u2014 sine, square, triangle, sawtooth',  hint: 'Pure sine = single frequency; square / triangle / sawtooth are sine sums (Fourier 1822). Each waveform sounds different at the same pitch \u2014 timbre IS the harmonic content.' },
+                standing:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFB8', title: 'Standing \u2014 nodes + antinodes on a string',     hint: 'Two waves traveling opposite directions interfere into a stationary pattern. Guitar / violin strings vibrate at fundamental + integer harmonics. Length, tension, density set the pitch.' },
+                ripple:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCA7', title: 'Ripple Tank \u2014 two sources, interference',     hint: 'Where crests meet crests \u2192 bright (constructive); crests meet troughs \u2192 dark (destructive). Young\u2019s 1801 double-slit experiment proved light is a wave; same physics here.' },
+                longitudinal: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u2261',         title: 'Longitudinal \u2014 compression + rarefaction',      hint: 'Sound is longitudinal: air molecules push and pull along the direction of travel, not perpendicular. P-waves in earthquakes are longitudinal too \u2014 they arrive first, hence the P (primary).' },
+                doppler:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDE97', title: 'Doppler \u2014 the moving siren effect',             hint: 'Source approaching = compressed wavelengths = higher pitch. Moving away = stretched wavelengths = lower pitch. Christian Doppler 1842; redshift in cosmology is the same idea, with light.' },
+                spectrum:     { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCCA', title: 'Spectrum \u2014 FFT decomposition',                  hint: 'Any periodic signal = sum of sines (Fourier transform). Music DAWs, JPEG, MRI, MP3 \u2014 all rest on this. Cooley + Tukey 1965 FFT made it computationally cheap; modern signal processing was born.' }
+              };
+              var meta = MODE_META[waveMode] || MODE_META.free;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // Canvas
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-cyan-300 shadow-lg mb-3", style: { height: "400px" } },

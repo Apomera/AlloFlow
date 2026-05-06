@@ -539,51 +539,15 @@
     };
 
     return React.createElement('div', {
-      className: 'p-6 rounded-2xl border-2 mb-8 shadow-md',
+      className: 'p-5 rounded-2xl border-2 mb-8 shadow-sm',
       style: { backgroundColor: bgColor, borderColor: ringColor }
     },
-      React.createElement('div', { className: 'flex flex-col md:flex-row items-center gap-6' },
-        // Score circle
-        React.createElement('div', {
-          className: 'relative flex-shrink-0',
-          style: { width: '120px', height: '120px' }
-        },
-          React.createElement('svg', {
-            viewBox: '0 0 120 120',
-            style: { width: '120px', height: '120px' },
-            'aria-hidden': 'true',
-          },
-            React.createElement('circle', {
-              cx: 60, cy: 60, r: 52,
-              fill: 'none', stroke: '#e2e8f0', strokeWidth: 10,
-            }),
-            React.createElement('circle', {
-              cx: 60, cy: 60, r: 52,
-              fill: 'none', stroke: ringColor, strokeWidth: 10,
-              strokeDasharray: (Math.PI * 2 * 52).toFixed(2),
-              strokeDashoffset: ((Math.PI * 2 * 52) * (1 - score / 100)).toFixed(2),
-              strokeLinecap: 'round',
-              transform: 'rotate(-90 60 60)',
-              style: { transition: 'stroke-dashoffset 800ms ease-out' },
-            }),
-            React.createElement('text', {
-              x: 60, y: 64, textAnchor: 'middle',
-              fontSize: 32, fontWeight: 900,
-              fill: textColor, fontFamily: 'system-ui, sans-serif',
-            }, score),
-            React.createElement('text', {
-              x: 60, y: 86, textAnchor: 'middle',
-              fontSize: 11, fontWeight: 600,
-              fill: textColor, fontFamily: 'system-ui, sans-serif',
-              opacity: 0.7,
-            }, '/ 100')
-          )
-        ),
-        // Label + per-dimension chips
-        React.createElement('div', { className: 'flex-1 min-w-0' },
-          React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wider mb-1', style: { color: textColor, opacity: 0.7 } },
-            'Curriculum Readiness Score'),
-          React.createElement('div', { className: 'text-xl font-black mb-3', style: { color: textColor } }, o.label || ''),
+      // Polish #2: Score circle removed — already rendered in the executive summary banner
+      // above. This card now functions as the per-dimension chip strip + blocking-issues
+      // detail panel that didn't fit in the summary banner.
+      React.createElement('div', { className: 'min-w-0' },
+        React.createElement('div', { className: 'text-xs font-bold uppercase tracking-wider mb-3', style: { color: textColor, opacity: 0.8 } },
+          'Per-Dimension Breakdown'),
           // Per-dimension status chips
           React.createElement('div', { className: 'flex flex-wrap gap-2' },
             ALL_DIMENSIONS_FOR_RENDER.map(function (dim) {
@@ -614,8 +578,8 @@
             )
           )
         )
-      ),
-      React.createElement('div', { className: 'mt-3 text-[11px] italic', style: { color: textColor, opacity: 0.65 } }, o.notes || '')
+      ,
+      o.notes && React.createElement('div', { className: 'mt-3 text-[11px] italic', style: { color: textColor, opacity: 0.65 } }, o.notes)
     );
   }
 
@@ -847,7 +811,24 @@
       standardsReportCount: reports.length,
       onApplyFixes: props.onApplyFixes,
     }),
-    reports.map((report, idx) => /*#__PURE__*/React.createElement("div", {
+    // Polish #1: Collapse legacy standards-alignment block by default. Native <details>
+    // gives us free keyboard + screen-reader semantics. The summary line shows the
+    // count + Pass/Revise distribution; the existing per-report cards render inside
+    // when expanded.
+    reports.length > 0 && (() => {
+      var passCount = 0; var reviseCount = 0;
+      reports.forEach(function (r) { if (r && r.overallDetermination === 'Pass') passCount++; else reviseCount++; });
+      var allPass = reviseCount === 0;
+      var distText = passCount + ' PASS' + (reviseCount > 0 ? ' · ' + reviseCount + ' REVISE' : '');
+      var summaryText = '📋 ' + reports.length + ' standard' + (reports.length === 1 ? '' : 's') + ' audited · ' + distText;
+      return React.createElement('details', {
+        className: 'rounded-xl border-2 overflow-hidden ' + (allPass ? 'border-green-300 bg-green-50' : 'border-red-300 bg-red-50'),
+      },
+        React.createElement('summary', {
+          className: 'px-4 py-3 cursor-pointer font-bold text-sm uppercase tracking-wider select-none ' + (allPass ? 'text-green-800 hover:bg-green-100' : 'text-red-800 hover:bg-red-100'),
+        }, summaryText),
+        React.createElement('div', { className: 'p-4 bg-white border-t-2 ' + (allPass ? 'border-green-200' : 'border-red-200') + ' space-y-8' },
+          reports.map((report, idx) => /*#__PURE__*/React.createElement("div", {
     key: idx,
     className: "animate-in slide-in-from-bottom-4 duration-500"
   }, /*#__PURE__*/React.createElement("div", {
@@ -988,7 +969,12 @@
     className: "bg-indigo-50 p-4 rounded-lg text-sm text-indigo-900 leading-relaxed border border-indigo-100 font-medium"
   }, report.adminRecommendation || "No recommendation was generated for this standard."))), idx < (generatedContent?.data?.reports?.length || 0) - 1 && /*#__PURE__*/React.createElement("hr", {
     className: "my-8 border-slate-300"
-  }))), comprehensive && React.createElement(ComprehensiveBlock, { comp: comprehensive, onApplyFixes: props.onApplyFixes }));
+  })))
+        )
+      );
+    })(),
+    comprehensive && React.createElement(ComprehensiveBlock, { comp: comprehensive, onApplyFixes: props.onApplyFixes })
+  );
 }
 
   window.AlloModules = window.AlloModules || {};
