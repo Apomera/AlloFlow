@@ -168,6 +168,27 @@ function _upgradeSafetyChecker() {
 }
 window._upgradeSafetyChecker = _upgradeSafetyChecker;
 
+// Shims for fluency_module.js. The CDN module upgrades these via
+// _upgradeFluency() after load. Pass-through defaults that return safe
+// empty results so any code running before module load degrades safely
+// (no thrown errors, no crashes, just a "no data yet" state in the UI).
+let calculateLocalFluencyMetrics = () => ({ accuracy: 0, wcpm: 0 });
+let calculateRunningRecordMetrics = () => ({
+    substitutions: 0, omissions: 0, insertions: 0,
+    selfCorrections: 0, totalErrors: 0, errorRate: '0',
+    scRate: '0', readingLevel: 'frustrational'
+});
+let getBenchmarkComparison = () => ({ level: 'unknown', target: 0 });
+let analyzeFluencyWithGemini = async () => null;
+function _upgradeFluency() {
+    if (typeof window.calculateLocalFluencyMetrics === 'function') calculateLocalFluencyMetrics = window.calculateLocalFluencyMetrics;
+    if (typeof window.calculateRunningRecordMetrics === 'function') calculateRunningRecordMetrics = window.calculateRunningRecordMetrics;
+    if (typeof window.getBenchmarkComparison === 'function') getBenchmarkComparison = window.getBenchmarkComparison;
+    if (typeof window.analyzeFluencyWithGemini === 'function') analyzeFluencyWithGemini = window.analyzeFluencyWithGemini;
+    console.log('[Fluency] Monolith shims upgraded from CDN module.');
+}
+window._upgradeFluency = _upgradeFluency;
+
 let safeJsonParse = (text) => { try { return text ? JSON.parse(text) : null; } catch { return null; } };
 let cleanJson = (text) => (text || '').replace(/^```json\s*|\s*```$/g, '').trim();
 let calculateTextEntropy = () => 1;
@@ -2693,179 +2714,12 @@ const useAudioRecorder = () => {
   };
   return { isRecording, startRecording, stopRecording };
 };
-const calculateLocalFluencyMetrics = (wordData, durationSeconds, totalReferenceWordCount) => {
-    if (!wordData || wordData.length === 0) return { accuracy: 0, wcpm: 0 };
-    const correctCount = wordData.filter(w => w.status === 'correct' || w.status === 'stumbled').length;
-    let denominator = (totalReferenceWordCount && totalReferenceWordCount > 0)
-        ? totalReferenceWordCount
-        : wordData.length;
-    if (totalReferenceWordCount > 0 && wordData.length > 0) {
-        const ratio = wordData.length / totalReferenceWordCount;
-        if (ratio < 0.8 || ratio > 1.2) {
-            console.warn(`[Fluency] Word count mismatch: Gemini returned ${wordData.length} words vs ${totalReferenceWordCount} reference words (ratio: ${ratio.toFixed(2)}). Using Gemini count.`);
-            denominator = wordData.length;
-        }
-    }
-    const accuracy = Math.min(100, denominator > 0 ? Math.round((correctCount / denominator) * 100) : 0);
-    const validDuration = Math.max(1, durationSeconds);
-    const minutes = validDuration / 60;
-    const wcpm = Math.round(correctCount / minutes);
-    return { accuracy, wcpm };
-};
-const calculateRunningRecordMetrics = (wordData, insertionsArr) => {
-    if (!wordData || wordData.length === 0) return {
-        substitutions: 0, omissions: 0, insertions: 0,
-        selfCorrections: 0, totalErrors: 0, errorRate: '0',
-        scRate: '0', readingLevel: 'frustrational'
-    };
-    const substitutions = wordData.filter(w => w.status === 'mispronounced').length;
-    const omissions = wordData.filter(w => w.status === 'missed').length;
-    const insertions = (insertionsArr && Array.isArray(insertionsArr)) ? insertionsArr.length : 0;
-    const selfCorrections = wordData.filter(w => w.status === 'self_corrected').length;
-    const totalErrors = substitutions + omissions + insertions;
-    const totalWords = wordData.length;
-    const errorRate = totalErrors > 0 ? (totalWords / totalErrors).toFixed(1) : '∞';
-    const scTotal = selfCorrections + totalErrors;
-    const scRate = scTotal > 0 ? (selfCorrections / scTotal * 100).toFixed(0) : '0';
-    const correctAndSC = wordData.filter(w => w.status === 'correct' || w.status === 'self_corrected' || w.status === 'stumbled').length;
-    const accuracyPct = totalWords > 0 ? (correctAndSC / totalWords) * 100 : 0;
-    let readingLevel = 'frustrational';
-    if (accuracyPct >= 95) readingLevel = 'independent';
-    else if (accuracyPct >= 90) readingLevel = 'instructional';
-    return {
-        substitutions, omissions, insertions, selfCorrections,
-        totalErrors, errorRate, scRate, readingLevel, accuracyPct: Math.round(accuracyPct)
-    };
-};
-const getBenchmarkComparison = (wcpm, grade, season, customNorms) => {
-    if (grade === 'custom' && customNorms) {
-        const seasonKey = (season || 'winter').toLowerCase();
-        const target = customNorms[seasonKey] || customNorms.winter || 0;
-        if (target <= 0) return { level: 'unknown', target: 0 };
-        const ratio = wcpm / target;
-        let level = 'well_below';
-        if (ratio >= 1.1) level = 'above';
-        else if (ratio >= 0.9) level = 'at';
-        else if (ratio >= 0.7) level = 'approaching';
-        return { level, target };
-    }
-    const gradeKey = String(grade).replace(/\D/g, '') || 'K';
-    const norms = FLUENCY_BENCHMARKS[gradeKey === '0' ? 'K' : gradeKey];
-    if (!norms) return { level: 'unknown', target: 0 };
-    const seasonKey = (season || 'winter').toLowerCase();
-    const target = norms[seasonKey] || norms.winter;
-    const ratio = target > 0 ? wcpm / target : 1;
-    let level = 'well_below';
-    if (ratio >= 1.1) level = 'above';
-    else if (ratio >= 0.9) level = 'at';
-    else if (ratio >= 0.7) level = 'approaching';
-    return { level, target };
-};
-const analyzeFluencyWithGemini = async (audioBase64, mimeType, referenceText) => {
-  const PROMPT = `
-    You are an expert reading tutor AND a critical self-assessor of AI speech recognition accuracy.
-    REFERENCE TEXT:
-    "${referenceText.substring(0, 5000)}",
-    INSTRUCTIONS:
-    1. Listen to the student's audio recording.
-    2. Compare it strictly word-for-word against the Reference Text.
-    3. Return a JSON object describing the status of every word.
-    STATUS TYPES:
-    - "correct": Pronounced correctly.
-    - "missed": Skipped completely (omission).
-    - "stumbled": Hesitated noticeably but eventually got it right without saying a different word.
-    - "self_corrected": Said a wrong word first, then corrected themselves to the right word.
-    - "mispronounced": Said the wrong word or pronounced it incorrectly and did NOT self-correct.
-    - "insertion": (Optional) If they added a word not in the text.
-    For "mispronounced" and "self_corrected" words, include a "said" field with what the student actually said.
-    For ANY word where you are less than 80% certain of your classification, add "lowConfidence": true.
-    KNOWN BIAS LIMITATIONS — YOU MUST ACCOUNT FOR THESE:
-    - AI speech recognition has documented higher error rates for speakers of African American English (Koenecke et al., 2020, PNAS)
-    - Child speech recognition error rates are 2-5x higher than adult rates (Wu et al., 2020)
-    - Regional accents and L2 English speakers experience higher misrecognition (Tatman, 2017)
-    - Dialectal pronunciations (e.g., "ax" for "ask" in AAE, "gonna" for "going to") are linguistically valid — do NOT mark these as mispronounced
-    - If you detect accent or dialect patterns, err on the side of "correct" rather than "mispronounced"
-    4. CONFIDENCE SELF-ASSESSMENT — After word analysis, evaluate your own accuracy:
-    - Audio quality: noise, clipping, echo, microphone distance
-    - Speaker characteristics: young child, accented speech, dialectal variation
-    - Consistency: did the same word get different classifications in different positions?
-    RETURN JSON ONLY:
-    {
-      "wordData": [
-        { "word": "The", "status": "correct" },
-        { "word": "cat", "status": "missed" },
-        { "word": "horse", "status": "mispronounced", "said": "house" },
-        { "word": "barn", "status": "self_corrected", "said": "band", "lowConfidence": true },
-        { "word": "sat", "status": "correct" }
-      ],
-      "insertions": ["um", "like"],
-      "feedback": "1-2 sentences of encouraging feedback focusing on specific phonics or pacing improvements.",
-      "prosody": {
-        "pacing": 3,
-        "expression": 4,
-        "phrasing": 3,
-        "note": "Brief note on prosody"
-      },
-      "confidence": {
-        "overall": 8,
-        "audioQuality": 9,
-        "speakerClarity": 7,
-        "accentDetected": false,
-        "youngVoiceDetected": false,
-        "dialectalPatternsDetected": false,
-        "lowConfidenceWordCount": 1,
-        "note": "Brief explanation of confidence factors affecting this specific analysis",
-        "limitationsApplied": "Which known limitations from the research literature were relevant, or 'none detected'"
-      }
-    }
-    PROSODY RATING GUIDE (1-5):
-    - pacing: 1=very slow/labored, 2=slow with many pauses, 3=uneven pace, 4=mostly smooth, 5=natural conversational pace
-    - expression: 1=monotone, 2=little variation, 3=some expression, 4=good variation, 5=expressive and natural
-    - phrasing: 1=word-by-word, 2=two-word groups, 3=some phrase groups, 4=mostly meaningful phrases, 5=smooth phrase reading
-    CONFIDENCE RATING GUIDE (1-10):
-    - 1-3: Low — results should be verified by a human listener
-    - 4-6: Moderate — some words may be inaccurate, especially if accent/dialect/young voice detected
-    - 7-8: Good — minor uncertainty on a few words
-    - 9-10: High — clear audio, standard pronunciation, high consistency
-  `;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
-  const payload = {
-    contents: [{
-      role: "user",
-      parts: [
-        { text: PROMPT },
-        {
-          inlineData: {
-            mimeType: mimeType,
-            data: audioBase64
-          }
-        }
-      ]
-    }],
-    generationConfig: {
-        responseMimeType: "application/json",
-    }
-  };
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!resultText) return null;
-    return JSON.parse(resultText);
-  } catch (error) {
-    warnLog("Gemini Audio Analysis Failed:", error);
-    return null;
-  }
-};
+// 4 fluency-assessment functions (calculateLocalFluencyMetrics,
+// calculateRunningRecordMetrics, getBenchmarkComparison, analyzeFluencyWithGemini)
+// extracted to fluency_module.js. Top-level shims at file head (~line 170)
+// get upgraded on CDN load via _upgradeFluency(). The dead window.__alloUtils.X
+// registrations were also removed (no external consumers).
 window.__alloUtils = window.__alloUtils || {};
-window.__alloUtils.calculateLocalFluencyMetrics = calculateLocalFluencyMetrics;
-window.__alloUtils.calculateRunningRecordMetrics = calculateRunningRecordMetrics;
-window.__alloUtils.getBenchmarkComparison = getBenchmarkComparison;
-window.__alloUtils.analyzeFluencyWithGemini = analyzeFluencyWithGemini;
 const BRIDGE_MODES = [
   { id: "react" },
   { id: "python" },
@@ -4683,92 +4537,93 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/safety_checker_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/allohaven_module.js');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', './word_sounds_module.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('SymbolStudio', './symbol_studio_module.js');
+    loadModule('AlloHaven', './allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/accessibility_lab_module.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/story_stage_module.js');
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    loadModule('StoryForge', './story_forge_module.js');
+    loadModule('LitLab', './story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/ui_modals_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/view_adventure_module.js');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/export_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4779,7 +4634,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/';
+      var pluginCdnBase = './';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',

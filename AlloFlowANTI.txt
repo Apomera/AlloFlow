@@ -168,6 +168,27 @@ function _upgradeSafetyChecker() {
 }
 window._upgradeSafetyChecker = _upgradeSafetyChecker;
 
+// Shims for fluency_module.js. The CDN module upgrades these via
+// _upgradeFluency() after load. Pass-through defaults that return safe
+// empty results so any code running before module load degrades safely
+// (no thrown errors, no crashes, just a "no data yet" state in the UI).
+let calculateLocalFluencyMetrics = () => ({ accuracy: 0, wcpm: 0 });
+let calculateRunningRecordMetrics = () => ({
+    substitutions: 0, omissions: 0, insertions: 0,
+    selfCorrections: 0, totalErrors: 0, errorRate: '0',
+    scRate: '0', readingLevel: 'frustrational'
+});
+let getBenchmarkComparison = () => ({ level: 'unknown', target: 0 });
+let analyzeFluencyWithGemini = async () => null;
+function _upgradeFluency() {
+    if (typeof window.calculateLocalFluencyMetrics === 'function') calculateLocalFluencyMetrics = window.calculateLocalFluencyMetrics;
+    if (typeof window.calculateRunningRecordMetrics === 'function') calculateRunningRecordMetrics = window.calculateRunningRecordMetrics;
+    if (typeof window.getBenchmarkComparison === 'function') getBenchmarkComparison = window.getBenchmarkComparison;
+    if (typeof window.analyzeFluencyWithGemini === 'function') analyzeFluencyWithGemini = window.analyzeFluencyWithGemini;
+    console.log('[Fluency] Monolith shims upgraded from CDN module.');
+}
+window._upgradeFluency = _upgradeFluency;
+
 let safeJsonParse = (text) => { try { return text ? JSON.parse(text) : null; } catch { return null; } };
 let cleanJson = (text) => (text || '').replace(/^```json\s*|\s*```$/g, '').trim();
 let calculateTextEntropy = () => 1;
@@ -2693,179 +2714,12 @@ const useAudioRecorder = () => {
   };
   return { isRecording, startRecording, stopRecording };
 };
-const calculateLocalFluencyMetrics = (wordData, durationSeconds, totalReferenceWordCount) => {
-    if (!wordData || wordData.length === 0) return { accuracy: 0, wcpm: 0 };
-    const correctCount = wordData.filter(w => w.status === 'correct' || w.status === 'stumbled').length;
-    let denominator = (totalReferenceWordCount && totalReferenceWordCount > 0)
-        ? totalReferenceWordCount
-        : wordData.length;
-    if (totalReferenceWordCount > 0 && wordData.length > 0) {
-        const ratio = wordData.length / totalReferenceWordCount;
-        if (ratio < 0.8 || ratio > 1.2) {
-            console.warn(`[Fluency] Word count mismatch: Gemini returned ${wordData.length} words vs ${totalReferenceWordCount} reference words (ratio: ${ratio.toFixed(2)}). Using Gemini count.`);
-            denominator = wordData.length;
-        }
-    }
-    const accuracy = Math.min(100, denominator > 0 ? Math.round((correctCount / denominator) * 100) : 0);
-    const validDuration = Math.max(1, durationSeconds);
-    const minutes = validDuration / 60;
-    const wcpm = Math.round(correctCount / minutes);
-    return { accuracy, wcpm };
-};
-const calculateRunningRecordMetrics = (wordData, insertionsArr) => {
-    if (!wordData || wordData.length === 0) return {
-        substitutions: 0, omissions: 0, insertions: 0,
-        selfCorrections: 0, totalErrors: 0, errorRate: '0',
-        scRate: '0', readingLevel: 'frustrational'
-    };
-    const substitutions = wordData.filter(w => w.status === 'mispronounced').length;
-    const omissions = wordData.filter(w => w.status === 'missed').length;
-    const insertions = (insertionsArr && Array.isArray(insertionsArr)) ? insertionsArr.length : 0;
-    const selfCorrections = wordData.filter(w => w.status === 'self_corrected').length;
-    const totalErrors = substitutions + omissions + insertions;
-    const totalWords = wordData.length;
-    const errorRate = totalErrors > 0 ? (totalWords / totalErrors).toFixed(1) : '∞';
-    const scTotal = selfCorrections + totalErrors;
-    const scRate = scTotal > 0 ? (selfCorrections / scTotal * 100).toFixed(0) : '0';
-    const correctAndSC = wordData.filter(w => w.status === 'correct' || w.status === 'self_corrected' || w.status === 'stumbled').length;
-    const accuracyPct = totalWords > 0 ? (correctAndSC / totalWords) * 100 : 0;
-    let readingLevel = 'frustrational';
-    if (accuracyPct >= 95) readingLevel = 'independent';
-    else if (accuracyPct >= 90) readingLevel = 'instructional';
-    return {
-        substitutions, omissions, insertions, selfCorrections,
-        totalErrors, errorRate, scRate, readingLevel, accuracyPct: Math.round(accuracyPct)
-    };
-};
-const getBenchmarkComparison = (wcpm, grade, season, customNorms) => {
-    if (grade === 'custom' && customNorms) {
-        const seasonKey = (season || 'winter').toLowerCase();
-        const target = customNorms[seasonKey] || customNorms.winter || 0;
-        if (target <= 0) return { level: 'unknown', target: 0 };
-        const ratio = wcpm / target;
-        let level = 'well_below';
-        if (ratio >= 1.1) level = 'above';
-        else if (ratio >= 0.9) level = 'at';
-        else if (ratio >= 0.7) level = 'approaching';
-        return { level, target };
-    }
-    const gradeKey = String(grade).replace(/\D/g, '') || 'K';
-    const norms = FLUENCY_BENCHMARKS[gradeKey === '0' ? 'K' : gradeKey];
-    if (!norms) return { level: 'unknown', target: 0 };
-    const seasonKey = (season || 'winter').toLowerCase();
-    const target = norms[seasonKey] || norms.winter;
-    const ratio = target > 0 ? wcpm / target : 1;
-    let level = 'well_below';
-    if (ratio >= 1.1) level = 'above';
-    else if (ratio >= 0.9) level = 'at';
-    else if (ratio >= 0.7) level = 'approaching';
-    return { level, target };
-};
-const analyzeFluencyWithGemini = async (audioBase64, mimeType, referenceText) => {
-  const PROMPT = `
-    You are an expert reading tutor AND a critical self-assessor of AI speech recognition accuracy.
-    REFERENCE TEXT:
-    "${referenceText.substring(0, 5000)}",
-    INSTRUCTIONS:
-    1. Listen to the student's audio recording.
-    2. Compare it strictly word-for-word against the Reference Text.
-    3. Return a JSON object describing the status of every word.
-    STATUS TYPES:
-    - "correct": Pronounced correctly.
-    - "missed": Skipped completely (omission).
-    - "stumbled": Hesitated noticeably but eventually got it right without saying a different word.
-    - "self_corrected": Said a wrong word first, then corrected themselves to the right word.
-    - "mispronounced": Said the wrong word or pronounced it incorrectly and did NOT self-correct.
-    - "insertion": (Optional) If they added a word not in the text.
-    For "mispronounced" and "self_corrected" words, include a "said" field with what the student actually said.
-    For ANY word where you are less than 80% certain of your classification, add "lowConfidence": true.
-    KNOWN BIAS LIMITATIONS — YOU MUST ACCOUNT FOR THESE:
-    - AI speech recognition has documented higher error rates for speakers of African American English (Koenecke et al., 2020, PNAS)
-    - Child speech recognition error rates are 2-5x higher than adult rates (Wu et al., 2020)
-    - Regional accents and L2 English speakers experience higher misrecognition (Tatman, 2017)
-    - Dialectal pronunciations (e.g., "ax" for "ask" in AAE, "gonna" for "going to") are linguistically valid — do NOT mark these as mispronounced
-    - If you detect accent or dialect patterns, err on the side of "correct" rather than "mispronounced"
-    4. CONFIDENCE SELF-ASSESSMENT — After word analysis, evaluate your own accuracy:
-    - Audio quality: noise, clipping, echo, microphone distance
-    - Speaker characteristics: young child, accented speech, dialectal variation
-    - Consistency: did the same word get different classifications in different positions?
-    RETURN JSON ONLY:
-    {
-      "wordData": [
-        { "word": "The", "status": "correct" },
-        { "word": "cat", "status": "missed" },
-        { "word": "horse", "status": "mispronounced", "said": "house" },
-        { "word": "barn", "status": "self_corrected", "said": "band", "lowConfidence": true },
-        { "word": "sat", "status": "correct" }
-      ],
-      "insertions": ["um", "like"],
-      "feedback": "1-2 sentences of encouraging feedback focusing on specific phonics or pacing improvements.",
-      "prosody": {
-        "pacing": 3,
-        "expression": 4,
-        "phrasing": 3,
-        "note": "Brief note on prosody"
-      },
-      "confidence": {
-        "overall": 8,
-        "audioQuality": 9,
-        "speakerClarity": 7,
-        "accentDetected": false,
-        "youngVoiceDetected": false,
-        "dialectalPatternsDetected": false,
-        "lowConfidenceWordCount": 1,
-        "note": "Brief explanation of confidence factors affecting this specific analysis",
-        "limitationsApplied": "Which known limitations from the research literature were relevant, or 'none detected'"
-      }
-    }
-    PROSODY RATING GUIDE (1-5):
-    - pacing: 1=very slow/labored, 2=slow with many pauses, 3=uneven pace, 4=mostly smooth, 5=natural conversational pace
-    - expression: 1=monotone, 2=little variation, 3=some expression, 4=good variation, 5=expressive and natural
-    - phrasing: 1=word-by-word, 2=two-word groups, 3=some phrase groups, 4=mostly meaningful phrases, 5=smooth phrase reading
-    CONFIDENCE RATING GUIDE (1-10):
-    - 1-3: Low — results should be verified by a human listener
-    - 4-6: Moderate — some words may be inaccurate, especially if accent/dialect/young voice detected
-    - 7-8: Good — minor uncertainty on a few words
-    - 9-10: High — clear audio, standard pronunciation, high consistency
-  `;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
-  const payload = {
-    contents: [{
-      role: "user",
-      parts: [
-        { text: PROMPT },
-        {
-          inlineData: {
-            mimeType: mimeType,
-            data: audioBase64
-          }
-        }
-      ]
-    }],
-    generationConfig: {
-        responseMimeType: "application/json",
-    }
-  };
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    const data = await response.json();
-    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!resultText) return null;
-    return JSON.parse(resultText);
-  } catch (error) {
-    warnLog("Gemini Audio Analysis Failed:", error);
-    return null;
-  }
-};
+// 4 fluency-assessment functions (calculateLocalFluencyMetrics,
+// calculateRunningRecordMetrics, getBenchmarkComparison, analyzeFluencyWithGemini)
+// extracted to fluency_module.js. Top-level shims at file head (~line 170)
+// get upgraded on CDN load via _upgradeFluency(). The dead window.__alloUtils.X
+// registrations were also removed (no external consumers).
 window.__alloUtils = window.__alloUtils || {};
-window.__alloUtils.calculateLocalFluencyMetrics = calculateLocalFluencyMetrics;
-window.__alloUtils.calculateRunningRecordMetrics = calculateRunningRecordMetrics;
-window.__alloUtils.getBenchmarkComparison = getBenchmarkComparison;
-window.__alloUtils.analyzeFluencyWithGemini = analyzeFluencyWithGemini;
 const BRIDGE_MODES = [
   { id: "react" },
   { id: "python" },
@@ -4686,6 +4540,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/allo_data_module.js');
     loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/firestore_sync_module.js');
     loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/fluency_module.js');
     loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/large_file_module.js');
     loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/key_concept_map_module.js');
     loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@febcba8/utils_pure_module.js');
@@ -40813,6 +40668,16 @@ Return ONLY the plain language summary in ${lang}.`, false);
                     // entries (only when type === 'glossary') and exposes
                     // them via the arcade ctx.
                     generatedContent,
+                    // Phase 3b.full — session bindings for the cooperative
+                    // class-vs-AI Boss Encounter mode. Plugin detects
+                    // 'in a live session' via sessionCode != null; teachers
+                    // create encounters (host-only); students join via
+                    // Firestore onSnapshot on the session doc.
+                    sessionCode: activeSessionCode,
+                    studentNickname,
+                    isHost: isTeacherMode,
+                    firestoreDb: db,
+                    firestoreAppId: appId,
                 });
             }
             return (
