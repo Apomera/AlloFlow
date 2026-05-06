@@ -30,6 +30,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     document.head.appendChild(st);
   })();
 
+  // ── WeldLab keyframes (defect-catalog celebration) ──
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('weldlab-celeb-css')) return;
+    var st = document.createElement('style');
+    st.id = 'weldlab-celeb-css';
+    st.textContent = [
+      '@keyframes weldlab-defect-rise {',
+      '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+      '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+      '}'
+    ].join('');
+    if (document.head) document.head.appendChild(st);
+  })();
+
   // Detect prefers-reduced-motion at module load — used to gate canvas-level
   // cosmetic motion (arc-tip travel animation, sparks). Bead geometry still
   // renders accurately; only purely decorative animation is suppressed.
@@ -182,12 +199,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         _hydratedRef.current = true;
         var savedBadges = lsGet('weldLab.badges.v1', null);
         if (savedBadges && d.weldBadges === undefined) upd('weldBadges', savedBadges);
+        // Defect catalog — cross-sample log of defect types correctly identified
+        // at least once. Window slot wins over localStorage (host's
+        // handleLoadProject populates the slot from a project JSON load).
+        var savedCatalog = null;
+        try {
+          if (typeof window !== 'undefined' && window.__alloflowWeldLab && window.__alloflowWeldLab.defectCatalog) {
+            savedCatalog = window.__alloflowWeldLab.defectCatalog;
+          }
+        } catch (e) {}
+        if (!savedCatalog) savedCatalog = lsGet('weldLab.defectCatalog.v1', null);
+        if (savedCatalog && d.defectCatalog === undefined) upd('defectCatalog', savedCatalog);
       }
 
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['heatInput','beadLab','defectHunt','processCompare','jointCatalog','symbolsReader','ppeSafety','careerPaths','underwater','speedChallenge'];
+      // First-find celebration state — fires the moment a brand-new defect
+      // type is correctly identified. Auto-clears after 3.2s.
+      var defectCelebState = useState(null);
+      var defectCeleb = defectCelebState[0], setDefectCeleb = defectCelebState[1];
+
+      // Mirror persistent state to window slot for host save/load + localStorage
+      // for non-Canvas warm cache. Project JSON is the only Canvas-survival layer.
+      useEffect(function () {
+        try {
+          var current = window.__alloflowWeldLab || {};
+          window.__alloflowWeldLab = Object.assign({}, current, {
+            defectCatalog: d.defectCatalog || current.defectCatalog || {},
+            badges: d.weldBadges || current.badges || {},
+            _ts: Date.now()
+          });
+        } catch (e) {}
+      }, [d.defectCatalog, d.weldBadges]);
+
+      // Hot-reload from a project-JSON load mid-session.
+      useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowWeldLab || {};
+            if (w.defectCatalog) upd('defectCatalog', w.defectCatalog);
+            if (w.badges) upd('weldBadges', w.badges);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-weldlab-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-weldlab-restored', onRestore); };
+      }, []);
+
+      var BADGE_IDS = ['heatInput','beadLab','defectHunt','processCompare','jointCatalog','symbolsReader','ppeSafety','careerPaths','underwater','speedChallenge','defectCatalog'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -397,6 +456,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             color: 'from-amber-600 to-orange-700',
             ring: 'ring-amber-600/40',
             ready: true
+          },
+          {
+            id: 'defectDiagnose', title: 'Defect Diagnose', icon: '🔬',
+            subtitle: '10 defects — identify the root cause',
+            desc: 'Complement to Defect Hunt: that one teaches what defects LOOK like; this one teaches what CAUSED them. 10 weld defects (porosity, undercut, lack of fusion, burn-through, crater crack, overlap, slag inclusion, spatter, distortion, sugar oxidation). Pick the cause from 6 categories (heat too high/low, travel too fast/slow, contamination, technique).',
+            color: 'from-rose-600 to-fuchsia-700',
+            ring: 'ring-rose-600/40',
+            ready: true
+          },
+          {
+            id: 'defectCatalog', title: "Welder's Defect Catalog", icon: '📔',
+            subtitle: 'Your personal log of every defect type you have ID\'d',
+            desc: 'A persistent catalog of welding discontinuities you have correctly identified across every Defect Hunt sample. CWI-style mental library. Crosses sessions when you save your project.',
+            color: 'from-orange-500 to-rose-700',
+            ring: 'ring-orange-500/40',
+            ready: true
           }
         ];
 
@@ -497,6 +572,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               })
             )
           ),
+          // ── Welder's Defect Catalog summary tile ──
+          // Persistent count of unique defect types the student has identified
+          // across all Defect Hunt samples. Click jumps to the full catalog
+          // view with per-type cause/fix details.
+          (function () {
+            var catalog = (d.defectCatalog && typeof d.defectCatalog === 'object') ? d.defectCatalog : {};
+            var totalDefectTypes = Object.keys(DEFECT_INFO).length;
+            var foundDefectTypes = Object.keys(DEFECT_INFO).filter(function (k) { return !!catalog[k]; }).length;
+            var catalogPct = totalDefectTypes > 0 ? Math.round((foundDefectTypes / totalDefectTypes) * 100) : 0;
+            var mostRecentKey = null;
+            var mostRecentTs = 0;
+            Object.keys(catalog).forEach(function (k) {
+              var ts = new Date(catalog[k].lastFoundAt || catalog[k].firstFoundAt).getTime();
+              if (ts > mostRecentTs) { mostRecentTs = ts; mostRecentKey = k; }
+            });
+            return h('button', {
+              onClick: function () { goto('defectCatalog'); },
+              'aria-label': 'Open Welder\'s Defect Catalog. ' + foundDefectTypes + ' of ' + totalDefectTypes + ' defect types identified.',
+              className: 'w-full mb-5 rounded-2xl border-2 border-orange-400 shadow-md text-left transition hover:shadow-xl hover:-translate-y-0.5 focus:outline-none focus:ring-4 ring-orange-500/40 weldlab-card-lift overflow-hidden',
+              style: { background: 'linear-gradient(110deg, #fff7ed 0%, #fed7aa 50%, #fde68a 100%)' }
+            },
+              h('div', { className: 'p-4 flex items-center gap-4 flex-wrap' },
+                h('div', { className: 'flex-shrink-0 text-center', style: { minWidth: 86 } },
+                  h('div', { className: 'text-3xl font-black text-orange-800 leading-none' }, foundDefectTypes + ' / ' + totalDefectTypes),
+                  h('div', { className: 'text-[9px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, 'Defects ID\'d')
+                ),
+                h('div', { className: 'flex-1 min-w-0' },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { 'aria-hidden': true, className: 'text-xl' }, '📔'),
+                    h('h3', { className: 'text-base font-black text-slate-800' }, "Welder's Defect Catalog")
+                  ),
+                  h('div', { className: 'h-2 bg-white/60 rounded-full overflow-hidden mb-1.5', 'aria-hidden': true },
+                    h('div', { className: 'h-full bg-orange-600 transition-all', style: { width: catalogPct + '%' } })
+                  ),
+                  h('p', { className: 'text-xs text-slate-700 leading-snug' },
+                    foundDefectTypes === 0
+                      ? 'Find your first defect in Defect Hunt Lab to start your inspector\'s catalog.'
+                      : (mostRecentKey
+                        ? 'Most recent: ' + DEFECT_INFO[mostRecentKey].name + '. Keep training your eye.'
+                        : 'Keep finding defects to fill the catalog.')
+                  )
+                ),
+                h('span', { 'aria-hidden': true, className: 'text-2xl text-orange-700 font-black flex-shrink-0' }, '→')
+              )
+            );
+          })(),
           h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-2 px-1' }, 'Core Simulators'),
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8' },
             bigCards.map(function(c) { return renderCard(c, true); })
@@ -1111,6 +1232,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               next[hit.id] = true;
               setFound(next);
               announce('Identified ' + DEFECT_INFO[hit.type].name);
+              // ── Defect Catalog: log first-find of this defect TYPE across all samples ──
+              // Per-sample 'found' resets when switching samples; the catalog
+              // sticks across samples and across sessions (when wired through
+              // the project-JSON layer). First time you correctly identify a
+              // defect of a given type, fire a celebration and lock it in.
+              try {
+                var catalog = (d.defectCatalog && typeof d.defectCatalog === 'object') ? d.defectCatalog : {};
+                var existingType = catalog[hit.type];
+                var nowIso = new Date().toISOString();
+                var nextCatalog;
+                if (existingType) {
+                  nextCatalog = Object.assign({}, catalog);
+                  nextCatalog[hit.type] = Object.assign({}, existingType, {
+                    lastFoundAt: nowIso,
+                    foundCount: (existingType.foundCount || 0) + 1,
+                    sampleIds: (existingType.sampleIds || []).indexOf(sample.id) === -1
+                      ? (existingType.sampleIds || []).concat([sample.id])
+                      : (existingType.sampleIds || [])
+                  });
+                } else {
+                  nextCatalog = Object.assign({}, catalog);
+                  nextCatalog[hit.type] = {
+                    firstFoundAt: nowIso,
+                    lastFoundAt: nowIso,
+                    foundCount: 1,
+                    firstSampleId: sample.id,
+                    sampleIds: [sample.id]
+                  };
+                  setDefectCeleb({
+                    type: hit.type,
+                    name: DEFECT_INFO[hit.type].name,
+                    icon: DEFECT_INFO[hit.type].icon,
+                    sampleId: sample.id,
+                    total: Object.keys(nextCatalog).length,
+                    at: Date.now()
+                  });
+                  setTimeout(function () { setDefectCeleb(null); }, 3500);
+                }
+                upd('defectCatalog', nextCatalog);
+                try { lsSet('weldLab.defectCatalog.v1', nextCatalog); } catch (e2) {}
+              } catch (catErr) {}
             }
           } else {
             setFalseReads(falseReads + 1);
@@ -3654,6 +3816,199 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         );
       }
 
+      // ─────────────────────────────────────────────────────
+      // DEFECT DIAGNOSE (net-new mini-game)
+      // 10 weld-defect vignettes; player picks the most likely root cause from
+      // 6 categories. Complements the existing Defect Hunt: that module teaches
+      // visual ID; this one teaches root-cause analysis — the next-level CWI
+      // skill that distinguishes welders from inspectors.
+      // ─────────────────────────────────────────────────────
+      function DefectDiagnose() {
+        var CAUSES = [
+          { id: 'heatHigh',    label: 'Heat too high',     color: '#dc2626', icon: '🔥', def: 'Amperage/voltage above the material\'s tolerance. Burns through, undercuts, excess spatter, oxidation, distortion.' },
+          { id: 'heatLow',     label: 'Heat too low',       color: '#0ea5e9', icon: '❄️', def: 'Insufficient amperage to fully fuse the base metal. Lack of fusion, cold lap, narrow weak weld bead.' },
+          { id: 'travelSlow',  label: 'Travel too slow',    color: '#16a34a', icon: '🐢', def: 'Torch lingered; puddle sat too long. Overlap (weld sits ON TOP), excess buildup, burn-through on thin material.' },
+          { id: 'travelFast',  label: 'Travel too fast',    color: '#f59e0b', icon: '🐇', def: 'Torch moved too quickly to develop full fusion. Undercut, narrow bead, lack of penetration.' },
+          { id: 'contamination', label: 'Contamination',     color: '#a855f7', icon: '🦠', def: 'Base metal had paint, oil, rust, mill scale, or moisture. Or shielding gas was lost (wind, leak, no purge). Causes porosity, oxidation, brittleness.' },
+          { id: 'technique',   label: 'Technique error',    color: '#64748b', icon: '👷', def: 'Wrong angle, no inter-pass cleaning, no taper-off, no preheat, poor sequence. The miscellaneous category that is actually most common.' }
+        ];
+        var V = [
+          { id: 1, defect: 'Porosity — gas pockets trapped in the weld, visible as small round holes on the surface or revealed by radiography.', correct: 'contamination',
+            why: 'Porosity = gas trapped during solidification. Sources: paint/oil/rust on base metal (fix: grind clean), wind blowing shielding gas away (fix: weld indoors or stick electrode), wet flux (fix: oven-dry low-hydrogen rods), or hydrogen from contaminated water-cooled tooling. Correctly cleaning the joint prevents 80%+ of porosity issues.' },
+          { id: 2, defect: 'Undercut — a continuous groove cut INTO the base metal alongside the weld toe, reducing the cross-section there.', correct: 'heatHigh',
+            why: 'Undercut happens when the weld puddle melts the base metal but the metal does not flow back to fill it. Primary cause: amperage too high for the joint thickness/position. Secondary causes: travel speed too fast, wrong electrode angle. Fix: lower amperage by ~10% and re-test on coupon.' },
+          { id: 3, defect: 'Lack of fusion — the weld metal sits on the base metal without bonding to it. Looks fine on the surface but fails NDT (ultrasonic, radiography).', correct: 'heatLow',
+            why: 'Insufficient heat input fails to melt the base metal at the joint interface. The dangerous thing about this defect: it usually looks great on the surface. Primary cause: amperage too low. Other causes: too-fast travel (didn\'t dwell long enough), contamination (oil/oxide barrier). Fix: raise amperage + verify joint is clean.' },
+          { id: 4, defect: 'Burn-through — a hole melted completely through the base metal at the weld location, especially on thin sheet (<14 gauge).', correct: 'heatHigh',
+            why: 'Heat input exceeded what the thin material could conduct away. Primary cause: amperage too high for thickness. Secondary: travel too slow (dwell). Fix on thin material: short-circuit-transfer MIG with low amperage, faster travel, possibly skip welding (segment) to let heat dissipate between passes.' },
+          { id: 5, defect: 'Crater crack — a crack at the END of a weld bead, in the cup-shaped depression where the arc was extinguished.', correct: 'technique',
+            why: 'When the welder lifts the arc abruptly at the end of a bead, the cooling crater shrinks faster than the surrounding metal can supply filler — the result is a crack. Fix: taper off slowly, use a back-step technique, or use a runoff tab. Hot-crack-prone alloys (high-sulfur steels, certain stainless grades) need extra care. NOT a heat or travel issue — purely how you finish.' },
+          { id: 6, defect: 'Overlap — weld metal sits on top of the base metal without fusing, looking like a frosting that did not penetrate the cake.', correct: 'travelSlow',
+            why: 'Travel speed too slow lets the puddle pile up beyond what the heat can fuse into the base metal. The puddle "rolls over" the toe instead of wetting in. Primary cause: travel too slow. Secondary: amperage too low (puddle freezes before it spreads). Fix: speed up + verify amperage is in the sweet spot for that material.' },
+          { id: 7, defect: 'Slag inclusion — non-metallic material (slag from the previous pass) trapped in the weld, often visible as dark spots in radiography.', correct: 'technique',
+            why: 'When multi-pass welding (Stick, FCAW), slag from each pass MUST be chipped + wire-brushed off before the next pass. Failure to clean = slag pockets melted into the next pass. Pure technique error. Fix: chip + brush every pass, every time, even if the slag "looks like it came off."' },
+          { id: 8, defect: 'Excessive spatter — small molten droplets stuck to the base metal AROUND the weld, requiring grinding to remove.', correct: 'heatHigh',
+            why: 'Spatter spikes when arc voltage is too high (long arc length) or wrong gas/wire combination. Most common cause: voltage too high relative to amperage. Fix: lower voltage, shorten stick-out, check gas mix (75/25 Ar/CO2 spatters less than 100% CO2 for MIG). Anti-spatter spray reduces what does land but does not fix the source.' },
+          { id: 9, defect: 'Distortion — the workpiece warped, twisted, or shrank after welding. Right-angle joint became 88°.', correct: 'technique',
+            why: 'Uneven heat input causes uneven cooling + uneven shrinkage. Welds on one side of a piece pull that side toward the weld. Fix: balance heat input (alternate sides), use back-step or skip-welding sequence, preheat large sections, jig the work, or design with shrinkage allowance. Heat input alone matters less than HOW IT IS DISTRIBUTED.' },
+          { id: 10, defect: 'Sugar oxidation — yellow/black oxide scale on the BACKSIDE of a stainless steel pipe weld, especially in food/sanitary applications.', correct: 'contamination',
+            why: 'Hot stainless reacts with atmospheric oxygen on the weld backside if the inside of the pipe is not purged with argon. The result: chromium-depleted, corrosion-prone scale that harbors bacteria — disqualifying for food/pharma/dairy work. Fix: argon backside purge during the entire weld + cool-down period. Required for sanitary 3-A certification.' }
+        ];
+
+        var ddIdx2 = d.dd2Idx == null ? -1 : d.dd2Idx;
+        var ddSeed2 = d.dd2Seed || 1;
+        var ddAns2 = !!d.dd2Ans;
+        var ddPick2 = d.dd2Pick;
+        var ddScore2 = d.dd2Score || 0;
+        var ddRounds2 = d.dd2Rounds || 0;
+        var ddStreak2 = d.dd2Streak || 0;
+        var ddBest2 = d.dd2Best || 0;
+        var ddShown2 = d.dd2Shown || [];
+
+        function startDd2() {
+          var pool = [];
+          for (var i = 0; i < V.length; i++) if (ddShown2.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); ddShown2 = []; }
+          var seedNext = ((ddSeed2 * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('dd2Seed', seedNext);
+          upd('dd2Idx', pick);
+          upd('dd2Ans', false);
+          upd('dd2Pick', null);
+          upd('dd2Shown', ddShown2.concat([pick]));
+        }
+        function pickDd2(causeId) {
+          if (ddAns2) return;
+          var v = V[ddIdx2];
+          var correct = causeId === v.correct;
+          var newScore = ddScore2 + (correct ? 1 : 0);
+          var newStreak = correct ? (ddStreak2 + 1) : 0;
+          var newBest = Math.max(ddBest2, newStreak);
+          upd('dd2Ans', true);
+          upd('dd2Pick', causeId);
+          upd('dd2Score', newScore);
+          upd('dd2Rounds', ddRounds2 + 1);
+          upd('dd2Streak', newStreak);
+          upd('dd2Best', newBest);
+        }
+
+        if (ddIdx2 < 0) {
+          return h('div', { className: 'min-h-screen bg-slate-50' },
+            h(BackBar, { icon: '🔬', title: 'Defect Diagnose' }),
+            h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
+              h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-2xl p-5' },
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '10 weld defects — identify the root cause'),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                  'Visual ID is one skill (Defect Hunt teaches it). ROOT-CAUSE diagnosis is the next-level skill that turns welders into CWI inspectors. For each defect, pick the most likely cause from 6 categories. Coaching cites the fix and how to prevent the defect on the next weld.')
+              ),
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-slate-700 mb-3' }, 'The six cause categories'),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                  CAUSES.map(function(c) {
+                    return h('div', { key: c.id, style: { padding: '8px 10px', borderRadius: 8, background: c.color + '15', border: '1px solid ' + c.color + '55' } },
+                      h('div', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, c.icon),
+                        h('span', { style: { color: c.color, fontWeight: 800, fontSize: 12 } }, c.label)
+                      ),
+                      h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, c.def)
+                    );
+                  })
+                )
+              ),
+              h('button', {
+                onClick: startDd2,
+                className: 'w-full px-5 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
+              }, '🔬 Start — defect 1 of 10')
+            )
+          );
+        }
+
+        var v = V[ddIdx2];
+        var pickedCorrect = ddAns2 && ddPick2 === v.correct;
+        var pct = ddRounds2 > 0 ? Math.round((ddScore2 / ddRounds2) * 100) : 0;
+        var allDone = ddShown2.length >= V.length && ddAns2;
+        var correctCause = CAUSES.filter(function(c) { return c.id === v.correct; })[0];
+        var pickedCause = ddPick2 ? CAUSES.filter(function(c) { return c.id === ddPick2; })[0] : null;
+
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '🔬', title: 'Defect Diagnose' }),
+          h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
+            h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-700' },
+              h('span', null, 'Defect ', h('strong', { className: 'text-slate-900' }, ddShown2.length)),
+              h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, ddScore2 + ' / ' + ddRounds2)),
+              ddRounds2 > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
+              h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, ddStreak2)),
+              h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, ddBest2))
+            ),
+            h('section', { className: 'p-5 rounded-2xl bg-rose-50 border-2 border-rose-300' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700 mb-2' }, 'Defect ' + ddShown2.length + ' of ' + V.length),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.defect)
+            ),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the root cause' },
+              CAUSES.map(function(c) {
+                var picked = ddAns2 && ddPick2 === c.id;
+                var isRight = ddAns2 && c.id === v.correct;
+                var bg, border, color;
+                if (ddAns2) {
+                  if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                  else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                  else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+                } else {
+                  bg = c.color + '12'; border = c.color + '60'; color = '#1e293b';
+                }
+                return h('button', {
+                  key: c.id, role: 'radio',
+                  'aria-checked': picked ? 'true' : 'false',
+                  'aria-label': c.label,
+                  disabled: ddAns2,
+                  onClick: function() { pickDd2(c.id); },
+                  style: { padding: '12px 14px', borderRadius: 12, background: bg, color: color, border: '2px solid ' + border, cursor: ddAns2 ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 70, transition: 'all 0.15s' }
+                },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, c.icon),
+                    h('span', { style: { color: ddAns2 ? color : c.color, fontSize: 13, fontWeight: 800 } }, c.label)
+                  ),
+                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: ddAns2 ? color : '#475569' } }, c.def)
+                );
+              })
+            ),
+            ddAns2 && h('section', {
+              className: 'p-4 rounded-2xl',
+              style: {
+                background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+                border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+              }
+            },
+              h('div', { className: 'text-sm font-bold mb-2', style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+                pickedCorrect
+                  ? '✅ Correct — ' + correctCause.label
+                  : '❌ The cause is ' + correctCause.label + (pickedCause ? ' (you picked ' + pickedCause.label + ')' : '')
+              ),
+              h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
+              allDone
+                ? h('div', { className: 'p-3 rounded-lg bg-rose-100 border border-rose-300' },
+                    h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, '🏆 All 10 defects diagnosed'),
+                    h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
+                      'Final: ', h('strong', null, ddScore2 + ' / ' + V.length + ' (' + Math.round((ddScore2 / V.length) * 100) + '%)'),
+                      ddScore2 === V.length ? ' — every root cause correctly identified. Ready for AWS CWI exam prep.' :
+                      ddScore2 >= 8 ? ' — strong root-cause reasoning. The most-confused pair is usually heat-too-high (undercut, burn-through) vs travel-too-fast (also causes undercut, narrow bead) — both produce similar visual signatures.' :
+                      ddScore2 >= 6 ? ' — solid baseline. Reflexes worth building: porosity = always think contamination/gas first, lack of fusion = always think low heat first, distortion = always technique (preheat + sequence).' :
+                      ' — these distinctions matter when a weld is rejected and you need to fix the root cause, not just re-weld with the same parameters. Re-read the rationales, then retake.'
+                    ),
+                    h('button', {
+                      onClick: function() { upd('dd2Idx', -1); upd('dd2Shown', []); upd('dd2Score', 0); upd('dd2Rounds', 0); upd('dd2Streak', 0); },
+                      className: 'mt-3 px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700'
+                    }, '🔄 Restart')
+                  )
+                : h('button', {
+                    onClick: startDd2,
+                    className: 'px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
+                  }, '➡️ Next defect')
+            )
+          )
+        );
+      }
+
       // Optimal weld parameters — these are the "in spec" targets per process
       // for typical mild-steel structural work.
       var SPEED_OPTIMAL = { V: 22, A: 180 };
@@ -3954,20 +4309,192 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       }
 
       // ─────────────────────────────────────────────────────
-      // VIEW DISPATCH
+      // DEFECT CATALOG VIEW
+      // Cross-sample log of welding defect types correctly identified at
+      // least once in Defect Hunt Lab. Mirrors the BirdLab life list /
+      // PetsLab decoder mastery / OpticsLab AP-quiz pattern: per-sample
+      // identification is transient; catalog mastery is permanent.
       // ─────────────────────────────────────────────────────
-      if (view === 'heatInput') return h(HeatInputCalculator);
-      if (view === 'beadLab') return h(WeldBeadLab);
-      if (view === 'defectHunt') return h(DefectHuntLab);
-      if (view === 'processCompare') return h(ProcessComparison);
-      if (view === 'jointCatalog') return h(JointCatalog);
-      if (view === 'symbolsReader') return h(SymbolsReader);
-      if (view === 'ppeSafety') return h(PPESafetyLab);
-      if (view === 'careerPaths') return h(CareerPathways);
-      if (view === 'underwater') return h(UnderwaterLab);
-      if (view === 'speedChallenge') return h(SpeedChallenge);
-      if (view === 'processSleuth') return h(ProcessSleuth);
-      return h(MainMenu);
+      function DefectCatalogView() {
+        var catalog = (d.defectCatalog && typeof d.defectCatalog === 'object') ? d.defectCatalog : {};
+        var allDefectKeys = Object.keys(DEFECT_INFO);
+        var foundKeys = allDefectKeys.filter(function (k) { return !!catalog[k]; });
+        var unfoundKeys = allDefectKeys.filter(function (k) { return !catalog[k]; });
+        var fmtDate = function (iso) {
+          if (!iso) return '';
+          try {
+            var dd = new Date(iso);
+            return dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+          } catch (e) { return iso.substring(0, 10); }
+        };
+        var pct = allDefectKeys.length > 0 ? Math.round((foundKeys.length / allDefectKeys.length) * 100) : 0;
+
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '📔', title: "Welder's Defect Catalog" }),
+          h('div', { className: 'p-4 max-w-4xl mx-auto space-y-4' },
+            // Hero
+            h('div', {
+              className: 'rounded-2xl border-2 border-orange-400 shadow-lg overflow-hidden',
+              style: { background: 'linear-gradient(135deg, #fff7ed 0%, #fed7aa 50%, #fde68a 100%)' }
+            },
+              h('div', { className: 'p-5 flex items-center gap-5 flex-wrap' },
+                h('div', { className: 'flex-shrink-0 text-center' },
+                  h('div', { className: 'text-5xl font-black text-orange-800', 'aria-label': foundKeys.length + ' of ' + allDefectKeys.length + ' defect types identified' },
+                    foundKeys.length + ' / ' + allDefectKeys.length
+                  ),
+                  h('div', { className: 'text-[10px] uppercase tracking-widest text-slate-700 font-bold mt-1' }, 'defect types ID\'d')
+                ),
+                h('div', { className: 'flex-1 min-w-0 space-y-1' },
+                  h('div', { className: 'flex items-center gap-2' },
+                    h('span', { 'aria-hidden': 'true', className: 'text-2xl' }, '🔥'),
+                    h('h2', { className: 'text-xl font-black text-slate-800' }, 'Your Defect Catalog')
+                  ),
+                  h('p', { className: 'text-sm text-slate-700 leading-snug' },
+                    "Every welding discontinuity you correctly identify in Defect Hunt Lab lands here. CWI inspectors keep mental catalogs like this their whole careers — yours starts now."
+                  ),
+                  h('div', { className: 'h-2 mt-2 bg-white/60 rounded-full overflow-hidden', 'aria-hidden': 'true' },
+                    h('div', { className: 'h-full bg-orange-600', style: { width: pct + '%' } })
+                  )
+                ),
+                foundKeys.length === 0 && h('div', { className: 'flex-shrink-0' },
+                  h('button', {
+                    onClick: function () { goto('defectHunt'); },
+                    className: 'px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-black text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
+                  }, 'Start inspecting →')
+                )
+              )
+            ),
+            // Found list
+            foundKeys.length > 0 && h('section', { 'aria-labelledby': 'wl-found-h' },
+              h('h2', { id: 'wl-found-h', className: 'text-base font-black text-slate-800 mb-2 flex items-center gap-2' },
+                h('span', { 'aria-hidden': 'true' }, '✓'),
+                'Identified (' + foundKeys.length + ')'
+              ),
+              h('ul', { className: 'space-y-2 list-none p-0' },
+                foundKeys.map(function (k) {
+                  var info = DEFECT_INFO[k];
+                  var entry = catalog[k];
+                  var sampleChips = (entry && entry.sampleIds) || [];
+                  return h('li', { key: k,
+                    className: 'rounded-xl border-2 border-emerald-300 bg-white p-3 shadow-sm flex items-start gap-3'
+                  },
+                    h('div', {
+                      'aria-hidden': 'true',
+                      className: 'flex-shrink-0 text-2xl flex items-center justify-center',
+                      style: {
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: 'rgba(16,185,129,0.12)',
+                        border: '2px solid #10b981'
+                      }
+                    }, info.icon),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                        h('h3', { className: 'text-sm font-black text-slate-800' }, info.name),
+                        h('span', { className: 'text-[10px] font-mono text-emerald-700' }, '✓ ' + fmtDate(entry.firstFoundAt)),
+                        entry.foundCount > 1 && h('span', { className: 'text-[10px] text-slate-600 font-medium' }, '· ' + entry.foundCount + ' sightings')
+                      ),
+                      h('div', { className: 'text-[11px] text-slate-700 mb-1 leading-snug' }, info.cause),
+                      sampleChips.length > 0 && h('div', { className: 'flex flex-wrap gap-1 mt-1' },
+                        sampleChips.map(function (sid) {
+                          return h('span', {
+                            key: sid,
+                            className: 'inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-900 border border-orange-300'
+                          }, '🔥 ' + sid);
+                        })
+                      )
+                    )
+                  );
+                })
+              )
+            ),
+            // Not yet found
+            unfoundKeys.length > 0 && h('section', { 'aria-labelledby': 'wl-unfound-h' },
+              h('h2', { id: 'wl-unfound-h', className: 'text-base font-black text-slate-700 mb-2 flex items-center gap-2 mt-4' },
+                h('span', { 'aria-hidden': 'true' }, '🔎'),
+                'Still to identify (' + unfoundKeys.length + ')'
+              ),
+              h('ul', { className: 'space-y-2 list-none p-0' },
+                unfoundKeys.map(function (k) {
+                  var info = DEFECT_INFO[k];
+                  return h('li', { key: k,
+                    className: 'rounded-xl border-2 border-slate-200 bg-slate-50 opacity-75 p-3 flex items-start gap-3'
+                  },
+                    h('div', {
+                      'aria-hidden': 'true',
+                      className: 'flex-shrink-0 text-2xl flex items-center justify-center',
+                      style: {
+                        width: 56, height: 56, borderRadius: '50%',
+                        background: '#e2e8f0',
+                        border: '2px solid #cbd5e1',
+                        filter: 'grayscale(100%)'
+                      }
+                    }, info.icon),
+                    h('div', { className: 'flex-1 min-w-0' },
+                      h('div', { className: 'flex items-baseline gap-2 flex-wrap' },
+                        h('h3', { className: 'text-sm font-black text-slate-600' }, info.name),
+                        h('span', { className: 'text-[10px] font-mono uppercase tracking-wider text-slate-500' }, 'Not yet identified')
+                      ),
+                      h('div', { className: 'text-[11px] italic text-slate-600 leading-snug' }, 'Hint: ' + info.cause.split('.')[0] + '.')
+                    )
+                  );
+                })
+              )
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 pt-2' },
+              h('button', {
+                onClick: function () { goto('defectHunt'); },
+                className: 'px-4 py-2 rounded-xl bg-orange-700 hover:bg-orange-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-orange-500/40'
+              }, '🔍 Open Defect Hunt'),
+              h('button', {
+                onClick: function () { goto('processCompare'); },
+                className: 'px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-slate-500/40'
+              }, '⚖️ Process comparison')
+            )
+          )
+        );
+      }
+
+      // First-find celebration overlay (renders on top of any view).
+      function defectCelebOverlay() {
+        if (!defectCeleb) return null;
+        var totalTypes = Object.keys(DEFECT_INFO).length;
+        return h('div', {
+          role: 'status',
+          'aria-live': 'assertive',
+          className: 'fixed top-20 left-1/2 z-[9999] pointer-events-none',
+          style: { animation: 'weldlab-defect-rise 3.5s ease-out forwards' }
+        },
+          h('div', { className: 'bg-gradient-to-r from-amber-400 via-orange-600 to-rose-600 text-white px-6 py-4 rounded-2xl shadow-2xl border-4 border-white flex items-center gap-3' },
+            h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, defectCeleb.icon),
+            h('div', null,
+              h('div', { className: 'text-[10px] font-black uppercase tracking-widest opacity-95' }, 'New defect identified'),
+              h('div', { className: 'text-lg font-black leading-tight' }, defectCeleb.name),
+              h('div', { className: 'text-xs opacity-95 italic' }, 'Catalog: ' + defectCeleb.total + ' / ' + totalTypes + ' defect types')
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // VIEW DISPATCH — wraps view in a fragment with the celebration
+      // overlay so the toast can appear regardless of which view is active.
+      // ─────────────────────────────────────────────────────
+      var viewBody;
+      if (view === 'heatInput') viewBody = h(HeatInputCalculator);
+      else if (view === 'beadLab') viewBody = h(WeldBeadLab);
+      else if (view === 'defectHunt') viewBody = h(DefectHuntLab);
+      else if (view === 'processCompare') viewBody = h(ProcessComparison);
+      else if (view === 'jointCatalog') viewBody = h(JointCatalog);
+      else if (view === 'symbolsReader') viewBody = h(SymbolsReader);
+      else if (view === 'ppeSafety') viewBody = h(PPESafetyLab);
+      else if (view === 'careerPaths') viewBody = h(CareerPathways);
+      else if (view === 'underwater') viewBody = h(UnderwaterLab);
+      else if (view === 'speedChallenge') viewBody = h(SpeedChallenge);
+      else if (view === 'processSleuth') viewBody = h(ProcessSleuth);
+      else if (view === 'defectDiagnose') viewBody = h(DefectDiagnose);
+      else if (view === 'defectCatalog') viewBody = h(DefectCatalogView);
+      else viewBody = h(MainMenu);
+      return h(React.Fragment, null, defectCelebOverlay(), viewBody);
     }
   });
 
