@@ -5,6 +5,23 @@
 // "Same arm, different ball, different game. See why."
 // ═══════════════════════════════════════════
 
+// ── ThrowLab keyframes (Pitch Locker celebration) ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('throwlab-celeb-css')) return;
+  var st = document.createElement('style');
+  st.id = 'throwlab-celeb-css';
+  st.textContent = [
+    '@keyframes throwlab-celeb-rise {',
+    '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+    '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══ Defensive StemLab guard ═══
 window.StemLab = window.StemLab || {
   _registry: {},
@@ -1672,6 +1689,61 @@ window.StemLab = window.StemLab || {
         });
       };
 
+      // ── Pitch Locker: cross-session mastery of pitch types thrown for strikes ──
+      // The StemLab host's localStorage block does not include throwlab, so the
+      // tool resets every reload by default. Layer our own:
+      //   - Hydrate `pitchLocker` from window slot → localStorage on mount
+      //   - Mirror back on every change for executeSaveFile pickup
+      //   - Hot-reload on `alloflow-throwlab-restored` event
+      var React = ctx.React;
+      var _tlHydrated = React.useRef(false);
+      if (!_tlHydrated.current) {
+        _tlHydrated.current = true;
+        try {
+          var winSt = (typeof window !== 'undefined' && window.__alloflowThrowLab) || null;
+          var lsSt = null;
+          try { lsSt = JSON.parse(localStorage.getItem('throwlab.state.v1') || 'null'); } catch (e) {}
+          var seed = winSt || lsSt || null;
+          if (seed && typeof seed === 'object' && seed.pitchLocker && !d.pitchLocker) {
+            setLabToolData(function (prev) {
+              return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, { pitchLocker: seed.pitchLocker }) });
+            });
+          }
+        } catch (e) {}
+      }
+
+      // First-strike celebration state — fires when a pitch type is thrown for
+      // a strike for the first time. Mirrors the BirdLab lifer / OpticsLab
+      // first-correct pattern. Auto-clears after 3.5s.
+      var _tlCeleb = React.useState(null);
+      var tlCeleb = _tlCeleb[0];
+      var setTlCeleb = _tlCeleb[1];
+
+      // Mirror to window slot + localStorage.
+      React.useEffect(function () {
+        try {
+          var snapshot = { pitchLocker: d.pitchLocker || {}, _ts: Date.now() };
+          window.__alloflowThrowLab = snapshot;
+          try { localStorage.setItem('throwlab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+        } catch (e) {}
+      }, [d.pitchLocker]);
+
+      // Hot-reload listener.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowThrowLab || {};
+            if (w.pitchLocker) {
+              setLabToolData(function (prev) {
+                return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, { pitchLocker: w.pitchLocker }) });
+              });
+            }
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-throwlab-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-throwlab-restored', onRestore); };
+      }, []);
+
       // ── Helpers ─────────────────────────────────────────
       function applyPitchPreset(pid) {
         var pt = PITCH_TYPES.find(function(p) { return p.id === pid; });
@@ -2428,6 +2500,37 @@ window.StemLab = window.StemLab || {
         var newVolleyAceCount = (d.mode === 'volleyball' && loc === 'ace') ? (d.volleyAceCount || 0) + 1 : (d.volleyAceCount || 0);
         var newTypesUsed = Object.assign({}, d.pitchTypesUsed || {});
         if (d.mode === 'pitching') newTypesUsed[d.pitchType] = true;
+
+        // ── Pitch Locker: per-pitch-type strike mastery (cross-session) ──
+        // First time a pitch type is thrown for a strike, log it permanently
+        // and fire a celebration. Subsequent strikes increment the count but
+        // do not re-fire the celebration.
+        var newPitchLocker = Object.assign({}, d.pitchLocker || {});
+        var firedNewLifter = null;
+        if (d.mode === 'pitching' && loc === 'strike' && d.pitchType) {
+          var prevEntry = newPitchLocker[d.pitchType];
+          var nowIso = new Date().toISOString();
+          if (prevEntry) {
+            newPitchLocker[d.pitchType] = Object.assign({}, prevEntry, {
+              lastStrikeAt: nowIso,
+              strikeCount: (prevEntry.strikeCount || 0) + 1,
+              bestSpeedMph: Math.max(prevEntry.bestSpeedMph || 0, Number(d.speedMph) || 0),
+              bestSpinRpm: Math.max(prevEntry.bestSpinRpm || 0, Number(d.spinRpm) || 0)
+            });
+          } else {
+            var ptInfo = PITCH_TYPES.find(function (p) { return p.id === d.pitchType; }) || { label: d.pitchType, icon: '⚾' };
+            newPitchLocker[d.pitchType] = {
+              firstStrikeAt: nowIso,
+              lastStrikeAt: nowIso,
+              strikeCount: 1,
+              bestSpeedMph: Number(d.speedMph) || 0,
+              bestSpinRpm: Number(d.spinRpm) || 0,
+              label: ptInfo.label,
+              icon: ptInfo.icon
+            };
+            firedNewLifter = { pitchType: d.pitchType, label: ptInfo.label, icon: ptInfo.icon, total: Object.keys(newPitchLocker).length };
+          }
+        }
         // Roll a compact history entry for Coach Mode — last 5 throws.
         // We only keep the fields a coach would need (mode, parameters,
         // outcome) so this object stays small even if the user throws
@@ -2612,6 +2715,7 @@ window.StemLab = window.StemLab || {
             dailyCompleted: newDailyCompleted,
             personalBests: newPersonalBests,
             pitchTypesUsed: newTypesUsed,
+            pitchLocker: newPitchLocker,
             recentThrows: newRecent,
             drillStats: stats,
             drillTaskIdx: newDrillTaskIdx,
@@ -2620,6 +2724,13 @@ window.StemLab = window.StemLab || {
           });
           return Object.assign({}, prev, { throwlab: next });
         });
+        if (firedNewLifter) {
+          try {
+            setTlCeleb(Object.assign({}, firedNewLifter, { at: Date.now() }));
+            setTimeout(function () { setTlCeleb(null); }, 3500);
+          } catch (e) {}
+          if (addToast) addToast('🏅 Pitch Locker: ' + firedNewLifter.label + ' added (' + firedNewLifter.total + '/' + PITCH_TYPES.length + ')');
+        }
         if (taskJustCompleted) {
           var modeDrills2 = DRILLS[d.mode];
           var allDone = modeDrills2 && newDrillTaskIdx >= modeDrills2.tasks.length;
@@ -4016,6 +4127,27 @@ window.StemLab = window.StemLab || {
       }
 
       return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
+        // Pitch Locker celebration overlay (fixed-position, top of screen).
+        // Fires the first time you throw a strike with a NEW pitch type.
+        // Self-clears after 3.5s. Renders on top of everything.
+        tlCeleb && h('div', {
+          role: 'status', 'aria-live': 'assertive',
+          style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+                   zIndex: 9999, pointerEvents: 'none',
+                   animation: 'throwlab-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+        },
+          h('div', { style: { background: 'linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #7c3aed 100%)',
+                              color: '#fff', padding: '14px 22px', borderRadius: 16,
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.35)', border: '4px solid #fff',
+                              display: 'flex', alignItems: 'center', gap: 12 } },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, tlCeleb.icon || '⚾'),
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Pitch added to your locker'),
+              h('div', { style: { fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, tlCeleb.label || tlCeleb.pitchType),
+              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, tlCeleb.total + ' / ' + PITCH_TYPES.length + ' pitch types thrown for strikes')
+            )
+          )
+        ),
         // Header — mode-aware title
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && h('button', {
@@ -4027,6 +4159,57 @@ window.StemLab = window.StemLab || {
           h('h2', { style: { margin: 0, fontSize: 20 } }, modeMeta.icon + ' ThrowLab — ' + modeMeta.label),
           h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Same arm, different ball, different game.')
         ),
+        // ── Pitch Locker compact summary (only shown in pitching mode) ──
+        // Sticky band under the header showing how many pitch types you have
+        // thrown for strikes across all sessions. Click expands the locker
+        // detail. Surfaces engagement-by-glance: kids see they have 4/6 and
+        // want the missing two.
+        d.mode === 'pitching' && (function () {
+          var locker = (d.pitchLocker && typeof d.pitchLocker === 'object') ? d.pitchLocker : {};
+          var got = Object.keys(locker).filter(function (k) { return PITCH_TYPES.some(function (p) { return p.id === k; }); }).length;
+          var total = PITCH_TYPES.length;
+          var pct = total > 0 ? Math.round((got / total) * 100) : 0;
+          return h('div', {
+            style: {
+              marginBottom: 12, padding: '10px 14px', borderRadius: 12,
+              background: 'linear-gradient(110deg, rgba(245,158,11,0.10) 0%, rgba(239,68,68,0.18) 50%, rgba(124,58,237,0.10) 100%)',
+              border: '1px solid rgba(245,158,11,0.50)',
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '🏅'),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, 'Pitch Locker'),
+                h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, got + ' / ' + total + ' types thrown for strikes'),
+                h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                  got === 0 ? 'Hit the strike zone with a new pitch type to lock it in.'
+                  : got === total ? '🏆 Full repertoire — every pitch type strike-tested.'
+                  : 'Hit a strike with a new type to add it.')
+              ),
+              h('div', { style: { marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' } },
+                PITCH_TYPES.map(function (p) {
+                  var locked = !!locker[p.id];
+                  return h('span', { key: p.id,
+                    title: p.label + (locked ? ' — locked in (' + (locker[p.id].strikeCount || 1) + ' strikes)' : ' — not yet'),
+                    'aria-label': p.label + (locked ? ' locked in' : ' not yet'),
+                    style: {
+                      display: 'inline-flex', alignItems: 'center', gap: 3,
+                      padding: '2px 8px', borderRadius: 12, fontSize: 11, fontWeight: 700,
+                      background: locked ? 'rgba(34,197,94,0.20)' : 'rgba(15,23,42,0.35)',
+                      color: locked ? '#86efac' : '#64748b',
+                      border: '1px solid ' + (locked ? 'rgba(34,197,94,0.55)' : '#334155'),
+                      filter: locked ? 'none' : 'grayscale(100%)'
+                    }
+                  },
+                    h('span', { 'aria-hidden': 'true' }, p.icon),
+                    p.label.replace(/^(.+?)( \(.+\))?$/, '$1')
+                  );
+                })
+              )
+            )
+          );
+        })(),
 
         // Mode picker — pill row, prominent under header. role=tablist makes
         // assistive-tech treat it as a single-select control group.
@@ -4049,6 +4232,37 @@ window.StemLab = window.StemLab || {
             }, mm.icon + ' ' + mm.label);
           })
         ),
+
+        // ── Mode-accent hero band (sport-flavored, dark-themed) ──
+        (function() {
+          var MODE_META = {
+            pitching:   { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '⚾', title: "Pitcher's Mound \u2014 60 ft 6 in to home plate",     hint: '6 grips, 6 trajectories. Fastball straight; curve drops via topspin; slider breaks late; splitter dies; sinker bores in; changeup deceives. Magnus force IS real \u2014 spin axis decides everything.' },
+            freethrow:  { accent: '#f97316', soft: 'rgba(249,115,22,0.14)', icon: '🏀', title: 'Free Throw \u2014 15 ft from line to hoop',          hint: 'Same line, same 23cm rim, very different shooters. Shaq career 52%, Steph Curry 91%. Soft arc, backspin, knees-into-shot \u2014 muscle memory you build one shot at a time.' },
+            freekick:   { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)',  icon: '⚽', title: 'Free Kick \u2014 22m + a 4-defender wall',          hint: 'Beckham knuckle, Roberto Carlos banana, Messi top-bin. Magnus = the curl. Hit the seam off-center, side-spin bends it around the wall, into the corner the keeper can\u2019t reach.' },
+            fieldgoal:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '🏈', title: 'Field Goal \u2014 18.5 ft wide, 10 ft up',          hint: 'Justin Tucker has hit 66+ yds. From 30 yd a pro hits ~95%; from 50+ it drops fast. Wind and the snap matter as much as leg power. Loneliest position on the field.' },
+            bowling:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '🏏', title: "Bowler's Crease \u2014 22 yd to the stumps",       hint: 'Yorker at the toes, bouncer at the chest, off-cutter that nips, googly that turns the wrong way. Fast bowlers hit 95+ mph and the ball BOUNCES \u2014 Test cricket\u2019s purest weapon.' },
+            golf:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '⛳', title: 'Golf Tee Shot \u2014 driver to wedge',                  hint: 'Driver carries 250+ yd; sand wedge 85. Backspin keeps the ball aloft (lift); topspin runs out fast. ~6 sec in the air. Smash factor 1.50 = the ceiling. Find the fairway.' },
+            volleyball: { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)', icon: '🏐', title: "Server's Line \u2014 over a 2.43m net, in 9\u00d79m",   hint: 'Jump-serve > 70 mph. Float serve has NO spin \u2014 the wake destabilizes mid-flight, divers and dips unpredictably. Top-spin jump serve = the receiving line\u2019s nightmare.' }
+          };
+          var meta = MODE_META[d.mode] || MODE_META.pitching;
+          return h('div', {
+            style: {
+              margin: '0 0 14px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
 
         // ── Scenarios ──
         // One-click teaching demos. Each pill snaps mode + preset +
