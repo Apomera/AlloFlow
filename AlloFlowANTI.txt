@@ -5061,6 +5061,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // module via the same toolModules array; each plugin polls the
         // registry until it's available, so order isn't strict.
         'arcade_mode_sage_launcher.js',
+        'arcade_mode_boss_encounter.js',
       ];
       var waitForRegistry = function(cb) {
         if (window.StemLab && window.StemLab.registerTool) { cb(); return; }

@@ -14018,12 +14018,21 @@
                 session: session,
                 onLaunch: function(minutes) { return launchArcadeMode(mode.id, minutes); },
                 onClose: close,
+                onEndSession: function(reason) { return endArcadeSession(reason || 'forfeit'); },
                 callImagen: props.callImagen,
                 callGemini: props.callGemini,
                 callTTS: props.callTTS,
+                callGeminiAudio: props.callGeminiAudio || null,
                 addToast: addToast,
                 toolData: props.toolData || {},
-                setStemLabTool: props.setStemLabTool || null
+                setStemLabTool: props.setStemLabTool || null,
+                // Plugin-accessible AlloHaven state (read-only) — gives
+                // arcade modes a deck source without forcing the host
+                // to expose its full state shape. Decorations excludes
+                // starter pieces by default since those are visual
+                // welcome gifts, not learning artifacts.
+                decorations: (state.decorations || []).filter(function(d) { return !d.isStarter; }),
+                companion: state.companion || null
               };
               // Default card if mode doesn't supply its own render. If it
               // does, the mode owns the entire card UI.
