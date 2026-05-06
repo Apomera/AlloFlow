@@ -14423,12 +14423,18 @@
                 h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text, fontVariantNumeric: 'tabular-nums' } }, detail.transformCount || 0)
               )
             ),
-            // Strongest Spark callout
+            // Strongest Spark callout. When the score was upgraded by a
+            // teacher mid-encounter, surface "adjusted up from N" inline
+            // so the audit trail is visible in IEP / parent review packets
+            // (3b.full.f follow-up).
             detail.strongestSpark ? h('div', {
               style: { padding: '10px 12px', background: palette.surface, border: '1.5px solid ' + palette.accent, borderRadius: '10px', marginBottom: '14px' }
             },
               h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } },
-                '✨ Strongest Spark · score ' + detail.strongestSpark.score),
+                '✨ Strongest Spark · score ' + detail.strongestSpark.score
+                + (detail.strongestSpark.teacherAdjusted && typeof detail.strongestSpark.originalScore === 'number'
+                    ? ' · ↑ adjusted from ' + detail.strongestSpark.originalScore
+                    : '')),
               h('div', { style: { fontSize: '12px', color: palette.text, marginBottom: '4px' } },
                 detail.strongestSpark.cardName + ' · ' + detail.strongestSpark.verb),
               h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.45' } },
@@ -14440,15 +14446,18 @@
                 'Per-turn detail'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
                 detail.history.map(function (turn, i) {
+                  var wasAdjusted = !!turn.teacherAdjusted && typeof turn.originalScore === 'number';
                   return h('div', {
                     key: 'pe-turn-' + i,
                     style: { padding: '8px 10px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', fontSize: '11px' }
                   },
-                    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '2px' } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '2px', alignItems: 'baseline' } },
                       h('span', { style: { fontWeight: 700, color: palette.text } },
                         'R' + turn.round + ' · ' + (turn.cardName || '?') + ' · ' + (turn.verb || '?')),
                       h('span', { style: { color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
-                        'score ' + turn.score + ' · -' + (turn.damage || 0) + ' HP')
+                        'score ' + turn.score
+                        + (wasAdjusted ? ' (↑ from ' + turn.originalScore + ')' : '')
+                        + ' · -' + (turn.damage || 0) + ' HP')
                     ),
                     turn.justification ? h('div', { style: { color: palette.textDim, fontStyle: 'italic', lineHeight: '1.4' } },
                       '"' + turn.justification + '"') : null
@@ -19724,7 +19733,11 @@
                 + (enc.criticalCount || 0) + ' critical · '
                 + (enc.totalDamage || 0) + ' damage'),
               enc.strongestSpark ? h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', marginTop: '4px', margin: '4px 0 0 0' }) },
-                '✨ Strongest Spark (score ' + enc.strongestSpark.score + ', ' + (enc.strongestSpark.cardName || '?') + ' · ' + (enc.strongestSpark.verb || '?') + '): "'
+                '✨ Strongest Spark (score ' + enc.strongestSpark.score
+                + (enc.strongestSpark.teacherAdjusted && typeof enc.strongestSpark.originalScore === 'number'
+                    ? ', adjusted up from ' + enc.strongestSpark.originalScore
+                    : '')
+                + ', ' + (enc.strongestSpark.cardName || '?') + ' · ' + (enc.strongestSpark.verb || '?') + '): "'
                 + (enc.strongestSpark.justification || '') + '"') : null
             );
           })
