@@ -862,6 +862,8 @@ const QuickStartWizard = React.memo(({
   }, t('wizard.tones.informative')), /*#__PURE__*/React.createElement("option", {
     value: "Narrative"
   }, t('wizard.tones.narrative')), /*#__PURE__*/React.createElement("option", {
+    value: "Dialogue"
+  }, t('wizard.tones.dialogue')), /*#__PURE__*/React.createElement("option", {
     value: "Persuasive"
   }, t('wizard.tones.persuasive')), /*#__PURE__*/React.createElement("option", {
     value: "Humorous"
