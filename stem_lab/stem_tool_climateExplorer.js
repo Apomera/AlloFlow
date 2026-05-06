@@ -2140,6 +2140,171 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Real innovations making a real difference \u2014 and what YOU can do')
             ),
 
+            // ═══ DRAWDOWN SLEUTH (net-new mini-game) ═══
+            // 8 rounds. Each shows 4 climate solutions; player picks the biggest-impact
+            // one per Drawdown's Plausible Scenario (gigatons CO\u2082 over 2020\u20132050).
+            // Forces students past 'obvious' choices (rooftop solar, EVs) to recognize
+            // the boring-but-massive ones (refrigerant management, food waste, girls' ed).
+            (function() {
+              var DS_ROUNDS = [
+                { id: 1, ids: ['refrigerants', 'solar_roof', 'evs_personal', 'heat_pumps'], correct: 'refrigerants',
+                  why: 'Refrigerant management beats rooftop solar + EVs + heat pumps COMBINED. HFC refrigerants are 1,000\u20139,000\u00d7 more potent than CO\u2082; just *recapturing them properly at end-of-life* is the highest-impact single climate action available. The boring infrastructure solution wins over the visible-tech ones.' },
+                { id: 2, ids: ['reduced_waste', 'wind_onshore', 'solar_farms', 'buildings_retrofit'], correct: 'wind_onshore',
+                  why: 'Onshore wind (147 GT) beats reduced food waste (88 GT) and crushes solar farms + retrofits. Scaling existing cheap technology massively is currently the largest single lever in the global energy transition.' },
+                { id: 3, ids: ['plant_rich', 'tropical_forest', 'cycling_walking', 'efficient_transit'], correct: 'tropical_forest',
+                  why: 'Tropical forest restoration (85 GT) edges out plant-rich diets (65 GT). Both crush bike infrastructure (5 GT). Transport solutions are hugely visible in policy debate but smaller than the food + land solutions in absolute terms.' },
+                { id: 4, ids: ['girls_education', 'wind_onshore', 'solar_farms', 'buildings_retrofit'], correct: 'wind_onshore',
+                  why: 'Girls\' education + family planning is enormous (85 GT in Drawdown\'s combined estimate), but onshore wind at full scale is even bigger (147 GT). Education compounds across generations though \u2014 per-dollar impact is much higher than the absolute GT suggests.' },
+                { id: 5, ids: ['silvopasture', 'evs_personal', 'kelp_forests', 'cycling_walking'], correct: 'silvopasture',
+                  why: 'Silvopasture (42 GT) \u2014 integrating trees into grazing land \u2014 beats EVs + bike infrastructure + kelp forests combined. Trees + livestock together build soil carbon at 4\u00d7 the rate of bare pasture. A surprisingly large agricultural lever that gets almost no public attention.' },
+                { id: 6, ids: ['refrigerants', 'reduced_waste', 'plant_rich', 'tropical_forest'], correct: 'reduced_waste',
+                  why: 'Reduced food waste (88 GT) leads this group, edging out tropical forest (85), plant-rich diet (65), and refrigerants (57). One-third of all food grown is wasted; preventing waste avoids both methane from landfills AND the upstream emissions to grow it.' },
+                { id: 7, ids: ['solar_farms', 'wind_onshore', 'buildings_retrofit', 'peatlands'], correct: 'wind_onshore',
+                  why: 'Onshore wind (147 GT) is the single largest line item in Drawdown \u2014 bigger than utility solar (42), retrofits (33), peatlands (26). Note peatlands punching above their weight: globally they store 3\u00d7 more carbon than forests.' },
+                { id: 8, ids: ['heat_pumps', 'evs_personal', 'cycling_walking', 'refrigerants'], correct: 'refrigerants',
+                  why: 'Refrigerants (57 GT) beat heat pumps + EVs + bike infrastructure COMBINED (25 GT total). The visible "consumer green tech" solutions are real but small at global scale; HFC management dwarfs them. Kigali Amendment is doing more for climate than most realize.' }
+              ];
+              var dsIdx = d.dsIdx == null ? -1 : d.dsIdx;
+              var dsSeed = d.dsSeed || 1;
+              var dsAnswered = !!d.dsAnswered;
+              var dsPick = d.dsPick;
+              var dsScore = d.dsScore || 0;
+              var dsRounds = d.dsRounds || 0;
+              var dsStreak = d.dsStreak || 0;
+              var dsBest = d.dsBest || 0;
+              var dsShown = d.dsShown || [];
+              var dsOpen = !!d.dsOpen;
+              function getSol(id) { return DRAWDOWN_SOLUTIONS.find(function(x) { return x.id === id; }); }
+              function startDs() {
+                var pool = [];
+                for (var i = 0; i < DS_ROUNDS.length; i++) if (dsShown.indexOf(i) < 0) pool.push(i);
+                if (pool.length === 0) { pool = []; for (var j = 0; j < DS_ROUNDS.length; j++) pool.push(j); dsShown = []; }
+                var seedNext = ((dsSeed * 16807 + 11) % 2147483647) || 7;
+                var pick = pool[seedNext % pool.length];
+                upd('dsSeed', seedNext);
+                upd('dsIdx', pick);
+                upd('dsAnswered', false);
+                upd('dsPick', null);
+                upd('dsShown', dsShown.concat([pick]));
+              }
+              function pickDs(solId) {
+                if (dsAnswered) return;
+                var r = DS_ROUNDS[dsIdx];
+                var correct = solId === r.correct;
+                var newScore = dsScore + (correct ? 1 : 0);
+                var newStreak = correct ? (dsStreak + 1) : 0;
+                var newBest = Math.max(dsBest, newStreak);
+                upd('dsAnswered', true);
+                upd('dsPick', solId);
+                upd('dsScore', newScore);
+                upd('dsRounds', dsRounds + 1);
+                upd('dsStreak', newStreak);
+                upd('dsBest', newBest);
+              }
+              return el('div', { style: { padding: 16, marginBottom: 18, borderRadius: 14, background: 'linear-gradient(135deg, rgba(34,197,94,0.08), rgba(15,23,42,0.4))', border: '2px solid rgba(34,197,94,0.30)' } },
+                el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
+                  el('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                    el('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, '\uD83D\uDD75\uFE0F'),
+                    el('div', null,
+                      el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, 'Drawdown Sleuth'),
+                      el('div', { style: { color: '#94a3b8', fontSize: 11, fontStyle: 'italic' } }, 'Pick the biggest-impact climate solution. The "obvious" answer is often wrong.')
+                    )
+                  ),
+                  el('button', {
+                    onClick: function() { upd('dsOpen', !dsOpen); },
+                    style: { padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(34,197,94,0.40)', background: 'rgba(34,197,94,0.15)', color: '#4ade80', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                  }, dsOpen ? 'Hide \u25b4' : 'Play \u2192')
+                ),
+                dsOpen && (dsIdx < 0
+                  ? el('div', { style: { textAlign: 'center', padding: '16px 8px' } },
+                      el('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 12 } },
+                        '8 rounds. Each shows 4 climate solutions; pick the one with the biggest CO\u2082 reduction (per Project Drawdown\'s Plausible Scenario, gigatons over 2020\u20132050). After picking, a coaching block names what makes the answer surprising.'),
+                      el('button', {
+                        onClick: startDs,
+                        'aria-label': 'Start Drawdown Sleuth',
+                        style: { padding: '10px 18px', borderRadius: 10, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+                      }, '\uD83D\uDD75\uFE0F Start \u2014 round 1 of 8')
+                    )
+                  : (function() {
+                      var r = DS_ROUNDS[dsIdx];
+                      var pickedCorrect = dsAnswered && dsPick === r.correct;
+                      var pct = dsRounds > 0 ? Math.round((dsScore / dsRounds) * 100) : 0;
+                      var allDone = dsShown.length >= DS_ROUNDS.length && dsAnswered;
+                      return el('div', null,
+                        el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: '#94a3b8', marginBottom: 8 } },
+                          el('span', null, 'Round ', el('strong', { style: { color: '#fff' } }, dsShown.length)),
+                          el('span', null, 'Score ', el('strong', { style: { color: '#4ade80' } }, dsScore + ' / ' + dsRounds)),
+                          dsRounds > 0 && el('span', null, 'Accuracy ', el('strong', { style: { color: '#0ea5e9' } }, pct + '%')),
+                          el('span', null, 'Streak ', el('strong', { style: { color: '#fbbf24' } }, dsStreak)),
+                          el('span', null, 'Best ', el('strong', { style: { color: '#f59e0b' } }, dsBest))
+                        ),
+                        el('div', { style: { color: '#fff', fontSize: 13, fontWeight: 800, marginBottom: 8 } }, 'Which solution avoids the most CO\u2082 globally (2020\u20132050)?'),
+                        el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the biggest-impact solution' },
+                          r.ids.map(function(solId) {
+                            var sol = getSol(solId);
+                            if (!sol) return null;
+                            var picked = dsAnswered && dsPick === solId;
+                            var isRight = dsAnswered && solId === r.correct;
+                            var bg, border, color;
+                            if (dsAnswered) {
+                              if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
+                              else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
+                              else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+                            } else {
+                              bg = 'rgba(30,41,59,0.7)'; border = 'rgba(34,197,94,0.40)'; color = '#e2e8f0';
+                            }
+                            return el('button', {
+                              key: solId, role: 'radio',
+                              'aria-checked': picked ? 'true' : 'false',
+                              'aria-label': sol.label,
+                              disabled: dsAnswered,
+                              onClick: function() { pickDs(solId); },
+                              style: { padding: '12px 10px', borderRadius: 10, background: bg, color: color, border: '2px solid ' + border, cursor: dsAnswered ? 'default' : 'pointer', textAlign: 'left', fontSize: 11, fontWeight: 700, transition: 'all 0.15s', minHeight: 80 }
+                            },
+                              el('div', { style: { fontSize: 22, marginBottom: 4 }, 'aria-hidden': 'true' }, sol.emoji),
+                              el('div', { style: { fontSize: 12, fontWeight: 800, lineHeight: 1.2, marginBottom: 4 } }, sol.label),
+                              dsAnswered && el('div', { style: { fontSize: 11, fontWeight: 800, color: isRight ? '#86efac' : (picked ? '#fca5a5' : '#94a3b8') } }, sol.gt + ' GT CO\u2082')
+                            );
+                          })
+                        ),
+                        dsAnswered && el('div', {
+                          style: {
+                            marginTop: 12, padding: '12px 14px', borderRadius: 10,
+                            background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.08)',
+                            border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+                          }
+                        },
+                          el('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+                            pickedCorrect
+                              ? '\u2705 Correct \u2014 ' + getSol(r.correct).label + ' (' + getSol(r.correct).gt + ' GT)'
+                              : '\u274C The biggest is ' + getSol(r.correct).label + ' (' + getSol(r.correct).gt + ' GT)' + (dsPick ? ' (you picked ' + getSol(dsPick).label + ' at ' + getSol(dsPick).gt + ' GT)' : '')
+                          ),
+                          el('p', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.55, margin: '0 0 10px' } }, r.why),
+                          allDone
+                            ? el('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.45)' } },
+                                el('div', { style: { fontSize: 13, fontWeight: 800, color: '#4ade80', marginBottom: 4 } }, '\uD83C\uDFC6 All 8 rounds complete'),
+                                el('div', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } },
+                                  'Final: ', el('strong', null, dsScore + ' / ' + DS_ROUNDS.length + ' (' + Math.round((dsScore / DS_ROUNDS.length) * 100) + '%)'),
+                                  dsScore === DS_ROUNDS.length ? ' \u2014 you can spot the boring-but-massive solutions over the sexy-but-small ones. Project Drawdown\'s mission is exactly that.' :
+                                  dsScore >= 6 ? ' \u2014 strong intuition for scale. The most-confused pair is usually onshore wind vs reduced food waste \u2014 both are top-3 globally; the Plausible Scenario number depends on assumed deployment rate.' :
+                                  ' \u2014 these intuitions take rebuilding. The consumer-green-tech framing (rooftop solar, EVs, bikes) underplays the boring infrastructure solutions that actually move the needle. Re-read the rationales, then retake.'
+                                ),
+                                el('button', {
+                                  onClick: function() { upd('dsIdx', -1); upd('dsShown', []); upd('dsScore', 0); upd('dsRounds', 0); upd('dsStreak', 0); },
+                                  style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                                }, '\uD83D\uDD04 Restart')
+                              )
+                            : el('button', {
+                                onClick: startDs,
+                                style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#22c55e', color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                              }, '\u27a1\uFE0F Next round')
+                        )
+                      );
+                    })()
+                )
+              );
+            })(),
+
             // ═══ SOLUTION STACK BUILDER (Project Drawdown) ═══
             (function() {
               var picked = d.drawdownPicked || {};

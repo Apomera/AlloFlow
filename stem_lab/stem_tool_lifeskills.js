@@ -844,6 +844,44 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ═══ Topic-accent hero band per sub-tool ═══
+        (function() {
+          var TAB_META = {
+            paycheck:   { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83E\uDDFE', title: 'Paycheck + tax math',     hint: 'Federal marginal brackets, FICA cap (6.2% Social Security up to $168,600), state withholding. Effective rate \u2260 marginal rate \u2014 most students conflate them.' },
+            data:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: 'Data literacy',           hint: 'Spot-check claims with order-of-magnitude reasoning. Per-capita vs total. Mean vs median. Sample size and selection bias \u2014 the four most-misrepresented quantities in everyday news.' },
+            decision:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: 'Decision frameworks',     hint: 'Pros/cons + opportunity cost + reversibility. Annie Duke\'s decision-quality model: "good decision" \u2260 "good outcome." Decide on process, not outcome.' },
+            contract:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCDD', title: 'Contracts + agreements',  hint: 'Read the whole thing before signing. Watch for arbitration clauses, auto-renewal, early-termination fees, and limit-of-liability caps. "Click to agree" is a contract.' },
+            insurance:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFE5', title: 'Insurance basics',        hint: 'Premium / deductible / out-of-pocket max / network. Insurance protects against catastrophic loss \u2014 not against everyday cost. High-deductible plans + HSA can beat low-deductible for healthy people.' },
+            science:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Applied science at home', hint: 'Pressure cookers, microwaves, refrigeration, thermostats, water heaters \u2014 the physics is in your kitchen. Knowing the principle saves you from googling "why is my fridge warm" at 2 AM.' },
+            carcare:    { accent: '#1f2937', soft: 'rgba(31,41,55,0.10)',   icon: '\uD83D\uDE97', title: 'Car care basics',         hint: 'Oil + tire pressure + battery + brakes + fluids. Maintenance prevents 80% of breakdowns. Pairs with the Auto Repair Shop tool for deeper dives.' },
+            homerepair: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDD27', title: 'Home repair basics',      hint: 'Toilet flapper, faucet washers, drywall patches, GFCI resets, breaker tripping. Five repairs a homeowner does themselves vs five they call a pro for.' },
+            homesys:    { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83C\uDFE0', title: 'Home systems',            hint: 'Where the water main is. Where the breaker panel is. How HVAC + electrical + plumbing actually work. The five things every renter and homeowner should know on day one.' },
+            budget:     { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDCB0', title: 'Budgeting',               hint: '50/30/20 rule (needs/wants/save+debt). Fixed vs variable. Sinking funds for predictable irregulars (car insurance, holiday gifts). Cash-flow timing > total spend.' },
+            credit:     { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDCB3', title: 'Credit + debt',           hint: 'FICO factors: payment history (35%), utilization (30%), age (15%), mix (10%), inquiries (10%). Pay statement balance in full each cycle = no interest. Minimum payment = decades of debt.' },
+            cooking:    { accent: '#f97316', soft: 'rgba(249,115,22,0.10)', icon: '\uD83C\uDF73', title: 'Cooking fundamentals',    hint: 'Heat control, knife skills, salt timing, food safety (40\u2013140\u00B0F danger zone, 165\u00B0F poultry-safe). Five techniques cover 80% of home recipes \u2014 sear, simmer, roast, steam, saut\u00e9.' },
+            challenge:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: 'Daily challenge',         hint: 'A new life-skills puzzle every session \u2014 calculate a tip, decode a credit-card APR, debug a leaking faucet. Streak counter tracks daily wins.' },
+            battle:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F',  title: 'Speed battle',            hint: 'Time-pressure quiz across multiple sub-tools. Tests whether the math + frameworks are automatic, not just recognized.' },
+            learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',    hint: 'Tax brackets, FICO factor weights, food-safe temp table, electrical breaker color-codes \u2014 the reference card you keep coming back to.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.paycheck;
+          return h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ PAYCHECK TAB ═══
         tab === 'paycheck' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard + ' space-y-3' },
