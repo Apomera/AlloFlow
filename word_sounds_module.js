@@ -9860,27 +9860,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setIsListening(false);
           return;
         }
-        const SpeechRecognition =
-          window.SpeechRecognition || window.webkitSpeechRecognition;
-        const recognition = new SpeechRecognition();
-        recognitionRef.current = recognition;
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = wordSoundsLanguage || "en-US";
-        recognition.onstart = () => {
-          setIsListening(true);
-          playSound("pop");
-        };
-        recognition.onend = () => setIsListening(false);
-        recognition.onerror = (e) => {
-          warnLog("Mic Error", e);
-          setIsListening(false);
-          if (e.error !== "no-speech") {
-            addToast(ts("common.mic_error") || "Microphone error", "error");
-          }
-        };
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
+        // Phase 3v.M — phoneme dictation scoring stays identical; only
+        // the SpeechRecognition construction is shared. The transcript
+        // → expected comparison + checkAnswer() flow is preserved.
+        const handleTranscript = (transcript) => {
           debugLog("Mic Transcript:", transcript);
           setUserAnswer(transcript);
           let expected = currentWordSoundsWord;
@@ -9899,6 +9882,51 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           } else {
             checkAnswer(transcript, expected);
           }
+        };
+        const handleError = (e) => {
+          warnLog("Mic Error", e);
+          setIsListening(false);
+          if (e && e.error !== "no-speech") {
+            addToast(ts("common.mic_error") || "Microphone error", "error");
+          }
+        };
+        const handleEnd = () => setIsListening(false);
+        if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+          const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+            lang: wordSoundsLanguage || 'en-US',
+            continuous: false,
+            interimResults: false,
+            onTranscript: (text) => handleTranscript(text),
+            onError: handleError,
+            onEnd: handleEnd
+          });
+          if (!ctrl.supported) {
+            handleError({ error: 'not-supported' });
+            return;
+          }
+          if (ctrl.start()) {
+            recognitionRef.current = ctrl;
+            setIsListening(true);
+            playSound("pop");
+          }
+          return;
+        }
+        // Inline fallback (pre-3v.M behavior)
+        const SpeechRecognition =
+          window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+        recognitionRef.current = recognition;
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = wordSoundsLanguage || "en-US";
+        recognition.onstart = () => {
+          setIsListening(true);
+          playSound("pop");
+        };
+        recognition.onend = handleEnd;
+        recognition.onerror = handleError;
+        recognition.onresult = (event) => {
+          handleTranscript(event.results[0][0].transcript);
         };
         recognition.start();
       }, [
