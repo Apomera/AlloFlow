@@ -208,7 +208,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay'];
+      var BADGE_IDS = ['macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -398,6 +398,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             desc: 'Pick one food for breakfast, lunch, dinner, and snack from a Maine-realistic short list (Maine wild blueberries, Atlantic salmon, lobster roll, fortified cereal, etc.). Watch six nutrient bars (protein, fiber, vitamin D, omega-3, iron, calcium) update against approximate adolescent DRIs. Final summary names deficits + strengths and ties them to Maine context (winter vit D, fisheries omega-3, adolescent iron).',
             color: 'from-stone-500 to-emerald-700',
             ring: 'ring-stone-500/40',
+            ready: true
+          },
+          {
+            id: 'deficiencyDetective', title: 'Deficiency Detective', icon: '🕵️',
+            subtitle: '10 vignettes — name the missing nutrient',
+            desc: '10 clinical vignettes; identify which of 6 nutrients (vitamin D, iron, B12, folate, calcium, iodine) is most likely missing. Vignettes target the canonical real-world deficiency cases: Maine winter runner with stress fractures, menstruating teen with ADHD-like inattention, strict vegan with neuropathy, preconception folate, lactose-intolerant teen with low bone density, PPI-induced B12 deficiency.',
+            color: 'from-rose-500 to-pink-700',
+            ring: 'ring-rose-500/40',
             ready: true
           }
         ];
@@ -3754,6 +3762,212 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
 
       // ─────────────────────────────────────────────────────
+      // DEFICIENCY DETECTIVE (net-new mini-game)
+      // 10 clinical vignettes; player picks the most likely missing nutrient
+      // from 6 options. Targets the canonical real-world deficiency patterns
+      // students will encounter in school nursing, sports medicine, and
+      // pediatric clinical practice.
+      // ─────────────────────────────────────────────────────
+      function DeficiencyDetective() {
+        var NUTRIENTS = [
+          { id: 'vitD',    label: 'Vitamin D', color: '#f59e0b', icon: '☀️',
+            def: 'Skin makes it from sunlight; few foods (fatty fish, fortified milk). At Maine\'s latitude, sun is too low Oct–Mar. Bone health + immune.' },
+          { id: 'iron',    label: 'Iron',      color: '#dc2626', icon: '🩸',
+            def: 'Carries oxygen via hemoglobin. Plant iron (lentils, spinach) absorbs poorly without vitamin C. Menstruating teens + endurance athletes high-risk.' },
+          { id: 'b12',     label: 'B12',       color: '#a855f7', icon: '🧬',
+            def: 'Animal products only (meat, fish, eggs, dairy) + fortified plant milks. Vegans + PPI-users + older adults at risk. Nerve + RBC formation.' },
+          { id: 'folate',  label: 'Folate',    color: '#16a34a', icon: '🥬',
+            def: 'Leafy greens, lentils, fortified grains. Critical preconception + early pregnancy for neural-tube development. Often supplemented as folic acid.' },
+          { id: 'calcium', label: 'Calcium',   color: '#0ea5e9', icon: '🦴',
+            def: 'Dairy, fortified plant milks, leafy greens. Adolescence = peak bone-building years; teen intake shapes lifelong bone density. Lactose-intolerance is risk.' },
+          { id: 'iodine',  label: 'Iodine',    color: '#7c3aed', icon: '🦋',
+            def: 'Iodized salt, seafood, dairy. Thyroid hormone production. US iodized-salt program nearly eliminated this; still common in low-iodine soil regions.' }
+        ];
+        var V = [
+          { id: 1, scenario: '17-year-old in Maine, runs cross-country. Recurring stress fractures since November. Spends most of the day indoors at school; rarely drinks fortified dairy and takes no supplement.', correct: 'vitD',
+            why: 'Maine winter latitude (43–47°N): sun is too low Oct–Mar to make vitamin D in skin. Indoor adolescent + low dietary D + stress fractures = canonical D deficiency. Maine CDC has flagged this as a documented public-health concern.' },
+          { id: 2, scenario: '14-year-old girl, started menstruating 6 months ago. Persistent fatigue, brain fog, and "ADHD-like" inattention in class. Vegetarian diet (no red meat). Pale conjunctivae on exam.', correct: 'iron',
+            why: 'Menstruating teen + plant-only iron source + fatigue + cognitive symptoms = classic iron-deficiency anemia. AAP notes iron deficiency can present with ADHD-like inattention before frank anemia. Pair plant iron with vitamin C for absorption.' },
+          { id: 3, scenario: '21-year-old, strict vegan for 3 years. Tingling and numbness in feet for 6 months; mild memory issues. Does not take a B12 supplement; relies on "B12 in nutritional yeast" but eats it inconsistently.', correct: 'b12',
+            why: 'B12 is exclusively in animal products (meat, fish, eggs, dairy) + fortified foods. Vegan without consistent fortified-food or supplement intake = certain B12 deficiency by 2–4 years. Tingling + memory = subacute combined degeneration of spinal cord. Standard recommendation: B12 supplement for ALL vegans.' },
+          { id: 4, scenario: '28-year-old, just learned she is 8 weeks pregnant — was not taking prenatal vitamins beforehand. Family history includes a relative born with spina bifida. Asks what supplement to start now and whether she should have started earlier.', correct: 'folate',
+            why: 'Folate for neural-tube defect prevention works MOST in the first 28 days of pregnancy — often before someone knows they are pregnant. CDC recommends 400 mcg folic acid daily for ALL women of reproductive age, not just those trying to conceive. The U.S. grain-fortification program has reduced (but not eliminated) NTDs.' },
+          { id: 5, scenario: '13-year-old girl, lactose intolerant since age 8. Drinks unfortified almond milk only. Sustained a stress fracture during cross-country. DEXA scan shows low bone density for age.', correct: 'calcium',
+            why: 'Lactose intolerance + unfortified plant milk = chronic low calcium intake during PEAK bone-building years (ages 9–18). Adolescent calcium RDA is 1300 mg/day — the highest of any age group. Lifelong bone density is largely set by 20. Switching to FORTIFIED plant milk (check label for 30% DV calcium) is the easy fix.' },
+          { id: 6, scenario: '35-year-old recent immigrant from a low-iodine soil region in central Asia. No iodized salt at home for years. Visible neck swelling (goiter); cold-intolerant; sluggish; recent weight gain; family history of thyroid disease.', correct: 'iodine',
+            why: 'Goiter + hypothyroid signs + low-iodine soil region (no iodized salt) = iodine deficiency causing thyroid enlargement and hypothyroidism. The U.S. iodized-salt program (1924) nearly eliminated this domestically, but it remains common in many parts of the world. First-line treatment: thyroid evaluation + iodized salt + possibly levothyroxine.' },
+          { id: 7, scenario: '68-year-old on omeprazole (a PPI) daily for 5 years for GERD. Recent CBC shows macrocytic anemia (high MCV); reports tingling in hands; not vegetarian, eats normal mixed diet.', correct: 'b12',
+            why: 'Long-term PPI use blocks gastric acid production — and gastric acid is required to release B12 from food protein. Even with adequate dietary B12, absorption fails. Macrocytic anemia + neuropathy + PPI = textbook PPI-induced B12 deficiency. AGA and gastroenterology guidelines recommend monitoring B12 in long-term PPI users.' },
+          { id: 8, scenario: '19-year-old male training for his first marathon. Persistent fatigue despite "iron-rich" diet. Hemoglobin is normal but ferritin (iron stores) is 12 ng/mL (very low). Not vegetarian.', correct: 'iron',
+            why: 'Endurance athletes lose iron through foot-strike hemolysis (RBCs damaged by repeated impact), GI micro-bleeding, and sweat. Ferritin can be very low BEFORE hemoglobin drops — "non-anemic iron deficiency" is real and causes fatigue + reduced performance. Ferritin <30 ng/mL is now the threshold for treatment in athletes (vs <12 in general).' },
+          { id: 9, scenario: '6-month-old, exclusively breastfed, born in November in northern New England. Mother is not taking a vitamin D supplement, and the infant has never received one. Pediatric exam notes early bowing of the legs.', correct: 'vitD',
+            why: 'Breast milk has very low vitamin D regardless of maternal intake. AAP recommends 400 IU vitamin D supplement for ALL exclusively breastfed infants from birth onward. Bowing legs = nutritional rickets, which is increasing again in the US after decades of decline. Easy prevention; sad to miss.' },
+          { id: 10, scenario: '65-year-old postmenopausal woman; recent vertebral compression fracture from a minor fall. DEXA shows osteoporosis. Reports lifelong "low dairy" diet and no calcium supplementation.', correct: 'calcium',
+            why: 'Postmenopausal women lose ~1–2% bone density per year for the first 5–10 years after menopause. A lifetime of low calcium intake compounds this. Treatment includes calcium + vitamin D, weight-bearing exercise, and often pharmacotherapy (bisphosphonates). Adolescent calcium intake (vignette #5) prevents this 50 years later.' }
+        ];
+
+        var ddIdx = d.ddIdx == null ? -1 : d.ddIdx;
+        var ddSeed = d.ddSeed || 1;
+        var ddAns = !!d.ddAns;
+        var ddPick = d.ddPick;
+        var ddScore = d.ddScore || 0;
+        var ddRounds = d.ddRounds || 0;
+        var ddStreak = d.ddStreak || 0;
+        var ddBest = d.ddBest || 0;
+        var ddShown = d.ddShown || [];
+
+        function startDd() {
+          var pool = [];
+          for (var i = 0; i < V.length; i++) if (ddShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); ddShown = []; }
+          var seedNext = ((ddSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('ddSeed', seedNext);
+          upd('ddIdx', pick);
+          upd('ddAns', false);
+          upd('ddPick', null);
+          upd('ddShown', ddShown.concat([pick]));
+        }
+        function pickDd(nutId) {
+          if (ddAns) return;
+          var v = V[ddIdx];
+          var correct = nutId === v.correct;
+          var newScore = ddScore + (correct ? 1 : 0);
+          var newStreak = correct ? (ddStreak + 1) : 0;
+          var newBest = Math.max(ddBest, newStreak);
+          upd('ddAns', true);
+          upd('ddPick', nutId);
+          upd('ddScore', newScore);
+          upd('ddRounds', ddRounds + 1);
+          upd('ddStreak', newStreak);
+          upd('ddBest', newBest);
+        }
+
+        if (ddIdx < 0) {
+          return h('div', { className: 'min-h-screen bg-slate-50' },
+            h(BackBar, { icon: '🕵️', title: 'Deficiency Detective' }),
+            h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
+              h('div', { className: 'bg-rose-50 border-2 border-rose-300 rounded-2xl p-5' },
+                h('h2', { className: 'text-lg font-black text-rose-900 mb-2' }, '10 clinical vignettes — name the missing nutrient'),
+                h('p', { className: 'text-sm text-slate-800 leading-relaxed mb-3' },
+                  'For each scenario, identify which of 6 common nutrients is most likely deficient. Coaching after each pick names what makes this nutrient more likely than the others (and what would have to be different to make a different answer right).'),
+                h('div', { className: 'p-3 rounded-lg bg-amber-50 border border-amber-300 text-xs text-slate-800 leading-relaxed' },
+                  h('strong', { className: 'text-amber-900' }, '⚠️ This is not a diagnostic tool. '),
+                  'Real deficiencies require lab tests, not vignettes. The game teaches pattern recognition for screening; treatment + diagnosis stay with a clinician.')
+              ),
+              h('div', { className: 'bg-white rounded-xl border-2 border-rose-200 p-4' },
+                h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700 mb-2' }, 'The six nutrients'),
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                  NUTRIENTS.map(function(n) {
+                    return h('div', { key: n.id, style: { padding: '8px 10px', borderRadius: 8, background: n.color + '15', border: '1px solid ' + n.color + '55' } },
+                      h('div', { className: 'flex items-center gap-2 mb-1' },
+                        h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, n.icon),
+                        h('span', { style: { color: n.color, fontWeight: 800, fontSize: 12 } }, n.label)
+                      ),
+                      h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, n.def)
+                    );
+                  })
+                )
+              ),
+              h('button', {
+                onClick: startDd,
+                className: 'w-full px-5 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
+              }, '🕵️ Start — vignette 1 of 10')
+            )
+          );
+        }
+
+        var v = V[ddIdx];
+        var pickedCorrect = ddAns && ddPick === v.correct;
+        var pct = ddRounds > 0 ? Math.round((ddScore / ddRounds) * 100) : 0;
+        var allDone = ddShown.length >= V.length && ddAns;
+        var correctNut = NUTRIENTS.filter(function(n) { return n.id === v.correct; })[0];
+        var pickedNut = ddPick ? NUTRIENTS.filter(function(n) { return n.id === ddPick; })[0] : null;
+
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '🕵️', title: 'Deficiency Detective' }),
+          h('div', { className: 'p-6 max-w-3xl mx-auto space-y-4' },
+            // Score header
+            h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-700' },
+              h('span', null, 'Vignette ', h('strong', { className: 'text-slate-900' }, ddShown.length)),
+              h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, ddScore + ' / ' + ddRounds)),
+              ddRounds > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
+              h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, ddStreak)),
+              h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, ddBest))
+            ),
+            // The vignette
+            h('section', { className: 'p-5 rounded-2xl bg-rose-50 border-2 border-rose-300' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700 mb-2' }, 'Vignette ' + ddShown.length + ' of ' + V.length),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario)
+            ),
+            // 6 nutrient picker buttons
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': 'Pick the most likely missing nutrient' },
+              NUTRIENTS.map(function(n) {
+                var picked = ddAns && ddPick === n.id;
+                var isRight = ddAns && n.id === v.correct;
+                var bg, border, color;
+                if (ddAns) {
+                  if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                  else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                  else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+                } else {
+                  bg = n.color + '12'; border = n.color + '60'; color = '#1e293b';
+                }
+                return h('button', {
+                  key: n.id, role: 'radio',
+                  'aria-checked': picked ? 'true' : 'false',
+                  'aria-label': n.label,
+                  disabled: ddAns,
+                  onClick: function() { pickDd(n.id); },
+                  style: { padding: '12px 14px', borderRadius: 12, background: bg, color: color, border: '2px solid ' + border, cursor: ddAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 70, transition: 'all 0.15s' }
+                },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, n.icon),
+                    h('span', { style: { color: ddAns ? color : n.color, fontSize: 13, fontWeight: 800 } }, n.label)
+                  ),
+                  h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: ddAns ? color : '#475569' } }, n.def)
+                );
+              })
+            ),
+            // Feedback
+            ddAns && h('section', {
+              className: 'p-4 rounded-2xl',
+              style: {
+                background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+                border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+              }
+            },
+              h('div', { className: 'text-sm font-bold mb-2', style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+                pickedCorrect
+                  ? '✅ Correct — ' + correctNut.label
+                  : '❌ The nutrient is ' + correctNut.label + (pickedNut ? ' (you picked ' + pickedNut.label + ')' : '')
+              ),
+              h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
+              allDone
+                ? h('div', { className: 'p-3 rounded-lg bg-rose-100 border border-rose-300' },
+                    h('div', { className: 'text-sm font-black text-rose-900 mb-1' }, '🏆 All 10 vignettes complete'),
+                    h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
+                      'Final: ', h('strong', null, ddScore + ' / ' + V.length + ' (' + Math.round((ddScore / V.length) * 100) + '%)'),
+                      ddScore === V.length ? ' — every deficiency correctly identified. The clinical pattern reflexes are in place.' :
+                      ddScore >= 8 ? ' — strong pattern recognition. The most-confused pair is usually B12 vs folate (both cause macrocytic anemia, but B12 has neuro signs and folate doesn\'t — and folate alone can MASK the B12 anemia while neuropathy progresses).' :
+                      ddScore >= 6 ? ' — solid baseline. Reflexes worth building: vegan = always B12 supp, menstruating teen = check ferritin, postmenopausal = calcium + DEXA, Maine winter = vit D for everyone.' :
+                      ' — these patterns take practice. The vignettes are designed to mimic the screening cues real clinicians use; re-read the rationales on misses, then retake.'
+                    ),
+                    h('button', {
+                      onClick: function() { upd('ddIdx', -1); upd('ddShown', []); upd('ddScore', 0); upd('ddRounds', 0); upd('ddStreak', 0); },
+                      className: 'mt-3 px-4 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-xs hover:bg-rose-700'
+                    }, '🔄 Restart')
+                  )
+                : h('button', {
+                    onClick: startDd,
+                    className: 'px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
+                  }, '➡️ Next vignette')
+            )
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'macroLab') return h(MacronutrientLab);
@@ -3767,6 +3981,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       if (view === 'maineReality') return h(MaineFoodReality);
       if (view === 'careerPaths') return h(CareerPathwaysNutrition);
       if (view === 'maineDay') return h(MaineDayBuilder);
+      if (view === 'deficiencyDetective') return h(DeficiencyDetective);
       return h(MainMenu);
     }
   });

@@ -3354,6 +3354,33 @@ var d = labToolData.cell;
 
             ),
 
+            // ── Topic-accent hero band (per mode) ──
+            (function() {
+              var MODE_META = {
+                observe: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)', icon: '👁️', title: 'Observe — explore the cell',         hint: 'Click any organelle to see its structure, function, and how it talks to its neighbors. Cells are factories: every organelle has a job and a delivery route.' },
+                play:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎮', title: 'Play — be the organism',           hint: 'Steer the cell yourself. Bacteria swim with flagella; protists pseudopod; humans push fluid via pumps. Movement reveals what each cell is built for.' },
+                quiz:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '🧠', title: 'Quiz — concepts in context',        hint: 'Multi-choice items on organelle function, transport, signaling, and life cycle. Each question links back to what you saw in the simulator.' }
+              };
+              var meta = MODE_META[d.mode] || MODE_META.observe;
+              return React.createElement('div', {
+                style: {
+                  margin: '12px 0',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
             // Canvas
