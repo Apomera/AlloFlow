@@ -4537,6 +4537,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       );
     }
 
+    if (sub === 'reliabilitySleuth') return _renderReliabilitySleuth(h, s, upd, addToast, backBtn);
     if (sub === 'eligibilitySort') {
       // Catalog of categories the game uses (keys back to IDEA_CATEGORIES + DD).
       // Players pick from the SAME 14-button grid no matter the vignette \u2014 forces
@@ -6102,6 +6103,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       { id: 'eligibilitySort', icon: '\uD83C\uDFAF', label: 'Eligibility Sort \u2014 interactive', desc: '12 student-profile vignettes. Pick the IDEA category from the full 14-button grid (no narrow-by-elimination). Coaching after each answer names common misclassifications (SLD vs ED, OHI vs SLD, AU vs SLI, HI vs D).' },
       { id: 'report', icon: '\uD83D\uDCC4', label: 'How to Read a Psych Report', desc: 'Section-by-section anatomy, score conversion cheat sheet, what to watch for in each section.' },
       { id: 'sem', icon: '\uD83D\uDCCF', label: 'SEM & Confidence Interval Simulator', desc: 'Interactive sliders. See why a test score is a range, not a point. The single most important concept in psychometric consumption.' },
+      { id: 'reliabilitySleuth', icon: '\uD83D\uDD75\uFE0F', label: 'Reliability Sleuth \u2014 interactive', desc: '10 vignettes. Each shows a real test, its reliability coefficient, and a use case. Decide \u2014 defensible, borderline, or insufficient. Coaching cites NASP / AERA / APA standards on reliability thresholds for high-stakes vs low-stakes decisions.' },
       { id: 'rights', icon: '\uD83D\uDD12', label: 'Parent Procedural Safeguards', desc: 'PWN, consent, IEE, records access, due process, mediation, stay-put, transition. When rights get violated and what to do.' },
       { id: 'twoe', icon: '\u2728', label: 'Twice-Exceptional (2E) Identification', desc: 'Gifted + disability. Why single-score thinking fails, masking in both directions, profile scatter, IEP writing that addresses both sides.' },
       { id: 'cases', icon: '\uD83D\uDCCB', label: 'Referral Case Vignettes', desc: 'Six realistic referral scenarios (SLD, ADHD/OHI, autism, 2E, ID borderline, ELL). Select the domains you\'d assess; AI critiques your evaluation plan.' },
@@ -6146,6 +6148,182 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // ═══════════════════════════════════════════════════════════════
   // MODULE 6: JUNK SCIENCE CAPSTONE IMPLEMENTATION
   // ═══════════════════════════════════════════════════════════════
+
+  function _renderReliabilitySleuth(h, s, upd, addToast, backBtn) {
+    var VERDICTS = [
+      { id: 'defensible',   label: 'Defensible',           color: '#16a34a', icon: '\u2705', def: 'Reliable enough for this specific use case. Common for r \u2265 0.90 on high-stakes decisions, lower thresholds for screeners.' },
+      { id: 'borderline',   label: 'Borderline',           color: '#f59e0b', icon: '\u26A0\uFE0F', def: 'The reliability is acceptable in principle, but something else (single measure, missing component, high-stakes decision) limits the defensibility.' },
+      { id: 'insufficient', label: 'Insufficient',         color: '#dc2626', icon: '\u274C', def: 'Reliability too low for the stakes, OR norms are outdated, OR reliability is unreported. Should not anchor the decision.' }
+    ];
+    var V = [
+      { id: 1, scenario: 'WISC-V Full Scale IQ has reliability r = 0.96 (manual). Used for SLD eligibility determination, alongside an achievement battery and observation.', correct: 'defensible',
+        why: 'r \u2265 0.95 is the gold standard for high-stakes cognitive measures, and SLD eligibility is high-stakes. The multi-measure context (achievement + observation) further strengthens defensibility. NASP best practice.' },
+      { id: 2, scenario: 'MBTI personality inventory has test-retest reliability r = 0.50 over a 5-week interval (Pittenger 2005). Used to inform placement in a special-education setting.', correct: 'insufficient',
+        why: 'r = 0.50 means 50% of the score variance is error, not signal. About half of MBTI takers get a different type on a 5-week retest. This level of reliability cannot anchor any educational decision \u2014 and MBTI is not a clinical instrument regardless of use case.' },
+      { id: 3, scenario: 'BASC-3 Parent Rating Scales have reliability r = 0.82. Used as ONE of several measures (also: teacher BASC, classroom observation, cognitive battery) to support an OHI eligibility determination.', correct: 'defensible',
+        why: 'Behavior rating scales typically have lower reliability than cognitive measures (r 0.80-0.90 range). When used as part of multi-source / multi-method assessment \u2014 BASC parent + teacher + observation \u2014 the cumulative reliability is much higher than any single measure. NASP supports this use.' },
+      { id: 4, scenario: 'BRIEF-2 Teacher Form has reliability r = 0.84. Used as the SOLE measure for a 504 plan determination based on executive function concerns.', correct: 'borderline',
+        why: 'BRIEF-2 reliability is in the acceptable range for behavioral measures, BUT using ANY single measure as the sole basis for a 504 (or IEP) decision is borderline regardless of reliability. Best practice: pair BRIEF-2 with classroom observation + parent report + cognitive measure (rule out other causes).' },
+      { id: 5, scenario: 'A free online "IQ test" with no reported reliability or norms. A parent uses it to decide whether to request a psychoeducational evaluation from school.', correct: 'insufficient',
+        why: 'Unreported reliability = treat as zero for any high-stakes decision. The test may be entertaining, but parents using it to gate a referral risk delay or deny a kid who needs a real eval. Schools should not use online IQ-screener results as evidence for or against eligibility \u2014 ever.' },
+      { id: 6, scenario: 'WJ-IV General Intellectual Ability has reliability r = 0.97. Used for Intellectual Disability eligibility, with concurrent Vineland-3 adaptive behavior measure (r = 0.91 composite).', correct: 'defensible',
+        why: 'Both measures are at the gold-standard reliability threshold (r \u2265 0.95 cognitive, r \u2265 0.90 adaptive), and the three-prong ID requirement (cognitive + adaptive + developmental period) is being met. This is the canonical defensible ID-eligibility battery.' },
+      { id: 7, scenario: 'Universal mental health screener with reliability r = 0.78. Used to identify students who should be flagged for tier-2 follow-up (no diagnostic decision; only triggers a closer look).', correct: 'defensible',
+        why: 'Low-stakes screening uses can defensibly use lower reliability (r 0.75-0.85 range) because the consequence is just "look more closely," not a placement decision. NASP and AERA both support lower reliability thresholds for screening decisions \u2014 the universal screener is doing what it should: surfacing kids for a closer look.' },
+      { id: 8, scenario: 'RIAS-2 Composite Intelligence Index has reliability r = 0.95. Used as the cognitive measure for SLD eligibility \u2014 but the team has NOT collected a comprehensive achievement battery.', correct: 'borderline',
+        why: 'RIAS-2 reliability is excellent. The problem is the missing achievement measure: SLD eligibility requires demonstrating a deficit in one of 8 specific academic areas. Cognitive alone cannot establish SLD regardless of how reliable it is. Borderline because the test choice is fine, but the BATTERY is incomplete.' },
+      { id: 9, scenario: 'A test normed in 1997 has reliability r = 0.92 in the original standardization sample. Used in 2024 for a high-stakes ID-eligibility determination.', correct: 'insufficient',
+        why: 'Outdated norms void otherwise-good reliability. Flynn effect alone shifts mean IQ ~3 points per decade \u2014 a 1997 test in 2024 over-estimates current performance by ~8 points. Reliability is about score consistency; norms are about score interpretation. You need both. NASP guidance: norms older than ~10-12 years should not anchor high-stakes decisions.' },
+      { id: 10, scenario: 'Curriculum-based measurement (CBM) reading probes have alternate-form reliability r = 0.85 across administrations. Used to monitor a student\'s response to tier-2 reading intervention over 8 weeks.', correct: 'defensible',
+        why: 'r = 0.85 is appropriate for CBM monitoring, where the use case is tracking change rather than making a single high-stakes call. Repeated measurement over time partially compensates for any single-point error. Best practice: 8-12 weekly probes, look at slope, not single-day score. NASP + RTI literature support this.' }
+    ];
+
+    var rsIdx = s.rsIdx == null ? -1 : s.rsIdx;
+    var rsSeed = s.rsSeed || 1;
+    var rsAns = !!s.rsAns;
+    var rsPick = s.rsPick;
+    var rsScore = s.rsScore || 0;
+    var rsRounds = s.rsRounds || 0;
+    var rsStreak = s.rsStreak || 0;
+    var rsBest = s.rsBest || 0;
+    var rsShown = s.rsShown || [];
+
+    function startRs() {
+      var pool = [];
+      for (var i = 0; i < V.length; i++) if (rsShown.indexOf(i) < 0) pool.push(i);
+      if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); rsShown = []; }
+      var seedNext = ((rsSeed * 16807 + 11) % 2147483647) || 7;
+      var pick = pool[seedNext % pool.length];
+      upd({ rsSeed: seedNext, rsIdx: pick, rsAns: false, rsPick: null, rsShown: rsShown.concat([pick]) });
+    }
+    function pickRs(verdictId) {
+      if (rsAns) return;
+      var v = V[rsIdx];
+      var correct = verdictId === v.correct;
+      var newScore = rsScore + (correct ? 1 : 0);
+      var newStreak = correct ? (rsStreak + 1) : 0;
+      var newBest = Math.max(rsBest, newStreak);
+      upd({ rsAns: true, rsPick: verdictId, rsScore: newScore, rsRounds: rsRounds + 1, rsStreak: newStreak, rsBest: newBest });
+    }
+
+    if (rsIdx < 0) {
+      return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
+        backBtn('schoolpsych', null, 'School Psych menu'),
+        h('h2', { className: 'text-2xl font-black text-sky-200' }, '\uD83D\uDD75\uFE0F Reliability Sleuth'),
+        h('p', { className: 'text-sm text-slate-200 leading-relaxed' },
+          '10 short scenarios. Each names a real test, its reliability coefficient, and how it is being used. Decide whether the use is defensible, borderline, or insufficient \u2014 then read the coaching for the rule that should have driven your call.'),
+        h('div', { className: 'p-4 rounded-xl bg-slate-800/60 border border-sky-500/30' },
+          h('div', { className: 'text-sm font-bold text-sky-200 mb-3' }, 'The three verdicts'),
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+            VERDICTS.map(function(v, i) {
+              return h('div', { key: i,
+                style: { background: v.color + '18', border: '1px solid ' + v.color + '60', borderRadius: 8, padding: '10px 12px' }
+              },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, v.icon),
+                  h('span', { style: { color: v.color, fontWeight: 800, fontSize: 13 } }, v.label)
+                ),
+                h('div', { className: 'text-xs text-slate-100 leading-relaxed' }, v.def)
+              );
+            })
+          )
+        ),
+        h('div', { className: 'p-3 rounded-lg bg-amber-900/30 border border-amber-500/40 text-xs text-slate-100 leading-relaxed' },
+          h('strong', { className: 'text-amber-300' }, 'Reminder \u2014 reliability \u2260 validity. '),
+          'A test can be highly reliable (consistent) but measure the wrong construct (low validity). And a test with old norms or unreported reliability voids both. This game tests reliability + use-case fit; validity belongs to a different sleuth.'
+        ),
+        h('button', {
+          onClick: startRs,
+          className: 'w-full py-3 rounded-xl bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+        }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 10')
+      );
+    }
+
+    var v = V[rsIdx];
+    var pickedCorrect = rsAns && rsPick === v.correct;
+    var pct = rsRounds > 0 ? Math.round((rsScore / rsRounds) * 100) : 0;
+    var allDone = rsShown.length >= V.length && rsAns;
+    var correctVerdict = VERDICTS.filter(function(x) { return x.id === v.correct; })[0];
+    var pickedVerdict = rsPick ? VERDICTS.filter(function(x) { return x.id === rsPick; })[0] : null;
+
+    return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
+      backBtn('schoolpsych', null, 'School Psych menu'),
+      h('h2', { className: 'text-2xl font-black text-sky-200' }, '\uD83D\uDD75\uFE0F Reliability Sleuth'),
+      // Score header
+      h('div', { className: 'flex flex-wrap gap-3 items-center text-xs' },
+        h('span', { className: 'text-slate-300' }, 'Vignette ', h('strong', { className: 'text-white' }, rsShown.length)),
+        h('span', { className: 'text-slate-300' }, 'Score ', h('strong', { className: 'text-emerald-300' }, rsScore + ' / ' + rsRounds)),
+        rsRounds > 0 && h('span', { className: 'text-slate-300' }, 'Accuracy ', h('strong', { className: 'text-cyan-300' }, pct + '%')),
+        h('span', { className: 'text-slate-300' }, 'Streak ', h('strong', { className: 'text-amber-300' }, rsStreak)),
+        h('span', { className: 'text-slate-300' }, 'Best ', h('strong', { className: 'text-yellow-300' }, rsBest))
+      ),
+      // Vignette
+      h('section', { className: 'p-5 rounded-xl bg-slate-800/60 border-2 border-sky-500/40' },
+        h('div', { className: 'text-xs font-bold text-sky-300 uppercase tracking-widest mb-2' }, 'Vignette ' + rsShown.length + ' of ' + V.length),
+        h('p', { className: 'text-sm text-slate-100 leading-relaxed' }, v.scenario)
+      ),
+      // 3 verdict picker buttons
+      h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2', role: 'radiogroup', 'aria-label': 'Pick the verdict' },
+        VERDICTS.map(function(vi) {
+          var picked = rsAns && rsPick === vi.id;
+          var isRight = rsAns && vi.id === v.correct;
+          var bg, border, color;
+          if (rsAns) {
+            if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
+            else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
+            else { bg = 'rgba(30,41,59,0.6)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+          } else {
+            bg = vi.color + '15'; border = vi.color + '60'; color = '#e2e8f0';
+          }
+          return h('button', {
+            key: vi.id, role: 'radio',
+            'aria-checked': picked ? 'true' : 'false',
+            'aria-label': vi.label,
+            disabled: rsAns,
+            onClick: function() { pickRs(vi.id); },
+            style: { padding: '12px 14px', borderRadius: 10, background: bg, color: color, border: '2px solid ' + border, cursor: rsAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 70, transition: 'all 0.15s' }
+          },
+            h('div', { className: 'flex items-center gap-2 mb-1' },
+              h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, vi.icon),
+              h('span', { style: { color: rsAns ? color : vi.color, fontSize: 13, fontWeight: 800 } }, vi.label)
+            ),
+            h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: rsAns ? color : '#cbd5e1' } }, vi.def)
+          );
+        })
+      ),
+      // Feedback
+      rsAns && h('section', {
+        className: 'p-4 rounded-xl',
+        style: { background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.08)', border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)') }
+      },
+        h('div', { className: 'text-sm font-bold mb-2', style: { color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+          pickedCorrect
+            ? '\u2705 Correct \u2014 ' + correctVerdict.label
+            : '\u274C The right verdict is ' + correctVerdict.label + (pickedVerdict ? ' (you picked ' + pickedVerdict.label + ')' : '')
+        ),
+        h('p', { className: 'text-xs text-slate-100 leading-relaxed mb-2' }, v.why),
+        allDone
+          ? h('div', { className: 'p-3 rounded-lg bg-sky-900/40 border border-sky-500/40 mt-2' },
+              h('div', { className: 'text-sm font-black text-sky-200 mb-1' }, '\uD83C\uDFC6 All 10 vignettes complete'),
+              h('div', { className: 'text-xs text-slate-100 leading-relaxed' },
+                'Final: ', h('strong', { className: 'text-white' }, rsScore + ' / ' + V.length + ' (' + Math.round((rsScore / V.length) * 100) + '%)'),
+                rsScore === V.length ? ' \u2014 you can defend a battery in a due-process hearing.' :
+                rsScore >= 8 ? ' \u2014 strong reliability reasoning. The most-confused pair is usually defensible vs borderline (good test + missing component, or single measure for high-stakes \u2014 both can pass at first glance).' :
+                rsScore >= 6 ? ' \u2014 solid baseline. The four reflexes worth building: high-stakes needs r \u2265 0.90, screening can use r \u2265 0.75, old norms void everything, unreported reliability = treat as zero.' :
+                ' \u2014 these distinctions matter at IEP team meetings and parent re-eval requests. Re-read the rationales on misses, then retake.'
+              ),
+              h('button', {
+                onClick: function() { upd({ rsIdx: -1, rsShown: [], rsScore: 0, rsRounds: 0, rsStreak: 0 }); },
+                className: 'mt-2 px-4 py-1.5 rounded-lg bg-sky-600 text-white font-bold text-xs hover:bg-sky-500'
+              }, '\uD83D\uDD04 Restart')
+            )
+          : h('button', {
+              onClick: startRs,
+              className: 'mt-1 px-4 py-2 rounded-lg bg-sky-600 text-white font-bold text-sm hover:bg-sky-500 focus:outline-none focus:ring-2 ring-sky-300'
+            }, '\u27A1\uFE0F Next vignette')
+      )
+    );
+  }
 
   function _RENDER_JUNK(h, s, upd, _callGemini, _addToast, backBtn) {
     var order = s.junkOrder || JUNK_SCENARIOS.map(function(_, i) { return i; });

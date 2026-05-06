@@ -1283,6 +1283,41 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ── Topic-accent hero band per sub-tool ──
+        (function() {
+          var TAB_META = {
+            sir:           { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'SIR \u2014 the foundational epidemic model',  hint: 'Three compartments: Susceptible \u2192 Infected \u2192 Recovered. The simplest model that captures real epidemic dynamics. Peaks when S = 1/R\u2080.' },
+            seir:          { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDA0', title: 'SEIR \u2014 add the latent (exposed) phase', hint: 'Diseases with incubation (COVID, measles, mumps) need an Exposed compartment. Latent period delays the epidemic peak and changes intervention timing.' },
+            r0explorer:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDF21\uFE0F', title: 'R\u2080 \u2014 basic reproduction number', hint: 'Average secondary infections per primary case in a fully susceptible population. R\u2080 > 1 = outbreak; R\u2080 < 1 = dies out. Measles ~15, flu ~1.3, COVID ~2-3.' },
+            vaccination:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDC89', title: 'Vaccination + herd immunity',          hint: 'Herd-immunity threshold = 1 - 1/R\u2080. Measles needs ~94% coverage; flu only ~25%. The math is what makes vaccination a public-health superlever.' },
+            interventions: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDE37', title: 'Non-pharmaceutical interventions',     hint: 'Masks, distancing, school closures, contact tracing \u2014 each lowers R effective. Stack them: 50% reduction \u00d7 50% \u2192 75% total transmission cut.' },
+            outbreakmap:   { accent: '#ef4444', soft: 'rgba(239,68,68,0.10)',  icon: '\uD83D\uDDFA\uFE0F', title: 'Outbreak map \u2014 spatial spread', hint: 'Disease moves through networks (households, schools, transit, workplaces). Travel networks dominate at country scale; close-contact at household scale.' },
+            contacttrace:  { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83D\uDD17', title: 'Contact tracing',                     hint: 'Identifies and isolates contacts of confirmed cases before they spread further. Most effective early when case count is low; breaks down when contacts > tracers.' },
+            history:       { accent: '#8b5cf6', soft: 'rgba(139,92,246,0.10)', icon: '\uD83D\uDCDC', title: 'Pandemic history',                    hint: '1918 flu, 2003 SARS, 2009 H1N1, 2014 Ebola, 2019 COVID. Each shaped modern public health \u2014 and surfaced new gaps to fix before the next.' },
+            scenarios:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDFAD', title: 'Scenario walk-through',               hint: 'Step through historical and hypothetical outbreaks. Practice intervention sequencing under uncertainty \u2014 the actual job of public health.' },
+            challenge:     { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFAF', title: 'Daily challenge',                     hint: 'A new outbreak puzzle every session: pick interventions, optimize timing, minimize deaths. Streak counter tracks daily wins.' },
+            battle:        { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u2694\uFE0F',  title: 'Battle mode \u2014 head-to-head',     hint: 'Two players race to contain identical outbreaks with limited resources. Tests intervention literacy under speed pressure.' },
+            learn:         { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: 'Reference + glossary',               hint: 'R\u2080, R-effective, attack rate, case fatality rate, generation interval \u2014 the glossary you keep coming back to as you read epi papers.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.sir;
+          return h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ── Disease presets (shared across SIR/SEIR/R0/Vaccination) ──
         (tab === 'sir' || tab === 'seir' || tab === 'r0explorer' || tab === 'vaccination' || tab === 'interventions') &&
         h('div', { className: glassCard },
