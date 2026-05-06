@@ -1452,7 +1452,209 @@ window.StemLab = window.StemLab || {
                 );
               })
             )
-          )
+          ),
+
+          // \u2550\u2550\u2550 MUTATION EFFECT SLEUTH (net-new mini-game) \u2550\u2550\u2550
+          // 10 mutation vignettes. Player picks the effect type from 5 options
+          // (silent / missense / nonsense / frameshift / in-frame indel). Tests the
+          // AP Bio canonical concept that mutation TYPE matters more than mutation
+          // existence \u2014 silent mutations don't change protein, frameshifts are
+          // usually catastrophic, missense varies by which AA changes.
+          (function() {
+            var MS_TYPES = [
+              { id: 'silent',     label: 'Silent',           color: '#22c55e', icon: '\uD83E\uDD2D', def: 'Codon changes but encodes the same amino acid (wobble, mostly 3rd position). No protein change.' },
+              { id: 'missense',   label: 'Missense',         color: '#f59e0b', icon: '\uD83D\uDD04', def: 'Codon changes to a different amino acid. Effect ranges from harmless (conservative) to catastrophic (e.g., sickle cell).' },
+              { id: 'nonsense',   label: 'Nonsense',         color: '#dc2626', icon: '\uD83D\uDED1', def: 'Sense codon changes to STOP. Protein is truncated \u2014 usually nonfunctional.' },
+              { id: 'frameshift', label: 'Frameshift',       color: '#7c3aed', icon: '\u21AA\uFE0F',  def: 'Insertion or deletion NOT divisible by 3. Reading frame shifts; downstream protein is garbage. Usually catastrophic.' },
+              { id: 'inframe',    label: 'In-frame indel',   color: '#0ea5e9', icon: '\u2795', def: 'Insertion or deletion that IS divisible by 3. Adds or removes whole amino acids; rest of protein is unchanged.' }
+            ];
+            var MS_VIGNETTES = [
+              { id: 1, before: 'ATG GCC TTC TAA',  after: 'ATG GCC TTT TAA',          change: 'TTC \u2192 TTT (3rd-position C\u2192T)',
+                aaBefore: 'Met-Ala-Phe-stop', aaAfter: 'Met-Ala-Phe-stop', correct: 'silent',
+                why: 'Both TTC and TTT encode phenylalanine \u2014 the 3rd-position change is wobble and produces no protein change. Common at the 3rd codon position because of the genetic code\'s redundancy there.' },
+              { id: 2, before: 'ATG GAG GTG TAA', after: 'ATG GTG GTG TAA',           change: 'GAG \u2192 GTG (2nd-position A\u2192T)',
+                aaBefore: 'Met-Glu-Val-stop', aaAfter: 'Met-Val-Val-stop', correct: 'missense',
+                why: 'Glutamate \u2192 Valine. This is the actual sickle-cell hemoglobin mutation (HbS). Single AA swap radically changes hemoglobin folding under low O\u2082. Missense effect depends entirely on which AA changes to which.' },
+              { id: 3, before: 'ATG CAG GCC TAA', after: 'ATG TAG GCC TAA',           change: 'CAG \u2192 TAG (1st-position C\u2192T)',
+                aaBefore: 'Met-Gln-Ala-stop', aaAfter: 'Met-STOP', correct: 'nonsense',
+                why: 'Glutamine \u2192 STOP. Protein is truncated immediately after Met. CAG\u2192TAG (and CGA\u2192TGA, TGG\u2192TGA, TGG\u2192TAG) are the most common nonsense mutations \u2014 single base flip from a sense codon to a stop.' },
+              { id: 4, before: 'ATG GCC TTC GGG TAA', after: 'ATG GCC GTT CGG GTA A',  change: 'Single G inserted between codons 2 and 3',
+                aaBefore: 'Met-Ala-Phe-Gly-stop', aaAfter: 'Met-Ala-Val-Arg-Val-...', correct: 'frameshift',
+                why: 'Inserting one base shifts the reading frame for everything downstream. Every codon past the insertion is a different triplet \u2014 usually creating a premature stop within ~20 codons. Frameshifts almost always destroy protein function.' },
+              { id: 5, before: 'ATG GCC TTC TAA', after: 'ATG GCC GGG TTC TAA',       change: 'GGG (3 bases) inserted between codons 2 and 3',
+                aaBefore: 'Met-Ala-Phe-stop', aaAfter: 'Met-Ala-Gly-Phe-stop', correct: 'inframe',
+                why: 'Inserting 3 bases keeps the reading frame intact. One extra glycine added between Ala and Phe. The rest of the protein is unchanged \u2014 effect depends on whether the new AA disrupts folding. Often less severe than frameshift.' },
+              { id: 6, before: 'ATG CCG GCC TAA', after: 'ATG CCA GCC TAA',           change: 'CCG \u2192 CCA (3rd-position G\u2192A)',
+                aaBefore: 'Met-Pro-Ala-stop', aaAfter: 'Met-Pro-Ala-stop', correct: 'silent',
+                why: 'Both CCG and CCA encode proline. All four CC_ codons code for proline \u2014 the 3rd position is fully wobble for proline. Silent mutations are common in coding sequences and one reason synonymous-substitution rates are used in molecular evolution.' },
+              { id: 7, before: 'ATG TGG GCC TAA', after: 'ATG TGA GCC TAA',           change: 'TGG \u2192 TGA (3rd-position G\u2192A)',
+                aaBefore: 'Met-Trp-Ala-stop', aaAfter: 'Met-STOP', correct: 'nonsense',
+                why: 'Tryptophan \u2192 STOP. TGG is the only Trp codon, and a single 3rd-position G\u2192A change makes it a stop. This is one reason Trp residues are often essential \u2014 they are fragile in the genetic code.' },
+              { id: 8, before: 'ATG GCC TTC GGG TAA', after: 'ATG GCC TTC GGA',       change: 'Last base of stop codon deleted',
+                aaBefore: 'Met-Ala-Phe-Gly-stop', aaAfter: 'Met-Ala-Phe-Gly-...', correct: 'frameshift',
+                why: 'Deleting one base causes a frameshift. The stop codon is destroyed; ribosome reads through into UTR until it hits the next in-frame stop somewhere downstream. The extended protein is usually misfolded.' },
+              { id: 9, before: 'ATG TTC GGG GCC TAA', after: 'ATG GCC TAA',           change: 'TTC GGG (6 bases, 2 codons) deleted in-frame',
+                aaBefore: 'Met-Phe-Gly-Ala-stop', aaAfter: 'Met-Ala-stop', correct: 'inframe',
+                why: 'Deleting 6 bases (2 codons) keeps the reading frame intact. Phe and Gly are removed; Ala remains. Classic example: cystic fibrosis \u0394F508 is a 3-base deletion that removes one phenylalanine \u2014 in-frame, but breaks CFTR folding.' },
+              { id: 10, before: 'ATG AAA GCC TAA', after: 'ATG AGA GCC TAA',          change: 'AAA \u2192 AGA (2nd-position A\u2192G)',
+                aaBefore: 'Met-Lys-Ala-stop', aaAfter: 'Met-Arg-Ala-stop', correct: 'missense',
+                why: 'Lysine \u2192 Arginine. Both are basic, positively-charged AAs \u2014 chemically very similar. This is a CONSERVATIVE missense. Often has minimal protein-function impact, unlike radical missense (e.g., Glu\u2192Val in #2).' }
+            ];
+            var msIdx = d.msIdx == null ? -1 : d.msIdx;
+            var msSeed = d.msSeed || 1;
+            var msAnswered = !!d.msAnswered;
+            var msPick = d.msPick;
+            var msScore = d.msScore || 0;
+            var msRounds = d.msRounds || 0;
+            var msStreak = d.msStreak || 0;
+            var msBest = d.msBest || 0;
+            var msShown = d.msShown || [];
+            var msOpen = !!d.msOpen;
+            function startMs() {
+              var pool = [];
+              for (var i = 0; i < MS_VIGNETTES.length; i++) if (msShown.indexOf(i) < 0) pool.push(i);
+              if (pool.length === 0) { pool = []; for (var j = 0; j < MS_VIGNETTES.length; j++) pool.push(j); msShown = []; }
+              var seedNext = ((msSeed * 16807 + 11) % 2147483647) || 7;
+              var pick = pool[seedNext % pool.length];
+              upd('msSeed', seedNext);
+              upd('msIdx', pick);
+              upd('msAnswered', false);
+              upd('msPick', null);
+              upd('msShown', msShown.concat([pick]));
+            }
+            function pickMs(typeId) {
+              if (msAnswered) return;
+              var v = MS_VIGNETTES[msIdx];
+              var correct = typeId === v.correct;
+              var newScore = msScore + (correct ? 1 : 0);
+              var newStreak = correct ? (msStreak + 1) : 0;
+              var newBest = Math.max(msBest, newStreak);
+              upd('msAnswered', true);
+              upd('msPick', typeId);
+              upd('msScore', newScore);
+              upd('msRounds', msRounds + 1);
+              upd('msStreak', newStreak);
+              upd('msBest', newBest);
+            }
+            return h("div", { className: "bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl border-2 border-violet-300 p-4" },
+              h("div", { className: "flex items-center justify-between mb-2 flex-wrap gap-2" },
+                h("div", { className: "flex items-center gap-2" },
+                  h("span", { style: { fontSize: 22 }, "aria-hidden": "true" }, '\uD83D\uDD75\uFE0F'),
+                  h("div", null,
+                    h("div", { className: "text-sm font-black text-violet-800" }, 'Mutation Effect Sleuth'),
+                    h("div", { className: "text-[11px] text-slate-600 italic" }, 'Predict the effect type from 5 options.')
+                  )
+                ),
+                h("button", {
+                  onClick: function() { upd('msOpen', !msOpen); },
+                  className: "px-3 py-1 rounded-lg bg-violet-200 text-violet-800 text-[11px] font-bold hover:bg-violet-300"
+                }, msOpen ? 'Hide \u25B4' : 'Play \u2192')
+              ),
+              msOpen && (msIdx < 0
+                ? h("div", { className: "text-center py-3" },
+                    h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-3" },
+                      '10 mutation vignettes. Each shows a short before/after DNA sequence with the change highlighted. Pick the effect type \u2014 silent, missense, nonsense, frameshift, or in-frame indel. Coaching after each pick names what makes this effect more likely than the others.'),
+                    h("button", {
+                      onClick: startMs,
+                      'aria-label': 'Start Mutation Effect Sleuth',
+                      className: "px-4 py-2 rounded-lg bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-500"
+                    }, '\uD83D\uDD75\uFE0F Start \u2014 vignette 1 of 10')
+                  )
+                : (function() {
+                    var v = MS_VIGNETTES[msIdx];
+                    var pickedCorrect = msAnswered && msPick === v.correct;
+                    var pct = msRounds > 0 ? Math.round((msScore / msRounds) * 100) : 0;
+                    var allDone = msShown.length >= MS_VIGNETTES.length && msAnswered;
+                    return h("div", null,
+                      h("div", { className: "flex items-center flex-wrap gap-3 mb-3 text-[11px] text-slate-600" },
+                        h("span", null, 'Vignette ', h('strong', { className: "text-slate-800" }, msShown.length)),
+                        h("span", null, 'Score ', h('strong', { className: "text-emerald-700" }, msScore + ' / ' + msRounds)),
+                        msRounds > 0 && h("span", null, 'Accuracy ', h('strong', { className: "text-cyan-700" }, pct + '%')),
+                        h("span", null, 'Streak ', h('strong', { className: "text-amber-700" }, msStreak)),
+                        h("span", null, 'Best ', h('strong', { className: "text-fuchsia-700" }, msBest))
+                      ),
+                      h("div", { className: "bg-white rounded-lg p-3 border border-violet-200 mb-2" },
+                        h("div", { className: "text-[10px] font-bold text-violet-700 uppercase tracking-wider mb-1" }, 'Vignette ' + msShown.length + ' of ' + MS_VIGNETTES.length),
+                        h("div", { className: "font-mono text-[12px] text-slate-700 mb-1" },
+                          h('span', { className: "text-slate-500" }, 'Before:  '),
+                          h('span', { className: "text-emerald-700 font-bold" }, v.before)
+                        ),
+                        h("div", { className: "font-mono text-[12px] text-slate-700 mb-1" },
+                          h('span', { className: "text-slate-500" }, 'After:   '),
+                          h('span', { className: "text-rose-700 font-bold" }, v.after)
+                        ),
+                        h("div", { className: "text-[11px] text-slate-700 italic mt-1" }, 'Change: ' + v.change),
+                        msAnswered && h("div", { className: "mt-2 pt-2 border-t border-violet-100 text-[11px] text-slate-700 font-mono" },
+                          h('div', null, h('span', { className: 'text-slate-500' }, 'AA before: '), v.aaBefore),
+                          h('div', null, h('span', { className: 'text-slate-500' }, 'AA after:  '), v.aaAfter)
+                        )
+                      ),
+                      h("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2", role: 'radiogroup', 'aria-label': 'Pick the mutation effect type' },
+                        MS_TYPES.map(function(t) {
+                          var picked = msAnswered && msPick === t.id;
+                          var isRight = msAnswered && t.id === v.correct;
+                          var bg, border, color;
+                          if (msAnswered) {
+                            if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                            else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                            else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+                          } else {
+                            bg = t.color + '15'; border = t.color + '60'; color = '#1e293b';
+                          }
+                          return h('button', {
+                            key: t.id, role: 'radio',
+                            'aria-checked': picked ? 'true' : 'false',
+                            'aria-label': t.label,
+                            disabled: msAnswered,
+                            onClick: function() { pickMs(t.id); },
+                            style: { padding: '10px 10px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: msAnswered ? 'default' : 'pointer', textAlign: 'left', fontSize: 11, fontWeight: 700, transition: 'all 0.15s', minHeight: 64 }
+                          },
+                            h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                              h('span', { style: { fontSize: 14 }, 'aria-hidden': 'true' }, t.icon),
+                              h('span', { style: { color: msAnswered ? color : t.color, fontSize: 12, fontWeight: 800 } }, t.label)
+                            ),
+                            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: msAnswered ? color : '#475569' } }, t.def)
+                          );
+                        })
+                      ),
+                      msAnswered && h("div", {
+                        className: "mt-3 p-3 rounded-lg",
+                        style: {
+                          background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+                          border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+                        }
+                      },
+                        h("div", { className: "text-[12px] font-bold mb-1", style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+                          pickedCorrect
+                            ? '\u2705 Correct \u2014 ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label
+                            : '\u274C The effect is ' + (MS_TYPES.filter(function(x) { return x.id === v.correct; })[0]).label + (msPick ? ' (you picked ' + (MS_TYPES.filter(function(x) { return x.id === msPick; })[0]).label + ')' : '')
+                        ),
+                        h("p", { className: "text-[11px] text-slate-700 leading-relaxed mb-2" }, v.why),
+                        allDone
+                          ? h("div", { className: "p-2 rounded bg-violet-100 border border-violet-300" },
+                              h("div", { className: "text-[12px] font-bold text-violet-800 mb-1" }, '\uD83C\uDFC6 All 10 vignettes complete'),
+                              h("div", { className: "text-[11px] text-slate-700 leading-relaxed" },
+                                'Final: ', h('strong', null, msScore + ' / ' + MS_VIGNETTES.length + ' (' + Math.round((msScore / MS_VIGNETTES.length) * 100) + '%)'),
+                                msScore === MS_VIGNETTES.length ? ' \u2014 every effect type correctly identified. Ready for AP Bio FRQ work.' :
+                                msScore >= 8 ? ' \u2014 strong codon-effect reasoning. The most-confused pair is usually missense vs silent (3rd-position changes can go either way) and frameshift vs in-frame indel (count the bases mod 3).' :
+                                msScore >= 6 ? ' \u2014 solid baseline. The mod-3 rule for indels and the wobble-rule for 3rd position are the two reflexes to build.' :
+                                ' \u2014 these distinctions take practice. Re-read the codon table + the rationales on misses, then retake.'
+                              ),
+                              h("button", {
+                                onClick: function() { upd('msIdx', -1); upd('msShown', []); upd('msScore', 0); upd('msRounds', 0); upd('msStreak', 0); },
+                                className: "mt-2 px-3 py-1.5 rounded bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-500"
+                              }, '\uD83D\uDD04 Restart')
+                            )
+                          : h("button", {
+                              onClick: startMs,
+                              className: "px-3 py-1.5 rounded bg-violet-600 text-white text-[11px] font-bold hover:bg-violet-500"
+                            }, '\u27A1\uFE0F Next vignette')
+                      )
+                    );
+                  })()
+              )
+            );
+          })()
         ),
 
         // ═══════════════════════════════════════════
