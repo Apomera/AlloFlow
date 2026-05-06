@@ -1654,31 +1654,65 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ]
             }
          `;
-         const result = await callGemini(prompt, true);
-         try {
-             content = JSON.parse(cleanJson(result));
-             metaInfo = `Standards: ${standardsPromptString}`;
-         } catch (parseErr) {
-             warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
+         // ---- Standards alignment (LLM): only if standards are provided -----
+         if (targetStandards.length > 0) {
+             const result = await callGemini(prompt, true);
              try {
-                 await new Promise(r => setTimeout(r, 750));
-                 const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
-                 const retryResult = await callGemini(retryPrompt, true);
-                 content = JSON.parse(cleanJson(retryResult));
+                 content = JSON.parse(cleanJson(result));
                  metaInfo = `Standards: ${standardsPromptString}`;
-             } catch (retryErr) {
-                 warnLog("Alignment Report Parse Error (attempt 2):", retryErr);
-                 throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+             } catch (parseErr) {
+                 warnLog("Alignment Report Parse Error (attempt 1):", parseErr);
+                 try {
+                     await new Promise(r => setTimeout(r, 750));
+                     const retryPrompt = `${prompt}\n\nCRITICAL: Your previous response failed JSON.parse. Return ONLY a single valid JSON object matching the structure above. No prose, no markdown fences, no trailing commas.`;
+                     const retryResult = await callGemini(retryPrompt, true);
+                     content = JSON.parse(cleanJson(retryResult));
+                     metaInfo = `Standards: ${standardsPromptString}`;
+                 } catch (retryErr) {
+                     warnLog("Alignment Report Parse Error (attempt 2):", retryErr);
+                     throw new Error("Failed to parse Alignment Report JSON. The AI response was not valid.");
+                 }
              }
+         } else {
+             // No standards provided: skip the alignment LLM call but still
+             // produce a content object so the comprehensive dimensions can
+             // attach. The render handles empty reports[] gracefully.
+             content = { reports: [] };
+             metaInfo = `Comprehensive audit (no target standards)`;
          }
-         // ---- Plan O Step 1: Vocabulary fit (deterministic) ------------------
-         // Compute a Tier 1/2/3 vocabulary classification across all source text +
-         // glossary entries, compare to grade-level expectations (Beck/McKeown
-         // norms), and surface as a new "comprehensive" section on the report.
+
+         // ---- Plan O Step 1: Vocabulary fit (deterministic + LLM review) ----
+         // Deterministic Tier 1/2/3 classification across all source text +
+         // glossary entries, then a focused Gemini call reviews the
+         // classifications and writes contextual recommendations. The LLM's
+         // role is to CATCH MISCLASSIFICATIONS (the heuristic flags
+         // "tomorrow" as Tier 2; LLM corrects to Tier 1) and to write
+         // grade-and-topic-specific suggestions.
          try {
              const vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
              content.comprehensive = content.comprehensive || {};
              content.comprehensive.vocabulary = vocabFit;
+
+             // Optional LLM review pass. Failures don't block the audit;
+             // deterministic results still ship if the LLM call errors.
+             try {
+                 const contextSnippet = (comprehensiveContext || '').slice(0, 4000);
+                 const vocabReviewPrompt = `You are a literacy coach reviewing a heuristic vocabulary classification.\n\nThe system classified words from a lesson as:\n- Tier 1 (everyday): ${vocabFit.tier1Count} unique words\n- Tier 2 (academic, cross-disciplinary): ${vocabFit.tier2Count} unique words. Examples flagged by the heuristic: ${(vocabFit.tier2Examples || []).join(', ') || '(none)'}\n- Tier 3 (domain-specific): ${vocabFit.tier3Count} unique words. Examples flagged: ${(vocabFit.tier3Examples || []).join(', ') || '(none)'}\n\nGrade band: ${vocabFit.expected.gradeBand}\nExpected per Beck/McKeown norms: ~${vocabFit.expected.tier2} Tier 2 + ~${vocabFit.expected.tier3} Tier 3 unique words.\n\nSource text excerpt (first 4000 chars):\n"""\n${contextSnippet}\n"""\n\nReview the heuristic classifications and provide:\n1. "corrections": array of words from the Tier 2 examples that the heuristic got WRONG (i.e., they're really Tier 1 everyday words). Common false positives to watch for: long-but-common words like "tomorrow", "remember", "different", "without", "morning".\n2. "missedTier2": array of 2-4 Tier 2 academic words that ARE in the source text but the heuristic likely missed (e.g., shorter words like "claim", "reveal", "trace", "frame" that appear academically).\n3. "recommendations": array of 2-3 specific Tier 2 academic words to ADD to this lesson, contextually appropriate to the topic and grade band. Each recommendation must be one to three words.\n4. "narrative": ONE paragraph (2-3 sentences) summarizing whether the lesson's vocabulary load is appropriate for the grade band, and what the most important next move is.\n\nReturn ONLY a single valid JSON object with exactly these four fields. No prose outside the JSON, no markdown fences.`;
+                 const vocabReviewResult = await callGemini(vocabReviewPrompt, true);
+                 try {
+                     const review = JSON.parse(cleanJson(vocabReviewResult));
+                     content.comprehensive.vocabulary.llmReview = {
+                         corrections: Array.isArray(review.corrections) ? review.corrections.slice(0, 12) : [],
+                         missedTier2: Array.isArray(review.missedTier2) ? review.missedTier2.slice(0, 8) : [],
+                         recommendations: Array.isArray(review.recommendations) ? review.recommendations.slice(0, 6) : [],
+                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     };
+                 } catch (parseErr) {
+                     warnLog('[Alignment] Vocab LLM review parse failed:', parseErr);
+                 }
+             } catch (llmErr) {
+                 warnLog('[Alignment] Vocab LLM review call failed:', llmErr);
+             }
          } catch (vocabErr) {
              warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr);
          }

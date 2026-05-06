@@ -97,10 +97,43 @@
           })
         )
       ),
-      v.recommendations && v.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-2' },
-        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Recommendations:'),
+      v.recommendations && v.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Heuristic recommendations:'),
         React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
           v.recommendations.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      // LLM review pairing (Plan O Step 1 enhancement)
+      v.llmReview && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🤖'), ' Literacy-coach review (AI)'),
+        v.llmReview.narrative && React.createElement('p', { className: 'text-sm text-indigo-900 mb-2' }, v.llmReview.narrative),
+        v.llmReview.corrections && v.llmReview.corrections.length > 0 && React.createElement('div', { className: 'mb-2' },
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' },
+            'Likely misclassified (heuristic flagged Tier 2 but really Tier 1):'),
+          React.createElement('div', { className: 'flex flex-wrap gap-1' },
+            v.llmReview.corrections.map(function (w, i) {
+              return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-orange-100 text-orange-900 rounded line-through' }, w);
+            })
+          )
+        ),
+        v.llmReview.missedTier2 && v.llmReview.missedTier2.length > 0 && React.createElement('div', { className: 'mb-2' },
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' },
+            'Tier 2 words present but missed by the heuristic:'),
+          React.createElement('div', { className: 'flex flex-wrap gap-1' },
+            v.llmReview.missedTier2.map(function (w, i) {
+              return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-blue-100 text-blue-900 rounded' }, w);
+            })
+          )
+        ),
+        v.llmReview.recommendations && v.llmReview.recommendations.length > 0 && React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' },
+            'Suggested Tier 2 words to add for this topic + grade:'),
+          React.createElement('div', { className: 'flex flex-wrap gap-1' },
+            v.llmReview.recommendations.map(function (w, i) {
+              return React.createElement('span', { key: i, className: 'text-xs px-2 py-0.5 bg-emerald-100 text-emerald-900 rounded font-semibold' }, '+ ' + w);
+            })
+          )
         )
       ),
       React.createElement('div', { className: 'text-[11px] text-slate-500 italic' }, v.notes || '')
