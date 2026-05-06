@@ -2543,6 +2543,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
             modules: [
               { id: 'lessonPlan', icon: '🎯', label: 'Lesson plan builder', desc: 'Topic + Bloom\'s level + grade band → matched verbs, activities, assessments.' },
               { id: 'strategyPicker', icon: '💡', label: 'Strategy picker', desc: 'Subject + time + assessment + prior knowledge → evidence-backed strategy recommendations.' },
+              { id: 'bloomMatch', icon: '🕵️', label: 'Bloom Match — interactive', desc: '10 task descriptions. Pick the Bloom\'s taxonomy level each one targets. Coaching cites the verb-level mapping (revised 2001 Anderson + Krathwohl) and what makes Apply vs Analyze the most-confused pair.' },
               { id: 'lab', icon: '🧪', label: 'Hands-on lab simulator', desc: '6 graded "advise a struggling student" cases. Letter grade + per-step feedback.' }
             ]
           },
@@ -4367,6 +4368,208 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
       }
 
       // ─────────────────────────────────────────
+      // BLOOM MATCH (net-new mini-game)
+      // 10 task descriptions; player picks the Bloom's taxonomy level each
+      // one targets. Tests the canonical teacher-training reflex of recognizing
+      // cognitive demand from task wording alone — verb selection is the
+      // primary discriminator (revised 2001 Anderson + Krathwohl).
+      // ─────────────────────────────────────────
+      function renderBloomMatch() {
+        var LEVELS = [
+          { id: 'remember',   label: 'Remember',    color: '#ef4444', icon: '📝',
+            verbs: 'list, name, define, identify, recall, recognize, label, repeat',
+            def: 'Recall facts and basic concepts. Lowest cognitive demand.' },
+          { id: 'understand', label: 'Understand',  color: '#f59e0b', icon: '💡',
+            verbs: 'explain, describe, summarize, paraphrase, classify, interpret, give example',
+            def: 'Translate, interpret, explain. Demonstrate comprehension in your own words.' },
+          { id: 'apply',      label: 'Apply',       color: '#16a34a', icon: '🔧',
+            verbs: 'use, solve, calculate, demonstrate, implement, execute, predict outcome',
+            def: 'Use procedures or knowledge in a NEW situation. Most-confused with Analyze.' },
+          { id: 'analyze',    label: 'Analyze',     color: '#0ea5e9', icon: '🔍',
+            verbs: 'compare, contrast, distinguish, examine, categorize, differentiate, infer, deconstruct',
+            def: 'Break apart, find relationships, see how parts fit. Most-confused with Apply.' },
+          { id: 'evaluate',   label: 'Evaluate',    color: '#7c3aed', icon: '⚖️',
+            verbs: 'judge, critique, defend, justify, recommend, prioritize, support, argue',
+            def: 'Make defensible judgments based on criteria + evidence. Almost always involves trade-offs.' },
+          { id: 'create',     label: 'Create',      color: '#ec4899', icon: '✨',
+            verbs: 'design, compose, construct, plan, produce, generate, devise, invent',
+            def: 'Produce something genuinely new. Highest cognitive demand. Synthesizes everything below.' }
+        ];
+        var V = [
+          { id: 1, task: 'List the names of the 13 IDEA eligibility categories.', correct: 'remember',
+            why: 'Verb "list" + recall of factual content = Remember. No analysis or application needed; just retrieval. The lowest of Bloom\'s 6 levels but still essential as a foundation.' },
+          { id: 2, task: 'Explain in your own words why the Flynn effect makes outdated norms problematic.', correct: 'understand',
+            why: '"Explain in your own words" is the canonical Understand verb stem. The student is paraphrasing + interpreting, not just recalling. Compare to "Define the Flynn effect" (Remember) or "Critique a study using outdated norms" (Evaluate).' },
+          { id: 3, task: 'Use the lens equation to predict where the image forms when a 10 cm focal-length lens is placed 30 cm from an object.', correct: 'apply',
+            why: '"Use" + plug values into a known formula = Apply. The procedure is established (1/f = 1/d_o + 1/d_i); the student uses it in a specific case. Compare to "Compare the image-formation rules for converging vs diverging lenses" (Analyze).' },
+          { id: 4, task: 'Compare and contrast the symptoms of nonsense vs frameshift mutations, and explain which is usually more catastrophic and why.', correct: 'analyze',
+            why: '"Compare and contrast" is the canonical Analyze stem. The student is breaking apart two categories, identifying differences and relationships. Compare to "Predict the effect of a single base change" (Apply if rules given; Analyze if rules must be derived).' },
+          { id: 5, task: 'Critique the methodology of a study that used a 1997-normed cognitive test in 2024 to determine eligibility.', correct: 'evaluate',
+            why: '"Critique" with a defensible verdict against criteria = Evaluate. Requires applying the Flynn-effect rule (Apply) AND comparing the design to best practice (Analyze) AND making a justified judgment about adequacy. Evaluate is always the highest-Bloom-level word in the prompt.' },
+          { id: 6, task: 'Design a 3-day lesson plan that teaches Bloom\'s taxonomy to 8th graders, including warm-up, three guided practice activities, and a formative assessment.', correct: 'create',
+            why: '"Design" + "produce a coherent new artifact" = Create. The student synthesizes everything below (must Remember + Understand Bloom\'s, Apply pedagogy principles, Analyze student needs, Evaluate activity choices). Highest-demand task; usually the capstone of a unit.' },
+          { id: 7, task: 'Define the Zone of Proximal Development (ZPD).', correct: 'remember',
+            why: '"Define" with a single-term answer = Remember. Pure recall of a textbook definition. To bump it to Understand, ask "Explain how a teacher uses ZPD when a student is stuck on long division" — same concept, much higher cognitive demand.' },
+          { id: 8, task: 'Categorize five student mistakes by which Bloom\'s level the student got stuck on.', correct: 'analyze',
+            why: '"Categorize" + breaking apart by criteria = Analyze. The student must Understand Bloom\'s, Apply criteria to each case, and assign categories — but the verb-level demand stops at Analyze. Add "and recommend a re-teaching strategy" to push to Evaluate.' },
+          { id: 9, task: 'Write a new mnemonic for the cranial nerves that incorporates clinical mnemonics + cultural references your grandparents would understand.', correct: 'create',
+            why: '"Write a new" mnemonic = Create. The student is producing original work (a mnemonic that did not exist), not just remembering or applying an existing one. The cultural-reference constraint forces synthesis across personal + cultural domains.' },
+          { id: 10, task: 'Decide which of three intervention strategies (orton-gillingham vs balanced literacy vs corrective reading) is most likely to help this struggling reader, given the diagnostic data, and defend your choice in a 2-paragraph parent letter.', correct: 'evaluate',
+            why: '"Decide which is most likely" + "defend your choice" = Evaluate. Requires applying diagnostic interpretation (Apply), comparing the three approaches against the student\'s profile (Analyze), and making + justifying a recommendation. The defense is the diagnostic verb for Evaluate.' }
+        ];
+
+        var bmIdx = d.bmIdx == null ? -1 : d.bmIdx;
+        var bmSeed = d.bmSeed || 1;
+        var bmAns = !!d.bmAns;
+        var bmPick = d.bmPick;
+        var bmScore = d.bmScore || 0;
+        var bmRounds = d.bmRounds || 0;
+        var bmStreak = d.bmStreak || 0;
+        var bmBest = d.bmBest || 0;
+        var bmShown = d.bmShown || [];
+
+        function startBm() {
+          var pool = [];
+          for (var i = 0; i < V.length; i++) if (bmShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); bmShown = []; }
+          var seedNext = ((bmSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('bmSeed', seedNext);
+          upd('bmIdx', pick);
+          upd('bmAns', false);
+          upd('bmPick', null);
+          upd('bmShown', bmShown.concat([pick]));
+        }
+        function pickBm(levelId) {
+          if (bmAns) return;
+          var v = V[bmIdx];
+          var correct = levelId === v.correct;
+          var newScore = bmScore + (correct ? 1 : 0);
+          var newStreak = correct ? (bmStreak + 1) : 0;
+          var newBest = Math.max(bmBest, newStreak);
+          upd('bmAns', true);
+          upd('bmPick', levelId);
+          upd('bmScore', newScore);
+          upd('bmRounds', bmRounds + 1);
+          upd('bmStreak', newStreak);
+          upd('bmBest', newBest);
+        }
+
+        if (bmIdx < 0) {
+          return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+            backBar('🕵️ Bloom Match'),
+            h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '10 task descriptions — pick the Bloom\'s level'),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                'For each task, pick the Bloom\'s taxonomy level it targets. Coaching after each pick names the canonical verb stem and what would have to change to push the task to a higher (or lower) level. Verb selection is the primary discriminator.')
+            ),
+            h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The 6 levels (revised 2001)'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 8 } },
+                LEVELS.map(function(l) {
+                  return h('div', { key: l.id, style: { padding: '8px 10px', borderRadius: 8, background: l.color + '15', border: '1px solid ' + l.color + '55' } },
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                      h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, l.icon),
+                      h('span', { style: { color: l.color, fontWeight: 800, fontSize: 12 } }, l.label)
+                    ),
+                    h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45, marginBottom: 3 } }, l.def),
+                    h('div', { style: { fontSize: 10, color: T.dim, fontStyle: 'italic' } }, 'Verbs: ' + l.verbs)
+                  );
+                })
+              )
+            ),
+            h('button', { 'data-ll-focusable': true,
+              onClick: startBm,
+              style: btnPrimary({ width: '100%', textAlign: 'center', padding: '12px 18px', fontSize: 14 })
+            }, '🕵️ Start — task 1 of 10')
+          );
+        }
+
+        var v = V[bmIdx];
+        var pickedCorrect = bmAns && bmPick === v.correct;
+        var pct = bmRounds > 0 ? Math.round((bmScore / bmRounds) * 100) : 0;
+        var allDone = bmShown.length >= V.length && bmAns;
+        var correctLevel = LEVELS.filter(function(l) { return l.id === v.correct; })[0];
+        var pickedLevel = bmPick ? LEVELS.filter(function(l) { return l.id === bmPick; })[0] : null;
+
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('🕵️ Bloom Match'),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.dim, marginBottom: 12 } },
+            h('span', null, 'Task ', h('strong', { style: { color: T.text } }, bmShown.length)),
+            h('span', null, 'Score ', h('strong', { style: { color: T.good } }, bmScore + ' / ' + bmRounds)),
+            bmRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link } }, pct + '%')),
+            h('span', null, 'Streak ', h('strong', { style: { color: T.warn } }, bmStreak)),
+            h('span', null, 'Best ', h('strong', { style: { color: T.accentHi } }, bmBest))
+          ),
+          h('section', { style: { padding: 16, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent + '88', marginBottom: 12 } },
+            h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Task ' + bmShown.length + ' of ' + V.length),
+            h('p', { style: { margin: 0, color: T.text, fontSize: 14, lineHeight: 1.55 } }, '"' + v.task + '"')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the Bloom level' },
+            LEVELS.map(function(l) {
+              var picked = bmAns && bmPick === l.id;
+              var isRight = bmAns && l.id === v.correct;
+              var bg, border, color;
+              if (bmAns) {
+                if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = T.good; color = '#bbf7d0'; }
+                else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = T.bad; color = '#fecaca'; }
+                else { bg = T.cardAlt; border = T.border; color = T.dim; }
+              } else {
+                bg = l.color + '15'; border = l.color + '60'; color = T.text;
+              }
+              return h('button', { key: l.id, role: 'radio',
+                'aria-checked': picked ? 'true' : 'false',
+                'aria-label': l.label,
+                disabled: bmAns,
+                'data-ll-focusable': true,
+                onClick: function() { pickBm(l.id); },
+                style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: bmAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 70, transition: 'all 0.15s' }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                  h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, l.icon),
+                  h('span', { style: { color: bmAns ? color : l.color, fontSize: 12, fontWeight: 800 } }, l.label)
+                ),
+                h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: bmAns ? color : T.muted } }, l.def)
+              );
+            })
+          ),
+          bmAns && h('section', {
+            style: {
+              marginTop: 12, padding: '12px 14px', borderRadius: 10,
+              background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+              border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+            }
+          },
+            h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+              pickedCorrect
+                ? '✅ Correct — ' + correctLevel.label
+                : '❌ The level is ' + correctLevel.label + (pickedLevel ? ' (you picked ' + pickedLevel.label + ')' : '')
+            ),
+            h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
+            allDone
+              ? h('div', { style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent } },
+                  h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 tasks complete'),
+                  h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.5 } },
+                    'Final: ', h('strong', null, bmScore + ' / ' + V.length + ' (' + Math.round((bmScore / V.length) * 100) + '%)'),
+                    bmScore === V.length ? ' — every Bloom level identified. Ready to write your own taxonomy-aligned learning objectives.' :
+                    bmScore >= 8 ? ' — strong verb-level reasoning. The most-confused pair is usually Apply vs Analyze (both involve "doing something" with knowledge — Apply uses a known procedure; Analyze derives or compares).' :
+                    bmScore >= 6 ? ' — solid baseline. Reflexes worth building: Define/List = Remember, Explain in own words = Understand, Use the formula = Apply, Compare/Categorize = Analyze, Critique/Defend = Evaluate, Design/Create = Create.' :
+                    ' — these distinctions take practice. Re-read the verb lists + the rationales on misses, then retake. Bloom\'s misclassification is one of the most common teacher-prep errors.'
+                  ),
+                  h('button', { 'data-ll-focusable': true,
+                    onClick: function() { upd('bmIdx', -1); upd('bmShown', []); upd('bmScore', 0); upd('bmRounds', 0); upd('bmStreak', 0); },
+                    style: btnPrimary({ marginTop: 10, padding: '6px 14px', fontSize: 12 })
+                  }, '🔄 Restart')
+                )
+              : h('button', { 'data-ll-focusable': true,
+                  onClick: startBm,
+                  style: btnPrimary({ padding: '8px 14px', fontSize: 13 })
+                }, '➡️ Next task')
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────
       // LAB SIMULATOR view — graded "advise a struggling student" scenarios
       // ─────────────────────────────────────────
       function renderLab() {
@@ -5316,6 +5519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('learningLab'))
         case 'maine-progs':   return renderMaineProgs();
         case 'lessonPlan':    return renderLessonPlan();
         case 'strategyPicker':return renderStrategyPicker();
+        case 'bloomMatch':    return renderBloomMatch();
         case 'path':          return renderPath();
         case 'glossary':      return renderGlossary();
         case 'memory':        return renderMemory();

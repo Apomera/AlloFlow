@@ -3664,6 +3664,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
               }, tab.icon + ' ' + tab.label);
             })),
 
+          // ── Topic-accent hero band (per tab) ──
+          (function() {
+            var TAB_META = {
+              visualizer:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🎤', title: 'Live visualizer — record + read your delivery', hint: 'Real-time pitch trace + volume meter + filler-word counter. Trained speakers vary pitch ~30% across a sentence; flat delivery loses listener attention within ~20 seconds.' },
+              practice:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '📝', title: 'Practice — work through a delivery',          hint: 'Pacing target ~150 wpm. Pauses between ideas (1–2 seconds) carry as much weight as the words. Read your own writing aloud first; awkward sentences reveal themselves immediately.' },
+              multilingual: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🌐', title: 'Multilingual — same speech, multiple languages', hint: 'Speech rate varies dramatically by language: Spanish + Japanese ~7 syllables/sec; English ~6; Mandarin ~5. Information rate is roughly constant — denser languages talk slower.' },
+              report:       { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '📋', title: 'Report — your delivery analytics',           hint: 'Pace, pitch range, filler-word density, pause timing — each scored against research-backed targets. Click any dimension for a citation + a coaching tip.' }
+            };
+            var meta = TAB_META[activeTab] || TAB_META.visualizer;
+            return h('div', {
+              className: 'mt-2',
+              style: {
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
           // Tab panels
           h('div', {
             id: 'oratory-panel-' + activeTab,
