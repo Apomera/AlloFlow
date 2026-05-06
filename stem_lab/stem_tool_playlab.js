@@ -5,6 +5,23 @@
 // "Every play is a coordinated math problem on a fixed grid."
 // ═══════════════════════════════════════════
 
+// ── PlayLab keyframes (Play Catalog celebration) ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('playlab-celeb-css')) return;
+  var st = document.createElement('style');
+  st.id = 'playlab-celeb-css';
+  st.textContent = [
+    '@keyframes playlab-celeb-rise {',
+    '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+    '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══ Defensive StemLab guard ═══
 window.StemLab = window.StemLab || {
   _registry: {},
@@ -1838,6 +1855,55 @@ window.StemLab = window.StemLab || {
         });
       };
 
+      // ── Play Catalog: cross-session mastery of plays run for completions ──
+      // Like ThrowLab's Pitch Locker — persistent across reloads / Canvas
+      // sessions. First-completion of each play (by id) locks it in with a
+      // timestamp + sport tag. Subsequent completions increment counts but
+      // don't re-fire the celebration.
+      var React = ctx.React;
+      var _plHydrated = React.useRef(false);
+      if (!_plHydrated.current) {
+        _plHydrated.current = true;
+        try {
+          var winSt = (typeof window !== 'undefined' && window.__alloflowPlayLab) || null;
+          var lsSt = null;
+          try { lsSt = JSON.parse(localStorage.getItem('playlab.state.v1') || 'null'); } catch (e) {}
+          var seed = winSt || lsSt || null;
+          if (seed && typeof seed === 'object' && seed.playCatalog && !d.playCatalog) {
+            setLabToolData(function (prev) {
+              return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playCatalog: seed.playCatalog }) });
+            });
+          }
+        } catch (e) {}
+      }
+      // First-completion celebration state.
+      var _plCeleb = React.useState(null);
+      var plCeleb = _plCeleb[0];
+      var setPlCeleb = _plCeleb[1];
+      // Mirror persistent slice to window slot + localStorage.
+      React.useEffect(function () {
+        try {
+          var snapshot = { playCatalog: d.playCatalog || {}, _ts: Date.now() };
+          window.__alloflowPlayLab = snapshot;
+          try { localStorage.setItem('playlab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+        } catch (e) {}
+      }, [d.playCatalog]);
+      // Hot-reload from project-JSON load mid-session.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowPlayLab || {};
+            if (w.playCatalog) {
+              setLabToolData(function (prev) {
+                return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, { playCatalog: w.playCatalog }) });
+              });
+            }
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-playlab-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-playlab-restored', onRestore); };
+      }, []);
+
       var isSoccer = d.sport === 'soccer';
       // Soccer-derived vars (only meaningful when isSoccer === true). They
       // shadow into the same `formation` / `defenders` slots so downstream
@@ -2489,15 +2555,56 @@ window.StemLab = window.StemLab || {
                   dailyJustCompletedS = true;
                 }
               }
+              // ── Play Catalog: cross-session high-xG-sequence log per concept ──
+              // Soccer success criterion: xG ≥ 0.20 (real chance created).
+              // First-time-per-concept locks in the catalog entry + celebration.
+              var _sCatalogPrev = (d.playCatalog && typeof d.playCatalog === 'object') ? d.playCatalog : {};
+              var _sCatalogNext = _sCatalogPrev;
+              var _sFiredNew = null;
+              if (finalXG >= 0.20) {
+                var _sKey = 'soccer:' + d.conceptId;
+                var _sExisting = _sCatalogPrev[_sKey];
+                var _sNowIso = new Date().toISOString();
+                _sCatalogNext = Object.assign({}, _sCatalogPrev);
+                if (_sExisting) {
+                  _sCatalogNext[_sKey] = Object.assign({}, _sExisting, {
+                    lastSuccessAt: _sNowIso,
+                    successCount: (_sExisting.successCount || 0) + 1,
+                    bestXG: Math.max(_sExisting.bestXG || 0, finalXG)
+                  });
+                } else {
+                  var _sConc = SOCCER_CONCEPTS.find(function (c) { return c.id === d.conceptId; });
+                  var _sLabel = (_sConc && _sConc.label) || d.conceptId;
+                  var _sIcon = (_sConc && _sConc.icon) || '⚽';
+                  _sCatalogNext[_sKey] = {
+                    firstSuccessAt: _sNowIso,
+                    lastSuccessAt: _sNowIso,
+                    successCount: 1,
+                    bestXG: finalXG,
+                    label: _sLabel,
+                    icon: _sIcon,
+                    sport: 'soccer'
+                  };
+                  _sFiredNew = { key: _sKey, label: _sLabel, icon: _sIcon, sport: 'soccer', total: Object.keys(_sCatalogNext).length };
+                }
+              }
               setLabToolData(function(prev) {
                 return Object.assign({}, prev, { playlab: Object.assign({}, prev.playlab, {
                   runActive: false, runT: SOCCER_TOTAL, runOutcome: soccerOutcome,
                   drillStats: sStats, drillTaskIdx: sNewTaskIdx,
                   badgesEarned: sNewEarned,
                   dailyCompleted: newDailyCompletedS,
-                  personalBests: newPersonalBestsS
+                  personalBests: newPersonalBestsS,
+                  playCatalog: _sCatalogNext
                 })});
               });
+              if (_sFiredNew) {
+                try {
+                  setPlCeleb(Object.assign({}, _sFiredNew, { at: Date.now() }));
+                  setTimeout(function () { setPlCeleb(null); }, 3500);
+                } catch (e) {}
+                if (addToast) addToast('🏅 Play Catalog: ' + _sFiredNew.label + ' added (' + _sFiredNew.total + ')');
+              }
               var qualLabel = finalXG > 0.30 ? 'high-quality chance' : finalXG > 0.10 ? 'decent shot' : 'low-percentage shot';
               plAnnounce('Sequence complete. ' + (finalReceiver ? finalReceiver.id : 'Final attacker') + ' arrives at xG ' + finalXG.toFixed(2) + ' — a ' + qualLabel + '.');
               if (finalXG > 0.20 && awardXP) awardXP('playlab', 8, 'High-xG sequence');
@@ -2594,6 +2701,47 @@ window.StemLab = window.StemLab || {
               // Engagement layer: cross-play streak counter
               hotStreak: 0
             }, d.drillStats || {});
+            // ── Play Catalog: cross-session first-completion log ──
+            // Per-session completionsByPlay below tracks within-session usage.
+            // The catalog tracks LIFETIME first-completion of each play and
+            // fires a celebration the first time a play is run successfully.
+            // Football: success = 'caught'. Soccer: success = goal/score outcome.
+            var _plCatalogPrev = (d.playCatalog && typeof d.playCatalog === 'object') ? d.playCatalog : {};
+            var _plCatalogNext = _plCatalogPrev;
+            var _plFiredNew = null;
+            var _isSuccess = (loc === 'caught') || (d.sport === 'soccer' && (loc === 'goal' || loc === 'scored' || loc === 'score'));
+            if (_isSuccess) {
+              var _playKey = (d.sport === 'soccer' ? 'soccer:' : 'football:') + (d.sport === 'soccer' ? d.conceptId : d.playId);
+              var _existingCat = _plCatalogPrev[_playKey];
+              var _nowIso = new Date().toISOString();
+              _plCatalogNext = Object.assign({}, _plCatalogPrev);
+              if (_existingCat) {
+                _plCatalogNext[_playKey] = Object.assign({}, _existingCat, {
+                  lastSuccessAt: _nowIso,
+                  successCount: (_existingCat.successCount || 0) + 1
+                });
+              } else {
+                var _label, _icon;
+                if (d.sport === 'soccer') {
+                  var _conc = (typeof SOCCER_CONCEPTS !== 'undefined') ? SOCCER_CONCEPTS.find(function (c) { return c.id === d.conceptId; }) : null;
+                  _label = (_conc && _conc.label) || d.conceptId;
+                  _icon = (_conc && _conc.icon) || '⚽';
+                } else {
+                  var _pl = PLAYS.find(function (p) { return p.id === d.playId; });
+                  _label = (_pl && (_pl.label || _pl.name)) || d.playId;
+                  _icon = (_pl && _pl.icon) || '🏈';
+                }
+                _plCatalogNext[_playKey] = {
+                  firstSuccessAt: _nowIso,
+                  lastSuccessAt: _nowIso,
+                  successCount: 1,
+                  label: _label,
+                  icon: _icon,
+                  sport: d.sport
+                };
+                _plFiredNew = { key: _playKey, label: _label, icon: _icon, sport: d.sport, total: Object.keys(_plCatalogNext).length };
+              }
+            }
             if (loc === 'caught') {
               if (!newStats.coveragesBeatenSet[d.coverageId]) {
                 newStats.coveragesBeatenSet = Object.assign({}, newStats.coveragesBeatenSet);
@@ -2655,9 +2803,17 @@ window.StemLab = window.StemLab || {
                 drillStats: newStats, drillTaskIdx: newDrillTaskIdx,
                 badgesEarned: newEarned,
                 dailyCompleted: newDailyCompletedF,
-                personalBests: newPersonalBestsF
+                personalBests: newPersonalBestsF,
+                playCatalog: _plCatalogNext
               })});
             });
+            if (_plFiredNew) {
+              try {
+                setPlCeleb(Object.assign({}, _plFiredNew, { at: Date.now() }));
+                setTimeout(function () { setPlCeleb(null); }, 3500);
+              } catch (e) {}
+              if (addToast) addToast('🏅 Play Catalog: ' + _plFiredNew.label + ' added (' + _plFiredNew.total + ')');
+            }
             plAnnounce(loc === 'caught'
               ? 'Pass complete to ' + targetId + '!'
               : loc === 'brokenup' ? 'Pass broken up by the defense at ' + targetId + '.'
@@ -3249,6 +3405,29 @@ window.StemLab = window.StemLab || {
       }
 
       return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
+        // Play Catalog celebration overlay (fixed, top of screen, 3.5s).
+        // Fires when a play is run successfully for the first time across all
+        // sessions — football completion or soccer xG ≥ 0.20.
+        plCeleb && h('div', {
+          role: 'status', 'aria-live': 'assertive',
+          style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+                   zIndex: 9999, pointerEvents: 'none',
+                   animation: 'playlab-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+        },
+          h('div', { style: { background: plCeleb.sport === 'soccer'
+                                  ? 'linear-gradient(135deg, #16a34a 0%, #06b6d4 50%, #6366f1 100%)'
+                                  : 'linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #7c3aed 100%)',
+                              color: '#fff', padding: '14px 22px', borderRadius: 16,
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.35)', border: '4px solid #fff',
+                              display: 'flex', alignItems: 'center', gap: 12 } },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, plCeleb.icon || (plCeleb.sport === 'soccer' ? '⚽' : '🏈')),
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Play added to your catalog'),
+              h('div', { style: { fontSize: 14, fontWeight: 800, lineHeight: 1.3 } }, plCeleb.label),
+              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, plCeleb.total + ' plays in your catalog')
+            )
+          )
+        ),
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && h('button', {
@@ -3260,6 +3439,44 @@ window.StemLab = window.StemLab || {
             (isSoccer ? '⚽ PlayLab — Soccer Tactics' : '🏈 PlayLab — Football Play & Coverage')),
           h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, 'Every play is a coordinated math problem on a fixed grid.')
         ),
+        // ── Play Catalog summary band ──
+        // Sticky band under the header. Shows count of unique plays/concepts
+        // run successfully for the current sport, plus chips for each.
+        // Football: counts plays with first-completion. Soccer: counts
+        // concepts with first xG ≥ 0.20.
+        (function () {
+          var catalog = (d.playCatalog && typeof d.playCatalog === 'object') ? d.playCatalog : {};
+          var sportPrefix = isSoccer ? 'soccer:' : 'football:';
+          var sportEntries = Object.keys(catalog).filter(function (k) { return k.indexOf(sportPrefix) === 0; });
+          var sportTotal = isSoccer
+            ? ((typeof SOCCER_CONCEPTS !== 'undefined' && SOCCER_CONCEPTS) ? SOCCER_CONCEPTS.length : 0)
+            : PLAYS.length;
+          var got = sportEntries.length;
+          if (sportTotal === 0) return null;
+          return h('div', {
+            style: {
+              marginBottom: 12, padding: '10px 14px', borderRadius: 12,
+              background: isSoccer
+                ? 'linear-gradient(110deg, rgba(22,163,74,0.10) 0%, rgba(6,182,212,0.18) 50%, rgba(99,102,241,0.10) 100%)'
+                : 'linear-gradient(110deg, rgba(245,158,11,0.10) 0%, rgba(239,68,68,0.18) 50%, rgba(124,58,237,0.10) 100%)',
+              border: '1px solid ' + (isSoccer ? 'rgba(22,163,74,0.50)' : 'rgba(245,158,11,0.50)'),
+              display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0 } }, '🏅'),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
+                h('strong', { style: { fontSize: 13, fontWeight: 800, color: '#fef3c7' } }, 'Play Catalog'),
+                h('span', { style: { fontSize: 12, color: '#cbd5e1' } }, got + ' / ' + sportTotal + (isSoccer ? ' concepts run with xG ≥ 0.20' : ' plays completed')),
+                h('span', { style: { fontSize: 11, color: '#94a3b8', fontStyle: 'italic' } },
+                  got === 0
+                    ? (isSoccer ? 'Build a chance with xG ≥ 0.20 to lock in a concept.' : 'Complete a pass to lock in a play.')
+                    : got === sportTotal ? '🏆 Full catalog — every play locked in.'
+                    : 'Run a new one to add it.')
+              )
+            )
+          );
+        })(),
 
         // Sport picker — football vs soccer. role=tablist so AT treats it
         // as a single-select group. Switching sports preserves separate
@@ -3290,6 +3507,32 @@ window.StemLab = window.StemLab || {
             }, sp.label);
           })
         ),
+
+        // ── Sport-accent hero band (sport-flavored, dark-themed) ──
+        (function() {
+          var SPORT_META = {
+            football: { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)', icon: '🏈', title: 'American Football \u2014 chess at 4.4 yds/sec',  hint: '11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense \u2014 and good QBs read the answer pre-snap.' },
+            soccer:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)', icon: '⚽', title: 'Soccer \u2014 the beautiful game, on a 105\u00d768m grid', hint: '4-3-3 vs 4-4-2 vs 3-5-2. Pep\u2019s positional play, Klopp\u2019s gegenpress, Italian catenaccio. Width creates space, the 10 finds it, the false-9 drops to make it. Tactics are the second player.' }
+          };
+          var meta = SPORT_META[d.sport || 'football'] || SPORT_META.football;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
 
         // ── Scenarios ──
         // One-click teaching demos. Each pill snaps sport + play/concept +
