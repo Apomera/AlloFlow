@@ -5049,6 +5049,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'sel_hub/sel_tool_peersupport.js',
         'sel_hub/sel_tool_selfadvocacy.js',
         'sel_hub/sel_tool_execfunction.js',
+        // AlloHaven Arcade plugins (Phase 3a) — self-register via
+        // window.AlloHavenArcade.registerMode. Loaded after AlloHaven
+        // module via the same toolModules array; each plugin polls the
+        // registry until it's available, so order isn't strict.
+        'arcade_mode_sage_launcher.js',
       ];
       var waitForRegistry = function(cb) {
         if (window.StemLab && window.StemLab.registerTool) { cb(); return; }
