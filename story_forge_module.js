@@ -142,6 +142,51 @@ const useDictation = (onTranscript, lang) => {
   const isDictatingRef = useRef(false);
   const recognitionRef = useRef(null);
   const startDictation = () => {
+    // Phase 3v.M — shared module path with inline fallback. The shared
+    // path uses restartOnEnd:true so the recursive restart (legacy
+    // line: recognitionRef.current.start() in onend) is handled inside
+    // the controller. The onRichResult callback forwards only final
+    // text via onTranscript, matching the original useDictation
+    // contract that callers rely on.
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+      // Note: NOT using restartOnEnd:true here — that would restart even
+      // after user-initiated stop. We replicate the legacy manual-restart
+      // pattern: on natural end (browser silence timeout) we re-start
+      // ourselves only if the user hasn't called stopDictation; on user
+      // stop we let the controller stay stopped.
+      let ctrlRef = null;
+      const handleEnd = () => {
+        if (ctrlRef && recognitionRef.current === ctrlRef && isDictatingRef.current) {
+          try { ctrlRef.start(); }
+          catch (e) {
+            isDictatingRef.current = false;
+            setIsDictating(false);
+          }
+        }
+      };
+      const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+        lang: lang || 'en-US',
+        continuous: true,
+        interimResults: true,
+        onRichResult: ({ final }) => {
+          if (final && onTranscript) onTranscript(final);
+        },
+        onError: () => {
+          isDictatingRef.current = false;
+          setIsDictating(false);
+        },
+        onEnd: handleEnd
+      });
+      if (!ctrl.supported) return;
+      ctrlRef = ctrl;
+      if (ctrl.start()) {
+        recognitionRef.current = ctrl;
+        isDictatingRef.current = true;
+        setIsDictating(true);
+      }
+      return;
+    }
+    // Inline fallback (pre-3v.M behavior, identical)
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) return;
     const recognition = new SR();
@@ -180,8 +225,13 @@ const useDictation = (onTranscript, lang) => {
   const stopDictation = () => {
     isDictatingRef.current = false;
     if (recognitionRef.current) {
-      recognitionRef.current.onend = null;
-      recognitionRef.current.stop();
+      // The shared-module controller handles its own end cleanup;
+      // the inline-fallback rec needs the legacy onend-clearing trick
+      // to prevent the restart-on-end recursion from re-entering.
+      if (recognitionRef.current.onend !== undefined) {
+        try { recognitionRef.current.onend = null; } catch (e) { /* shared ctrl: noop */ }
+      }
+      try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
       recognitionRef.current = null;
     }
     setIsDictating(false);

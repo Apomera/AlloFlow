@@ -12758,11 +12758,50 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                 if (addToast) addToast(t('behavior_lens.toast.speech_recognition_not_supported_in_this_browser') || 'Speech recognition not supported in this browser', 'error');
                 return;
             }
+            // Phase 3v.M — shared module path with inline fallback.
+            // Uses the onRichResult callback to preserve interim/final
+            // distinction (the 🎤 indicator pattern needs it).
+            let finalTranscript = '';
+            const handleRich = ({ final, interim }) => {
+                if (final) finalTranscript += final + ' ';
+                setDraft(prev => {
+                    const base = prev.replace(/\s*🎤.*$/, ''); // remove prior interim indicator
+                    const combined = (base ? base + ' ' : '') + finalTranscript;
+                    return interim ? combined + '🎤 ' + interim : combined;
+                });
+            };
+            const handleEnd = () => {
+                setIsListening(false);
+                setDraft(prev => prev.replace(/\s*🎤.*$/, '').trim());
+            };
+            const handleError = (e) => {
+                warnLog('Speech recognition error:', e && e.error);
+                setIsListening(false);
+            };
+            if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+                const ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+                    lang: 'en-US',
+                    continuous: true,
+                    interimResults: true,
+                    onRichResult: handleRich,
+                    onError: handleError,
+                    onEnd: handleEnd
+                });
+                if (!ctrl.supported) {
+                    if (addToast) addToast(t('behavior_lens.toast.speech_recognition_not_supported_in_this_browser') || 'Speech recognition not supported in this browser', 'error');
+                    return;
+                }
+                if (ctrl.start()) {
+                    recognitionRef.current = ctrl;
+                    setIsListening(true);
+                }
+                return;
+            }
+            // Inline fallback (pre-3v.M behavior, identical)
             const rec = new SpeechRecognition();
             rec.continuous = true;
             rec.interimResults = true;
             rec.lang = 'en-US';
-            let finalTranscript = '';
             rec.onresult = (e) => {
                 let interim = '';
                 for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -12772,22 +12811,14 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
                         interim += e.results[i][0].transcript;
                     }
                 }
-                // Auto-append to draft
                 setDraft(prev => {
-                    const base = prev.replace(/\s*🎤.*$/, ''); // remove interim indicator
+                    const base = prev.replace(/\s*🎤.*$/, '');
                     const combined = (base ? base + ' ' : '') + finalTranscript;
                     return interim ? combined + '🎤 ' + interim : combined;
                 });
             };
-            rec.onerror = (e) => {
-                warnLog('Speech recognition error:', e.error);
-                setIsListening(false);
-            };
-            rec.onend = () => {
-                setIsListening(false);
-                // Clean up interim indicator
-                setDraft(prev => prev.replace(/\s*🎤.*$/, '').trim());
-            };
+            rec.onerror = handleError;
+            rec.onend = handleEnd;
             recognitionRef.current = rec;
             rec.start();
             setIsListening(true);
@@ -12795,7 +12826,7 @@ For each suggestion, rate the effort level (Low/Medium/High) and expected impact
 
         const stopMic = useCallback(() => {
             if (recognitionRef.current) {
-                recognitionRef.current.stop();
+                try { recognitionRef.current.stop(); } catch (e) { /* ignore */ }
                 recognitionRef.current = null;
             }
             setIsListening(false);

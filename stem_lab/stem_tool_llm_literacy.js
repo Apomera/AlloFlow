@@ -302,13 +302,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
 
   // Create a recognizer bound to callbacks. Returns the recognizer instance
   // or null if unsupported. Caller is responsible for start()/stop().
+  // Phase 3v.M — when window.AlloFlowVoice is available, returns a
+  // controller that mirrors the SpeechRecognition surface callers expect
+  // (start/stop methods on the returned object). Falls back to the inline
+  // construction otherwise so this tool keeps working pre-3v.M and on
+  // first paint while voice_module is still loading.
   function createSpeechRecognizer(onResult, onEnd, onError) {
     if (!SpeechRecognitionCtor) return null;
+    var lang = (navigator.language || 'en-US');
+    if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+      var ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+        lang: lang,
+        continuous: false,
+        interimResults: true,
+        onRichResult: function(payload) {
+          if (onResult) onResult({ final: payload.final, interim: payload.interim });
+        },
+        onError: function(ev) { if (onError) onError(ev); },
+        onEnd: function() { if (onEnd) onEnd(); }
+      });
+      if (!ctrl.supported) return null;
+      // Return a thin SpeechRecognition-shaped facade so existing callers
+      // that invoke .start() / .stop() on the returned instance keep working.
+      return {
+        start: ctrl.start,
+        stop: ctrl.stop,
+        // Read-only echo of the rec settings; some callers may inspect these.
+        continuous: false,
+        interimResults: true,
+        lang: lang
+      };
+    }
     var rec;
     try { rec = new SpeechRecognitionCtor(); } catch (e) { return null; }
     rec.continuous = false;   // one utterance per start
     rec.interimResults = true;
-    rec.lang = (navigator.language || 'en-US');
+    rec.lang = lang;
     rec.onresult = function(ev) {
       var finalText = '';
       var interim = '';

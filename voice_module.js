@@ -171,20 +171,41 @@
       r.interimResults = settings.interimResults;
       r.lang = settings.lang;
 
-      // Aggregates result text per event, mirroring the AlloHaven pattern.
-      // For one-shot mode (continuous=false, interimResults=false), the
-      // resultIndex+results[] structure is still preferred — onresult will
-      // fire once with a single final result.
+      // Result handler — invokes whichever callbacks the caller supplied.
+      // Supports two modes (independent; either or both can be wired):
+      //   onTranscript(text, isFinal): simple aggregated transcript +
+      //     boolean isFinal flag. Mirrors the AlloHaven pattern.
+      //   onRichResult({ final, interim, fullEvent }): separates final
+      //     and interim transcripts so callers can render in-progress
+      //     dictation indicators (used by behavior_lens, story_forge,
+      //     llm_literacy migrations in Phase 3v.M).
+      // Both callbacks fire on the same event when both are provided.
       r.onresult = function (event) {
-        if (typeof opts.onTranscript !== 'function') return;
+        var hasSimple = typeof opts.onTranscript === 'function';
+        var hasRich = typeof opts.onRichResult === 'function';
+        if (!hasSimple && !hasRich) return;
         var transcript = '';
-        var isFinal = false;
+        var finalText = '';
+        var interimText = '';
+        var sawFinal = false;
         for (var i = event.resultIndex; i < event.results.length; i++) {
           var res = event.results[i];
-          if (res && res[0]) transcript += res[0].transcript || '';
-          if (res && res.isFinal) isFinal = true;
+          if (!res || !res[0]) continue;
+          var chunk = res[0].transcript || '';
+          transcript += chunk;
+          if (res.isFinal) { finalText += chunk; sawFinal = true; }
+          else interimText += chunk;
         }
-        if (transcript) opts.onTranscript(transcript, isFinal);
+        if (hasSimple && transcript) {
+          opts.onTranscript(transcript, sawFinal);
+        }
+        if (hasRich) {
+          opts.onRichResult({
+            final: finalText,
+            interim: interimText,
+            fullEvent: event
+          });
+        }
       };
 
       r.onerror = function (e) {
@@ -196,10 +217,12 @@
       r.onend = function () {
         active = false;
         if (typeof opts.onEnd === 'function') opts.onEnd();
-        if (settings.restartOnEnd) {
+        if (settings.restartOnEnd && !intentionallyStopped) {
           // Defer one tick so the browser releases mic before re-acquire.
+          // The intentionallyStopped guard prevents user-initiated stops
+          // from auto-restarting (the caller asked to stop; respect it).
           setTimeout(function () {
-            if (!active) {
+            if (!active && !intentionallyStopped) {
               try { startInternal(); } catch (err) { /* ignore */ }
             }
           }, 50);
@@ -209,9 +232,19 @@
       return r;
     }
 
+    // intentionallyStopped tracks whether stopInternal() was called by the
+    // caller (vs. the browser ending the session naturally on silence).
+    // restartOnEnd reads this so user-initiated stops don't trigger a
+    // restart loop. Without this guard, calling stop() would still
+    // restart after the 50ms timeout because active is just a transient
+    // flag, not an intent flag. (Caught during the Phase 3v.M
+    // story_forge migration.)
+    var intentionallyStopped = false;
+
     function startInternal() {
       if (active) return true;
       try {
+        intentionallyStopped = false;
         rec = buildRec();
         rec.start();
         active = true;
@@ -225,6 +258,7 @@
     }
 
     function stopInternal() {
+      intentionallyStopped = true;
       if (rec) {
         try { rec.stop(); } catch (err) { /* ignore */ }
         rec = null;
