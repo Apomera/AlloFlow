@@ -522,7 +522,7 @@ window.SelHub = window.SelHub || {
             h('strong', null, 'Goal: '), aiScenario.goal
           ),
           // Chat
-          h('div', { style: { flex: 1, overflowY: 'auto', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
+          h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Conversation with ' + aiScenario.peerName, 'aria-busy': chatLoading ? 'true' : 'false', style: { flex: 1, overflowY: 'auto', marginBottom: '8px', display: 'flex', flexDirection: 'column', gap: '6px' } },
             chatHistory.map(function(msg, i) {
               var isPeer = msg.role === 'peer';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isPeer ? 'flex-start' : 'flex-end', gap: '6px' } },
@@ -578,9 +578,20 @@ window.SelHub = window.SelHub || {
               style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '13px', outline: 'none' },
               'aria-label': 'Your response using OARS skills' }),
             ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && h('button', { onClick: function() {
+              // Phase 3v.M — shared module path with inline fallback
+              var append = function(t) { setChatInput(function(p) { return p ? p + ' ' + t : t; }); };
+              if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+                var ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+                  lang: 'en-US', continuous: false, interimResults: false,
+                  onTranscript: append
+                });
+                if (ctrl.supported) ctrl.start();
+                addToast && addToast('Listening...', 'info');
+                return;
+              }
               var SR = window.SpeechRecognition || window.webkitSpeechRecognition; var rec = new SR();
               rec.lang = 'en-US'; rec.interimResults = false;
-              rec.onresult = function(ev) { setChatInput(function(p) { return p ? p + ' ' + ev.results[0][0].transcript : ev.results[0][0].transcript; }); };
+              rec.onresult = function(ev) { append(ev.results[0][0].transcript); };
               rec.start(); addToast && addToast('Listening...', 'info');
             }, style: btn('#f1f5f9', '#374151', chatLoading), 'aria-label': 'Voice input' }, '🎤'),
             h('button', { onClick: function() { if (chatInput.trim()) sendChat(chatInput); }, disabled: !chatInput.trim() || chatLoading,

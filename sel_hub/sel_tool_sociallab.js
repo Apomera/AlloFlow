@@ -675,7 +675,7 @@ window.SelHub = window.SelHub || {
           rapport >= 70 && chatTurns >= 2 && h('div', { style: { background: '#dcfce7', border: '1px solid #86efac', borderRadius: '8px', padding: '6px 12px', marginBottom: '8px', fontSize: '11px', color: '#166534', fontWeight: 600, textAlign: 'center', flexShrink: 0 } }, '🤝 ' + aiScenario.peerName + ' trusts you! Great social skills!'),
           rapport <= 20 && chatTurns >= 2 && h('div', { style: { background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: '8px', padding: '6px 12px', marginBottom: '8px', fontSize: '11px', color: '#991b1b', fontWeight: 600, textAlign: 'center', flexShrink: 0 } }, '⚠️ ' + aiScenario.peerName + ' seems uncomfortable. Try being more empathetic.'),
           // Chat messages
-          h('div', { style: { flex: 1, overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
+          h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Conversation with ' + aiScenario.peerName, 'aria-busy': chatLoading ? 'true' : 'false', style: { flex: 1, overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px' } },
             chatHistory.map(function(msg, i) {
               var isPeer = msg.role === 'peer';
               return h('div', { key: i, style: { display: 'flex', justifyContent: isPeer ? 'flex-start' : 'flex-end', gap: '8px' } },
@@ -717,13 +717,26 @@ window.SelHub = window.SelHub || {
               placeholder: 'Type what you would say...', disabled: chatLoading,
               style: { flex: 1, padding: '10px 14px', border: '2px solid #d1d5db', borderRadius: '12px', fontSize: '14px', outline: 'none' },
               'aria-label': 'Your response' }),
-            // Speech-to-text button
+            // Speech-to-text button — Phase 3v.M migrated to shared
+            // window.AlloFlowVoice.initWebSpeechCapture when available;
+            // inline fallback retained for race-tolerance on first paint.
             ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && h('button', { onClick: function() {
+              var appendTranscript = function(t) { setChatInput(function(prev) { return prev ? prev + ' ' + t : t; }); };
+              var onErr = function() { addToast && addToast('Voice input failed. Try typing instead.', 'info'); };
+              if (window.AlloFlowVoice && typeof window.AlloFlowVoice.initWebSpeechCapture === 'function') {
+                var ctrl = window.AlloFlowVoice.initWebSpeechCapture({
+                  lang: 'en-US', continuous: false, interimResults: false,
+                  onTranscript: appendTranscript, onError: onErr
+                });
+                if (ctrl.supported) ctrl.start();
+                addToast && addToast('Listening... speak now!', 'info');
+                return;
+              }
               var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
               var rec = new SpeechRec();
               rec.lang = 'en-US'; rec.interimResults = false; rec.maxAlternatives = 1;
-              rec.onresult = function(ev) { var t = ev.results[0][0].transcript; setChatInput(function(prev) { return prev ? prev + ' ' + t : t; }); };
-              rec.onerror = function() { addToast && addToast('Voice input failed. Try typing instead.', 'info'); };
+              rec.onresult = function(ev) { appendTranscript(ev.results[0][0].transcript); };
+              rec.onerror = onErr;
               rec.start();
               addToast && addToast('Listening... speak now!', 'info');
             }, disabled: chatLoading, style: btn('#f1f5f9', '#374151', chatLoading), 'aria-label': 'Voice input' }, '🎤'),
