@@ -3039,7 +3039,11 @@
                                                                                             "upload_too_large": "Image is too large (max 5 MB).",
                                                                                               "image_uploaded": "Image uploaded.",
                                                                                                 "upload_failed": "Upload failed.",
-                                                                                                  "image_cleared": "Image removed."
+                                                                                                  "image_cleared": "Image removed.",
+                                                                                                    "no_image_refine": "No image to refine — generate or upload one first.",
+                                                                                                      "refining_image": "Refining image...",
+                                                                                                        "image_refined": "Image refined.",
+                                                                                                          "image_refine_failed": "Image refinement failed. Try again or rephrase the prompt."
                                                                                     }
   },
   "dbq": {
