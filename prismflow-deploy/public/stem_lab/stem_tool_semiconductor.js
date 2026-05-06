@@ -3600,6 +3600,32 @@ window.StemLab = window.StemLab || {
         })
       );
 
+      // Topic-accent hero band per tab
+      var TAB_META = {
+        explore:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: 'Explore \u2014 diodes, transistors, doping',     hint: 'Doping silicon with phosphorus (n-type) or boron (p-type) is the foundation of every chip ever made. The PN junction is the building block of every diode + LED + solar cell + transistor.' },
+        challenge: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded problems',              hint: 'Bias a transistor, calculate band-gap energy, predict current vs voltage. AP Physics 2 + intro EE problems with step-by-step feedback.' },
+        battle:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: 'Battle \u2014 head-to-head circuit duels',       hint: 'Time-pressure rounds: build a circuit faster than the timer. Tests whether semiconductor reasoning is automatic, not just recognized.' },
+        learn:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn \u2014 reference + history',               hint: 'Bardeen + Brattain + Shockley invented the transistor at Bell Labs (1947); Nobel 1956. Moore\'s Law: transistor count doubles every ~2 years; held for 50+ years before slowing.' }
+      };
+      var meta = TAB_META[tab] || TAB_META.explore;
+      var tabHero = h('div', {
+        style: {
+          margin: '4px 0 12px',
+          padding: '12px 14px',
+          borderRadius: 12,
+          background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+          border: '1px solid ' + meta.accent + '55',
+          borderLeft: '4px solid ' + meta.accent,
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+        }
+      },
+        h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+        h('div', { style: { flex: 1, minWidth: 220 } },
+          h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+          h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+        )
+      );
+
       var subtoolNav = tab === 'explore' ? h('div', { className: 'flex flex-wrap gap-1.5 mb-4', role: 'navigation', 'aria-label': 'Semiconductor sub-tools' },
         SUBTOOLS.map(function(st) {
           return pill(st.icon + ' ' + st.short, subtool === st.id, function() {
@@ -3674,6 +3700,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'ml-auto text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200' }, '\u2B50 ' + (getStemXP ? getStemXP() : 0) + ' XP')
         ),
         tabBar,
+        tabHero,
         subtoolNav,
         h('div', { className: 'flex-1 overflow-y-auto pr-1' }, content),
         snapshotBtn
