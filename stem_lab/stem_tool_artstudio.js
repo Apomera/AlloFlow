@@ -1420,6 +1420,45 @@ const d = labToolData.artStudio || {};
 
             ),
 
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                colorWheel:   { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDFA8', title: 'Color Wheel \u2014 HSL/HSV + complementary pairs',           hint: 'Hue (0-360 around the wheel), saturation (purity), lightness (brightness). Complementary across, analogous adjacent, triadic 120\u00b0 apart. Newton put the spectrum on a wheel in 1666.' },
+                mixer:        { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDEA', title: 'Color Mixer \u2014 subtractive vs additive',                  hint: 'Paint and print = subtractive (CMY mixes to dark); light and screens = additive (RGB mixes to white). Same world, completely different math \u2014 a printer thinks in K plates, a TV thinks in Hz.' },
+                pixel:        { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDBC',  title: 'Pixel Art \u2014 bitmap craft at 8\u00d78 to 32\u00d732',          hint: 'Each pixel is a deliberate decision. NES sprites famously fit a hero into 16\u00d716 with a 4-color palette. Bresenham\u2019s line algorithm draws diagonals without floats.' },
+                symmetry:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\u2728',         title: 'Symmetry \u2014 reflection, rotation, glide',                hint: 'Bilateral (mirror), rotational (n-fold), point. The 17 wallpaper groups classify every possible repeating 2D pattern \u2014 Escher\u2019s entire body of work.' },
+                spirograph:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83C\uDF00', title: 'Spirograph \u2014 hypotrochoid roulettes',                  hint: 'A small circle rolls inside a big one, pen offset from center. Ratio of radii determines petal count; offset sets thickness. Toy patented 1965, math from 1700s.' },
+                generative:   { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83C\uDF86', title: 'Generative \u2014 algorithm + randomness as artist',         hint: 'Sol LeWitt wrote instructions; the wall installer was the executor. Today: Processing, p5.js, Cinder. \u201CThe artist is the rule, not the result.\u201D' },
+                spinArt:      { accent: '#db2777', soft: 'rgba(219,39,119,0.10)', icon: '\uD83C\uDF00', title: 'Spin Art \u2014 centripetal physics in paint',               hint: 'Drop paint, spin, watch it fling outward in spirals. Damien Hirst made millions selling spin paintings. Same physics as a salad spinner; F = m\u03c9\u00b2r.' },
+                stringArt:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDD78', title: 'String Art \u2014 curves from straight lines',                hint: 'Connect every n-th nail; an envelope curve emerges. Mary Everest Boole introduced this as classroom math c. 1900. The straight-line cardioid is still hypnotic.' },
+                opArt:        { accent: '#475569', soft: 'rgba(71,85,105,0.10)',  icon: '\uD83D\uDC41', title: 'Op Art \u2014 fooling the visual system',                    hint: 'Bridget Riley\u2019s moir\u00e9 fields, Vasarely\u2019s grids. The brain\u2019s motion-detection edge cells over-fire on rapidly alternating contrast \u2014 the page appears to *vibrate*.' },
+                tessellation: { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDD37', title: 'Tessellation \u2014 the 17 wallpaper groups',                hint: 'Every periodic 2D tiling fits one of 17 symmetry groups. Escher figured this out by visiting the Alhambra in 1936; he then spent 30 years exhausting the catalogue.' },
+                fractal:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2E', title: 'Fractal \u2014 self-similar at every scale',                  hint: 'Mandelbrot 1975. Cauliflower, coastlines, blood vessels, lightning, lung alveoli \u2014 all fractal. \u201CClouds are not spheres, mountains are not cones, bark is not smooth.\u201D' },
+                gradient:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83C\uDF08', title: 'Gradient \u2014 smooth color transitions',                    hint: 'CSS gives you linear, radial, and conic gradients. Real rainbows have continuous spectra (no discrete bands) \u2014 the 7 \u201Ccolors of the rainbow\u201D were Newton\u2019s arbitrary choice for musical reasons.' },
+                stereogram:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC53', title: 'Stereogram \u2014 3D from a flat page',                       hint: '90s Magic Eye craze. Each eye sees a slightly shifted version; if you cross or diverge correctly, the brain fuses them into depth. ~5% of people genuinely can\u2019t \u2014 not their fault.' },
+                life:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDDEC', title: 'Game of Life \u2014 4 rules, infinite emergence',             hint: 'Conway, 1970. Born=3, survive=2-3, else die. Gliders glide, oscillators oscillate, glider guns shoot. Conway proved Life is Turing-complete \u2014 you can build a CPU in cells.' },
+                contrast:     { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\u267F',         title: 'Contrast \u2014 WCAG 4.5:1 / 3:1 / APCA',                   hint: 'WCAG 2.1: normal text 4.5:1, large 3:1. Why low contrast hurts low-vision readers, even if you can read it. APCA (the WCAG 3.0 successor) uses perceptual lightness, not raw luminance ratio.' }
+              };
+              var meta = TAB_META[tab] || TAB_META.colorWheel;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             tab === 'colorWheel' && React.createElement("div", { className: "space-y-4" },
 
               React.createElement("div", { className: "flex gap-4", style: { alignItems: 'flex-start' } },
