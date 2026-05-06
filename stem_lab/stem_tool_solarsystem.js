@@ -5090,8 +5090,39 @@ const d = labToolData.solarSystem;
     default: content = h("div", null, "Unknown tab");
   }
 
+  // Topic-accent hero band per tab
+  var TAB_META = [
+    { accent: "#7c3aed", soft: "rgba(124,58,237,0.10)", title: "Full orrery — animated solar system",     hint: "All 8 planets to scale (size + orbit). Watch Mercury lap Earth ~4× per Earth-year. Inner planets cluster tight; outer ones sweep huge orbits." },
+    { accent: "#0ea5e9", soft: "rgba(14,165,233,0.10)", title: "Kepler I — orbits are ellipses",          hint: "Every planet orbits in an ellipse with the Sun at one focus. The other focus is empty space. Earth's orbit is barely-eccentric (e ≈ 0.017)." },
+    { accent: "#22c55e", soft: "rgba(34,197,94,0.10)",  title: "Kepler II — equal areas in equal times",  hint: "A line from planet to Sun sweeps equal areas in equal times — meaning planets move FASTER near the Sun (perihelion) and SLOWER far away (aphelion)." },
+    { accent: "#f59e0b", soft: "rgba(245,158,11,0.10)", title: "Kepler III — period² ∝ semi-major-axis³", hint: "T² = a³ when T is in years and a is in AU. Earth's T=1, a=1 makes the math beautifully clean. Doubling orbit size multiplies period by ~2.83." },
+    { accent: "#06b6d4", soft: "rgba(6,182,212,0.10)",  title: "Workshop — build your own orbit",         hint: "Set semi-major axis + eccentricity; the orrery shows the orbit in real time. Try e=0.9 — that's comet territory. Try e=0 — perfect circle." },
+    { accent: "#dc2626", soft: "rgba(220,38,38,0.10)",  title: "Hohmann transfers — actual rocket math",  hint: "The minimum-energy way to travel between two circular orbits. Two burns: leave the inner orbit at perihelion of transfer, arrive at the outer orbit at aphelion." },
+    { accent: "#fbbf24", soft: "rgba(251,191,36,0.10)", title: "Challenges — apply Kepler's laws",        hint: "Multi-step problems: predict periods from semi-major axis, identify perihelion vs aphelion speeds, compute transfer-orbit Δv. AP Physics 1 + 2 territory." },
+    { accent: "#8b5cf6", soft: "rgba(139,92,246,0.10)", title: "True / False — concept check",            hint: "Quick discrimination quiz on common Kepler misconceptions. Targets the orbital myths (\"closer = slower,\" \"orbits are circles,\" \"all orbits go the same direction\")." }
+  ];
+  var meta = TAB_META[stab] || TAB_META[0];
+  var tabHero = h("div", {
+    style: {
+      padding: "12px 14px",
+      borderRadius: "12px",
+      background: "linear-gradient(135deg, " + meta.soft + " 0%, " + (isDark ? "rgba(15,23,42,0)" : "rgba(255,255,255,0)") + " 100%)",
+      border: "1px solid " + meta.accent + "55",
+      borderLeft: "4px solid " + meta.accent,
+      display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap",
+      marginBottom: "12px"
+    }
+  },
+    h("div", { style: { fontSize: "26px", flexShrink: 0, fontWeight: 900, color: meta.accent }, "aria-hidden": "true" }, TAB_ICONS[stab]),
+    h("div", { style: { flex: 1, minWidth: "220px" } },
+      h("h3", { style: { color: meta.accent, fontSize: "15px", fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+      h("p", { style: { margin: "3px 0 0", color: isDark ? "#cbd5e1" : "#475569", fontSize: "11px", lineHeight: 1.45, fontStyle: "italic" } }, meta.hint)
+    )
+  );
+
   return h("div", { className: "space-y-3" },
     tabHeader,
+    tabHero,
     content
   );
 
