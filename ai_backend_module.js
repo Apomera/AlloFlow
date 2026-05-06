@@ -1488,6 +1488,79 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             : data.choices?.[0]?.message?.content || '';
     }
 
+    // ─── AUDIO ANALYSIS (Phase 3v.4) ─────────────────────────────────
+    /**
+     * Send audio + a text prompt to the model. Mirrors analyzeImage
+     * shape but with audio MIME types. Returns plain text — callers
+     * who want structured output (transcript + score + ack) ask for
+     * JSON in their prompt and parse the result.
+     *
+     * Used by voice_module.js:gradeAudioJustification — the primary
+     * path for arcade Boss Encounter card-play justification grading.
+     * Collapses transcription + grading into a single API call.
+     *
+     * @param {string} prompt
+     * @param {string} base64Data
+     * @param {Object} [opts]
+     * @param {string} [opts.mimeType='audio/webm']  — supported by Gemini in
+     *   practice; falls back to ogg/wav/mp3/aac/flac per Google docs.
+     *   AlloHaven's MediaRecorder default is audio/webm;codecs=opus.
+     * @returns {Promise<string>} Model response text
+     */
+    async analyzeAudio(prompt, base64Data, { mimeType = 'audio/webm' } = {}) {
+        this._debugLog(`[AIProvider] analyzeAudio: ${prompt?.substring(0, 60)}`);
+        switch (this.backend) {
+            case 'gemini':
+                return this._geminiAnalyzeAudio(prompt, base64Data, mimeType);
+            case 'openai':
+            case 'localai':
+            case 'ollama':
+            case 'claude':
+            case 'custom':
+            default:
+                // Most non-Gemini backends don't accept audio inline; fail
+                // with a clear error so the caller falls back to local
+                // Whisper transcription + text-only grading path.
+                throw new Error('Audio input not supported on this backend (' + this.backend + '). Use Whisper for transcription, then text grading.');
+        }
+    }
+
+    async _geminiAnalyzeAudio(prompt, base64Data, mimeType) {
+        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
+        // Use the vision/multimodal model — Gemini's flash/pro vision
+        // models accept audio in the same payload shape.
+        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
+
+        // Strip any data:audio/...;base64, prefix the caller may have left
+        // on the string (recordAudioBlob returns a full data URI).
+        let cleanData = base64Data || '';
+        const m = cleanData.match(/^data:([^;]+);base64,(.+)$/);
+        if (m) {
+            mimeType = m[1] || mimeType;
+            cleanData = m[2];
+        }
+
+        const payload = {
+            contents: [{
+                parts: [
+                    { text: prompt },
+                    { inlineData: { mimeType, data: cleanData } },
+                ],
+            }],
+        };
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error.message || 'Gemini audio analysis failed');
+        }
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    }
+
     // ─── TEXT-TO-SPEECH ───────────────────────────────────────────────
 
     /**

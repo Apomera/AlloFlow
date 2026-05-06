@@ -1189,6 +1189,37 @@
             })
           ),
 
+          /* ── Topic-accent hero band per tab ── */
+          (function() {
+            var TAB_META = {
+              explore:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u2697\uFE0F', title: 'Explore the material',         hint: 'Pick a material to see its molecular structure, properties, and what breaks it down. Atoms are the same; arrangement is everything.' },
+              scenes:     { accent: '#e11d48', soft: 'rgba(225,29,72,0.10)',   icon: '\uD83C\uDFE0', title: 'Hunt \u2014 find the change',  hint: 'Spot evidence of decomposition in real-world scenes. Patina on copper, rust on iron, mold on bread \u2014 each is a chemical signature.' },
+              reactions:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83C\uDF0B', title: 'Mix \u2014 combine reactants',  hint: 'Drag materials together; watch what they form. Combustion needs fuel + oxidizer + heat. Acid + base = water + salt. Ratios matter.' },
+              states:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF21\uFE0F', title: 'States \u2014 phase changes', hint: 'Solid \u2192 liquid \u2192 gas (and back). Phase change requires energy in or out without changing temperature \u2014 the latent heat trap.' },
+              visualize:  { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83C\uDFA8', title: 'Atoms \u2014 zoom in',         hint: 'Watch the atomic-scale view of the same reaction you saw at the human scale. Bonds break (energy out), bonds form (energy in). Net change = enthalpy.' },
+              quiz:       { accent: '#10b981', soft: 'rgba(16,185,129,0.10)',  icon: '\uD83E\uDDE0', title: 'Quiz \u2014 concepts in context', hint: 'Multi-choice items on bonding, redox, phase changes, half-life. Each question pairs back to the explore + reactions modes.' },
+              tutor:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83E\uDD16', title: 'AI tutor',                      hint: 'Ask the tutor about the active material or reaction. It knows what is on screen and tailors answers to your grade band.' }
+            };
+            var meta = TAB_META[tab] || TAB_META.explore;
+            return h('div', {
+              className: 'mb-4',
+              style: {
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
           /* ── Material selector chips (always visible) ── */
           h('div', { className: 'flex flex-wrap gap-1.5 mb-4' },
             MATERIALS.map(function(m) {

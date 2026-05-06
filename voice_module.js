@@ -627,7 +627,35 @@
     }
 
     if (engine === 'gemini') {
-      return Promise.reject(new Error('Gemini multimodal audio not yet shipped (Phase 3v.4)'));
+      var callGeminiAudio = opts.callGeminiAudio;
+      if (typeof callGeminiAudio !== 'function') {
+        return Promise.reject(new Error(
+          'engine=\'gemini\' requires opts.callGeminiAudio. ' +
+          'The caller (e.g. arcade plugin) must thread its AI bridge through.'
+        ));
+      }
+      var startedAtG = Date.now();
+      var transcriptPrompt =
+        'Transcribe the spoken audio to text. ' +
+        'Respond with ONLY the transcript, no commentary, no quotes, no leading "Transcript:" label.';
+      return callGeminiAudio(transcriptPrompt, audioBase64, { mimeType: opts.mimeType || 'audio/webm' })
+        .then(function (text) {
+          var transcript = (typeof text === 'string') ? text.trim() : '';
+          // Strip a wrapping "Transcript:" label if the model added one anyway
+          transcript = transcript.replace(/^transcript\s*:\s*/i, '');
+          // Strip wrapping quotes
+          if (transcript.length >= 2 && (
+            (transcript.charAt(0) === '"' && transcript.charAt(transcript.length - 1) === '"') ||
+            (transcript.charAt(0) === '“' && transcript.charAt(transcript.length - 1) === '”')
+          )) {
+            transcript = transcript.slice(1, -1).trim();
+          }
+          return {
+            transcript: transcript,
+            engine: 'gemini-audio',
+            durationMs: Date.now() - startedAtG
+          };
+        });
     }
 
     if (engine === 'fast' || engine === 'webspeech') {
@@ -647,15 +675,151 @@
     return Promise.reject(new Error('Unknown engine: ' + engine));
   }
 
+  // ── Gemini multimodal audio (Phase 3v.4) ──────────────────────────
+  // Sends audio + a structured rubric prompt to Gemini in a single call.
+  // The model returns transcript + 1-20 score + ack + follow-up as JSON,
+  // which we parse and return. Primary path for arcade Boss Encounter
+  // justification grading — collapses transcription + grading into one
+  // API hit, saving the second LLM round-trip vs. a separate
+  // Whisper-then-grade pipeline.
+  //
+  // The caller wires the actual API access via opts.callGeminiAudio,
+  // which is expected to be a function (prompt, audioBase64, opts) =>
+  // Promise<string>. This keeps voice_module decoupled from any
+  // specific AI provider instance — the consumer (e.g. Boss Encounter
+  // arcade plugin) plumbs its existing AI helper through.
+  //
+  // opts:
+  //   callGeminiAudio (required): the AI bridge function
+  //   rubric: { conceptName, conceptDef, cardName, cardSource ('decoration'|'glossary'),
+  //             tier ('Domain-Specific'|'Academic'|'Tier 2'|'Tier 3'),
+  //             actionVerb (optional), bossTopic (optional) }
+  //   mimeType: 'audio/webm' (default; matches recordAudioBlob output)
+  //
+  // Returns Promise<{
+  //   transcript: string,
+  //   score: number 1-20,
+  //   ackText: string,    // always-supportive acknowledgement
+  //   followUp: string,   // one optional follow-up question
+  //   engine: 'gemini-audio',
+  //   raw: string         // raw model response for debugging
+  // }>
   function gradeAudioJustification(audioBase64, rubric, opts) {
-    // Phase 3v.4 — the primary path for arcade Boss Encounter justifications.
-    // Sends audio + rubric to Gemini multimodal in a single call;
-    // returns Promise<{ transcript, score, ackText, followUp }>.
-    // Collapses transcription + grading into one API hit.
-    if (typeof console !== 'undefined') {
-      console.warn('[Voice] gradeAudioJustification not yet implemented (Phase 3v.4).');
+    opts = opts || {};
+    rubric = rubric || {};
+    var callGeminiAudio = opts.callGeminiAudio;
+    if (typeof callGeminiAudio !== 'function') {
+      return Promise.reject(new Error('gradeAudioJustification requires opts.callGeminiAudio'));
     }
-    return Promise.reject(new Error('voice.gradeAudioJustification not yet implemented'));
+    if (!audioBase64) {
+      return Promise.reject(new Error('No audio data provided'));
+    }
+
+    var prompt = buildJustificationRubricPrompt(rubric);
+    var startedAt = Date.now();
+
+    return callGeminiAudio(prompt, audioBase64, { mimeType: opts.mimeType || 'audio/webm' })
+      .then(function (raw) {
+        var parsed = parseRubricResponse(raw);
+        return {
+          transcript: parsed.transcript || '',
+          score: parsed.score,
+          ackText: parsed.ackText || '',
+          followUp: parsed.followUp || '',
+          engine: 'gemini-audio',
+          raw: raw,
+          durationMs: Date.now() - startedAt
+        };
+      });
+  }
+
+  // Builds the structured rubric prompt sent to Gemini. The prompt
+  // explicitly values BRIDGE QUALITY over card-topic alignment — the
+  // equal-reward-for-distant-transfer decision from the plan. Domain-
+  // Specific tier raises the bar for "strong" but not the score ceiling.
+  function buildJustificationRubricPrompt(rubric) {
+    var conceptName = rubric.conceptName || rubric.cardName || 'a concept';
+    var conceptDef = rubric.conceptDef || '';
+    var cardName = rubric.cardName || conceptName;
+    var cardSource = rubric.cardSource || 'glossary';
+    var tier = rubric.tier || 'Tier 2';
+    var actionVerb = rubric.actionVerb || 'spark';
+    var bossTopic = rubric.bossTopic || conceptName;
+
+    var lines = [];
+    lines.push('You are evaluating a student\'s spoken justification for a card play in an educational game.');
+    lines.push('');
+    lines.push('CONTEXT:');
+    lines.push('- The student plays cards in a cooperative class-vs-AI encounter.');
+    lines.push('- Each card play is justified by the student explaining how it fits the topic.');
+    lines.push('- Justifications are graded 1–20 (a "d20" score) which determines the action\'s effect.');
+    lines.push('');
+    lines.push('THIS PLAY:');
+    lines.push('- Encounter topic: ' + bossTopic);
+    lines.push('- Card name: ' + cardName);
+    lines.push('- Card source: ' + cardSource + ' (decoration = student\'s personal collection; glossary = unit lesson term)');
+    if (conceptDef) lines.push('- Concept definition: ' + conceptDef);
+    lines.push('- Concept tier: ' + tier);
+    lines.push('- Action: ' + actionVerb);
+    lines.push('');
+    lines.push('RUBRIC (read carefully):');
+    lines.push('1. Score 1–20 the QUALITY OF THE BRIDGE between the card and the topic. Equal reward for distant transfer:');
+    lines.push('   - A creative, well-reasoned bridge between an unrelated card and the topic deserves the SAME high score');
+    lines.push('     as a textbook-direct connection. Do NOT penalize a less-obvious card whose justification is strong.');
+    lines.push('2. Tier informs the bar, not the ceiling. Domain-Specific concepts require accurate invocation to score 18+;');
+    lines.push('   any card can score 1–20 with an appropriate justification.');
+    lines.push('3. Be GENEROUS with autistic students whose answers may be literal-but-correct. Concise + accurate beats verbose.');
+    lines.push('4. Score band guide:');
+    lines.push('   - 1–5:   No meaningful connection or unintelligible audio.');
+    lines.push('   - 6–10:  Connection attempted but vague, off-topic, or only superficially related.');
+    lines.push('   - 11–14: Solid connection. Concept is invoked correctly; bridge is reasonable.');
+    lines.push('   - 15–17: Strong connection. Specific evidence cited; the bridge holds up to scrutiny.');
+    lines.push('   - 18–20: Excellent. Either textbook-precise on a Domain-Specific concept, OR a striking creative');
+    lines.push('     transfer that genuinely illuminates the topic.');
+    lines.push('5. Acknowledgement: ALWAYS lead with what was clear or strong about the response. One short sentence.');
+    lines.push('6. Follow-up: ONE thought-provoking question the student could think about. Not graded; just an invitation.');
+    lines.push('');
+    lines.push('OUTPUT FORMAT — respond with ONLY valid JSON, no surrounding prose, no markdown fences:');
+    lines.push('{');
+    lines.push('  "transcript": "the student\'s spoken words, transcribed",');
+    lines.push('  "score": <integer 1-20>,');
+    lines.push('  "ackText": "1 short sentence acknowledging what was clear or strong",');
+    lines.push('  "followUp": "1 short thought-provoking question (not graded)"');
+    lines.push('}');
+    return lines.join('\n');
+  }
+
+  function parseRubricResponse(raw) {
+    var defaults = { transcript: '', score: 1, ackText: '', followUp: '' };
+    if (!raw || typeof raw !== 'string') return defaults;
+    // Strip code-fence wrappers if the model added them despite instructions.
+    var cleaned = raw.trim()
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim();
+    // Extract the first JSON object substring (model may add prose).
+    var firstBrace = cleaned.indexOf('{');
+    var lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1 || lastBrace <= firstBrace) {
+      return Object.assign({}, defaults, { ackText: cleaned.slice(0, 200) });
+    }
+    var jsonText = cleaned.substring(firstBrace, lastBrace + 1);
+    try {
+      var parsed = JSON.parse(jsonText);
+      var score = Number(parsed.score);
+      if (!isFinite(score) || score < 1) score = 1;
+      if (score > 20) score = 20;
+      return {
+        transcript: typeof parsed.transcript === 'string' ? parsed.transcript : '',
+        score: Math.round(score),
+        ackText: typeof parsed.ackText === 'string' ? parsed.ackText : '',
+        followUp: typeof parsed.followUp === 'string' ? parsed.followUp : ''
+      };
+    } catch (err) {
+      // Couldn't parse — return what we got as ackText so the caller has
+      // something to show instead of a blank screen.
+      return Object.assign({}, defaults, { ackText: cleaned.slice(0, 200) });
+    }
   }
 
   // ── Public API ─────────────────────────────────────────────────────
@@ -677,19 +841,22 @@
     getLoadedWhisperTier: getLoadedWhisperTier,
     subscribeToVoiceProgress: subscribeToVoiceProgress,
 
-    // Phase 3v.4+ — stubs
+    // Phase 3v.4 — shipped
     gradeAudioJustification: gradeAudioJustification,
+    buildJustificationRubricPrompt: buildJustificationRubricPrompt,
+    parseRubricResponse: parseRubricResponse,
 
     // Phase / version markers — let callers detect what's actually wired.
-    _phase: '3v.3',
+    _phase: '3v.4',
     _shipped: [
       'initWebSpeechCapture', 'getCapabilities', 'loadPreference', 'savePreference',
       'recordAudioBlob',
-      'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'subscribeToVoiceProgress'
+      'transcribeAudio', 'preloadWhisper', 'isWhisperLoaded', 'getLoadedWhisperTier', 'subscribeToVoiceProgress',
+      'gradeAudioJustification', 'buildJustificationRubricPrompt', 'parseRubricResponse'
     ]
   };
 
   if (typeof console !== 'undefined') {
-    console.log('[Voice] AlloFlowVoice loaded — phase 3v.3');
+    console.log('[Voice] AlloFlowVoice loaded — phase 3v.4');
   }
 })();
