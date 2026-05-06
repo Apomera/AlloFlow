@@ -41,6 +41,32 @@ function gradeBandExpectations(grade) {
   return                 { tier2: 30, tier3: 22, band: 'College' };
 }
 
+// ─── Plan O: In-session LLM-review cache ─────────────────────────────
+// Keyed by (dimension, artifact-fingerprint, gradeLevel). On audit re-run,
+// dimensions whose inputs haven't changed reuse cached LLM reviews instead
+// of re-calling Gemini. Persists for the page session only; cleared on reload.
+const _auditLLMCache = new Map();
+function _hashStr(s) {
+    let h = 5381;
+    for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+}
+function _auditFingerprint(artifacts, ...extras) {
+    const safe = Array.isArray(artifacts) ? artifacts : [];
+    const sorted = safe.slice().sort((a, b) => {
+        const ai = (a && a.id) || '';
+        const bi = (b && b.id) || '';
+        return ai < bi ? -1 : ai > bi ? 1 : 0;
+    });
+    const parts = sorted.map(a => {
+        if (!a) return '?';
+        let dataHash = '0';
+        try { dataHash = _hashStr(JSON.stringify(a.data || null)); } catch (e) { dataHash = 'circ'; }
+        return (a.id || '?') + ':' + (a.type || '?') + ':' + dataHash;
+    });
+    return _hashStr(parts.join('|') + '||' + extras.join('|'));
+}
+
 // ─── Plan O: Harvest existing audit signals from artifacts ─────────────
 // AlloFlow already produces audit-shaped data inside individual artifacts
 // (analysis items contain reading-level bands + accuracy ratings; simplified
@@ -1959,119 +1985,116 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              metaInfo = `Comprehensive audit (no target standards)`;
          }
 
-         // ---- Plan O Step 1+2: Comprehensive dimensions ---------------------
-         // Step 1: Vocabulary fit (deterministic + LLM review) + reading-level
-         //   harvest from analysis items.
-         // Step 2: Engagement variety (deterministic counts of distinct
-         //   artifact types + DOK distribution + scaffolds + multi-modal
-         //   coverage, plus LLM review).
+         // ---- Plan O Steps 1-5: Comprehensive dimensions (PARALLEL) ---------
+         // Deterministic computations run synchronously first (microseconds).
+         // The 5 LLM review calls then run in parallel via Promise.all, cutting
+         // wall-clock from ~30-60s sequential to ~10s.
          const auditHarvest = harvestExistingAuditSignals(artifactsToAudit);
-         setGenerationStep && setGenerationStep('Analyzing vocabulary fit...');
-         try {
-             const vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
-             // Enrich vocabulary with reading-level harvest from analysis items
-             vocabFit.readingLevels = auditHarvest.readingLevels;
-             content.comprehensive = content.comprehensive || {};
-             content.comprehensive.vocabulary = vocabFit;
+         content.comprehensive = content.comprehensive || {};
 
-             // Optional LLM review pass. Failures don't block the audit;
-             // deterministic results still ship if the LLM call errors.
+         // ---- Sync deterministic compute (Steps 1, 2, 3, 5 stats) -----------
+         let vocabFit = null;
+         try {
+             vocabFit = computeVocabularyFit(artifactsToAudit, gradeLevel);
+             vocabFit.readingLevels = auditHarvest.readingLevels;
+             content.comprehensive.vocabulary = vocabFit;
+         } catch (vocabErr) { warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr); }
+
+         let engagement = null;
+         try {
+             engagement = computeEngagementVariety(auditHarvest, artifactsToAudit);
+             content.comprehensive.engagement = engagement;
+         } catch (engErr) { warnLog('[Alignment] Engagement variety computation failed:', engErr); }
+
+         let accessibility = null;
+         try {
+             accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, gradeLevel);
+             content.comprehensive.accessibility = accessibility;
+         } catch (accErr) { warnLog('[Alignment] Accessibility computation failed:', accErr); }
+
+         let accuracy = null;
+         try {
+             accuracy = computeContentAccuracy(auditHarvest);
+             content.comprehensive.accuracy = accuracy;
+         } catch (accuracyErr) { warnLog('[Alignment] Content accuracy computation failed:', accuracyErr); }
+
+         // Shared grade band derived once for all dimensions
+         const dimGradeBand = (vocabFit && vocabFit.expected && vocabFit.expected.gradeBand) || gradeLevel;
+
+         // ---- Async LLM reviews (parallel) ---------------------------------
+         setGenerationStep && setGenerationStep('Running 5 audit dimensions in parallel...');
+
+         // Each task is self-contained: build prompt → call → parse → apply.
+         // Tasks return null on any failure; failures are logged but don't
+         // block other dimensions or the overall audit.
+         const vocabTask = vocabFit ? (async () => {
+             const fp = 'vocab:' + _auditFingerprint(artifactsToAudit, gradeLevel);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.vocabulary.llmReview = cached; return; }
              try {
                  const contextSnippet = (comprehensiveContext || '').slice(0, 4000);
-                 const vocabReviewPrompt = `You are a literacy coach reviewing a heuristic vocabulary classification.\n\nThe system classified words from a lesson as:\n- Tier 1 (everyday): ${vocabFit.tier1Count} unique words\n- Tier 2 (academic, cross-disciplinary): ${vocabFit.tier2Count} unique words. Examples flagged by the heuristic: ${(vocabFit.tier2Examples || []).join(', ') || '(none)'}\n- Tier 3 (domain-specific): ${vocabFit.tier3Count} unique words. Examples flagged: ${(vocabFit.tier3Examples || []).join(', ') || '(none)'}\n\nGrade band: ${vocabFit.expected.gradeBand}\nExpected per Beck/McKeown norms: ~${vocabFit.expected.tier2} Tier 2 + ~${vocabFit.expected.tier3} Tier 3 unique words.\n\nSource text excerpt (first 4000 chars):\n"""\n${contextSnippet}\n"""\n\nReview the heuristic classifications and provide:\n1. "corrections": array of words from the Tier 2 examples that the heuristic got WRONG (i.e., they're really Tier 1 everyday words). Common false positives to watch for: long-but-common words like "tomorrow", "remember", "different", "without", "morning".\n2. "missedTier2": array of 2-4 Tier 2 academic words that ARE in the source text but the heuristic likely missed (e.g., shorter words like "claim", "reveal", "trace", "frame" that appear academically).\n3. "recommendations": array of 2-3 specific Tier 2 academic words to ADD to this lesson, contextually appropriate to the topic and grade band. Each recommendation must be one to three words.\n4. "narrative": ONE paragraph (2-3 sentences) summarizing whether the lesson's vocabulary load is appropriate for the grade band, and what the most important next move is.\n\nReturn ONLY a single valid JSON object with exactly these four fields. No prose outside the JSON, no markdown fences.`;
-                 const vocabReviewResult = await callGemini(vocabReviewPrompt, true);
-                 try {
-                     const review = JSON.parse(cleanJson(vocabReviewResult));
-                     content.comprehensive.vocabulary.llmReview = {
-                         corrections: Array.isArray(review.corrections) ? review.corrections.slice(0, 12) : [],
-                         missedTier2: Array.isArray(review.missedTier2) ? review.missedTier2.slice(0, 8) : [],
-                         recommendations: Array.isArray(review.recommendations) ? review.recommendations.slice(0, 6) : [],
-                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                     };
-                 } catch (parseErr) {
-                     warnLog('[Alignment] Vocab LLM review parse failed:', parseErr);
-                 }
-             } catch (llmErr) {
-                 warnLog('[Alignment] Vocab LLM review call failed:', llmErr);
-             }
-         } catch (vocabErr) {
-             warnLog('[Alignment] Vocabulary fit computation failed:', vocabErr);
-         }
+                 const prompt = `You are a literacy coach reviewing a heuristic vocabulary classification.\n\nThe system classified words from a lesson as:\n- Tier 1 (everyday): ${vocabFit.tier1Count} unique words\n- Tier 2 (academic, cross-disciplinary): ${vocabFit.tier2Count} unique words. Examples flagged by the heuristic: ${(vocabFit.tier2Examples || []).join(', ') || '(none)'}\n- Tier 3 (domain-specific): ${vocabFit.tier3Count} unique words. Examples flagged: ${(vocabFit.tier3Examples || []).join(', ') || '(none)'}\n\nGrade band: ${vocabFit.expected.gradeBand}\nExpected per Beck/McKeown norms: ~${vocabFit.expected.tier2} Tier 2 + ~${vocabFit.expected.tier3} Tier 3 unique words.\n\nSource text excerpt (first 4000 chars):\n"""\n${contextSnippet}\n"""\n\nReview the heuristic classifications and provide:\n1. "corrections": array of words from the Tier 2 examples that the heuristic got WRONG (i.e., they're really Tier 1 everyday words). Common false positives to watch for: long-but-common words like "tomorrow", "remember", "different", "without", "morning".\n2. "missedTier2": array of 2-4 Tier 2 academic words that ARE in the source text but the heuristic likely missed (e.g., shorter words like "claim", "reveal", "trace", "frame" that appear academically).\n3. "recommendations": array of 2-3 specific Tier 2 academic words to ADD to this lesson, contextually appropriate to the topic and grade band. Each recommendation must be one to three words.\n4. "narrative": ONE paragraph (2-3 sentences) summarizing whether the lesson's vocabulary load is appropriate for the grade band, and what the most important next move is.\n\nReturn ONLY a single valid JSON object with exactly these four fields. No prose outside the JSON, no markdown fences.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     corrections: Array.isArray(review.corrections) ? review.corrections.slice(0, 12) : [],
+                     missedTier2: Array.isArray(review.missedTier2) ? review.missedTier2.slice(0, 8) : [],
+                     recommendations: Array.isArray(review.recommendations) ? review.recommendations.slice(0, 6) : [],
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                 };
+                 content.comprehensive.vocabulary.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Vocab LLM review failed:', e); }
+         })() : Promise.resolve();
 
-         // ---- Plan O Step 2: Engagement variety -----------------------------
-         setGenerationStep && setGenerationStep('Evaluating engagement variety...');
-         try {
-             const engagement = computeEngagementVariety(auditHarvest, artifactsToAudit);
-             content.comprehensive = content.comprehensive || {};
-             content.comprehensive.engagement = engagement;
-
+         const engagementTask = engagement ? (async () => {
+             const fp = 'engagement:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.engagement.llmReview = cached; return; }
              try {
-                 const engagementGradeBand = (content.comprehensive && content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
-                 const engagementReviewPrompt = `You are an expert in UDL (Universal Design for Learning) and Webb's Depth of Knowledge framework. Review the engagement-variety profile of this curriculum.\n\nDeterministic stats:\n- Distinct artifact types: ${engagement.distinctTypeCount} (${engagement.distinctTypes.join(', ')})\n- Total artifacts: ${engagement.totalArtifacts}\n- Diversity score: ${engagement.diversityScore} (0=single type, 1=balanced)\n- DOK distribution (% of quiz items, ${engagement.dokTotal} total): L1=${engagement.dokDistribution.L1 || 0}%, L2=${engagement.dokDistribution.L2 || 0}%, L3=${engagement.dokDistribution.L3 || 0}%, L4=${engagement.dokDistribution.L4 || 0}%, unknown=${engagement.dokDistribution.unknown || 0}%\n- Scaffolds: ${engagement.scaffoldCounts.sentenceFrames} sentence-frames sets, ${engagement.scaffoldCounts.simplifiedTexts} simplified texts, ${engagement.scaffoldCounts.leveledGlossary} leveled glossaries\n- Modalities present: ${engagement.multimodalCoverage.present.join(', ') || '(none)'}\n- Modalities missing: ${engagement.multimodalCoverage.missing.join(', ') || '(none)'}\n- Grade band: ${engagementGradeBand}\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether engagement variety is appropriate for the grade band and what is most needed.\n2. "formatGaps": array of 1-3 specific format additions that would most improve engagement (e.g., "add a Visual Organizer to give visual learners a non-text path through the content", "add a brief Adventure scenario for kinesthetic engagement"). Each entry should be a sentence.\n3. "dokAssessment": ONE sentence on whether the DOK balance is appropriate (e.g., "DOK skews recall-heavy; add 2-3 application-level questions" or "DOK distribution is well-balanced for ${engagementGradeBand}"). If dokTotal is 0, say "No quiz items present to evaluate DOK."\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
-                 const engagementReviewResult = await callGemini(engagementReviewPrompt, true);
-                 try {
-                     const review = JSON.parse(cleanJson(engagementReviewResult));
-                     content.comprehensive.engagement.llmReview = {
-                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                         formatGaps: Array.isArray(review.formatGaps) ? review.formatGaps.slice(0, 5) : [],
-                         dokAssessment: typeof review.dokAssessment === 'string' ? review.dokAssessment : '',
-                     };
-                 } catch (parseErr) {
-                     warnLog('[Alignment] Engagement LLM review parse failed:', parseErr);
-                 }
-             } catch (llmErr) {
-                 warnLog('[Alignment] Engagement LLM review call failed:', llmErr);
-             }
-         } catch (engErr) {
-             warnLog('[Alignment] Engagement variety computation failed:', engErr);
-         }
+                 const prompt = `You are an expert in UDL (Universal Design for Learning) and Webb's Depth of Knowledge framework. Review the engagement-variety profile of this curriculum.\n\nDeterministic stats:\n- Distinct artifact types: ${engagement.distinctTypeCount} (${engagement.distinctTypes.join(', ')})\n- Total artifacts: ${engagement.totalArtifacts}\n- Diversity score: ${engagement.diversityScore} (0=single type, 1=balanced)\n- DOK distribution (% of quiz items, ${engagement.dokTotal} total): L1=${engagement.dokDistribution.L1 || 0}%, L2=${engagement.dokDistribution.L2 || 0}%, L3=${engagement.dokDistribution.L3 || 0}%, L4=${engagement.dokDistribution.L4 || 0}%, unknown=${engagement.dokDistribution.unknown || 0}%\n- Scaffolds: ${engagement.scaffoldCounts.sentenceFrames} sentence-frames sets, ${engagement.scaffoldCounts.simplifiedTexts} simplified texts, ${engagement.scaffoldCounts.leveledGlossary} leveled glossaries\n- Modalities present: ${engagement.multimodalCoverage.present.join(', ') || '(none)'}\n- Modalities missing: ${engagement.multimodalCoverage.missing.join(', ') || '(none)'}\n- Grade band: ${dimGradeBand}\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether engagement variety is appropriate for the grade band and what is most needed.\n2. "formatGaps": array of 1-3 specific format additions that would most improve engagement (e.g., "add a Visual Organizer to give visual learners a non-text path through the content", "add a brief Adventure scenario for kinesthetic engagement"). Each entry should be a sentence.\n3. "dokAssessment": ONE sentence on whether the DOK balance is appropriate (e.g., "DOK skews recall-heavy; add 2-3 application-level questions" or "DOK distribution is well-balanced for ${dimGradeBand}"). If dokTotal is 0, say "No quiz items present to evaluate DOK."\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     formatGaps: Array.isArray(review.formatGaps) ? review.formatGaps.slice(0, 5) : [],
+                     dokAssessment: typeof review.dokAssessment === 'string' ? review.dokAssessment : '',
+                 };
+                 content.comprehensive.engagement.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Engagement LLM review failed:', e); }
+         })() : Promise.resolve();
 
-         // ---- Plan O Step 3: Content accessibility (heuristic + LLM) -------
-         setGenerationStep && setGenerationStep('Scanning content accessibility...');
-         try {
-             const accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, gradeLevel);
-             content.comprehensive = content.comprehensive || {};
-             content.comprehensive.accessibility = accessibility;
-
+         const accessTask = accessibility ? (async () => {
+             const fp = 'accessibility:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.accessibility.llmReview = cached; return; }
              try {
-                 const accessGradeBand = (content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
-                 const accessReviewPrompt = `You are a school accessibility specialist (school psychologist with assistive-technology expertise). Review the content-level accessibility of this curriculum.\n\nDeterministic findings:\n- Total images: ${accessibility.totalImages} (${accessibility.imagesWithAlt} with alt text${accessibility.altCoveragePct !== null ? ', ' + accessibility.altCoveragePct + '% coverage' : ''})\n- Color-only language hits: ${accessibility.colorOnlyCount}${accessibility.colorOnlyExamples.length > 0 ? ' (examples: ' + accessibility.colorOnlyExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Implicit image references: ${accessibility.implicitImageCount}${accessibility.implicitImageExamples.length > 0 ? ' (examples: ' + accessibility.implicitImageExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Longest unbroken passage: ${accessibility.longestUnbrokenPassage} words\n- Grade band: ${accessGradeBand}\n\nSource text excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accessibility for this grade band. Focus on student impact (what would a student with X experience here?), not WCAG terminology.\n2. "studentImpacts": array of 1-3 specific student-experience callouts. Each entry pairs a student profile with what they would encounter, e.g., "A student using a screen reader would hear 'image' with no description for 3 of the 4 figures, missing the visual evidence for the photosynthesis diagram." Be specific and concrete.\n3. "fixes": array of 2-4 actionable fix suggestions a teacher could apply to THIS content. Each fix should be a sentence, concrete, and tied to the specific findings.\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
-                 const accessReviewResult = await callGemini(accessReviewPrompt, true);
-                 try {
-                     const review = JSON.parse(cleanJson(accessReviewResult));
-                     content.comprehensive.accessibility.llmReview = {
-                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                         studentImpacts: Array.isArray(review.studentImpacts) ? review.studentImpacts.slice(0, 5) : [],
-                         fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 6) : [],
-                     };
-                 } catch (parseErr) {
-                     warnLog('[Alignment] Accessibility LLM review parse failed:', parseErr);
-                 }
-             } catch (llmErr) {
-                 warnLog('[Alignment] Accessibility LLM review call failed:', llmErr);
-             }
-         } catch (accErr) {
-             warnLog('[Alignment] Accessibility computation failed:', accErr);
-         }
+                 const prompt = `You are a school accessibility specialist (school psychologist with assistive-technology expertise). Review the content-level accessibility of this curriculum.\n\nDeterministic findings:\n- Total images: ${accessibility.totalImages} (${accessibility.imagesWithAlt} with alt text${accessibility.altCoveragePct !== null ? ', ' + accessibility.altCoveragePct + '% coverage' : ''})\n- Color-only language hits: ${accessibility.colorOnlyCount}${accessibility.colorOnlyExamples.length > 0 ? ' (examples: ' + accessibility.colorOnlyExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Implicit image references: ${accessibility.implicitImageCount}${accessibility.implicitImageExamples.length > 0 ? ' (examples: ' + accessibility.implicitImageExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Longest unbroken passage: ${accessibility.longestUnbrokenPassage} words\n- Grade band: ${dimGradeBand}\n\nSource text excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accessibility for this grade band. Focus on student impact (what would a student with X experience here?), not WCAG terminology.\n2. "studentImpacts": array of 1-3 specific student-experience callouts. Each entry pairs a student profile with what they would encounter, e.g., "A student using a screen reader would hear 'image' with no description for 3 of the 4 figures, missing the visual evidence for the photosynthesis diagram." Be specific and concrete.\n3. "fixes": array of 2-4 actionable fix suggestions a teacher could apply to THIS content. Each fix should be a sentence, concrete, and tied to the specific findings.\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     studentImpacts: Array.isArray(review.studentImpacts) ? review.studentImpacts.slice(0, 5) : [],
+                     fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 6) : [],
+                 };
+                 content.comprehensive.accessibility.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Accessibility LLM review failed:', e); }
+         })() : Promise.resolve();
 
-         // ---- Plan O Step 4: UDL principles (LLM with deterministic priors) -
-         // Three-pillar evaluation per CAST UDL Guidelines v3.0:
-         //   - Multiple Means of Representation
-         //   - Multiple Means of Engagement
-         //   - Multiple Means of Action & Expression
-         // Pure LLM judgment, but seeded with the deterministic harvest from
-         // Step 2 so the model has factual ground (which modalities are
-         // present, scaffold counts, distinct artifact types, reading levels).
-         setGenerationStep && setGenerationStep('Evaluating UDL principles...');
-         try {
-             const udlGradeBand = (content.comprehensive && content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
-             const modPresent = auditHarvest.multimodal || {};
-             const scaffoldCounts = auditHarvest.scaffoldCounts || {};
-             const distinctTypes = Array.from(auditHarvest.distinctTypes || []);
-             const udlPrompt = `You are a CAST-trained UDL specialist evaluating a curriculum against the three Universal Design for Learning principles (CAST UDL Guidelines v3.0). Each principle has its own pillar. Rate each pillar individually, not the curriculum as a whole.\n\nCurriculum profile (deterministic):\n- Distinct artifact types: ${distinctTypes.join(', ') || '(none)'}\n- Modalities: text=${!!modPresent.text}, image=${!!modPresent.image}, audio=${!!modPresent.audio}, interactive=${!!modPresent.interactive}\n- Scaffolds: ${scaffoldCounts.sentenceFrames || 0} sentence-frame sets, ${scaffoldCounts.simplifiedTexts || 0} simplified texts, ${scaffoldCounts.leveledGlossary || 0} leveled glossaries\n- Reading levels: ${(auditHarvest.readingLevels || []).map(r => r.range).join('; ') || '(none)'}\n- Grade band: ${udlGradeBand}\n\nSource excerpt (first 2500 chars):\n"""\n${(comprehensiveContext || '').slice(0, 2500)}\n"""\n\nFor EACH UDL pillar, evaluate using these prompts:\n\n1. REPRESENTATION (how is content presented?). Multiple ways to access the same content? Visual + auditory + text + interactive? Customizable display? Vocabulary support? Activate background knowledge? Highlight patterns?\n\n2. ENGAGEMENT (why do learners invest effort?). Choices/autonomy? Authenticity, relevance, cultural responsiveness? Optimal challenge with scaffolds? Sustained-effort supports (goal-setting, feedback, self-reflection)?\n\n3. ACTION & EXPRESSION (how do learners demonstrate what they know?). Multiple ways to respond (writing, speaking, drawing, building, performing)? Tools and assistive-tech support? Goal-setting and progress-monitoring scaffolds?\n\nReturn ONLY a single valid JSON object:\n{\n  "representation": { "status": "Aligned"|"Partially Aligned"|"Not Aligned", "evidence": "...", "gaps": "...", "recommendation": "ONE sentence" },\n  "engagement":     { "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "actionExpression":{ "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "overallNarrative": "ONE paragraph (2-3 sentences) summarizing UDL alignment and naming the most pressing pillar to strengthen",\n  "overallStatus": "Aligned"|"Partially Aligned"|"Not Aligned"\n}\n\nNo prose outside the JSON. No markdown fences. No trailing commas.`;
-             const udlResult = await callGemini(udlPrompt, true);
+         // UDL is pure-LLM (no deterministic stats; uses harvest priors)
+         const udlTask = (async () => {
+             const fp = 'udl:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.udl = cached; return; }
              try {
-                 const udl = JSON.parse(cleanJson(udlResult));
+                 const modPresent = auditHarvest.multimodal || {};
+                 const scaffoldCounts = auditHarvest.scaffoldCounts || {};
+                 const distinctTypes = Array.from(auditHarvest.distinctTypes || []);
+                 const prompt = `You are a CAST-trained UDL specialist evaluating a curriculum against the three Universal Design for Learning principles (CAST UDL Guidelines v3.0). Each principle has its own pillar. Rate each pillar individually, not the curriculum as a whole.\n\nCurriculum profile (deterministic):\n- Distinct artifact types: ${distinctTypes.join(', ') || '(none)'}\n- Modalities: text=${!!modPresent.text}, image=${!!modPresent.image}, audio=${!!modPresent.audio}, interactive=${!!modPresent.interactive}\n- Scaffolds: ${scaffoldCounts.sentenceFrames || 0} sentence-frame sets, ${scaffoldCounts.simplifiedTexts || 0} simplified texts, ${scaffoldCounts.leveledGlossary || 0} leveled glossaries\n- Reading levels: ${(auditHarvest.readingLevels || []).map(r => r.range).join('; ') || '(none)'}\n- Grade band: ${dimGradeBand}\n\nSource excerpt (first 2500 chars):\n"""\n${(comprehensiveContext || '').slice(0, 2500)}\n"""\n\nFor EACH UDL pillar, evaluate using these prompts:\n\n1. REPRESENTATION (how is content presented?). Multiple ways to access the same content? Visual + auditory + text + interactive? Customizable display? Vocabulary support? Activate background knowledge? Highlight patterns?\n\n2. ENGAGEMENT (why do learners invest effort?). Choices/autonomy? Authenticity, relevance, cultural responsiveness? Optimal challenge with scaffolds? Sustained-effort supports (goal-setting, feedback, self-reflection)?\n\n3. ACTION & EXPRESSION (how do learners demonstrate what they know?). Multiple ways to respond (writing, speaking, drawing, building, performing)? Tools and assistive-tech support? Goal-setting and progress-monitoring scaffolds?\n\nReturn ONLY a single valid JSON object:\n{\n  "representation": { "status": "Aligned"|"Partially Aligned"|"Not Aligned", "evidence": "...", "gaps": "...", "recommendation": "ONE sentence" },\n  "engagement":     { "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "actionExpression":{ "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "overallNarrative": "ONE paragraph (2-3 sentences) summarizing UDL alignment and naming the most pressing pillar to strengthen",\n  "overallStatus": "Aligned"|"Partially Aligned"|"Not Aligned"\n}\n\nNo prose outside the JSON. No markdown fences. No trailing commas.`;
+                 const result = await callGemini(prompt, true);
+                 const udl = JSON.parse(cleanJson(result));
                  const pillarShape = function (p) {
                      const safe = p && typeof p === 'object' ? p : {};
                      return {
@@ -2081,8 +2104,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                          recommendation: typeof safe.recommendation === 'string' ? safe.recommendation : '',
                      };
                  };
-                 content.comprehensive = content.comprehensive || {};
-                 content.comprehensive.udl = {
+                 const udlShape = {
                      status: typeof udl.overallStatus === 'string' ? udl.overallStatus : 'Partially Aligned',
                      overallNarrative: typeof udl.overallNarrative === 'string' ? udl.overallNarrative : '',
                      representation: pillarShape(udl.representation),
@@ -2095,48 +2117,36 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                      },
                      notes: 'Per CAST UDL Guidelines v3.0. Each pillar evaluated against the deterministic curriculum profile + LLM judgment of the source content.',
                  };
-             } catch (parseErr) {
-                 warnLog('[Alignment] UDL LLM parse failed:', parseErr);
-             }
-         } catch (udlErr) {
-             warnLog('[Alignment] UDL evaluation failed:', udlErr);
-         }
+                 content.comprehensive.udl = udlShape;
+                 _auditLLMCache.set(fp, udlShape);
+             } catch (e) { warnLog('[Alignment] UDL evaluation failed:', e); }
+         })();
 
-         // ---- Plan O Step 5: Content accuracy (harvest + LLM review) -------
-         // Aggregates existing analysis.accuracy data + LLM interpretation.
-         setGenerationStep && setGenerationStep('Verifying content accuracy...');
-         try {
-             const accuracy = computeContentAccuracy(auditHarvest);
-             content.comprehensive = content.comprehensive || {};
-             content.comprehensive.accuracy = accuracy;
-
+         const accuracyTask = accuracy ? (async () => {
+             const fp = 'accuracy:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.accuracy.llmReview = cached; return; }
              try {
-                 const accGradeBand = (content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
-                 const accuracyReviewPrompt = `You are a fact-checking editor reviewing a curriculum's content accuracy. The lesson's source text was previously analyzed and AI-graded for accuracy.\n\nDeterministic harvest from analysis items:\n- Total analyses run: ${accuracy.totalAnalyses}\n- Accuracy ratings: ${accuracy.accuracyRatingCounts.high} High, ${accuracy.accuracyRatingCounts.medium} Medium, ${accuracy.accuracyRatingCounts.low} Low\n- Total verified facts: ${accuracy.totalVerifiedFacts}\n- Total discrepancies flagged: ${accuracy.totalDiscrepancies}\n- Grade band: ${accGradeBand}\n\nSample analysis verifications (first 3):\n${accuracy.sampleVerifications.slice(0, 3).map((s, i) => `  ${i+1}. Rating: ${s.rating}, ${s.verifiedFactCount} verified, ${s.discrepancyCount} discrepancies. Reason: "${(s.reason || '').slice(0, 200)}"`).join('\n') || '(no analyses available)'}\n\nFull source excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accuracy. If no analyses have been run, explicitly suggest running "Analyze Source Text" before deploying this curriculum.\n2. "claimsToVerify": array of 1-4 specific factual claims in NON-analysis artifacts (quiz questions, glossary definitions, lesson-plan facts) that a teacher should double-check. Each entry should be the actual claim quoted or paraphrased. Focus on claims with measurable risk (specific dates, numbers, named people/places, scientific assertions).\n3. "fixes": array of 1-3 actionable suggestions for improving accuracy ("add citations to the quiz answers", "verify the dates in the timeline against a primary source", etc.).\n\nReturn ONLY a single valid JSON object with exactly these three fields. No prose outside the JSON.`;
-                 const accReviewResult = await callGemini(accuracyReviewPrompt, true);
-                 try {
-                     const review = JSON.parse(cleanJson(accReviewResult));
-                     content.comprehensive.accuracy.llmReview = {
-                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
-                         claimsToVerify: Array.isArray(review.claimsToVerify) ? review.claimsToVerify.slice(0, 6) : [],
-                         fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 5) : [],
-                     };
-                 } catch (parseErr) {
-                     warnLog('[Alignment] Accuracy LLM review parse failed:', parseErr);
-                 }
-             } catch (llmErr) {
-                 warnLog('[Alignment] Accuracy LLM review call failed:', llmErr);
-             }
-         } catch (accuracyErr) {
-             warnLog('[Alignment] Content accuracy computation failed:', accuracyErr);
-         }
+                 const prompt = `You are a fact-checking editor reviewing a curriculum's content accuracy. The lesson's source text was previously analyzed and AI-graded for accuracy.\n\nDeterministic harvest from analysis items:\n- Total analyses run: ${accuracy.totalAnalyses}\n- Accuracy ratings: ${accuracy.accuracyRatingCounts.high} High, ${accuracy.accuracyRatingCounts.medium} Medium, ${accuracy.accuracyRatingCounts.low} Low\n- Total verified facts: ${accuracy.totalVerifiedFacts}\n- Total discrepancies flagged: ${accuracy.totalDiscrepancies}\n- Grade band: ${dimGradeBand}\n\nSample analysis verifications (first 3):\n${accuracy.sampleVerifications.slice(0, 3).map((s, i) => `  ${i+1}. Rating: ${s.rating}, ${s.verifiedFactCount} verified, ${s.discrepancyCount} discrepancies. Reason: "${(s.reason || '').slice(0, 200)}"`).join('\n') || '(no analyses available)'}\n\nFull source excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accuracy. If no analyses have been run, explicitly suggest running "Analyze Source Text" before deploying this curriculum.\n2. "claimsToVerify": array of 1-4 specific factual claims in NON-analysis artifacts (quiz questions, glossary definitions, lesson-plan facts) that a teacher should double-check. Each entry should be the actual claim quoted or paraphrased. Focus on claims with measurable risk (specific dates, numbers, named people/places, scientific assertions).\n3. "fixes": array of 1-3 actionable suggestions for improving accuracy ("add citations to the quiz answers", "verify the dates in the timeline against a primary source", etc.).\n\nReturn ONLY a single valid JSON object with exactly these three fields. No prose outside the JSON.`;
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     claimsToVerify: Array.isArray(review.claimsToVerify) ? review.claimsToVerify.slice(0, 6) : [],
+                     fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 5) : [],
+                 };
+                 content.comprehensive.accuracy.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Accuracy LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         await Promise.all([vocabTask, engagementTask, accessTask, udlTask, accuracyTask]);
 
          // ---- Plan O Step 6: Curriculum Readiness Score (roll-up) -----------
          setGenerationStep && setGenerationStep('Computing curriculum readiness score...');
          try {
              const readiness = computeReadinessScore(content.comprehensive);
              if (readiness) {
-                 content.comprehensive = content.comprehensive || {};
                  content.comprehensive.overall = readiness;
              }
          } catch (rollupErr) {
