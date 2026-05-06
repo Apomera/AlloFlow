@@ -1891,6 +1891,33 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          } catch (engErr) {
              warnLog('[Alignment] Engagement variety computation failed:', engErr);
          }
+
+         // ---- Plan O Step 3: Content accessibility (heuristic + LLM) -------
+         try {
+             const accessibility = computeContentAccessibility(artifactsToAudit, auditHarvest, gradeLevel);
+             content.comprehensive = content.comprehensive || {};
+             content.comprehensive.accessibility = accessibility;
+
+             try {
+                 const accessGradeBand = (content.comprehensive.vocabulary && content.comprehensive.vocabulary.expected && content.comprehensive.vocabulary.expected.gradeBand) || gradeLevel;
+                 const accessReviewPrompt = `You are a school accessibility specialist (school psychologist with assistive-technology expertise). Review the content-level accessibility of this curriculum.\n\nDeterministic findings:\n- Total images: ${accessibility.totalImages} (${accessibility.imagesWithAlt} with alt text${accessibility.altCoveragePct !== null ? ', ' + accessibility.altCoveragePct + '% coverage' : ''})\n- Color-only language hits: ${accessibility.colorOnlyCount}${accessibility.colorOnlyExamples.length > 0 ? ' (examples: ' + accessibility.colorOnlyExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Implicit image references: ${accessibility.implicitImageCount}${accessibility.implicitImageExamples.length > 0 ? ' (examples: ' + accessibility.implicitImageExamples.slice(0, 3).join(' | ') + ')' : ''}\n- Longest unbroken passage: ${accessibility.longestUnbrokenPassage} words\n- Grade band: ${accessGradeBand}\n\nSource text excerpt (first 3000 chars):\n"""\n${(comprehensiveContext || '').slice(0, 3000)}\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on overall content accessibility for this grade band. Focus on student impact (what would a student with X experience here?), not WCAG terminology.\n2. "studentImpacts": array of 1-3 specific student-experience callouts. Each entry pairs a student profile with what they would encounter, e.g., "A student using a screen reader would hear 'image' with no description for 3 of the 4 figures, missing the visual evidence for the photosynthesis diagram." Be specific and concrete.\n3. "fixes": array of 2-4 actionable fix suggestions a teacher could apply to THIS content. Each fix should be a sentence, concrete, and tied to the specific findings.\n\nReturn ONLY a single valid JSON object with exactly these three fields.`;
+                 const accessReviewResult = await callGemini(accessReviewPrompt, true);
+                 try {
+                     const review = JSON.parse(cleanJson(accessReviewResult));
+                     content.comprehensive.accessibility.llmReview = {
+                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                         studentImpacts: Array.isArray(review.studentImpacts) ? review.studentImpacts.slice(0, 5) : [],
+                         fixes: Array.isArray(review.fixes) ? review.fixes.slice(0, 6) : [],
+                     };
+                 } catch (parseErr) {
+                     warnLog('[Alignment] Accessibility LLM review parse failed:', parseErr);
+                 }
+             } catch (llmErr) {
+                 warnLog('[Alignment] Accessibility LLM review call failed:', llmErr);
+             }
+         } catch (accErr) {
+             warnLog('[Alignment] Accessibility computation failed:', accErr);
+         }
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
          const effectiveCount = configOverride.timelineCount || timelineItemCount;

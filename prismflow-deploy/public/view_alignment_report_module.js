@@ -259,6 +259,82 @@
     );
   }
 
+  function AccessibilitySection(p) {
+    var a = p.access;
+    if (!a) return null;
+    var altPctColor = a.altCoveragePct === null ? 'slate' : a.altCoveragePct >= 80 ? 'emerald' : a.altCoveragePct >= 50 ? 'amber' : 'rose';
+    return React.createElement(ComprehensiveSection, { icon: '♿', title: 'Content accessibility', status: a.status },
+      // Top stat row
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, a.totalImages),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Images')
+        ),
+        React.createElement('div', { className: 'p-3 rounded text-center bg-' + altPctColor + '-50 border border-' + altPctColor + '-200' },
+          React.createElement('div', { className: 'text-2xl font-bold text-' + altPctColor + '-800' },
+            a.altCoveragePct === null ? 'n/a' : a.altCoveragePct + '%'),
+          React.createElement('div', { className: 'text-xs text-' + altPctColor + '-700' }, 'Alt-text coverage')
+        ),
+        React.createElement('div', {
+          className: 'p-3 rounded text-center ' + (a.colorOnlyCount > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-emerald-50 border border-emerald-200')
+        },
+          React.createElement('div', { className: 'text-2xl font-bold ' + (a.colorOnlyCount > 0 ? 'text-rose-800' : 'text-emerald-800') }, a.colorOnlyCount),
+          React.createElement('div', { className: 'text-xs ' + (a.colorOnlyCount > 0 ? 'text-rose-700' : 'text-emerald-700') }, 'Color-only refs')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, a.longestUnbrokenPassage),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Longest passage (words)')
+        )
+      ),
+      // Color-only examples
+      a.colorOnlyExamples && a.colorOnlyExamples.length > 0 && React.createElement('div', { className: 'mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-rose-800 mb-1' },
+          'Color-only language found (students with color blindness cannot follow these):'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-xs text-rose-900 space-y-0.5' },
+          a.colorOnlyExamples.slice(0, 6).map(function (ex, i) {
+            return React.createElement('li', { key: i, className: 'font-mono italic' }, '"' + ex + '"');
+          })
+        )
+      ),
+      // Implicit image references
+      a.implicitImageExamples && a.implicitImageExamples.length > 0 && React.createElement('div', { className: 'mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-800 mb-1' },
+          'References to images (verify each has descriptive alt text):'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-xs text-amber-900 space-y-0.5' },
+          a.implicitImageExamples.slice(0, 6).map(function (ex, i) {
+            return React.createElement('li', { key: i, className: 'font-mono italic' }, '"' + ex + '"');
+          })
+        )
+      ),
+      // Heuristic recommendations
+      a.recommendations && a.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Heuristic recommendations:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
+          a.recommendations.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      // LLM review with student impacts
+      a.llmReview && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🤖'), ' Accessibility-specialist review (AI)'),
+        a.llmReview.narrative && React.createElement('p', { className: 'text-sm text-indigo-900 mb-3' }, a.llmReview.narrative),
+        a.llmReview.studentImpacts && a.llmReview.studentImpacts.length > 0 && React.createElement('div', { className: 'mb-3' },
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' }, 'Student-impact callouts:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            a.llmReview.studentImpacts.map(function (s, i) { return React.createElement('li', { key: i }, s); })
+          )
+        ),
+        a.llmReview.fixes && a.llmReview.fixes.length > 0 && React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' }, 'Suggested fixes:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            a.llmReview.fixes.map(function (f, i) { return React.createElement('li', { key: i }, f); })
+          )
+        )
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic' }, a.notes || '')
+    );
+  }
+
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
@@ -272,7 +348,8 @@
           'Multi-dimensional analysis beyond standards alignment. Each dimension evaluates the curriculum against a specific quality lens. Hybrid: deterministic computation + AI review.')
       ),
       c.vocabulary && React.createElement(VocabularySection, { vocab: c.vocabulary }),
-      c.engagement && React.createElement(EngagementSection, { eng: c.engagement })
+      c.engagement && React.createElement(EngagementSection, { eng: c.engagement }),
+      c.accessibility && React.createElement(AccessibilitySection, { access: c.accessibility })
     );
   }
 
