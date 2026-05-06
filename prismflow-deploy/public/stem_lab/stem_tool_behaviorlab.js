@@ -4857,6 +4857,178 @@ var d = labToolData || {};
               })()
             ),
 
+            // === FUNCTION SLEUTH (net-new — sister mini-game to Schedule Sleuth) ===
+            // 12 behavior vignettes. Player picks the function (ATT / ESC / TAN / AUT)
+            // that the behavior is most likely serving. Tests the FBA reasoning that
+            // sits underneath every BIP — figure out what the behavior is GETTING for
+            // the kid before you try to change it. Coaching after each pick names what
+            // makes this function more likely than the others.
+            React.createElement("div", {
+              style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(59,130,246,0.25)' }, glass)
+            },
+              React.createElement("div", { className: "flex items-center justify-between mb-2" },
+                React.createElement("h4", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, "🔍 Function Sleuth — what is the behavior getting?"),
+                React.createElement("button", {
+                  onClick: function() { upd('blShowFnSleuth', !d.blShowFnSleuth); },
+                  className: "text-[11px] text-blue-400 hover:text-blue-300"
+                }, d.blShowFnSleuth ? 'Hide' : 'Play →')
+              ),
+              d.blShowFnSleuth && (function() {
+                var FN_VIGNETTES = [
+                  { id: 1, scenario: 'Maya calls out across the classroom whenever the teacher is talking to another student. The teacher usually pauses to redirect Maya, then resumes with the other student. Maya stops calling out for a minute, then does it again.', correct: 'Attention',
+                    why: 'The behavior reliably pulls the teacher\'s attention away from someone else and onto Maya — even though it is corrective attention. The pause-then-redirect cycle is the giveaway. Negative attention still reinforces.' },
+                  { id: 2, scenario: 'Devin starts crumpling his math worksheet and tearing the corners off as soon as it is placed on his desk. The teacher gives him a quiet warning and tells him to come back to the work after a "break" at the calm-down corner.', correct: 'Escape',
+                    why: 'The behavior consistently postpones or removes the math demand. The "break" is the consequence the kid is working for. Escape from math is being negatively reinforced — even though the teacher meant it as a calm-down.' },
+                  { id: 3, scenario: 'Every time Aria walks past the prize bin in the resource room, she grabs at the box and then lays on the floor crying until staff hand her a fidget. Staff have started giving her one quickly to keep the hallway calm.', correct: 'Tangible',
+                    why: 'The crying produces access to a preferred item (the fidget). The hallway-calm rationale matters less than the contingency: cry → get fidget. That is positive reinforcement of the behavior by the tangible item.' },
+                  { id: 4, scenario: 'During independent reading, Jordan rocks rhythmically in his chair and hums quietly. He continues whether or not anyone is around or paying attention. He stops on his own when the bell rings.', correct: 'Sensory',
+                    why: 'The behavior happens regardless of who is around or what is in front of him. No attention payoff, no demand to escape, no item being chased. The behavior itself is the reward — vestibular/proprioceptive input. May not need intervention.' },
+                  { id: 5, scenario: 'When the cafeteria runs out of pizza on Wednesday, Sam slams his tray, screams, and refuses to move from the line until staff find him a pizza slice from the staff lounge.', correct: 'Tangible',
+                    why: 'Specific item → behavior → access to that specific item. Staff sourcing pizza from the lounge is the smoking-gun reinforcer. Different from a generic escape (he is not avoiding lunch — he wants a specific thing).' },
+                  { id: 6, scenario: 'When asked to read aloud, Priya immediately drops to the floor and lies face-down. Staff usually skip her and ask the next student. She returns to her seat once the read-aloud is over.', correct: 'Escape',
+                    why: 'The behavior reliably gets her out of reading aloud. The "skip her" response is the reinforcer. She returns to baseline once the demand is gone — clean evidence the demand itself was what she was avoiding.' },
+                  { id: 7, scenario: 'During free play, Theo flicks his fingers in front of his eyes near the window. He does it whether the teacher is watching, with peers, or alone. It seems to happen more on bright sunny days.', correct: 'Sensory',
+                    why: 'Independent of social context, increases with bright light (a sensory variable). The behavior is producing visual stimulation that the kid finds reinforcing. Common in autistic students; often does not need intervention unless interfering with learning.' },
+                  { id: 8, scenario: 'In the lunch line, Alex pinches the kid in front whenever a staff member walks by. The staff member always intervenes, asks Alex what is going on, and walks Alex to a separate table to "talk." Alex stops pinching for the rest of lunch.', correct: 'Attention',
+                    why: 'The pinching reliably gets a 1-on-1 conversation with an adult. The "separate table" intervention is functioning as adult-attention payoff, not as a consequence. Hidden attention reinforcement is one of the most-missed FBA findings.' },
+                  { id: 9, scenario: 'When his teacher asks Eli to put away his iPad, Eli starts flopping on the floor and screaming. The screaming stops the moment Eli sees the iPad placed back in his hands.', correct: 'Tangible',
+                    why: 'Direct cause-and-effect with a specific item. Behavior stops the moment the item returns. That instant-stop is the diagnostic giveaway — it tells you what the behavior was working for.' },
+                  { id: 10, scenario: 'Carla tears up her worksheet, throws it in the trash, and asks the teacher for a fresh one. She does this on every assignment, regardless of subject or difficulty. After tearing it up, she always completes the new copy without further issue.', correct: 'Sensory',
+                    why: 'No attention payoff (teacher just hands her a new sheet, no extended interaction). No escape (she completes the work). No specific tangible (she gets back the same item). The tearing itself appears to be the reinforcer — likely tactile/auditory sensory input.' },
+                  { id: 11, scenario: 'Whenever the lights are turned off for a video, Marco starts loudly humming a song. The teacher pauses the video, asks Marco to be quiet, then restarts. Marco hums again 30 seconds later.', correct: 'Attention',
+                    why: 'Pattern: behavior → teacher attention (pause + redirect) → repeat. The 30-second cycle is suspicious — that is reinforcer-driven repetition, not random vocalizing. If it were sensory, it would not pause when noticed.' },
+                  { id: 12, scenario: 'In gym, when the teacher announces a running drill, Sasha immediately complains of stomach pain and asks to sit out. She is fine for the rest of class, including the basketball drill that follows.', correct: 'Escape',
+                    why: 'Behavior precedes the aversive demand and is specific to it. She is not avoiding gym in general — just the run. The selective onset + selective relief is the giveaway. Reinforcer = removal of the running demand.' }
+                ];
+                var FN_OPTIONS = [
+                  { id: 'Attention', label: 'Attention',         color: '#3b82f6', icon: '👀' },
+                  { id: 'Escape',    label: 'Escape / Avoidance', color: '#ef4444', icon: '🏃' },
+                  { id: 'Tangible',  label: 'Tangible',          color: '#f59e0b', icon: '🎮' },
+                  { id: 'Sensory',   label: 'Sensory / Automatic', color: '#8b5cf6', icon: '✨' }
+                ];
+                var fnIdx = d.blFnIdx == null ? -1 : d.blFnIdx;
+                var fnSeed = d.blFnSeed || 1;
+                var fnAnswered = !!d.blFnAnswered;
+                var fnPick = d.blFnPick;
+                var fnScore = d.blFnScore || 0;
+                var fnRounds = d.blFnRounds || 0;
+                var fnStreak = d.blFnStreak || 0;
+                var fnBest = d.blFnBest || 0;
+                var fnShown = d.blFnShown || [];
+                function startFn() {
+                  var pool = [];
+                  for (var i = 0; i < FN_VIGNETTES.length; i++) if (fnShown.indexOf(i) < 0) pool.push(i);
+                  if (pool.length === 0) { pool = []; for (var j = 0; j < FN_VIGNETTES.length; j++) pool.push(j); fnShown = []; }
+                  var seedNext = ((fnSeed * 16807 + 11) % 2147483647) || 7;
+                  var pick = pool[seedNext % pool.length];
+                  upd('blFnSeed', seedNext);
+                  upd('blFnIdx', pick);
+                  upd('blFnAnswered', false);
+                  upd('blFnPick', null);
+                  upd('blFnShown', fnShown.concat([pick]));
+                }
+                function pickFn(fnId) {
+                  if (fnAnswered) return;
+                  var v = FN_VIGNETTES[fnIdx];
+                  var correct = fnId === v.correct;
+                  var newScore = fnScore + (correct ? 1 : 0);
+                  var newStreak = correct ? (fnStreak + 1) : 0;
+                  var newBest = Math.max(fnBest, newStreak);
+                  upd('blFnAnswered', true);
+                  upd('blFnPick', fnId);
+                  upd('blFnScore', newScore);
+                  upd('blFnRounds', fnRounds + 1);
+                  upd('blFnStreak', newStreak);
+                  upd('blFnBest', newBest);
+                  if (addToast) addToast(correct ? '✅ Correct — ' + v.correct : '❌ Not quite — it was ' + v.correct, correct ? 'success' : 'info');
+                }
+                if (fnIdx < 0) {
+                  return React.createElement("div", { className: "text-center py-3" },
+                    React.createElement("p", { className: "text-[11px] text-slate-300 italic mb-3 leading-relaxed" }, "12 vignettes. For each, pick the function the behavior is most likely serving — Attention, Escape, Tangible, or Sensory. Coaching after each pick names what makes this function more likely than the other three."),
+                    React.createElement("button", {
+                      onClick: startFn,
+                      "aria-label": "Start Function Sleuth",
+                      className: "px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
+                    }, "🔍 Start the game")
+                  );
+                }
+                var v = FN_VIGNETTES[fnIdx];
+                var pickedCorrect = fnAnswered && fnPick === v.correct;
+                var pct = fnRounds > 0 ? Math.round((fnScore / fnRounds) * 100) : 0;
+                var allDone = fnShown.length >= FN_VIGNETTES.length && fnAnswered;
+                return React.createElement("div", null,
+                  React.createElement("div", { className: "flex items-center flex-wrap gap-3 mb-2 text-[11px]" },
+                    React.createElement("span", { className: "text-slate-300" }, "Round ", React.createElement("strong", { className: "text-white" }, fnShown.length)),
+                    React.createElement("span", { className: "text-slate-300" }, "Streak ", React.createElement("strong", { className: "text-amber-400" }, fnStreak)),
+                    React.createElement("span", { className: "text-slate-300" }, "Best ", React.createElement("strong", { className: "text-emerald-400" }, fnBest)),
+                    fnRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
+                  ),
+                  React.createElement("div", { style: { background: '#0f172a', borderRadius: 10, padding: '12px 14px', border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 } },
+                    React.createElement("div", { className: "text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-1" }, 'Vignette ' + fnShown.length + ' of ' + FN_VIGNETTES.length),
+                    React.createElement("p", { className: "text-[12px] text-slate-100 leading-relaxed", style: { margin: 0 } }, v.scenario)
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-2", role: 'radiogroup', 'aria-label': 'Pick the function' },
+                    FN_OPTIONS.map(function(opt) {
+                      var picked = fnAnswered && fnPick === opt.id;
+                      var isRight = fnAnswered && opt.id === v.correct;
+                      var bg, border, color;
+                      if (fnAnswered) {
+                        if (isRight) { bg = '#064e3b'; border = '#22c55e'; color = '#bbf7d0'; }
+                        else if (picked) { bg = '#7f1d1d'; border = '#ef4444'; color = '#fecaca'; }
+                        else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+                      } else {
+                        bg = opt.color + '20'; border = opt.color + '60'; color = '#e2e8f0';
+                      }
+                      return React.createElement('button', {
+                        key: opt.id, role: 'radio',
+                        'aria-checked': picked ? 'true' : 'false',
+                        'aria-label': opt.label,
+                        disabled: fnAnswered,
+                        onClick: function() { pickFn(opt.id); },
+                        style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: fnAnswered ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, textAlign: 'left', minHeight: 50, transition: 'all 0.15s' }
+                      },
+                        React.createElement('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                          React.createElement('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, opt.icon),
+                          React.createElement('span', { style: { color: fnAnswered ? color : opt.color, fontSize: 12, fontWeight: 800 } }, opt.label)
+                        )
+                      );
+                    })
+                  ),
+                  fnAnswered && React.createElement("div", {
+                    style: {
+                      padding: '10px 12px', borderRadius: 8,
+                      background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+                      border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+                    }
+                  },
+                    React.createElement("div", { className: "text-[12px] font-bold mb-1", style: { color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+                      pickedCorrect ? '✅ Correct — ' + v.correct : '❌ The function is ' + v.correct + (fnPick ? ' (you picked ' + fnPick + ')' : '')
+                    ),
+                    React.createElement("p", { className: "text-[11px] text-slate-200 leading-relaxed", style: { margin: '0 0 8px' } }, v.why),
+                    allDone
+                      ? React.createElement("div", { style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.45)' } },
+                          React.createElement("div", { className: "text-[12px] font-bold text-blue-300 mb-1" }, '🏆 All 12 vignettes complete'),
+                          React.createElement("div", { className: "text-[11px] text-slate-100 leading-relaxed" },
+                            'Final: ', React.createElement('strong', null, fnScore + ' / ' + FN_VIGNETTES.length + ' (' + Math.round((fnScore / FN_VIGNETTES.length) * 100) + '%)'),
+                            fnScore === FN_VIGNETTES.length ? ' — every function correctly identified. Ready for real FBA case work.' :
+                            fnScore >= 10 ? ' — strong FBA reasoning. The most-confused pair is usually attention vs escape (when adult intervention happens to coincide with demand removal — both can co-occur).' :
+                            fnScore >= 7 ? ' — solid baseline. Re-read the rationales on misses; look specifically for what the behavior consistently produces vs prevents.' :
+                            ' — these distinctions take many examples. Re-read the FOUR_FUNCTIONS reference card above + the rationales on each miss, then retake.'
+                          ),
+                          React.createElement("button", {
+                            onClick: function() { upd('blFnIdx', -1); upd('blFnShown', []); upd('blFnScore', 0); upd('blFnRounds', 0); upd('blFnStreak', 0); },
+                            className: "mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500"
+                          }, '🔄 Restart')
+                        )
+                      : React.createElement("button", {
+                          onClick: startFn,
+                          className: "px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
+                        }, '➡️ Next vignette')
+                  )
+                );
+              })()
+            ),
+
             // === REINFORCEMENT / PUNISHMENT 2x2 MATRIX ===
             React.createElement("div", {
               style: Object.assign({ background: 'rgba(30,41,59,0.55)', borderRadius: 14, padding: '14px', border: '1px solid rgba(139,92,246,0.2)' }, glass)

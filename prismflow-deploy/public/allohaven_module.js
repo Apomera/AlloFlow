@@ -12037,6 +12037,14 @@
             'aria-label': 'Open 5-4-3-2-1 sensory grounding exercise',
             style: secondaryBtnStyle(palette)
           }, '🧷 Grounding'),
+          // Arcade hub (Phase 3a) — token-time-gated launcher for plugin
+          // arcade modes (Sage launcher, Concept Cards, Runway, etc.).
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'arcade'); },
+            'aria-label': 'Open arcade — spend tokens on game time',
+            title: 'Token-time gated games (Sage, future TCG, etc.)',
+            style: secondaryBtnStyle(palette)
+          }, '🎮 Arcade'),
           (function() {
             var deckCount = state.decorations.filter(function(d) { return !!d.linkedContent; }).length;
             var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;

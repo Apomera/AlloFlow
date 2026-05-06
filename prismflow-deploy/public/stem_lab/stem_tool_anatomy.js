@@ -4161,6 +4161,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             h('span', { className: 'ml-auto text-[11px] font-bold text-amber-600 self-center' }, '\uD83C\uDFC5 ' + Object.keys(badges).length + '/' + BADGE_DEFS.length + ' badges')
           ),
 
+          // ── Topic-accent hero band per tab ──
+          (function() {
+            var TAB_META = {
+              explore:     { accent: '#1e293b', soft: 'rgba(30,41,59,0.06)',  icon: '\uD83E\uDEC0', title: 'Explore the system',         hint: 'Click any organ to see its structure, function, and connections. Hover for plain-English labels; tap for the deep dive.' },
+              tour:        { accent: '#047857', soft: 'rgba(4,120,87,0.10)',  icon: '\uD83E\uDDED', title: 'Guided tour',                 hint: 'Step through each major part in pedagogical order. Best path for first-time learners \u2014 covers structure \u2192 function \u2192 integration in one pass.' },
+              connections: { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)', icon: '\uD83D\uDD17', title: 'Cross-system connections',    hint: 'No system works alone. The kidney filters blood (cardiovascular), responds to ADH (endocrine), and excretes urea (digestive byproduct). Find the links.' },
+              aiTutor:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDD16', title: 'AI tutor',                    hint: 'Ask a question about the active organ or system. The tutor knows what is on screen and tailors answers to your grade band.' },
+              spotter:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83C\uDFAF', title: 'Structure spotter',           hint: 'Click the named structure on the diagram. Builds the click-the-thing reflex that AP and medical exams rely on.' },
+              pathways:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\uD83D\uDEE4\uFE0F', title: 'Trace the pathway',          hint: 'Follow blood, air, food, or signals through the body in sequence. Pathways are how isolated facts become a system you can reason about.' },
+              flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: 'Spaced-repetition cards',     hint: 'Quick-recall cards with spaced repetition. Six-second review now beats five-minute re-read tomorrow \u2014 that is the testing effect.' }
+            };
+            var meta = TAB_META[activeTab] || TAB_META.explore;
+            return h('div', {
+              style: {
+                margin: '0 0 12px',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
           // ── AI Tutor Tab ──
           activeTab === 'aiTutor' ? h('div', { className: 'bg-white rounded-xl border-2 border-violet-200 p-4 space-y-3' },
             h('h4', { className: 'font-bold text-violet-800 text-sm mb-2' }, '\uD83E\uDD16 AI Anatomy Tutor'),
