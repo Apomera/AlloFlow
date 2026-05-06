@@ -862,6 +862,34 @@ window.StemLab = window.StemLab || {
           tabBtn('tools', 'Tools', '\uD83D\uDEE0\uFE0F')
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            chart: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDCCA', title: 'Chart \u2014 pick the right visualization', hint: 'Scatter for relationships, line for time, bar for categories, histogram for distribution shape, box plot for spread + outliers, ogive for cumulative. Choosing the wrong chart type usually misleads more than it informs.' },
+            stats: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Statistics \u2014 center, spread, shape',  hint: 'Mean vs median (median wins for skewed data), standard deviation vs IQR (IQR wins for non-normal), correlation vs causation (low correlation does NOT prove no causal link).' },
+            quiz:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAF', title: 'Quiz \u2014 practice + apply',           hint: 'AP Stats / data-literacy items. Each question links back to the active dataset so you can verify visually before answering.' },
+            tools: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEE0\uFE0F', title: 'Tools \u2014 load + clean + export',  hint: 'Paste from Google Sheets, generate sample data, export as PNG/CSV. Most students underestimate how much real-world data analysis is data CLEANING (~70% of total time).' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.chart;
+          return h('div', {
+            className: 'mt-2',
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ══════════════════════════════════════════════════════════
         // ── TAB: Chart ──
         // ══════════════════════════════════════════════════════════
