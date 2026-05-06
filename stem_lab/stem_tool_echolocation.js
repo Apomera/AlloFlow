@@ -4608,6 +4608,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            sonar:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDD87', title: 'Sonar vision \u2014 listen with the bat',  hint: 'Bats "see" by emitting ultrasonic clicks (20\u201380 kHz) and timing the echoes. Time-of-flight \u00d7 speed of sound = distance. Microsecond timing = millimeter resolution.' },
+            cave3d:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD26', title: '3D cave \u2014 navigate without sight',    hint: 'Steer through a procedural cave using only echolocation feedback. Bats add Doppler-shift compensation to track moving prey while flying.' },
+            waves:   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83C\uDF0A', title: 'Sound waves \u2014 the physics',          hint: 'Frequency, wavelength, amplitude. Speed of sound in air \u2248 343 m/s. Higher frequency = better resolution but shorter range (atmospheric absorption rises steeply).' },
+            doppler: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDEA8', title: 'Doppler \u2014 motion \u2192 frequency shift', hint: 'Moving source = compressed waves ahead, stretched waves behind. Bats use this to read prey velocity. Same physics powers police radar guns + redshift astronomy.' },
+            biology: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDDA0', title: 'Bat biology \u2014 evolution of the pinger', hint: 'Echolocation evolved at least twice independently \u2014 in microbats and in oilbirds/swiftlets. Convergent evolution under similar selection pressure (low-light foraging).' },
+            ecology: { accent: '#84cc16', soft: 'rgba(132,204,22,0.10)', icon: '\uD83C\uDF33', title: 'Acoustic ecology',                          hint: 'Bats provide ~$3.7 billion / yr in pest-control value to US agriculture. White-nose syndrome has killed 90%+ of some northeastern populations. Maine\u2019s little brown bats are listed.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.sonar;
+          return h('div', {
+            style: {
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap',
+              marginTop: 8
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // Tab content
         tab === 'sonar' && renderSonarTab(),
         tab === 'cave3d' && renderCave3dTab(),
