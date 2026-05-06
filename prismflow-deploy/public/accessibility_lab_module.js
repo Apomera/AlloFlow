@@ -46,7 +46,7 @@
   var TABS = [
     { key: 'preview',      label: 'Preview as student', icon: '👁️',  ready: true  },
     { key: 'keyboard',     label: 'Keyboard tour',      icon: '⌨️',  ready: true  },
-    { key: 'audit',        label: 'Audit',              icon: '🔍', ready: false },
+    { key: 'audit',        label: 'Audit',              icon: '🔍', ready: true  },
     { key: 'screenreader', label: 'Screen reader',      icon: '🔊', ready: false },
     { key: 'simulators',   label: 'Simulators',         icon: '👓', ready: false },
   ];
@@ -709,7 +709,283 @@
     );
   }
 
-  // ----- Coming-soon stub for phases 3-5 -------------------------------------
+  // ----- Phase 3: Live in-app a11y audit (axe-core) --------------------------
+
+  var AXE_CDN_URL = 'https://cdn.jsdelivr.net/npm/axe-core@4.10.3/axe.min.js';
+  var axeLoadPromise = null;
+
+  function loadAxeCore() {
+    if (window.axe && typeof window.axe.run === 'function') {
+      return Promise.resolve(window.axe);
+    }
+    if (axeLoadPromise) return axeLoadPromise;
+    axeLoadPromise = new Promise(function (resolve, reject) {
+      var s = document.createElement('script');
+      s.src = AXE_CDN_URL;
+      s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.onload = function () {
+        if (window.axe && typeof window.axe.run === 'function') resolve(window.axe);
+        else reject(new Error('axe-core loaded but window.axe is missing'));
+      };
+      s.onerror = function () { axeLoadPromise = null; reject(new Error('Failed to load axe-core from CDN')); };
+      document.head.appendChild(s);
+    });
+    return axeLoadPromise;
+  }
+
+  // Teacher-friendly translations for the most common axe rule IDs.
+  // For unmapped rules we fall back to axe's `help` field at render time.
+  var TEACHER_FRIENDLY_RULES = {
+    'color-contrast':              'Some text on this page does not have enough contrast against its background. Students with low vision (about 1 in 12 people) would have trouble reading it.',
+    'color-contrast-enhanced':     'Some text does not meet the higher AAA contrast standard. AA-level students may still read it; AAA is the stricter target.',
+    'image-alt':                   'Some images do not have alt text. Students who use screen readers (blind or low-vision students) will hear nothing or just a filename when this image appears.',
+    'input-image-alt':             'An image button is missing alt text. Screen reader users will not know what the button does.',
+    'button-name':                 'A button has no name a screen reader can announce. The student would hear only "button" with no context.',
+    'link-name':                   'A link has no text or aria-label. Screen reader users will not know where it leads.',
+    'label':                       'A form input has no label. Students using screen readers or speech recognition will not know what to enter.',
+    'aria-required-attr':          'An element has an ARIA role but is missing required attributes. Screen reader users may get confusing or no information.',
+    'aria-roles':                  'An element uses an ARIA role that is not valid. Screen readers may ignore it or behave unexpectedly.',
+    'aria-valid-attr':             'An element has an invalid ARIA attribute. The accessibility hint is being ignored.',
+    'aria-valid-attr-value':       'An ARIA attribute has an invalid value. The accessibility hint is being ignored.',
+    'duplicate-id':                'Two elements share the same id. Screen readers and labels can attach to the wrong one.',
+    'duplicate-id-aria':           'Duplicate IDs are interfering with ARIA labeling.',
+    'document-title':              'The page has no <title>. Screen readers and tab listings will not identify it.',
+    'html-has-lang':               'The page is missing a lang attribute. Screen readers will not know which pronunciation to use.',
+    'html-lang-valid':             'The page lang attribute is not a valid language code.',
+    'landmark-one-main':           'The page is missing a <main> landmark. Screen reader users have a harder time skipping past navigation to the main content.',
+    'region':                      'Some content is not contained in a landmark (header, main, nav, footer). Screen reader users may struggle to navigate.',
+    'heading-order':               'Headings on this page skip levels (e.g., h1 jumping to h3). Screen reader navigation by heading levels gets confusing.',
+    'page-has-heading-one':        'The page has no <h1> heading. Screen reader users lose orientation about the page topic.',
+    'list':                        'A list element (ul/ol) contains items that are not <li>. Screen readers misreport the structure.',
+    'listitem':                    'A list item is not inside a list. Screen readers will not announce list semantics.',
+    'frame-title':                 'An iframe is missing a title attribute. Screen reader users will not know what is inside it.',
+    'meta-viewport':               'The viewport meta tag prevents zooming. Students who need to zoom in will be blocked from doing so.',
+    'tabindex':                    'An element has tabindex greater than 0. This breaks natural keyboard tab order.',
+    'scrollable-region-focusable': 'A scrollable region cannot be focused with the keyboard. Keyboard-only users cannot scroll it.',
+    'autocomplete-valid':          'A form field has an invalid autocomplete value. Some assistive tech relies on these to fill in fields automatically.',
+    'role-img-alt':                'An element with role="img" has no accessible name. Screen reader users will hear nothing.',
+    'svg-img-alt':                 'An SVG used as an image has no accessible name.',
+  };
+
+  var IMPACT_ORDER = ['critical', 'serious', 'moderate', 'minor'];
+  var IMPACT_STYLES = {
+    critical: { bg: '#fef2f2', border: '#fca5a5', text: '#991b1b', label: 'Critical' },
+    serious:  { bg: '#fef3c7', border: '#fcd34d', text: '#92400e', label: 'Serious'  },
+    moderate: { bg: '#dbeafe', border: '#93c5fd', text: '#1e40af', label: 'Moderate' },
+    minor:    { bg: '#f1f5f9', border: '#cbd5e1', text: '#475569', label: 'Minor'    },
+  };
+
+  function teacherFriendly(violation) {
+    if (TEACHER_FRIENDLY_RULES[violation.id]) return TEACHER_FRIENDLY_RULES[violation.id];
+    return violation.help || violation.description || violation.id;
+  }
+
+  function AuditTab(props) {
+    var addToast = props.addToast;
+
+    var status$ = useState('idle'); // idle | loading | running | done | error
+    var status = status$[0], setStatus = status$[1];
+    var result$ = useState(null);
+    var result = result$[0], setResult = result$[1];
+    var error$ = useState(null);
+    var error = error$[0], setError = error$[1];
+
+    function handleRunAudit() {
+      setStatus('loading');
+      setError(null);
+      loadAxeCore()
+        .then(function (axe) {
+          setStatus('running');
+          return axe.run(
+            { exclude: [['[aria-label="Accessibility Lab"]']] },
+            {
+              runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] },
+              resultTypes: ['violations', 'passes', 'incomplete'],
+            }
+          );
+        })
+        .then(function (axeResult) {
+          setResult(axeResult);
+          setStatus('done');
+          var totalNodes = (axeResult.violations || []).reduce(function (sum, v) {
+            return sum + (v.nodes ? v.nodes.length : 0);
+          }, 0);
+          addToast && addToast(
+            'Audit complete: ' + (axeResult.violations || []).length + ' violations across ' + totalNodes + ' elements; ' + (axeResult.passes || []).length + ' rules passed.',
+            (axeResult.violations || []).length === 0 ? 'success' : 'info'
+          );
+        })
+        .catch(function (err) {
+          setError(err && err.message ? err.message : String(err));
+          setStatus('error');
+          addToast && addToast('Audit failed: ' + (err && err.message ? err.message : 'unknown error'), 'error');
+        });
+    }
+
+    function handleFocusFirstNode(violation) {
+      try {
+        var firstNode = violation.nodes && violation.nodes[0];
+        if (!firstNode) return;
+        var selector = firstNode.target && firstNode.target[0];
+        if (!selector) return;
+        var el = document.querySelector(selector);
+        if (el) {
+          el.focus();
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          // Briefly highlight
+          var origOutline = el.style.outline;
+          var origOffset = el.style.outlineOffset;
+          el.style.outline = '3px solid #dc2626';
+          el.style.outlineOffset = '2px';
+          setTimeout(function () {
+            el.style.outline = origOutline;
+            el.style.outlineOffset = origOffset;
+          }, 2400);
+        }
+      } catch (err) { /* ignore */ }
+    }
+
+    var grouped = useMemo(function () {
+      if (!result || !result.violations) return null;
+      var byImpact = {};
+      IMPACT_ORDER.forEach(function (imp) { byImpact[imp] = []; });
+      result.violations.forEach(function (v) {
+        var imp = v.impact || 'minor';
+        if (!byImpact[imp]) byImpact[imp] = [];
+        byImpact[imp].push(v);
+      });
+      return byImpact;
+    }, [result]);
+
+    return e('div', { className: 'flex flex-col gap-4' },
+      e('div', null,
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Live in-app accessibility audit'),
+        e('p', { className: 'text-sm text-slate-600 mt-1' },
+          'Runs axe-core (industry-standard accessibility engine, used by browsers, the Deque team, and many enterprise audits) against the current view. Reports WCAG 2.1 A and AA violations in plain language framed by student impact. The lab modal itself is excluded.')
+      ),
+
+      // Action button + status
+      e('div', { className: 'flex gap-2 flex-wrap items-center' },
+        e('button', {
+          onClick: handleRunAudit,
+          disabled: status === 'loading' || status === 'running',
+          className: 'px-4 py-2 text-sm font-semibold bg-indigo-600 text-white rounded hover:bg-indigo-700 disabled:opacity-50',
+        }, status === 'loading' ? 'Loading axe-core...' : status === 'running' ? 'Running audit...' : (result ? 'Re-run audit' : '🔍 Run audit')),
+        result && e('span', { className: 'text-xs text-slate-500' },
+          'Last run: ' + new Date().toLocaleTimeString())
+      ),
+
+      status === 'error' && e('div', { className: 'p-3 bg-rose-50 border border-rose-300 rounded text-sm text-rose-900' },
+        'Audit failed: ' + error + '. Check your network connection (axe-core loads from cdn.jsdelivr.net) and try again.'
+      ),
+
+      !result && status !== 'error' && status !== 'loading' && status !== 'running' && e('div', { className: 'p-6 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300 text-sm text-slate-600' },
+        'Click "Run audit" to scan the current view for WCAG 2.1 A and AA violations. The first run takes ~2 seconds to load axe-core (~350 KB minified) from a CDN; subsequent runs are instant.'
+      ),
+
+      result && e('div', { className: 'flex flex-col gap-3' },
+        // Top-level summary
+        e('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
+          e('div', {
+            className: 'p-3 border rounded text-center ' + (result.violations.length === 0 ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')
+          },
+            e('div', { className: 'text-2xl font-bold ' + (result.violations.length === 0 ? 'text-emerald-800' : 'text-rose-800') }, result.violations.length),
+            e('div', { className: 'text-xs ' + (result.violations.length === 0 ? 'text-emerald-700' : 'text-rose-700') }, 'Violations')
+          ),
+          e('div', { className: 'p-3 bg-emerald-50 border border-emerald-300 rounded text-center' },
+            e('div', { className: 'text-2xl font-bold text-emerald-800' }, (result.passes || []).length),
+            e('div', { className: 'text-xs text-emerald-700' }, 'Rules passed')
+          ),
+          e('div', { className: 'p-3 bg-blue-50 border border-blue-300 rounded text-center' },
+            e('div', { className: 'text-2xl font-bold text-blue-800' }, (result.incomplete || []).length),
+            e('div', { className: 'text-xs text-blue-700' }, 'Need review')
+          ),
+          e('div', { className: 'p-3 bg-slate-50 border border-slate-300 rounded text-center' },
+            e('div', { className: 'text-2xl font-bold text-slate-800' },
+              (result.violations || []).reduce(function (sum, v) { return sum + (v.nodes ? v.nodes.length : 0); }, 0)),
+            e('div', { className: 'text-xs text-slate-700' }, 'Affected elements')
+          )
+        ),
+
+        result.violations.length === 0 && e('div', { className: 'p-4 bg-emerald-50 border border-emerald-300 rounded text-sm text-emerald-900 text-center' },
+          '✅ No WCAG 2.1 A/AA violations found in the current view by axe-core. (Note: automated audits catch ~30-50% of real accessibility issues. Combine with the keyboard tour, screen-reader preview, and manual review.)'
+        ),
+
+        // Violations grouped by impact
+        result.violations.length > 0 && IMPACT_ORDER.map(function (impact) {
+          var rules = (grouped && grouped[impact]) || [];
+          if (rules.length === 0) return null;
+          var styles = IMPACT_STYLES[impact];
+          return e('details', {
+            key: impact,
+            open: impact === 'critical' || impact === 'serious',
+            className: 'rounded p-3 border',
+            style: { backgroundColor: styles.bg, borderColor: styles.border },
+          },
+            e('summary', {
+              className: 'cursor-pointer font-semibold text-sm flex items-center gap-2',
+              style: { color: styles.text },
+            },
+              styles.label + ' (' + rules.length + ' rule' + (rules.length === 1 ? '' : 's') + ')',
+              e('span', {
+                className: 'text-xs font-normal opacity-75',
+              }, impact === 'critical' ? 'Blocks access for some users' :
+                  impact === 'serious'  ? 'Significantly degrades the experience' :
+                  impact === 'moderate' ? 'Causes friction or confusion' :
+                                          'Minor improvement')
+            ),
+            e('div', { className: 'mt-3 flex flex-col gap-2' },
+              rules.map(function (v, i) {
+                return e('div', {
+                  key: v.id,
+                  className: 'p-3 bg-white border rounded',
+                  style: { borderColor: styles.border },
+                },
+                  e('div', { className: 'flex items-start justify-between gap-2 mb-1' },
+                    e('div', { className: 'font-semibold text-sm', style: { color: styles.text } },
+                      v.id, ' ',
+                      e('span', { className: 'text-xs font-normal text-slate-500' },
+                        '(' + v.nodes.length + ' element' + (v.nodes.length === 1 ? '' : 's') + ')')
+                    ),
+                    e('div', { className: 'flex gap-1' },
+                      v.nodes.length > 0 && e('button', {
+                        onClick: function () { handleFocusFirstNode(v); },
+                        className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
+                      }, 'Show me'),
+                      v.helpUrl && e('a', {
+                        href: v.helpUrl,
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                        className: 'text-xs px-2 py-1 border border-slate-300 rounded hover:bg-slate-50',
+                      }, 'Learn more ↗')
+                    )
+                  ),
+                  e('p', { className: 'text-xs text-slate-700' }, teacherFriendly(v)),
+                  v.nodes.length > 1 && e('details', { className: 'mt-2' },
+                    e('summary', { className: 'text-xs text-slate-500 cursor-pointer hover:text-slate-700' },
+                      'Affected elements (' + v.nodes.length + ')'),
+                    e('ul', { className: 'mt-1 max-h-40 overflow-y-auto pl-5 text-xs list-disc text-slate-600 space-y-0.5' },
+                      v.nodes.slice(0, 50).map(function (node, j) {
+                        return e('li', { key: j, className: 'font-mono break-all' },
+                          (node.target || []).join(' '));
+                      })
+                    )
+                  )
+                );
+              })
+            )
+          );
+        }),
+
+        // Tip
+        e('div', { className: 'text-xs text-slate-500 italic mt-2' },
+          'Tip: critical and serious issues are open by default. Click "Show me" on any rule to focus and highlight the first affected element. axe-core covers ~30-50% of real accessibility issues; combine with the keyboard tour, screen-reader preview, and manual review.')
+      )
+    );
+  }
+
+  // ----- Coming-soon stub for phases 4-5 -------------------------------------
 
   function ComingSoon(props) {
     return e('div', { className: 'p-10 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300' },
@@ -776,7 +1052,7 @@
         e('div', { className: 'flex-1 overflow-y-auto px-5 py-4' },
           tab === 'preview'      ? e(PreviewTab, props) :
           tab === 'keyboard'     ? e(KeyboardTab, props) :
-          tab === 'audit'        ? e(ComingSoon, { icon: '🔍', title: 'Live in-app accessibility audit', description: 'Runs axe-core against the current view and surfaces violations in plain language framed by student impact, with teacher-friendly fix suggestions. Coming in Phase 3.' }) :
+          tab === 'audit'        ? e(AuditTab, props) :
           tab === 'screenreader' ? e(ComingSoon, { icon: '🔊', title: 'Screen-reader announcement preview', description: "Plays back exactly what a screen reader would announce while a student worked through the lesson, using AlloFlow's text-to-speech. Coming in Phase 4." }) :
           e(ComingSoon, { icon: '👓', title: 'Disability simulators', description: 'Toggleable filters for low-vision blur, color-blindness (deutan/protan/tritan), dyslexia simulation, and motor-impairment delay. Each with a teacher-friendly explainer of who experiences this. Coming in Phase 5.' })
         )
