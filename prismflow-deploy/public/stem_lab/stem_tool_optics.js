@@ -2084,6 +2084,7 @@
             { id: 'interference', label: '✨ Interference', desc: 'Double-slit fringes' },
             { id: 'diffraction', label: '〰 Diffraction', desc: 'Single-slit + grating' },
             { id: 'polarization', label: '↕ Polarization', desc: "Malus's law" },
+            { id: 'sleuth', label: '🕵️ Sleuth', desc: 'Predict image from setup' },
             { id: 'quiz', label: '📝 Quiz', desc: 'AP exam practice' }
           ].map(function(tab) {
             var sel = d.mode === tab.id;
@@ -2142,6 +2143,7 @@
           sim: _renderPolarizationSim(d, upd, h),
           calc: _renderPolarizationCalc(d, upd, h)
         }),
+        d.mode === 'sleuth' && _renderSleuthPanel(d, upd, h, addToast),
         d.mode === 'quiz' && _renderQuizPanel(d, upd, h, addToast, awardXP)
       );
     }
@@ -2383,6 +2385,195 @@
                 )
               )
             )
+      )
+    );
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // SIGN CONVENTION SLEUTH (net-new mini-game)
+  // 10 vignettes. Each describes a setup (object distance + lens/mirror type
+  // + focal length); player picks the resulting image type from 4 options:
+  // real-inverted-magnified / real-inverted-reduced / virtual-upright-magnified
+  // / virtual-upright-reduced. Tests the AP Physics 2 canonical reflex of
+  // predicting image character from object position relative to focal length.
+  // ──────────────────────────────────────────────────────────────────
+  function _renderSleuthPanel(d, upd, h, addToast) {
+    var TYPES = [
+      { id: 'realInvMag',  label: 'Real, inverted, magnified',  color: '#ef4444', icon: '🔻',
+        rule: 'Object between f and 2f (inside 2× focal length but outside f). Image forms beyond 2f on the opposite side.' },
+      { id: 'realInvRed',  label: 'Real, inverted, reduced',     color: '#f59e0b', icon: '⬇️',
+        rule: 'Object beyond 2f. Image forms between f and 2f on the opposite side, smaller than the object.' },
+      { id: 'virtUprMag',  label: 'Virtual, upright, magnified', color: '#22c55e', icon: '🔍',
+        rule: 'Object inside f (between lens and focal point) for a CONVERGING lens. Image forms on the same side, magnified — this is the magnifying-glass case.' },
+      { id: 'virtUprRed',  label: 'Virtual, upright, reduced',   color: '#0ea5e9', icon: '👓',
+        rule: 'DIVERGING lens (any object position) OR convex mirror. Image is always virtual, upright, and reduced — peephole/wide-angle case.' }
+    ];
+    var V = [
+      { id: 1, setup: 'Converging lens, f = 10 cm. Object placed at 30 cm from the lens.', correct: 'realInvRed',
+        why: 'Object beyond 2f (30 cm > 20 cm). Real, inverted, reduced. Verify with 1/f = 1/d_o + 1/d_i: 1/10 = 1/30 + 1/d_i → d_i = 15 cm. Magnification = -d_i/d_o = -15/30 = -0.5 (inverted, half size).' },
+      { id: 2, setup: 'Converging lens, f = 10 cm. Object placed at 15 cm from the lens.', correct: 'realInvMag',
+        why: 'Object between f and 2f (10 < 15 < 20). Real, inverted, magnified. 1/10 = 1/15 + 1/d_i → d_i = 30 cm. Magnification = -30/15 = -2 (inverted, 2× size). This is the projector setup — film at f-to-2f range, screen far away.' },
+      { id: 3, setup: 'Converging lens, f = 10 cm. Object placed at 5 cm from the lens.', correct: 'virtUprMag',
+        why: 'Object inside focal length (5 < 10). Virtual, upright, magnified. 1/10 = 1/5 + 1/d_i → d_i = -10 cm (negative = same side as object = virtual). Magnification = -(-10)/5 = +2 (upright, 2× size). This is the magnifying-glass case.' },
+      { id: 4, setup: 'Diverging lens, f = -8 cm. Object placed at 12 cm from the lens.', correct: 'virtUprRed',
+        why: 'Diverging lenses ALWAYS produce virtual, upright, reduced images regardless of object position. 1/(-8) = 1/12 + 1/d_i → d_i = -4.8 cm (virtual). Magnification = +4.8/12 = +0.4 (upright, smaller). This is what eyeglasses for nearsightedness do.' },
+      { id: 5, setup: 'Concave (converging) mirror, f = 15 cm. Object placed at 45 cm from the mirror.', correct: 'realInvRed',
+        why: 'Object beyond 2f (45 > 30). Same rules as a converging lens: real, inverted, reduced. d_i = 22.5 cm in front of the mirror. Magnification = -0.5. The pattern transfers: concave mirrors and converging lenses share image-formation rules.' },
+      { id: 6, setup: 'Convex (diverging) mirror at the end of a hallway, f = -50 cm. You stand 100 cm away.', correct: 'virtUprRed',
+        why: 'Convex mirrors ALWAYS produce virtual, upright, reduced images. d_i = -33 cm (virtual, behind mirror). Magnification = +0.33. This is the security-mirror / passenger-side-mirror pattern: wide field of view at the cost of distance distortion.' },
+      { id: 7, setup: 'Converging lens, f = 20 cm. Object placed exactly at 40 cm (= 2f).', correct: 'realInvRed',
+        why: 'At exactly 2f, the image forms at exactly 2f on the opposite side, with magnification = -1 (same size, inverted). Some sources call this neither magnified nor reduced — but if you must pick, "reduced" is the conventional choice since magnification ≠ +1. Real and inverted are unambiguous.' },
+      { id: 8, setup: 'Concave mirror, f = 12 cm. Object placed 6 cm from the mirror.', correct: 'virtUprMag',
+        why: 'Object inside f (6 < 12). Virtual, upright, magnified. d_i = -12 cm (behind mirror). Magnification = +2. This is the makeup-mirror / shaving-mirror case — concave mirrors used at close range to magnify and stay upright.' },
+      { id: 9, setup: 'Converging lens, f = 5 cm. Object very far away (essentially at infinity, like a distant star).', correct: 'realInvRed',
+        why: 'Object at infinity → image at f (5 cm) on the opposite side. Real, inverted, reduced (as small as possible — just a point image). This is how a telescope objective works: parallel rays from a distant star focus to a point at the focal plane.' },
+      { id: 10, setup: 'Diverging lens, f = -15 cm. Object placed at 5 cm (close to the lens).', correct: 'virtUprRed',
+        why: 'Diverging lens — ALWAYS virtual, upright, reduced. Position does not change the qualitative answer for diverging lenses. d_i = -3.75 cm. Magnification = +0.75. The closer the object, the closer the virtual image is to the object (and the magnification approaches 1 from below).' }
+    ];
+
+    var ssIdx = d.ssIdx == null ? -1 : d.ssIdx;
+    var ssSeed = d.ssSeed || 1;
+    var ssAns = !!d.ssAns;
+    var ssPick = d.ssPick;
+    var ssScore = d.ssScore || 0;
+    var ssRounds = d.ssRounds || 0;
+    var ssStreak = d.ssStreak || 0;
+    var ssBest = d.ssBest || 0;
+    var ssShown = d.ssShown || [];
+
+    function startSs() {
+      var pool = [];
+      for (var i = 0; i < V.length; i++) if (ssShown.indexOf(i) < 0) pool.push(i);
+      if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); ssShown = []; }
+      var seedNext = ((ssSeed * 16807 + 11) % 2147483647) || 7;
+      var pick = pool[seedNext % pool.length];
+      upd({ ssSeed: seedNext, ssIdx: pick, ssAns: false, ssPick: null, ssShown: ssShown.concat([pick]) });
+    }
+    function pickSs(typeId) {
+      if (ssAns) return;
+      var v = V[ssIdx];
+      var correct = typeId === v.correct;
+      var newScore = ssScore + (correct ? 1 : 0);
+      var newStreak = correct ? (ssStreak + 1) : 0;
+      var newBest = Math.max(ssBest, newStreak);
+      upd({ ssAns: true, ssPick: typeId, ssScore: newScore, ssRounds: ssRounds + 1, ssStreak: newStreak, ssBest: newBest });
+    }
+
+    if (ssIdx < 0) {
+      return h('div', null,
+        h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '🕵️ Sign Convention Sleuth'),
+        h('div', {
+          style: { background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.40)', borderRadius: 10, padding: 16, marginBottom: 14 }
+        },
+          h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#cbd5e1', lineHeight: 1.55 } },
+            '10 setups. Each describes an object + a lens/mirror with a given focal length. Predict the image type from 4 options: real-inverted-magnified, real-inverted-reduced, virtual-upright-magnified, virtual-upright-reduced. Coaching after each pick shows the lens-equation math + the rule that would have given you the answer faster than the math.'
+          ),
+          h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 6, fontStyle: 'italic' } },
+            'Sign convention reminder: + d_i = real (opposite side), – d_i = virtual (same side). + magnification = upright; – magnification = inverted.')
+        ),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginBottom: 14 } },
+          TYPES.map(function(t) {
+            return h('div', { key: t.id, style: { padding: '10px 12px', borderRadius: 8, background: t.color + '15', border: '1px solid ' + t.color + '55' } },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, t.icon),
+                h('span', { style: { color: t.color, fontWeight: 800, fontSize: 12 } }, t.label)
+              ),
+              h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.45 } }, t.rule)
+            );
+          })
+        ),
+        h('button', {
+          onClick: startSs,
+          'data-op-focusable': 'true',
+          style: { padding: '10px 18px', background: '#7c3aed', color: '#fff', border: 'none', borderRadius: 10, fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+        }, '🕵️ Start — vignette 1 of 10')
+      );
+    }
+
+    var v = V[ssIdx];
+    var pickedCorrect = ssAns && ssPick === v.correct;
+    var pct = ssRounds > 0 ? Math.round((ssScore / ssRounds) * 100) : 0;
+    var allDone = ssShown.length >= V.length && ssAns;
+    var correctType = TYPES.filter(function(t) { return t.id === v.correct; })[0];
+    var pickedType = ssPick ? TYPES.filter(function(t) { return t.id === ssPick; })[0] : null;
+
+    return h('div', null,
+      h('h3', { style: { color: '#7dd3fc', fontSize: 16, fontWeight: 800, margin: '0 0 12px' } }, '🕵️ Sign Convention Sleuth'),
+      // Score header
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 11, color: '#94a3b8', marginBottom: 12 } },
+        h('span', null, 'Vignette ', h('strong', { style: { color: '#fff' } }, ssShown.length)),
+        h('span', null, 'Score ', h('strong', { style: { color: '#86efac' } }, ssScore + ' / ' + ssRounds)),
+        ssRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: '#7dd3fc' } }, pct + '%')),
+        h('span', null, 'Streak ', h('strong', { style: { color: '#fbbf24' } }, ssStreak)),
+        h('span', null, 'Best ', h('strong', { style: { color: '#a78bfa' } }, ssBest))
+      ),
+      // Vignette
+      h('section', { style: { padding: '14px 16px', borderRadius: 12, background: 'rgba(168,85,247,0.08)', border: '2px solid rgba(168,85,247,0.40)', marginBottom: 12 } },
+        h('div', { style: { fontSize: 11, color: '#a78bfa', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Vignette ' + ssShown.length + ' of ' + V.length),
+        h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.55 } }, v.setup)
+      ),
+      // 4 type picker buttons
+      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the image type' },
+        TYPES.map(function(t) {
+          var picked = ssAns && ssPick === t.id;
+          var isRight = ssAns && t.id === v.correct;
+          var bg, border, color;
+          if (ssAns) {
+            if (isRight) { bg = 'rgba(34,197,94,0.18)'; border = '#22c55e'; color = '#bbf7d0'; }
+            else if (picked) { bg = 'rgba(239,68,68,0.18)'; border = '#ef4444'; color = '#fecaca'; }
+            else { bg = 'rgba(30,41,59,0.5)'; border = 'rgba(100,116,139,0.4)'; color = '#94a3b8'; }
+          } else {
+            bg = t.color + '15'; border = t.color + '60'; color = '#e2e8f0';
+          }
+          return h('button', {
+            key: t.id, role: 'radio',
+            'aria-checked': picked ? 'true' : 'false',
+            'aria-label': t.label,
+            disabled: ssAns,
+            onClick: function() { pickSs(t.id); },
+            style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: ssAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 11, transition: 'all 0.15s', minHeight: 70 }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+              h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, t.icon),
+              h('span', { style: { color: ssAns ? color : t.color, fontSize: 12, fontWeight: 800 } }, t.label)
+            ),
+            h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: ssAns ? color : '#94a3b8' } }, t.rule)
+          );
+        })
+      ),
+      // Feedback
+      ssAns && h('section', {
+        style: {
+          marginTop: 12, padding: '14px 16px', borderRadius: 10,
+          background: pickedCorrect ? 'rgba(34,197,94,0.10)' : 'rgba(239,68,68,0.10)',
+          border: '1px solid ' + (pickedCorrect ? 'rgba(34,197,94,0.45)' : 'rgba(239,68,68,0.40)')
+        }
+      },
+        h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#86efac' : '#fca5a5' } },
+          pickedCorrect
+            ? '✅ Correct — ' + correctType.label
+            : '❌ The image is ' + correctType.label + (pickedType ? ' (you picked ' + pickedType.label + ')' : '')
+        ),
+        h('p', { style: { margin: '0 0 10px', color: '#e2e8f0', fontSize: 12, lineHeight: 1.55 } }, v.why),
+        allDone
+          ? h('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.45)' } },
+              h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c4b5fd', marginBottom: 4 } }, '🏆 All 10 vignettes complete'),
+              h('div', { style: { color: '#e2e8f0', fontSize: 12, lineHeight: 1.5 } },
+                'Final: ', h('strong', null, ssScore + ' / ' + V.length + ' (' + Math.round((ssScore / V.length) * 100) + '%)'),
+                ssScore === V.length ? ' — every image type correctly predicted. Ready for AP Physics 2 FRQ work.' :
+                ssScore >= 8 ? ' — strong sign-convention reasoning. The most-confused pair is usually realInvRed vs realInvMag (object beyond 2f vs between f and 2f) — memorize the cutoff at 2f.' :
+                ssScore >= 6 ? ' — solid baseline. Reflexes to build: diverging lens + convex mirror = ALWAYS virtual upright reduced. Object inside f for converging = magnifying glass.' :
+                ' — these distinctions take practice. Re-read the four type cards above + the rationales on misses, then retake. The lens equation sign convention is the foundation.'
+              ),
+              h('button', {
+                onClick: function() { upd({ ssIdx: -1, ssShown: [], ssScore: 0, ssRounds: 0, ssStreak: 0 }); },
+                style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              }, '🔄 Restart')
+            )
+          : h('button', {
+              onClick: startSs,
+              style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: '#7c3aed', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+            }, '➡️ Next vignette')
       )
     );
   }

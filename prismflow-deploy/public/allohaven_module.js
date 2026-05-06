@@ -10765,6 +10765,45 @@
     var letterLoading = letterLoadingTuple[0];
     var setLetterLoading = letterLoadingTuple[1];
 
+    // Phase 3v.3 — Whisper load status, lifted to AlloHaven top level so
+    // the Settings modal can show progress without violating rules-of-hooks
+    // (the modal renders conditionally; hooks must run unconditionally).
+    var whisperStatusTuple = useState({ phase: 'idle', progress: null, file: null, tier: null, error: null });
+    var whisperStatus = whisperStatusTuple[0];
+    var setWhisperStatus = whisperStatusTuple[1];
+    useEffect(function() {
+      if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.subscribeToVoiceProgress !== 'function') return;
+      var unsubscribe = window.AlloFlowVoice.subscribeToVoiceProgress(function(payload) {
+        // Aggregate the latest event into a single state object so the
+        // UI can render a coherent status string + progress bar.
+        setWhisperStatus(function(prev) {
+          var merged = Object.assign({}, prev, {
+            phase: payload.phase || prev.phase,
+            tier: payload.tier || prev.tier
+          });
+          if (payload.phase === 'model-fetch-progress') {
+            merged.file = payload.file || prev.file;
+            // Whisper download fires multiple files; keep the latest progress
+            if (typeof payload.progress === 'number') merged.progress = payload.progress;
+            merged.loaded = payload.loaded;
+            merged.total = payload.total;
+          } else if (payload.phase === 'model-loaded') {
+            merged.progress = 100;
+            merged.error = null;
+          } else if (payload.phase === 'model-error') {
+            merged.error = payload.error;
+            merged.progress = null;
+          } else if (payload.phase === 'transformers-fetch') {
+            merged.progress = 0;
+            merged.error = null;
+          }
+          return merged;
+        });
+      });
+      return unsubscribe;
+      // eslint-disable-next-line
+    }, []);
+
     // Phase 2p.32 — companion-phrases draft, lifted for rules-of-hooks.
     var phraseDraftTuple = useState('');
     var phraseDraft = phraseDraftTuple[0];
@@ -17476,44 +17515,124 @@
                 })
               ),
               // Whisper tier sub-picker — only shown when 'best' is selected.
-              // Saves the tier for when 3v.3 lands.
-              (current === 'best') ? h('div', {
-                style: { marginTop: '8px', paddingLeft: '12px', borderLeft: '2px solid ' + palette.border }
-              },
-                h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
-                  'Whisper model size'),
-                h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                  [
-                    { id: 'tiny',  label: 'Tiny · 75 MB',   note: 'fastest, runs on any laptop' },
-                    { id: 'base',  label: 'Base · 150 MB',  note: 'balanced (recommended)' },
-                    { id: 'small', label: 'Small · 500 MB', note: 'best, needs WebGPU' }
-                  ].map(function(tier) {
-                    var tactive = (prefs.whisperTier || 'tiny') === tier.id;
-                    return h('button', {
-                      key: 'vt-' + tier.id,
-                      onClick: function() {
-                        try {
-                          window.AlloFlowVoice.savePreference({ whisperTier: tier.id });
-                          setStateField('arcade', Object.assign({}, state.arcade));
-                        } catch (err) { /* ignore */ }
+              // 3v.3 wires actual model loading + progress UI.
+              (current === 'best') ? (function() {
+                var selectedTier = prefs.whisperTier || 'tiny';
+                var loadedTier = (typeof window.AlloFlowVoice.getLoadedWhisperTier === 'function')
+                  ? window.AlloFlowVoice.getLoadedWhisperTier()
+                  : null;
+                var isLoaded = !!loadedTier && loadedTier === selectedTier;
+                var isLoading = !isLoaded && whisperStatus && (
+                  whisperStatus.phase === 'transformers-fetch' ||
+                  whisperStatus.phase === 'model-fetch-progress'
+                ) && whisperStatus.tier === selectedTier;
+                var hasError = whisperStatus && whisperStatus.phase === 'model-error' && whisperStatus.tier === selectedTier;
+                return h('div', {
+                  style: { marginTop: '8px', paddingLeft: '12px', borderLeft: '2px solid ' + palette.border }
+                },
+                  h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+                    'Whisper model size'),
+                  h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '8px' } },
+                    [
+                      { id: 'tiny',  label: 'Tiny · 75 MB',   note: 'fastest, runs on any laptop' },
+                      { id: 'base',  label: 'Base · 150 MB',  note: 'balanced (recommended)' },
+                      { id: 'small', label: 'Small · 500 MB', note: 'best, needs WebGPU' }
+                    ].map(function(tier) {
+                      var tactive = selectedTier === tier.id;
+                      var tloaded = loadedTier === tier.id;
+                      return h('button', {
+                        key: 'vt-' + tier.id,
+                        onClick: function() {
+                          if (isLoading) return; // don't switch mid-download
+                          try {
+                            window.AlloFlowVoice.savePreference({ whisperTier: tier.id });
+                            setStateField('arcade', Object.assign({}, state.arcade));
+                          } catch (err) { /* ignore */ }
+                        },
+                        'aria-pressed': tactive ? 'true' : 'false',
+                        disabled: isLoading,
+                        title: tier.note + (tloaded ? ' (loaded)' : ''),
+                        style: {
+                          background: tactive ? palette.accent : 'transparent',
+                          color: tactive ? palette.onAccent : palette.text,
+                          border: '1.5px solid ' + (tactive ? palette.accent : palette.border),
+                          borderRadius: '999px',
+                          padding: '4px 12px',
+                          fontSize: '11px',
+                          fontWeight: tactive ? 700 : 600,
+                          cursor: isLoading ? 'not-allowed' : 'pointer',
+                          fontFamily: 'inherit',
+                          opacity: isLoading ? 0.6 : 1
+                        }
                       },
-                      'aria-pressed': tactive ? 'true' : 'false',
-                      title: tier.note,
+                        tier.label,
+                        tloaded ? h('span', { style: { marginLeft: '4px' } }, ' ✓') : null
+                      );
+                    })
+                  ),
+                  // Load / Loading / Loaded button + status row
+                  h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+                    h('button', {
+                      onClick: function() {
+                        if (isLoading || isLoaded) return;
+                        if (typeof window.AlloFlowVoice.preloadWhisper === 'function') {
+                          addToast('🎙️ Downloading Whisper-' + selectedTier + '… this may take a minute.');
+                          window.AlloFlowVoice.preloadWhisper(selectedTier).then(function() {
+                            addToast('🎙️ Whisper-' + selectedTier + ' ready. Voice transcription is now offline-capable.');
+                            // Trigger re-render so the badge updates
+                            setStateField('arcade', Object.assign({}, state.arcade));
+                          }).catch(function(err) {
+                            addToast('Whisper load failed. Falling back to other engines.');
+                          });
+                        }
+                      },
+                      disabled: isLoading || isLoaded,
                       style: {
-                        background: tactive ? palette.accent : 'transparent',
-                        color: tactive ? palette.onAccent : palette.text,
-                        border: '1.5px solid ' + (tactive ? palette.accent : palette.border),
-                        borderRadius: '999px',
-                        padding: '4px 12px',
-                        fontSize: '11px',
-                        fontWeight: tactive ? 700 : 600,
-                        cursor: 'pointer',
-                        fontFamily: 'inherit'
+                        background: isLoaded ? palette.success || '#16a34a' : (isLoading ? palette.surface : palette.accent),
+                        color: isLoaded ? '#fff' : (isLoading ? palette.textMute : palette.onAccent),
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '6px 14px',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: (isLoading || isLoaded) ? 'default' : 'pointer',
+                        fontFamily: 'inherit',
+                        opacity: (isLoading || isLoaded) ? 0.85 : 1
                       }
-                    }, tier.label);
-                  })
-                )
-              ) : null
+                    },
+                      isLoaded ? '✓ Loaded'
+                      : isLoading ? 'Loading…'
+                      : '↓ Load Whisper-' + selectedTier
+                    ),
+                    isLoading && typeof whisperStatus.progress === 'number' ? h('div', {
+                      'aria-hidden': 'true',
+                      style: { flex: 1, minWidth: '120px', height: '8px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '999px', overflow: 'hidden' }
+                    },
+                      h('div', {
+                        style: {
+                          width: Math.round(whisperStatus.progress) + '%',
+                          height: '100%',
+                          background: palette.accent,
+                          transition: 'width 240ms linear'
+                        }
+                      })
+                    ) : null,
+                    isLoading ? h('span', {
+                      style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' }
+                    },
+                      whisperStatus.file ? whisperStatus.file + ' · ' : '',
+                      typeof whisperStatus.progress === 'number' ? Math.round(whisperStatus.progress) + '%' : 'fetching…'
+                    ) : null
+                  ),
+                  hasError ? h('p', {
+                    role: 'alert',
+                    style: { fontSize: '11px', color: '#dc2626', fontStyle: 'italic', marginTop: '6px' }
+                  }, 'Could not load Whisper. Voice will fall back to Web Speech API. Check your network or try a smaller tier.') : null,
+                  isLoaded ? h('p', {
+                    style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginTop: '6px' }
+                  }, 'Whisper-' + loadedTier + ' is loaded. Audio stays on this device — no upload.') : null
+                );
+              })() : null
             );
           })(),
 
