@@ -3310,6 +3310,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       else if (tab === 'aero') tabContent = renderAero();
       else if (tab === 'navigate') tabContent = renderNavigate();
 
+      // Topic-accent hero band per tab
+      var TAB_META = {
+        vformation: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83E\uDEBF', title: 'V-formation flying',         hint: 'Trailing birds catch the upwash from the bird ahead \u2014 20\u201330% energy savings. Lead position rotates because the front bird does the most work.' },
+        wind:       { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',   icon: '\uD83C\uDF2C\uFE0F', title: 'Wind currents + thermals',   hint: 'Birds read pressure gradients we cannot feel. Updrafts, ridge lift, and thermal columns are how raptors fly hundreds of miles burning almost no calories.' },
+        routes:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDDFA\uFE0F', title: 'Migration routes + flyways',  hint: 'Four major North American flyways (Pacific, Central, Mississippi, Atlantic) channel billions of birds twice yearly. Maine sits at the top of the Atlantic Flyway.' },
+        aero:       { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\u2708\uFE0F', title: 'Aerodynamics of bird flight', hint: 'Wing shape (aspect ratio + camber) tunes lift vs drag. Soaring birds = high aspect ratio, slow wingbeat. Hummingbirds = low AR, 60+ Hz wingbeat.' },
+        navigate:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83E\uDDED', title: 'Weather + navigation',       hint: 'Birds use multiple cues simultaneously \u2014 sun compass, magnetic field via cryptochrome in the eye, star patterns, and learned landmarks. Robust against losing any single cue.' }
+      };
+      var meta = TAB_META[tab] || TAB_META.vformation;
+      var tabHero = h('div', {
+        style: {
+          padding: '12px 14px',
+          borderRadius: 12,
+          background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%)',
+          border: '1px solid ' + meta.accent + '55',
+          borderLeft: '4px solid ' + meta.accent,
+          display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+        }
+      },
+        h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+        h('div', { style: { flex: 1, minWidth: 220 } },
+          h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+          h('p', { style: { margin: '3px 0 0', color: isDark ? '#cbd5e1' : '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+        )
+      );
+
       return h('div', { className: 'space-y-3 p-3 ' + bg + ' rounded-2xl' },
         // Header
         h('div', { className: 'flex items-center justify-between' },
@@ -3323,6 +3349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
           )
         ),
         tabBar,
+        tabHero,
         h('div', { role: 'tabpanel', 'aria-label': (function() { for (var i = 0; i < TABS.length; i++) { if (TABS[i].id === tab) return TABS[i].label; } return 'Tab'; })() },
           tabContent
         )

@@ -48,6 +48,59 @@
     document.body.appendChild(lr);
   })();
 
+  // ── AlloHavenArcade plugin registry (Phase 3a) ──
+  // Mirrors the window.StemLab.registerTool pattern (stem_lab_module.js:23-54)
+  // so arcade modes are pure plugins. Each mode lives in its own
+  // arcade_mode_<name>.js file and self-registers at load time.
+  // The arcade hub (rendered inside AlloHaven) iterates getRegisteredModes()
+  // and renders a card per mode. Adding a new game = a new file + one
+  // load-list entry; no host changes required.
+  //
+  // Plugin contract — config shape passed to registerMode:
+  //   { id, label, icon, blurb, timeCost (minutes per launch),
+  //     partnerRequired (bool), render(ctx), ready (bool, default true) }
+  //
+  // ctx provided to render():
+  //   {
+  //     React, palette, tokens, minutesPerToken,
+  //     onLaunch(minutes)       — deduct tokens + start session timer
+  //     onClose()               — close the arcade hub
+  //     callImagen, callGemini, callTTS,  — AI plumbing pass-through
+  //     addToast,
+  //     toolData               — cross-tool state aggregator (read-only)
+  //     setStemLabTool(id)     — for modes that deep-link into STEM Lab
+  //   }
+  if (!window.AlloHavenArcade) {
+    window.AlloHavenArcade = {
+      _registry: {},
+      _order: [],
+      registerMode: function(id, config) {
+        if (!id || typeof config !== 'object') return;
+        config.id = id;
+        config.ready = config.ready !== false;
+        this._registry[id] = config;
+        if (this._order.indexOf(id) === -1) this._order.push(id);
+        if (typeof console !== 'undefined') {
+          console.log('[AlloHavenArcade] Registered mode: ' + id);
+        }
+      },
+      getRegisteredModes: function() {
+        var self = this;
+        return this._order.map(function(id) { return self._registry[id]; }).filter(Boolean);
+      },
+      isRegistered: function(id) { return !!this._registry[id]; },
+      renderMode: function(id, ctx) {
+        var mode = this._registry[id];
+        if (!mode || typeof mode.render !== 'function') return null;
+        try { return mode.render(ctx); }
+        catch (e) {
+          if (typeof console !== 'undefined') console.error('[AlloHavenArcade] Error rendering ' + id, e);
+          return null;
+        }
+      }
+    };
+  }
+
   // ── Print stylesheet (Phase 2h) ──
   // Memory-palace export: when student/parent triggers window.print(),
   // hide everything except .ah-print-packet so the packet prints clean.
@@ -348,6 +401,20 @@
       memoryDecks:  true,
       stories:      true,
       journals:     true
+    },
+
+    // ── Arcade (Phase 3a) ──
+    // The arcade is a plugin-based hub for token-time-gated games that
+    // live alongside AlloHaven. Each game (Sage launcher, Concept Cards,
+    // Runway, etc.) is registered via window.AlloHavenArcade.registerMode
+    // from its own arcade_mode_<name>.js file. Tokens earned in AlloFlow
+    // tools convert to play time at a teacher-configurable rate.
+    // session is null when no game is active; otherwise tracks the
+    // current launch (which mode, when started, how many minutes budgeted,
+    // when it ends).
+    arcade: {
+      minutesPerToken: 5,         // teacher-configurable conversion rate
+      session: null               // { modeId, startedAt, minutes, endsAt }
     }
   };
 
@@ -8940,6 +9007,22 @@
       } else {
         merged.printOptions = Object.assign({}, printDefaults, merged.printOptions);
       }
+      // Phase 3a — arcade state. Defaults are safe for any save that
+      // predates arcade mode; session always starts null on load even
+      // if a previous session was mid-flight when the tab closed
+      // (timer runs in-memory only, mid-session restart is not honored).
+      if (!merged.arcade || typeof merged.arcade !== 'object') {
+        merged.arcade = { minutesPerToken: 5, session: null };
+      } else {
+        if (typeof merged.arcade.minutesPerToken !== 'number'
+            || merged.arcade.minutesPerToken < 1
+            || merged.arcade.minutesPerToken > 60) {
+          merged.arcade.minutesPerToken = 5;
+        }
+        // Always clear session on load — a stale session from a closed
+        // tab shouldn't hold the user hostage to a non-existent timer.
+        merged.arcade.session = null;
+      }
       return merged;
     });
     var state = stateTuple[0];
@@ -9192,15 +9275,30 @@
     // Only runs while the timer is active. Re-renders the mm:ss display.
     // Cheap; doesn't affect perceived smoothness at 4Hz.
     useEffect(function() {
-      // Tick while Pomodoro OR breathing pacer is active so any
-      // mm:ss / elapsed displays smoothly refresh.
+      // Tick while Pomodoro OR breathing pacer OR arcade session is
+      // active so any mm:ss / elapsed displays smoothly refresh.
       var pomActive = !!(state.pomodoroState && state.pomodoroState.active);
       var breatheActive = state.activeModal === 'breathe';
-      if (!pomActive && !breatheActive) return;
+      var arcadeActive = !!(state.arcade && state.arcade.session);
+      if (!pomActive && !breatheActive && !arcadeActive) return;
       var iv = setInterval(function() { setNowTick(Date.now()); }, 250);
       return function() { clearInterval(iv); };
       // eslint-disable-next-line
-    }, [state.pomodoroState.active, state.activeModal]);
+    }, [state.pomodoroState.active, state.activeModal, state.arcade && state.arcade.session]);
+
+    // Phase 3a — auto-end the arcade session when the timer expires.
+    // Lives outside the tick effect so it fires once per session
+    // boundary instead of every 250ms.
+    useEffect(function() {
+      if (!state.arcade || !state.arcade.session) return;
+      var endsMs = new Date(state.arcade.session.endsAt).getTime();
+      if (isNaN(endsMs)) return;
+      var msLeft = endsMs - Date.now();
+      if (msLeft <= 0) { endArcadeSession('expired'); return; }
+      var t = setTimeout(function() { endArcadeSession('expired'); }, msLeft + 50);
+      return function() { clearTimeout(t); };
+      // eslint-disable-next-line
+    }, [state.arcade && state.arcade.session && state.arcade.session.endsAt]);
 
     // ── Ambient soundscape (Phase 2g) ──
     // Procedural Web Audio noise — no external assets. A 5-second buffer
@@ -11939,6 +12037,14 @@
             'aria-label': 'Open 5-4-3-2-1 sensory grounding exercise',
             style: secondaryBtnStyle(palette)
           }, '🧷 Grounding'),
+          // Arcade hub (Phase 3a) — token-time-gated launcher for plugin
+          // arcade modes (Sage launcher, Concept Cards, Runway, etc.).
+          h('button', {
+            onClick: function() { setStateField('activeModal', 'arcade'); },
+            'aria-label': 'Open arcade — spend tokens on game time',
+            title: 'Token-time gated games (Sage, future TCG, etc.)',
+            style: secondaryBtnStyle(palette)
+          }, '🎮 Arcade'),
           (function() {
             var deckCount = state.decorations.filter(function(d) { return !!d.linkedContent; }).length;
             var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
@@ -13693,6 +13799,238 @@
       { id: 'stories',      emoji: '📜', label: 'Stories',               hint: 'Walkable story chains across decorations.' },
       { id: 'journals',     emoji: '📝', label: 'Recent reflections',    hint: 'The last several journal entries.' }
     ];
+    // ─────────────────────────────────────────────────
+    // ARCADE HUB (Phase 3a) — token-time-gated launcher for modes
+    // registered via window.AlloHavenArcade. Each mode is its own
+    // arcade_mode_*.js file. The hub iterates getRegisteredModes()
+    // so adding a new game = adding a new file + one load entry.
+    //
+    // Time-budget economy: tokens earned in AlloFlow tools spend at
+    // state.arcade.minutesPerToken per token (default 5). When a mode
+    // is launched, the hub deducts the requested tokens, computes
+    // session.endsAt = now + minutes, and hands control to the mode's
+    // render(ctx). Modes that deep-link to other tools (Sage launcher)
+    // close the AlloHaven modal and rely on the host's persistent
+    // session to remember the timer.
+    // ─────────────────────────────────────────────────
+    function launchArcadeMode(modeId, minutes) {
+      // Look up the mode + sanity-check the minutes vs. token balance.
+      var mode = window.AlloHavenArcade && window.AlloHavenArcade._registry && window.AlloHavenArcade._registry[modeId];
+      if (!mode) {
+        addToast('That game isn\'t registered.');
+        return false;
+      }
+      var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
+      var minutesAsked = Math.max(1, Math.floor(minutes || mode.timeCost || mpt));
+      var tokensNeeded = Math.ceil(minutesAsked / mpt);
+      if (state.tokens < tokensNeeded) {
+        addToast('Need ' + tokensNeeded + ' 🪙 tokens for ' + minutesAsked + ' min. You have ' + state.tokens + '.');
+        return false;
+      }
+      var nowMs = Date.now();
+      var endsAt = nowMs + minutesAsked * 60 * 1000;
+      var earningsEntry = {
+        source: 'arcade-launch',
+        tokens: -tokensNeeded,
+        date: new Date(nowMs).toISOString(),
+        metadata: { modeId: modeId, minutes: minutesAsked }
+      };
+      setStateMulti({
+        tokens: state.tokens - tokensNeeded,
+        earnings: state.earnings.concat([earningsEntry]),
+        arcade: Object.assign({}, state.arcade, {
+          session: {
+            modeId: modeId,
+            startedAt: new Date(nowMs).toISOString(),
+            minutes: minutesAsked,
+            endsAt: new Date(endsAt).toISOString()
+          }
+        })
+      });
+      addToast('🎮 ' + (mode.label || modeId) + ' · ' + minutesAsked + ' min · -' + tokensNeeded + ' 🪙');
+      return true;
+    }
+
+    function endArcadeSession(reason) {
+      // reason: 'expired' | 'closed' | 'forfeit'
+      if (!state.arcade || !state.arcade.session) return;
+      var modeId = state.arcade.session.modeId;
+      setStateField('arcade', Object.assign({}, state.arcade, { session: null }));
+      var mode = window.AlloHavenArcade && window.AlloHavenArcade._registry && window.AlloHavenArcade._registry[modeId];
+      var label = mode ? (mode.label || modeId) : modeId;
+      var msg = reason === 'expired' ? '⏰ Time\'s up — ' + label + ' session ended.'
+              : reason === 'closed'  ? 'Closed ' + label + '.'
+              :                        'Left ' + label + ' early.';
+      addToast(msg);
+    }
+
+    function renderArcadeHubModal() {
+      if (state.activeModal !== 'arcade') return null;
+      var modes = (window.AlloHavenArcade && window.AlloHavenArcade.getRegisteredModes())
+                  ? window.AlloHavenArcade.getRegisteredModes()
+                  : [];
+      var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
+      var session = state.arcade && state.arcade.session;
+      // Ms remaining if a session is active
+      var remainingMs = 0;
+      if (session && session.endsAt) {
+        remainingMs = Math.max(0, new Date(session.endsAt).getTime() - Date.now());
+      }
+      var remainingMin = Math.ceil(remainingMs / 60000);
+
+      function close() { setStateField('activeModal', null); }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'AlloHaven arcade',
+        onClick: function(e) { if (e.target === e.currentTarget) close(); },
+        style: {
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)', zIndex: 175,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          style: {
+            background: palette.bg, border: '1px solid ' + palette.border,
+            borderRadius: '14px', padding: '24px',
+            maxWidth: '560px', width: '100%', maxHeight: '88vh',
+            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)'
+          }
+        },
+          // Header
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '🎮 Arcade'),
+            h('button', {
+              onClick: close,
+              'aria-label': 'Close arcade',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          h('p', {
+            style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', margin: '0 0 14px 0', lineHeight: '1.5' }
+          }, 'Tokens you\'ve earned can be spent on time in arcade games. Right now: 1 🪙 = ' + mpt + ' minutes.'),
+
+          // Active session banner
+          session ? h('div', {
+            role: 'status',
+            'aria-live': 'polite',
+            style: {
+              padding: '10px 14px',
+              background: palette.surface,
+              border: '1.5px solid ' + palette.accent,
+              borderRadius: '10px',
+              marginBottom: '14px',
+              display: 'flex',
+              gap: '10px',
+              alignItems: 'center',
+              flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
+                '⏱ Active session · ' + remainingMin + ' min left'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.4' } },
+                'You\'re currently playing ' + ((window.AlloHavenArcade._registry[session.modeId] && window.AlloHavenArcade._registry[session.modeId].label) || session.modeId) + '.')
+            ),
+            h('button', {
+              onClick: function() { endArcadeSession('forfeit'); },
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+            }, 'End early')
+          ) : null,
+
+          // Token balance row
+          h('div', {
+            style: {
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '8px 12px',
+              background: palette.surface,
+              border: '1px solid ' + palette.border,
+              borderRadius: '8px',
+              marginBottom: '14px',
+              fontSize: '12px'
+            }
+          },
+            h('span', { style: { color: palette.textDim } }, 'Your wallet'),
+            h('span', { style: { color: palette.text, fontWeight: 700 } },
+              state.tokens + ' 🪙  ·  up to ' + (state.tokens * mpt) + ' minutes')
+          ),
+
+          // Modes list
+          modes.length === 0 ? h('div', {
+            style: {
+              padding: '32px 20px', background: palette.surface,
+              border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center'
+            }
+          },
+            h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '🕹'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              'No arcade games installed yet. Each game ships as its own arcade_mode_*.js plugin file.')
+          ) : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+            modes.map(function(mode) {
+              var ctx = {
+                React: window.React,
+                palette: palette,
+                tokens: state.tokens,
+                minutesPerToken: mpt,
+                session: session,
+                onLaunch: function(minutes) { return launchArcadeMode(mode.id, minutes); },
+                onClose: close,
+                callImagen: props.callImagen,
+                callGemini: props.callGemini,
+                callTTS: props.callTTS,
+                addToast: addToast,
+                toolData: props.toolData || {},
+                setStemLabTool: props.setStemLabTool || null
+              };
+              // Default card if mode doesn't supply its own render. If it
+              // does, the mode owns the entire card UI.
+              if (typeof mode.render === 'function') {
+                try { return h('div', { key: 'arcade-' + mode.id }, window.AlloHavenArcade.renderMode(mode.id, ctx)); }
+                catch (err) {
+                  return h('div', { key: 'arcade-err-' + mode.id, style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', padding: '8px' } },
+                    'Error loading ' + mode.id);
+                }
+              }
+              // Generic fallback card (if mode declared no render)
+              var defaultMin = mode.timeCost || mpt;
+              var defaultTokens = Math.ceil(defaultMin / mpt);
+              var canAfford = state.tokens >= defaultTokens;
+              return h('div', {
+                key: 'arcade-default-' + mode.id,
+                style: {
+                  padding: '12px 14px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '10px'
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: mode.blurb ? '6px' : 0 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: '28px' } }, mode.icon || '🎲'),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: '14px', fontWeight: 700, color: palette.text } }, mode.label || mode.id),
+                    mode.blurb ? h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.4', marginTop: '2px' } }, mode.blurb) : null
+                  ),
+                  h('button', {
+                    onClick: function() { ctx.onLaunch(defaultMin); },
+                    disabled: !canAfford || !!session,
+                    style: Object.assign({}, primaryBtnStyle(palette), {
+                      padding: '6px 14px', fontSize: '12px',
+                      opacity: (!canAfford || !!session) ? 0.5 : 1,
+                      cursor: (!canAfford || !!session) ? 'not-allowed' : 'pointer'
+                    })
+                  }, defaultMin + ' min · ' + defaultTokens + ' 🪙')
+                )
+              );
+            })
+          )
+        )
+      );
+    }
+
     function renderPrintOptionsModal() {
       if (state.activeModal !== 'print-options') return null;
       var opts = state.printOptions || {};
@@ -17056,6 +17394,38 @@
             })
           ),
 
+          // ── Arcade time-budget (Phase 3a) ──
+          // Tokens convert to play time at this rate. Teacher- (or
+          // self-) configurable so a class can scale arcade access.
+          h('div', {
+            style: { fontSize: '13px', color: palette.textDim, marginTop: '18px', marginBottom: '6px', fontWeight: 600 }
+          }, 'Arcade time'),
+          h('p', {
+            style: { fontSize: '11px', color: palette.textMute, marginTop: 0, marginBottom: '10px', lineHeight: '1.5' }
+          }, '1 🪙 token = N minutes of arcade play. Lower = faster spend, higher = longer sessions per token.'),
+          (function() {
+            var mpt = (state.arcade && state.arcade.minutesPerToken) || 5;
+            return h('div', { style: { display: 'flex', alignItems: 'center', gap: '12px' } },
+              h('input', {
+                type: 'range',
+                min: 1, max: 30, step: 1,
+                value: mpt,
+                'aria-label': 'Minutes per token',
+                onChange: function(e) {
+                  var n = parseInt(e.target.value, 10);
+                  if (!isNaN(n)) setStateField('arcade', Object.assign({}, state.arcade, { minutesPerToken: n }));
+                },
+                style: { flex: 1, accentColor: palette.accent }
+              }),
+              h('span', {
+                style: {
+                  fontSize: '13px', color: palette.text, fontWeight: 700,
+                  fontVariantNumeric: 'tabular-nums', minWidth: '54px', textAlign: 'right'
+                }
+              }, mpt + ' min')
+            );
+          })(),
+
           // ── Backup / Restore (Phase 2g) ──
           // Export full state as a JSON file, or restore from a prior export.
           // Restore prompts for confirmation since it overwrites everything.
@@ -18688,6 +19058,7 @@
       renderGroundingModal(),
       renderCompanionPhrasesModal(),
       renderPrintOptionsModal(),
+      renderArcadeHubModal(),
       renderWelcomeBackdrop(),
       renderWelcomeCard(),
       // Print packet — portaled to body so the @media print rule's
