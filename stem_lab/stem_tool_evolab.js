@@ -377,6 +377,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
             ring: 'ring-slate-500/40'
           },
           {
+            id: 'selectionSleuth', title: 'Selection Sleuth', icon: '🕵️',
+            subtitle: '10 vignettes — name the mechanism',
+            desc: 'For each scenario, identify the evolutionary mechanism: natural selection (directional / stabilizing / disruptive), sexual selection, artificial selection, or genetic drift. Forces students past "evolution = natural selection" toward the full taxonomy of mechanisms.',
+            color: 'from-amber-500 to-orange-700',
+            ring: 'ring-amber-500/40'
+          },
+          {
             id: 'capstone', title: 'Capstone Project', icon: '🎓',
             subtitle: 'Predict, run, reflect',
             desc: 'A guided 4-step research project. Pick a real-world scenario, predict the outcome, run the matching simulation, then write up your findings. Generates a print-ready lab report.',
@@ -5386,6 +5393,210 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       // ─────────────────────────────────────────────────────
       // CAPSTONE PROJECT — 4-step guided research workflow
       // ─────────────────────────────────────────────────────
+      // SELECTION SLEUTH (net-new mini-game)
+      // 10 vignettes; player picks the evolutionary mechanism from 6 options.
+      // Tests the AP Bio / intro bio canonical concept that "evolution" has
+      // multiple distinct mechanisms — natural selection (3 modes), sexual
+      // selection, artificial selection, genetic drift. Most-misclassified:
+      // sexual vs natural (peacock tails), drift vs selection (small pops),
+      // artificial vs natural (cultivated species), and the 3 directional
+      // modes of natural selection.
+      // ─────────────────────────────────────────────────────
+      function SelectionSleuth() {
+        var MECHANISMS = [
+          { id: 'natural-directional', label: 'Natural — directional', color: '#16a34a', icon: '➡️',
+            def: 'A pressure favors one extreme. Population mean shifts that way over generations.' },
+          { id: 'natural-stabilizing', label: 'Natural — stabilizing',  color: '#0ea5e9', icon: '🎯',
+            def: 'Pressure against BOTH extremes. Population narrows around the average.' },
+          { id: 'natural-disruptive',  label: 'Natural — disruptive',   color: '#a855f7', icon: '⇆',
+            def: 'Pressure against the AVERAGE. Population splits to both extremes; intermediate phenotypes lose.' },
+          { id: 'sexual',              label: 'Sexual selection',       color: '#ec4899', icon: '🦚',
+            def: 'Trait spreads via mate choice (or male-male competition), even if it costs survival.' },
+          { id: 'artificial',          label: 'Artificial selection',   color: '#f59e0b', icon: '🧑‍🌾',
+            def: 'Humans deliberately breed for chosen traits. Crops, livestock, dog breeds.' },
+          { id: 'drift',               label: 'Genetic drift',          color: '#94a3b8', icon: '🎲',
+            def: 'Random changes in allele frequency, especially in small populations. Bottleneck and founder effects.' }
+        ];
+        var V = [
+          { id: 1, scenario: 'African elephants in heavily-poached areas have shorter (or no) tusks compared to those in protected reserves. Ivory poaching has been intense for ~150 years.', correct: 'natural-directional',
+            why: 'Poaching is a survival pressure that favors one extreme (no tusks / small tusks). The population mean for tusk size is shifting in that direction. Not artificial selection because humans aren\'t deliberately breeding the surviving elephants — they\'re just removing the ones with tusks.' },
+          { id: 2, scenario: 'Modern dairy cattle produce 2–3× more milk than their 1950s ancestors. Farmers have systematically bred for higher milk yield using AI-selected sires.', correct: 'artificial',
+            why: 'Humans deliberately choose which animals reproduce based on a desired trait. That\'s the textbook definition of artificial selection. The pressure isn\'t survival — it\'s breeder decisions.' },
+          { id: 3, scenario: 'Peacock males with the longest, most colorful tails are chosen as mates significantly more often. Long tails make them more visible to predators and harder to fly.', correct: 'sexual',
+            why: 'Trait spreads despite its survival cost — a hallmark of sexual selection. Mate choice (or male competition) is the selecting force, not survival. Runaway selection produces ornaments that wouldn\'t survive natural-selection scrutiny alone.' },
+          { id: 4, scenario: 'On a small Pacific island, a rare blue flower-color variant became the dominant color over 5 generations after a hurricane killed most of the parent generation. The blue color provides no apparent advantage.', correct: 'drift',
+            why: 'Bottleneck event + small population + no fitness advantage = genetic drift. Random sampling (the hurricane) shifted allele frequencies by chance. Population size is the giveaway — drift dominates in small populations even when there\'s no selection pressure.' },
+          { id: 5, scenario: 'Antibiotic-resistant E. coli strains have become increasingly common in hospitals worldwide over 30 years of widespread penicillin and methicillin use.', correct: 'natural-directional',
+            why: 'Antibiotics are a survival pressure favoring one extreme (resistance). Population mean shifts toward higher resistance. Not artificial — humans aren\'t deliberately breeding resistant bacteria; they\'re creating a survival pressure that selects for them. (This is why "finishing your prescription" matters.)' },
+          { id: 6, scenario: 'Most human babies cluster around 7–8 lbs at birth. Babies that are very small (premature) or very large (gestational diabetes) have higher mortality. Average-weight babies have the highest survival rate.', correct: 'natural-stabilizing',
+            why: 'Pressure against BOTH extremes — small AND large — favoring the average. The population narrows around the optimum. Classic textbook example of stabilizing selection. Birthweight has remained relatively stable in human populations for millennia.' },
+          { id: 7, scenario: 'In a finch population, small-beaked birds eat small soft seeds; large-beaked birds crack hard seeds; medium-beaked birds can\'t do either well and have lower fitness.', correct: 'natural-disruptive',
+            why: 'Pressure against the AVERAGE. Small AND large are favored; medium loses. This produces a bimodal population distribution and is the precursor to sympatric speciation. Real-world: African seedcracker finches show this exactly.' },
+          { id: 8, scenario: 'Modern broccoli, kale, cauliflower, Brussels sprouts, and cabbage all descended from a single wild mustard species (Brassica oleracea), bred over centuries by farmers selecting for different parts (flowers, leaves, stems, buds).', correct: 'artificial',
+            why: 'Classic artificial selection — same species, deliberate breeding for divergent human-chosen traits. The diversity within Brassica oleracea is one of the most-cited examples in intro bio. Compare to dog breeds (Canis familiaris) for the same pattern.' },
+          { id: 9, scenario: 'Cheetahs have very low genetic diversity. Genetic analysis suggests their ancestors went through a near-extinction bottleneck ~12,000 years ago, with as few as 500 surviving individuals.', correct: 'drift',
+            why: 'Bottleneck effect — a form of genetic drift. The few survivors carried only a sample of the original gene pool, by chance. Modern cheetahs are essentially genetic clones of each other. Founder effects (small population colonizing new area) work the same way.' },
+          { id: 10, scenario: 'Bowerbird males build elaborate stick-and-decoration display structures (bowers). Females visit multiple bowers and mate with the male whose bower most impresses them. Males with sloppier bowers rarely reproduce.', correct: 'sexual',
+            why: 'Mate choice is the selection force. The bower itself doesn\'t aid survival; the trait (bower-building skill) spreads only because females select for it. Compare to peacock tails (#3) — same mechanism, different display modality.' }
+        ];
+
+        var sIdx = d.evoSlIdx == null ? -1 : d.evoSlIdx;
+        var sSeed = d.evoSlSeed || 1;
+        var sAns = !!d.evoSlAns;
+        var sPick = d.evoSlPick;
+        var sScore = d.evoSlScore || 0;
+        var sRounds = d.evoSlRounds || 0;
+        var sStreak = d.evoSlStreak || 0;
+        var sBest = d.evoSlBest || 0;
+        var sShown = d.evoSlShown || [];
+
+        function startSl() {
+          var pool = [];
+          for (var i = 0; i < V.length; i++) if (sShown.indexOf(i) < 0) pool.push(i);
+          if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); sShown = []; }
+          var seedNext = ((sSeed * 16807 + 11) % 2147483647) || 7;
+          var pick = pool[seedNext % pool.length];
+          upd('evoSlSeed', seedNext);
+          upd('evoSlIdx', pick);
+          upd('evoSlAns', false);
+          upd('evoSlPick', null);
+          upd('evoSlShown', sShown.concat([pick]));
+        }
+        function pickSl(mechId) {
+          if (sAns) return;
+          var v = V[sIdx];
+          var correct = mechId === v.correct;
+          var newScore = sScore + (correct ? 1 : 0);
+          var newStreak = correct ? (sStreak + 1) : 0;
+          var newBest = Math.max(sBest, newStreak);
+          upd('evoSlAns', true);
+          upd('evoSlPick', mechId);
+          upd('evoSlScore', newScore);
+          upd('evoSlRounds', sRounds + 1);
+          upd('evoSlStreak', newStreak);
+          upd('evoSlBest', newBest);
+        }
+
+        if (sIdx < 0) {
+          return h('div', { className: 'p-6 max-w-3xl mx-auto' },
+            h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); }, className: 'mb-4 text-sm font-bold text-slate-700 hover:text-slate-900' }, '← Back to EvoLab menu'),
+            h('h1', { className: 'text-3xl font-black text-amber-700 mb-2' }, '🕵️ Selection Sleuth'),
+            h('p', { className: 'text-sm text-slate-700 leading-relaxed mb-4' },
+              '10 vignettes. For each, identify which of six mechanisms is driving the evolutionary change. After picking, a coaching block names what makes this mechanism more likely than the others (and what would have to be different to make a different mechanism the right answer).'
+            ),
+            h('div', { className: 'p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 mb-4' },
+              h('div', { className: 'text-xs font-bold uppercase tracking-widest text-amber-800 mb-2' }, 'The six mechanisms'),
+              h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                MECHANISMS.map(function(m) {
+                  return h('div', { key: m.id, style: { padding: '10px 12px', borderRadius: 8, background: m.color + '15', border: '1px solid ' + m.color + '55' } },
+                    h('div', { className: 'flex items-center gap-2 mb-1' },
+                      h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, m.icon),
+                      h('span', { style: { color: m.color, fontWeight: 800, fontSize: 12 } }, m.label)
+                    ),
+                    h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, m.def)
+                  );
+                })
+              )
+            ),
+            h('button', {
+              onClick: startSl,
+              className: 'w-full px-5 py-3 rounded-xl bg-amber-600 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+            }, '🕵️ Start — vignette 1 of 10')
+          );
+        }
+
+        var v = V[sIdx];
+        var pickedCorrect = sAns && sPick === v.correct;
+        var pct = sRounds > 0 ? Math.round((sScore / sRounds) * 100) : 0;
+        var allDone = sShown.length >= V.length && sAns;
+        var correctMech = MECHANISMS.filter(function(m) { return m.id === v.correct; })[0];
+        var pickedMech = sPick ? MECHANISMS.filter(function(m) { return m.id === sPick; })[0] : null;
+
+        return h('div', { className: 'p-6 max-w-3xl mx-auto' },
+          h('button', { onClick: function() { setView('menu'); upd('view', 'menu'); }, className: 'mb-4 text-sm font-bold text-slate-700 hover:text-slate-900' }, '← Back to EvoLab menu'),
+          h('h1', { className: 'text-3xl font-black text-amber-700 mb-2' }, '🕵️ Selection Sleuth'),
+          // Score header
+          h('div', { className: 'flex flex-wrap gap-3 items-center text-xs text-slate-600 mb-4' },
+            h('span', null, 'Vignette ', h('strong', { className: 'text-slate-800' }, sShown.length)),
+            h('span', null, 'Score ', h('strong', { className: 'text-emerald-700' }, sScore + ' / ' + sRounds)),
+            sRounds > 0 && h('span', null, 'Accuracy ', h('strong', { className: 'text-cyan-700' }, pct + '%')),
+            h('span', null, 'Streak ', h('strong', { className: 'text-amber-700' }, sStreak)),
+            h('span', null, 'Best ', h('strong', { className: 'text-fuchsia-700' }, sBest))
+          ),
+          // The vignette
+          h('section', { className: 'p-5 rounded-2xl bg-amber-50 border-2 border-amber-300 mb-4' },
+            h('div', { className: 'text-xs font-bold uppercase tracking-widest text-amber-700 mb-2' }, 'Vignette ' + sShown.length + ' of ' + V.length),
+            h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario)
+          ),
+          // 6 mechanism picker buttons
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-4', role: 'radiogroup', 'aria-label': 'Pick the mechanism' },
+            MECHANISMS.map(function(m) {
+              var picked = sAns && sPick === m.id;
+              var isRight = sAns && m.id === v.correct;
+              var bg, border, color;
+              if (sAns) {
+                if (isRight) { bg = '#ecfdf5'; border = '#22c55e'; color = '#166534'; }
+                else if (picked) { bg = '#fef2f2'; border = '#ef4444'; color = '#991b1b'; }
+                else { bg = '#f8fafc'; border = '#cbd5e1'; color = '#64748b'; }
+              } else {
+                bg = m.color + '12'; border = m.color + '60'; color = '#1e293b';
+              }
+              return h('button', {
+                key: m.id, role: 'radio',
+                'aria-checked': picked ? 'true' : 'false',
+                'aria-label': m.label,
+                disabled: sAns,
+                onClick: function() { pickSl(m.id); },
+                style: { padding: '12px 14px', borderRadius: 12, background: bg, color: color, border: '2px solid ' + border, cursor: sAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 70, transition: 'all 0.15s' }
+              },
+                h('div', { className: 'flex items-center gap-2 mb-1' },
+                  h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, m.icon),
+                  h('span', { style: { color: sAns ? color : m.color, fontSize: 13, fontWeight: 800 } }, m.label)
+                ),
+                h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: sAns ? color : '#475569' } }, m.def)
+              );
+            })
+          ),
+          // Feedback
+          sAns && h('section', {
+            className: 'p-4 rounded-2xl',
+            style: {
+              background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
+              border: '1px solid ' + (pickedCorrect ? '#22c55e88' : '#ef444488')
+            }
+          },
+            h('div', { className: 'text-sm font-bold mb-2', style: { color: pickedCorrect ? '#166534' : '#991b1b' } },
+              pickedCorrect
+                ? '✅ Correct — ' + correctMech.label
+                : '❌ The mechanism is ' + correctMech.label + (pickedMech ? ' (you picked ' + pickedMech.label + ')' : '')
+            ),
+            h('p', { className: 'text-xs text-slate-800 leading-relaxed mb-3' }, v.why),
+            allDone
+              ? h('div', { className: 'p-3 rounded-lg bg-amber-100 border border-amber-300' },
+                  h('div', { className: 'text-sm font-black text-amber-800 mb-1' }, '🏆 All 10 vignettes complete'),
+                  h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
+                    'Final: ', h('strong', null, sScore + ' / ' + V.length + ' (' + Math.round((sScore / V.length) * 100) + '%)'),
+                    sScore === V.length ? ' — every mechanism correctly identified. Ready for AP Bio FRQ work on selection.' :
+                    sScore >= 8 ? ' — strong mechanism reasoning. The most-confused pair is usually natural-directional vs artificial (when humans create a pressure but don\'t deliberately breed) and natural vs sexual (when a trait helps with mate-getting AND survives — both can be active).' :
+                    sScore >= 6 ? ' — solid baseline. The biggest reflex to build: ask whether HUMANS deliberately picked which individuals reproduced (artificial), or just removed some (natural).' :
+                    ' — these distinctions take practice. The 3 natural-selection modes (directional / stabilizing / disruptive) trip up nearly everyone at first. Re-read the rationales, then retake.'
+                  ),
+                  h('button', {
+                    onClick: function() { upd('evoSlIdx', -1); upd('evoSlShown', []); upd('evoSlScore', 0); upd('evoSlRounds', 0); upd('evoSlStreak', 0); },
+                    className: 'mt-3 px-4 py-1.5 rounded-lg bg-amber-600 text-white font-bold text-xs hover:bg-amber-700'
+                  }, '🔄 Restart')
+                )
+              : h('button', {
+                  onClick: startSl,
+                  className: 'px-4 py-2 rounded-lg bg-amber-600 text-white font-bold text-sm hover:bg-amber-700 focus:outline-none focus:ring-2 ring-amber-400'
+                }, '➡️ Next vignette')
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
+      // CAPSTONE PROJECT
+      // ─────────────────────────────────────────────────────
       // Students pick a real-world evolutionary scenario, predict outcomes,
       // run the matching sim, then reflect. Final step generates a printable
       // lab report. This is the assessment artifact teachers can grade.
@@ -6405,6 +6616,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
       if (view === 'antibioticLab') return h(AntibioticLab);
       if (view === 'discoveryTimeline') return h(DiscoveryTimeline);
       if (view === 'misconceptions') return h(MisconceptionsQuiz);
+      if (view === 'selectionSleuth') return h(SelectionSleuth);
       if (view === 'capstone') return h(CapstoneProject);
       if (view === 'curriculumGuide') return h(CurriculumGuide);
       if (view === 'moduleMap') return h(ModuleMap);
