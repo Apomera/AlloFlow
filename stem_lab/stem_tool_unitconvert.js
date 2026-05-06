@@ -434,6 +434,34 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             })
           ),
 
+          // ── Topic-accent hero band per tab ──
+          (function() {
+            var TAB_META = {
+              convert:     { accent: '#0e7490', soft: 'rgba(14,116,144,0.10)', icon: '\uD83D\uDD04', title: 'Convert \u2014 the math behind units',  hint: 'Conversion factor = ratio equal to 1 (e.g., 1 ft = 12 in \u2192 12 in / 1 ft). Multiplying by it changes the unit without changing the value. SI prefixes (kilo, milli) are powers of 10 \u2014 just shift the decimal.' },
+              table:       { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCCA', title: 'All units \u2014 reference table',     hint: 'Length, mass, volume, temperature, time, energy, pressure. The single rule that matters: track units through every step. If your final answer is in m\u00b2 when you wanted seconds, you made an error somewhere upstream.' },
+              quiz:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDE0', title: 'Quiz \u2014 conversion practice',      hint: 'Daily-life conversions (\u00b0F\u2194\u00b0C, mph\u2194km/h, lb\u2194kg) plus AP / SAT / lab measurements. Each question shows the conversion factor after answering so you build the muscle memory.' },
+              wordproblem: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCDD', title: 'Word problem \u2014 apply in context',  hint: 'Real-world unit-conversion scenarios: gas mileage, recipe scaling, dosage calculations, travel-distance estimates. Word problems are 80% reading comprehension + 20% conversion math.' }
+            };
+            var meta = TAB_META[tab] || TAB_META.convert;
+            return h('div', {
+              style: {
+                margin: '0 0 12px',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
           // ═══ TAB: CONVERT ═══
           tab === 'convert' && h('div', { key: 'convert' },
 
