@@ -1170,6 +1170,7 @@
               "tone_options": {
       "informative": "Informative / Textbook",
         "narrative": "Engaging Narrative",
+          "dialogue": "Dialogue / Conversation",
           "persuasive": "Persuasive / Opinion",
             "humorous": "Humorous",
               "procedural": "Step-by-Step / Procedural"
@@ -1290,6 +1291,7 @@
                                                                                                                                                                                               "tones": {
       "informative": "Informative / Textbook",
         "narrative": "Engaging Narrative",
+          "dialogue": "Dialogue / Conversation",
           "persuasive": "Persuasive / Opinion",
             "humorous": "Humorous",
               "procedural": "Step-by-Step / Procedural"

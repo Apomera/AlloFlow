@@ -407,7 +407,11 @@ var createContentEngine = function(deps) {
     // Dialogue mode uses a bespoke JSON output schema + dialogue-plan pre-step
     // (see single-call path below) and cannot route through the multi-chunk
     // pipeline. Narrative (prose) has no such constraint — it rides along.
-    const isDialogueMode = effTone === 'Narrative';
+    // Earlier versions gated dialogue on 'Narrative' but the user-facing label
+    // is "Engaging Narrative" — that surprised users into seeing a JSON dialogue
+    // script when they expected a story. 'Dialogue' is now the explicit tone
+    // for the dialogue/JSON path; 'Narrative' falls through to prose.
+    const isDialogueMode = effTone === 'Dialogue';
     const isNarrativeMode = effTone === 'Narrative' || effTone === 'Engaging Narrative';
     // Prompt helpers hoisted up: the single-section (N=1) branch of the
     // multi-chunk pipeline merges these into its section prompt to preserve
@@ -521,6 +525,7 @@ var createContentEngine = function(deps) {
                  Plan a comprehensive educational article.
                  Topic: "${effTopic}"
                  Target Audience: ${effGrade}
+                 ${effStandards ? `Standards Coverage Required: "${effStandards}". The section headings must cover the content + skills these standards mandate, not just the topic at large. If a standard names a specific cognitive move (e.g. compare, evaluate, cite evidence, analyze structure), at least one heading should set up that move directly.` : ''}
                  Total Target Word Count: ${targetWords} words.
                  Task: Create a structured outline with exactly ${numChunks} distinct section headings that cover the topic in depth.
                  Return ONLY a JSON array of strings (the headings).
@@ -613,6 +618,7 @@ var createContentEngine = function(deps) {
                    IMPORTANT: This brief is for context. You MUST still use Google Search independently to verify and cite every fact you write.
                    ` : ''}
                    This is a single self-contained article — write an engaging opening AND a summary conclusion. No section heading — the article stands on its own.
+                   ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly so a student reading it sees the skill in action.` : ''}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
                    1. CITATION REQUIREMENT: Include inline citations throughout. Every paragraph should have at least one citation.
@@ -660,6 +666,7 @@ You MUST:
   • Cover genuinely NEW ground specific to "${sectionTitle}"
   • Assume the reader has just finished reading the prior sections
 `}
+                   ${effStandards ? `STANDARD ALIGNMENT: This article supports "${effStandards}". Embed examples, vocabulary, and rhetorical structures that let a student demonstrate the skills/knowledge in the standard — don't just touch the topic. If the standard calls for a cognitive move (compare, cite evidence, analyze structure, evaluate, etc.), the prose should model that move explicitly when this section's content makes it natural to do so.` : ''}
                    STRICT INSTRUCTIONS:
                    ${effIncludeCitations ? `
                    1. CITATION REQUIREMENT (section ${i + 1} of ${sections.length}): Include inline citations throughout this section.
@@ -1195,27 +1202,38 @@ Return ONLY the JSON object. Do not include any preamble, markdown code blocks, 
           text = String(result || "");
       }
       if (isDialogueMode && text) {
-        try {
-          const dialogueData = safeJsonParse(text);
-          if (dialogueData && dialogueData.dialogue && Array.isArray(dialogueData.dialogue)) {
-            let formattedScript = '';
-            if (dialogueData.title) {
-              formattedScript += `# ${dialogueData.title}\n\n`;
-            }
-            if (dialogueData.setting) {
-              formattedScript += `*${dialogueData.setting}*\n\n`;
-            }
-            const learnerName = dialogueData.characters?.learner?.name || 'LEARNER';
-            const guideName = dialogueData.characters?.guide?.name || 'GUIDE';
-            for (const line of dialogueData.dialogue) {
-              const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
-              const action = line.action ? ` ${line.action}` : '';
-              formattedScript += `**${speakerName}:**${action} ${line.line}\n\n`;
-            }
-            text = formattedScript.trim();
+        const dialogueData = (() => {
+          try { return safeJsonParse(text); } catch (e) { return null; }
+        })();
+        if (dialogueData && dialogueData.dialogue && Array.isArray(dialogueData.dialogue)) {
+          let formattedScript = '';
+          if (dialogueData.title) {
+            formattedScript += `# ${dialogueData.title}\n\n`;
           }
-        } catch (parseErr) {
-          warnLog("Dialogue JSON parsing failed, using raw text:", parseErr);
+          if (dialogueData.setting) {
+            formattedScript += `*${dialogueData.setting}*\n\n`;
+          }
+          const learnerName = dialogueData.characters?.learner?.name || 'LEARNER';
+          const guideName = dialogueData.characters?.guide?.name || 'GUIDE';
+          for (const line of dialogueData.dialogue) {
+            const speakerName = line.speaker === 'learner' ? learnerName.toUpperCase() : guideName.toUpperCase();
+            const action = line.action ? ` ${line.action}` : '';
+            formattedScript += `**${speakerName}:**${action} ${line.line}\n\n`;
+          }
+          text = formattedScript.trim();
+        } else {
+          // Parse failed — preserve the dialogue lines but strip JSON syntax
+          // so the user sees readable text instead of `# { "title": ... }`.
+          // Keeps the LLM's actual content; signals via toast that the user
+          // can regenerate if it looks rough.
+          warnLog("Dialogue JSON parsing failed; flattening raw text.");
+          try { addToast("Dialogue formatting hit a snag — showing raw text. Try regenerating if it looks rough.", "info"); } catch (_) {}
+          text = text
+            .replace(/^[\s{[]+/, '')
+            .replace(/[\s}\]]+$/, '')
+            .replace(/^\s*"[^"]+"\s*:\s*/gm, '')
+            .replace(/",?\s*$/gm, '')
+            .trim();
         }
       }
       if (effIncludeCitations && text) {
