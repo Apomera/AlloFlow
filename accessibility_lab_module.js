@@ -44,11 +44,11 @@
   // ----- Constants ------------------------------------------------------------
 
   var TABS = [
-    { key: 'preview',      label: 'Preview as student', icon: '👁️',  ready: true  },
-    { key: 'keyboard',     label: 'Keyboard tour',      icon: '⌨️',  ready: true  },
-    { key: 'audit',        label: 'Audit',              icon: '🔍', ready: true  },
-    { key: 'screenreader', label: 'Screen reader',      icon: '🔊', ready: true  },
-    { key: 'simulators',   label: 'Simulators',         icon: '👓', ready: false },
+    { key: 'preview',      label: 'Preview as student', icon: '👁️',  ready: true },
+    { key: 'keyboard',     label: 'Keyboard tour',      icon: '⌨️',  ready: true },
+    { key: 'audit',        label: 'Audit',              icon: '🔍', ready: true },
+    { key: 'screenreader', label: 'Screen reader',      icon: '🔊', ready: true },
+    { key: 'simulators',   label: 'Simulators',         icon: '👓', ready: true },
   ];
 
   var FONT_FAMILIES = [
@@ -1331,7 +1331,258 @@
     );
   }
 
-  // ----- Coming-soon stub for phase 5 ----------------------------------------
+  // ----- Phase 5: Disability simulators --------------------------------------
+
+  // Standard color-matrix values for simulating different forms of color
+  // vision deficiency. Values from Vienot, Brettel & Mollon (1999) and the
+  // Brettel Vienot Mollon LMS-confusion model, widely used in accessibility
+  // simulation tools.
+  var SIM_SVG_FILTERS = '\
+<defs>\
+  <filter id="alloflow-sim-protanopia" color-interpolation-filters="sRGB">\
+    <feColorMatrix type="matrix" values="0.567 0.433 0.000 0 0  0.558 0.442 0.000 0 0  0.000 0.242 0.758 0 0  0 0 0 1 0"/>\
+  </filter>\
+  <filter id="alloflow-sim-deuteranopia" color-interpolation-filters="sRGB">\
+    <feColorMatrix type="matrix" values="0.625 0.375 0.000 0 0  0.700 0.300 0.000 0 0  0.000 0.300 0.700 0 0  0 0 0 1 0"/>\
+  </filter>\
+  <filter id="alloflow-sim-tritanopia" color-interpolation-filters="sRGB">\
+    <feColorMatrix type="matrix" values="0.950 0.050 0.000 0 0  0.000 0.433 0.567 0 0  0.000 0.475 0.525 0 0  0 0 0 1 0"/>\
+  </filter>\
+  <filter id="alloflow-sim-achromatopsia" color-interpolation-filters="sRGB">\
+    <feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0.299 0.587 0.114 0 0  0 0 0 1 0"/>\
+  </filter>\
+</defs>';
+
+  // CSS rules applied via body class. Excludes the lab modal so the teacher
+  // can keep using the Lab UI clearly while the underlying app is filtered.
+  // Note: child selectors `> *` ensure only direct children of body get
+  // filtered (so the Lab modal as a body-direct sibling stays unfiltered).
+  var SIM_CSS = '\
+:root { --alloflow-sim-blur: 2px; }\
+body.alloflow-sim-blur > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+  filter: blur(var(--alloflow-sim-blur, 2px));\
+}\
+body.alloflow-sim-protanopia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+  filter: url("#alloflow-sim-protanopia");\
+}\
+body.alloflow-sim-deuteranopia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+  filter: url("#alloflow-sim-deuteranopia");\
+}\
+body.alloflow-sim-tritanopia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+  filter: url("#alloflow-sim-tritanopia");\
+}\
+body.alloflow-sim-achromatopsia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+  filter: url("#alloflow-sim-achromatopsia");\
+}\
+body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) {\
+  filter: blur(0.4px) contrast(0.85);\
+  letter-spacing: 0.04em;\
+  word-spacing: 0.12em;\
+}\
+body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) p,\
+body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) li,\
+body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) span,\
+body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) h1,\
+body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) h2,\
+body.alloflow-sim-dyslexia > *:not([aria-label="Accessibility Lab"]):not([aria-hidden="true"]) h3 {\
+  animation: alloflow-sim-dyslexia-jitter 6s infinite;\
+}\
+@keyframes alloflow-sim-dyslexia-jitter {\
+  0%, 100% { letter-spacing: 0.04em; word-spacing: 0.12em; }\
+  20% { letter-spacing: 0.06em; word-spacing: 0.10em; }\
+  40% { letter-spacing: 0.03em; word-spacing: 0.14em; }\
+  60% { letter-spacing: 0.05em; word-spacing: 0.11em; }\
+  80% { letter-spacing: 0.04em; word-spacing: 0.13em; }\
+}';
+
+  function ensureSimulatorAssetsLoaded() {
+    if (!document.getElementById('alloflow-sim-svg-defs')) {
+      var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.id = 'alloflow-sim-svg-defs';
+      svg.setAttribute('aria-hidden', 'true');
+      svg.setAttribute('width', '0');
+      svg.setAttribute('height', '0');
+      svg.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;';
+      svg.innerHTML = SIM_SVG_FILTERS;
+      document.body.appendChild(svg);
+    }
+    if (!document.getElementById('alloflow-sim-styles')) {
+      var style = document.createElement('style');
+      style.id = 'alloflow-sim-styles';
+      style.textContent = SIM_CSS;
+      document.head.appendChild(style);
+    }
+  }
+
+  var SIM_CLASSES = [
+    'alloflow-sim-blur',
+    'alloflow-sim-protanopia',
+    'alloflow-sim-deuteranopia',
+    'alloflow-sim-tritanopia',
+    'alloflow-sim-achromatopsia',
+    'alloflow-sim-dyslexia',
+  ];
+
+  function applySimulator(activeKey, blurPx) {
+    ensureSimulatorAssetsLoaded();
+    var body = document.body;
+    SIM_CLASSES.forEach(function (c) { body.classList.remove(c); });
+    if (activeKey && activeKey !== 'none' && activeKey !== 'motor-info') {
+      body.classList.add('alloflow-sim-' + activeKey);
+    }
+    if (typeof blurPx === 'number') {
+      body.style.setProperty('--alloflow-sim-blur', blurPx + 'px');
+    }
+  }
+
+  function clearAllSimulators() {
+    var body = document.body;
+    SIM_CLASSES.forEach(function (c) { body.classList.remove(c); });
+  }
+
+  var SIMULATORS = [
+    {
+      key: 'blur',
+      label: 'Low-vision blur',
+      icon: '🔭',
+      description: 'Approximates uncorrected low vision (visual acuity worse than 20/40). Roughly 4% of the population has uncorrected refractive error or other low-vision conditions; this share is much higher among older adults and students with visual impairments.',
+      hasSlider: true,
+    },
+    {
+      key: 'protanopia',
+      label: 'Protanopia (red-blind)',
+      icon: '🔴',
+      description: 'Severe red-green color vision deficiency, missing the L-cone. About 1% of males and very rare in females. Reds appear darker; reds and greens are confused.',
+    },
+    {
+      key: 'deuteranopia',
+      label: 'Deuteranopia (green-blind)',
+      icon: '🟢',
+      description: 'The most common form of color blindness, missing the M-cone. About 6% of males. Reds and greens appear similar; the most common form of red-green color vision deficiency.',
+    },
+    {
+      key: 'tritanopia',
+      label: 'Tritanopia (blue-blind)',
+      icon: '🔵',
+      description: 'Rare form, missing the S-cone. About 0.01% of the population. Blues appear greenish; yellow-blue distinctions are lost.',
+    },
+    {
+      key: 'achromatopsia',
+      label: 'Achromatopsia (no color)',
+      icon: '⚫',
+      description: 'Complete absence of color vision. Affects roughly 0.003% of the population (about 1 in 30,000). The world appears in shades of grey.',
+    },
+    {
+      key: 'dyslexia',
+      label: 'Dyslexia visual stress',
+      icon: '🌀',
+      description: 'A LIMITED simulation of one common visual-stress experience some dyslexic readers report (slight blur, lower contrast, shifting spacing). Dyslexia is highly individual; this is one slice, not a definitive rendering. About 5-10% of students have dyslexia.',
+    },
+    {
+      key: 'motor-info',
+      label: 'Motor impairments',
+      icon: '🖱️',
+      description: 'Motor impairments resist visual simulation. The most authentic test is to use the OS-level tools real students use: Windows Sticky Keys, macOS Slow Keys, dwell-click software, switch access (e.g., the iOS Switch Control or Android Switch Access). Try completing a lesson using only one hand, only the keyboard, or only one finger.',
+      isInfo: true,
+    },
+  ];
+
+  function SimulatorsTab(props) {
+    var addToast = props.addToast;
+
+    var active$ = useState('none');
+    var active = active$[0], setActive = active$[1];
+
+    var blurPx$ = useState(2);
+    var blurPx = blurPx$[0], setBlurPx = blurPx$[1];
+
+    // Apply when active changes. Don't clear on unmount; the simulator
+    // should persist across tab switches inside the lab. The lab as a whole
+    // clears all simulators on close (see AccessibilityLab's useEffect).
+    useEffect(function () {
+      applySimulator(active, blurPx);
+    }, [active, blurPx]);
+
+    function handleSelect(key) {
+      if (active === key) {
+        setActive('none');
+      } else {
+        setActive(key);
+        if (key === 'motor-info') {
+          addToast && addToast('Motor impairment simulation: see the info card.', 'info');
+        }
+      }
+    }
+
+    return e('div', { className: 'flex flex-col gap-4' },
+      e('div', null,
+        e('h3', { className: 'font-bold text-lg text-slate-800' }, 'Disability simulators'),
+        e('p', { className: 'text-sm text-slate-600 mt-1' },
+          'Toggle a simulator to apply a CSS filter to the page behind this lab. The lab itself stays unfiltered so you can keep using these controls. Click a tile to enable; click again to disable. Only one simulator runs at a time.')
+      ),
+
+      // Honest framing card
+      e('div', { className: 'p-3 bg-amber-50 border border-amber-300 rounded text-xs text-amber-900' },
+        e('strong', null, 'Important framing: '),
+        'simulators are imperfect approximations. They are useful for empathy-building and quick checks, NOT for verifying compliance. A protanopia filter is NOT the same as protanopia. Real users have lived with their condition; you are seeing it for 60 seconds. Use simulators to surface obvious problems (color-only information, low contrast, illegible text), then test with real users when stakes matter.'
+      ),
+
+      // Simulator tiles
+      e('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3' },
+        SIMULATORS.map(function (sim) {
+          var isActive = active === sim.key;
+          return e('button', {
+            key: sim.key,
+            onClick: function () { handleSelect(sim.key); },
+            className: 'flex items-start gap-3 p-3 rounded-lg border text-left transition-all ' +
+              (isActive
+                ? 'bg-indigo-600 text-white border-indigo-700 shadow-md'
+                : 'bg-white border-slate-200 hover:border-indigo-400 hover:shadow-sm text-slate-800'),
+            'aria-pressed': isActive,
+          },
+            e('span', { className: 'text-2xl shrink-0', 'aria-hidden': 'true' }, sim.icon),
+            e('div', null,
+              e('div', { className: 'font-bold text-sm flex items-center gap-2' },
+                sim.label,
+                isActive && !sim.isInfo && e('span', { className: 'text-xs font-normal opacity-80' }, '· active'),
+                isActive && sim.isInfo && e('span', { className: 'text-xs font-normal opacity-80' }, '· info')
+              ),
+              e('p', { className: 'text-xs mt-1 ' + (isActive ? 'opacity-95' : 'text-slate-600') },
+                sim.description)
+            )
+          );
+        })
+      ),
+
+      // Blur slider when blur is active
+      active === 'blur' && e('div', { className: 'p-3 bg-slate-50 border border-slate-200 rounded' },
+        e('label', { className: 'block text-xs font-semibold text-slate-700 mb-2' },
+          'Blur amount: ', e('span', { className: 'font-mono' }, blurPx + 'px'),
+          ' ', e('span', { className: 'font-normal text-slate-500' }, '(2px ≈ mild low vision; 5-8px ≈ severe)')),
+        e('input', {
+          type: 'range', min: '0', max: '8', step: '0.5',
+          value: blurPx,
+          onChange: function (ev) { setBlurPx(parseFloat(ev.target.value)); },
+          className: 'w-full',
+          'aria-label': 'Blur amount in pixels',
+        })
+      ),
+
+      // Stop button when any simulator active
+      active !== 'none' && active !== 'motor-info' && e('div', { className: 'flex justify-center' },
+        e('button', {
+          onClick: function () { setActive('none'); },
+          className: 'px-4 py-2 text-sm font-semibold border border-slate-400 text-slate-700 rounded hover:bg-slate-50',
+        }, 'Stop simulator')
+      ),
+
+      // Helpful tips
+      e('div', { className: 'text-xs text-slate-500 italic' },
+        'Tip: try the color-blindness simulators on a lesson that uses red/green to convey meaning (correct/incorrect, warning/safe). If the meaning is lost in the simulation, the original design is failing students with that condition. Add icons, labels, or patterns alongside color.')
+    );
+  }
+
+  // ----- ComingSoon stub (no longer used; kept for safety) ------------------
 
   function ComingSoon(props) {
     return e('div', { className: 'p-10 text-center bg-slate-50 rounded-lg border border-dashed border-slate-300' },
@@ -1348,6 +1599,14 @@
 
     var tab$ = useState('preview');
     var tab = tab$[0], setTab = tab$[1];
+
+    // Clear any active simulator when the lab is closed.
+    // (Simulators persist across tab switches; only a full close resets them.)
+    useEffect(function () {
+      return function () {
+        clearAllSimulators();
+      };
+    }, []);
 
     function tabBtn(t) {
       var active = tab === t.key;
@@ -1400,7 +1659,7 @@
           tab === 'keyboard'     ? e(KeyboardTab, props) :
           tab === 'audit'        ? e(AuditTab, props) :
           tab === 'screenreader' ? e(ScreenReaderTab, props) :
-          e(ComingSoon, { icon: '👓', title: 'Disability simulators', description: 'Toggleable filters for low-vision blur, color-blindness (deutan/protan/tritan), dyslexia simulation, and motor-impairment delay. Each with a teacher-friendly explainer of who experiences this. Coming in Phase 5.' })
+          e(SimulatorsTab, props)
         )
       )
     );
