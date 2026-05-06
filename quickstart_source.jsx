@@ -637,6 +637,7 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                                               >
                                                   <option value="Informative">{t('wizard.tones.informative')}</option>
                                                   <option value="Narrative">{t('wizard.tones.narrative')}</option>
+                                                  <option value="Dialogue">{t('wizard.tones.dialogue')}</option>
                                                   <option value="Persuasive">{t('wizard.tones.persuasive')}</option>
                                                   <option value="Humorous">{t('wizard.tones.humorous')}</option>
                                                   <option value="Step-by-Step">{t('wizard.tones.procedural')}</option>
