@@ -3505,6 +3505,39 @@ var d = labToolData.brainAtlas || {};
 
             ),
 
+            // ── Topic-accent hero band (per anatomical view) ──
+            (function() {
+              var VIEW_META = {
+                lateral:           { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '🧠', title: 'Lateral view — the 4 lobes, cerebellum, brainstem',  hint: 'The classic side view. Frontal (planning + Broca), parietal (sensation + space), temporal (language + memory), occipital (vision). Each lobe maps to specific clinical syndromes.' },
+                medial:            { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '🪞', title: 'Medial sagittal — midline structures',          hint: 'Cut the brain in half: corpus callosum, thalamus, hypothalamus, cingulate, hippocampus. The deep structures the lateral view hides — most of the limbic system lives here.' },
+                superior:          { accent: '#3b82f6', soft: 'rgba(59,130,246,0.10)', icon: '⬆️', title: 'Superior view — top-down',                       hint: 'Look down at the brain. The longitudinal fissure splits L and R hemispheres; the central sulcus separates motor (front) from somatosensory (back). Asymmetry reveals.' },
+                inferior:          { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '⬇️', title: 'Inferior view — bottom-up',                      hint: 'Look up from underneath. Cranial nerves I–XII exit here. The Circle of Willis (basilar + vertebral + ICA) supplies the brain — strokes happen at these branch points.' },
+                neurotransmitters: { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '🧪', title: 'Neurotransmitters — chemistry of mind',          hint: 'Glutamate (excite), GABA (inhibit), dopamine (reward + motor), serotonin (mood + GI), norepinephrine (alertness), acetylcholine (memory + autonomic). Drug targets all live here.' },
+                neuron:            { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '🪡', title: 'Neuron anatomy — single cell',                  hint: 'Dendrites (input) → soma → axon (output) → terminal. Action potential travels at 10–120 m/s; myelin makes it faster. Synapses can be excitatory or inhibitory.' },
+                sleepStages:       { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)', icon: '😴', title: 'Sleep stages — N1, N2, N3, REM',               hint: 'Cycles every ~90 min. N3 (deep) for memory consolidation; REM for emotional processing + procedural memory. Adolescents need 8–10 hrs; chronic deprivation impairs everything cognitive.' },
+                eegWaves:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '📈', title: 'EEG waves — brain rhythms',                    hint: 'Delta (deep sleep) → Theta (drowsy + memory) → Alpha (relaxed wakefulness) → Beta (active thinking) → Gamma (focused attention). Frequency rises with arousal level.' },
+                crossLateral:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '⚡', title: 'Cross-lateral wiring — left vs right',          hint: 'Each hemisphere controls the OPPOSITE side of the body. Left = language + sequential reasoning (most people); right = spatial + emotional processing. Stroke maps directly here.' }
+              };
+              var meta = VIEW_META[viewKey] || VIEW_META.lateral;
+              return React.createElement('div', {
+                style: {
+                  marginBottom: '12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // Controls
 
             React.createElement("div", { className: "flex items-center gap-2 mb-3 flex-wrap" },

@@ -8,6 +8,23 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// ── PetsLab-specific keyframes (decoder-mastery celebration) ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('petslab-celeb-css')) return;
+  var st = document.createElement('style');
+  st.id = 'petslab-celeb-css';
+  st.textContent = [
+    '@keyframes petslab-celeb-rise {',
+    '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+    '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  85%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_pets.js — Science of Pets Lab
 // Companion-animal SCIENCE: physiology, ethology, nutrition, genetics,
@@ -920,10 +937,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     };
     var addToast = ctx.addToast || function(msg) { console.log('[Pets]', msg); };
 
+    // ── Hydration + Canvas-survival persistence ──
+    // Read priority: window slot (set by host's handleLoadProject) → localStorage
+    // → ctx.toolData. The StemLab host doesn't persist this tool's state by
+    // default; we layer our own so reloads don't wipe progress.
+    var _hydratedRef = React.useRef(false);
+    if (!_hydratedRef.current) {
+      _hydratedRef.current = true;
+      try {
+        var winState = (typeof window !== 'undefined' && window.__alloflowPetsLab) || null;
+        var lsState = null;
+        try { lsState = JSON.parse(localStorage.getItem('petsLab.state.v1') || 'null'); } catch (e) {}
+        var initial = winState || lsState || null;
+        if (initial && typeof initial === 'object') {
+          if (initial.badges && d.badges === undefined) upd('badges', initial.badges);
+          if (initial.modulesVisited && d.modulesVisited === undefined) upd('modulesVisited', initial.modulesVisited);
+          if (initial.decoderMastery && d.decoderMastery === undefined) upd('decoderMastery', initial.decoderMastery);
+        }
+      } catch (e) {}
+    }
+
+    // Decoder-mastery celebration state — fires once when a body-language
+    // signal is correctly identified for the first time. Auto-clears after
+    // ~3.2s. Separate from the quiz score (which is per-attempt) — mastery
+    // is forever, like a life list of signals decoded.
+    var _decoderCelebState = React.useState(null);
+    var decoderCeleb = _decoderCelebState[0];
+    var setDecoderCeleb = _decoderCelebState[1];
+
     var view = d.view || 'menu';
     var modulesVisited = d.modulesVisited || {};
     var badges = d.badges || {};
+    var decoderMastery = d.decoderMastery || {};
     var quizState = d.quizState || { idx: 0, score: 0, answered: false, lastChoice: null };
+
+    // Mirror persistent state to window slot (for executeSaveFile pickup) +
+    // localStorage (for non-Canvas across-session warm cache).
+    React.useEffect(function () {
+      try {
+        var snapshot = {
+          badges: d.badges || {},
+          modulesVisited: d.modulesVisited || {},
+          decoderMastery: d.decoderMastery || {},
+          _ts: Date.now()
+        };
+        window.__alloflowPetsLab = snapshot;
+        try { localStorage.setItem('petsLab.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+      } catch (e) {}
+    }, [d.badges, d.modulesVisited, d.decoderMastery]);
+
+    // Hot-reload from a project-JSON load mid-session.
+    React.useEffect(function () {
+      function onRestore() {
+        try {
+          var w = window.__alloflowPetsLab || {};
+          if (w.badges) upd('badges', w.badges);
+          if (w.modulesVisited) upd('modulesVisited', w.modulesVisited);
+          if (w.decoderMastery) upd('decoderMastery', w.decoderMastery);
+        } catch (e) {}
+      }
+      window.addEventListener('alloflow-petslab-restored', onRestore);
+      return function () { window.removeEventListener('alloflow-petslab-restored', onRestore); };
+    }, []);
     // Pet Picker state
     var pickHousing = d.pickHousing || 'house';
     var pickKids = d.pickKids != null ? d.pickKids : false;
@@ -1033,7 +1108,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'careSim',      icon: '📅', label: 'Pet-Care Week (sim)',  desc: 'Live a week with a dog/cat/rabbit. Decisions affect 4 welfare meters.' },
       { id: 'picker',       icon: '🏠', label: 'Pet Picker',           desc: 'Match species/breed-class to your housing + lifestyle.' },
       { id: 'bodyLang',     icon: '👀', label: 'Body Language Decoder', desc: 'Read dogs, cats, rabbits, birds. Stress + appeasement signals.' },
+      { id: 'decoderMastery', icon: '🏅', label: 'Decoder Mastery',   desc: 'Your personal log of every body-language signal you have decoded across species.' },
       { id: 'cost',         icon: '💵', label: 'Lifetime Cost Calc',   desc: 'First-year + annual + emergency fund. Time + space too.' },
+      { id: 'lifespan',     icon: '⏳', label: 'Lifespan Match',       desc: '10 species/breeds. Pick the typical lifespan range from 5 buckets (under 3 yrs through 50+ yrs). Surfaces the surprising spread — hamsters die in 2–3 yrs while macaws and tortoises outlive their owners.' },
       { id: 'diagrams',     icon: '🔬', label: 'Diagrams',             desc: '4 SVG schematics: dog vs cat skull, bird air sacs, operant loop, body language.' },
       { id: 'aiPractice',   icon: '🤖', label: 'AI Practice',          desc: '6 real-world scenarios. AI critiques your reasoning vs welfare rubric.' },
       { id: 'famous',       icon: '🌟', label: 'Famous Animals',       desc: 'Pavlov, Skinner, Alex, Koko, Endal, Hachikō, Balto, Stubby, Belyaev foxes.' },
@@ -1068,11 +1145,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi, marginBottom: 4 } }, s.header),
           h('p', { style: { margin: 0, fontSize: 12, color: T.muted, lineHeight: 1.6 } }, s.body));
       }
+      var _decoderUnique = Object.keys(decoderMastery || {}).length;
       return h('div', { style: { padding: 20, maxWidth: 1000, margin: '0 auto', color: T.text } },
+        decoderCelebOverlay(),
         h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 10 } },
           h('h2', { style: { margin: 0, fontSize: 22 } }, '🐾 Science of Pets Lab'),
-          h('div', { style: { fontSize: 12, color: T.dim } },
-            'Modules visited: ', h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 2)))),
+          h('div', { style: { display: 'flex', gap: 14, fontSize: 12, color: T.dim, flexWrap: 'wrap' } },
+            h('span', null, 'Modules: ', h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 2))),
+            h('span', { 'aria-label': 'Decoder mastery: ' + _decoderUnique + ' of 27 signals decoded' },
+              h('span', { 'aria-hidden': 'true' }, '🏅 '),
+              'Mastery: ',
+              h('strong', { style: { color: _decoderUnique > 0 ? T.accentHi : T.text } }, _decoderUnique + ' / 27')
+            )
+          )
+        ),
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
           'How companion animals actually work — the physiology, behavior, genetics, and welfare science behind the pets in our lives. Pair with ',
           h('strong', { style: { color: T.text } }, 'BehaviorLab'), ' for operant-conditioning theory and ',
@@ -2523,11 +2609,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         if (existing[blQuiz.idx] != null) return;  // already answered
         var nextAns = existing.slice();
         nextAns[blQuiz.idx] = choiceIdx;
-        var isCorrect = choiceIdx === blQuiz.qs[blQuiz.idx].correct;
+        var q = blQuiz.qs[blQuiz.idx];
+        var isCorrect = choiceIdx === q.correct;
         upd('blQuiz', Object.assign({}, blQuiz, {
           answers: nextAns,
           score: blQuiz.score + (isCorrect ? 1 : 0)
         }));
+        // Decoder Mastery: log unique signals correctly identified across
+        // every attempt. First-correct fires a celebration overlay.
+        if (isCorrect) {
+          var sigKey = q.species + '|' + q.signal;
+          var prevMastery = (d.decoderMastery && typeof d.decoderMastery === 'object') ? d.decoderMastery : {};
+          var existingEntry = prevMastery[sigKey];
+          var isFirstCorrect = !existingEntry;
+          var nowIso = new Date().toISOString();
+          var nextEntry = isFirstCorrect
+            ? { firstCorrectAt: nowIso, lastCorrectAt: nowIso, correctCount: 1, species: q.species, signal: q.signal, meaning: q.qs ? null : null }
+            : Object.assign({}, existingEntry, { lastCorrectAt: nowIso, correctCount: (existingEntry.correctCount || 0) + 1 });
+          var nextMastery = Object.assign({}, prevMastery);
+          nextMastery[sigKey] = nextEntry;
+          upd('decoderMastery', nextMastery);
+          if (isFirstCorrect) {
+            try { setDecoderCeleb({ species: q.species, signal: q.signal, at: Date.now() }); } catch (e) {}
+            try { setTimeout(function () { setDecoderCeleb(null); }, 3200); } catch (e) {}
+            // Award progressive badges based on unique signals decoded
+            var uniqueCount = Object.keys(nextMastery).length;
+            if (uniqueCount >= 5) awardBadge('pets_decoder_5', 'Signal Reader (5 decoded)');
+            if (uniqueCount >= 15) awardBadge('pets_decoder_15', 'Fluent Decoder (15 decoded)');
+            if (uniqueCount >= 27) awardBadge('pets_decoder_all', 'Master Decoder (all signals)');
+          }
+        }
         petsAnnounce(isCorrect ? 'Correct.' : 'Not quite — see explanation.');
       }
       function nextQuiz() {
@@ -3254,6 +3365,205 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, marginTop: 4 } }, p.body));
           })),
         footer());
+    }
+
+    // ─────────────────────────────────────────
+    // LIFESPAN MATCH (net-new mini-game)
+    // 10 species/breeds. Player picks the typical lifespan range from 5 buckets.
+    // Surfaces the surprising spread — hamsters 2-3 yrs vs macaws 50-80 vs
+    // Galápagos tortoises 100+. Useful pre-adoption to set expectations.
+    // ─────────────────────────────────────────
+    function renderLifespan() {
+      var BUCKETS = [
+        { id: 'b1', label: 'Under 3 years', color: '#dc2626', icon: '⏱️',
+          def: 'Very short — most small rodents fall here. Plan for the loss; this is often a child\'s first death.' },
+        { id: 'b2', label: '3–10 years', color: '#f97316', icon: '🪻',
+          def: 'Short to medium. Rabbits, guinea pigs, ferrets, large-breed dogs. ~half a childhood.' },
+        { id: 'b3', label: '10–20 years', color: '#22c55e', icon: '🌳',
+          def: 'Medium-long. Average dogs + indoor cats. Outlasts most childhoods; will see your kid through college.' },
+        { id: 'b4', label: '20–50 years', color: '#0ea5e9', icon: '🏛️',
+          def: 'Long-lived. Cockatiels, mid-size parrots, ball pythons. Multi-decade commitment; plan for who inherits.' },
+        { id: 'b5', label: '50+ years', color: '#7c3aed', icon: '👑',
+          def: 'Very long-lived — outlives the owner. Macaws, large cockatoos, Galápagos tortoises. Generational pet; estate planning needed.' }
+      ];
+      var V = [
+        { id: 1, species: 'Syrian (golden) hamster', icon: '🐹', correct: 'b1',
+          why: 'Hamsters live 2–3 years. The shortest-lived common pet. Often a child\'s first experience with death; many parents underestimate how soon it happens. Buy from rescue if possible — pet-store rodents are often older than labeled.' },
+        { id: 2, species: 'Indoor-only cat', icon: '🐈', correct: 'b3',
+          why: '12–18 years indoors. Compare to OUTDOOR cats: 2–5 years (predation, traffic, disease). The factor of 4–7× is one of the strongest evidence-based welfare arguments for indoor-only cats. ASPCA and AVMA both back this.' },
+        { id: 3, species: 'Blue-and-gold macaw (parrot)', icon: '🦜', correct: 'b5',
+          why: '50–80 years. Macaws and large cockatoos genuinely outlive most owners. Estate planning + designated successor caregiver is essential. Most parrot rescues are full because owners died first or could no longer care for them.' },
+        { id: 4, species: 'Galápagos tortoise', icon: '🐢', correct: 'b5',
+          why: '100+ years. Lonesome George (last Pinta tortoise) lived ~100. Multi-generational commitment — typically passed down or rehomed multiple times. Most US owners cannot legally own one without permits; commonly seen at zoos.' },
+        { id: 5, species: 'Domestic ferret', icon: '🦡', correct: 'b2',
+          why: '6–10 years. Adrenal disease + insulinoma are common late-life problems; budget $300+/year for senior ferret vet bills. Banned in California and Hawaii.' },
+        { id: 6, species: 'Average medium-size dog (~50 lb)', icon: '🐕', correct: 'b3',
+          why: '10–14 years. Inverse size rule: small dogs (Yorkies, Chihuahuas) live 14–18; large dogs (Mastiffs, Great Danes) often 7–10. Genetics + cancer rates explain most of the gap.' },
+        { id: 7, species: 'Cockatiel', icon: '🐦', correct: 'b4',
+          why: '15–25 years. Often surprises owners who expected 5–8 years like a finch. Cockatiels are still parrots and need parrot-level commitment + enrichment. Will outlast most childhood-to-college periods.' },
+        { id: 8, species: 'Guinea pig', icon: '🐹', correct: 'b2',
+          why: '5–8 years. Often kept in pairs (social animals — solo housing is welfare violation in some EU countries). Vitamin C deficiency (scurvy) is a common preventable cause of early death — same as humans, they cannot synthesize it.' },
+        { id: 9, species: 'Ball python', icon: '🐍', correct: 'b4',
+          why: '20–30 years in captivity. Ball pythons are the most common pet snake and a long commitment. Husbandry-driven mortality is high in inexperienced hands; respiratory infections + scale rot from improper humidity kill many young snakes.' },
+        { id: 10, species: 'Goldfish (well-cared in proper tank)', icon: '🐠', correct: 'b3',
+          why: '10–20 years in proper conditions (50+ gallon filtered tank, regular water changes). The "goldfish die in 6 months" stereotype is a husbandry failure, not a species lifespan. World record is 43 years. Bowls + neglected tanks shorten this dramatically.' }
+      ];
+
+      var lsIdx = d.lsIdx == null ? -1 : d.lsIdx;
+      var lsSeed = d.lsSeed || 1;
+      var lsAns = !!d.lsAns;
+      var lsPick = d.lsPick;
+      var lsScore = d.lsScore || 0;
+      var lsRounds = d.lsRounds || 0;
+      var lsStreak = d.lsStreak || 0;
+      var lsBest = d.lsBest || 0;
+      var lsShown = d.lsShown || [];
+
+      function startLs() {
+        var pool = [];
+        for (var i = 0; i < V.length; i++) if (lsShown.indexOf(i) < 0) pool.push(i);
+        if (pool.length === 0) { pool = []; for (var j = 0; j < V.length; j++) pool.push(j); lsShown = []; }
+        var seedNext = ((lsSeed * 16807 + 11) % 2147483647) || 7;
+        var pick = pool[seedNext % pool.length];
+        upd('lsSeed', seedNext);
+        upd('lsIdx', pick);
+        upd('lsAns', false);
+        upd('lsPick', null);
+        upd('lsShown', lsShown.concat([pick]));
+      }
+      function pickLs(bId) {
+        if (lsAns) return;
+        var v = V[lsIdx];
+        var correct = bId === v.correct;
+        var newScore = lsScore + (correct ? 1 : 0);
+        var newStreak = correct ? (lsStreak + 1) : 0;
+        var newBest = Math.max(lsBest, newStreak);
+        upd('lsAns', true);
+        upd('lsPick', bId);
+        upd('lsScore', newScore);
+        upd('lsRounds', lsRounds + 1);
+        upd('lsStreak', newStreak);
+        upd('lsBest', newBest);
+      }
+
+      if (lsIdx < 0) {
+        return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+          backBar('⏳ Lifespan Match'),
+          h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 16, color: T.text } }, '⏳ 10 species/breeds — pick the typical lifespan range'),
+            h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+              'For each species, pick the lifespan bucket from 5 options (under 3 yrs through 50+ yrs). Coaching after each pick names what makes this species fall in that range and what shortens or extends typical lifespan.')
+          ),
+          h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('div', { style: { fontSize: 11, color: T.muted, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 } }, 'The five lifespan buckets'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8 } },
+              BUCKETS.map(function(b) {
+                return h('div', { key: b.id, style: { padding: '8px 10px', borderRadius: 8, background: b.color + '15', border: '1px solid ' + b.color + '55' } },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
+                    h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, b.icon),
+                    h('span', { style: { color: b.color, fontWeight: 800, fontSize: 12 } }, b.label)
+                  ),
+                  h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, b.def)
+                );
+              })
+            )
+          ),
+          h('button', { 'data-pets-focusable': true,
+            onClick: startLs,
+            style: { width: '100%', padding: '12px 18px', borderRadius: 10, border: 'none', background: T.accent, color: '#0f172a', fontSize: 13, fontWeight: 800, cursor: 'pointer' }
+          }, '⏳ Start — vignette 1 of 10')
+        );
+      }
+
+      var v = V[lsIdx];
+      var pickedCorrect = lsAns && lsPick === v.correct;
+      var pct = lsRounds > 0 ? Math.round((lsScore / lsRounds) * 100) : 0;
+      var allDone = lsShown.length >= V.length && lsAns;
+      var correctBucket = BUCKETS.filter(function(b) { return b.id === v.correct; })[0];
+      var pickedBucket = lsPick ? BUCKETS.filter(function(b) { return b.id === lsPick; })[0] : null;
+
+      return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
+        backBar('⏳ Lifespan Match'),
+        h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', fontSize: 12, color: T.dim, marginBottom: 12 } },
+          h('span', null, 'Vignette ', h('strong', { style: { color: T.text } }, lsShown.length)),
+          h('span', null, 'Score ', h('strong', { style: { color: T.ok } }, lsScore + ' / ' + lsRounds)),
+          lsRounds > 0 && h('span', null, 'Accuracy ', h('strong', { style: { color: T.link } }, pct + '%')),
+          h('span', null, 'Streak ', h('strong', { style: { color: T.warm } }, lsStreak)),
+          h('span', null, 'Best ', h('strong', { style: { color: T.accentHi } }, lsBest))
+        ),
+        // Vignette card
+        h('section', { style: { padding: 14, borderRadius: 12, background: T.card, border: '2px solid ' + T.accent + '88', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: 40, flexShrink: 0 }, 'aria-hidden': 'true' }, v.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('div', { style: { fontSize: 11, color: T.accentHi, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, 'Vignette ' + lsShown.length + ' of ' + V.length),
+            h('div', { style: { fontSize: 18, fontWeight: 800, color: T.text } }, v.species)
+          )
+        ),
+        // 5 picker buttons
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'radiogroup', 'aria-label': 'Pick the lifespan range' },
+          BUCKETS.map(function(b) {
+            var picked = lsAns && lsPick === b.id;
+            var isRight = lsAns && b.id === v.correct;
+            var bg, border, color;
+            if (lsAns) {
+              if (isRight) { bg = 'rgba(132,204,22,0.18)'; border = T.ok; color = '#bbf7d0'; }
+              else if (picked) { bg = 'rgba(220,38,38,0.18)'; border = T.danger; color = '#fecaca'; }
+              else { bg = T.cardAlt; border = T.border; color = T.dim; }
+            } else {
+              bg = b.color + '15'; border = b.color + '55'; color = T.text;
+            }
+            return h('button', { key: b.id, role: 'radio',
+              'aria-checked': picked ? 'true' : 'false',
+              'aria-label': b.label,
+              disabled: lsAns,
+              'data-pets-focusable': true,
+              onClick: function() { pickLs(b.id); },
+              style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: lsAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 12, minHeight: 64, transition: 'all 0.15s' }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 5, marginBottom: 3 } },
+                h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, b.icon),
+                h('span', { style: { color: lsAns ? color : b.color, fontSize: 12, fontWeight: 800 } }, b.label)
+              ),
+              h('div', { style: { fontSize: 10, fontWeight: 500, lineHeight: 1.4, color: lsAns ? color : T.muted } }, b.def)
+            );
+          })
+        ),
+        // Feedback
+        lsAns && h('section', {
+          style: {
+            marginTop: 12, padding: '12px 14px', borderRadius: 10,
+            background: pickedCorrect ? 'rgba(132,204,22,0.10)' : 'rgba(220,38,38,0.10)',
+            border: '1px solid ' + (pickedCorrect ? 'rgba(132,204,22,0.45)' : 'rgba(220,38,38,0.40)')
+          }
+        },
+          h('div', { style: { fontSize: 13, fontWeight: 800, marginBottom: 6, color: pickedCorrect ? '#bef264' : '#fca5a5' } },
+            pickedCorrect
+              ? '✅ Correct — ' + correctBucket.label
+              : '❌ The right range is ' + correctBucket.label + (pickedBucket ? ' (you picked ' + pickedBucket.label + ')' : '')
+          ),
+          h('p', { style: { margin: '0 0 10px', color: T.text, fontSize: 12, lineHeight: 1.55 } }, v.why),
+          allDone
+            ? h('div', { style: { padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.accent } },
+                h('div', { style: { fontSize: 13, fontWeight: 800, color: T.accentHi, marginBottom: 4 } }, '🏆 All 10 species complete'),
+                h('div', { style: { color: T.text, fontSize: 12, lineHeight: 1.5 } },
+                  'Final: ', h('strong', null, lsScore + ' / ' + V.length + ' (' + Math.round((lsScore / V.length) * 100) + '%)'),
+                  lsScore === V.length ? ' — every lifespan correctly identified. Use this when families ask "what pet should we adopt?"' :
+                  lsScore >= 8 ? ' — strong lifespan intuition. The most-confused pair is usually goldfish (10–20 yr in proper tanks) vs cockatiel (15–25 yr) — both surprise people who expected shorter spans.' :
+                  lsScore >= 6 ? ' — solid baseline. The four reflexes worth building: rodents = under 3, parrots = 15+ to 80, large dogs lose to small dogs by ~5 years, indoor cats outlive outdoor cats by 4–7×.' :
+                  ' — these matter at adoption. Re-read the rationales on misses, then retake. Lifespan-mismatch is the #1 cause of pet surrender after the first year.'
+                ),
+                h('button', { 'data-pets-focusable': true,
+                  onClick: function() { upd('lsIdx', -1); upd('lsShown', []); upd('lsScore', 0); upd('lsRounds', 0); upd('lsStreak', 0); },
+                  style: { marginTop: 8, padding: '6px 12px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+                }, '🔄 Restart')
+              )
+            : h('button', { 'data-pets-focusable': true,
+                onClick: startLs,
+                style: { padding: '8px 14px', borderRadius: 8, border: 'none', background: T.accent, color: '#0f172a', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+              }, '➡️ Next species')
+        ),
+        footer()
+      );
     }
 
     // ─────────────────────────────────────────
@@ -4093,36 +4403,203 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       );
     }
 
-    // VIEW ROUTER
-    switch (view) {
-      case 'dogs':         return renderDogs();
-      case 'cats':         return renderCats();
-      case 'smallMammals': return renderSmallMammals();
-      case 'birds':        return renderBirds();
-      case 'reptiles':     return renderReptiles();
-      case 'training':     return renderTraining();
-      case 'nutrition':    return renderNutrition();
-      case 'genetics':     return renderGenetics();
-      case 'zoonoses':     return renderZoonoses();
-      case 'service':      return renderService();
-      case 'welfare':      return renderWelfare();
-      case 'careSim':      return renderCareSim();
-      case 'picker':       return renderPicker();
-      case 'bodyLang':     return renderBodyLang();
-      case 'cost':         return renderCost();
-      case 'famous':       return renderFamous();
-      case 'aiPractice':   return renderAiPractice();
-      case 'diagrams':     return renderDiagrams();
-      case 'glossary':     return renderGlossary();
-      case 'myths':        return renderMyths();
-      case 'careers':      return renderCareers();
-      case 'action':       return renderAction();
-      case 'quiz':         return renderQuiz();
-      case 'resources':    return renderResources();
-      case 'teacher':      return renderTeacher();
-      case 'menu':
-      default:             return renderMenu();
+    // First-correct decoder-mastery celebration overlay. Renders on top
+    // of any view if the celebration state is set; auto-clears after 3.2s.
+    function decoderCelebOverlay() {
+      if (!decoderCeleb) return null;
+      var unique = Object.keys(decoderMastery || {}).length;
+      return h('div', {
+        role: 'status',
+        'aria-live': 'assertive',
+        style: {
+          position: 'fixed', top: 80, left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 9999, pointerEvents: 'none',
+          animation: 'petslab-celeb-rise 3.2s ease-out forwards'
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(135deg, #f59e0b 0%, #fb923c 50%, #ef4444 100%)',
+            color: '#fff',
+            padding: '14px 22px',
+            borderRadius: 16,
+            boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+            border: '4px solid #fff',
+            display: 'flex', alignItems: 'center', gap: 12,
+            maxWidth: 420
+          }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🎉'),
+          h('div', null,
+            h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Signal decoded'),
+            h('div', { style: { fontSize: 15, fontWeight: 800, lineHeight: 1.2 } }, decoderCeleb.species + ' — ' + decoderCeleb.signal),
+            h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, unique + ' / 27 unique signals decoded')
+          )
+        )
+      );
     }
+
+    // ── DECODER MASTERY VIEW ─────────────────────────────────
+    // Cross-species log of body-language signals correctly identified at
+    // least once in the quiz. Mirrors BirdLab's life-list pattern: tracks
+    // mastery across attempts, not per-attempt score.
+    function renderDecoderMastery() {
+      // Re-derive the canonical signal list (same source as renderBodyLang).
+      var sets = [
+        { species: '🐕 Dogs', items: [
+          { signal: 'Loose body + soft eyes + open mouth + wagging mid-height tail', meaning: 'Relaxed + happy' },
+          { signal: 'Stiff body + closed mouth + hard stare + slow high tail wag', meaning: 'WARNING — back off' },
+          { signal: '"Whale eye" (whites of eyes showing as head turns away)', meaning: 'Stress / fear / discomfort — give space' },
+          { signal: 'Lip licking / yawning / sniffing the ground in a tense moment', meaning: 'Calming signal — dog is trying to defuse' },
+          { signal: 'Play bow (front low, butt up)', meaning: 'Invitation to play / "what comes next is fun"' },
+          { signal: 'Tucked tail + low body + ears back', meaning: 'Fear / appeasement — do NOT push interaction' },
+          { signal: 'Showing belly with relaxed body', meaning: 'Trust / play (not always "rub me!")' },
+          { signal: 'Showing teeth + low growl + freeze', meaning: 'CLEAR warning — bite is the next step if pressure continues' }
+        ]},
+        { species: '🐈 Cats', items: [
+          { signal: 'Slow blink toward you', meaning: '"Cat kiss" — affection / trust' },
+          { signal: 'Tail held straight up (sometimes with curve at tip)', meaning: 'Friendly greeting' },
+          { signal: 'Tail flicking back and forth', meaning: 'Annoyed / about to react — back off' },
+          { signal: 'Pupils dilated wide in normal light', meaning: 'Aroused (could be play, fear, or aggression — read context)' },
+          { signal: 'Ears flattened back / sideways', meaning: 'Fear or aggression' },
+          { signal: 'Crouched + tail wrapped tight', meaning: 'Stressed / unwell' },
+          { signal: 'Kneading paws + purring', meaning: 'Content (kitten-nursing leftover behavior)' },
+          { signal: 'Loud meowing AT you specifically', meaning: 'Demand — for food, attention, or door opening' }
+        ]},
+        { species: '🐰 Rabbits', items: [
+          { signal: '"Binky" (sudden midair leap + twist)', meaning: 'Pure joy' },
+          { signal: 'Loud thump with hind feet', meaning: 'Alarm — perceived threat (rabbits HEAR something)' },
+          { signal: 'Tooth purring (soft chattering)', meaning: 'Content' },
+          { signal: 'Tooth grinding (loud grating)', meaning: 'PAIN — vet visit' },
+          { signal: 'Flopping over on side', meaning: 'Trust / relaxation (NOT injured)' },
+          { signal: 'Hunched + not eating + closed eyes', meaning: 'GI stasis or other illness — EMERGENCY' }
+        ]},
+        { species: '🦜 Birds', items: [
+          { signal: 'Crest feathers raised + relaxed posture', meaning: 'Curious / engaged (in cockatiels)' },
+          { signal: 'Eye-pinning (rapid pupil contraction)', meaning: 'Excitement OR aggression — read context' },
+          { signal: 'Beak grinding', meaning: 'Content (often before sleep)' },
+          { signal: 'Tail bobbing while breathing', meaning: 'Respiratory distress — vet now' },
+          { signal: 'Feather plucking / overgrooming', meaning: 'Boredom / stress / medical — needs investigation' }
+        ]}
+      ];
+      var totalSignals = 0;
+      sets.forEach(function (s) { totalSignals += s.items.length; });
+      var unique = Object.keys(decoderMastery || {}).length;
+      var pctOverall = totalSignals > 0 ? Math.round((unique / totalSignals) * 100) : 0;
+
+      return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
+        decoderCelebOverlay(),
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 14 } },
+          h('h2', { style: { margin: 0, fontSize: 22 } }, '🏅 Decoder Mastery'),
+          h('button', { 'data-pets-focusable': true,
+            onClick: function () { upd('view', 'menu'); petsAnnounce('Back to menu'); },
+            style: btnPrimary({ padding: '8px 14px', fontSize: 13 })
+          }, '← Menu')
+        ),
+        // Hero summary
+        h('div', { style: { padding: 16, borderRadius: 14, background: 'linear-gradient(135deg, ' + T.cardAlt + ' 0%, ' + T.card + ' 100%)', border: '2px solid ' + T.accent, marginBottom: 16 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
+            h('div', { style: { textAlign: 'center', minWidth: 110 } },
+              h('div', { style: { fontSize: 38, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, unique + ' / ' + totalSignals),
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Signals decoded')
+            ),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('p', { style: { margin: 0, fontSize: 13, color: T.muted, lineHeight: 1.5 } },
+                'Every body-language signal you correctly identify in the quiz lands here permanently. Read animals confidently — across species — and the meter fills. Quiz scores reset; mastery sticks.'
+              ),
+              h('div', { style: { marginTop: 8, height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
+                h('div', { style: { width: pctOverall + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
+              )
+            )
+          )
+        ),
+        // Per-species progress
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: 14 } },
+          sets.map(function (s) {
+            var total = s.items.length;
+            var decodedItems = s.items.filter(function (it) { return decoderMastery[s.species + '|' + it.signal]; });
+            var pct = total > 0 ? Math.round((decodedItems.length / total) * 100) : 0;
+            return h('div', { key: s.species,
+              style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
+                h('div', { style: { fontSize: 16, fontWeight: 800 } }, s.species),
+                h('div', { style: { fontSize: 12, color: T.dim } }, decodedItems.length + ' of ' + total + ' decoded'),
+                h('div', { style: { flex: 1, minWidth: 80, height: 6, background: T.cardAlt, borderRadius: 3, overflow: 'hidden' }, 'aria-hidden': 'true' },
+                  h('div', { style: { width: pct + '%', height: '100%', background: T.accent } })
+                )
+              ),
+              h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 6 } },
+                s.items.map(function (it, i) {
+                  var entry = decoderMastery[s.species + '|' + it.signal];
+                  var done = !!entry;
+                  return h('li', { key: i,
+                    style: {
+                      padding: '8px 10px', borderRadius: 8,
+                      background: done ? 'rgba(132,204,22,0.08)' : T.cardAlt,
+                      border: '1px solid ' + (done ? T.ok : T.border),
+                      opacity: done ? 1 : 0.7,
+                      display: 'flex', alignItems: 'flex-start', gap: 8
+                    }
+                  },
+                    h('span', { 'aria-hidden': 'true', style: { color: done ? T.ok : T.dim, fontSize: 14, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                    h('div', { style: { flex: 1, minWidth: 0 } },
+                      h('div', { style: { fontSize: 12, fontWeight: 600, lineHeight: 1.4 } }, it.signal),
+                      h('div', { style: { fontSize: 11, color: T.muted, fontStyle: 'italic', marginTop: 2 } }, it.meaning),
+                      done && entry.correctCount > 1 && h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2 } }, '✓ ' + entry.correctCount + ' correct attempts')
+                    )
+                  );
+                })
+              )
+            );
+          })
+        ),
+        h('div', { style: { marginTop: 16, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
+          h('button', { 'data-pets-focusable': true,
+            onClick: function () { upd('view', 'bodyLang'); markVisited('bodyLang'); petsAnnounce('Opening Body Language Decoder'); },
+            style: btnPrimary({ padding: '10px 18px', fontSize: 13, width: '100%' })
+          }, unique === 0 ? '🎯 Take the decoder quiz to start your mastery log' : (unique === totalSignals ? '🏆 All signals decoded — review or retry the quiz' : '🎯 Keep going — open the decoder quiz'))
+        )
+      );
+    }
+
+    // VIEW ROUTER — wraps each view in a fragment so the celebration overlay
+    // can render on top of any view (it's anchored to fixed positioning, so
+    // it doesn't matter which view it appears over).
+    var viewBody;
+    switch (view) {
+      case 'dogs':         viewBody = renderDogs(); break;
+      case 'cats':         viewBody = renderCats(); break;
+      case 'smallMammals': viewBody = renderSmallMammals(); break;
+      case 'birds':        viewBody = renderBirds(); break;
+      case 'reptiles':     viewBody = renderReptiles(); break;
+      case 'training':     viewBody = renderTraining(); break;
+      case 'nutrition':    viewBody = renderNutrition(); break;
+      case 'genetics':     viewBody = renderGenetics(); break;
+      case 'zoonoses':     viewBody = renderZoonoses(); break;
+      case 'service':      viewBody = renderService(); break;
+      case 'welfare':      viewBody = renderWelfare(); break;
+      case 'careSim':      viewBody = renderCareSim(); break;
+      case 'picker':       viewBody = renderPicker(); break;
+      case 'bodyLang':     viewBody = renderBodyLang(); break;
+      case 'cost':         viewBody = renderCost(); break;
+      case 'lifespan':     viewBody = renderLifespan(); break;
+      case 'famous':       viewBody = renderFamous(); break;
+      case 'aiPractice':   viewBody = renderAiPractice(); break;
+      case 'diagrams':     viewBody = renderDiagrams(); break;
+      case 'glossary':     viewBody = renderGlossary(); break;
+      case 'myths':        viewBody = renderMyths(); break;
+      case 'careers':      viewBody = renderCareers(); break;
+      case 'action':       viewBody = renderAction(); break;
+      case 'quiz':         viewBody = renderQuiz(); break;
+      case 'resources':    viewBody = renderResources(); break;
+      case 'teacher':      viewBody = renderTeacher(); break;
+      case 'decoderMastery': viewBody = renderDecoderMastery(); break;
+      case 'menu':
+      default:             viewBody = renderMenu(); break;
+    }
+    return h(React.Fragment, null, decoderCelebOverlay(), viewBody);
   }
 
 })();
