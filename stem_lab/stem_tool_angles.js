@@ -695,6 +695,34 @@ window.StemLab = window.StemLab || {
           tabBtn('tools', 'Tools', '\uD83D\uDEE0\uFE0F')
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            explore:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCD0', title: 'Explore \u2014 drag the protractor, name the angle', hint: 'Acute < 90\u00b0, right = 90\u00b0, obtuse 90\u2013180\u00b0, straight = 180\u00b0, reflex > 180\u00b0. The protractor was invented around 1801; the half-circle version still runs every geometry class.' },
+            challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFAF', title: 'Challenges \u2014 estimate, classify, measure',     hint: 'Estimation builds spatial sense; precise measurement builds the protractor habit. Common Core 4.MD.5\u20137: angles as fractions of a full turn (1/360 of a rotation).' },
+            reference:  { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: 'Learn \u2014 the angle relationships',              hint: 'Complementary sum to 90\u00b0; supplementary to 180\u00b0; vertical pairs are equal; alternate interior angles match when lines are parallel. These four facts unlock most middle-school proofs.' },
+            tools:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE0',  title: 'Tools \u2014 bisector, second ray, calculator',     hint: 'Bisect = cut in half (the construction with compass + straightedge is in Euclid Book I, Proposition 9). Modern tools: protractor, miter saw, theodolite \u2014 all the same idea, calibrated.' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.explore;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ══════════════════════════════════════════════════════════
         // ── TAB: Explore ──
         // ══════════════════════════════════════════════════════════

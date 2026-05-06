@@ -1297,6 +1297,36 @@ window.StemLab = window.StemLab || {
         })
       ),
 
+      // ── Topic-accent hero band per tab ──
+      (function() {
+        var TAB_META = {
+          practice:    { accent: '#e11d48', soft: 'rgba(225,29,72,0.10)',  icon: '\uD83C\uDF55', title: 'Practice \u2014 pizza + bar model intuition',           hint: 'Common Core fluency = automatic recall of basic facts in under 3 seconds. Pizza model for what-out-of-the-whole; bar model for comparison and operation.' },
+          compare:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83D\uDD0D', title: 'Compare \u2014 cross-multiply or benchmark',           hint: 'Three tools: same denom (just compare tops), cross-multiplication (a/b vs c/d \u2192 ad vs bc), or benchmark to \u00bd / \u00be. Last one is fastest in your head.' },
+          operations:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2795',         title: 'Operations \u2014 add/sub/mul/div with rules',           hint: 'Add/sub: common denominator first. Multiply: tops\u00d7tops, bottoms\u00d7bottoms. Divide: keep-change-flip (multiply by reciprocal). Always simplify to lowest terms.' },
+          equivalents: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDD17', title: 'Equivalents \u2014 same value, different form',         hint: 'Multiply top AND bottom by the same number; value stays put. \u00bd = 2/4 = 50/100 = 0.5 = 50%. Equivalent fractions are the bridge between fractions, decimals, and percents.' },
+          converter:   { accent: '#059669', soft: 'rgba(5,150,105,0.10)',  icon: '\uD83D\uDD04', title: 'Converter \u2014 mixed \u2194 improper \u2194 decimal',  hint: '2\u00be = 11/4. Long division gives a terminating decimal (denom = 2\u00b9 \u00d7 5\u207f) or a repeating one (any other prime in the denom). 1/3 = 0.333... forever.' },
+          wall:        { accent: '#4f46e5', soft: 'rgba(79,70,229,0.10)',  icon: '\uD83E\uDDF1', title: 'Wall \u2014 visual proof of equivalence',                  hint: 'Stack the fraction wall: 1 whole = 2 halves = 4 quarters = 8 eighths. Same height = same value. Cuisenaire rods (1952) made this concrete; the wall is the digital descendant.' }
+        };
+        var meta = TAB_META[tab] || TAB_META.practice;
+        return h('div', {
+          style: {
+            margin: '0 0 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })(),
+
       // Active tab content
       tab === 'practice' && renderPractice(),
       tab === 'compare' && renderCompare(),
