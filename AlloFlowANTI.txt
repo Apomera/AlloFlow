@@ -187,7 +187,56 @@ window._upgradeUtilsPure = _upgradeUtilsPure;
 let callGemini = async (prompt) => { console.warn('[callGemini] Fallback — CDN module not loaded'); return ''; };
 let callGeminiVision = async () => { console.warn('[callGeminiVision] Fallback — CDN module not loaded'); return ''; };
 let callGeminiImageEdit = async () => { console.warn('[callGeminiImageEdit] Fallback — CDN module not loaded'); return null; };
-let callGeminiAudio = async () => { console.warn('[callGeminiAudio] Fallback — CDN module not loaded'); return ''; };
+// callGeminiAudio (Phase 3b.voice) — inline implementation. Uses the same
+// generateContent endpoint as vision; mirrors callGeminiVision shape but
+// with audio MIME types in inlineData. Defined inline here rather than in
+// gemini_api_module.js so the audio surface ships without coupling to the
+// extracted factory's release cadence.
+const callGeminiAudio = async (prompt, base64Audio, opts = {}) => {
+    let mimeType = (opts && opts.mimeType) || 'audio/webm';
+    let cleanData = base64Audio || '';
+    const m = cleanData.match(/^data:([^;]+);base64,(.+)$/);
+    if (m) { mimeType = m[1] || mimeType; cleanData = m[2]; }
+    if (!apiKey) {
+        console.warn('[callGeminiAudio] No API key available');
+        return '';
+    }
+    const model = (typeof GEMINI_MODELS !== 'undefined' && GEMINI_MODELS.flash) || 'gemini-2.0-flash';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const payload = {
+        contents: [{
+            parts: [
+                { text: prompt },
+                { inlineData: { mimeType, data: cleanData } }
+            ]
+        }],
+        generationConfig: { maxOutputTokens: 4096 }
+    };
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) {
+            const errText = await response.text().catch(() => 'Unknown error');
+            throw new Error(`Gemini audio API error ${response.status}: ${errText}`);
+        }
+        const data = await response.json();
+        const blockReason = data.candidates?.[0]?.finishReason || data.promptFeedback?.blockReason;
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (!text && blockReason) {
+            throw new Error(`No text generated from audio. Reason: ${blockReason}`);
+        }
+        return text;
+    } catch (err) {
+        console.error('[callGeminiAudio] error:', err && err.message);
+        throw err;
+    }
+};
+if (typeof window !== 'undefined') {
+    window.callGeminiAudio = callGeminiAudio;
+}
 function _upgradeGeminiAPI() {
     const factory = window.AlloModules && window.AlloModules.createGeminiAPI;
     if (!factory) return;
@@ -199,12 +248,10 @@ function _upgradeGeminiAPI() {
     callGemini = api.callGemini;
     callGeminiVision = api.callGeminiVision;
     callGeminiImageEdit = api.callGeminiImageEdit;
-    if (typeof api.callGeminiAudio === 'function') callGeminiAudio = api.callGeminiAudio;
     if (typeof window !== 'undefined') {
         window.callGemini = callGemini;
         window.callGeminiVision = callGeminiVision;
         window.callGeminiImageEdit = callGeminiImageEdit;
-        window.callGeminiAudio = callGeminiAudio;
     }
     console.log('[GeminiAPI] Monolith shim upgraded from CDN module.');
 }
