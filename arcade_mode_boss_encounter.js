@@ -514,6 +514,19 @@
     // metadata so the claim survives reload.
     var rewardClaimedRef = useRef(false);
 
+    // Phase 3b.full.f — per-submission grade override state. Tracks
+    // which submission (if any) the host is currently editing + the
+    // staged new score. Upgrade-only: the editor floor is the current
+    // AI score; the ceiling is 20. Visible to host only.
+    //   editingSubmissionId: 'sub-...' | null
+    //   editingScore: number (1-20)
+    var editingSubIdTuple = useState(null);
+    var editingSubId = editingSubIdTuple[0];
+    var setEditingSubId = editingSubIdTuple[1];
+    var editingScoreTuple = useState(0);
+    var editingScore = editingScoreTuple[0];
+    var setEditingScore = editingScoreTuple[1];
+
     // Phase 3b.full.c — shared session-doc state for class encounters.
     // Captures the full sessions/{code} doc snapshot. Plugin reads
     // bossEncounter.submissions to compute shared HP + participant count.
@@ -692,6 +705,42 @@
       try {
         ctx.sessionUpdate({ bossEncounter: fields }).catch(function () { /* ignore */ });
       } catch (e) { /* ignore */ }
+    }
+
+    // Phase 3b.full.f — host upgrades a submission's score. Recomputes
+    // damage from the same curve applySpark uses (1-10 → 0, 11-17 →
+    // score-5, 18-20 → score). Writes to bossEncounter.submissions[id]
+    // via setDoc-with-merge; the snapshot useEffect propagates new
+    // shared HP to all participants. Marks teacherAdjusted=true so the
+    // peer feed badge surfaces.
+    function saveSubmissionEdit(sub, newScore) {
+      if (!isClassHost) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      var clamped = Math.max(1, Math.min(20, Math.floor(newScore)));
+      // Upgrade-only enforcement (defense-in-depth — UI also gates)
+      if (clamped <= (sub.score || 1)) {
+        ctx.addToast('Score upgrades only. Pick a higher number than ' + (sub.score || 1) + '.');
+        return;
+      }
+      var newDamage = clamped < 11 ? 0 : (clamped >= 18 ? clamped : (clamped - 5));
+      var subFields = {};
+      subFields[sub.id] = Object.assign({}, sub, {
+        score: clamped,
+        damage: newDamage,
+        healed: clamped >= 18,
+        teacherAdjusted: true,
+        teacherAdjustedAt: new Date().toISOString(),
+        // Preserve the AI's original score so a future "what did the
+        // AI think?" surface can show both numbers.
+        originalScore: typeof sub.originalScore === 'number' ? sub.originalScore : (sub.score || 1)
+      });
+      try {
+        ctx.sessionUpdate({
+          bossEncounter: { submissions: subFields }
+        }).catch(function () { /* best-effort */ });
+        ctx.addToast('Adjusted ' + (sub.nickname || 'anon') + '\'s Spark to ' + clamped + ' (was ' + (sub.score || '?') + ').');
+      } catch (e) { /* ignore */ }
+      setEditingSubId(null);
     }
 
     // Same as above but also handles the host's own end-encounter +
@@ -1684,6 +1733,9 @@
       // ANY participant, newest at the top. Lets students see each
       // other's Sparks landing in real time without exposing too much.
       // Hidden in solo mode.
+      // Phase 3b.full.f — host gets a ✏️ pencil per row to upgrade the
+      // AI's score (upgrade-only — never a public downgrade). Saving
+      // recomputes damage; shared HP updates via the next snapshot.
       isClassMode && classView && classView.submissions.length > 0 ? h('div', {
         style: {
           padding: '8px 10px',
@@ -1695,18 +1747,113 @@
       },
         h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } },
           '🌐 Class Sparks · last ' + Math.min(5, classView.submissions.length) + ' of ' + classView.submissions.length),
-        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '11px', color: palette.textDim } },
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', color: palette.textDim } },
           classView.submissions.slice(-5).reverse().map(function (s) {
             var icon = s.score >= 18 ? '✨' : s.score >= 11 ? '💡' : '🌫️';
+            var isEditing = editingSubId === s.id;
+            var teacherAdjusted = !!s.teacherAdjusted;
             return h('div', {
               key: 'cs-' + s.id,
-              style: { display: 'flex', gap: '6px', alignItems: 'baseline' }
+              style: { display: 'flex', flexDirection: 'column', gap: '3px' }
             },
-              h('span', { 'aria-hidden': 'true' }, icon),
-              h('strong', { style: { color: palette.text } }, s.nickname || 'anon'),
-              h('span', null, ' · ' + (s.cardName || '?') + ' · ' + (s.verb || '?')),
-              h('span', { style: { fontVariantNumeric: 'tabular-nums', color: palette.textMute } },
-                ' · ' + s.score + (s.damage ? ' · -' + s.damage + ' HP' : ''))
+              h('div', { style: { display: 'flex', gap: '6px', alignItems: 'baseline', flexWrap: 'wrap' } },
+                h('span', { 'aria-hidden': 'true' }, icon),
+                h('strong', { style: { color: palette.text } }, s.nickname || 'anon'),
+                h('span', null, ' · ' + (s.cardName || '?') + ' · ' + (s.verb || '?')),
+                h('span', { style: { fontVariantNumeric: 'tabular-nums', color: palette.textMute } },
+                  ' · ' + s.score + (s.damage ? ' · -' + s.damage + ' HP' : '')),
+                teacherAdjusted ? h('span', {
+                  title: 'Score adjusted by the teacher',
+                  style: {
+                    fontSize: '9px', fontWeight: 700, color: palette.text,
+                    background: (palette.success || '#16a34a') + '33',
+                    border: '1px solid ' + (palette.success || palette.accent),
+                    borderRadius: '4px', padding: '0 4px',
+                    letterSpacing: '0.04em', marginLeft: '4px'
+                  }
+                }, '↑ adjusted') : null,
+                // Host-only edit affordance
+                isClassHost && !isEditing ? h('button', {
+                  onClick: function () {
+                    setEditingSubId(s.id);
+                    setEditingScore(s.score || 1);
+                  },
+                  'aria-label': 'Adjust score for ' + (s.nickname || 'anon') + '\'s Spark',
+                  title: 'Adjust score (upgrade-only)',
+                  style: {
+                    background: 'transparent', border: '1px solid ' + palette.border,
+                    borderRadius: '4px',
+                    padding: '0 6px', fontSize: '10px', color: palette.textDim,
+                    cursor: 'pointer', fontFamily: 'inherit', marginLeft: 'auto'
+                  }
+                }, '✏️') : null
+              ),
+              isEditing ? h('div', {
+                style: {
+                  display: 'flex', gap: '6px', alignItems: 'center',
+                  padding: '6px 8px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.accent,
+                  borderRadius: '6px',
+                  flexWrap: 'wrap'
+                }
+              },
+                h('label', {
+                  htmlFor: 'edit-score-' + s.id,
+                  style: { fontSize: '10px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }
+                }, 'New score'),
+                h('input', {
+                  id: 'edit-score-' + s.id,
+                  type: 'number',
+                  min: s.score || 1,
+                  max: 20,
+                  value: editingScore,
+                  onChange: function (e) {
+                    var n = parseInt(e.target.value, 10);
+                    if (!isFinite(n)) return;
+                    if (n < (s.score || 1)) n = s.score || 1;
+                    if (n > 20) n = 20;
+                    setEditingScore(n);
+                  },
+                  style: {
+                    width: '54px',
+                    padding: '4px 6px',
+                    background: palette.bg,
+                    border: '1px solid ' + palette.border,
+                    color: palette.text,
+                    borderRadius: '4px',
+                    fontFamily: 'inherit',
+                    fontSize: '12px',
+                    fontVariantNumeric: 'tabular-nums'
+                  }
+                }),
+                h('span', { style: { fontSize: '9px', color: palette.textMute, fontStyle: 'italic' } },
+                  'Upgrade-only · floor ' + (s.score || 1) + ', max 20'),
+                h('button', {
+                  onClick: function () {
+                    if (editingScore <= (s.score || 1)) {
+                      ctx.addToast('Pick a higher score to apply.');
+                      return;
+                    }
+                    saveSubmissionEdit(s, editingScore);
+                  },
+                  style: {
+                    background: palette.accent, color: palette.onAccent,
+                    border: 'none', borderRadius: '6px',
+                    padding: '4px 12px', fontSize: '11px', fontWeight: 700,
+                    cursor: 'pointer', fontFamily: 'inherit', marginLeft: 'auto'
+                  }
+                }, 'Save'),
+                h('button', {
+                  onClick: function () { setEditingSubId(null); },
+                  style: {
+                    background: 'transparent', color: palette.textDim,
+                    border: '1px solid ' + palette.border, borderRadius: '6px',
+                    padding: '4px 10px', fontSize: '11px', fontWeight: 600,
+                    cursor: 'pointer', fontFamily: 'inherit'
+                  }
+                }, 'Cancel')
+              ) : null
             );
           })
         )
