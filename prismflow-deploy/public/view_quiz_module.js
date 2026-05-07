@@ -54,6 +54,146 @@
   var PenTool = _lazyIcon('PenTool');
   var ShieldCheck = _lazyIcon('ShieldCheck');
 
+  // ─── FreeformItemsBlock (Plan S Slice 2) ──────────────────────────────
+  // Renders fill-blank and short-answer items below the MCQ list. Each item
+  // is a self-contained card with its own state (response, grading status,
+  // feedback). Calls QuizAIHelpers.gradeFreeformAnswer / gradeFillBlank.
+  function FreeformItemsBlock(p) {
+    var allQuestions = Array.isArray(p.questions) ? p.questions : [];
+    var freeform = allQuestions
+      .map(function (q, idx) { return { q: q, idx: idx }; })
+      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer'); });
+    if (freeform.length === 0) return null;
+    return React.createElement('div', { className: 'space-y-4 mt-6' },
+      React.createElement('h4', { className: 'font-bold text-slate-700 flex items-center gap-2 text-base' },
+        React.createElement('span', { 'aria-hidden': 'true' }, '✏️'),
+        ' Open-Response Items'),
+      React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
+        'Type your answer and click "Grade my answer" — an AI will give you immediate feedback.'),
+      freeform.map(function (entry) {
+        return React.createElement(FreeformItemCard, {
+          key: entry.idx,
+          q: entry.q,
+          itemNumber: entry.idx + 1,
+          callGemini: p.callGemini,
+          gradeLevel: p.gradeLevel,
+          QuizAIHelpers: p.QuizAIHelpers,
+        });
+      })
+    );
+  }
+
+  function FreeformItemCard(p) {
+    var q = p.q;
+    var responseState = React.useState('');
+    var response = responseState[0]; var setResponse = responseState[1];
+    var gradeState = React.useState({ status: null, feedback: '', loading: false });
+    var grade = gradeState[0]; var setGrade = gradeState[1];
+
+    function submitGrade() {
+      if (!response || !response.trim()) return;
+      if (!p.QuizAIHelpers) {
+        setGrade({ status: 'error', feedback: 'Grader unavailable: QuizAIHelpers not loaded.', loading: false });
+        return;
+      }
+      setGrade({ status: null, feedback: '', loading: true });
+      var graderArgs = {
+        callGemini: p.callGemini,
+        gradeLevel: p.gradeLevel,
+      };
+      var promise;
+      if (q.type === 'fill-blank') {
+        graderArgs.contextSentence = q.question;
+        graderArgs.expectedFill = q.expectedFill || '';
+        graderArgs.acceptableAlternatives = q.acceptableAlternatives || [];
+        graderArgs.studentFill = response;
+        promise = p.QuizAIHelpers.gradeFillBlank(graderArgs);
+      } else {
+        graderArgs.question = q.question;
+        graderArgs.expectedAnswer = q.expectedAnswer || '';
+        graderArgs.studentResponse = response;
+        promise = p.QuizAIHelpers.gradeFreeformAnswer(graderArgs);
+      }
+      Promise.resolve(promise).then(function (result) {
+        setGrade({ status: result.status || 'unclear', feedback: result.feedback || '', loading: false });
+      }).catch(function (err) {
+        setGrade({ status: 'error', feedback: (err && err.message) ? err.message : 'Grader failed.', loading: false });
+      });
+    }
+
+    var statusColor = grade.status === 'correct' ? 'emerald' :
+                      grade.status === 'partially-correct' ? 'amber' :
+                      grade.status === 'incorrect' ? 'rose' :
+                      grade.status === 'error' ? 'rose' :
+                      'slate';
+    var statusLabel = grade.status === 'correct' ? '✓ Correct' :
+                      grade.status === 'partially-correct' ? '~ Close' :
+                      grade.status === 'incorrect' ? '✗ Not yet' :
+                      grade.status === 'unclear' ? '? Unclear' :
+                      grade.status === 'error' ? '! Error' :
+                      '';
+
+    return React.createElement('div', {
+      className: 'bg-white p-5 rounded-xl border border-slate-300 shadow-sm',
+    },
+      React.createElement('div', { className: 'flex items-start gap-3 mb-3' },
+        React.createElement('span', { className: 'flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5' }, p.itemNumber),
+        React.createElement('div', { className: 'flex-1 min-w-0' },
+          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' },
+            q.type === 'fill-blank' ? 'Fill-in-the-blank' : 'Short answer'),
+          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || '')
+        )
+      ),
+      // Input area: short text input for fill-blank, multi-line textarea for short-answer
+      q.type === 'fill-blank' ?
+        React.createElement('input', {
+          type: 'text',
+          value: response,
+          onChange: function (ev) { setResponse(ev.target.value); },
+          onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); submitGrade(); } },
+          placeholder: 'Type the missing word or phrase...',
+          disabled: grade.loading || grade.status === 'correct',
+          className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50',
+          'aria-label': 'Fill in the blank',
+        })
+      :
+        React.createElement('textarea', {
+          value: response,
+          onChange: function (ev) { setResponse(ev.target.value); },
+          placeholder: 'Type your 1-2 sentence response...',
+          disabled: grade.loading || grade.status === 'correct',
+          rows: 3,
+          className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y',
+          'aria-label': 'Short-answer response',
+        }),
+      // Submit button + retry
+      React.createElement('div', { className: 'flex items-center justify-between gap-2 mt-2' },
+        React.createElement('button', {
+          type: 'button',
+          onClick: submitGrade,
+          disabled: !response.trim() || grade.loading || grade.status === 'correct',
+          className: 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
+        }, grade.loading ? 'Grading…' : (grade.status ? 'Re-check' : 'Grade my answer')),
+        grade.status && grade.status !== 'correct' && React.createElement('button', {
+          type: 'button',
+          onClick: function () { setGrade({ status: null, feedback: '', loading: false }); setResponse(''); },
+          className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors',
+        }, 'Try again')
+      ),
+      // Feedback panel
+      grade.status && React.createElement('div', {
+        className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
+        role: 'status',
+        'aria-live': 'polite',
+      },
+        React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' }, statusLabel)
+        ),
+        grade.feedback && React.createElement('p', { className: 'text-sm text-' + statusColor + '-900' }, grade.feedback)
+      )
+    );
+  }
+
   function QuizView(props) {
   // State reads
   var t = props.t;
@@ -723,7 +863,7 @@
     className: "text-2xl font-medium leading-relaxed text-center"
   }, "\"", generatedContent?.data.reflection, "\"")))) : /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, generatedContent?.data.questions.map((q, i) => /*#__PURE__*/React.createElement("div", {
+  }, generatedContent?.data.questions.map((q, i) => (q && q.type && q.type !== 'mcq') ? null : /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question"
   }, /*#__PURE__*/React.createElement("div", {
@@ -818,7 +958,20 @@
     className: "flex-grow"
   }, /*#__PURE__*/React.createElement("div", {
     className: "whitespace-pre-line leading-relaxed text-slate-700"
-  }, renderFormattedText(q.factCheck)))))), /*#__PURE__*/React.createElement("div", {
+  }, renderFormattedText(q.factCheck)))))),
+    // ─── Plan S Slice 2: freeform item types (fill-blank + short-answer) ───
+    // Renders below MCQ items. Each freeform item gets its own card with input
+    // + AI-graded feedback via QuizAIHelpers. Mode-agnostic — works in any
+    // mode that includes these item types in its strategy.
+    Array.isArray(generatedContent?.data?.questions) &&
+    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer'); }) &&
+    /*#__PURE__*/React.createElement(FreeformItemsBlock, {
+      questions: generatedContent.data.questions,
+      callGemini: props.callGemini,
+      gradeLevel: props.gradeLevel,
+      QuizAIHelpers: window.AlloModules && window.AlloModules.QuizAIHelpers,
+    }),
+    /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"
   }, /*#__PURE__*/React.createElement("h4", {
     className: "font-bold text-indigo-900 mb-2 flex items-center gap-2"
