@@ -8106,13 +8106,20 @@
     var minLen = 2;
     var results = q.length < minLen ? null : (function() {
       var out = { decorations: [], stories: [], journals: [] };
-      // Decoration labels + deck content
+      // Decoration labels + deck content + voice-note caption
       (p.decorations || []).forEach(function(d) {
         var label = (d.templateLabel || d.template || '').toLowerCase();
         var labelHit = label.indexOf(q) !== -1;
         var refl = (d.studentReflection || '').toLowerCase();
         var reflHit = refl.indexOf(q) !== -1;
+        // Voice-note caption (Phase 4) — student-authored text companion
+        // to the audio. Indexed here so a search hits captions too.
+        var captionRaw = (d.voiceNote && d.voiceNote.caption) || '';
+        var captionHit = captionRaw.toLowerCase().indexOf(q) !== -1;
         var contentHits = []; // matching content snippets
+        if (captionHit) {
+          contentHits.push('🎤 “' + captionRaw + '”');
+        }
         var lc = d.linkedContent;
         if (lc && lc.data) {
           if (lc.type === 'flashcards' && Array.isArray(lc.data.cards)) {
@@ -8147,11 +8154,12 @@
             }
           }
         }
-        if (labelHit || reflHit || contentHits.length > 0) {
+        if (labelHit || reflHit || captionHit || contentHits.length > 0) {
           out.decorations.push({
             decoration: d,
             labelHit: labelHit,
             reflHit: reflHit,
+            captionHit: captionHit,
             contentHits: contentHits.slice(0, 3) // cap snippets
           });
         }
@@ -11702,14 +11710,26 @@
     // removes the caption (audio stays). No-op if there's no voice note
     // attached to the decoration.
     function setDecorationVoiceNoteCaption(decorationId, caption) {
+      var changed = false;
+      var hadBefore = false;
       var newDecs = state.decorations.map(function(d) {
         if (d.id !== decorationId || !d.voiceNote || !d.voiceNote.base64) return d;
+        hadBefore = !!d.voiceNote.caption;
         var nextVn = Object.assign({}, d.voiceNote);
         if (caption) nextVn.caption = String(caption).slice(0, 80);
         else delete nextVn.caption;
+        changed = true;
         return Object.assign({}, d, { voiceNote: nextVn });
       });
+      if (!changed) return;
       setStateField('decorations', newDecs);
+      // Toast confirmation so the student knows the save landed —
+      // distinguish add vs edit vs remove for tiny but useful clarity.
+      if (caption) {
+        addToast(hadBefore ? '✓ Caption updated.' : '✓ Caption saved.');
+      } else if (hadBefore) {
+        addToast('Caption removed.');
+      }
     }
 
     // "Make similar" — opens the generate modal with the same template +
@@ -16915,12 +16935,19 @@
           !ins.loading && s.moodSummary === 'Not enough yet' ? h('p', {
             style: { color: palette.textDim, fontSize: '13px', padding: '12px 4px', lineHeight: '1.6' }
           }, 'Your entries so far are short or recent — keep journaling and a richer view will surface here.') : null,
-          // AI error / fallback notice
-          ins.error ? h('p', {
+          // AI error / fallback notice — explicit Try-again button so
+          // a transient network failure isn't a dead end.
+          ins.error ? h('div', {
             role: 'alert',
             'aria-live': 'polite',
-            style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic' }
-          }, ins.error) : null,
+            style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }
+          },
+            h('span', { style: { flex: 1, minWidth: 0 } }, ins.error),
+            h('button', {
+              onClick: function() { runInsightsAnalysis(); },
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', flexShrink: 0 })
+            }, '↻ Try again')
+          ) : null,
           // Local stats card — always shown, even on AI failure
           !ins.loading && (s.entriesAnalyzed > 0) ? h('div', {
             style: {
