@@ -1586,18 +1586,32 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         }
       } else if (type === 'quiz') {
         setShowQuizAnswers(false);
+        // Plan S: Quiz is now mode-aware. Default 'exit-ticket' preserves the
+        // existing behavior for any caller that doesn't pass a mode.
+        const _quizMode = (configOverride && configOverride.quizMode) || 'exit-ticket';
+        const _qmStrategies = (window.AlloModules && window.AlloModules.QuizModeStrategies) || null;
+        const _modeStrategy = _qmStrategies ? _qmStrategies.getStrategy(_quizMode) : null;
+        const _modeFraming = _modeStrategy ? _modeStrategy.generation.promptFrame : 'Create a short "Exit Ticket" quiz based on this text.';
+        const _modeQuestionTargets = _modeStrategy ? _modeStrategy.generation.questionTargets : 'today\'s lesson content';
+        // Pre-check + review modes draw on different context: pre-check needs
+        // PREREQUISITE concepts (what the source assumes), review pulls from
+        // earlier history items rather than today's source.
         let analysisContext = "";
-        if (passAnalysisToQuiz) {
+        if (passAnalysisToQuiz || _quizMode === 'pre-check' || _quizMode === 'review') {
              const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
              if (analysisItem && analysisItem.data) {
                  const { concepts, readingLevel } = analysisItem.data;
                  const levelStr = typeof readingLevel === 'object' ? readingLevel.range : readingLevel;
-                 analysisContext = `
-                 PRIORITY CONTEXT FROM SOURCE ANALYSIS:
-                 - Key Concepts Identified: ${concepts ? concepts.join(', ') : 'N/A'}
-                 - Detected Source Level: ${levelStr}
-                 INSTRUCTION: Ensure the quiz questions specifically target these identified concepts to check for understanding.
-                 `;
+                 if (_quizMode === 'pre-check') {
+                     analysisContext = `\n                 SOURCE ANALYSIS (for prerequisite identification):\n                 - Key Concepts the Lesson Will Teach: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Lesson Reading Level: ${levelStr}\n                 INSTRUCTION: For EACH key concept above, identify ONE prerequisite the student should already know to access that concept, then write a probe testing that prerequisite. Probes should test PRIOR knowledge (e.g., for "photosynthesis" the prerequisite might be "what plants need to grow"). Do NOT test today's lesson content directly.\n                 `;
+                 } else if (_quizMode === 'review') {
+                     // Pull historical concepts from prior history items too (multiple analyses)
+                     const allAnalyses = history.filter(h => h && h.type === 'analysis');
+                     const allConcepts = allAnalyses.flatMap(h => (h.data && h.data.concepts) || []).filter(Boolean);
+                     analysisContext = `\n                 PRIOR LESSON CONCEPTS FOR SPACED RETRIEVAL:\n                 - Earlier Concepts Across History: ${allConcepts.length > 0 ? allConcepts.join(', ') : 'N/A (use today\'s source as fallback)'}\n                 - Today's Concepts: ${concepts ? concepts.join(', ') : 'N/A'}\n                 INSTRUCTION: Probe retention of EARLIER concepts (not today's). If only today's concepts are available, probe deeper retention of today's content from a few angles.\n                 `;
+                 } else {
+                     analysisContext = `\n                 PRIORITY CONTEXT FROM SOURCE ANALYSIS:\n                 - Key Concepts Identified: ${concepts ? concepts.join(', ') : 'N/A'}\n                 - Detected Source Level: ${levelStr}\n                 INSTRUCTION: Ensure the quiz questions specifically target these identified concepts to check for understanding.\n                 `;
+                 }
              }
         }
         let dokInstruction = "";
@@ -1606,16 +1620,21 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         } else if (dokLevel) {
             dokInstruction = `Target Webb's Depth of Knowledge (DOK): ${dokLevel}`;
         }
+        const _modeItemCount = (_modeStrategy && _modeStrategy.generation.defaultItemCount) || effectiveQuizCount;
+        // Use mode default ONLY when the caller didn't explicitly request a count
+        const _resolvedItemCount = (configOverride && configOverride.quizMcqCount) ? configOverride.quizMcqCount : _modeItemCount;
         const prompt = `
-          Create a short "Exit Ticket" quiz based on this text for ${gradeLevel} level students.
+          ${_modeFraming}
+          Quiz target: ${_modeQuestionTargets}.
+          Audience: ${gradeLevel} level students.
           ${dnaPromptBlock}
           Language: ${effectiveLanguage}.
           ${dokInstruction}
           ${standardsPromptString ? `Ensure questions align with Standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
           Include:
-          1. ${effectiveQuizCount} Multiple Choice Questions (with 4 options each).
-          2. ${quizReflectionCount} Open-Ended Reflection Question(s).
+          1. ${_resolvedItemCount} Multiple Choice Questions (with 4 options each).
+          2. ${_quizMode === 'exit-ticket' ? quizReflectionCount : 0} Open-Ended Reflection Question(s).
           3. The correct answer for the MCQs.
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
@@ -1624,7 +1643,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${dialectInstruction}
           Return ONLY valid JSON format: { "questions": [{ "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }], "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}] }
           ${differentiationContext}
-          Text: "${textToProcess}"
+          ${_quizMode === 'exit-ticket' ? `Text: "${textToProcess}"` : `Source text (for context only — do not directly quiz on it for ${_quizMode} mode):\n"${textToProcess}"`}
         `;
         setGenerationStep(t('status_steps.drafting_quiz'));
         const result = await callGemini(prompt, true);
@@ -1686,7 +1705,15 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              warnLog("Quiz Parse Error:", parseErr);
              throw new Error("Failed to parse Quiz JSON. The AI response was not valid.");
         }
-        metaInfo = `${gradeLevel} - Quiz (${effectiveQuizCount}MC/${quizReflectionCount}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}`;
+        // Plan S: stamp the mode onto the content so the view can render
+        // mode-aware behavior (intro banner, AI explainer, confidence rating).
+        if (content && typeof content === 'object') {
+            content.mode = _quizMode;
+            content.modeLabel = _modeStrategy ? _modeStrategy.label : 'Exit Ticket';
+            content.modeIcon = _modeStrategy ? _modeStrategy.icon : '📝';
+        }
+        const _modeMetaPrefix = _modeStrategy && _quizMode !== 'exit-ticket' ? _modeStrategy.label + ' · ' : '';
+        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_resolvedItemCount}MC/${_quizMode === 'exit-ticket' ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}`;
       } else if (type === 'analysis') {
         let verificationContext = "";
         let collectedSources = [];
