@@ -5639,6 +5639,33 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             ),
 
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                tank:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDC20', title: 'Aquarium Lab \u2014 keep a closed ecosystem alive',  hint: 'pH, ammonia, nitrite, nitrate \u2014 the nitrogen cycle is the entire game. Bacteria on filter media convert toxic NH\u2083 \u2192 NO\u2082\u207B \u2192 NO\u2083\u207B. Cycle a tank for 4-6 weeks BEFORE adding fish; the bacteria need time.' },
+                ocean:  { accent: '#1e40af', soft: 'rgba(30,64,175,0.10)',  icon: '\uD83C\uDF0A', title: 'Ocean Ecology \u2014 the planet\u2019s biggest biome',  hint: 'Oceans cover 71% of Earth, hold 97% of water, produce ~50% of atmospheric O\u2082 (phytoplankton). Acidification (CO\u2082 + H\u2082O \u2192 H\u2082CO\u2083) has dropped surface pH 0.1 since 1900 \u2014 30% more acidic in chemistry terms.' },
+                marine: { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDD2C', title: 'Marine Science \u2014 careers + research methods',     hint: 'Marine biology, oceanography, fisheries, conservation. CTD profilers measure conductivity/temperature/depth. Acoustic surveys count whales by song. Tagging studies follow sharks across oceans \u2014 most science you\u2019ll never see.' }
+              };
+              var meta = MODE_META[mode] || MODE_META.tank;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
 
