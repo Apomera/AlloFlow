@@ -14533,6 +14533,15 @@
                 // zone-add. AlloHaven upserts by id and caps total realms.
                 realms: state.realms || [],
                 onRealmUpdate: function(realm) { return saveOrUpdateRealm(realm); },
+                // Single-realm print: plugin can call this from a wrap-up
+                // screen so students/teachers print just the one realm.
+                onPrintRealm: function(realmId) {
+                  setStateField('printScope', { type: 'realm', realmId: realmId });
+                  setTimeout(function() {
+                    try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+                    setTimeout(function() { setStateField('printScope', null); }, 200);
+                  }, 80);
+                },
                 // Phase 3b.full.e — plugin calls this to grant tokens for
                 // arcade rewards (e.g. class-encounter wins). Plugin
                 // de-dups via metadata before calling. AlloHaven persists
@@ -16644,6 +16653,16 @@
           launchArcadeMode('realm-builder', 10);
         }, 30);
       }
+      function printThisRealm() {
+        // Mirror renderPrintCard's pattern — set printScope to this realm,
+        // fire window.print() on the next tick so React paints first, then
+        // clear printScope after the dialog closes.
+        setStateField('printScope', { type: 'realm', realmId: realm.id });
+        setTimeout(function() {
+          try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+          setTimeout(function() { setStateField('printScope', null); }, 200);
+        }, 80);
+      }
       function confirmDelete() {
         if (window.confirm && !window.confirm('Delete this realm? Zones and justifications cannot be recovered.')) return;
         deleteRealm(realm.id);
@@ -16686,6 +16705,12 @@
             'aria-label': 'Continue ' + (realm.name || realm.topic || 'realm'),
             style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
           }, '▶ Continue'),
+          h('button', {
+            onClick: printThisRealm,
+            'aria-label': 'Print ' + (realm.name || realm.topic || 'realm'),
+            title: 'Print just this realm (single packet for IEP / parent meeting)',
+            style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🖨'),
           h('button', {
             onClick: confirmDelete,
             'aria-label': 'Delete ' + (realm.name || realm.topic || 'realm'),
@@ -19884,6 +19909,106 @@
       );
     }
 
+    // Single-realm print — focused output for IEP / parent packets where
+    // one ongoing project (e.g. "the cell" or "ancient Rome") is the
+    // evidence. Mirrors renderPrintCard's pattern: standalone scope,
+    // branched at the top of renderPrintPacket.
+    function renderPrintRealm(realmId) {
+      var realm = (state.realms || []).filter(function(r) { return r.id === realmId; })[0];
+      if (!realm) return null;
+      var zones = realm.zones || [];
+      var milestones = realm.milestones || [];
+      var resonant = zones.filter(function(z) { return z.score >= 18; });
+      var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var sectionTitleStyle = { fontSize: '14px', fontWeight: 700, marginBottom: '8px', borderBottom: '1.5px solid #333', paddingBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' };
+      var subTitleStyle = { fontSize: '13px', fontWeight: 700, marginBottom: '4px', color: '#000', marginTop: '14px' };
+      var bodyTextStyle = { fontSize: '11px', color: '#333', lineHeight: 1.5, margin: 0 };
+      var smallMetaStyle = { fontSize: '9px', color: '#666', fontStyle: 'italic' };
+      return h('div', {
+        className: 'ah-print-packet',
+        'aria-hidden': 'true'
+      },
+        // Cover header
+        h('div', { style: { borderBottom: '2px solid #000', paddingBottom: '8px', marginBottom: '14px' } },
+          h('h1', { style: { fontSize: '22px', margin: '0 0 4px 0', fontWeight: 800, color: '#000' } },
+            '🌍 ' + (realm.name || realm.topic || 'Untitled realm')
+            + (realm.isComplete ? ' ✓' : '')),
+          h('p', { style: { margin: 0, fontSize: '12px', color: '#444' } },
+            'Topic: ' + (realm.topic || '?')
+            + ' · ' + zones.length + ' zone' + (zones.length === 1 ? '' : 's') + ' placed'
+            + (milestones.length > 0 ? ' · ' + milestones.length + ' milestone' + (milestones.length === 1 ? '' : 's') : '')),
+          h('p', { style: smallMetaStyle },
+            (realm.createdAt ? 'Started ' + new Date(realm.createdAt).toLocaleDateString() : '')
+            + (realm.updatedAt ? ' · last updated ' + new Date(realm.updatedAt).toLocaleDateString() : '')
+            + ' · printed ' + dateStr)
+        ),
+        // Canvas
+        realm.canvas ? h('img', {
+          src: realm.canvas, alt: 'Canvas for ' + (realm.name || realm.topic),
+          style: { display: 'block', width: '100%', maxHeight: '380px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #999', margin: '0 0 14px 0' }
+        }) : null,
+        // Milestones
+        milestones.length > 0 ? h('div', {
+          style: { padding: '8px 12px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px', color: '#222', marginBottom: '14px' }
+        },
+          h('strong', null, 'Milestones reached: '),
+          milestones.map(function(m, i) {
+            return h('span', { key: 'pmi-' + i }, (i > 0 ? ' · ' : '') + m.emoji + ' ' + m.label
+              + (m.achievedAt ? ' (' + new Date(m.achievedAt).toLocaleDateString() + ')' : ''));
+          })
+        ) : null,
+        // Resonant placements
+        resonant.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+          h('h2', { style: sectionTitleStyle }, '🌟 Resonant Placements · ' + resonant.length),
+          resonant.map(function(z, i) {
+            return h('div', { key: 'pri-' + i, className: 'ah-print-section', style: { marginBottom: '8px', padding: '8px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+              h('p', { style: { margin: '0 0 2px 0', fontSize: '12px', fontWeight: 700, color: '#000' } },
+                z.cardName + ' (' + z.verbLabel + ')'
+                + (z.partnerCardName ? ' ↔ ' + z.partnerCardName : '')
+                + ' · score ' + z.score + '/20'),
+              h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', margin: '2px 0 0 0' }) },
+                '"' + (z.justification || '') + '"'),
+              z.followUp ? h('p', { style: { margin: '4px 0 0 0', fontSize: '10px', color: '#666' } },
+                '↳ Follow-up: ' + z.followUp) : null
+            );
+          })
+        ) : null,
+        // Full zone list
+        zones.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+          h('h2', { style: sectionTitleStyle }, 'All Zones · ' + zones.length),
+          h('ol', { style: { paddingLeft: '22px', margin: '4px 0' } },
+            zones.map(function(z) {
+              var addedStr = z.addedAt ? new Date(z.addedAt).toLocaleDateString() : '';
+              return h('li', { key: 'pra-' + z.id, style: { marginBottom: '8px', fontSize: '11px', color: '#222', lineHeight: 1.5 } },
+                h('strong', null, z.cardName),
+                ' · ', z.verbLabel,
+                z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
+                h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
+                  'score ' + z.score + '/20' + (addedStr ? ' · ' + addedStr : '')
+                  + (z.score >= 18 ? ' · 🌟' : '')
+                  + (z.transformed ? ' · canvas evolved' : '')),
+                z.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
+                  '"' + z.justification + '"') : null,
+                z.ackText ? h('div', { style: { fontSize: '10px', color: '#666', marginTop: '2px' } },
+                  '↳ ' + z.ackText) : null
+              );
+            })
+          )
+        ) : h('p', { style: smallMetaStyle }, 'No zones placed yet.'),
+        // Signature lines
+        h('div', { style: { marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Reviewed with: '),
+            h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' ')),
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Date: '),
+            h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '120px', padding: '0 4px' } }, ' '))
+        ),
+        h('div', { style: { marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
+          'AlloHaven Realm Builder · single-realm packet · printed ' + dateStr)
+      );
+    }
+
     function renderPrintPacket() {
       // Phase 2p.17 — when printScope is a card, render that instead
       if (state.printScope && state.printScope.type === 'card' && state.printScope.decorationId) {
@@ -19893,6 +20018,10 @@
       // student's full AlloHaven journey).
       if (state.printScope && state.printScope.type === 'tenure') {
         return renderPrintTenure();
+      }
+      // Single-realm print — Realm Builder artifact for IEP / parent packets.
+      if (state.printScope && state.printScope.type === 'realm' && state.printScope.realmId) {
+        return renderPrintRealm(state.printScope.realmId);
       }
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
       var allStories = state.stories || [];

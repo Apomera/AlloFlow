@@ -894,6 +894,11 @@
     }
 
     function renderCompletePhase() {
+      var resonantCount = (realm.zones || []).filter(function(z) { return z.score >= 18; }).length;
+      var canPrint = typeof ctx.onPrintRealm === 'function';
+      function printRealm() {
+        if (canPrint) ctx.onPrintRealm(realm.id);
+      }
       return h('div', { style: { padding: '12px' } },
         renderHeader(),
         h('div', { style: { padding: '20px 16px', background: palette.surface || '#1e293b', border: '1.5px solid ' + (palette.accent || '#60a5fa'), borderRadius: '10px', textAlign: 'center' } },
@@ -901,12 +906,20 @@
           h('h3', { style: { margin: '0 0 8px 0', color: palette.text || '#e2e8f0', fontSize: '17px', fontWeight: 700 } },
             'Realm wrapped'),
           h('p', { style: { margin: '0 0 14px 0', color: palette.textDim || '#cbd5e1', fontSize: '13px', lineHeight: '1.55' } },
-            'You placed ' + realm.zones.length + ' zone' + (realm.zones.length === 1 ? '' : 's') + ' across "' + realm.topic + '". '
-            + 'Reopen this realm any time from the Memory Overview to keep building.'),
-          h('button', {
-            onClick: closeArcade,
-            style: { padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: palette.accent || '#60a5fa', color: palette.onAccent || '#0f172a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
-          }, 'Back to your room')
+            'You placed ' + realm.zones.length + ' zone' + (realm.zones.length === 1 ? '' : 's') + ' across "' + realm.topic + '"'
+            + (resonantCount > 0 ? ' · 🌟 ' + resonantCount + ' resonant placement' + (resonantCount === 1 ? '' : 's') : '')
+            + '. Reopen this realm any time from the Memory Overview to keep building.'),
+          h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
+            canPrint ? h('button', {
+              onClick: printRealm,
+              'aria-label': 'Print this realm',
+              style: { padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: 'transparent', color: palette.text || '#e2e8f0', border: '1.5px solid ' + (palette.border || '#334155'), borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
+            }, '🖨 Print this realm') : null,
+            h('button', {
+              onClick: closeArcade,
+              style: { padding: '8px 18px', fontSize: '13px', fontWeight: 700, background: palette.accent || '#60a5fa', color: palette.onAccent || '#0f172a', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: 'inherit' }
+            }, 'Back to your room')
+          )
         )
       );
     }
