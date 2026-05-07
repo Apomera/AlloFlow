@@ -126,11 +126,20 @@
   }
 
   // ────────────────────────────────────────────────────────────────────
-  // LAUNCHER CARD — solo only (Phase B). Class collaboration is Phase D.
+  // LAUNCHER CARD
+  // Solo (default) plus class-mode branches when the user is in a live
+  // AlloFlow session:
+  //   - Host (teacher): "Start class realm" CTA → picks topic → all
+  //     students in session see the same evolving canvas
+  //   - Student (no class realm active): "Waiting for your teacher" hint
+  //   - Student (class realm active): "Join class realm: [topic]" CTA
+  // Solo continues to work for everyone, regardless of session state.
   // ────────────────────────────────────────────────────────────────────
   function RealmLauncherCard(props) {
     var React = window.React;
     var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
     var ctx = props.ctx;
     var palette = ctx.palette || {};
     var session = ctx.session;
@@ -142,10 +151,23 @@
     var tokensCost = Math.ceil(minutesAsked / (ctx.minutesPerToken || 5));
     var canAfford = ctx.tokens >= tokensCost && deckSize >= MIN_DECK_FOR_LAUNCH;
 
-    // In-progress realm? The arcade context exposes ctx.realms when the host
-    // (AlloHaven) wires it; gracefully handle the missing-host case.
+    // In-progress local realm? Solo continuation path.
     var realms = (ctx.realms || []).filter(function (r) { return r && !r.isComplete; });
     var resumable = realms.length > 0 ? realms[realms.length - 1] : null;
+
+    // ── Class-mode subscription ─────────────────────────────────────
+    var sessionStateTuple = useState(null);
+    var sessionState = sessionStateTuple[0];
+    var setSessionState = sessionStateTuple[1];
+    useEffect(function () {
+      if (!ctx.sessionCode || typeof ctx.sessionSubscribe !== 'function') return;
+      var unsubscribe = ctx.sessionSubscribe(function (data) { setSessionState(data); });
+      return typeof unsubscribe === 'function' ? unsubscribe : function () {};
+    }, [ctx.sessionCode]);
+
+    var classRealm = sessionState && sessionState.realmBuilder;
+    var hasOpenClassRealm = !!(classRealm && classRealm.status === 'open');
+    var isInSession = !!ctx.sessionCode;
 
     function handleLaunch() {
       if (disabled) return;
@@ -154,14 +176,53 @@
         return;
       }
       window.__alloHavenRealmResume = null;
+      window.__alloHavenRealmClassMode = null;
       ctx.onLaunch(minutesAsked);
     }
 
     function handleResume() {
       if (disabled || !resumable) return;
-      // Sentinel that RealmBuilderMain reads on mount to know it should
-      // hydrate from an existing realm rather than starting fresh.
       window.__alloHavenRealmResume = { realmId: resumable.id };
+      window.__alloHavenRealmClassMode = null;
+      ctx.onLaunch(minutesAsked);
+    }
+
+    function handleStartClassRealm() {
+      if (disabled) return;
+      if (deckSize < MIN_DECK_FOR_LAUNCH) {
+        ctx.addToast('You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to play.');
+        return;
+      }
+      if (typeof ctx.sessionUpdate !== 'function') {
+        ctx.addToast('Class mode unavailable — Firestore plumbing missing.');
+        return;
+      }
+      window.__alloHavenRealmResume = null;
+      window.__alloHavenRealmClassMode = {
+        role: 'host',
+        hostNickname: ctx.studentNickname || 'Teacher',
+        startedAt: new Date().toISOString()
+      };
+      ctx.onLaunch(minutesAsked);
+    }
+
+    function handleJoinClassRealm() {
+      if (disabled) return;
+      if (!classRealm) {
+        ctx.addToast('No class realm is active right now.');
+        return;
+      }
+      if (deckSize < MIN_DECK_FOR_LAUNCH) {
+        ctx.addToast('You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to play.');
+        return;
+      }
+      window.__alloHavenRealmResume = null;
+      window.__alloHavenRealmClassMode = {
+        role: 'student',
+        hostNickname: classRealm.hostNickname || 'Teacher',
+        joinFromSession: true,
+        startedAt: new Date().toISOString()
+      };
       ctx.onLaunch(minutesAsked);
     }
 
@@ -182,7 +243,120 @@
             'Pick a topic. Place cards from your room into a world that grows. Each card needs a justification — the realm evolves visually when your reasoning lands.')
         )
       ),
-      // Resume row, only when there's an in-progress realm
+      // ── Class-mode strip ─────────────────────────────────────────
+      // Visible when in a live session. Host + student roles each get
+      // tailored UX:
+      //   - Host, no class realm active → Start CTA
+      //   - Host, class realm active → status banner ("Your class realm
+      //     is active — students can join")
+      //   - Student, no class realm → Waiting hint
+      //   - Student, class realm active → prominent Join CTA
+      isInSession ? (function () {
+        if (ctx.isHost) {
+          if (hasOpenClassRealm) {
+            return h('div', {
+              role: 'status',
+              style: {
+                padding: '10px 12px',
+                background: (palette.bg || '#0f172a') + 'aa',
+                border: '1.5px solid ' + (palette.accent || '#60a5fa'),
+                borderRadius: '8px',
+                marginBottom: '10px',
+                fontSize: '12px',
+                color: palette.text || '#e2e8f0',
+                lineHeight: '1.45'
+              }
+            },
+              h('div', { style: { fontWeight: 700, marginBottom: '2px' } },
+                '🌐 Class realm active · ' + (classRealm.topic || 'untitled')),
+              h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginBottom: '6px' } },
+                'Students in session ' + ctx.sessionCode + ' can now join from their AlloHaven Arcades.'),
+              h('button', {
+                onClick: handleStartClassRealm,
+                disabled: disabled || !canAfford,
+                'aria-label': 'Re-enter your active class realm',
+                style: {
+                  background: 'transparent', color: palette.accent || '#60a5fa',
+                  border: '1px solid ' + (palette.accent || '#60a5fa'),
+                  borderRadius: '8px', padding: '6px 12px', fontSize: '12px', fontWeight: 700,
+                  cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer', fontFamily: 'inherit',
+                  opacity: (disabled || !canAfford) ? 0.6 : 1
+                }
+              }, '↻ Re-enter as host (' + tokensCost + ' 🪙)')
+            );
+          }
+          // Host, no active class realm — Start CTA
+          return h('button', {
+            onClick: handleStartClassRealm,
+            disabled: disabled || !canAfford,
+            'aria-label': 'Start a class realm for session ' + ctx.sessionCode,
+            style: {
+              display: 'flex', gap: '12px', alignItems: 'center',
+              width: '100%',
+              padding: '10px 12px',
+              background: 'transparent',
+              border: '1.5px dashed ' + (palette.accent || '#60a5fa'),
+              borderRadius: '8px',
+              cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+              color: palette.text || '#e2e8f0',
+              textAlign: 'left',
+              marginBottom: '10px',
+              opacity: (disabled || !canAfford) ? 0.6 : 1
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, '🌐'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Start class realm'),
+              h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', marginTop: '2px' } },
+                'Pick a topic; students in session ' + ctx.sessionCode + ' join from their Arcades. Same ' + tokensCost + ' 🪙 cost.')
+            )
+          );
+        }
+        // Student
+        if (hasOpenClassRealm) {
+          return h('button', {
+            onClick: handleJoinClassRealm,
+            disabled: disabled || !canAfford,
+            'aria-label': 'Join class realm: ' + (classRealm.topic || 'untitled'),
+            style: {
+              display: 'flex', gap: '12px', alignItems: 'center',
+              width: '100%',
+              padding: '10px 12px',
+              background: canAfford && !disabled ? (palette.accent || '#60a5fa') : 'transparent',
+              color: canAfford && !disabled ? (palette.onAccent || '#0f172a') : (palette.textDim || '#cbd5e1'),
+              border: '1.5px solid ' + (palette.accent || '#60a5fa'),
+              borderRadius: '8px',
+              cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
+              fontFamily: 'inherit',
+              textAlign: 'left',
+              marginBottom: '10px',
+              opacity: (disabled || !canAfford) ? 0.6 : 1
+            }
+          },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, '🌐'),
+            h('span', { style: { flex: 1 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700 } },
+                'Join class realm: ' + (classRealm.topic || 'untitled')),
+              h('div', { style: { fontSize: '11px', opacity: 0.85, marginTop: '2px' } },
+                (classRealm.zones || []).length + ' zone' + ((classRealm.zones || []).length === 1 ? '' : 's') + ' so far · ' + tokensCost + ' 🪙 to join')
+            )
+          );
+        }
+        // Student, no active class realm
+        return h('div', {
+          role: 'status',
+          style: {
+            padding: '8px 12px', marginBottom: '10px',
+            background: (palette.bg || '#0f172a') + 'aa',
+            border: '1px dashed ' + (palette.border || '#334155'),
+            borderRadius: '8px',
+            fontSize: '11px', color: palette.textDim || '#cbd5e1', fontStyle: 'italic',
+            lineHeight: '1.45'
+          }
+        }, '🌐 Waiting for your teacher to start a class realm in session ' + ctx.sessionCode + '. You can still build solo below.');
+      })() : null,
+      // Resume row, only when there's an in-progress local realm
       resumable ? h('button', {
         onClick: handleResume,
         disabled: disabled || !canAfford,
@@ -213,13 +387,13 @@
       h('button', {
         onClick: handleLaunch,
         disabled: disabled || !canAfford,
-        'aria-label': 'Start a new realm',
+        'aria-label': 'Start a new realm (solo)',
         style: {
           display: 'flex', gap: '12px', alignItems: 'center',
           width: '100%',
           padding: '10px 12px',
-          background: canAfford && !disabled ? (palette.accent || '#60a5fa') : 'transparent',
-          color: canAfford && !disabled ? (palette.onAccent || '#0f172a') : (palette.textDim || '#cbd5e1'),
+          background: canAfford && !disabled && !isInSession ? (palette.accent || '#60a5fa') : 'transparent',
+          color: canAfford && !disabled && !isInSession ? (palette.onAccent || '#0f172a') : (palette.text || '#e2e8f0'),
           border: '1.5px solid ' + (palette.accent || '#60a5fa'),
           borderRadius: '8px',
           cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
@@ -230,7 +404,8 @@
       },
         h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, '🌱'),
         h('span', { style: { flex: 1 } },
-          h('div', { style: { fontSize: '13px', fontWeight: 700 } }, resumable ? 'Start a new realm' : 'Start building'),
+          h('div', { style: { fontSize: '13px', fontWeight: 700 } },
+            isInSession ? 'Solo realm (just for you)' : (resumable ? 'Start a new realm' : 'Start building')),
           h('div', { style: { fontSize: '11px', opacity: 0.85, marginTop: '2px' } },
             tokensCost + ' 🪙 · ' + minutesAsked + ' min · ' + deckSize + ' cards in deck')
         )
@@ -269,6 +444,36 @@
     var hostRealms = ctx.realms || [];
     var hydrate = resumeId ? hostRealms.filter(function (r) { return r.id === resumeId; })[0] : null;
 
+    // ── Class-mode sentinel ────────────────────────────────────────
+    // Captured ONCE on mount; cleared after read so re-mounts don't
+    // re-trigger. Mirrors arcade_mode_boss_encounter's pattern. Null in
+    // solo, { role: 'host'|'student', hostNickname, joinFromSession,
+    // startedAt } in class mode.
+    var classModeRef = useRef(null);
+    if (classModeRef.current === null) {
+      classModeRef.current = window.__alloHavenRealmClassMode || { role: 'solo' };
+      window.__alloHavenRealmClassMode = null;
+    }
+    var classRole = (classModeRef.current && classModeRef.current.role) || 'solo';
+    var isClassHost = classRole === 'host';
+    var isClassStudent = classRole === 'student';
+    var isClass = isClassHost || isClassStudent;
+    var nickname = ctx.studentNickname || (isClassHost ? 'Teacher' : 'Student');
+
+    // ── Class-mode session subscription ─────────────────────────────
+    // Student: this drives the rendered realm (derived from session doc).
+    // Host: useful for reading back the current submissions queue.
+    // Solo: skipped — sessionCode will be null.
+    var sessionStateTuple = useState(null);
+    var sessionState = sessionStateTuple[0];
+    var setSessionState = sessionStateTuple[1];
+    useEffect(function () {
+      if (!isClass) return;
+      if (!ctx.sessionCode || typeof ctx.sessionSubscribe !== 'function') return;
+      var unsubscribe = ctx.sessionSubscribe(function (data) { setSessionState(data); });
+      return typeof unsubscribe === 'function' ? unsubscribe : function () {};
+    }, [isClass, ctx.sessionCode]);
+
     // ── Build deck once per session (decorations + glossary) ──
     var deck = useMemo(function () {
       var decoCards = (ctx.decorations || []).map(helpers.decorationToCard || function (d) { return null; })
@@ -280,25 +485,67 @@
     }, []); // eslint-disable-line
 
     // ── Realm state ──
+    // Solo + host: canonical state lives here. Host also broadcasts to
+    // session.realmBuilder on every change.
+    // Student: this local state is unused for the realm itself (the realm
+    // is derived from sessionState.realmBuilder below) but we still keep
+    // the slot so hooks order stays stable across role switches.
     var realmTuple = useState(function () {
       if (hydrate) return JSON.parse(JSON.stringify(hydrate)); // deep clone
       return emptyRealm();
     });
-    var realm = realmTuple[0];
-    var setRealm = realmTuple[1];
+    var localRealm = realmTuple[0];
+    var setLocalRealm = realmTuple[1];
+
+    // Class-student realm: derived from session.realmBuilder, not local.
+    var classRealm = sessionState && sessionState.realmBuilder
+      ? sessionState.realmBuilder
+      : null;
+
+    // The realm the rest of this component reads. Student → session-derived;
+    // solo + host → local state.
+    var realm = isClassStudent
+      ? (classRealm || emptyRealm())
+      : localRealm;
+
+    // Universal setRealm. Student writes are constrained — most state
+    // updates from the play loop won't apply (the host owns the realm),
+    // so student-side calls become no-ops with one exception (we still
+    // track local picked-card / lastFeedback / submitting in component
+    // state, those don't go through setRealm).
+    function setRealm(updater) {
+      if (isClassStudent) return; // host is the source of truth
+      setLocalRealm(updater);
+    }
 
     // Phase machine
-    // 'topic' → student names the world
-    // 'gen-canvas' → loading starter image
+    // 'topic' → name + topic input (host-only; student skips this)
+    // 'gen-canvas' → loading starter image (host runs the call; student waits on session sync)
     // 'play' → main loop
     // 'complete' → terminal screen with print + close
     var phaseTuple = useState(function () {
+      if (isClassStudent) return 'gen-canvas'; // overridden each render below
       if (hydrate && hydrate.topic && hydrate.canvas) return 'play';
       if (hydrate && hydrate.topic) return 'gen-canvas';
       return 'topic';
     });
-    var phase = phaseTuple[0];
-    var setPhase = phaseTuple[1];
+    var localPhase = phaseTuple[0];
+    var setLocalPhase = phaseTuple[1];
+
+    // Student phase derives from the session realm: canvas present → play,
+    // status closed → complete, else gen-canvas. Host/solo use localPhase.
+    var phase;
+    if (isClassStudent) {
+      if (classRealm && classRealm.status === 'closed') phase = 'complete';
+      else if (classRealm && classRealm.canvas) phase = 'play';
+      else phase = 'gen-canvas';
+    } else {
+      phase = localPhase;
+    }
+    function setPhase(p) {
+      if (isClassStudent) return;
+      setLocalPhase(p);
+    }
 
     var topicDraftTuple = useState(realm.topic || '');
     var topicDraft = topicDraftTuple[0];
@@ -371,12 +618,178 @@
       setHand(d.slice(0, HAND_SIZE));
     }
 
-    // ── Persistence: every realm change emits to the host ──
+    // ── Persistence: every realm change emits to the AlloHaven host ──
+    // Solo + class-host: writes locally so the realm shows in My Realms.
+    // Class-student: skipped (host owns the canonical state).
     useEffect(function () {
+      if (isClassStudent) return;
       if (typeof ctx.onRealmUpdate === 'function') {
-        ctx.onRealmUpdate(realm);
+        ctx.onRealmUpdate(localRealm);
       }
-    }, [realm]); // eslint-disable-line
+    }, [localRealm]); // eslint-disable-line
+
+    // ── Class-mode: HOST broadcasts the realm to the session doc ──
+    // Student clients subscribe and re-render when this lands. We trim
+    // the broadcast payload — the canvas image is the heaviest field but
+    // also the one students need to see, so we keep it; we drop the
+    // verbose `raw` references inside zones if they sneak in.
+    useEffect(function () {
+      if (!isClassHost) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      // Only broadcast once we have a topic — there's nothing useful to
+      // share before that point (and students would see noise).
+      if (!localRealm.topic) return;
+      var payload = {
+        realmBuilder: {
+          status: localRealm.isComplete ? 'closed' : 'open',
+          hostNickname: nickname,
+          startedAt: localRealm.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          realmId: localRealm.id,
+          topic: localRealm.topic || '',
+          name: localRealm.name || '',
+          canvas: localRealm.canvas || null,
+          zones: (localRealm.zones || []).map(function (z) {
+            // Strip any nested raw refs that might have crept in.
+            var copy = Object.assign({}, z);
+            delete copy.raw;
+            return copy;
+          }),
+          milestones: localRealm.milestones || [],
+          transformCount: localRealm.transformCount || 0,
+          isComplete: !!localRealm.isComplete
+        }
+      };
+      Promise.resolve(ctx.sessionUpdate(payload)).catch(function () {
+        // Silent — broadcast failures don't block local play.
+      });
+    }, [localRealm, isClassHost]); // eslint-disable-line
+
+    // ── Class-mode STUDENT: claim the class-reward when host wraps up ──
+    // Host writes session.realmBuilder.classRewardTokens + classRewardKey
+    // when ending a class realm. Each student claims once per key via
+    // metadata-based dedupe — checking ctx.getEarnings() for a prior
+    // entry with the same realm-* key.
+    var claimedRewardRef = useRef({});
+    useEffect(function () {
+      if (!isClassStudent) return;
+      if (!sessionState || !sessionState.realmBuilder) return;
+      var rb = sessionState.realmBuilder;
+      var key = rb.classRewardKey;
+      var amount = rb.classRewardTokens;
+      if (!key || !amount) return;
+      if (claimedRewardRef.current[key]) return;
+      // Server-of-record dedupe: scan earnings for matching key.
+      if (typeof ctx.getEarnings === 'function') {
+        var earnings = ctx.getEarnings() || [];
+        var alreadyClaimed = earnings.some(function (e) {
+          return e && e.metadata && e.metadata.classRewardKey === key;
+        });
+        if (alreadyClaimed) {
+          claimedRewardRef.current[key] = true;
+          return;
+        }
+      }
+      claimedRewardRef.current[key] = true;
+      if (typeof ctx.onAwardTokens === 'function') {
+        ctx.onAwardTokens(amount, 'realm-class-reward', { classRewardKey: key, realmId: rb.realmId });
+      }
+    }, [sessionState, isClassStudent]); // eslint-disable-line
+
+    // ── Class-mode HOST: drain student submissions ──
+    // Each student writes their graded play to session.realmBuilder.submissions[uuid].
+    // Host iterates the queue, applies each one as a zone (just like a
+    // local play), then clears the consumed submission via Firestore
+    // delete-sentinel so the queue stays bounded.
+    var processedSubsRef = useRef({});
+    useEffect(function () {
+      if (!isClassHost) return;
+      if (!sessionState || !sessionState.realmBuilder) return;
+      var subs = sessionState.realmBuilder.submissions || {};
+      var keys = Object.keys(subs);
+      if (keys.length === 0) return;
+      // Order by submittedAt so simultaneous submits stay deterministic
+      keys.sort(function (a, b) {
+        var sa = subs[a] && subs[a].submittedAt || '';
+        var sb = subs[b] && subs[b].submittedAt || '';
+        return sa.localeCompare(sb);
+      });
+      var processed = processedSubsRef.current;
+      keys.forEach(function (k) {
+        if (processed[k]) return;
+        var sub = subs[k];
+        if (!sub || !sub.cardName || !sub.verb) return;
+        processed[k] = true;
+        applyZoneFromSubmission(sub);
+        // Clear the submission so the queue stays small. Use a sentinel
+        // that Firestore treats as a delete (set to null in this stack;
+        // the host's set-merge wrapper accepts nulls as deletions).
+        var clearPayload = { realmBuilder: { submissions: {} } };
+        clearPayload.realmBuilder.submissions[k] = null;
+        Promise.resolve(ctx.sessionUpdate(clearPayload)).catch(function () {});
+      });
+    }, [sessionState, isClassHost]); // eslint-disable-line
+
+    // Apply a class-student submission as a zone on the host. Mirrors
+    // applyZone() but reads card+verb+text from the submission record
+    // instead of component picked-state. Visual evolution still runs.
+    function applyZoneFromSubmission(sub) {
+      var score = sub.score || 1;
+      var willTransform = score >= 11;
+      var isResonant = score >= 18;
+      var nowIso = new Date().toISOString();
+      var verbDef = (verbs.filter(function (v) { return v.id === sub.verb; })[0]) || { id: sub.verb, label: sub.verbLabel, editPrompt: '' };
+      var newZone = {
+        id: 'zone-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+        cardId: sub.cardId,
+        cardName: sub.cardName,
+        cardSource: sub.cardSource,
+        cardImageBase64: sub.cardImageBase64 || null,
+        verb: sub.verb,
+        verbLabel: sub.verbLabel,
+        partnerCardId: sub.partnerCardId || null,
+        partnerCardName: sub.partnerCardName || null,
+        justification: sub.justification || '',
+        score: score,
+        ackText: sub.ackText || '',
+        followUp: sub.followUp || '',
+        addedAt: nowIso,
+        transformed: false,
+        resonant: isResonant,
+        contributorNickname: sub.nickname || ''
+      };
+      // Use functional update so we don't race against other submissions
+      // landing in the same render cycle.
+      setLocalRealm(function (prev) {
+        var nextZoneCount = (prev.zones || []).length + 1;
+        var alreadyLevels = (prev.milestones || []).map(function (m) { return m.level; });
+        var newMilestones = MILESTONES.filter(function (m) {
+          return nextZoneCount >= m.zones && alreadyLevels.indexOf(m.level) === -1;
+        }).map(function (m) {
+          return { level: m.level, label: m.label, emoji: m.emoji, zones: m.zones, achievedAt: nowIso, tokensAwarded: m.tokens };
+        });
+        if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
+          newMilestones.forEach(function (m) {
+            ctx.onAwardTokens(m.tokens, 'realm-milestone', { realmId: prev.id, level: m.level });
+            ctx.addToast(m.emoji + ' ' + m.label + ' unlocked (class) · +' + m.tokens + ' 🪙');
+          });
+        }
+        var isComplete = prev.isComplete || nextZoneCount >= MILESTONES[MILESTONES.length - 1].zones;
+        return Object.assign({}, prev, {
+          zones: (prev.zones || []).concat([newZone]),
+          milestones: (prev.milestones || []).concat(newMilestones),
+          isComplete: isComplete,
+          updatedAt: nowIso
+        });
+      });
+      // Toast the host so they see a contribution
+      ctx.addToast('🌐 ' + (sub.nickname || 'A student') + ' placed ' + sub.cardName + ' (' + sub.verbLabel + ', ' + score + '/20)');
+      if (willTransform) {
+        // Visual evolution — host's machine handles all image edits in
+        // class mode. Pass the verb def so the right editPrompt is used.
+        applyVisualEvolution(newZone, verbDef, isResonant);
+      }
+    }
 
     // ──────────────────────────────────────────────────────────────────
     // PHASE: TOPIC
@@ -404,6 +817,10 @@
     useEffect(function () {
       if (phase !== 'gen-canvas') return;
       if (realm.canvas) { setPhase('play'); return; } // already have one
+      // Class-student: don't generate; the host owns canvas creation.
+      // The student's phase just signals "waiting for canvas" until the
+      // session sync delivers one.
+      if (isClassStudent) return;
       if (typeof ctx.callImagen !== 'function') {
         setCanvasError('Image generator unavailable. You can still build — the canvas will stay blank.');
         setPhase('play');
@@ -460,12 +877,74 @@
         justification: text,
         topic: realm.topic,
         frameAs: 'building',
-        context: { existingZoneCount: realm.zones.length }
+        context: { existingZoneCount: (realm.zones || []).length }
       }).then(function (parsed) {
-        applyZone(parsed);
+        if (isClassStudent) {
+          submitToClassQueue(parsed);
+        } else {
+          applyZone(parsed);
+        }
       }).catch(function (err) {
         setSubmitting(false);
         ctx.addToast('Grading failed: ' + ((err && err.message) || 'unknown'));
+      });
+    }
+
+    // Class-student submission: writes the GRADED play to a submissions
+    // map keyed by uuid. The host's effect (below) drains this queue and
+    // applies each entry as a zone, running the canvas evolution on its
+    // own machine so we don't fan-out image-edit calls.
+    function submitToClassQueue(parsed) {
+      if (typeof ctx.sessionUpdate !== 'function') {
+        ctx.addToast('Class sync unavailable. Try solo mode.');
+        setSubmitting(false);
+        return;
+      }
+      var subId = 'rs-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+      var payload = {
+        realmBuilder: {
+          submissions: {}
+        }
+      };
+      payload.realmBuilder.submissions[subId] = {
+        subId: subId,
+        nickname: nickname,
+        cardId: pickedCard.id,
+        cardName: pickedCard.name,
+        cardSource: pickedCard.source,
+        cardImageBase64: pickedCard.imageBase64 || null,
+        verb: pickedVerb.id,
+        verbLabel: pickedVerb.label,
+        partnerCardId: partnerCard ? partnerCard.id : null,
+        partnerCardName: partnerCard ? partnerCard.name : null,
+        justification: (justification || '').trim(),
+        score: parsed.score || 1,
+        ackText: parsed.ackText || '',
+        followUp: parsed.followUp || '',
+        submittedAt: new Date().toISOString()
+      };
+      Promise.resolve(ctx.sessionUpdate(payload)).then(function () {
+        // Local feedback so the student sees their score immediately,
+        // even before the host applies the zone.
+        var sc = parsed.score || 1;
+        setLastFeedback({
+          score: sc,
+          ackText: parsed.ackText || '',
+          followUp: parsed.followUp || '',
+          cardName: pickedCard.name,
+          verbLabel: pickedVerb.label,
+          resonant: sc >= 18
+        });
+        // Reset turn UI
+        setPickedCard(null);
+        setPickedVerb(null);
+        setPartnerCard(null);
+        setJustification('');
+        setSubmitting(false);
+        refreshHand();
+      }).catch(function (err) {
+        setSubmitting(false);
+        ctx.addToast('Submit failed: ' + ((err && err.message) || 'unknown'));
       });
     }
 
@@ -491,7 +970,10 @@
         followUp: parsed.followUp || '',
         addedAt: nowIso,
         transformed: false,            // updated when image edit resolves
-        resonant: isResonant
+        resonant: isResonant,
+        // Class mode: tag the host's own zone with their nickname so the
+        // shared feed shows attribution. Solo: omit (no other contributors).
+        contributorNickname: isClass ? nickname : null
       };
 
       // Compute new milestone unlocks
@@ -604,6 +1086,21 @@
       var nowIso = new Date().toISOString();
       setRealm(function (prev) { return Object.assign({}, prev, { isComplete: true, updatedAt: nowIso }); });
       setPhase('complete');
+      // Class-host wrap-up: write a class-reward token amount to the
+      // session doc. Students' clients read this on next sync and claim
+      // via ctx.onAwardTokens (with metadata-based dedupe so refreshing
+      // doesn't double-pay). Reward scales with milestones reached.
+      if (isClassHost && typeof ctx.sessionUpdate === 'function') {
+        var milestonesHit = (localRealm.milestones || []).length;
+        var classReward = Math.max(2, milestonesHit * 2); // floor 2, +2 per milestone
+        Promise.resolve(ctx.sessionUpdate({
+          realmBuilder: {
+            classRewardTokens: classReward,
+            classRewardKey: 'realm-' + (localRealm.id || 'unknown') + '-' + nowIso,
+            classRewardWrittenAt: nowIso
+          }
+        })).catch(function () {});
+      }
     }
 
     function closeArcade() {
@@ -614,21 +1111,35 @@
     // RENDER
     // ──────────────────────────────────────────────────────────────────
     function renderHeader() {
+      var classBadge = null;
+      if (isClassHost) {
+        classBadge = h('span', {
+          style: { fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: palette.accent + '22' || 'rgba(96,165,250,0.18)', color: palette.accent || '#60a5fa', border: '1px solid ' + (palette.accent || '#60a5fa'), letterSpacing: '0.04em', textTransform: 'uppercase' }
+        }, '🌐 Hosting');
+      } else if (isClassStudent) {
+        classBadge = h('span', {
+          style: { fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '999px', background: palette.accent + '22' || 'rgba(96,165,250,0.18)', color: palette.accent || '#60a5fa', border: '1px solid ' + (palette.accent || '#60a5fa'), letterSpacing: '0.04em', textTransform: 'uppercase' }
+        }, '🌐 Joined · ' + ((realm && realm.hostNickname) || 'Teacher'));
+      }
       return h('div', {
         style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }
       },
         h('span', { 'aria-hidden': 'true', style: { fontSize: '28px' } }, '🌱'),
         h('div', { style: { flex: 1, minWidth: 0 } },
-          h('h2', { style: { margin: 0, fontSize: '17px', fontWeight: 700, color: palette.text || '#e2e8f0' } },
-            realm.name || realm.topic || 'New realm'),
+          h('h2', { style: { margin: 0, fontSize: '17px', fontWeight: 700, color: palette.text || '#e2e8f0', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+            h('span', null, realm.name || realm.topic || 'New realm'),
+            classBadge),
           realm.topic ? h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1' } },
-            realm.zones.length + ' zone' + (realm.zones.length === 1 ? '' : 's') + ' placed' +
-            (realm.milestones.length > 0 ? ' · last milestone: ' + realm.milestones[realm.milestones.length - 1].label : '')
+            (realm.zones || []).length + ' zone' + ((realm.zones || []).length === 1 ? '' : 's') + ' placed' +
+            ((realm.milestones || []).length > 0 ? ' · last milestone: ' + realm.milestones[realm.milestones.length - 1].label : '')
           ) : null
         ),
-        phase === 'play' ? h('button', {
+        // Wrap-up: solo + host only. Students wait for the host to wrap;
+        // when status flips to 'closed' their phase becomes 'complete'
+        // automatically and they see the recap screen.
+        (phase === 'play' && !isClassStudent) ? h('button', {
           onClick: endRealm,
-          'aria-label': 'Wrap up this realm',
+          'aria-label': isClassHost ? 'Wrap up this class realm (saves to your room and rewards students)' : 'Wrap up this realm',
           style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
         }, 'Wrap up') : null,
         h('button', {
@@ -676,15 +1187,18 @@
     }
 
     function renderGenCanvasPhase() {
+      var msg = isClassStudent
+        ? 'Waiting for ' + ((realm && realm.hostNickname) || 'your teacher') + ' to set up the realm…'
+        : 'Generating an establishing scene for "' + (realm.topic || '?') + '"…';
       return h('div', { style: { padding: '12px' } },
         renderHeader(),
         h('div', {
           'aria-busy': 'true',
+          'aria-live': 'polite',
           style: { padding: '40px 16px', background: palette.surface || '#1e293b', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '10px', textAlign: 'center' }
         },
           h('div', { style: { fontSize: '40px', marginBottom: '10px' } }, '🌍'),
-          h('p', { style: { color: palette.textDim || '#cbd5e1', fontSize: '13px', fontStyle: 'italic', margin: 0, lineHeight: '1.55' } },
-            'Generating an establishing scene for "' + realm.topic + '"…')
+          h('p', { style: { color: palette.textDim || '#cbd5e1', fontSize: '13px', fontStyle: 'italic', margin: 0, lineHeight: '1.55' } }, msg)
         )
       );
     }
@@ -870,25 +1384,31 @@
             }
           }, submitting ? 'Grading…' : '🌱 Place into the realm')
         ),
-        // Zones-so-far recap (collapsible would be nicer; for now just show recent 3)
-        realm.zones.length > 0 ? h('div', { style: { marginTop: '14px', padding: '10px 12px', background: palette.surface || '#1e293b', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px' } },
+        // Zones-so-far recap. In class mode this becomes the shared
+        // "recent placements" feed visible to all participants — each
+        // row carries the contributor's nickname so students see who
+        // built what.
+        (realm.zones || []).length > 0 ? h('div', { style: { marginTop: '14px', padding: '10px 12px', background: palette.surface || '#1e293b', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px' } },
           h('div', { style: { fontSize: '11px', fontWeight: 700, color: palette.textMute || '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
-            'Zones in your realm · ' + realm.zones.length),
+            (isClass ? '🌐 Recent placements · ' : 'Zones in your realm · ') + realm.zones.length),
           h('ul', {
             role: 'list',
             style: { display: 'flex', flexDirection: 'column', gap: '4px', margin: 0, padding: 0, listStyle: 'none', maxHeight: '160px', overflowY: 'auto' }
           },
-            realm.zones.slice().reverse().slice(0, 6).map(function (z) {
+            realm.zones.slice().reverse().slice(0, 8).map(function (z) {
               return h('li', { key: 'zr-' + z.id, role: 'listitem', style: { listStyle: 'none', fontSize: '11px', color: palette.textDim || '#cbd5e1', display: 'flex', gap: '6px', alignItems: 'center' } },
                 z.resonant ? h('span', null, '🌟') : h('span', null, '·'),
                 h('strong', { style: { color: palette.text || '#e2e8f0' } }, z.cardName),
                 h('span', null, ' (' + z.verbLabel + ')'),
                 z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
+                z.contributorNickname ? h('span', {
+                  style: { fontSize: '10px', color: palette.textMute || '#94a3b8', fontStyle: 'italic' }
+                }, ' · by ' + z.contributorNickname) : null,
                 h('span', { style: { marginLeft: 'auto', fontVariantNumeric: 'tabular-nums', color: palette.textMute || '#94a3b8' } }, z.score + '/20')
               );
             })
           ),
-          realm.zones.length > 6 ? h('div', { style: { fontSize: '10px', color: palette.textMute || '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'showing newest 6 — full list in print packet') : null
+          realm.zones.length > 8 ? h('div', { style: { fontSize: '10px', color: palette.textMute || '#94a3b8', marginTop: '4px', fontStyle: 'italic' } }, 'showing newest 8 — full list in print packet') : null
         ) : null
       );
     }
