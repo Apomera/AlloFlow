@@ -579,6 +579,7 @@ window.SelHub = window.SelHub || {
         var callGemini = ctx.callGemini;
         var callTTS = ctx.callTTS;
         var gradeLevel = ctx.gradeLevel;
+        var onSafetyFlag = ctx.onSafetyFlag || null;
 
         // ── Grade band detection ──
         var band = (function() {
@@ -621,6 +622,33 @@ window.SelHub = window.SelHub || {
         // AI Coach state
         var aiPrompt       = d.aiPrompt || '';
         var aiResponse     = d.aiResponse || null;
+        var _communityTier = d._communityTier || 0;
+
+        // Triangulated safety assessment of student-typed input. Cultural
+        // identity / heritage reflection can surface trauma (immigration,
+        // racism, family separation), so we assess the same way as upstander.
+        var _runSafetyAssess = function(userInput) {
+          if (!window.SelHub || !window.SelHub.assessSafety || !userInput) return;
+          window.SelHub.assessSafety(userInput, band, 'community', callGemini)
+            .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+            .then(function(_safety) {
+              _safety = _safety || { tier: 0 };
+              if (_safety.tier >= 2 && onSafetyFlag) {
+                onSafetyFlag({
+                  category: 'ai_community_' + (_safety.category || 'concerning'),
+                  match: _safety.rationale || 'SEL community safety concern',
+                  severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                  source: 'sel_community',
+                  context: userInput.substring(0, 100),
+                  timestamp: new Date().toISOString(),
+                  aiGenerated: true,
+                  confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                  tier: _safety.tier
+                });
+              }
+              upd({ _communityTier: _safety.tier || 0 });
+            });
+        };
         var aiLoading      = d.aiLoading || false;
 
         // Culture Quiz state
@@ -1814,6 +1842,7 @@ window.SelHub = window.SelHub || {
                 'Explore questions about intersectionality, systemic issues, cultural humility, advocacy strategies, or any cultural topic.'
               ),
               h('div', { role: 'region', 'aria-label': 'Community AI response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+                (_communityTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
                 aiResponse && h('div', { style: { padding: 12, borderRadius: 10, background: '#0f172a', border: '1px solid #334155', marginBottom: 10, fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, whiteSpace: 'pre-wrap' } },
                   aiResponse,
                   callTTS ? h('button', { 'aria-label': 'Read aloud', onClick: function() { speak(aiResponse); }, style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer', display: 'block' } }, '\uD83D\uDD0A Read aloud') : null
@@ -1834,6 +1863,7 @@ window.SelHub = window.SelHub || {
                         'Respond in 2-3 short paragraphs. Be age-appropriate for ' + band + ' school. ' +
                         'Use encouraging language. If the question involves cultural sensitivity, model cultural humility. ' +
                         'End with a reflective question to keep them thinking.';
+                      _runSafetyAssess(aiPrompt);
                       callGemini(sysPrompt).then(function(result) {
                         var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                         upd({ aiResponse: text, aiLoading: false, aiPrompt: '' });
@@ -1857,6 +1887,7 @@ window.SelHub = window.SelHub || {
                       'Respond in 2-3 short paragraphs. Be age-appropriate for ' + band + ' school. ' +
                       'Use encouraging language. If the question involves cultural sensitivity, model cultural humility. ' +
                       'End with a reflective question to keep them thinking.';
+                    _runSafetyAssess(aiPrompt);
                     callGemini(sysPrompt).then(function(result) {
                       var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                       upd({ aiResponse: text, aiLoading: false, aiPrompt: '' });
