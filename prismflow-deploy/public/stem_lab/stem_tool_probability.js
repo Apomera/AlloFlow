@@ -749,6 +749,39 @@ var d = (labToolData.probability) || {};
 
             ),
 
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                coin:      { accent: '#94a3b8', soft: 'rgba(148,163,184,0.10)', icon: '\uD83E\uDE99', title: 'Coin \u2014 the simplest 50/50',                  hint: 'P(H) = P(T) = 0.5. Law of large numbers: as trials grow, the proportion of heads converges to 0.5. After 1,000 flips you\u2019ll be within ~3% of 50%, but in any short streak anything is possible.' },
+                dice:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83C\uDFB2', title: 'Dice \u2014 uniform 1/6 each',                       hint: 'Each face equally likely. Roll two dice and the SUM is no longer uniform \u2014 7 has 6 ways, 2 and 12 only 1 each. The basis of every Monopoly, D&D, and Settlers turn.' },
+                spinner:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83C\uDFA1', title: 'Spinner \u2014 4-color uniform',                    hint: 'Equal-area sectors = equal probability. Unequal sectors → weighted draws. Spinners are the gentlest path into discrete distributions for elementary students.' },
+                sports:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83C\uDFC6', title: 'Sports \u2014 weighted real-world odds',             hint: 'Free-throw 75%, NBA 3-point 36%, MLB hit ~25%. Probability isn\u2019t always 50/50 \u2014 the math handles unequal weights the same way, just with different denominators.' },
+                marbleBag: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDFB1', title: 'Marble Bag \u2014 with vs without replacement',     hint: 'With replacement: independent draws. Without: probabilities CHANGE each pull \u2014 conditional probability. The exact mechanism behind hypergeometric distribution and card-game odds.' },
+                custom:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2699',         title: 'Custom \u2014 design your own outcome set',         hint: 'Build any discrete distribution. Test the law of large numbers with skewed odds, demonstrate that simulations can answer ANY closed-form question if you have enough trials. Monte Carlo in miniature.' },
+                tree:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: 'Tree \u2014 multi-stage probability',                 hint: 'Multiply along branches; add across leaves. Two coin flips: HH HT TH TT each 0.25. Tree diagrams scale up to medical-test base-rate problems and Bayes\u2019 theorem.' },
+                pi:        { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83E\uDD67', title: 'Pi \u2014 Monte Carlo \u03c0 estimation',            hint: 'Throw darts at a unit square; count how many land inside the inscribed quarter circle. \u03c0 \u2248 4 \u00d7 (inside / total). Convergence is O(1/\u221AN) \u2014 each digit costs 100\u00d7 more darts.' },
+                birthday:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\uD83C\uDF82', title: 'Birthday \u2014 the famous paradox',                  hint: 'In a room of 23, the probability of a shared birthday is > 50%. By 70 it\u2019s > 99.9%. Counterintuitive because we count comparisons (23 choose 2 = 253), not people. The cleanest classroom counter to gut-feel probability.' }
+              };
+              var meta = MODE_META[d.mode] || MODE_META.coin;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
             // â”€â”€ Marble Bag mode config â”€â”€
