@@ -7095,41 +7095,53 @@
             // Caption row — shown as quoted text when present, "Add a caption"
             // affordance when absent. Caption prints in the packet so the
             // audio (which can't print) still has a textual companion.
-            editingCaption ? h('div', { style: { marginBottom: '10px' } },
-              h('label', {
-                htmlFor: 'ah-vn-caption-' + decoration.id,
-                style: { display: 'block', fontSize: '10px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }
-              }, 'Caption (prints in packet)'),
-              h('input', {
-                id: 'ah-vn-caption-' + decoration.id,
-                type: 'text',
-                value: captionDraft,
-                onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
-                placeholder: 'A few words about this voice note…',
-                maxLength: VOICE_CAPTION_MAX,
-                style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box' }
-              }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' } },
-                h('span', { style: { fontSize: '10px', color: palette.textMute } },
-                  captionDraft.length + ' / ' + VOICE_CAPTION_MAX),
-                h('div', { style: { display: 'flex', gap: '6px' } },
-                  h('button', {
-                    onClick: function() { setCaptionDraft(null); },
-                    style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
-                  }, 'Cancel'),
-                  h('button', {
-                    onClick: function() {
-                      var clean = (captionDraft || '').trim().slice(0, VOICE_CAPTION_MAX);
-                      if (typeof p.onSetVoiceNoteCaption === 'function') {
-                        p.onSetVoiceNoteCaption(clean || null);
-                      }
-                      setCaptionDraft(null);
-                    },
-                    style: Object.assign({}, primaryBtnStyle(palette), { padding: '3px 10px', fontSize: '10px' })
-                  }, 'Save caption')
+            editingCaption ? (function() {
+              var saveCaption = function() {
+                var clean = (captionDraft || '').trim().slice(0, VOICE_CAPTION_MAX);
+                if (typeof p.onSetVoiceNoteCaption === 'function') {
+                  p.onSetVoiceNoteCaption(clean || null);
+                }
+                setCaptionDraft(null);
+              };
+              // Color the counter as it approaches the cap so the user
+              // gets a visual cue that they're running out of room.
+              var remain = VOICE_CAPTION_MAX - captionDraft.length;
+              var counterColor = remain <= 5 ? '#dc2626' : (remain <= 15 ? '#d97706' : palette.textMute);
+              return h('div', { style: { marginBottom: '10px' } },
+                h('label', {
+                  htmlFor: 'ah-vn-caption-' + decoration.id,
+                  style: { display: 'block', fontSize: '10px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }
+                }, 'Caption (prints in packet)'),
+                h('input', {
+                  id: 'ah-vn-caption-' + decoration.id,
+                  type: 'text',
+                  value: captionDraft,
+                  onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
+                  onKeyDown: function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); saveCaption(); }
+                    else if (e.key === 'Escape') { e.preventDefault(); setCaptionDraft(null); }
+                  },
+                  placeholder: 'A few words about this voice note…',
+                  maxLength: VOICE_CAPTION_MAX,
+                  autoFocus: true,
+                  style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box' }
+                }),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' } },
+                  h('span', { style: { fontSize: '10px', color: counterColor, fontWeight: remain <= 15 ? 700 : 400 } },
+                    captionDraft.length + ' / ' + VOICE_CAPTION_MAX),
+                  h('div', { style: { display: 'flex', gap: '6px' } },
+                    h('button', {
+                      onClick: function() { setCaptionDraft(null); },
+                      style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+                    }, 'Cancel'),
+                    h('button', {
+                      onClick: saveCaption,
+                      style: Object.assign({}, primaryBtnStyle(palette), { padding: '3px 10px', fontSize: '10px' })
+                    }, 'Save caption')
+                  )
                 )
-              )
-            ) : (savedCaption ? h('div', {
+              );
+            })() : (savedCaption ? h('div', {
               style: { marginBottom: '10px', padding: '8px 10px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }
             },
               h('div', { style: { fontSize: '12px', color: palette.text, fontStyle: 'italic', lineHeight: '1.45', flex: 1, minWidth: 0 } },
@@ -7183,6 +7195,8 @@
         // Preview — playback + optional caption + save / discard
         voiceMode === 'preview' && recorded ? (function() {
           var draft = captionDraft == null ? '' : captionDraft;
+          var remain = VOICE_CAPTION_MAX - draft.length;
+          var counterColor = remain <= 5 ? '#dc2626' : (remain <= 15 ? '#d97706' : palette.textMute);
           return h('div', null,
             h('audio', {
               src: recorded.base64,
@@ -7201,11 +7215,12 @@
               type: 'text',
               value: draft,
               onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
+              onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); saveRecording(); } },
               placeholder: 'A few words about this voice note…',
               maxLength: VOICE_CAPTION_MAX,
               style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box', marginBottom: '4px' }
             }),
-            h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '10px' } },
+            h('div', { style: { fontSize: '10px', color: counterColor, fontWeight: remain <= 15 ? 700 : 400, marginBottom: '10px' } },
               draft.length + ' / ' + VOICE_CAPTION_MAX),
             h('div', { style: { display: 'flex', gap: '8px' } },
               h('button', {
@@ -9479,9 +9494,26 @@
     // otherwise closes AlloHaven itself. Active Pomodoro takes precedence
     // — Esc during a focus session is too easy to hit accidentally; users
     // must explicitly use the Cancel button.
+    //
+    // Also wires "/" as a global Search shortcut (matches GitHub-style
+    // keyboard convention) so power users can pop the search modal
+    // without mousing to the header. Suppressed while typing in inputs
+    // so it doesn't intercept literal slashes.
     useEffect(function() {
       if (!props.isOpen) return;
       var handler = function(e) {
+        if (e.key === '/') {
+          var t = e.target;
+          var tag = t && t.tagName ? t.tagName.toUpperCase() : '';
+          var isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable);
+          if (isEditable) return;
+          if (state.pomodoroState && state.pomodoroState.active) return;
+          if (!state.onboardingSeen) return;
+          if (state.activeModal) return; // don't pop search on top of another modal
+          e.preventDefault();
+          setStateField('activeModal', 'search');
+          return;
+        }
         if (e.key !== 'Escape') return;
         // Ignore Esc during active Pomodoro (accidental cancel guard)
         if (state.pomodoroState && state.pomodoroState.active) return;
@@ -11070,6 +11102,17 @@
     var printPreviewingTuple = useState(false);
     var printPreviewing = printPreviewingTuple[0];
     var setPrintPreviewing = printPreviewingTuple[1];
+
+    // Lock body scroll while the preview overlay is open so the
+    // background app doesn't scroll behind the preview when the user
+    // wheels through the long preview document. Restores prior overflow
+    // on close.
+    useEffect(function() {
+      if (!printPreviewing || typeof document === 'undefined') return;
+      var prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return function() { document.body.style.overflow = prev; };
+    }, [printPreviewing]);
     useEffect(function() {
       if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.subscribeToVoiceProgress !== 'function') return;
       var unsubscribe = window.AlloFlowVoice.subscribeToVoiceProgress(function(payload) {
