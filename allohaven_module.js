@@ -5136,6 +5136,11 @@
       });
     }
 
+    // Tab/panel ids — paired so screen readers can announce the
+    // tabpanel relationship (`aria-controls` ↔ `aria-labelledby`).
+    var tabIdFor = function(id) { return 'ah-mem-tab-' + decoration.id + '-' + id; };
+    var panelIdFor = function(id) { return 'ah-mem-panel-' + decoration.id + '-' + id; };
+
     // ── Tab navigation header (for non-empty states) ──
     function renderTabs() {
       if (!hasContent || mode === 'pick-type') return null;
@@ -5149,6 +5154,7 @@
       if (existing.type !== 'notes' || notesQuizzable) tabs.push({ id: 'quiz', label: 'Quiz' });
       return h('div', {
         role: 'tablist',
+        'aria-label': 'Memory content view',
         style: {
           display: 'flex',
           gap: '4px',
@@ -5161,8 +5167,11 @@
           var active = mode === t.id;
           return h('button', {
             key: 't-' + t.id,
+            id: tabIdFor(t.id),
             role: 'tab',
             'aria-selected': active ? 'true' : 'false',
+            'aria-controls': panelIdFor(t.id),
+            tabIndex: active ? 0 : -1,
             onClick: function() {
               if (t.id === 'quiz' && mode !== 'quiz') {
                 startQuiz();
@@ -7435,7 +7444,16 @@
         ) : null,
         renderVoiceNotePanel(),
         renderTabs(),
-        body
+        // Wrap body in a tabpanel when the tabs are visible (modes
+        // view/edit/quiz). For 'pick-type' there are no tabs so render
+        // body bare. Tab/panel ids are paired so screen readers can
+        // announce the relationship.
+        (hasContent && mode !== 'pick-type') ? h('div', {
+          role: 'tabpanel',
+          id: panelIdFor(mode),
+          'aria-labelledby': tabIdFor(mode),
+          tabIndex: 0
+        }, body) : body
       )
     );
   }
@@ -12166,9 +12184,11 @@
               var active = r.id === room.id;
               return h('button', {
                 key: 'rt-' + r.id,
+                id: 'ah-room-tab-' + r.id,
                 role: 'tab',
                 'aria-selected': active ? 'true' : 'false',
                 'aria-label': r.label + (active ? ' (currently viewing)' : ''),
+                tabIndex: active ? 0 : -1,
                 onClick: function() { setStateField('activeRoomId', r.id); },
                 style: {
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
@@ -14657,10 +14677,14 @@
               h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
                 'No past encounters yet. Open the Arcade and play a Boss Encounter to start tracking.')
             )
-            : h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
+            : h('ul', {
+              role: 'list',
+              style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
+            },
               encounters.map(function (enc) {
                 var dateStr = enc.savedAt ? new Date(enc.savedAt).toLocaleDateString() : '?';
-                return h('button', {
+                return h('li', { key: 'enc-li-' + enc.id, role: 'listitem', style: { listStyle: 'none' } },
+                h('button', {
                   key: 'enc-' + enc.id,
                   onClick: function () { openDetail(enc.id); },
                   style: {
@@ -14693,7 +14717,7 @@
                     ),
                     outcomeChip(enc.outcome)
                   )
-                );
+                ));
               })
             ),
           // Footer — clear-all (lives outside the list so it's never accidental)
@@ -16786,9 +16810,14 @@
               }, '← Back')
             )
           ),
-          // Loading state
-          ins.loading ? h('p', { style: { color: palette.textDim, fontSize: '13px', fontStyle: 'italic', padding: '24px 8px', textAlign: 'center' } },
-            'Reading your last ' + Math.min(entries.length, 14) + ' entries…') : null,
+          // Loading state — aria-busy lets assistive tech know the
+          // region is mid-AI-fetch (matches the SEL Hub WCAG playbook).
+          ins.loading ? h('p', {
+            'aria-busy': 'true',
+            'aria-live': 'polite',
+            role: 'status',
+            style: { color: palette.textDim, fontSize: '13px', fontStyle: 'italic', padding: '24px 8px', textAlign: 'center' }
+          }, 'Reading your last ' + Math.min(entries.length, 14) + ' entries…') : null,
           // AI summary card (only when present)
           !ins.loading && s.moodSummary && enoughText ? h('div', {
             style: {
@@ -17001,19 +17030,25 @@
           entries.length === 0 ? h('p', {
             style: { color: palette.textDim, textAlign: 'center', padding: '24px 12px', fontStyle: 'italic' }
           }, "No journal entries yet. Write your first reflection — your past words will live here.") : null,
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          h('ul', {
+            role: 'list',
+            'aria-label': 'Journal entries',
+            style: { display: 'flex', flexDirection: 'column', gap: '10px', listStyle: 'none', padding: 0, margin: 0 }
+          },
             entries.map(function(entry) {
-              return h(JournalEntryRow, {
-                key: entry.id,
-                entry: entry,
-                palette: palette,
-                onEdit: function(newText) { editJournalEntry(entry.id, newText); },
-                onDelete: function() {
-                  if (window.confirm && !window.confirm('Delete this entry? Tokens already earned will not be refunded.')) return;
-                  deleteJournalEntry(entry.id);
-                },
-                onQuizComplete: function(eid, pct) { recordReflectionQuiz(eid, pct); }
-              });
+              return h('li', { key: 'jli-' + entry.id, role: 'listitem', style: { listStyle: 'none' } },
+                h(JournalEntryRow, {
+                  key: entry.id,
+                  entry: entry,
+                  palette: palette,
+                  onEdit: function(newText) { editJournalEntry(entry.id, newText); },
+                  onDelete: function() {
+                    if (window.confirm && !window.confirm('Delete this entry? Tokens already earned will not be refunded.')) return;
+                    deleteJournalEntry(entry.id);
+                  },
+                  onQuizComplete: function(eid, pct) { recordReflectionQuiz(eid, pct); }
+                })
+              );
             })
           ),
           h('div', {
