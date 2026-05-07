@@ -291,6 +291,131 @@ const handleLoadProject = (e, deps) => {
                 if (rawData.externalCBMScores) setExternalCBMScores(rawData.externalCBMScores);
                 if (rawData.settings?.researchMode) setResearchMode(rawData.settings.researchMode);
             }
+            // SEL Hub engagement (streak, per-tool usage). The hub itself
+            // listens for the custom event so a load mid-session refreshes
+            // its UI without remount.
+            if (rawData.selEngagement && typeof rawData.selEngagement === 'object') {
+                try {
+                    window.__alloflowSelEngagement = rawData.selEngagement;
+                    if (rawData.selEngagement.streak) {
+                        try { localStorage.setItem('alloflow_sel_streak', JSON.stringify(rawData.selEngagement.streak)); } catch (e) {}
+                    }
+                    if (rawData.selEngagement.toolUsage) {
+                        try { localStorage.setItem('alloflow_sel_tool_usage', JSON.stringify(rawData.selEngagement.toolUsage)); } catch (e) {}
+                    }
+                    window.dispatchEvent(new CustomEvent('alloflow-sel-engagement-restored'));
+                } catch (e) { warnLog && warnLog('SEL engagement restore failed:', e); }
+            }
+            // BirdLab persistent state (life list, badges). Same pattern as
+            // SEL engagement: write to window slot, mirror to localStorage,
+            // dispatch event for live re-hydration of an open BirdLab tool.
+            if (rawData.birdLab && typeof rawData.birdLab === 'object') {
+                try {
+                    window.__alloflowBirdLab = rawData.birdLab;
+                    if (rawData.birdLab.lifeList) {
+                        try { localStorage.setItem('birdLab.lifeList.v1', JSON.stringify(rawData.birdLab.lifeList)); } catch (e) {}
+                    }
+                    if (rawData.birdLab.badges) {
+                        try { localStorage.setItem('birdLab.badges.v1', JSON.stringify(rawData.birdLab.badges)); } catch (e) {}
+                    }
+                    window.dispatchEvent(new CustomEvent('alloflow-birdlab-restored'));
+                } catch (e) { warnLog && warnLog('BirdLab restore failed:', e); }
+            }
+            // PetsLab persistent state (module visits, badges, decoder mastery).
+            // Same Canvas-survival flow as SEL engagement and BirdLab above.
+            if (rawData.petsLab && typeof rawData.petsLab === 'object') {
+                try {
+                    window.__alloflowPetsLab = rawData.petsLab;
+                    try { localStorage.setItem('petsLab.state.v1', JSON.stringify(rawData.petsLab)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-petslab-restored'));
+                } catch (e) { warnLog && warnLog('PetsLab restore failed:', e); }
+            }
+            // OpticsLab AP-quiz concept mastery. Mirrors the rest of the
+            // STEM Lab tool persistence chain.
+            if (rawData.opticsLab && typeof rawData.opticsLab === 'object') {
+                try {
+                    window.__alloflowOpticsLab = rawData.opticsLab;
+                    try { localStorage.setItem('opticsLab.state.v1', JSON.stringify(rawData.opticsLab)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-opticslab-restored'));
+                } catch (e) { warnLog && warnLog('OpticsLab restore failed:', e); }
+            }
+            // StatsLab AP-quiz concept mastery (AP Psych / AP Bio).
+            if (rawData.statsLab && typeof rawData.statsLab === 'object') {
+                try {
+                    window.__alloflowStatsLab = rawData.statsLab;
+                    try { localStorage.setItem('statsLab.state.v1', JSON.stringify(rawData.statsLab)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-statslab-restored'));
+                } catch (e) { warnLog && warnLog('StatsLab restore failed:', e); }
+            }
+            // WeldLab welder's defect catalog (cross-sample log) + badges.
+            if (rawData.weldLab && typeof rawData.weldLab === 'object') {
+                try {
+                    window.__alloflowWeldLab = rawData.weldLab;
+                    if (rawData.weldLab.defectCatalog) {
+                        try { localStorage.setItem('weldLab.defectCatalog.v1', JSON.stringify(rawData.weldLab.defectCatalog)); } catch (e) {}
+                    }
+                    if (rawData.weldLab.badges) {
+                        try { localStorage.setItem('weldLab.badges.v1', JSON.stringify(rawData.weldLab.badges)); } catch (e) {}
+                    }
+                    window.dispatchEvent(new CustomEvent('alloflow-weldlab-restored'));
+                } catch (e) { warnLog && warnLog('WeldLab restore failed:', e); }
+            }
+            // RenewablesLab energy-source mastery (badges + module visits + quiz mastery).
+            if (rawData.renewablesLab && typeof rawData.renewablesLab === 'object') {
+                try {
+                    window.__alloflowRenewablesLab = rawData.renewablesLab;
+                    try { localStorage.setItem('renewablesLab.state.v1', JSON.stringify(rawData.renewablesLab)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-renewableslab-restored'));
+                } catch (e) { warnLog && warnLog('RenewablesLab restore failed:', e); }
+            }
+            // FirstResponse Lab responder mastery (consent + module visits + faMastery).
+            if (rawData.firstResponse && typeof rawData.firstResponse === 'object') {
+                try {
+                    window.__alloflowFirstResponse = rawData.firstResponse;
+                    try { localStorage.setItem('firstResponse.state.v1', JSON.stringify(rawData.firstResponse)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-firstresponse-restored'));
+                } catch (e) { warnLog && warnLog('FirstResponse restore failed:', e); }
+            }
+            // ThrowLab Pitch Locker (cross-session strike log per pitch type).
+            if (rawData.throwlab && typeof rawData.throwlab === 'object') {
+                try {
+                    window.__alloflowThrowLab = rawData.throwlab;
+                    try { localStorage.setItem('throwlab.state.v1', JSON.stringify(rawData.throwlab)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-throwlab-restored'));
+                } catch (e) { warnLog && warnLog('ThrowLab restore failed:', e); }
+            }
+            // PlayLab Play Catalog (cross-session log of plays/concepts run successfully).
+            if (rawData.playlab && typeof rawData.playlab === 'object') {
+                try {
+                    window.__alloflowPlayLab = rawData.playlab;
+                    try { localStorage.setItem('playlab.state.v1', JSON.stringify(rawData.playlab)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-playlab-restored'));
+                } catch (e) { warnLog && warnLog('PlayLab restore failed:', e); }
+            }
+            // Assessment Literacy junk-science mastery (per-scenario first-correct).
+            if (rawData.assessmentLiteracy && typeof rawData.assessmentLiteracy === 'object') {
+                try {
+                    window.__alloflowAssessmentLiteracy = rawData.assessmentLiteracy;
+                    try { localStorage.setItem('assessmentLiteracy.state.v1', JSON.stringify(rawData.assessmentLiteracy)); } catch (e) {}
+                    window.dispatchEvent(new CustomEvent('alloflow-assessmentliteracy-restored'));
+                } catch (e) { warnLog && warnLog('AssessmentLiteracy restore failed:', e); }
+            }
+            // RoadReady Permit Mastery (per-question first-correct log + per-category stats + parking best).
+            if (rawData.roadReady && typeof rawData.roadReady === 'object') {
+                try {
+                    window.__alloflowRoadReady = rawData.roadReady;
+                    if (rawData.roadReady.permitMastery) {
+                        try { localStorage.setItem('roadReady.permitMastery.v1', JSON.stringify(rawData.roadReady.permitMastery)); } catch (e) {}
+                    }
+                    if (rawData.roadReady.permitStats) {
+                        try { localStorage.setItem('roadReady.permitStats.v1', JSON.stringify(rawData.roadReady.permitStats)); } catch (e) {}
+                    }
+                    if (rawData.roadReady.parkingBest) {
+                        try { localStorage.setItem('roadReady.parkingBest.v1', JSON.stringify(rawData.roadReady.parkingBest)); } catch (e) {}
+                    }
+                    window.dispatchEvent(new CustomEvent('alloflow-roadready-restored'));
+                } catch (e) { warnLog && warnLog('RoadReady restore failed:', e); }
+            }
             if (Array.isArray(loadedHistory)) {
                 setHistory(hydrateHistory(loadedHistory));
                 if (isStudentSave) {

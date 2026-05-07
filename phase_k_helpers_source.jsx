@@ -793,6 +793,51 @@ const executeSaveFile = (deps) => {
       }
       const filename = saveFileName.trim().endsWith('.json') ? saveFileName.trim() : `${saveFileName.trim()}.json`;
       let dataStr = "";
+      // SEL Hub engagement state (streak, per-tool usage). Lives at
+      // window.__alloflowSelEngagement, written by sel_hub_module.js whenever
+      // its state changes. Picked up here so it rides the project JSON, which
+      // is what survives Canvas sandbox sessions (localStorage does not).
+      const selEngagement = (typeof window !== 'undefined' && window.__alloflowSelEngagement) || null;
+      // BirdLab persistent state (life list of species spotted across all
+      // habitats, plus module-visited badges). Mirrored to
+      // window.__alloflowBirdLab by stem_tool_birdlab.js — same Canvas-survival
+      // pattern as SEL engagement above.
+      const birdLab = (typeof window !== 'undefined' && window.__alloflowBirdLab) || null;
+      // PetsLab persistent state (module visits, badges, decoder mastery).
+      // The StemLab host's localStorage block does not include petsLab, so
+      // without this slot the tool resets every reload — we ride the
+      // project JSON instead.
+      const petsLab = (typeof window !== 'undefined' && window.__alloflowPetsLab) || null;
+      // OpticsLab AP-quiz concept mastery (per-question first-correct log,
+      // rolled up into six AP topic concepts at render time). Same Canvas-
+      // survival pattern: window slot → JSON → localStorage warm cache.
+      const opticsLab = (typeof window !== 'undefined' && window.__alloflowOpticsLab) || null;
+      // StatsLab AP-quiz concept mastery (parallel to OpticsLab, AP Psych /
+      // AP Bio focus, rolled up into 6 stats concept clusters at render).
+      const statsLab = (typeof window !== 'undefined' && window.__alloflowStatsLab) || null;
+      // WeldLab welder's defect catalog (cross-sample log of welding
+      // discontinuities the student has correctly identified) + module
+      // badges. Same Canvas-survival pattern.
+      const weldLab = (typeof window !== 'undefined' && window.__alloflowWeldLab) || null;
+      // RenewablesLab energy-source mastery: per-question first-correct log
+      // (18-question bank) rolled up into the 8 source clusters at render.
+      const renewablesLab = (typeof window !== 'undefined' && window.__alloflowRenewablesLab) || null;
+      // FirstResponse Lab responder-mastery: per-vignette first-correct log
+      // (10 First Action Sleuth scenarios) + module visits + consent flag.
+      const firstResponse = (typeof window !== 'undefined' && window.__alloflowFirstResponse) || null;
+      // ThrowLab Pitch Locker: cross-session log of pitch types thrown for
+      // strikes (parallel to BirdLab's life list — the "I have done it once,
+      // forever" engagement primitive applied to baseball pitches).
+      const throwlab = (typeof window !== 'undefined' && window.__alloflowThrowLab) || null;
+      // PlayLab Play Catalog: cross-session log of plays/concepts run
+      // successfully (football completions + soccer xG ≥ 0.20 sequences).
+      const playlab = (typeof window !== 'undefined' && window.__alloflowPlayLab) || null;
+      // RoadReady Permit Mastery: per-question first-correct log (Maine BMV
+      // permit bank), plus parking best-time + per-category running tally.
+      const roadReady = (typeof window !== 'undefined' && window.__alloflowRoadReady) || null;
+      // Assessment Literacy junk-science mastery: per-scenario first-correct
+      // log from the "Spot the Junk Science" capstone module.
+      const assessmentLiteracy = (typeof window !== 'undefined' && window.__alloflowAssessmentLiteracy) || null;
       if (saveType === 'teacher') {
           dataStr = JSON.stringify({
               mode: isIndependentMode ? 'independent' : 'teacher',
@@ -806,7 +851,19 @@ const executeSaveFile = (deps) => {
               surveyResponses: surveyResponses,
               fidelityLog: fidelityLog,
               sessionCounter: sessionCounter,
-              externalCBMScores: externalCBMScores
+              externalCBMScores: externalCBMScores,
+              selEngagement: selEngagement,
+              birdLab: birdLab,
+              petsLab: petsLab,
+              opticsLab: opticsLab,
+              statsLab: statsLab,
+              weldLab: weldLab,
+              renewablesLab: renewablesLab,
+              firstResponse: firstResponse,
+              throwlab: throwlab,
+              playlab: playlab,
+              roadReady: roadReady,
+              assessmentLiteracy: assessmentLiteracy
           }, null, 2);
       } else {
           const studentHistory = history.filter(item => !['udl-advice', 'brainstorm'].includes(item.type));
@@ -884,6 +941,18 @@ const executeSaveFile = (deps) => {
               fidelityLog: fidelityLog,
               sessionCounter: sessionCounter,
               externalCBMScores: externalCBMScores,
+              selEngagement: selEngagement,
+              birdLab: birdLab,
+              petsLab: petsLab,
+              opticsLab: opticsLab,
+              statsLab: statsLab,
+              weldLab: weldLab,
+              renewablesLab: renewablesLab,
+              firstResponse: firstResponse,
+              throwlab: throwlab,
+              playlab: playlab,
+              roadReady: roadReady,
+              assessmentLiteracy: assessmentLiteracy,
               timestamp: new Date()
           }, null, 2);
           if (adventureState.turnCount > 0 || adventureState.xp > 0) {

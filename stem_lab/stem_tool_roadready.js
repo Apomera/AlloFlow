@@ -8,6 +8,23 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// ── RoadReady keyframes (Permit Mastery celebration) ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('roadready-celeb-css')) return;
+  var st = document.createElement('style');
+  st.id = 'roadready-celeb-css';
+  st.textContent = [
+    '@keyframes roadready-celeb-rise {',
+    '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+    '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 // ═══════════════════════════════════════════
 // stem_tool_roadready.js — RoadReady: Driver's Ed & Automotive Science Lab
 // Teaches US driver's ed curriculum (Maine state focus), fuel efficiency physics,
@@ -3174,7 +3191,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         if (savedParkingBest && d.parkingBest === undefined) {
           upd('parkingBest', savedParkingBest);
         }
+        // ── Permit Mastery: cross-attempt log of permit questions answered
+        // correctly. Window slot wins over localStorage so a project-JSON
+        // load (handleLoadProject) overrides stale local cache. This is the
+        // proven mastery primitive applied to RoadReady's permit test.
+        var savedMastery = null;
+        try {
+          if (typeof window !== 'undefined' && window.__alloflowRoadReady && window.__alloflowRoadReady.permitMastery) {
+            savedMastery = window.__alloflowRoadReady.permitMastery;
+          }
+        } catch (e) {}
+        if (!savedMastery) savedMastery = lsGet('roadReady.permitMastery.v1', null);
+        if (savedMastery && d.permitMastery === undefined) upd('permitMastery', savedMastery);
       }
+
+      // First-correct celebration state (auto-clears after 3.5s).
+      var _rrCeleb = React.useState(null);
+      var rrCeleb = _rrCeleb[0];
+      var setRrCeleb = _rrCeleb[1];
+
+      // Mirror persistent state to window slot for executeSaveFile pickup.
+      // Includes both permitStats (per-category running tally — already
+      // localStorage-backed but not Canvas-survival) AND permitMastery
+      // (per-question first-correct log — new). Bundles parkingBest too.
+      React.useEffect(function () {
+        try {
+          var current = window.__alloflowRoadReady || {};
+          window.__alloflowRoadReady = Object.assign({}, current, {
+            permitMastery: d.permitMastery || current.permitMastery || {},
+            permitStats: d.permitStats || current.permitStats || {},
+            parkingBest: d.parkingBest || current.parkingBest || null,
+            _ts: Date.now()
+          });
+        } catch (e) {}
+      }, [d.permitMastery, d.permitStats, d.parkingBest]);
+
+      // Hot-reload from project-JSON load mid-session.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowRoadReady || {};
+            if (w.permitMastery) upd('permitMastery', w.permitMastery);
+            if (w.permitStats) upd('permitStats', w.permitStats);
+            if (w.parkingBest) upd('parkingBest', w.parkingBest);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-roadready-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-roadready-restored', onRestore); };
+      }, []);
       var addToast = ctx.addToast || function(msg) { console.log('[RoadReady]', msg); };
       var callTTS = ctx.callTTS || null;
       var callGemini = ctx.callGemini || null;
@@ -20489,12 +20553,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var startTest = function(qs) {
           updMulti({ view: 'permit', permit: { questions: qs, index: 0, answers: [], score: 0, done: false } });
         };
+        var _permitMastery = (d.permitMastery && typeof d.permitMastery === 'object') ? d.permitMastery : {};
+        var _masteredCount = Object.keys(_permitMastery).length;
+        var _bankTotal = PERMIT_BANK.length;
+        var _masteryPct = _bankTotal > 0 ? Math.round((_masteredCount / _bankTotal) * 100) : 0;
         return h('div', { style: { padding: '20px', maxWidth: '720px', margin: '0 auto', color: '#e2e8f0' } },
           h('button', { onClick: function() { upd('view', 'menu'); }, style: { marginBottom: '12px', fontSize: '12px', color: '#60a5fa', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 } }, '← Menu'),
           h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '24px', textAlign: 'center', border: '1px solid #fbbf24', marginBottom: '14px' } },
             h('div', { style: { fontSize: '40px' } }, '📝'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900, marginBottom: '6px' } }, 'Maine BMV Permit Test'),
             h('div', { style: { fontSize: '12px', color: '#fcd34d', marginBottom: '14px' } }, "Bank of " + PERMIT_BANK.length + " Maine-specific questions across 8 categories. Pass at 80% (16 of 20)."),
+            // ── Permit Mastery summary ──
+            // Shows cumulative cross-attempt progress: how many unique
+            // questions in the bank have ever been answered correctly.
+            // Distinct from per-attempt score (which resets each test).
+            h('div', { 'aria-label': 'Permit Mastery: ' + _masteredCount + ' of ' + _bankTotal + ' questions answered correctly across all attempts',
+              style: { background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(251,191,36,0.4)', borderRadius: 10, padding: '10px 14px', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+              h('div', { style: { flex: 1, minWidth: 180, textAlign: 'left' } },
+                h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fef3c7', marginBottom: 2 } }, 'Permit Mastery'),
+                h('div', { style: { height: 6, background: 'rgba(15,23,42,0.7)', borderRadius: 3, overflow: 'hidden', marginBottom: 4 }, 'aria-hidden': 'true' },
+                  h('div', { style: { width: _masteryPct + '%', height: '100%', background: '#fbbf24' } })
+                ),
+                h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.4 } },
+                  _masteredCount === 0 ? 'Take your first test — every correct answer locks the question in permanently.'
+                  : _masteredCount === _bankTotal ? '🏆 Full bank mastered — every question answered correctly at least once.'
+                  : _masteredCount + ' / ' + _bankTotal + ' questions mastered (' + _masteryPct + '%). Keep going.'
+                )
+              )
+            ),
             // Three start-mode buttons
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '12px' } },
               h('button', {
@@ -20654,6 +20741,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var q = permitState.questions[permitState.index];
         var lastAns = permitState.answers[permitState.index];
         return h('div', { style: { padding: '20px', maxWidth: '680px', margin: '0 auto', color: '#e2e8f0' } },
+          // Permit Mastery first-correct celebration (fixed-position, top of screen).
+          rrCeleb && h('div', {
+            role: 'status', 'aria-live': 'assertive',
+            style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+                     zIndex: 9999, pointerEvents: 'none',
+                     animation: 'roadready-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+          },
+            h('div', { style: { background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #dc2626 100%)',
+                                color: '#fff', padding: '14px 22px', borderRadius: 16,
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.35)', border: '4px solid #fff',
+                                display: 'flex', alignItems: 'center', gap: 12 } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '🏅'),
+              h('div', null,
+                h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Question locked in'),
+                h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, rrCeleb.question.length > 90 ? (rrCeleb.question.substring(0, 87) + '…') : rrCeleb.question),
+                h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, rrCeleb.total + ' / ' + PERMIT_BANK.length + ' questions mastered · ' + rrCeleb.category)
+              )
+            )
+          ),
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' } },
             h('div', { style: { fontSize: '11px', color: '#94a3b8' } }, 'Question ' + (permitState.index + 1) + ' of ' + permitState.questions.length),
             h('div', { style: { fontSize: '11px', color: '#fbbf24', fontWeight: 700 } }, '✓ ' + permitState.score + '  ✗ ' + (permitState.answers.filter(function(a) { return a !== null && a.correct === false; }).length))
@@ -20692,6 +20798,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   nextStats[catKey] = { correct: curCat.correct + (isCorrect ? 1 : 0), total: curCat.total + 1 };
                   upd('permitStats', nextStats);
                   lsSet('roadReady.permitStats.v1', nextStats);
+                  // ── Permit Mastery: cross-attempt first-correct log per question ──
+                  // Per-attempt score resets at the start of each test; mastery sticks.
+                  // First-correct on a given question fires the celebration overlay.
+                  if (isCorrect && q && q.q) {
+                    var prevMastery = (d.permitMastery && typeof d.permitMastery === 'object') ? d.permitMastery : {};
+                    var existingEntry = prevMastery[q.q];
+                    var nowIso = new Date().toISOString();
+                    var nextMastery = Object.assign({}, prevMastery);
+                    if (existingEntry) {
+                      nextMastery[q.q] = Object.assign({}, existingEntry, {
+                        lastCorrectAt: nowIso,
+                        correctCount: (existingEntry.correctCount || 0) + 1
+                      });
+                    } else {
+                      nextMastery[q.q] = {
+                        firstCorrectAt: nowIso,
+                        lastCorrectAt: nowIso,
+                        correctCount: 1,
+                        category: catKey
+                      };
+                      try {
+                        setRrCeleb({ question: q.q, category: catKey, total: Object.keys(nextMastery).length, at: Date.now() });
+                        setTimeout(function () { setRrCeleb(null); }, 3500);
+                      } catch (e) {}
+                    }
+                    upd('permitMastery', nextMastery);
+                    lsSet('roadReady.permitMastery.v1', nextMastery);
+                  }
                 },
                 style: { display: 'block', width: '100%', padding: '10px 14px', marginBottom: '6px', borderRadius: '8px', border: '1px solid ' + border, background: bg, color: '#fff', cursor: showResult ? 'default' : 'pointer', textAlign: 'left', fontSize: '12px' }
               }, String.fromCharCode(65 + i) + '. ' + opt);

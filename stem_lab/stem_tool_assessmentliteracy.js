@@ -7,6 +7,23 @@
 // and strategy for employer personality/cognitive tests.
 // ═══════════════════════════════════════════
 
+// ── Assessment Literacy keyframes (junk-science mastery celebration) ──
+(function() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('assessmentliteracy-celeb-css')) return;
+  var st = document.createElement('style');
+  st.id = 'assessmentliteracy-celeb-css';
+  st.textContent = [
+    '@keyframes assessmentliteracy-celeb-rise {',
+    '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+    '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+    '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}'
+  ].join('');
+  if (document.head) document.head.appendChild(st);
+})();
+
 window.StemLab = window.StemLab || {
   _registry: {},
   _order: [],
@@ -2016,6 +2033,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         });
       };
 
+      // ── Junk-Science Mastery: Canvas-survival persistence ──
+      // The StemLab host's localStorage block does not include
+      // assessmentLiteracy, so reloads wipe state by default. Layer our own:
+      // window slot → localStorage → host state, plus project-JSON ride-along.
+      var _alHydrated = React.useRef(false);
+      if (!_alHydrated.current) {
+        _alHydrated.current = true;
+        try {
+          var winSt = (typeof window !== 'undefined' && window.__alloflowAssessmentLiteracy) || null;
+          var lsSt = null;
+          try { lsSt = JSON.parse(localStorage.getItem('assessmentLiteracy.state.v1') || 'null'); } catch (e) {}
+          var seed = winSt || lsSt || null;
+          if (seed && typeof seed === 'object' && seed.junkMastery && !s.junkMastery) {
+            // Defer one tick so host setToolData reducer doesn't fight current render.
+            setTimeout(function () {
+              setToolData(function (prev) {
+                return Object.assign({}, prev, { assessmentLiteracy: Object.assign({}, prev.assessmentLiteracy || defaultState(), { junkMastery: seed.junkMastery }) });
+              });
+            }, 0);
+          }
+        } catch (e) {}
+      }
+      // First-correct celebration state (auto-clears after 3.5s).
+      var _alCeleb = React.useState(null);
+      var alCeleb = _alCeleb[0];
+      var setAlCeleb = _alCeleb[1];
+      // Mirror persistent slice to window slot + localStorage.
+      React.useEffect(function () {
+        try {
+          var snapshot = { junkMastery: s.junkMastery || {}, _ts: Date.now() };
+          window.__alloflowAssessmentLiteracy = snapshot;
+          try { localStorage.setItem('assessmentLiteracy.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+        } catch (e) {}
+      }, [s.junkMastery]);
+      // Hot-reload from project-JSON load mid-session.
+      React.useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowAssessmentLiteracy || {};
+            if (w.junkMastery) {
+              setToolData(function (prev) {
+                return Object.assign({}, prev, { assessmentLiteracy: Object.assign({}, prev.assessmentLiteracy || defaultState(), { junkMastery: w.junkMastery }) });
+              });
+            }
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-assessmentliteracy-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-assessmentliteracy-restored', onRestore); };
+      }, []);
+
       // Breadcrumb back-button helper
       function backBtn(targetView, targetSub, label) {
         return h('button', {
@@ -2656,7 +2723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       // MODULE 6: JUNK SCIENCE CAPSTONE (PLACEHOLDER — expanded below)
       // ─────────────────────────────────────────
       function renderJunk() {
-        return _RENDER_JUNK(h, s, upd, callGemini, addToast, backBtn);
+        return _RENDER_JUNK(h, s, upd, callGemini, addToast, backBtn, setAlCeleb, alCeleb);
       }
 
       // ─────────────────────────────────────────
@@ -6325,7 +6392,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     );
   }
 
-  function _RENDER_JUNK(h, s, upd, _callGemini, _addToast, backBtn) {
+  function _RENDER_JUNK(h, s, upd, _callGemini, _addToast, backBtn, setAlCeleb, alCeleb) {
     var order = s.junkOrder || JUNK_SCENARIOS.map(function(_, i) { return i; });
     var idx = s.junkIndex || 0;
     var answers = s.junkAnswers || {};
@@ -6337,7 +6404,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       if (revealed[idx]) return;
       var nextA = Object.assign({}, answers); nextA[idx] = verdict;
       var nextR = Object.assign({}, revealed); nextR[idx] = true;
-      upd({ junkAnswers: nextA, junkRevealed: nextR });
+      // ── Junk-Science Mastery: cross-attempt first-correct log ──
+      // Per-attempt answers reset on quiz reset; mastery sticks. First-correct
+      // on each scenario fires a celebration overlay.
+      var origIdx = order[idx];
+      var scenario = JUNK_SCENARIOS[origIdx];
+      var isCorrect = scenario && verdict === scenario.verdict;
+      var patch = { junkAnswers: nextA, junkRevealed: nextR };
+      if (isCorrect && scenario) {
+        var prevMastery = (s.junkMastery && typeof s.junkMastery === 'object') ? s.junkMastery : {};
+        var existingEntry = prevMastery[origIdx];
+        var nowIso = new Date().toISOString();
+        var nextMastery = Object.assign({}, prevMastery);
+        if (existingEntry) {
+          nextMastery[origIdx] = Object.assign({}, existingEntry, {
+            lastCorrectAt: nowIso,
+            correctCount: (existingEntry.correctCount || 0) + 1
+          });
+        } else {
+          nextMastery[origIdx] = {
+            firstCorrectAt: nowIso,
+            lastCorrectAt: nowIso,
+            correctCount: 1,
+            verdict: scenario.verdict
+          };
+          if (typeof setAlCeleb === 'function') {
+            try {
+              setAlCeleb({
+                scenarioIdx: origIdx,
+                claim: scenario.claim || '',
+                verdict: scenario.verdict,
+                total: Object.keys(nextMastery).length,
+                at: Date.now()
+              });
+              setTimeout(function () { setAlCeleb(null); }, 3500);
+            } catch (e) {}
+          }
+        }
+        patch.junkMastery = nextMastery;
+      }
+      upd(patch);
       announceSR('Your answer: ' + verdict);
     };
     var next = function() {
@@ -6408,13 +6514,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
       return h('span', { className: 'inline-block px-2 py-0.5 rounded text-xs font-black text-white ' + p.bg }, p.label);
     };
 
+    var _masteredCount = Object.keys(s.junkMastery || {}).length;
     return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-4' },
+      // First-correct celebration overlay (fixed-position, top of screen, 3.5s).
+      alCeleb && h('div', {
+        role: 'status', 'aria-live': 'assertive',
+        style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+                 zIndex: 9999, pointerEvents: 'none',
+                 animation: 'assessmentliteracy-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+      },
+        h('div', { style: { background: 'linear-gradient(135deg, #c026d3 0%, #db2777 50%, #f97316 100%)',
+                            color: '#fff', padding: '14px 22px', borderRadius: 16,
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.35)', border: '4px solid #fff',
+                            display: 'flex', alignItems: 'center', gap: 12 } },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, '\uD83D\uDD0D'),
+          h('div', null,
+            h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'Junk-science nailed'),
+            h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, alCeleb.claim.length > 90 ? (alCeleb.claim.substring(0, 87) + '\u2026') : alCeleb.claim),
+            h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, alCeleb.total + ' / ' + JUNK_SCENARIOS.length + ' scenarios mastered')
+          )
+        )
+      ),
       backBtn('menu', null, 'Main menu'),
       h('div', { className: 'flex items-center justify-between' },
         h('h2', { className: 'text-2xl font-black text-fuchsia-200' }, '\uD83D\uDD0D Spot the Junk Science'),
         h('span', { className: 'text-xs font-bold text-slate-400' }, 'Item ' + (idx + 1) + ' / ' + total)
       ),
       h('p', { className: 'text-xs text-slate-300 leading-relaxed' }, 'Read the claim. Decide: is this legitimate psychometric evidence, suspect framing, or outright pseudoscience? You get one guess per item. Reasoning is revealed after you answer.'),
+      // Cross-attempt mastery summary (only shown when student has \u22651 correct).
+      _masteredCount > 0 && h('div', { className: 'p-3 rounded-lg border border-fuchsia-500/40',
+        style: { background: 'rgba(192,38,211,0.10)' } },
+        h('div', { className: 'flex items-center gap-3' },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, '\uD83C\uDFC5'),
+          h('div', { className: 'flex-1' },
+            h('div', { className: 'text-xs font-bold text-fuchsia-200' }, 'Junk-Science Mastery: ' + _masteredCount + ' / ' + JUNK_SCENARIOS.length + ' scenarios locked in'),
+            h('div', { className: 'text-[10px] text-slate-400 italic mt-1' }, 'Per-attempt scores reset; mastery sticks across every retake.')
+          )
+        )
+      ),
 
       h('section', { className: 'p-5 rounded-xl bg-slate-800/70 border border-fuchsia-500/30' },
         h('div', { className: 'text-xs font-bold text-fuchsia-300 mb-2' }, 'CLAIM'),

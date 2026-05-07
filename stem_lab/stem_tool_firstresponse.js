@@ -33,6 +33,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
 (function() {
   'use strict';
 
+  // ── FirstResponse keyframes (mastery celebration) ──
+  (function() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('firstresponse-celeb-css')) return;
+    var st = document.createElement('style');
+    st.id = 'firstresponse-celeb-css';
+    st.textContent = [
+      '@keyframes firstresponse-celeb-rise {',
+      '  0%   { transform: translate(-50%, -120%); opacity: 0; }',
+      '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  88%  { transform: translate(-50%, 0%);    opacity: 1; }',
+      '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+      '}'
+    ].join('');
+    if (document.head) document.head.appendChild(st);
+  })();
+
   // ── Accessibility live region (WCAG 4.1.3) ──
   (function() {
     if (typeof document === 'undefined') return;
@@ -327,13 +344,99 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       var gradeBand = (ctx.gradeBand || 'g68').toLowerCase();
       if (['k2','g35','g68','g912'].indexOf(gradeBand) === -1) gradeBand = 'g68';
 
+      // ── First Action Sleuth shared data (hoisted so both the play view
+      // and the Mastery view can reference the same canonical list) ──
+      var FA_ACTIONS = [
+        { id: 'callEMS',  label: 'Call 911',                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
+        { id: 'cpr',      label: 'Start CPR',                 color: '#ef4444', icon: '❤️', def: 'Hands-only chest compressions, 2 inches deep, 100–120/min.' },
+        { id: 'aed',      label: 'Apply AED',                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
+        { id: 'pressure', label: 'Direct pressure',           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
+        { id: 'heimlich', label: 'Abdominal thrusts',         color: '#0ea5e9', icon: '🫶', def: 'Inward and upward thrusts above the navel until object dislodges.' },
+        { id: 'recovery', label: 'Recovery position',         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
+      ];
+      // Compact vignette index for Mastery view (full scenarios still live in
+      // renderFirstActionSleuth's local block to keep this hoist small).
+      var FA_VIGNETTE_INDEX = [
+        { id: 1,  short: 'Coworker collapse — unresponsive, no pulse',           correct: 'callEMS' },
+        { id: 2,  short: '7-year-old pulled from pool — alone',                  correct: 'cpr' },
+        { id: 3,  short: 'Bright-red pulsing bleed — thigh',                     correct: 'pressure' },
+        { id: 4,  short: 'Choking at dinner — universal sign',                   correct: 'heimlich' },
+        { id: 5,  short: 'CPR in progress, AED arrives ready',                   correct: 'aed' },
+        { id: 6,  short: 'Post-seizure, breathing normally',                     correct: 'recovery' },
+        { id: 7,  short: 'Sudden FAST-positive (face droop, slurred speech)',    correct: 'callEMS' },
+        { id: 8,  short: 'Crushing chest pain radiating to left arm',            correct: 'callEMS' },
+        { id: 9,  short: 'Unresponsive adult, breathing normally',               correct: 'recovery' },
+        { id: 10, short: 'Severe asthma attack, cannot speak in sentences',      correct: 'callEMS' }
+      ];
+
       // ── State schema (defaults for first launch) ──
       var view = d.view || 'menu';
       var consentAccepted = !!d.consentAccepted;
       var modulesVisited = d.modulesVisited || {};
       var quizResults = d.quizResults || {};
       var badges = d.badges || {};
+      var faMastery = d.faMastery || {};
       var quizState = d.quizState || { idx: 0, score: 0, answered: false, lastChoice: null };
+
+      // ── Hydration + Canvas-survival persistence ──
+      // The StemLab host's localStorage block does not include firstResponse,
+      // so reloads wipe state by default. Layer our own: window slot →
+      // localStorage → host state, plus project-JSON ride-along.
+      var _frHydrated = useRef(false);
+      if (!_frHydrated.current) {
+        _frHydrated.current = true;
+        try {
+          var winState = (typeof window !== 'undefined' && window.__alloflowFirstResponse) || null;
+          var lsState = null;
+          try { lsState = JSON.parse(localStorage.getItem('firstResponse.state.v1') || 'null'); } catch (e) {}
+          var seed = winState || lsState || null;
+          if (seed && typeof seed === 'object') {
+            var merge = {};
+            if (seed.consentAccepted && d.consentAccepted === undefined) merge.consentAccepted = seed.consentAccepted;
+            if (seed.badges && d.badges === undefined) merge.badges = seed.badges;
+            if (seed.modulesVisited && d.modulesVisited === undefined) merge.modulesVisited = seed.modulesVisited;
+            if (seed.faMastery && d.faMastery === undefined) merge.faMastery = seed.faMastery;
+            if (Object.keys(merge).length > 0) updMulti(merge);
+          }
+        } catch (e) {}
+      }
+
+      // First-correct celebration state (auto-clears after 3.5s).
+      var _frCeleb = useState(null);
+      var frCeleb = _frCeleb[0];
+      var setFrCeleb = _frCeleb[1];
+
+      // Mirror persistent state to window slot + localStorage.
+      useEffect(function () {
+        try {
+          var snapshot = {
+            consentAccepted: !!d.consentAccepted,
+            badges: d.badges || {},
+            modulesVisited: d.modulesVisited || {},
+            faMastery: d.faMastery || {},
+            _ts: Date.now()
+          };
+          window.__alloflowFirstResponse = snapshot;
+          try { localStorage.setItem('firstResponse.state.v1', JSON.stringify(snapshot)); } catch (e) {}
+        } catch (e) {}
+      }, [d.consentAccepted, d.badges, d.modulesVisited, d.faMastery]);
+
+      // Hot-reload from project-JSON load mid-session.
+      useEffect(function () {
+        function onRestore() {
+          try {
+            var w = window.__alloflowFirstResponse || {};
+            var patch = {};
+            if (w.consentAccepted) patch.consentAccepted = w.consentAccepted;
+            if (w.badges) patch.badges = w.badges;
+            if (w.modulesVisited) patch.modulesVisited = w.modulesVisited;
+            if (w.faMastery) patch.faMastery = w.faMastery;
+            if (Object.keys(patch).length > 0) updMulti(patch);
+          } catch (e) {}
+        }
+        window.addEventListener('alloflow-firstresponse-restored', onRestore);
+        return function () { window.removeEventListener('alloflow-firstresponse-restored', onRestore); };
+      }, []);
 
       // Award badge once (idempotent). frAnnounce + toast for SR + visual feedback.
       function awardBadge(id, label) {
@@ -464,18 +567,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         { id: 'scenarios', icon: '🎭', label: 'Scenario sim', desc: 'Multi-step branching emergency decisions.', ready: true },
         { id: 'firstAction', icon: '🎯', label: 'First Action Sleuth', desc: '10 vignettes. Pick the FIRST action from 6 options (call EMS, CPR, AED, pressure, abdominal thrusts, recovery position). Builds the decision reflex.', ready: true },
         { id: 'aiPractice', icon: '🤖', label: 'AI Practice', desc: 'Novel scenes — you write the response, AI critiques.', ready: true },
+        { id: 'mastery', icon: '🏅', label: 'Responder Mastery', desc: 'Cross-attempt log of every First Action scenario you have nailed, plus per-action coverage.', ready: true },
         { id: 'resources', icon: '📚', label: 'Resources', desc: 'Every org cited in this tool. Tap to call or visit.', ready: true }
       ];
 
       function renderMenu() {
         var visitedCount = Object.keys(modulesVisited).length;
+        var _mMastery = (d.faMastery && typeof d.faMastery === 'object') ? d.faMastery : {};
+        var _mDoneCount = FA_VIGNETTE_INDEX.filter(function (v) { return !!_mMastery[v.id]; }).length;
+        var _mTotal = FA_VIGNETTE_INDEX.length;
         return h('div', { style: { padding: 20, maxWidth: 960, margin: '0 auto', color: T.text } },
           emergencyBanner(),
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 } },
             h('h2', { style: { margin: 0, fontSize: 22 } }, '🚑 First Response Lab'),
-            h('div', { style: { fontSize: 12, color: T.dim } },
-              'Modules visited: ',
-              h('strong', { style: { color: T.text } }, visitedCount + ' / 9'))
+            h('div', { style: { display: 'flex', gap: 14, fontSize: 12, color: T.dim, flexWrap: 'wrap' } },
+              h('span', null, 'Modules: ', h('strong', { style: { color: T.text } }, visitedCount + ' / ' + (MENU_TILES.length - 1))),
+              h('span', { 'aria-label': 'Responder mastery: ' + _mDoneCount + ' of ' + _mTotal + ' scenarios mastered' },
+                h('span', { 'aria-hidden': 'true' }, '🏅 '),
+                'Mastery: ',
+                h('strong', { style: { color: _mDoneCount > 0 ? T.accentHi : T.text } }, _mDoneCount + ' / ' + _mTotal)
+              )
+            )
           ),
           h('p', { style: { margin: '0 0 16px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
             'Pick a module. Start with ',
@@ -2646,6 +2758,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           upd('faRounds', faRounds + 1);
           upd('faStreak', newStreak);
           upd('faBest', newBest);
+          // ── Mastery: per-vignette first-correct log ──
+          // Per-attempt streak/score reset between sessions; mastery sticks.
+          // First correct on a given vignette fires a celebration overlay.
+          if (correct) {
+            var prevMastery = (d.faMastery && typeof d.faMastery === 'object') ? d.faMastery : {};
+            var existingEntry = prevMastery[v.id];
+            var nowIso = new Date().toISOString();
+            var nextMastery = Object.assign({}, prevMastery);
+            if (existingEntry) {
+              nextMastery[v.id] = Object.assign({}, existingEntry, {
+                lastCorrectAt: nowIso,
+                correctCount: (existingEntry.correctCount || 0) + 1
+              });
+            } else {
+              var actionInfo = ACTIONS.filter(function (a) { return a.id === v.correct; })[0] || { label: v.correct, icon: '✓' };
+              nextMastery[v.id] = {
+                firstCorrectAt: nowIso,
+                lastCorrectAt: nowIso,
+                correctCount: 1,
+                action: v.correct,
+                actionLabel: actionInfo.label,
+                actionIcon: actionInfo.icon
+              };
+              try {
+                setFrCeleb({
+                  vignetteId: v.id,
+                  scenario: v.scenario,
+                  action: v.correct,
+                  actionLabel: actionInfo.label,
+                  actionIcon: actionInfo.icon,
+                  total: Object.keys(nextMastery).length,
+                  at: Date.now()
+                });
+                setTimeout(function () { setFrCeleb(null); }, 3500);
+              } catch (e) {}
+              // Progressive scenario-mastery badges.
+              var uniq = Object.keys(nextMastery).length;
+              if (uniq >= 5) awardBadge('fr_first_responder', 'First Responder (5 scenarios)');
+              if (uniq >= 10) awardBadge('fr_master_responder', 'Master Responder (all 10)');
+            }
+            upd('faMastery', nextMastery);
+          }
           frAnnounce(correct ? 'Correct: ' + (ACTIONS.filter(function(x) { return x.id === v.correct; })[0]).label : 'Not quite');
         }
 
@@ -2775,26 +2929,174 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ─────────────────────────────────────────
       // VIEW ROUTER
       // ─────────────────────────────────────────
+      // ─────────────────────────────────────────
+      // RESPONDER MASTERY VIEW
+      // Cross-attempt log of First Action Sleuth vignettes the student has
+      // answered correctly at least once. Mirrors the BirdLab life list /
+      // PetsLab decoder mastery / OpticsLab / WeldLab pattern.
+      // ─────────────────────────────────────────
+      function renderResponderMastery() {
+        var mastery = (d.faMastery && typeof d.faMastery === 'object') ? d.faMastery : {};
+        var total = FA_VIGNETTE_INDEX.length;
+        var doneVignettes = FA_VIGNETTE_INDEX.filter(function (v) { return !!mastery[v.id]; });
+        var doneCount = doneVignettes.length;
+        var pct = total > 0 ? Math.round((doneCount / total) * 100) : 0;
+        function fmtDate(iso) {
+          if (!iso) return '';
+          try {
+            var dd = new Date(iso);
+            return dd.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          } catch (e) { return iso.substring(0, 10); }
+        }
+        // Per-action rollup: how many of each first-action have been demonstrated.
+        var actionCounts = {};
+        Object.keys(mastery).forEach(function (vid) {
+          var entry = mastery[vid];
+          if (entry && entry.action) actionCounts[entry.action] = (actionCounts[entry.action] || 0) + 1;
+        });
+        var actionTotals = {};
+        FA_VIGNETTE_INDEX.forEach(function (v) { actionTotals[v.correct] = (actionTotals[v.correct] || 0) + 1; });
+        return h('div', { style: { padding: 20, maxWidth: 920, margin: '0 auto', color: T.text } },
+          backBar('🏅 Responder Mastery'),
+          // Hero
+          h('div', { style: { padding: 18, borderRadius: 14, marginBottom: 14,
+                              background: 'linear-gradient(135deg, ' + T.cardAlt + ' 0%, ' + T.card + ' 100%)',
+                              border: '2px solid ' + T.accent } },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap' } },
+              h('div', { style: { textAlign: 'center', minWidth: 110 } },
+                h('div', { style: { fontSize: 38, fontWeight: 900, color: T.accentHi, lineHeight: 1 } }, doneCount + ' / ' + total),
+                h('div', { style: { fontSize: 9, fontWeight: 800, color: T.dim, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 4 } }, 'Scenarios mastered')
+              ),
+              h('div', { style: { flex: 1, minWidth: 240 } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, '🏅'),
+                  h('h3', { style: { margin: 0, fontSize: 17, color: T.text, fontWeight: 800 } }, "Responder Mastery")
+                ),
+                h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                  'Every First Action Sleuth scenario you answer correctly at least once locks in here. Per-attempt streak resets between sessions; mastery sticks. Build coverage across all 10 scenarios — and across all 6 first actions — before you trust your reflex.'),
+                h('div', { style: { height: 8, background: T.cardAlt, borderRadius: 4, overflow: 'hidden' }, 'aria-hidden': 'true' },
+                  h('div', { style: { width: pct + '%', height: '100%', background: T.accent, transition: 'width 0.3s' } })
+                ),
+                h('div', { style: { fontSize: 10, color: T.dim, marginTop: 4, fontWeight: 700 } },
+                  pct === 100 ? '🏆 All 10 scenarios mastered'
+                  : doneCount === 0 ? 'Open First Action Sleuth to start building mastery'
+                  : pct + '% complete · ' + (total - doneCount) + ' to go'
+                )
+              )
+            )
+          ),
+          // Per-action breakdown
+          h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+            h('div', { style: { fontSize: 13, fontWeight: 800, color: T.text, marginBottom: 10 } }, 'First-action coverage'),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+              FA_ACTIONS.map(function (a) {
+                var done = actionCounts[a.id] || 0;
+                var avail = actionTotals[a.id] || 0;
+                if (avail === 0) return null;
+                var aPct = avail > 0 ? Math.round((done / avail) * 100) : 0;
+                return h('div', { key: a.id,
+                  style: { padding: '8px 10px', borderRadius: 8,
+                           background: a.color + (done > 0 ? '20' : '08'),
+                           border: '1px solid ' + a.color + (done > 0 ? '88' : '33') }
+                },
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, a.icon),
+                    h('span', { style: { color: a.color, fontWeight: 800, fontSize: 12 } }, a.label),
+                    h('span', { style: { fontSize: 11, color: T.dim, marginLeft: 'auto', fontWeight: 700 } }, done + ' / ' + avail)
+                  ),
+                  h('div', { style: { height: 4, background: T.cardAlt, borderRadius: 2, overflow: 'hidden' }, 'aria-hidden': 'true' },
+                    h('div', { style: { width: aPct + '%', height: '100%', background: a.color } })
+                  )
+                );
+              })
+            )
+          ),
+          // Per-scenario list
+          h('section', null,
+            h('h3', { style: { fontSize: 13, fontWeight: 800, margin: '0 0 8px', color: T.text } }, 'Scenarios'),
+            h('ul', { style: { listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 6 } },
+              FA_VIGNETTE_INDEX.map(function (v) {
+                var entry = mastery[v.id];
+                var done = !!entry;
+                var actionInfo = FA_ACTIONS.filter(function (a) { return a.id === v.correct; })[0] || { label: v.correct, icon: '✓', color: T.dim };
+                return h('li', { key: v.id,
+                  style: { display: 'flex', alignItems: 'flex-start', gap: 10,
+                           padding: '10px 12px', borderRadius: 10,
+                           background: done ? T.cardAlt : T.cardAlt,
+                           border: '1px solid ' + (done ? actionInfo.color + '88' : T.border),
+                           opacity: done ? 1 : 0.7 }
+                },
+                  h('span', { 'aria-hidden': 'true', style: { color: done ? T.ok : T.dim, fontSize: 18, flexShrink: 0, marginTop: 1 } }, done ? '✓' : '○'),
+                  h('div', { style: { flex: 1, minWidth: 0 } },
+                    h('div', { style: { fontSize: 12, fontWeight: 800, color: done ? T.text : T.muted, marginBottom: 2 } },
+                      'Scenario ' + v.id + ': ' + v.short
+                    ),
+                    h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: done ? T.muted : T.dim } },
+                      h('span', { 'aria-hidden': 'true' }, actionInfo.icon),
+                      h('span', { style: { color: actionInfo.color, fontWeight: 700 } }, actionInfo.label),
+                      done && entry.firstCorrectAt && h('span', { style: { color: T.dim, marginLeft: 'auto', fontStyle: 'italic' } }, fmtDate(entry.firstCorrectAt))
+                    )
+                  )
+                );
+              })
+            )
+          ),
+          h('div', { style: { marginTop: 14, padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.accent } },
+            h('button', { 'data-fr-focusable': true,
+              onClick: function () { upd({ view: 'firstAction', faIdx: -1, faAnswered: false, faPick: null, faShown: [] }); },
+              style: btnPrimary({ width: '100%', textAlign: 'center' })
+            }, doneCount === 0 ? '🎯 Open First Action Sleuth to start'
+              : doneCount === total ? '🏆 All mastered — re-attempt to reinforce reflex'
+              : '🎯 Keep going — fill in the remaining scenarios')
+          )
+        );
+      }
+
+      // First-correct celebration overlay (renders on top of any view).
+      function frCelebOverlay() {
+        if (!frCeleb) return null;
+        return h('div', {
+          role: 'status', 'aria-live': 'assertive',
+          style: { position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)',
+                   zIndex: 9999, pointerEvents: 'none',
+                   animation: 'firstresponse-celeb-rise 3.5s ease-out forwards', maxWidth: 480 }
+        },
+          h('div', { style: { background: 'linear-gradient(135deg, #dc2626 0%, #f59e0b 50%, #16a34a 100%)',
+                              color: '#fff', padding: '14px 22px', borderRadius: 16,
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.35)', border: '4px solid #fff',
+                              display: 'flex', alignItems: 'center', gap: 12 } },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 28 } }, frCeleb.actionIcon || '🎯'),
+            h('div', null,
+              h('div', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', opacity: 0.95 } }, 'First action locked in'),
+              h('div', { style: { fontSize: 13, fontWeight: 800, lineHeight: 1.3 } }, 'Scenario ' + frCeleb.vignetteId + ' — ' + (frCeleb.actionLabel || 'correct')),
+              h('div', { style: { fontSize: 11, fontStyle: 'italic', opacity: 0.95, marginTop: 2 } }, frCeleb.total + ' / ' + FA_VIGNETTE_INDEX.length + ' scenarios mastered')
+            )
+          )
+        );
+      }
+
       // Consent gate blocks every view EXCEPT 'resources' (emergencies always
       // need access to phone numbers, even from a fresh install).
       if (!consentAccepted && view !== 'resources') {
         return renderConsent();
       }
+      var viewBody;
       switch (view) {
-        case 'recognize':       return renderRecognize();
-        case 'call':            return renderCall();
-        case 'cprAed':          return renderCprAed();
-        case 'bleed':           return renderBleed();
-        case 'choking':         return renderChoking();
-        case 'disabilityAware': return renderDisabilityAware();
-        case 'scenarios':       return renderScenarios();
-        case 'firstAction':     return renderFirstActionSleuth();
-        case 'aiPractice':      return renderAiPractice();
-        case 'resources':       return renderResources();
+        case 'recognize':       viewBody = renderRecognize(); break;
+        case 'call':            viewBody = renderCall(); break;
+        case 'cprAed':          viewBody = renderCprAed(); break;
+        case 'bleed':           viewBody = renderBleed(); break;
+        case 'choking':         viewBody = renderChoking(); break;
+        case 'disabilityAware': viewBody = renderDisabilityAware(); break;
+        case 'scenarios':       viewBody = renderScenarios(); break;
+        case 'firstAction':     viewBody = renderFirstActionSleuth(); break;
+        case 'aiPractice':      viewBody = renderAiPractice(); break;
+        case 'resources':       viewBody = renderResources(); break;
+        case 'mastery':         viewBody = renderResponderMastery(); break;
         case 'menu':
-        default:
-          return renderMenu();
+        default:                viewBody = renderMenu(); break;
       }
+      return React.createElement(React.Fragment, null, frCelebOverlay(), viewBody);
       } catch(e) {
         console.error('[FirstResponse] render error', e);
         return ctx.React.createElement('div', { style: { padding: 16, color: '#fde2e2', background: '#7f1d1d', borderRadius: 8 } },
