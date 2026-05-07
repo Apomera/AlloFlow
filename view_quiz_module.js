@@ -67,52 +67,89 @@
     return copy;
   }
 
-  // ─── SequencingItemCard (Plan S Slice 4) ──────────────────────────────
-  // Up/down buttons for reordering. Accessible by default; no drag-drop
-  // library needed. Deterministic grade by comparing current order to the
-  // canonical items[] order from generation.
-  function SequencingItemCard(p) {
+  // ─── SequenceSenseCard (Plan S Slice 5) ───────────────────────────────
+  // 3-step diagnostic that probes verification + diagnosis + metacognitive
+  // reasoning about WHY ordering matters. Genuinely distinct from Timeline
+  // (which produces an order); this verifies, diagnoses, AND identifies
+  // the underlying principle. Deterministic grade.
+  function SequenceSenseCard(p) {
     var q = p.q;
-    var canonicalItems = Array.isArray(q.items) ? q.items.map(function (it) { return typeof it === 'string' ? it : (it && it.text) || ''; }).filter(Boolean) : [];
-    // Initial state: shuffled copy. useState initializer runs once.
-    var orderState = React.useState(function () { return _quizShuffleCopy(canonicalItems); });
-    var currentOrder = orderState[0]; var setOrder = orderState[1];
-    var gradeState = React.useState({ status: null, score: null, correctIndices: null });
+    var canonicalItems = Array.isArray(q.items) ? q.items.filter(Boolean) : [];
+    var intentionallyWrongIndex = (typeof q.intentionallyWrongIndex === 'number') ? q.intentionallyWrongIndex : null;
+    var orderingPrinciple = q.orderingPrinciple || 'chronological';
+    var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2
+      ? q.principleOptions
+      : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
+
+    // Derive presentedOrder: use q.presentedOrder if provided, else shuffle once on first render.
+    var presentedOrderState = React.useState(function () {
+      if (Array.isArray(q.presentedOrder) && q.presentedOrder.length === canonicalItems.length) {
+        return q.presentedOrder.slice();
+      }
+      // Fallback: shuffle indices
+      var indices = canonicalItems.map(function (_, i) { return i; });
+      for (var i = indices.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = indices[i]; indices[i] = indices[j]; indices[j] = tmp;
+      }
+      return indices;
+    });
+    var presentedOrder = presentedOrderState[0];
+
+    var stepState = React.useState(1);  // 1 = verify, 2 = click misplaced, 3 = principle, 'done'
+    var step = stepState[0]; var setStep = stepState[1];
+    var verifyState = React.useState(null);  // 'yes' | 'no'
+    var verifyAnswer = verifyState[0]; var setVerifyAnswer = verifyState[1];
+    var clickedState = React.useState(null);  // index in presentedOrder of which item student thought was misplaced
+    var clickedIdx = clickedState[0]; var setClickedIdx = clickedState[1];
+    var principleState = React.useState(null);
+    var principleAnswer = principleState[0]; var setPrincipleAnswer = principleState[1];
+    var gradeState = React.useState(null);  // {step1Correct, step2Correct, step3Correct, status, score}
     var grade = gradeState[0]; var setGrade = gradeState[1];
 
-    function moveItem(idx, dir) {
-      var swap = idx + dir;
-      if (swap < 0 || swap >= currentOrder.length) return;
-      var next = currentOrder.slice();
-      var tmp = next[idx]; next[idx] = next[swap]; next[swap] = tmp;
-      setOrder(next);
+    function answerVerify(ans) {
+      setVerifyAnswer(ans);
+      // If user says "No", they need to identify the misplaced item; if "Yes", skip to principle.
+      setStep(ans === 'no' ? 2 : 3);
     }
 
-    function submitGrade() {
-      // Score: number of items in their correct canonical position
-      var correctIndices = [];
-      var correctCount = 0;
-      for (var i = 0; i < currentOrder.length; i++) {
-        var isCorrect = currentOrder[i] === canonicalItems[i];
-        if (isCorrect) { correctCount++; correctIndices.push(i); }
+    function answerMisplaced(idx) {
+      setClickedIdx(idx);
+      setStep(3);
+    }
+
+    function answerPrinciple(p2) {
+      setPrincipleAnswer(p2);
+      // Compute composite grade
+      var actualOrderIsCorrect = (intentionallyWrongIndex === null);
+      var step1Correct = (verifyAnswer === 'yes') ? actualOrderIsCorrect : !actualOrderIsCorrect;
+      var step2Correct;
+      if (verifyAnswer === 'yes') {
+        // User skipped step 2 — give credit if their step 1 was right (the order really was correct)
+        step2Correct = step1Correct;
+      } else {
+        step2Correct = (clickedIdx === intentionallyWrongIndex);
       }
-      var pct = canonicalItems.length > 0 ? Math.round((correctCount / canonicalItems.length) * 100) : 0;
-      var status = pct === 100 ? 'correct' :
-                   pct >= 50 ? 'partially-correct' :
-                   'incorrect';
-      setGrade({ status: status, score: pct, correctIndices: correctIndices });
+      var step3Correct = (p2 === orderingPrinciple);
+      var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
+      var status = score === 3 ? 'correct' : score === 2 ? 'partially-correct' : 'incorrect';
+      setGrade({ step1Correct: step1Correct, step2Correct: step2Correct, step3Correct: step3Correct, status: status, score: score });
+      setStep('done');
     }
 
-    function shuffleAgain() {
-      setOrder(_quizShuffleCopy(canonicalItems));
-      setGrade({ status: null, score: null, correctIndices: null });
+    function reset() {
+      setStep(1);
+      setVerifyAnswer(null);
+      setClickedIdx(null);
+      setPrincipleAnswer(null);
+      setGrade(null);
     }
-
-    var statusColor = grade.status === 'correct' ? 'emerald' :
-                      grade.status === 'partially-correct' ? 'amber' :
-                      grade.status === 'incorrect' ? 'rose' : 'slate';
 
     if (canonicalItems.length === 0) return null;
+
+    var statusColor = grade && grade.status === 'correct' ? 'emerald' :
+                      grade && grade.status === 'partially-correct' ? 'amber' :
+                      grade ? 'rose' : 'slate';
 
     return React.createElement('div', {
       className: 'bg-white p-5 rounded-xl border border-slate-300 shadow-sm',
@@ -120,207 +157,151 @@
       React.createElement('div', { className: 'flex items-start gap-3 mb-3' },
         React.createElement('span', { className: 'flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5' }, p.itemNumber),
         React.createElement('div', { className: 'flex-1 min-w-0' },
-          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, 'Sequencing'),
-          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || 'Put these in the correct order:')
+          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, 'Sequence Sense'),
+          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || 'Below is a sequence. Verify and explain.')
         )
       ),
-      // Items list with up/down buttons
-      React.createElement('ol', { className: 'space-y-1.5 mb-2' },
-        currentOrder.map(function (item, idx) {
-          var isCorrectPos = grade.correctIndices && grade.correctIndices.indexOf(idx) !== -1;
-          var rowClass = grade.status
-            ? (isCorrectPos ? 'bg-emerald-50 border-emerald-300' : 'bg-rose-50 border-rose-300')
-            : 'bg-slate-50 border-slate-300';
+      // Items list — clickable in step 2, otherwise read-only
+      React.createElement('ol', { className: 'space-y-1.5 mb-3' },
+        presentedOrder.map(function (canonicalIdx, displayIdx) {
+          var item = canonicalItems[canonicalIdx];
+          var isClickable = step === 2;
+          var isClicked = clickedIdx === displayIdx;
+          var showCorrectness = grade !== null;
+          var thisIsActuallyMisplaced = (intentionallyWrongIndex === displayIdx);
+          var rowClass;
+          if (showCorrectness) {
+            if (thisIsActuallyMisplaced) rowClass = 'bg-amber-50 border-amber-400';
+            else if (isClicked) rowClass = 'bg-rose-50 border-rose-400';
+            else rowClass = 'bg-slate-50 border-slate-300';
+          } else if (isClicked) {
+            rowClass = 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300';
+          } else {
+            rowClass = 'bg-slate-50 border-slate-300' + (isClickable ? ' hover:bg-slate-100 cursor-pointer' : '');
+          }
           return React.createElement('li', {
-            key: idx + '-' + item,
+            key: displayIdx,
+            onClick: isClickable ? function () { answerMisplaced(displayIdx); } : null,
             className: 'flex items-center gap-2 px-3 py-2 rounded-lg border ' + rowClass,
+            role: isClickable ? 'button' : undefined,
+            tabIndex: isClickable ? 0 : undefined,
+            onKeyDown: isClickable ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); answerMisplaced(displayIdx); } } : undefined,
           },
-            React.createElement('span', { className: 'flex-shrink-0 text-xs font-bold text-slate-500 w-6' }, (idx + 1) + '.'),
+            React.createElement('span', { className: 'flex-shrink-0 text-xs font-bold text-slate-500 w-6' }, (displayIdx + 1) + '.'),
             React.createElement('span', { className: 'flex-1 text-sm text-slate-800' }, item),
-            !grade.status && React.createElement('button', {
-              type: 'button',
-              onClick: function () { moveItem(idx, -1); },
-              disabled: idx === 0,
-              className: 'flex-shrink-0 px-2 py-0.5 rounded text-xs font-bold bg-slate-200 hover:bg-slate-300 disabled:opacity-30 disabled:cursor-not-allowed',
-              'aria-label': 'Move up',
-              title: 'Move up',
-            }, '▲'),
-            !grade.status && React.createElement('button', {
-              type: 'button',
-              onClick: function () { moveItem(idx, 1); },
-              disabled: idx === currentOrder.length - 1,
-              className: 'flex-shrink-0 px-2 py-0.5 rounded text-xs font-bold bg-slate-200 hover:bg-slate-300 disabled:opacity-30 disabled:cursor-not-allowed',
-              'aria-label': 'Move down',
-              title: 'Move down',
-            }, '▼'),
-            grade.status && React.createElement('span', {
-              className: 'flex-shrink-0 text-xs font-bold ' + (isCorrectPos ? 'text-emerald-700' : 'text-rose-700'),
-            }, isCorrectPos ? '✓' : '✗')
+            showCorrectness && thisIsActuallyMisplaced && React.createElement('span', { className: 'text-xs font-bold text-amber-700' }, '↔ misplaced'),
+            showCorrectness && isClicked && !thisIsActuallyMisplaced && React.createElement('span', { className: 'text-xs font-bold text-rose-700' }, '✗')
           );
         })
       ),
-      // Submit / retry
-      React.createElement('div', { className: 'flex items-center gap-2 mt-2 flex-wrap' },
-        React.createElement('button', {
-          type: 'button',
-          onClick: submitGrade,
-          disabled: grade.status === 'correct',
-          className: 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
-        }, grade.status === 'correct' ? 'Perfect order!' : grade.status ? 'Re-check' : 'Check my order'),
-        grade.status && grade.status !== 'correct' && React.createElement('button', {
-          type: 'button',
-          onClick: shuffleAgain,
-          className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors',
-        }, 'Shuffle and try again')
+      // Step 1: verify
+      step === 1 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
+        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900 mb-2' }, 'Step 1 of 3 — Is this order correct?'),
+        React.createElement('div', { className: 'flex gap-2' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { answerVerify('yes'); },
+            className: 'flex-1 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold transition-colors',
+          }, '✓ Yes, correct'),
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { answerVerify('no'); },
+            className: 'flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors',
+          }, '✗ No, something is off')
+        )
       ),
-      // Feedback panel
-      grade.status && React.createElement('div', {
+      // Step 2: click the misplaced
+      step === 2 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
+        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900' }, 'Step 2 of 3 — Click the item that\'s out of place above.')
+      ),
+      // Step 3: pick the principle
+      step === 3 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
+        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900 mb-2' }, 'Step 3 of 3 — What\'s the ordering principle?'),
+        React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2' },
+          principleOptions.map(function (opt) {
+            return React.createElement('button', {
+              key: opt,
+              type: 'button',
+              onClick: function () { answerPrinciple(opt); },
+              className: 'px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors',
+            }, opt);
+          })
+        )
+      ),
+      // Grade panel (after step 'done')
+      grade && React.createElement('div', {
         className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
         role: 'status',
+        'aria-live': 'polite',
       },
-        React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900 mr-2' },
-          grade.status === 'correct' ? '✓ All correct' :
-          grade.status === 'partially-correct' ? ('~ ' + grade.score + '% in correct position') :
-          ('✗ ' + grade.score + '% in correct position')),
-        React.createElement('span', { className: 'text-sm text-' + statusColor + '-900' },
-          grade.status === 'correct' ? 'Nice — every item is in the right place.' :
-          'Items marked ✗ are out of place. Try the shuffle button to start fresh.')
+        React.createElement('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
+          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' },
+            grade.score + ' / 3 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
+        ),
+        React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
+          React.createElement('li', null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (intentionallyWrongIndex === null ? 'order was correct' : 'order had one misplaced item') + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')),
+          verifyAnswer === 'no' && React.createElement('li', null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found the misplaced item' : 'the misplaced item was item #' + ((intentionallyWrongIndex || 0) + 1))),
+          React.createElement('li', null, (grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")'))
+        ),
+        React.createElement('button', {
+          type: 'button',
+          onClick: reset,
+          className: 'mt-2 px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
+        }, 'Try again')
       )
     );
   }
 
-  // ─── MatchingItemCard (Plan S Slice 4) ────────────────────────────────
-  // Click-to-pair UI. Click a left item, then click a right item to pair
-  // them. Each pair gets a color/number stamp. Click an existing pair to
-  // unpair. Deterministic grade.
-  function MatchingItemCard(p) {
+  // ─── RelationMismatchCard (Plan S Slice 5) ────────────────────────────
+  // 2-step diagnostic: find the wrong pair, then pick the correct partner.
+  // Distinct from Glossary's matching/memory game (which tests recall of all
+  // pairs). This tests pair-error recognition + corrective reasoning.
+  // Deterministic grade.
+  function RelationMismatchCard(p) {
     var q = p.q;
-    var canonicalPairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pair) {
-      return pair && (pair.left || pair.left_text) && (pair.right || pair.right_text);
-    }).map(function (pair) {
-      return { left: pair.left || pair.left_text, right: pair.right || pair.right_text };
-    }) : [];
-    var leftItems = canonicalPairs.map(function (pair) { return pair.left; });
-    var rightItemsCanonical = canonicalPairs.map(function (pair) { return pair.right; });
-    // Shuffle right column for display
-    var rightItemsState = React.useState(function () { return _quizShuffleCopy(rightItemsCanonical); });
-    var rightItems = rightItemsState[0];
-    // pairings: object map { leftItem: rightItem }
-    var pairingsState = React.useState({});
-    var pairings = pairingsState[0]; var setPairings = pairingsState[1];
-    var selectedLeftState = React.useState(null);
-    var selectedLeft = selectedLeftState[0]; var setSelectedLeft = selectedLeftState[1];
-    var gradeState = React.useState({ status: null, score: null, correctSet: null });
+    var pairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pr) { return pr && pr.left && pr.right; }) : [];
+    var wrongPairIndex = (typeof q.wrongPairIndex === 'number') ? q.wrongPairIndex : 0;
+    var correctPartnerForWrong = q.correctPartnerForWrong || '';
+    var candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
+
+    var stepState = React.useState(1);
+    var step = stepState[0]; var setStep = stepState[1];
+    var clickedPairState = React.useState(null);
+    var clickedPairIdx = clickedPairState[0]; var setClickedPairIdx = clickedPairState[1];
+    var partnerAnswerState = React.useState(null);
+    var partnerAnswer = partnerAnswerState[0]; var setPartnerAnswer = partnerAnswerState[1];
+    var gradeState = React.useState(null);
     var grade = gradeState[0]; var setGrade = gradeState[1];
 
-    var rightToLeftMap = {};
-    Object.keys(pairings).forEach(function (l) { rightToLeftMap[pairings[l]] = l; });
-
-    function selectLeft(item) {
-      if (grade.status === 'correct') return;
-      // If this left already has a pair, unpair it
-      if (pairings[item]) {
-        var next = Object.assign({}, pairings);
-        delete next[item];
-        setPairings(next);
-        setSelectedLeft(null);
-        return;
-      }
-      setSelectedLeft(selectedLeft === item ? null : item);
+    function answerWhichWrong(idx) {
+      setClickedPairIdx(idx);
+      setStep(2);
     }
 
-    function selectRight(item) {
-      if (grade.status === 'correct') return;
-      if (selectedLeft === null) {
-        // Right clicked without a left selected: if this right is already paired, unpair it
-        if (rightToLeftMap[item]) {
-          var next = Object.assign({}, pairings);
-          delete next[rightToLeftMap[item]];
-          setPairings(next);
-        }
-        return;
-      }
-      // Pair the selected left with this right (if right is already paired, unpair the old left first)
-      var next = Object.assign({}, pairings);
-      if (rightToLeftMap[item] && rightToLeftMap[item] !== selectedLeft) {
-        delete next[rightToLeftMap[item]];
-      }
-      next[selectedLeft] = item;
-      setPairings(next);
-      setSelectedLeft(null);
-    }
-
-    function submitGrade() {
-      var correctSet = [];
-      var correctCount = 0;
-      canonicalPairs.forEach(function (pair) {
-        if (pairings[pair.left] === pair.right) { correctCount++; correctSet.push(pair.left); }
-      });
-      var pct = canonicalPairs.length > 0 ? Math.round((correctCount / canonicalPairs.length) * 100) : 0;
-      var status = pct === 100 ? 'correct' :
-                   pct >= 50 ? 'partially-correct' :
-                   'incorrect';
-      setGrade({ status: status, score: pct, correctSet: correctSet });
+    function answerPartner(ans) {
+      setPartnerAnswer(ans);
+      var step1Correct = (clickedPairIdx === wrongPairIndex);
+      var step2Correct = (ans === correctPartnerForWrong);
+      var score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0);
+      var status = score === 2 ? 'correct' : score === 1 ? 'partially-correct' : 'incorrect';
+      setGrade({ step1Correct: step1Correct, step2Correct: step2Correct, status: status, score: score });
+      setStep('done');
     }
 
     function reset() {
-      setPairings({});
-      setSelectedLeft(null);
-      setGrade({ status: null, score: null, correctSet: null });
+      setStep(1);
+      setClickedPairIdx(null);
+      setPartnerAnswer(null);
+      setGrade(null);
     }
 
-    var statusColor = grade.status === 'correct' ? 'emerald' :
-                      grade.status === 'partially-correct' ? 'amber' :
-                      grade.status === 'incorrect' ? 'rose' : 'slate';
+    if (pairs.length === 0) return null;
 
-    if (canonicalPairs.length === 0) return null;
+    var statusColor = grade && grade.status === 'correct' ? 'emerald' :
+                      grade && grade.status === 'partially-correct' ? 'amber' :
+                      grade ? 'rose' : 'slate';
 
-    function leftRow(item, idx) {
-      var pairedRight = pairings[item];
-      var isSelected = selectedLeft === item;
-      var isCorrect = grade.correctSet && grade.correctSet.indexOf(item) !== -1;
-      var bg = grade.status
-        ? (isCorrect ? 'bg-emerald-50 border-emerald-300' : (pairedRight ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-300'))
-        : (isSelected ? 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300' : pairedRight ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-300 hover:bg-slate-100');
-      return React.createElement('button', {
-        key: 'L' + idx,
-        type: 'button',
-        onClick: function () { selectLeft(item); },
-        disabled: grade.status === 'correct',
-        className: 'text-left px-3 py-2 rounded-lg border text-sm transition-all w-full ' + bg,
-      },
-        React.createElement('span', { className: 'flex items-center gap-2' },
-          pairedRight && React.createElement('span', {
-            className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white flex-shrink-0',
-          }, '#' + (Object.keys(pairings).indexOf(item) + 1)),
-          React.createElement('span', { className: 'flex-1' }, item),
-          grade.status && (isCorrect ? React.createElement('span', { className: 'text-emerald-700 text-xs font-bold' }, '✓') : pairedRight ? React.createElement('span', { className: 'text-rose-700 text-xs font-bold' }, '✗') : null)
-        )
-      );
-    }
-
-    function rightRow(item, idx) {
-      var leftThatPaired = rightToLeftMap[item];
-      var isPaired = !!leftThatPaired;
-      var isCorrect = grade.correctSet && leftThatPaired && grade.correctSet.indexOf(leftThatPaired) !== -1;
-      var bg = grade.status
-        ? (isCorrect ? 'bg-emerald-50 border-emerald-300' : (isPaired ? 'bg-rose-50 border-rose-300' : 'bg-slate-50 border-slate-300'))
-        : (isPaired ? 'bg-indigo-50 border-indigo-200' : (selectedLeft ? 'bg-white border-indigo-300 hover:bg-indigo-50' : 'bg-slate-50 border-slate-300 hover:bg-slate-100'));
-      return React.createElement('button', {
-        key: 'R' + idx,
-        type: 'button',
-        onClick: function () { selectRight(item); },
-        disabled: grade.status === 'correct',
-        className: 'text-left px-3 py-2 rounded-lg border text-sm transition-all w-full ' + bg,
-      },
-        React.createElement('span', { className: 'flex items-center gap-2' },
-          isPaired && React.createElement('span', {
-            className: 'text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white flex-shrink-0',
-          }, '#' + (Object.keys(pairings).indexOf(leftThatPaired) + 1)),
-          React.createElement('span', { className: 'flex-1' }, item)
-        )
-      );
-    }
+    var wrongPairLeft = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
 
     return React.createElement('div', {
       className: 'bg-white p-5 rounded-xl border border-slate-300 shadow-sm',
@@ -328,48 +309,82 @@
       React.createElement('div', { className: 'flex items-start gap-3 mb-3' },
         React.createElement('span', { className: 'flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5' }, p.itemNumber),
         React.createElement('div', { className: 'flex-1 min-w-0' },
-          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, 'Matching'),
-          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || 'Match each item on the left with its pair on the right.')
+          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, 'Relation Mismatch'),
+          React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || 'One of these pairs is wrong. Find it and fix it.')
         )
       ),
-      // Hint
-      !grade.status && React.createElement('p', { className: 'text-xs text-slate-600 italic mb-2' },
-        selectedLeft ? '✓ Now click an item on the right to pair it.' : 'Click an item on the left to start pairing.'
+      // Step 1: pairs list (clickable to identify the wrong one)
+      React.createElement('div', { className: 'space-y-1.5 mb-3' },
+        pairs.map(function (pair, idx) {
+          var isClickable = step === 1;
+          var isClicked = clickedPairIdx === idx;
+          var thisIsActuallyWrong = (idx === wrongPairIndex);
+          var showCorrectness = grade !== null;
+          var rowClass;
+          if (showCorrectness) {
+            if (thisIsActuallyWrong) rowClass = 'bg-amber-50 border-amber-400';
+            else if (isClicked) rowClass = 'bg-rose-50 border-rose-400';
+            else rowClass = 'bg-slate-50 border-slate-300';
+          } else if (isClicked) {
+            rowClass = 'bg-indigo-100 border-indigo-500 ring-2 ring-indigo-300';
+          } else {
+            rowClass = 'bg-slate-50 border-slate-300' + (isClickable ? ' hover:bg-slate-100 cursor-pointer' : '');
+          }
+          return React.createElement('div', {
+            key: idx,
+            onClick: isClickable ? function () { answerWhichWrong(idx); } : null,
+            className: 'grid grid-cols-2 gap-3 px-3 py-2 rounded-lg border ' + rowClass,
+            role: isClickable ? 'button' : undefined,
+            tabIndex: isClickable ? 0 : undefined,
+            onKeyDown: isClickable ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); answerWhichWrong(idx); } } : undefined,
+          },
+            React.createElement('span', { className: 'text-sm font-semibold text-slate-800' }, pair.left),
+            React.createElement('span', { className: 'text-sm text-slate-700 flex items-center justify-between gap-2' },
+              React.createElement('span', null, '↔ ' + pair.right),
+              showCorrectness && thisIsActuallyWrong && React.createElement('span', { className: 'text-xs font-bold text-amber-700 flex-shrink-0' }, 'wrong'),
+              showCorrectness && isClicked && !thisIsActuallyWrong && React.createElement('span', { className: 'text-xs font-bold text-rose-700 flex-shrink-0' }, '✗')
+            )
+          );
+        })
       ),
-      // Two-column matching grid
-      React.createElement('div', { className: 'grid grid-cols-2 gap-3' },
-        React.createElement('div', { className: 'space-y-1.5' },
-          leftItems.map(leftRow)
-        ),
-        React.createElement('div', { className: 'space-y-1.5' },
-          rightItems.map(rightRow)
+      // Step 1 prompt
+      step === 1 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
+        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900' }, 'Step 1 of 2 — Click the pair that\'s wrong above.')
+      ),
+      // Step 2: pick the correct partner
+      step === 2 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
+        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900 mb-2' },
+          'Step 2 of 2 — Which item should "' + (clickedPairIdx !== null && pairs[clickedPairIdx] ? pairs[clickedPairIdx].left : wrongPairLeft) + '" have been paired with?'),
+        React.createElement('div', { className: 'grid grid-cols-2 gap-2' },
+          (candidatePartners.length > 0 ? candidatePartners : [correctPartnerForWrong]).map(function (cand) {
+            return React.createElement('button', {
+              key: cand,
+              type: 'button',
+              onClick: function () { answerPartner(cand); },
+              className: 'px-3 py-2 rounded-lg bg-white hover:bg-indigo-50 border border-indigo-300 hover:border-indigo-500 text-sm font-semibold text-slate-800 transition-colors',
+            }, cand);
+          })
         )
       ),
-      // Submit / reset
-      React.createElement('div', { className: 'flex items-center gap-2 mt-3 flex-wrap' },
-        React.createElement('button', {
-          type: 'button',
-          onClick: submitGrade,
-          disabled: Object.keys(pairings).length !== canonicalPairs.length || grade.status === 'correct',
-          className: 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
-        }, grade.status === 'correct' ? 'Perfect match!' : grade.status ? 'Re-check' : 'Check pairs (' + Object.keys(pairings).length + '/' + canonicalPairs.length + ')'),
-        grade.status && grade.status !== 'correct' && React.createElement('button', {
-          type: 'button',
-          onClick: reset,
-          className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors',
-        }, 'Reset and try again')
-      ),
-      // Feedback
-      grade.status && React.createElement('div', {
+      // Grade panel
+      grade && React.createElement('div', {
         className: 'mt-3 p-3 rounded-lg border bg-' + statusColor + '-50 border-' + statusColor + '-300',
         role: 'status',
+        'aria-live': 'polite',
       },
-        React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900 mr-2' },
-          grade.status === 'correct' ? '✓ All matches correct' :
-          ('~ ' + grade.score + '% correct')),
-        React.createElement('span', { className: 'text-sm text-' + statusColor + '-900' },
-          grade.status === 'correct' ? 'Every pair is right.' :
-          'Pairs marked ✗ on the left are wrong matches. Reset to try again.')
+        React.createElement('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
+          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' },
+            grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
+        ),
+        React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
+          React.createElement('li', null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Find: ' + (grade.step1Correct ? 'you spotted the wrong pair' : 'the wrong pair was "' + wrongPairLeft + ' ↔ ' + (pairs[wrongPairIndex] ? pairs[wrongPairIndex].right : '') + '"')),
+          React.createElement('li', null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Fix: ' + (grade.step2Correct ? 'correct partner — "' + correctPartnerForWrong + '"' : 'correct partner was "' + correctPartnerForWrong + '" (you picked "' + partnerAnswer + '")'))
+        ),
+        React.createElement('button', {
+          type: 'button',
+          onClick: reset,
+          className: 'mt-2 px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
+        }, 'Try again')
       )
     );
   }
@@ -382,7 +397,7 @@
     var allQuestions = Array.isArray(p.questions) ? p.questions : [];
     var freeform = allQuestions
       .map(function (q, idx) { return { q: q, idx: idx }; })
-      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequencing' || entry.q.type === 'matching'); });
+      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch'); });
     if (freeform.length === 0) return null;
     return React.createElement('div', { className: 'space-y-4 mt-6' },
       React.createElement('h4', { className: 'font-bold text-slate-700 flex items-center gap-2 text-base' },
@@ -391,15 +406,15 @@
       React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
         'Type your answer and click "Grade my answer" — an AI will give you immediate feedback.'),
       freeform.map(function (entry) {
-        if (entry.q.type === 'sequencing') {
-          return React.createElement(SequencingItemCard, {
+        if (entry.q.type === 'sequence-sense') {
+          return React.createElement(SequenceSenseCard, {
             key: entry.idx,
             q: entry.q,
             itemNumber: entry.idx + 1,
           });
         }
-        if (entry.q.type === 'matching') {
-          return React.createElement(MatchingItemCard, {
+        if (entry.q.type === 'relation-mismatch') {
+          return React.createElement(RelationMismatchCard, {
             key: entry.idx,
             q: entry.q,
             itemNumber: entry.idx + 1,
@@ -1293,7 +1308,15 @@
   }, generatedContent?.data.questions.map((q, i) => (q && q.type && q.type !== 'mcq') ? null : /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question"
-  }, /*#__PURE__*/React.createElement("div", {
+  },
+    // Plan S Slice 5: Visual MCQ — question image stimulus when present
+    q.imageUrl && /*#__PURE__*/React.createElement("img", {
+      src: q.imageUrl,
+      alt: q.question || 'Question image',
+      loading: "lazy",
+      className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 mb-3 bg-slate-50",
+    }),
+    /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-start mb-4 gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-grow flex gap-3"
@@ -1336,7 +1359,15 @@
   }, q.options.map((opt, optIdx) => /*#__PURE__*/React.createElement("div", {
     key: optIdx,
     className: `p-2 rounded-lg border text-sm relative group/option ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : 'bg-slate-50 border-slate-100'}`
-  }, /*#__PURE__*/React.createElement("div", {
+  },
+    // Plan S Slice 5: Visual MCQ — option image thumbnail when present
+    Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("img", {
+      src: q.optionImageUrls[optIdx],
+      alt: opt,
+      loading: "lazy",
+      className: "w-full h-24 object-contain rounded mb-2 bg-white border border-slate-200",
+    }),
+    /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "mt-1.5 opacity-50"
@@ -1391,7 +1422,7 @@
     // + AI-graded feedback via QuizAIHelpers. Mode-agnostic — works in any
     // mode that includes these item types in its strategy.
     Array.isArray(generatedContent?.data?.questions) &&
-    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequencing' || q.type === 'matching'); }) &&
+    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch'); }) &&
     /*#__PURE__*/React.createElement(FreeformItemsBlock, {
       questions: generatedContent.data.questions,
       callGemini: props.callGemini,

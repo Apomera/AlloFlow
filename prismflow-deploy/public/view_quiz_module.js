@@ -397,7 +397,7 @@
     var allQuestions = Array.isArray(p.questions) ? p.questions : [];
     var freeform = allQuestions
       .map(function (q, idx) { return { q: q, idx: idx }; })
-      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequencing' || entry.q.type === 'matching'); });
+      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation' || entry.q.type === 'sequence-sense' || entry.q.type === 'relation-mismatch'); });
     if (freeform.length === 0) return null;
     return React.createElement('div', { className: 'space-y-4 mt-6' },
       React.createElement('h4', { className: 'font-bold text-slate-700 flex items-center gap-2 text-base' },
@@ -406,15 +406,15 @@
       React.createElement('p', { className: 'text-xs text-slate-600 mb-2' },
         'Type your answer and click "Grade my answer" — an AI will give you immediate feedback.'),
       freeform.map(function (entry) {
-        if (entry.q.type === 'sequencing') {
-          return React.createElement(SequencingItemCard, {
+        if (entry.q.type === 'sequence-sense') {
+          return React.createElement(SequenceSenseCard, {
             key: entry.idx,
             q: entry.q,
             itemNumber: entry.idx + 1,
           });
         }
-        if (entry.q.type === 'matching') {
-          return React.createElement(MatchingItemCard, {
+        if (entry.q.type === 'relation-mismatch') {
+          return React.createElement(RelationMismatchCard, {
             key: entry.idx,
             q: entry.q,
             itemNumber: entry.idx + 1,
@@ -1308,7 +1308,15 @@
   }, generatedContent?.data.questions.map((q, i) => (q && q.type && q.type !== 'mcq') ? null : /*#__PURE__*/React.createElement("div", {
     key: i,
     className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question"
-  }, /*#__PURE__*/React.createElement("div", {
+  },
+    // Plan S Slice 5: Visual MCQ — question image stimulus when present
+    q.imageUrl && /*#__PURE__*/React.createElement("img", {
+      src: q.imageUrl,
+      alt: q.question || 'Question image',
+      loading: "lazy",
+      className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 mb-3 bg-slate-50",
+    }),
+    /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-start mb-4 gap-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex-grow flex gap-3"
@@ -1351,7 +1359,15 @@
   }, q.options.map((opt, optIdx) => /*#__PURE__*/React.createElement("div", {
     key: optIdx,
     className: `p-2 rounded-lg border text-sm relative group/option ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : 'bg-slate-50 border-slate-100'}`
-  }, /*#__PURE__*/React.createElement("div", {
+  },
+    // Plan S Slice 5: Visual MCQ — option image thumbnail when present
+    Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("img", {
+      src: q.optionImageUrls[optIdx],
+      alt: opt,
+      loading: "lazy",
+      className: "w-full h-24 object-contain rounded mb-2 bg-white border border-slate-200",
+    }),
+    /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-2"
   }, /*#__PURE__*/React.createElement("span", {
     className: "mt-1.5 opacity-50"
@@ -1406,7 +1422,7 @@
     // + AI-graded feedback via QuizAIHelpers. Mode-agnostic — works in any
     // mode that includes these item types in its strategy.
     Array.isArray(generatedContent?.data?.questions) &&
-    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequencing' || q.type === 'matching'); }) &&
+    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation' || q.type === 'sequence-sense' || q.type === 'relation-mismatch'); }) &&
     /*#__PURE__*/React.createElement(FreeformItemsBlock, {
       questions: generatedContent.data.questions,
       callGemini: props.callGemini,

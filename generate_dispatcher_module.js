@@ -1630,16 +1630,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _fillBlankCount = _modeItemMix['fill-blank'] || 0;
         const _shortAnswerCount = _modeItemMix['short-answer'] || 0;
         const _selfExplanationCount = _modeItemMix['self-explanation'] || 0;
-        const _sequencingCount = _modeItemMix['sequencing'] || 0;
-        const _matchingCount = _modeItemMix['matching'] || 0;
+        // Slice 5: replaced 'sequencing'/'matching' with deeper diagnostic mechanics
+        const _sequenceSenseCount = _modeItemMix['sequence-sense'] || 0;
+        const _relationMismatchCount = _modeItemMix['relation-mismatch'] || 0;
+        // Slice 5: visual MCQ mode read from configOverride
+        const _mcqVisualMode = (configOverride && configOverride.mcqVisualMode) || 'none';
         // Build item-type-specific instruction blocks dynamically
         const _itemTypeBlocks = [];
         if (_mcqCount > 0) _itemTypeBlocks.push(_mcqCount + ' Multiple Choice Question(s) with 4 options each');
         if (_fillBlankCount > 0) _itemTypeBlocks.push(_fillBlankCount + ' Fill-in-the-Blank Question(s)');
         if (_shortAnswerCount > 0) _itemTypeBlocks.push(_shortAnswerCount + ' Short-Answer Question(s) (1-2 sentence response)');
         if (_selfExplanationCount > 0) _itemTypeBlocks.push(_selfExplanationCount + ' Self-Explanation Prompt(s) (3-5 sentence explanation in own words)');
-        if (_sequencingCount > 0) _itemTypeBlocks.push(_sequencingCount + ' Sequencing Question(s) (4-6 items the student must put in correct order)');
-        if (_matchingCount > 0) _itemTypeBlocks.push(_matchingCount + ' Matching Question(s) (4-6 left-right pairs the student must match)');
+        if (_sequenceSenseCount > 0) _itemTypeBlocks.push(_sequenceSenseCount + ' Sequence Sense Question(s) (4-6 items where the student verifies order, diagnoses misplacement, and identifies the ordering principle)');
+        if (_relationMismatchCount > 0) _itemTypeBlocks.push(_relationMismatchCount + ' Relation Mismatch Question(s) (4-5 pre-paired items where ONE pair is wrong; student finds it and picks the correct partner)');
         const _includeReflections = (_quizMode === 'exit-ticket' && quizReflectionCount > 0);
         if (_includeReflections) _itemTypeBlocks.push(quizReflectionCount + ' Open-Ended Reflection Question(s)');
         const _itemTypeInstructions = _itemTypeBlocks.map(function (s, i) { return (i + 1) + '. ' + s + '.'; }).join('\n          ');
@@ -1654,9 +1657,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               { "type": "mcq", "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }${_fillBlankCount > 0 ? `,
               { "type": "fill-blank", "question": "Sentence with ___ for the blank.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedFill": "...", "acceptableAlternatives": ["alt1", "alt2"] }` : ''}${_shortAnswerCount > 0 ? `,
               { "type": "short-answer", "question": "Open prompt requiring 1-2 sentence response.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedAnswer": "Concise reference answer (10-30 words) covering the key idea." }` : ''}${_selfExplanationCount > 0 ? `,
-              { "type": "self-explanation", "question": "Explain X in your own words. Cover the key elements: A, B, C.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"rubric": "Reward: clear explanation of A, accurate description of B, connection to C. Use of student's own words. Avoid grading on memorization of textbook phrasing." }` : ''}${_sequencingCount > 0 ? `,
-              { "type": "sequencing", "question": "Put these in the correct order:", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"items": ["Step 1 / earliest event / cause", "Step 2", "Step 3", "Step 4 / latest event / effect"] }` : ''}${_matchingCount > 0 ? `,
-              { "type": "matching", "question": "Match each item with its pair:", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"pairs": [{ "left": "Term A", "right": "Definition A" }, { "left": "Term B", "right": "Definition B" }, { "left": "Term C", "right": "Definition C" }, { "left": "Term D", "right": "Definition D" }] }` : ''}
+              { "type": "self-explanation", "question": "Explain X in your own words. Cover the key elements: A, B, C.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"rubric": "Reward: clear explanation of A, accurate description of B, connection to C. Use of student's own words. Avoid grading on memorization of textbook phrasing." }` : ''}${_sequenceSenseCount > 0 ? `,
+              { "type": "sequence-sense", "question": "Below is a sequence. Verify and explain.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"items": ["earliest/first/cause", "second", "third", "latest/last/effect"], "presentedOrder": [0, 2, 1, 3], "intentionallyWrongIndex": 1, "orderingPrinciple": "chronological", "principleOptions": ["chronological", "cause-effect", "process", "size", "hierarchy"] }` : ''}${_relationMismatchCount > 0 ? `,
+              { "type": "relation-mismatch", "question": "One of these pairs is wrong. Find it and fix it.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"pairs": [{ "left": "A", "right": "correct A match" }, { "left": "B", "right": "correct B match" }, { "left": "C", "right": "WRONG match for C" }, { "left": "D", "right": "correct D match" }], "wrongPairIndex": 2, "correctPartnerForWrong": "actual right answer for C", "candidatePartners": ["distractor 1", "actual right answer for C", "distractor 2", "distractor 3"] }` : ''}
             ]${_includeReflections ? `,
             "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}]` : ''}
           }`;
@@ -1672,11 +1675,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           Include the following item types:
           ${_itemTypeInstructions}
           ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
+          ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
+          ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each is a 1-sentence prompt depicting that option\'s answer concretely. Example for "Which planet is Mars?": ["A red rocky planet with thin atmosphere", "A large striped gas giant with a great red spot", ...]' : ''}
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
-          ${_sequencingCount > 0 ? 'For each Sequencing Question: provide an "items" array of 4-6 strings IN THE CORRECT ORDER (the student will see them shuffled and must drag them back into order via up/down buttons). Choose content where ordering genuinely matters: chronological events, process steps, cause-effect chains, hierarchies. Each item should be one short sentence or phrase.' : ''}
-          ${_matchingCount > 0 ? 'For each Matching Question: provide a "pairs" array of 4-6 objects, each with "left" and "right" strings. The student will see the right column shuffled and must click-pair them with the left items. Choose content where genuine left-right correspondences exist: term-definition, cause-effect, person-contribution, country-capital, etc. Avoid pairs that are too similar to one another.' : ''}
+          ${_sequenceSenseCount > 0 ? 'For each Sequence Sense Question: provide an "items" array of 4-6 strings in the CANONICAL CORRECT ORDER. Then provide "presentedOrder" — an array of indices [0..N-1] representing the order the student will see (with one item intentionally moved out of position). Provide "intentionallyWrongIndex" — the position in presentedOrder where the misplaced item appears (or null if you want the displayed order to actually be correct). Provide "orderingPrinciple" — one of "chronological", "cause-effect", "process", "size", or "hierarchy" — and "principleOptions" — the same 5 strings (always all 5, in random order is fine). The student will: (1) verify yes/no, (2) click the misplaced item if any, (3) identify the principle. Choose content where ordering genuinely matters and the principle is clear.' : ''}
+          ${_relationMismatchCount > 0 ? 'For each Relation Mismatch Question: provide a "pairs" array of 4-5 {left, right} objects where ONE pair is intentionally WRONG. Provide "wrongPairIndex" pointing to that pair. Provide "correctPartnerForWrong" — the right column value that SHOULD have been paired with the wrong-pair\'s left item. Provide "candidatePartners" — an array of 4 strings that includes correctPartnerForWrong and 3 distractors. Choose content where genuine left-right relationships exist (term-definition, cause-effect, person-contribution, etc.) and the wrong pair encodes a believable confusion (not an obvious nonsense match).' : ''}
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
@@ -1717,12 +1722,25 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 } else if (itemType === 'self-explanation') {
                     // Self-explanation uses a rubric string for the grader instead of a key answer.
                     base.rubric = q.rubric || q.expectedAnswer || "";
-                } else if (itemType === 'sequencing') {
-                    // Sequencing: items[] holds the canonical correct order; view shuffles for display.
+                } else if (itemType === 'sequence-sense') {
+                    // Slice 5: 3-step diagnostic. items[] = canonical order; presentedOrder = display permutation;
+                    // intentionallyWrongIndex = which display position is misplaced (null = order is actually correct);
+                    // orderingPrinciple = canonical principle answer; principleOptions = 5 candidate principles.
                     base.items = Array.isArray(q.items) ? q.items.filter(function (it) { return it && (typeof it === 'string' || it.text); }) : [];
-                } else if (itemType === 'matching') {
-                    // Matching: pairs[] holds canonical {left, right}; view shuffles right column for display.
-                    base.pairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pr) { return pr && (pr.left || pr.left_text) && (pr.right || pr.right_text); }) : [];
+                    base.presentedOrder = Array.isArray(q.presentedOrder) ? q.presentedOrder.filter(function (n) { return typeof n === 'number'; }) : null;
+                    base.intentionallyWrongIndex = (typeof q.intentionallyWrongIndex === 'number') ? q.intentionallyWrongIndex : null;
+                    base.orderingPrinciple = q.orderingPrinciple || '';
+                    var defaultPrincipleOpts = ['chronological','cause-effect','process','size','hierarchy'];
+                    base.principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 3 ? q.principleOptions : defaultPrincipleOpts;
+                } else if (itemType === 'relation-mismatch') {
+                    // Slice 5: 2-step diagnostic. pairs[] = displayed pairs (one wrong);
+                    // wrongPairIndex = which pair is wrong; correctPartnerForWrong = right answer; candidatePartners = 4 options.
+                    base.pairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pr) { return pr && (pr.left || pr.left_text) && (pr.right || pr.right_text); }).map(function (pr) {
+                        return { left: pr.left || pr.left_text, right: pr.right || pr.right_text };
+                    }) : [];
+                    base.wrongPairIndex = (typeof q.wrongPairIndex === 'number') ? q.wrongPairIndex : 0;
+                    base.correctPartnerForWrong = q.correctPartnerForWrong || '';
+                    base.candidatePartners = Array.isArray(q.candidatePartners) ? q.candidatePartners.filter(function (s) { return typeof s === 'string' && s; }) : [];
                 }
                 return base;
             });
@@ -1773,12 +1791,67 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              warnLog("Quiz Parse Error:", parseErr);
              throw new Error("Failed to parse Quiz JSON. The AI response was not valid.");
         }
+        // Plan S Slice 5: Visual MCQ image generation. Only runs when the
+        // teacher opted in via mcqVisualMode. Iterates MCQ items in parallel
+        // (Promise.all) so wall-clock scales with max single-image latency,
+        // not the sum. Question and option images each fire independently.
+        const _wantQuestionImages = _mcqVisualMode === 'question' || _mcqVisualMode === 'both';
+        const _wantOptionImages = _mcqVisualMode === 'options' || _mcqVisualMode === 'both';
+        if ((_wantQuestionImages || _wantOptionImages) && Array.isArray(content.questions) && typeof callImagen === 'function') {
+            try {
+                const _mcqItems = content.questions.filter(function (q) { return q && (q.type === 'mcq' || !q.type); });
+                if (_mcqItems.length > 0) {
+                    setGenerationStep && setGenerationStep('Generating MCQ visuals (' + _mcqItems.length + ' question' + (_mcqItems.length === 1 ? '' : 's') + ')...');
+                    // Build a flat list of image generation tasks
+                    const _imgTasks = [];
+                    _mcqItems.forEach(function (q) {
+                        if (_wantQuestionImages && q.imagePrompt) {
+                            _imgTasks.push({
+                                target: q,
+                                key: 'imageUrl',
+                                prompt: q.imagePrompt,
+                            });
+                        }
+                        if (_wantOptionImages && Array.isArray(q.optionImagePrompts)) {
+                            q.optionImageUrls = q.optionImageUrls || new Array(q.options ? q.options.length : 4).fill(null);
+                            q.optionImagePrompts.slice(0, 4).forEach(function (prompt, optIdx) {
+                                if (prompt) _imgTasks.push({
+                                    target: q,
+                                    key: 'optionImageUrls',
+                                    optIdx: optIdx,
+                                    prompt: prompt,
+                                });
+                            });
+                        }
+                    });
+                    // Run all image gens in parallel; any failure leaves the URL null and
+                    // the view falls back to text-only rendering. Never blocks the quiz.
+                    await Promise.all(_imgTasks.map(async function (task) {
+                        try {
+                            const url = await callImagen(task.prompt);
+                            if (task.key === 'imageUrl') {
+                                task.target.imageUrl = url || '';
+                            } else if (task.key === 'optionImageUrls') {
+                                task.target.optionImageUrls[task.optIdx] = url || '';
+                            }
+                        } catch (imgErr) {
+                            warnLog('[Quiz] Visual MCQ image generation failed for one item:', imgErr);
+                            // Leave the URL unset; render falls back to text-only
+                        }
+                    }));
+                }
+            } catch (visualErr) {
+                warnLog('[Quiz] Visual MCQ pipeline failed:', visualErr);
+                // Don't throw — quiz still works without visuals
+            }
+        }
         // Plan S: stamp the mode onto the content so the view can render
         // mode-aware behavior (intro banner, AI explainer, confidence rating).
         if (content && typeof content === 'object') {
             content.mode = _quizMode;
             content.modeLabel = _modeStrategy ? _modeStrategy.label : 'Exit Ticket';
             content.modeIcon = _modeStrategy ? _modeStrategy.icon : '📝';
+            content.mcqVisualMode = _mcqVisualMode;
         }
         const _modeMetaPrefix = _modeStrategy && _quizMode !== 'exit-ticket' ? _modeStrategy.label + ' · ' : '';
         metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_resolvedItemCount}MC/${_quizMode === 'exit-ticket' ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}`;
