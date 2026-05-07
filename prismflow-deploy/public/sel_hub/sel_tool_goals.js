@@ -2029,7 +2029,39 @@ window.SelHub = window.SelHub || {
                 })
               ) : null
             ) : null
-          )
+          ),
+
+          // \u2500\u2500 Print my action plan (take-home artifact) \u2500\u2500
+          (goals && goals.length > 0) ? h('div', { style: { padding: '10px 16px', textAlign: 'center', borderTop: '1px solid rgba(99,102,241,0.15)' } },
+            h('button', {
+              'aria-label': 'Print my goals as an action plan',
+              onClick: function() {
+                if (!window.SelHub || !window.SelHub.printDoc) return;
+                var sections = goals.map(function(g) {
+                  var cat = (GOAL_CATEGORIES.find(function(c) { return c.id === g.category; }) || { name: '' }).name;
+                  var lines = [];
+                  lines.push('Goal: ' + (g.text || '(unnamed)'));
+                  if (cat) lines.push('Category: ' + cat);
+                  if (typeof g.progress === 'number') lines.push('Progress: ' + g.progress + '%');
+                  if (g.completed) lines.push('Status: Completed');
+                  if (g.smart) {
+                    if (g.smart.S) lines.push('Specific: ' + g.smart.S);
+                    if (g.smart.M) lines.push('Measurable: ' + g.smart.M);
+                    if (g.smart.A) lines.push('Achievable: ' + g.smart.A);
+                    if (g.smart.R) lines.push('Relevant: ' + g.smart.R);
+                    if (g.smart.T) lines.push('Time-bound: ' + g.smart.T);
+                  }
+                  return { heading: g.text || '(unnamed goal)', items: lines };
+                });
+                window.SelHub.printDoc({
+                  title: 'My Action Plan',
+                  subtitle: 'Bring this to a mentor, advisor, or family member to talk through your next steps.',
+                  sections: sections
+                });
+              },
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid rgba(99,102,241,0.4)', background: 'rgba(99,102,241,0.08)', color: '#c7d2fe', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, '\ud83d\udda8 Print my action plan')
+          ) : null
         );
       })();
     }

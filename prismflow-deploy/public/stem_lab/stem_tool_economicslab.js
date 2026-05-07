@@ -1483,6 +1483,35 @@ var d = labToolData || {};
 
             ),
 
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                supplyDemand:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCC9', title: 'Supply & Demand \u2014 the price-discovery engine',     hint: 'Demand slopes down (cheap = buy more); supply slopes up (expensive = produce more). Equilibrium price + quantity is where they cross. Adam Smith\u2019s 1776 Wealth of Nations is still the foundation.' },
+                personalFinance: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDFE6', title: 'Personal Finance \u2014 budgeting, saving, credit',     hint: '50/30/20: needs / wants / save. Compound interest is the eighth wonder; a 30-year head start at 7% turns $1 into $7.61. Pay credit cards in full \u2014 19% APR is mafia rates.' },
+                stockMarket:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83D\uDCC8', title: 'Stock Market \u2014 ownership at fractional scale',     hint: 'Buy a share = own a slice of the company. S&P 500 has averaged ~10% annual returns over 100 years. Diversify (don\u2019t bet on one ticker), hold long (time in market beats timing it).' },
+                entrepreneur:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFEA', title: 'Business Sim \u2014 you\u2019re the founder',           hint: 'Revenue \u2212 costs = profit. Break-even point is when fixed costs are covered. Most small businesses fail in year 5; the survivors found product-market fit. Customer acquisition cost (CAC) vs lifetime value (LTV) is the founder\u2019s daily math.' },
+                macro:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFDB', title: 'National Economy \u2014 GDP, inflation, unemployment',  hint: 'GDP measures total output; CPI measures inflation; unemployment U-3 is the headline rate. The Fed sets interest rates to balance growth vs inflation \u2014 the dual mandate Congress gave it in 1977.' }
+              };
+              var meta = TAB_META[econTab] || TAB_META.supplyDemand;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // Achievement panel
 
             d.showAchievements && React.createElement('div', { className: 'bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-4 border border-amber-200 mb-4' },

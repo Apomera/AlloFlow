@@ -1534,7 +1534,39 @@ window.SelHub = window.SelHub || {
                     );
                   })
                 )
-              )
+              ),
+
+          // ── Print my practice log (take-home artifact) ──
+          totalPractices > 0 ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
+            h('button', {
+              'aria-label': 'Print my mindfulness practice log',
+              onClick: function() {
+                if (!window.SelHub || !window.SelHub.printDoc) return;
+                var typeLabels = { breathe: 'Breathing', scan: 'Body scan', grounding: 'Grounding', gratitude: 'Gratitude', activity: 'Mindful activity', meditation: 'Meditation', movement: 'Mindful movement', technique: 'Technique' };
+                var byTypeItems = Object.keys(typeCounts).filter(function(k) { return typeCounts[k] > 0; }).map(function(k) {
+                  return (typeLabels[k] || k) + ': ' + typeCounts[k] + ' session' + (typeCounts[k] === 1 ? '' : 's');
+                });
+                var recent = practiceLog.slice().reverse().slice(0, 20).map(function(e) {
+                  var d = new Date(e.timestamp);
+                  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — ' + (typeLabels[e.type] || e.type) + (e.id ? ' (' + e.id + ')' : '');
+                });
+                window.SelHub.printDoc({
+                  title: 'My Mindfulness Practice Log',
+                  subtitle: 'Bring this to a counselor, parent, or coach to talk through what is helping.',
+                  sections: [
+                    { heading: 'Totals', items: [
+                      'Total sessions: ' + totalPractices,
+                      'Current daily streak: ' + streak + ' day' + (streak === 1 ? '' : 's'),
+                      'This week: ' + weekPractices + ' session' + (weekPractices === 1 ? '' : 's') + ' across ' + weekDays + ' day' + (weekDays === 1 ? '' : 's')
+                    ] },
+                    { heading: 'Practice mix', items: byTypeItems },
+                    { heading: 'Recent sessions (latest 20)', items: recent }
+                  ]
+                });
+              },
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, '🖨 Print my practice log')
+          ) : null
         );
       }
 

@@ -1601,7 +1601,37 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 12 } },
                 'Check in at least 3 times this week to see your summary!'
               )
-            )
+            ),
+
+            // ── Print my week (take-home artifact) ──
+            weeklySummary ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
+              h('button', {
+                'aria-label': 'Print my weekly summary',
+                onClick: function() {
+                  if (!window.SelHub || !window.SelHub.printDoc) return;
+                  var sections = [
+                    { heading: 'This week at a glance', items: [
+                      'Average mood: ' + weeklySummary.avgMood.toFixed(1) + ' / 5',
+                      'Average energy: ' + weeklySummary.avgEnergy.toFixed(1) + ' / 5',
+                      'Trajectory: ' + weeklySummary.trajectory,
+                      'Check-ins this week: ' + (weeklySummary.checkInCount || 0)
+                    ] }
+                  ];
+                  if (weeklySummary.topTriggers && weeklySummary.topTriggers.length) {
+                    sections.push({ heading: 'Top triggers I noticed', items: weeklySummary.topTriggers });
+                  }
+                  if (weeklySummary.encouragement) {
+                    sections.push({ heading: 'A note to myself', paragraphs: [weeklySummary.encouragement] });
+                  }
+                  window.SelHub.printDoc({
+                    title: 'My Weekly Mood Summary',
+                    subtitle: 'Bring this to your counselor, parent, or therapist so they can see how the week went.',
+                    sections: sections
+                  });
+                },
+                style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              }, '🖨 Print my weekly summary')
+            ) : null
           );
         }
 

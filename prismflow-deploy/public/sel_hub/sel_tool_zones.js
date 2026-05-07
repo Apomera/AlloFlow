@@ -1658,7 +1658,40 @@ window.SelHub = window.SelHub || {
                     )
                   );
                 })
-              )
+              ),
+
+          // ── Print my self-assessment (take-home artifact) ──
+          log.length > 0 ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
+            h('button', {
+              'aria-label': 'Print my zone history',
+              onClick: function() {
+                if (!window.SelHub || !window.SelHub.printDoc) return;
+                var counts = {};
+                ZONES.forEach(function(z) { counts[z.id] = log.filter(function(e) { return e.zone === z.id; }).length; });
+                var distItems = ZONES.map(function(z) {
+                  var c = counts[z.id]; var pct = log.length ? Math.round((c / log.length) * 100) : 0;
+                  return z.label + ': ' + c + ' check-ins (' + pct + '%)';
+                });
+                var entryItems = log.slice().reverse().slice(0, 20).map(function(e) {
+                  var z = ZONES.find(function(zz) { return zz.id === e.zone; }) || ZONES[1];
+                  var t = new Date(e.timestamp);
+                  var line = t.toLocaleDateString() + ' ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — ' + z.label;
+                  if (e.intensity) line += ' (intensity ' + e.intensity + '/10)';
+                  if (e.note) line += ' — ' + e.note;
+                  return line;
+                });
+                window.SelHub.printDoc({
+                  title: 'My Zone Self-Assessment',
+                  subtitle: 'Bring this to a counselor, parent, or trusted adult so they can see how your zones look across the week.',
+                  sections: [
+                    { heading: 'Total check-ins: ' + log.length, items: distItems },
+                    { heading: 'Recent check-ins (latest 20)', items: entryItems }
+                  ]
+                });
+              },
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, '🖨 Print my zone history')
+          ) : null
         );
       }
 
