@@ -185,6 +185,7 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var update = ctx.update;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var toolData = (ctx.toolData && ctx.toolData.peersupport) || {};
       var hasAI = !!callGemini;
 
@@ -205,6 +206,9 @@ window.SelHub = window.SelHub || {
       var _peerMood = useState('neutral'); var peerMood = _peerMood[0]; var setPeerMood = _peerMood[1];
       var _oarsUsed = useState({}); var oarsUsed = _oarsUsed[0]; var setOarsUsed = _oarsUsed[1]; // tracks which OARS skills detected
       var _safetyTriggered = useState(false); var safetyTriggered = _safetyTriggered[0]; var setSafetyTriggered = _safetyTriggered[1];
+      // Triangulated assessment of the STUDENT supporter's own messages — distinct
+      // from `safetyTriggered` (which tracks the AI peer's scripted safety reveal).
+      var _userTier = useState(0); var userTier = _userTier[0]; var setUserTier = _userTier[1];
       var chatEndRef = useRef(null);
 
       var scenarios = PRACTICE_SCENARIOS[gradeBand] || PRACTICE_SCENARIOS.elementary;
@@ -240,7 +244,29 @@ window.SelHub = window.SelHub || {
             + '"oarsDetected":["open"|"affirm"|"reflect"|"summarize"|null] (which OARS skills the student used in their message),'
             + '"isSafetyMoment":false (set true ONLY if you just revealed something requiring adult help)}\n\n'
             + 'Rules:\n- Stay in character as a struggling peer\n- React authentically — if they use good OARS skills, open up more\n- If they give unsolicited advice, pull back slightly\n- 1-2 sentences max\n- Do NOT coach or break character';
-          var result = await callGemini(prompt, true);
+          // Triangulated safety assessment of the STUDENT's own message (in case
+          // they start revealing their own distress while practicing supporting
+          // the AI peer). Runs in parallel with the chat call.
+          var _safetyP = (window.SelHub && window.SelHub.assessSafety)
+            ? window.SelHub.assessSafety(userMsg, gradeBand, 'peersupport', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+            : Promise.resolve({ tier: 0, rationale: '', category: 'none' });
+          var _both = await Promise.all([callGemini(prompt, true), _safetyP]);
+          var result = _both[0];
+          var _safety = _both[1] || { tier: 0 };
+          if (_safety.tier >= 2 && onSafetyFlag) {
+            onSafetyFlag({
+              category: 'ai_peersupport_' + (_safety.category || 'concerning'),
+              match: _safety.rationale || 'SEL peersupport safety concern',
+              severity: _safety.tier >= 3 ? 'critical' : 'medium',
+              source: 'sel_peersupport',
+              context: userMsg.substring(0, 100),
+              timestamp: new Date().toISOString(),
+              aiGenerated: true,
+              confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+              tier: _safety.tier
+            });
+          }
+          setUserTier(_safety.tier || 0);
           if (result) {
             try {
               var parsed = JSON.parse(result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim().replace(/^[^{]*/, '').replace(/[^}]*$/, ''));
@@ -375,7 +401,8 @@ window.SelHub = window.SelHub || {
             'Safety boundary training is integrated throughout — students learn to recognize when situations require adult intervention. ',
             'Evidence base: Teen Mental Health First Aid, Sources of Strength (Wyman et al., 2010), Motivational Interviewing in Schools (Rollnick et al., 2016). ',
             'This tool does NOT train students as counselors — it teaches them to be better listeners and to know their limits.'
-          )
+          ),
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, gradeBand)
         );
       }
 
@@ -513,7 +540,10 @@ window.SelHub = window.SelHub || {
               })
             )
           ),
-          // Safety alert
+          // Crisis resources surfaced when the STUDENT's own message hits Tier 3
+          // (distinct from `safetyTriggered`, which is the AI peer's scripted reveal).
+          (userTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
+          // Safety alert (AI peer signal recognition)
           safetyTriggered && h('div', { role: 'alert', style: { background: '#fef2f2', border: '2px solid #fca5a5', borderRadius: '10px', padding: '8px 12px', marginBottom: '8px', fontSize: '11px', color: '#991b1b', fontWeight: 700, textAlign: 'center', flexShrink: 0 } },
             '🚨 ' + aiScenario.peerName + ' may need adult help. Consider suggesting a trusted adult.'
           ),

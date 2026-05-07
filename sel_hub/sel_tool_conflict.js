@@ -890,6 +890,7 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var band = ctx.gradeBand || 'elementary';
+      var onSafetyFlag = ctx.onSafetyFlag || null;
 
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.conflict) || {};
@@ -965,6 +966,7 @@ window.SelHub = window.SelHub || {
       var rpPracticeCompleted = d.rpPracticeCompleted || 0;
       var rpResolveStreak = d.rpResolveStreak || 0;
       var rpInputText    = d.rpInputText || '';
+      var _rpUserTier    = d._rpUserTier || 0;
 
       // Role-Play state (Mediation Mode)
       var medScenarioIdx = d.medScenarioIdx || 0;
@@ -973,6 +975,7 @@ window.SelHub = window.SelHub || {
       var medTurnCount   = d.medTurnCount || 0;
       var medLoadingRP   = d.medLoadingRP || false;
       var medInputText   = d.medInputText || '';
+      var _medUserTier   = d._medUserTier || 0;
       var medMediationCompleted = d.medMediationCompleted || 0;
 
       // Practice log & badges
@@ -1063,9 +1066,10 @@ window.SelHub = window.SelHub || {
       if (showBadgePopup) {
         var popBadge = BADGES.find(function(b) { return b.id === showBadgePopup; });
         if (popBadge) {
-          badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
-            h('div', { style: { background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
-              h('div', { style: { fontSize: 56, marginBottom: 10 } }, popBadge.icon),
+          badgePopup = h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Badge earned: ' + popBadge.name, style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, background: 'rgba(0,0,0,0.6)' }, onClick: function() { upd('showBadgePopup', null); } },
+            h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: '#1e293b', border: '2px solid ' + ACCENT, borderRadius: 20, padding: '32px 40px', textAlign: 'center', maxWidth: 300 } },
+              h('button', { 'aria-label': 'Close', onClick: function() { upd('showBadgePopup', null); }, style: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, background: '#334155', color: '#cbd5e1', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
+              h('div', { style: { fontSize: 56, marginBottom: 10 }, 'aria-hidden': 'true' }, popBadge.icon),
               h('div', { style: { fontSize: 18, fontWeight: 700, color: '#f1f5f9', marginBottom: 6 } }, popBadge.name),
               h('div', { style: { fontSize: 12, color: '#94a3b8' } }, popBadge.desc)
             )
@@ -1073,8 +1077,9 @@ window.SelHub = window.SelHub || {
         }
       }
       if (showBadgesPanel) {
-        badgePopup = h('div', { style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd('showBadgesPanel', false); } },
-          h('div', { onClick: function(e) { e.stopPropagation(); }, style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+        badgePopup = h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Badges panel', style: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9998, background: 'rgba(0,0,0,0.5)' }, onClick: function() { upd('showBadgesPanel', false); } },
+          h('div', { onClick: function(e) { e.stopPropagation(); }, style: { position: 'relative', background: '#1e293b', border: '1px solid #334155', borderRadius: 16, padding: 24, width: '90%', maxWidth: 400, maxHeight: '70vh', overflow: 'auto' } },
+            h('button', { 'aria-label': 'Close badges panel', onClick: function() { upd('showBadgesPanel', false); }, style: { position: 'absolute', top: 8, right: 8, width: 28, height: 28, borderRadius: 14, background: '#334155', color: '#cbd5e1', border: 'none', cursor: 'pointer', fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, '×'),
             h('h3', { style: { textAlign: 'center', color: '#f1f5f9', marginBottom: 16, fontSize: 16 } }, '\uD83C\uDFC5 Badges (' + Object.keys(earnedBadges).length + '/' + BADGES.length + ')'),
             h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 } },
               BADGES.map(function(b) {
@@ -2020,6 +2025,8 @@ window.SelHub = window.SelHub || {
                   style: { marginTop: 10, padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, 'Try Another Scenario')
               ),
+              // Crisis resources surfaced when student's own message hits Tier 3
+              (_rpUserTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
               // Input area
               rpTurnCount < 20 && h('div', { style: { display: 'flex', gap: 8 } },
                 h('input', {
@@ -2068,6 +2075,30 @@ window.SelHub = window.SelHub || {
                 'Also evaluate how well the student communicated.\n\n' +
                 'Return ONLY valid JSON: {"reply":"your response","rapportChange":number_between_-15_and_15,"resolved":boolean}\n' +
                 'rapportChange should be positive for empathetic, calm, I-statement responses. Negative for aggressive, blaming, or dismissive responses. resolved=true only when rapport is above ' + curRPScenario.resolveThreshold + ' AND the student has demonstrated understanding.';
+
+              // Triangulated safety assessment of the student's own message,
+              // fired in parallel with the role-play AI call (separate updates).
+              if (window.SelHub && window.SelHub.assessSafety) {
+                window.SelHub.assessSafety(userMsg, band, 'conflict', callGemini)
+                  .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                  .then(function(_safety) {
+                    _safety = _safety || { tier: 0 };
+                    if (_safety.tier >= 2 && onSafetyFlag) {
+                      onSafetyFlag({
+                        category: 'ai_conflict_' + (_safety.category || 'concerning'),
+                        match: _safety.rationale || 'SEL conflict safety concern',
+                        severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                        source: 'sel_conflict',
+                        context: userMsg.substring(0, 100),
+                        timestamp: new Date().toISOString(),
+                        aiGenerated: true,
+                        confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                        tier: _safety.tier
+                      });
+                    }
+                    upd('_rpUserTier', _safety.tier || 0);
+                  });
+              }
 
               callGemini(prompt).then(function(resp) {
                 var text = typeof resp === 'string' ? resp : (resp && resp.text ? resp.text : String(resp));
@@ -2236,6 +2267,8 @@ window.SelHub = window.SelHub || {
                   style: { marginTop: 10, padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
                 }, 'Try Another')
               ),
+              // Crisis resources surfaced when mediator's own message hits Tier 3
+              (_medUserTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
               // Input area
               medTurnCount < 20 && h('div', { style: { display: 'flex', gap: 8 } },
                 h('input', {
@@ -2279,6 +2312,30 @@ window.SelHub = window.SelHub || {
                 'Both characters respond to the mediator. Each should speak in 1-2 sentences appropriate for ' + gradeLabel + '.\n\n' +
                 'Return ONLY valid JSON: {"replyA":"' + curMedScenario.charA.name + ' says...","replyB":"' + curMedScenario.charB.name + ' says...","harmonyChange":number_between_-10_and_15,"resolved":boolean}\n' +
                 'harmonyChange positive when mediator validates feelings, finds common ground, or proposes fair solutions. Negative when mediator takes sides or dismisses feelings. resolved=true only when harmony > ' + curMedScenario.resolveThreshold + ' AND both sides show willingness to compromise.';
+
+              // Triangulated safety assessment of the mediator's message,
+              // fired in parallel with the mediation AI call (separate updates).
+              if (window.SelHub && window.SelHub.assessSafety) {
+                window.SelHub.assessSafety(userMsg, band, 'conflict', callGemini)
+                  .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                  .then(function(_safety) {
+                    _safety = _safety || { tier: 0 };
+                    if (_safety.tier >= 2 && onSafetyFlag) {
+                      onSafetyFlag({
+                        category: 'ai_conflict_med_' + (_safety.category || 'concerning'),
+                        match: _safety.rationale || 'SEL conflict mediation safety concern',
+                        severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                        source: 'sel_conflict',
+                        context: userMsg.substring(0, 100),
+                        timestamp: new Date().toISOString(),
+                        aiGenerated: true,
+                        confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                        tier: _safety.tier
+                      });
+                    }
+                    upd('_medUserTier', _safety.tier || 0);
+                  });
+              }
 
               callGemini(prompt).then(function(resp) {
                 var text = typeof resp === 'string' ? resp : (resp && resp.text ? resp.text : String(resp));
@@ -2419,7 +2476,8 @@ window.SelHub = window.SelHub || {
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
         badgePopup,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+        h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

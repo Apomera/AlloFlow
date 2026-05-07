@@ -568,6 +568,7 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var t = ctx.t;
       var band = ctx.gradeBand || 'elementary';
 
@@ -624,6 +625,7 @@ window.SelHub = window.SelHub || {
       var matcherFeeling  = d.matcherFeeling || '';
       var matcherResult   = d.matcherResult || null;
       var matcherLoading  = d.matcherLoading || false;
+      var _matcherTier    = d._matcherTier || 0;
 
       // Practice log state
       var practiceLog     = d.practiceLog || []; // { strategyId, type, timestamp, rating, note }
@@ -1995,6 +1997,26 @@ window.SelHub = window.SelHub || {
                 style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 700, cursor: planEditing ? 'wait' : 'pointer', fontSize: 12 }
               }, '\uD83D\uDCCB ' + (planEditing ? 'Generating...' : 'Suggest Steps'))
             )
+          ),
+
+          // ── Print my calm plan (take-home artifact) ──
+          h('div', { style: { marginTop: 16, textAlign: 'center' } },
+            h('button', {
+              'aria-label': 'Print my calm plan',
+              onClick: function() {
+                if (!window.SelHub || !window.SelHub.printDoc) return;
+                window.SelHub.printDoc({
+                  title: band === 'elementary' ? 'My Calm-Down Plan' : 'My Personal Calm Plan',
+                  subtitle: 'Bring this with you. Share it with a counselor, parent, or trusted adult so they can help you follow it.',
+                  sections: [
+                    { heading: band === 'elementary' ? 'How I know I’m getting upset' : 'My warning signs', items: plan.warningSigns || [] },
+                    { heading: band === 'elementary' ? 'Steps that help me calm down' : 'My calming steps (in order)', items: plan.steps || [] },
+                    { heading: 'Trusted adults I can talk to', items: plan.trustedAdults || [] }
+                  ]
+                });
+              },
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, '🖨 Print my calm plan')
           )
         );
       }
@@ -2039,11 +2061,30 @@ window.SelHub = window.SelHub || {
                 '3. Give one quick tip to get started\n\n' +
                 'Use ' + (band === 'elementary' ? 'simple, warm language for ages 5-10' : band === 'middle' ? 'relatable teen language' : 'mature, evidence-based language') + '. ' +
                 'Format each as a numbered item. Be specific to their situation, not generic.';
-              callGemini(prompt).then(function(resp) {
-                upd({ matcherResult: resp, matcherLoading: false });
+              // Route student input through SelHub.safeCoach (assesses Tier 0–3,
+              // pushes flags for Tier 2+, attaches crisis info to Tier 3 response).
+              // Falls back to direct callGemini when safety layer isn't loaded.
+              var matchFn = (window.SelHub && window.SelHub.safeCoach)
+                ? function() {
+                    return window.SelHub.safeCoach({
+                      studentMessage: matcherFeeling,
+                      coachPrompt: prompt,
+                      toolId: 'coping',
+                      band: band,
+                      callGemini: callGemini,
+                      codename: ctx.codename || 'student',
+                      conversationHistory: [],
+                      onSafetyFlag: onSafetyFlag
+                    });
+                  }
+                : function() {
+                    return callGemini(prompt).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  };
+              matchFn().then(function(result) {
+                upd({ matcherResult: result.response, matcherLoading: false, _matcherTier: result.tier || 0 });
                 if (soundEnabled) sfxCorrect();
               }).catch(function() {
-                upd({ matcherResult: 'I couldn\'t match strategies right now. Try browsing the Library tab and picking what feels right!', matcherLoading: false });
+                upd({ matcherResult: 'I couldn\'t match strategies right now. Try browsing the Library tab and picking what feels right!', matcherLoading: false, _matcherTier: 0 });
               });
             },
             disabled: matcherLoading,
@@ -2052,6 +2093,9 @@ window.SelHub = window.SelHub || {
             Sparkles ? h(Sparkles, { size: 16 }) : '\u2728',
             matcherLoading ? 'Finding the best strategies...' : 'Match Me!'
           ),
+
+          // Surface crisis resources inline when triangulated assessment hits Tier 3
+          (_matcherTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
 
           matcherResult && h('div', { style: { padding: 20, borderRadius: 14, background: '#14b8a611', border: '1px solid #14b8a633' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 } },
@@ -2303,7 +2347,7 @@ window.SelHub = window.SelHub || {
         if (document.getElementById('sel-coping-keyframes')) return;
         var s = document.createElement('style');
         s.id = 'sel-coping-keyframes';
-        s.textContent = '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }';
+        s.textContent = '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
         document.head.appendChild(s);
         return function() { var el = document.getElementById('sel-coping-keyframes'); if (el) el.remove(); };
       }, []);
@@ -2320,7 +2364,8 @@ window.SelHub = window.SelHub || {
         practiceContent,
         planContent,
         matcherContent,
-        logContent
+        logContent,
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

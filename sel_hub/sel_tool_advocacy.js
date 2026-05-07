@@ -1149,6 +1149,7 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var band = ctx.gradeBand || 'elementary';
+      var onSafetyFlag = ctx.onSafetyFlag || null;
 
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.advocacy) || {};
@@ -1186,6 +1187,7 @@ window.SelHub = window.SelHub || {
       var voTurnCount    = d.voTurnCount || 0;
       var voLoading      = d.voLoading || false;
       var voInputText    = d.voInputText || '';
+      var _voUserTier    = d._voUserTier || 0;
       var voCompleted    = d.voCompleted || 0;
       var voResolveStreak = d.voResolveStreak || 0;
 
@@ -1502,7 +1504,10 @@ window.SelHub = window.SelHub || {
             })
           ),
           // Active card
-          !rtRevealed && h('div', {             onClick: function() {
+          !rtRevealed && h('div', Object.assign({
+            'aria-label': 'Reveal right: ' + curRt.title,
+            style: { padding: 24, borderRadius: 16, background: '#0f172a', border: '2px dashed ' + ACCENT_MED, cursor: 'pointer', textAlign: 'center' }
+          }, a11yClick(function() {
               upd('rtRevealed', true);
               if (!rtViewedSet[curRt.id]) {
                 var newSet = Object.assign({}, rtViewedSet);
@@ -1515,10 +1520,7 @@ window.SelHub = window.SelHub || {
                 if (Object.keys(newSet).length >= rtCards.length) tryAwardBadge('rights_all');
               }
               if (soundEnabled) sfxReveal();
-            },
-            style: { padding: 24, borderRadius: 16, background: '#0f172a', border: '2px dashed ' + ACCENT_MED, cursor: 'pointer', textAlign: 'center' },
-            role: 'button', tabIndex: 0
-          },
+          })),
             h('div', { style: { fontSize: 40, marginBottom: 8 } }, curRt.icon),
             h('div', { style: { fontSize: 16, fontWeight: 700, color: '#f1f5f9', marginBottom: 8 } }, curRt.title),
             h('p', { style: { fontSize: 14, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } }, curRt.right),
@@ -1641,6 +1643,8 @@ window.SelHub = window.SelHub || {
                 style: { marginTop: 10, padding: '10px 24px', borderRadius: 10, border: 'none', background: '#334155', color: '#f1f5f9', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
               }, 'Try Another')
             ),
+            // Crisis resources surfaced when student's own message hits Tier 3
+            (_voUserTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
             voTurnCount < 20 && h('div', { style: { display: 'flex', gap: 8 } },
               h('input', {
                 type: 'text', value: voInputText,
@@ -1689,6 +1693,30 @@ window.SelHub = window.SelHub || {
               'Return ONLY valid JSON: {"reply":"your response","confidenceChange":number_between_-15_and_15,"resolved":boolean}\n' +
               'confidenceChange positive when student is clear, specific, polite, and persistent. Negative when vague, aggressive, gives up, or fails to state their need. ' +
               'resolved=true only when confidence > ' + curVo.resolveThreshold + ' AND student clearly stated their need AND you committed to a concrete action.';
+
+            // Triangulated safety assessment of the student's own message,
+            // fired in parallel with the authority-figure AI response.
+            if (window.SelHub && window.SelHub.assessSafety) {
+              window.SelHub.assessSafety(userMsg, band, 'advocacy', callGemini)
+                .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                .then(function(_safety) {
+                  _safety = _safety || { tier: 0 };
+                  if (_safety.tier >= 2 && onSafetyFlag) {
+                    onSafetyFlag({
+                      category: 'ai_advocacy_' + (_safety.category || 'concerning'),
+                      match: _safety.rationale || 'SEL advocacy safety concern',
+                      severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                      source: 'sel_advocacy',
+                      context: userMsg.substring(0, 100),
+                      timestamp: new Date().toISOString(),
+                      aiGenerated: true,
+                      confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                      tier: _safety.tier
+                    });
+                  }
+                  upd('_voUserTier', _safety.tier || 0);
+                });
+            }
 
             callGemini(prompt).then(function(resp) {
               var text = typeof resp === 'string' ? resp : (resp && resp.text ? resp.text : String(resp));
@@ -2278,7 +2306,8 @@ window.SelHub = window.SelHub || {
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
         badgePopup,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+        h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

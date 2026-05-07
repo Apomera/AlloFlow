@@ -136,6 +136,7 @@ window.SelHub = window.SelHub || {
       var addToast = ctx.addToast;
       var awardXP = ctx.awardXP;
       var announceToSR = ctx.announceToSR;
+      var a11yClick = ctx.a11yClick;
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var onSafetyFlag = ctx.onSafetyFlag || null;
@@ -312,10 +313,9 @@ window.SelHub = window.SelHub || {
               var isCurrent = i === curvePhaseIdx % phases.length;
               var isMyPhase = myPhase === i;
               return h('button', {
-                key: i, role: 'button', tabIndex: 0,
+                key: i,
                 'aria-label': p.phase + (isMyPhase ? ' (where I am)' : ''),
                 onClick: function() { upd('curvePhaseIdx', i); if (soundEnabled) sfxClick(); },
-                onKeyDown: function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); upd('curvePhaseIdx', i); } },
                 style: {
                   flex: 1, padding: '12px 8px', borderRadius: '12px', cursor: 'pointer',
                   border: isCurrent ? '3px solid ' + p.color : '2px solid #e5e7eb',
@@ -532,15 +532,16 @@ window.SelHub = window.SelHub || {
           planSteps.length > 0
             ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
                 planSteps.map(function(step) {
-                  return h('div', {
+                  return h('div', Object.assign({
                     key: step.id,
-                    onClick: function() {
+                    'aria-label': (step.done ? 'Mark incomplete: ' : 'Mark complete: ') + step.text,
+                    'aria-pressed': step.done ? 'true' : 'false',
+                    style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: step.done ? '#f0fdf4' : '#fff', border: '2px solid ' + (step.done ? '#86efac' : '#e5e7eb'), borderRadius: '12px', cursor: 'pointer', transition: 'all 0.15s' }
+                  }, a11yClick(function() {
                       upd('planSteps', planSteps.map(function(s) { return s.id === step.id ? Object.assign({}, s, { done: !s.done }) : s; }));
                       if (!step.done && soundEnabled) sfxComplete();
                       if (!step.done && awardXP) awardXP(10, 'Completed a step!');
-                    },
-                    style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: step.done ? '#f0fdf4' : '#fff', border: '2px solid ' + (step.done ? '#86efac' : '#e5e7eb'), borderRadius: '12px', cursor: 'pointer', transition: 'all 0.15s' }
-                  },
+                  })),
                     h('div', { style: { width: '22px', height: '22px', borderRadius: '6px', border: '2px solid ' + (step.done ? '#16a34a' : '#d1d5db'), background: step.done ? '#16a34a' : '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' } },
                       step.done && h('span', { style: { color: '#fff', fontSize: '14px', fontWeight: 800 } }, '\u2713')
                     ),
@@ -634,9 +635,9 @@ window.SelHub = window.SelHub || {
 
                   var sendSafe = (window.SelHub && window.SelHub.safeCoach)
                     ? function() { return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
-                    : function() { return callGemini(prompt, true); };
-                  sendSafe().then(function(response) {
-                    upd({ coachHistory: newHist.concat([{ role: 'coach', text: response }]), coachLoading: false });
+                    : function() { return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; }); };
+                  sendSafe().then(function(result) {
+                    upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false });
                     if (awardXP) awardXP(5, 'Talked with Transition Coach');
                   }).catch(function() {
                     upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'I\u2019m having trouble connecting right now. But I want you to know: what you\u2019re going through is real, your feelings about it are valid, and the fact that you\u2019re here talking about it shows remarkable courage.' }]), coachLoading: false });
@@ -663,9 +664,9 @@ window.SelHub = window.SelHub || {
                 var prompt = 'You are a warm, empathetic transition support coach for a ' + band + ' school student. ' + context + 'The student said: "' + userMsg + '"\nValidate, normalize, suggest. Warm, concise, age-appropriate. Max 3-4 sentences.';
                 var sendSafe = (window.SelHub && window.SelHub.safeCoach)
                   ? function() { return window.SelHub.safeCoach({ studentMessage: userMsg, coachPrompt: prompt, toolId: 'transitions', band: band, callGemini: callGemini, codename: ctx.studentCodename || 'student', conversationHistory: newHist, onSafetyFlag: onSafetyFlag }); }
-                  : function() { return callGemini(prompt, true); };
-                sendSafe().then(function(response) {
-                  upd({ coachHistory: newHist.concat([{ role: 'coach', text: response }]), coachLoading: false });
+                  : function() { return callGemini(prompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; }); };
+                sendSafe().then(function(result) {
+                  upd({ coachHistory: newHist.concat([{ role: 'coach', text: result.response }]), coachLoading: false });
                 }).catch(function() {
                   upd({ coachHistory: newHist.concat([{ role: 'coach', text: 'Connection issue. But remember: you are not alone in this, and what you\u2019re feeling makes complete sense.' }]), coachLoading: false });
                 });
@@ -697,7 +698,8 @@ window.SelHub = window.SelHub || {
       var content = identifyContent || curveContent || storiesContent || anchorsContent || planContent || coachContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+        h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

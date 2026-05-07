@@ -527,6 +527,7 @@ window.SelHub = window.SelHub || {
     desc: 'Guided breathing, body scans, grounding, and gratitude \u2014 find your calm.',
     color: 'purple',
     category: 'self-management',
+    cleanup: function() { stopBreathTimer(); stopScanTimer(); },
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -1533,7 +1534,39 @@ window.SelHub = window.SelHub || {
                     );
                   })
                 )
-              )
+              ),
+
+          // ── Print my practice log (take-home artifact) ──
+          totalPractices > 0 ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
+            h('button', {
+              'aria-label': 'Print my mindfulness practice log',
+              onClick: function() {
+                if (!window.SelHub || !window.SelHub.printDoc) return;
+                var typeLabels = { breathe: 'Breathing', scan: 'Body scan', grounding: 'Grounding', gratitude: 'Gratitude', activity: 'Mindful activity', meditation: 'Meditation', movement: 'Mindful movement', technique: 'Technique' };
+                var byTypeItems = Object.keys(typeCounts).filter(function(k) { return typeCounts[k] > 0; }).map(function(k) {
+                  return (typeLabels[k] || k) + ': ' + typeCounts[k] + ' session' + (typeCounts[k] === 1 ? '' : 's');
+                });
+                var recent = practiceLog.slice().reverse().slice(0, 20).map(function(e) {
+                  var d = new Date(e.timestamp);
+                  return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — ' + (typeLabels[e.type] || e.type) + (e.id ? ' (' + e.id + ')' : '');
+                });
+                window.SelHub.printDoc({
+                  title: 'My Mindfulness Practice Log',
+                  subtitle: 'Bring this to a counselor, parent, or coach to talk through what is helping.',
+                  sections: [
+                    { heading: 'Totals', items: [
+                      'Total sessions: ' + totalPractices,
+                      'Current daily streak: ' + streak + ' day' + (streak === 1 ? '' : 's'),
+                      'This week: ' + weekPractices + ' session' + (weekPractices === 1 ? '' : 's') + ' across ' + weekDays + ' day' + (weekDays === 1 ? '' : 's')
+                    ] },
+                    { heading: 'Practice mix', items: byTypeItems },
+                    { heading: 'Recent sessions (latest 20)', items: recent }
+                  ]
+                });
+              },
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, '🖨 Print my practice log')
+          ) : null
         );
       }
 
@@ -1558,10 +1591,11 @@ window.SelHub = window.SelHub || {
           meditationIdx === -1 && h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
             scripts.map(function(script, i) {
               var isFav = !!meditationFavs[script.id];
-              return h('div', {                 key: script.id,
-                style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' },
-                onClick: function() { upd('meditationIdx', i); if (soundEnabled) sfxClick(); }
-              },
+              return h('div', Object.assign({
+                key: script.id,
+                'aria-label': 'Open meditation: ' + script.name,
+                style: { display: 'flex', alignItems: 'center', gap: 12, padding: 14, borderRadius: 14, background: '#1e293b', border: '1px solid #334155', cursor: 'pointer' }
+              }, a11yClick(function() { upd('meditationIdx', i); if (soundEnabled) sfxClick(); })),
                 h('div', { style: { fontSize: 32, flexShrink: 0 } }, script.emoji),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 14, fontWeight: 700, color: '#f1f5f9', marginBottom: 2 } }, script.name),

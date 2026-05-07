@@ -30,6 +30,16 @@ window.SelHub = window.SelHub || {
     liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
     document.body.appendChild(liveRegion);
   })();
+
+  // ── WCAG 2.3.3: Reduced-motion guard ──
+  (function() {
+    if (document.getElementById('allo-voicedet-rm-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-voicedet-rm-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
+
   function announceToSR(msg) {
     var el = document.getElementById('allo-live-voicedet');
     if (el) { el.textContent = ''; setTimeout(function() { el.textContent = msg; }, 50); }

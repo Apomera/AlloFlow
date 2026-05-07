@@ -29,6 +29,14 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(liveRegion);
   })();
 
+  // ── WCAG 2.3.3: Reduced-motion guard ──
+  (function() {
+    if (document.getElementById('allo-decisions-rm-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-decisions-rm-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
@@ -491,6 +499,7 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var band = ctx.gradeBand || 'elementary';
+      var onSafetyFlag = ctx.onSafetyFlag || null;
 
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.decisions) || {};
@@ -510,6 +519,7 @@ window.SelHub = window.SelHub || {
       var dtChoice       = d.dtChoice || null;
       var dtReflection   = d.dtReflection || '';
       var dtAiResp       = d.dtAiResp || null;
+      var _decisionsTier = d._decisionsTier || 0;
       var dtAiLoad       = d.dtAiLoad || false;
       var dtCompleted    = d.dtCompleted || 0;
 
@@ -879,6 +889,29 @@ window.SelHub = window.SelHub || {
                     '4. End with an affirming observation about their decision-making process\n\n' +
                     'Use ' + (band === 'elementary' ? 'simple, warm language for ages 5-10.' : band === 'middle' ? 'clear language for ages 11-14.' : 'nuanced language for ages 15-18.') + '\n' +
                     'Never say their choice was wrong. This is about process, not answers. Keep it under 200 words.';
+                  // Triangulated safety assessment of the student's reasoning,
+                  // fired in parallel with the feedback generation.
+                  if (window.SelHub && window.SelHub.assessSafety) {
+                    window.SelHub.assessSafety(dtReflection, band, 'decisions', callGemini)
+                      .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                      .then(function(_safety) {
+                        _safety = _safety || { tier: 0 };
+                        if (_safety.tier >= 2 && onSafetyFlag) {
+                          onSafetyFlag({
+                            category: 'ai_decisions_' + (_safety.category || 'concerning'),
+                            match: _safety.rationale || 'SEL decisions safety concern',
+                            severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                            source: 'sel_decisions',
+                            context: dtReflection.substring(0, 100),
+                            timestamp: new Date().toISOString(),
+                            aiGenerated: true,
+                            confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                            tier: _safety.tier
+                          });
+                        }
+                        upd('_decisionsTier', _safety.tier || 0);
+                      });
+                  }
                   callGemini(prompt).then(function(result) {
                     var resp = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
                     upd('dtAiResp', resp);
@@ -910,6 +943,7 @@ window.SelHub = window.SelHub || {
               }, '\u2705 Complete & Next')
             ),
             // AI Response
+            (_decisionsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
             dtAiResp && h('div', { style: { padding: 16, borderRadius: 12, background: '#1e293b', border: '1px solid #6366f144', marginTop: 16 } },
               h('p', { style: { fontSize: 10, color: '#818cf8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8, fontWeight: 700 } }, '\u2728 Decision Analysis'),
               h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, dtAiResp)

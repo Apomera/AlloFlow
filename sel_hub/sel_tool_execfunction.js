@@ -767,7 +767,7 @@ window.SelHub = window.SelHub || {
                     if (window.SelHub && window.SelHub.safeCoach) {
                       window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
                     } else {
-                      callGemini(p, true).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
+                      callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
                     }
                   }
                 },
@@ -786,7 +786,7 @@ window.SelHub = window.SelHub || {
                   if (window.SelHub && window.SelHub.safeCoach) {
                     window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
                   } else {
-                    callGemini(p, true).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
+                    callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
                   }
                 },
                 disabled: coachLoading || !coachInput.trim() || !callGemini,

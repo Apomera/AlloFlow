@@ -2303,6 +2303,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── AI Response ──
+        h('div', { role: 'region', 'aria-label': 'Circle facilitator response', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
         aiResponse && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-xl p-4' },
           h('div', { className: 'flex items-start gap-2' },
             h(Sparkles, { size: 14, className: 'text-indigo-500 mt-0.5 shrink-0' }),
@@ -2312,6 +2313,7 @@ window.SelHub = window.SelHub || {
             )
           ),
           h('button', { 'aria-label': 'Dismiss', onClick: function() { upd('aiResponse', null); }, className: 'mt-2 text-[10px] text-indigo-400 hover:text-indigo-600 font-bold' }, 'Dismiss')
+        )
         )
       );
     }

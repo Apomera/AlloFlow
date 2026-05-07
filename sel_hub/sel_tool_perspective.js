@@ -1512,9 +1512,11 @@ window.SelHub = window.SelHub || {
             )
           ),
           // AI Response
-          aiResponse && h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
-            h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Perspective Analysis'),
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, aiResponse)
+          h('div', { role: 'region', 'aria-label': 'Perspective analysis', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+            aiResponse && h('div', { style: { padding: 20, borderRadius: 12, background: '#1e293b', border: '1px solid ' + ACCENT_MED } },
+              h('p', { style: { fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 10, fontWeight: 700 } }, 'Perspective Analysis'),
+              h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.8, whiteSpace: 'pre-wrap' } }, aiResponse)
+            )
           )
         );
       }

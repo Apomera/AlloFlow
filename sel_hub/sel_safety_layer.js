@@ -221,7 +221,7 @@
 
     // Run coach + safety assessment in parallel
     return Promise.all([
-      callGemini(opts.coachPrompt, true).catch(function() { return null; }),
+      callGemini(opts.coachPrompt, false).catch(function() { return null; }),
       window.SelHub.assessSafety(msg, band, toolId, callGemini)
     ]).then(function(results) {
       var response = results[0];
@@ -291,7 +291,92 @@
     );
   };
 
+  // Always-on resource strip for tools that touch sensitive content.
+  // Quieter than renderCrisisResources (no role="alert" / aria-live) so screen
+  // readers don't announce on every render. Use as a persistent footer.
+  window.SelHub.renderResourceFooter = function(h, band) {
+    var isYoung = band === 'elementary';
+    return h('div', {
+      role: 'complementary',
+      'aria-label': 'Crisis support resources',
+      style: { background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 12, padding: '10px 14px', marginTop: 16, fontSize: 12, color: '#7c2d12' }
+    },
+      h('div', { style: { fontWeight: 700, marginBottom: 4 } }, isYoung ? 'You\u2019re not alone. Help is here:' : 'You\u2019re not alone. If you need help, reach out:'),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 14px' } },
+        !isYoung && h('span', null, '\uD83D\uDCDE 988 (call or text)'),
+        !isYoung && h('span', null, '\uD83D\uDCF1 Text HOME to 741741'),
+        !isYoung && h('span', null, '\uD83C\uDF08 Trevor (LGBTQ+): 1-866-488-7386'),
+        h('span', null, '\uD83C\uDFEB Trusted adult at school')
+      )
+    );
+  };
+
   window.SelHub.getSessionFlagLog = function() { return _flagLog.slice(); };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Print Packet Helper ──
+  // Renders a clean printable artifact (calm plans, action plans,
+  // weekly summaries, etc.) in a new window. Intended for take-home
+  // use: students bring the printout to a counselor, parent, or IEP
+  // meeting.
+  //
+  // opts: {
+  //   title: string,
+  //   subtitle?: string,
+  //   sections: [{ heading, items?: string[], paragraphs?: string[] }]
+  // }
+  // ══════════════════════════════════════════════════════════════
+
+  function _esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  window.SelHub.printDoc = function(opts) {
+    opts = opts || {};
+    var w;
+    try { w = window.open('', '_blank', 'width=760,height=920'); } catch (e) {}
+    if (!w) { alert('Please allow pop-ups to print this. Then click the button again.'); return; }
+
+    var sectionsHtml = (opts.sections || []).map(function(sec) {
+      var inner = '';
+      if (sec.paragraphs && sec.paragraphs.length) {
+        inner += sec.paragraphs.map(function(p) { return '<p>' + _esc(p) + '</p>'; }).join('');
+      }
+      if (sec.items && sec.items.length) {
+        inner += '<ul>' + sec.items.map(function(it) { return '<li>' + _esc(it) + '</li>'; }).join('') + '</ul>';
+      }
+      if (!inner) inner = '<p class="sel-empty">(nothing recorded yet)</p>';
+      return '<section><h2>' + _esc(sec.heading || '') + '</h2>' + inner + '</section>';
+    }).join('');
+
+    var subtitleHtml = opts.subtitle ? '<p class="sel-sub">' + _esc(opts.subtitle) + '</p>' : '';
+    var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+
+    var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + _esc(opts.title || 'Print') + '</title>'
+      + '<style>'
+      + 'body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#111;background:#fff;padding:40px;max-width:720px;margin:auto;line-height:1.55}'
+      + 'h1{font-size:24px;margin:0 0 4px}'
+      + '.sel-sub{color:#475569;margin:0 0 20px;font-size:14px}'
+      + 'h2{font-size:15px;color:#1e293b;margin:22px 0 6px;border-bottom:1px solid #e2e8f0;padding-bottom:4px}'
+      + 'ul{margin:6px 0 10px;padding-left:22px}'
+      + 'li{margin-bottom:4px}'
+      + 'p{margin:6px 0}'
+      + '.sel-empty{color:#94a3b8;font-style:italic;font-size:13px}'
+      + '.sel-meta{color:#64748b;font-size:11px;border-top:1px solid #e2e8f0;margin-top:32px;padding-top:8px}'
+      + '@media print{body{padding:24px}}'
+      + '</style></head><body>'
+      + '<h1>' + _esc(opts.title || '') + '</h1>'
+      + subtitleHtml
+      + sectionsHtml
+      + '<div class="sel-meta">Generated ' + _esc(dateStr) + ' • AlloFlow SEL Hub</div>'
+      + '</body></html>';
+
+    w.document.write(html);
+    w.document.close();
+    setTimeout(function() { try { w.focus(); w.print(); } catch (e) {} }, 250);
+  };
 
   console.log('[SelHub] Safety layer v1.1 loaded (Canvas-compatible, in-memory)');
 })();

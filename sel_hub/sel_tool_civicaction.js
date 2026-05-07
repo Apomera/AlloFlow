@@ -665,11 +665,40 @@ window.SelHub = window.SelHub || {
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var gradeBand = ctx.gradeBand || 'elementary';
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+
+      // Triangulated safety assessment of student-typed input. Civic topics
+      // (racism, immigration fears, school safety, family separation) can
+      // surface real distress, so we route any free-text student input through
+      // the same pipeline as upstander/coping/journal.
+      var _runSafetyAssess = function(userInput, scope) {
+        if (!window.SelHub || !window.SelHub.assessSafety || !userInput) return;
+        window.SelHub.assessSafety(userInput, gradeBand, 'civicaction', callGemini)
+          .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+          .then(function(_safety) {
+            _safety = _safety || { tier: 0 };
+            if (_safety.tier >= 2 && onSafetyFlag) {
+              onSafetyFlag({
+                category: 'ai_civicaction_' + (scope || 'general') + '_' + (_safety.category || 'concerning'),
+                match: _safety.rationale || 'SEL civic action safety concern',
+                severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                source: 'sel_civicaction',
+                context: userInput.substring(0, 100),
+                timestamp: new Date().toISOString(),
+                aiGenerated: true,
+                confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                tier: _safety.tier
+              });
+            }
+            upd('_civicTier', _safety.tier || 0);
+          });
+      };
 
       var tab = d.tab || 'feelings';
       var selectedFeeling = d.feeling || null;
       var selectedCoping = d.coping || null;
       var aiResponse = d.aiResponse || null;
+      var _civicTier = d._civicTier || 0;
       var aiLoading = d.aiLoading || false;
       var actionPlan = d.actionPlan || null;
 
@@ -750,6 +779,7 @@ window.SelHub = window.SelHub || {
           'Respond with warmth and validation. Acknowledge their feelings without minimizing them. ' +
           'Offer 1-2 practical, age-appropriate suggestions. Keep it brief (3-4 sentences). ' +
           'Do NOT suggest they just "think positive." Validate the difficulty of what they are experiencing.';
+        _runSafetyAssess(question, 'counselor');
         callGemini(prompt).then(function(resp) {
           updMulti({ aiResponse: resp, aiLoading: false });
         }).catch(function() {
@@ -769,6 +799,7 @@ window.SelHub = window.SelHub || {
           'Each step should be specific, achievable, and empowering. ' +
           'Frame it as: "You have more power than you think." ' +
           'Return ONLY JSON: {"steps": [{"action": "what to do", "why": "why it matters", "how": "specific how-to"}]}';
+        _runSafetyAssess(issue, 'actionplan');
         callGemini(prompt, true).then(function(resp) {
           try {
             var cleaned = resp.trim();
@@ -1077,9 +1108,10 @@ window.SelHub = window.SelHub || {
               className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-xs font-bold hover:bg-teal-700 transition-colors disabled:opacity-40 flex items-center gap-2'
             }, aiLoading ? 'Creating your plan...' : '\u2728 Generate My Action Plan'),
 
-            // Display action plan
-            actionPlan && actionPlan.steps && h('div', { className: 'mt-4 space-y-3' },
-              actionPlan.steps.map(function(step, i) {
+            // Display action plan — always-rendered live region so screen readers
+            // announce arrival even before the plan exists. aria-busy flips during load.
+            h('div', { role: 'region', 'aria-label': 'Civic action plan', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', className: 'mt-4 space-y-3' },
+              actionPlan && actionPlan.steps && actionPlan.steps.map(function(step, i) {
                 return h('div', { key: i, className: 'bg-white rounded-xl border border-teal-200 p-3' },
                   h('div', { className: 'flex items-start gap-2' },
                     h('span', { className: 'bg-teal-700 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0' }, i + 1),
@@ -1870,6 +1902,7 @@ window.SelHub = window.SelHub || {
                   onClick: function() {
                     upd('aiLoading', true);
                     var prompt = 'You are a civic education teacher for ' + (gradeLevel || 'middle school') + ' students. The student is studying the section "' + activeSection.label + '" and was given this prompt about "' + item.title + '": "' + item.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their reasoning. Stay historical and nonpartisan; do not endorse current political positions. Be warm and specific.';
+                    _runSafetyAssess(rightsScenarioAnswer, 'rightsprompt');
                     callGemini(prompt).then(function(resp) {
                       updMulti({ aiResponse: resp, aiLoading: false });
                       ctx.awardXP(5);
@@ -1963,6 +1996,7 @@ window.SelHub = window.SelHub || {
                       onClick: function() {
                         upd('aiLoading', true);
                         var prompt = 'You are a civic education teacher for ' + (gradeLevel || '5th grade') + ' students. A student was asked this scenario about rights: "' + right.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their good reasoning and gently suggest any perspectives they might have missed. Be warm and supportive.';
+                        _runSafetyAssess(rightsScenarioAnswer, 'rightsscenario');
                         callGemini(prompt).then(function(resp) {
                           updMulti({ aiResponse: resp, aiLoading: false });
                           ctx.awardXP(5);
@@ -2397,6 +2431,7 @@ window.SelHub = window.SelHub || {
         ),
 
         // ── AI Response ──
+        (_civicTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
         aiResponse && h('div', { className: 'bg-teal-50 border border-teal-200 rounded-xl p-4' },
           h('div', { className: 'flex items-start gap-2' },
             h(Heart, { size: 14, className: 'text-teal-500 mt-0.5 shrink-0' }),

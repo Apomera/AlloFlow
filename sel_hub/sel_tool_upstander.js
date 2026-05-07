@@ -382,7 +382,7 @@ window.SelHub = window.SelHub || {
                   });
                 }
               : function() {
-                  return callGemini(coachPrompt, true).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  return callGemini(coachPrompt, false).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
                 };
 
             sendFn().then(function(result) {

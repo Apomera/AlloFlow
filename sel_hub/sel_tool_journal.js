@@ -638,6 +638,7 @@ window.SelHub = window.SelHub || {
         var callGemini = ctx.callGemini;
         var callTTS = ctx.callTTS;
         var band = ctx.gradeBand || 'elementary';
+        var onSafetyFlag = ctx.onSafetyFlag || null;
 
         // ── Tool-scoped state ──
         var d = (ctx.toolData && ctx.toolData.journal) || {};
@@ -665,6 +666,7 @@ window.SelHub = window.SelHub || {
 
         // Insights state
         var aiInsight      = d.aiInsight || '';
+        var _journalTier   = d._journalTier || 0;
         var aiLoading      = d.aiLoading || false;
 
         // Badges state
@@ -1601,7 +1603,37 @@ window.SelHub = window.SelHub || {
               h('div', { style: { fontSize: 12, color: '#94a3b8', textAlign: 'center', padding: 12 } },
                 'Check in at least 3 times this week to see your summary!'
               )
-            )
+            ),
+
+            // ── Print my week (take-home artifact) ──
+            weeklySummary ? h('div', { style: { marginTop: 16, textAlign: 'center' } },
+              h('button', {
+                'aria-label': 'Print my weekly summary',
+                onClick: function() {
+                  if (!window.SelHub || !window.SelHub.printDoc) return;
+                  var sections = [
+                    { heading: 'This week at a glance', items: [
+                      'Average mood: ' + weeklySummary.avgMood.toFixed(1) + ' / 5',
+                      'Average energy: ' + weeklySummary.avgEnergy.toFixed(1) + ' / 5',
+                      'Trajectory: ' + weeklySummary.trajectory,
+                      'Check-ins this week: ' + (weeklySummary.checkInCount || 0)
+                    ] }
+                  ];
+                  if (weeklySummary.topTriggers && weeklySummary.topTriggers.length) {
+                    sections.push({ heading: 'Top triggers I noticed', items: weeklySummary.topTriggers });
+                  }
+                  if (weeklySummary.encouragement) {
+                    sections.push({ heading: 'A note to myself', paragraphs: [weeklySummary.encouragement] });
+                  }
+                  window.SelHub.printDoc({
+                    title: 'My Weekly Mood Summary',
+                    subtitle: 'Bring this to your counselor, parent, or therapist so they can see how the week went.',
+                    sections: sections
+                  });
+                },
+                style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+              }, '🖨 Print my weekly summary')
+            ) : null
           );
         }
 
@@ -1769,8 +1801,9 @@ window.SelHub = window.SelHub || {
               })(),
 
               // AI Insight
-              h('div', { style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
+              h('div', { role: 'region', 'aria-label': 'AI-powered mood insight', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
                 h('div', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, marginBottom: 8 } }, '\uD83E\uDD16 AI-Powered Insight'),
+                (_journalTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
                 aiInsight ? h('div', null,
                   h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, aiInsight),
                   callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -1778,7 +1811,7 @@ window.SelHub = window.SelHub || {
                     style: { marginTop: 6, background: 'none', border: 'none', color: ACCENT, fontSize: 10, cursor: 'pointer' }
                   }, '\uD83D\uDD0A Read aloud')
                 ) :
-                h('button', { 'aria-label': 'thoughtful and empowering',
+                h('button', { 'aria-label': aiLoading ? 'Generating insight\u2026' : 'Generate AI insight',
                   onClick: function() {
                     if (!callGemini || aiLoading || checkIns.length < 2) {
                       if (checkIns.length < 2) addToast('Need at least 2 check-ins for AI insights!', 'warning');
@@ -1792,8 +1825,32 @@ window.SelHub = window.SelHub || {
                     var prompt = 'You are a supportive SEL coach for a ' + band + ' school student. Based on their recent mood check-ins: [' + moodSummary + ']. Provide a brief, warm, ' +
                       (band === 'elementary' ? 'simple and encouraging' : band === 'middle' ? 'relatable and supportive' : 'thoughtful and empowering') +
                       ' insight about patterns you notice. Keep it to 2-3 sentences. Be specific about what you observe. Do NOT diagnose or give medical advice.';
-                    callGemini(prompt, false, false, 0.8).then(function(resp) {
-                      upd({ aiInsight: resp, aiLoading: false });
+                    // Run insight generation + triangulated safety assessment in parallel.
+                    // The mood summary may include user-entered trigger text, so we
+                    // assess it the same way coping/upstander/crisiscompanion do.
+                    var safetyP = (window.SelHub && window.SelHub.assessSafety)
+                      ? window.SelHub.assessSafety(moodSummary, band, 'journal', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                      : Promise.resolve({ tier: 0, rationale: '', category: 'none' });
+                    Promise.all([
+                      callGemini(prompt, false, false, 0.8),
+                      safetyP
+                    ]).then(function(results) {
+                      var resp = results[0];
+                      var safety = results[1] || { tier: 0 };
+                      if (safety.tier >= 2 && onSafetyFlag) {
+                        onSafetyFlag({
+                          category: 'ai_journal_' + (safety.category || 'concerning'),
+                          match: safety.rationale || 'SEL journal safety concern',
+                          severity: safety.tier >= 3 ? 'critical' : 'medium',
+                          source: 'sel_journal',
+                          context: moodSummary.substring(0, 100),
+                          timestamp: new Date().toISOString(),
+                          aiGenerated: true,
+                          confidence: safety.tier >= 3 ? 0.9 : 0.7,
+                          tier: safety.tier
+                        });
+                      }
+                      upd({ aiInsight: resp, aiLoading: false, _journalTier: safety.tier || 0 });
                       awardXP(10);
                       tryAwardBadge('ai_reflector');
                       addToast('Insight generated!', 'success');
@@ -1859,7 +1916,8 @@ window.SelHub = window.SelHub || {
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
           badgePopup,
-          h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+          h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
       })();
     }

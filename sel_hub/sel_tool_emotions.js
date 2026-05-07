@@ -481,6 +481,7 @@ window.SelHub = window.SelHub || {
       var callTTS = ctx.callTTS;
       var t = ctx.t;
       var band = ctx.gradeBand || 'elementary';
+      var onSafetyFlag = ctx.onSafetyFlag || null;
 
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.emotions) || {};
@@ -524,6 +525,7 @@ window.SelHub = window.SelHub || {
       // Journal state
       var journalEntries  = d.journalEntries || [];
       var journalDraft    = d.journalDraft || '';
+      var _emotionsTier   = d._emotionsTier || 0;
       var journalEmotion  = d.journalEmotion || '';
       var journalAiResp   = d.journalAiResp || null;
       var journalAiLoading = d.journalAiLoading || false;
@@ -1636,8 +1638,28 @@ window.SelHub = window.SelHub || {
                      band === 'middle' ? 'Be genuine and relatable. Validate, reflect back what you notice, and offer a perspective shift or coping suggestion.' :
                      'Use evidence-based language. Validate with empathy, identify the emotion pattern, and offer a reframe or regulation strategy rooted in CBT/DBT principles.') +
                     ' Never minimize their experience.';
-                  callGemini(prompt).then(function(resp) {
-                    upd({ journalAiResp: resp, journalAiLoading: false });
+                  // Triangulated safety assessment of the student's journal entry,
+                  // run in parallel with the coach response.
+                  var safetyP = (window.SelHub && window.SelHub.assessSafety)
+                    ? window.SelHub.assessSafety(journalDraft, band, 'emotions', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                    : Promise.resolve({ tier: 0, rationale: '', category: 'none' });
+                  Promise.all([callGemini(prompt), safetyP]).then(function(results) {
+                    var resp = results[0];
+                    var safety = results[1] || { tier: 0 };
+                    if (safety.tier >= 2 && onSafetyFlag) {
+                      onSafetyFlag({
+                        category: 'ai_emotions_' + (safety.category || 'concerning'),
+                        match: safety.rationale || 'SEL emotions safety concern',
+                        severity: safety.tier >= 3 ? 'critical' : 'medium',
+                        source: 'sel_emotions',
+                        context: journalDraft.substring(0, 100),
+                        timestamp: new Date().toISOString(),
+                        aiGenerated: true,
+                        confidence: safety.tier >= 3 ? 0.9 : 0.7,
+                        tier: safety.tier
+                      });
+                    }
+                    upd({ journalAiResp: resp, journalAiLoading: false, _emotionsTier: safety.tier || 0 });
                     tryAwardBadge('ai_coach');
                     if (soundEnabled) sfxReveal();
                   }).catch(function() {
@@ -1652,6 +1674,8 @@ window.SelHub = window.SelHub || {
               )
             ),
 
+            // Crisis resources surfaced when triangulated assessment hits Tier 3
+            (_emotionsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
             // AI response
             journalAiResp && h('div', { style: { marginTop: 12, padding: 14, borderRadius: 12, background: '#8b5cf618', border: '1px solid #8b5cf644' } },
               h('p', { style: { fontSize: 10, color: '#a78bfa', fontWeight: 700, marginBottom: 6 } }, '\u2728 Emotion Coach'),
@@ -2074,7 +2098,8 @@ window.SelHub = window.SelHub || {
         scenariosContent,
         journalContent,
         mixerContent,
-        historyContent
+        historyContent,
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

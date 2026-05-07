@@ -2139,7 +2139,8 @@ window.SelHub = window.SelHub || {
         return h('div', { className: 'selh-safety', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
           badgePopup,
-          h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+          h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
       })();
     }

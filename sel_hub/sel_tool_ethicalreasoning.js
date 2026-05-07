@@ -682,12 +682,39 @@ window.SelHub = window.SelHub || {
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var gradeBand = ctx.gradeBand || 'elementary';
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+
+      // Triangulated safety assessment of student-typed input. Used by both the
+      // dilemma dialogue (askSocratic) and the case-study Socratic flow.
+      var _runSafetyAssess = function(userInput, scope) {
+        if (!window.SelHub || !window.SelHub.assessSafety || !userInput) return;
+        window.SelHub.assessSafety(userInput, gradeBand, 'ethicalreasoning', callGemini)
+          .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+          .then(function(_safety) {
+            _safety = _safety || { tier: 0 };
+            if (_safety.tier >= 2 && onSafetyFlag) {
+              onSafetyFlag({
+                category: 'ai_ethicalreasoning_' + (scope || 'dialogue') + '_' + (_safety.category || 'concerning'),
+                match: _safety.rationale || 'SEL ethical reasoning safety concern',
+                severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                source: 'sel_ethicalreasoning',
+                context: userInput.substring(0, 100),
+                timestamp: new Date().toISOString(),
+                aiGenerated: true,
+                confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                tier: _safety.tier
+              });
+            }
+            upd('_ethicsTier', _safety.tier || 0);
+          });
+      };
 
       var tab = d.tab || 'dilemmas';
       var selectedDilemma = d.dilemmaId ? DILEMMAS.find(function(dl) { return dl.id === d.dilemmaId; }) : null;
       var selectedFramework = d.frameworkId || null;
       var dialogueHistory = d.dialogue || [];
       var aiLoading = d.aiLoading || false;
+      var _ethicsTier = d._ethicsTier || 0;
 
       // ── Socratic dialogue with AI ──
       var askSocratic = function(userInput) {
@@ -705,6 +732,8 @@ window.SelHub = window.SelHub || {
           'Be warm and encouraging. Keep it to 2-3 sentences max. ' +
           'If they seem to be oversimplifying, gently complicate their thinking. ' +
           'If they seem stuck, offer a helpful framing question.';
+
+        _runSafetyAssess(userInput, 'dilemma');
 
         callGemini(prompt).then(function(resp) {
           var newHistory = dialogueHistory.concat([
@@ -1162,12 +1191,14 @@ window.SelHub = window.SelHub || {
           ),
 
           // Framework analysis (if generated)
-          d.frameworkAnalysis && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-2xl p-5' },
-            h('div', { className: 'flex items-center gap-2 mb-2' },
-              h(Sparkles, { size: 14, className: 'text-indigo-500' }),
-              h('h4', { className: 'text-sm font-bold text-indigo-700' }, 'Framework Analysis')
-            ),
-            h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.frameworkAnalysis)
+          h('div', { role: 'region', 'aria-label': 'Framework analysis', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
+            d.frameworkAnalysis && h('div', { className: 'bg-indigo-50 border border-indigo-200 rounded-2xl p-5' },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h(Sparkles, { size: 14, className: 'text-indigo-500' }),
+                h('h4', { className: 'text-sm font-bold text-indigo-700' }, 'Framework Analysis')
+              ),
+              h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.frameworkAnalysis)
+            )
           ),
 
           // Your position
@@ -1178,7 +1209,7 @@ window.SelHub = window.SelHub || {
               className: 'w-full text-sm p-3 border border-slate-400 rounded-lg resize-none h-24 outline-none focus:ring-2 focus:ring-indigo-300',
               'aria-label': 'Your ethical position'
             }),
-            d.position && d.position.length > 20 && h('button', { 'aria-label': 'dialogue', onClick: function() { upd('tab', 'dialogue'); askSocratic(d.position); },
+            d.position && d.position.length > 20 && h('button', { 'aria-label': 'Challenge my reasoning with Socratic dialogue', onClick: function() { upd('tab', 'dialogue'); askSocratic(d.position); },
               className: 'mt-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors flex items-center gap-2'
             }, '\uD83D\uDCAC Challenge my reasoning with Socratic dialogue')
           ),
@@ -1212,6 +1243,7 @@ window.SelHub = window.SelHub || {
 
           selectedDilemma && h('div', { className: 'space-y-3' },
             // Dialogue history
+            (_ethicsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
             dialogueHistory.length > 0 && h('div', { className: 'space-y-2 max-h-[400px] overflow-y-auto' },
               dialogueHistory.map(function(msg, i) {
                 return h('div', { key: i, className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
@@ -1338,10 +1370,11 @@ window.SelHub = window.SelHub || {
           })(),
 
           // Kohlberg results
+          h('div', { role: 'region', 'aria-label': 'Moral reasoning analysis', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
           d.kohlbergComplete && h('div', { className: 'space-y-4' },
             h('div', { className: 'bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200 p-5' },
               h('div', { className: 'flex items-center gap-2 mb-3' },
-                h('span', { className: 'text-3xl' }, '\uD83E\uDDD9'),
+                h('span', { className: 'text-3xl', 'aria-hidden': 'true' }, '\uD83E\uDDD9'),
                 h('h4', { className: 'text-base font-bold text-purple-800' }, 'Your Moral Reasoning Pattern')
               ),
               h('p', { className: 'text-sm text-slate-700 leading-relaxed whitespace-pre-line' }, d.kohlbergFeedback)
@@ -1371,6 +1404,7 @@ window.SelHub = window.SelHub || {
             h('button', { 'aria-label': 'Retake assessment', onClick: function() { updMulti({ kohlbergStarted: false, kohlbergComplete: false, kohlbergStep: 0, kohlbergAnswers: {}, kohlbergFeedback: null }); },
               className: 'w-full px-4 py-2 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
             }, '\uD83D\uDD04 Retake Assessment')
+          )
           )
         ),
 
@@ -1483,6 +1517,7 @@ window.SelHub = window.SelHub || {
             ),
 
             // Feedback display
+            h('div', { role: 'region', 'aria-label': 'Debate coach feedback', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false' },
             d.debateFeedback && h('div', {  className: 'space-y-3' },
               h('div', {  className: 'bg-violet-50 border border-violet-200 rounded-2xl p-5' },
                 h('div', {  className: 'flex items-center gap-2 mb-3' },
@@ -1495,14 +1530,15 @@ window.SelHub = window.SelHub || {
               // Challenge: argue the other side
               h('div', {  className: 'bg-amber-50 border border-amber-200 rounded-xl p-4 text-center' },
                 h('p', { className: 'text-xs font-bold text-amber-700 mb-2' }, '\uD83C\uDFC6 Challenge: Can you argue the OTHER side just as well?'),
-                h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
+                h('button', { 'aria-label': 'Switch sides and try again', onClick: function() { updMulti({ debateSide: d.debateSide === 'for' ? 'against' : 'for', debateArgs: '', debateCounter: '', debateFeedback: null }); },
                   className: 'px-4 py-2 bg-amber-700 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors'
                 }, 'Switch Sides & Try Again')
               ),
 
-              h('button', { 'aria-label': ', debateCounter:', onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
+              h('button', { 'aria-label': 'Choose another topic', onClick: function() { updMulti({ debateTopicObj: null, debateSide: null, debateArgs: '', debateCounter: '', debateFeedback: null }); },
                 className: 'w-full px-4 py-2 bg-slate-100 border border-slate-400 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200 transition-colors'
               }, '\u2190 Choose Another Topic')
+            )
             )
           )
         ),
@@ -1616,6 +1652,7 @@ window.SelHub = window.SelHub || {
                   })
                 ),
 
+                (_ethicsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
                 csSocratic.length === 0 && h('p', { className: 'text-xs text-slate-600 italic text-center' }, 'Share your thinking to begin a Socratic dialogue about this case.'),
 
                 // Socratic input
@@ -1631,6 +1668,7 @@ window.SelHub = window.SelHub || {
                           'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
                           histCtx + '\nStudent says: "' + userInput + '"\n\n' +
                           'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
+                        _runSafetyAssess(userInput, 'casestudy');
                         callGemini(prompt).then(function(resp) {
                           var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
                           updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
