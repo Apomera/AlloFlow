@@ -996,6 +996,19 @@
         },
           React.createElement('span', { 'aria-hidden': 'true' }, '🛠️'),
           ' Apply suggested fixes'
+        ),
+        // Plan S+ Audit↔Quiz bridge: "Generate Pre-Check on identified gaps".
+        // Pulls priority gaps from the audit and seeds a Pre-Check Quiz with
+        // them — closing the loop from "audit found prereq gaps" to "students
+        // can practice those before the lesson lands."
+        typeof p.onGeneratePreCheck === 'function' && topRecs.length > 0 && React.createElement('button', {
+          type: 'button',
+          onClick: function () { p.onGeneratePreCheck(topRecs); },
+          className: 'flex-shrink-0 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2',
+          title: 'Generate a Pre-Check Quiz that probes the prerequisites the audit identified as gaps. Students take the quiz before the lesson; missed concepts get just-in-time AI explainers.',
+        },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🎯'),
+          ' Pre-Check from gaps'
         )
       ),
       // Failed dimensions warning
@@ -1161,6 +1174,7 @@
       comp: comprehensive,
       standardsReportCount: reports.length,
       onApplyFixes: props.onApplyFixes,
+      onGeneratePreCheck: props.onGeneratePreCheck,
     }),
     // Per-dimension findings (standards is now the first dimension card; the
     // legacy top-level reports[] block has been folded into comprehensive.standards).
