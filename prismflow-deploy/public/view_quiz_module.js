@@ -135,6 +135,23 @@
       var status = score === 3 ? 'correct' : score === 2 ? 'partially-correct' : 'incorrect';
       setGrade({ step1Correct: step1Correct, step2Correct: step2Correct, step3Correct: step3Correct, status: status, score: score });
       setStep('done');
+      // Plan T Slice Ta: live session response capture for sequence-sense
+      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+        try {
+          p.onSubmitLiveAnswer({
+            questionIdx: p.questionIdx,
+            itemType: 'sequence-sense',
+            answer: {
+              verifyAnswer: verifyAnswer,
+              clickedIdx: clickedIdx,
+              principleAnswer: p2,
+              score: score,
+              status: status,
+            },
+            timestamp: Date.now(),
+          });
+        } catch (e) { /* swallow */ }
+      }
     }
 
     function reset() {
@@ -286,6 +303,22 @@
       var status = score === 2 ? 'correct' : score === 1 ? 'partially-correct' : 'incorrect';
       setGrade({ step1Correct: step1Correct, step2Correct: step2Correct, status: status, score: score });
       setStep('done');
+      // Plan T Slice Ta: live session response capture for relation-mismatch
+      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+        try {
+          p.onSubmitLiveAnswer({
+            questionIdx: p.questionIdx,
+            itemType: 'relation-mismatch',
+            answer: {
+              clickedPairIdx: clickedPairIdx,
+              partnerAnswer: ans,
+              score: score,
+              status: status,
+            },
+            timestamp: Date.now(),
+          });
+        } catch (e) { /* swallow */ }
+      }
     }
 
     function reset() {
@@ -435,6 +468,17 @@
     function markIDK() {
       setIdkMarked(true);
       requestExplainer();
+      // Plan T Slice Ta: write IDK signal to live session if active
+      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+        try {
+          p.onSubmitLiveAnswer({
+            questionIdx: p.questionIdx,
+            itemType: 'mcq',
+            answer: { idk: true },
+            timestamp: Date.now(),
+          });
+        } catch (e) { /* swallow */ }
+      }
     }
 
     return React.createElement('div', { className: 'mt-3 ml-9 space-y-2' },
@@ -506,6 +550,8 @@
             key: entry.idx,
             q: entry.q,
             itemNumber: entry.idx + 1,
+            questionIdx: entry.idx,
+            onSubmitLiveAnswer: p.onSubmitLiveAnswer,
           });
         }
         if (entry.q.type === 'relation-mismatch') {
@@ -513,17 +559,21 @@
             key: entry.idx,
             q: entry.q,
             itemNumber: entry.idx + 1,
+            questionIdx: entry.idx,
+            onSubmitLiveAnswer: p.onSubmitLiveAnswer,
           });
         }
         return React.createElement(FreeformItemCard, {
           key: entry.idx,
           q: entry.q,
           itemNumber: entry.idx + 1,
+          questionIdx: entry.idx,
           callGemini: p.callGemini,
           callTTS: p.callTTS,
           gradeLevel: p.gradeLevel,
           QuizAIHelpers: p.QuizAIHelpers,
           modeStrategy: p.modeStrategy,
+          onSubmitLiveAnswer: p.onSubmitLiveAnswer,
         });
       })
     );
@@ -547,6 +597,17 @@
 
     function submitGrade() {
       if (!response || !response.trim()) return;
+      // Plan T Slice Ta: write the raw response to live session if active.
+      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+        try {
+          p.onSubmitLiveAnswer({
+            questionIdx: p.questionIdx,
+            itemType: q.type || 'short-answer',
+            answer: { text: response },
+            timestamp: Date.now(),
+          });
+        } catch (e) { /* swallow — local grading still proceeds */ }
+      }
       if (!p.QuizAIHelpers) {
         setGrade({ status: 'error', feedback: 'Grader unavailable: QuizAIHelpers not loaded.', loading: false });
         return;
@@ -739,6 +800,13 @@
   var isIndependentMode = props.isIndependentMode;
   var activeSessionCode = props.activeSessionCode;
   var sessionData = props.sessionData;
+  // Plan T Slice Ta: live-session response capture. When the host passes
+  // onSubmitLiveAnswer AND we're in an active session, item cards write
+  // each submission to quizState.allResponses[uid][questionIdx]. Inactive
+  // session → onSubmitLiveAnswer is undefined and writes are no-ops.
+  var onSubmitLiveAnswer = (activeSessionCode && typeof props.onSubmitLiveAnswer === 'function')
+    ? props.onSubmitLiveAnswer
+    : null;
   var isPresentationMode = props.isPresentationMode;
   var isReviewGame = props.isReviewGame;
   var isEditingQuiz = props.isEditingQuiz;
@@ -1502,10 +1570,12 @@
     // Plan S Slice 5+: per-MCQ enhancements (Explain / IDK / confidence) — same parity as freeform items
     /*#__PURE__*/React.createElement(McqEnhancements, {
       q: q,
+      questionIdx: i,
       modeStrategy: _modeStrat,
       callGemini: props.callGemini,
       callTTS: props.callTTS,
       gradeLevel: props.gradeLevel,
+      onSubmitLiveAnswer: onSubmitLiveAnswer,
     }),
     q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in slide-in-from-top-2 relative"
@@ -1543,6 +1613,7 @@
       gradeLevel: props.gradeLevel,
       QuizAIHelpers: window.AlloModules && window.AlloModules.QuizAIHelpers,
       modeStrategy: _modeStrat,
+      onSubmitLiveAnswer: onSubmitLiveAnswer,
     }),
     /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"
