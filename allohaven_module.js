@@ -14797,16 +14797,24 @@
         catch (e) { addToast('Print not available in this browser.'); }
       }
       // Esc closes — wire via onKeyDown on the scrim itself (focusable
-      // via tabIndex). Click on backdrop also closes.
+      // via tabIndex) and autofocus on mount via callback ref so the
+      // user doesn't have to click into the scrim before Esc works.
+      var scrimRef = function(node) {
+        if (node && typeof node.focus === 'function') {
+          // Defer one tick so React has finished mounting children.
+          setTimeout(function() { try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (_) {} } }, 0);
+        }
+      };
       return h('div', {
         key: 'ah-preview',
+        ref: scrimRef,
         className: 'ah-preview-scrim',
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': 'Print preview',
         tabIndex: -1,
         onClick: function(e) { if (e.target === e.currentTarget) close(); },
-        onKeyDown: function(e) { if (e.key === 'Escape') close(); }
+        onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } }
       },
         h('div', { className: 'ah-preview-chrome' },
           h('span', { style: { fontSize: '12px', opacity: 0.85 } }, '🔍 Print preview'),
@@ -16611,10 +16619,23 @@
             minWidth: 0
           }
         },
-          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
-            typeIcon + ' ' + label),
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+            h('span', null, typeIcon + ' ' + label),
+            decoration.voiceNote && decoration.voiceNote.base64 ? h('span', {
+              'aria-label': 'Voice note attached'
+                + (decoration.voiceNote.caption ? ': ' + decoration.voiceNote.caption : ''),
+              title: decoration.voiceNote.caption || 'Voice note attached',
+              style: { fontSize: '10px', color: palette.textMute, fontWeight: 600 }
+            }, '🎤') : null
+          ),
           h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
             summary),
+          // Caption surfaced in the row so the student sees the
+          // textual companion to the voice note without opening the
+          // modal. Truncates via CSS to keep the row compact.
+          (decoration.voiceNote && decoration.voiceNote.caption) ? h('div', {
+            style: { fontSize: '10px', color: palette.textDim, fontStyle: 'italic', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+          }, '🎤 “' + decoration.voiceNote.caption + '”') : null,
           h('div', {
             style: {
               fontSize: '10px',
@@ -17319,15 +17340,29 @@
           unlockedItems.length > 0 ? h('div', { style: { marginBottom: '14px' } },
             h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
               '✓ Unlocked · ' + unlockedItems.length),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-              unlockedItems.map(function(a) { return renderRow(a, true); })
+            h('ul', {
+              role: 'list',
+              'aria-label': 'Unlocked achievements',
+              style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
+            },
+              unlockedItems.map(function(a) {
+                return h('li', { key: 'ach-li-u-' + a.id, role: 'listitem', style: { listStyle: 'none' } },
+                  renderRow(a, true));
+              })
             )
           ) : null,
           lockedItems.length > 0 ? h('div', { style: { paddingTop: unlockedItems.length > 0 ? '14px' : 0, borderTop: unlockedItems.length > 0 ? '1px solid ' + palette.border : 'none' } },
             h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
               '○ Still ahead · ' + lockedItems.length),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-              lockedItems.map(function(a) { return renderRow(a, false); })
+            h('ul', {
+              role: 'list',
+              'aria-label': 'Locked achievements',
+              style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
+            },
+              lockedItems.map(function(a) {
+                return h('li', { key: 'ach-li-l-' + a.id, role: 'listitem', style: { listStyle: 'none' } },
+                  renderRow(a, false));
+              })
             )
           ) : null
         )
@@ -17991,7 +18026,11 @@
           ) : null,
 
           // Stories list
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          sortedStories.length > 0 ? h('ul', {
+            role: 'list',
+            'aria-label': 'Stories',
+            style: { display: 'flex', flexDirection: 'column', gap: '10px', listStyle: 'none', padding: 0, margin: 0 }
+          },
             sortedStories.map(function(s) {
               var walkable = isWalkable(s);
               var stepCount = (s.steps || []).length;
@@ -18007,12 +18046,14 @@
                 else if (days === 1) lastReviewedLabel = 'Walked yesterday';
                 else lastReviewedLabel = 'Walked ' + days + ' days ago';
               }
-              return h('div', {
+              return h('li', {
                 key: 'story-row-' + s.id,
+                role: 'listitem',
                 style: {
                   display: 'flex', gap: '10px', alignItems: 'center',
                   padding: '12px', background: palette.surface,
-                  border: '1px solid ' + palette.border, borderRadius: '8px'
+                  border: '1px solid ' + palette.border, borderRadius: '8px',
+                  listStyle: 'none'
                 }
               },
                 h('div', { style: { flex: 1, minWidth: 0 } },
@@ -18041,7 +18082,7 @@
                 }, 'Edit')
               );
             })
-          )
+          ) : null
         )
       );
     }
