@@ -579,6 +579,174 @@
     );
   }
 
+  // ─── DifferentiationSection ───────────────────────────────────────────
+  function DifferentiationSection(p) {
+    var d = p.diff;
+    if (!d) return null;
+    var flags = d.flags || {};
+    var labelMap = {
+      leveledReadingText: 'Leveled text',
+      multipleReadingLevels: 'Multi-level versions',
+      glossarySupport: 'Glossary',
+      sentenceFrames: 'Sentence frames',
+      visualOrganizer: 'Visual organizer',
+      quizScaffold: 'Formative check',
+      interactiveOrAdventure: 'Interactive / adventure',
+      visualOrImage: 'Image / visual',
+      audioPath: 'Audio narration',
+    };
+    return React.createElement(ComprehensiveSection, { id: 'audit-differentiation', icon: '🎚️', title: 'Differentiation coverage', status: d.status },
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, d.coverage + '%'),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'UDL coverage')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, d.presentCount + '/' + d.totalAccommodationTypes),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Accommodation types')
+        ),
+        React.createElement('div', { className: 'p-3 bg-emerald-50 rounded text-center border border-emerald-200' },
+          React.createElement('div', { className: 'text-2xl font-bold text-emerald-800' }, Object.keys(flags).filter(function (k) { return flags[k]; }).length),
+          React.createElement('div', { className: 'text-xs text-emerald-700' }, 'Present')
+        ),
+        React.createElement('div', { className: 'p-3 rounded text-center ' + ((d.missing && d.missing.length > 0) ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200') },
+          React.createElement('div', { className: 'text-2xl font-bold ' + ((d.missing && d.missing.length > 0) ? 'text-rose-800' : 'text-slate-800') }, (d.missing && d.missing.length) || 0),
+          React.createElement('div', { className: 'text-xs ' + ((d.missing && d.missing.length > 0) ? 'text-rose-700' : 'text-slate-600') }, 'Missing')
+        )
+      ),
+      // Inventory grid
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-1.5 mb-3' },
+        Object.keys(flags).map(function (k) {
+          var on = flags[k];
+          return React.createElement('div', {
+            key: k,
+            className: 'flex items-center gap-2 text-xs px-2 py-1.5 rounded border ' + (on ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-500'),
+          },
+            React.createElement('span', { 'aria-hidden': 'true', className: 'flex-shrink-0' }, on ? '✓' : '○'),
+            React.createElement('span', { className: 'truncate' }, labelMap[k] || k)
+          );
+        })
+      ),
+      d.recommendations && d.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Heuristic recommendations:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
+          d.recommendations.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      d.llmReview && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🤖'), ' UDL specialist review (AI)'),
+        d.llmReview.narrative && React.createElement('p', { className: 'text-sm text-indigo-900 mb-2' }, d.llmReview.narrative),
+        d.llmReview.priorityAdditions && d.llmReview.priorityAdditions.length > 0 && React.createElement('div', { className: 'mb-2' },
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' }, 'Priority additions:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            d.llmReview.priorityAdditions.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+          )
+        ),
+        d.llmReview.qualityFlags && d.llmReview.qualityFlags.length > 0 && React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' }, 'Quality flags:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            d.llmReview.qualityFlags.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+          )
+        )
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic' }, d.notes || '')
+    );
+  }
+
+  // ─── CognitiveLoadSection ─────────────────────────────────────────────
+  function CognitiveLoadSection(p) {
+    var c = p.load;
+    if (!c) return null;
+    var b = c.breakdown || {};
+    var ratioColor = c.ratio === null ? 'slate' :
+                     c.ratio >= 0.7 && c.ratio <= 1.4 ? 'emerald' :
+                     c.ratio >= 0.4 && c.ratio <= 2.0 ? 'amber' : 'rose';
+    return React.createElement(ComprehensiveSection, { id: 'audit-cognitiveLoad', icon: '⏱️', title: 'Cognitive load / pacing', status: c.status },
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, c.claimedTotalMinutes + 'm'),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Claimed')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, c.estimatedTotalMinutes + 'm'),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Estimated')
+        ),
+        React.createElement('div', { className: 'p-3 rounded text-center bg-' + ratioColor + '-50 border border-' + ratioColor + '-200' },
+          React.createElement('div', { className: 'text-2xl font-bold text-' + ratioColor + '-800' }, c.ratio === null ? 'n/a' : c.ratio + 'x'),
+          React.createElement('div', { className: 'text-xs text-' + ratioColor + '-700' }, 'Estimated / Claimed')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-xs font-bold text-slate-800 leading-tight pt-1' },
+            'R: ' + b.reading + 'm · Q: ' + b.quiz + 'm · A: ' + b.activities + 'm'),
+          React.createElement('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'Reading at ' + b.wpmAssumption + ' wpm')
+        )
+      ),
+      // Per-segment breakdown
+      Array.isArray(c.perSegment) && c.perSegment.length > 0 && React.createElement('div', { className: 'mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-slate-700 mb-1' }, 'Lesson plan segments:'),
+        React.createElement('ul', { className: 'space-y-0.5 text-sm text-slate-700' },
+          c.perSegment.map(function (s, i) {
+            return React.createElement('li', { key: i, className: 'flex items-center justify-between gap-2' },
+              React.createElement('span', null, s.label),
+              React.createElement('span', { className: 'font-mono text-xs ' + (s.claimedMinutes !== null ? 'text-slate-800' : 'text-slate-400 italic') },
+                s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)')
+            );
+          })
+        )
+      ),
+      c.recommendations && c.recommendations.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Heuristic recommendations:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
+          c.recommendations.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      c.llmReview && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded mb-3' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-2 flex items-center gap-2' },
+          React.createElement('span', { 'aria-hidden': 'true' }, '🤖'), ' Pacing review (AI)'),
+        c.llmReview.narrative && React.createElement('p', { className: 'text-sm text-indigo-900 mb-2' }, c.llmReview.narrative),
+        c.llmReview.specificAdjustments && c.llmReview.specificAdjustments.length > 0 && React.createElement('div', null,
+          React.createElement('div', { className: 'text-xs font-semibold text-indigo-800 mb-1' }, 'Specific adjustments:'),
+          React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+            c.llmReview.specificAdjustments.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+          )
+        )
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic' }, c.notes || '')
+    );
+  }
+
+  // ─── CulturalResponsivenessSection ────────────────────────────────────
+  function CulturalResponsivenessSection(p) {
+    var c = p.cr;
+    if (!c) return null;
+    return React.createElement(ComprehensiveSection, { id: 'audit-culturalResponsiveness', icon: '🤝', title: 'Cultural responsiveness', status: c.status },
+      c.narrative && React.createElement('p', { className: 'text-sm text-slate-800 mb-3 leading-relaxed' }, c.narrative),
+      // Strengths
+      Array.isArray(c.strengths) && c.strengths.length > 0 && React.createElement('div', { className: 'p-3 bg-emerald-50 border border-emerald-200 rounded mb-2' },
+        React.createElement('div', { className: 'text-xs font-semibold text-emerald-900 mb-1' }, 'Strengths:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-emerald-900 space-y-1' },
+          c.strengths.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      // Gaps
+      Array.isArray(c.gaps) && c.gaps.length > 0 && React.createElement('div', { className: 'p-3 bg-amber-50 border border-amber-200 rounded mb-2' },
+        React.createElement('div', { className: 'text-xs font-semibold text-amber-900 mb-1' }, 'Gaps:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-amber-900 space-y-1' },
+          c.gaps.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      // Additions (the actionable list)
+      Array.isArray(c.additions) && c.additions.length > 0 && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded mb-2' },
+        React.createElement('div', { className: 'text-xs font-semibold text-indigo-900 mb-1' }, 'Suggested additions:'),
+        React.createElement('ul', { className: 'list-disc ml-5 text-sm text-indigo-900 space-y-1' },
+          c.additions.map(function (r, i) { return React.createElement('li', { key: i }, r); })
+        )
+      ),
+      React.createElement('div', { className: 'text-[11px] text-slate-500 italic mt-2' }, c.notes || '')
+    );
+  }
+
   function ReadinessScoreCard(p) {
     var o = p.overall;
     if (!o) return null;
@@ -669,7 +837,7 @@
     );
   }
 
-  var ALL_DIMENSIONS_FOR_RENDER = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
+  var ALL_DIMENSIONS_FOR_RENDER = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy', 'differentiation', 'cognitiveLoad', 'culturalResponsiveness'];
 
   // ─── ExecutiveSummary helpers ─────────────────────────────────────────
   // Pull and rank the top recommendations across all dimensions so a teacher
@@ -685,6 +853,9 @@
       accessibility: 'Accessibility',
       udl: 'UDL',
       accuracy: 'Accuracy',
+      differentiation: 'Differentiation',
+      cognitiveLoad: 'Pacing',
+      culturalResponsiveness: 'Representation',
     };
     // Priority 0: blocking issues from readiness-score roll-up (Not Aligned dimensions)
     var overall = comprehensive.overall;
@@ -697,6 +868,9 @@
       'Content accessibility': 'accessibility',
       'UDL principles': 'udl',
       'Content accuracy': 'accuracy',
+      'Differentiation coverage': 'differentiation',
+      'Cognitive load / pacing': 'cognitiveLoad',
+      'Cultural responsiveness': 'culturalResponsiveness',
     };
     if (overall && Array.isArray(overall.blockingIssues)) {
       overall.blockingIssues.forEach(function (b) {
@@ -723,7 +897,18 @@
         if (Array.isArray(d.llmReview.recommendations)) d.llmReview.recommendations.forEach(function (r) {
           if (typeof r === 'string') all.push({ priority: priority + 0.5, dimension: label, dimensionKey: dim, text: 'Add Tier 2 word: "' + r + '"' });
         });
+        // Plan R+ new-dimension fields
+        if (Array.isArray(d.llmReview.priorityAdditions)) d.llmReview.priorityAdditions.forEach(function (r) {
+          if (typeof r === 'string') all.push({ priority: priority, dimension: label, dimensionKey: dim, text: r });
+        });
+        if (Array.isArray(d.llmReview.specificAdjustments)) d.llmReview.specificAdjustments.forEach(function (r) {
+          if (typeof r === 'string') all.push({ priority: priority, dimension: label, dimensionKey: dim, text: r });
+        });
       }
+      // Cultural responsiveness stores additions at the dimension top level (not under llmReview)
+      if (dim === 'culturalResponsiveness' && Array.isArray(d.additions)) d.additions.forEach(function (r) {
+        if (typeof r === 'string') all.push({ priority: priority, dimension: label, dimensionKey: dim, text: r });
+      });
     });
     // UDL pillar recommendations — all anchor to the single UDL card
     if (comprehensive.udl && !comprehensive.udl.computeFailed) {
@@ -945,7 +1130,21 @@
         : React.createElement(UdlSection, { udl: c.udl })),
       c.accuracy && (c.accuracy.computeFailed
         ? React.createElement(FailedDimensionCard, { id: 'audit-accuracy', data: c.accuracy, label: 'Content accuracy' })
-        : React.createElement(AccuracySection, { acc: c.accuracy }))
+        : React.createElement(AccuracySection, { acc: c.accuracy })),
+      // Plan R+ new dimensions
+      c.differentiation && (c.differentiation.computeFailed
+        ? React.createElement(FailedDimensionCard, { id: 'audit-differentiation', data: c.differentiation, label: 'Differentiation coverage' })
+        : React.createElement(DifferentiationSection, { diff: c.differentiation })),
+      c.cognitiveLoad && (c.cognitiveLoad.computeFailed
+        ? React.createElement(FailedDimensionCard, { id: 'audit-cognitiveLoad', data: c.cognitiveLoad, label: 'Cognitive load / pacing' })
+        : c.cognitiveLoad.notApplicable
+        ? React.createElement(NotApplicableCard, { id: 'audit-cognitiveLoad', data: c.cognitiveLoad, label: 'Cognitive load / pacing' })
+        : React.createElement(CognitiveLoadSection, { load: c.cognitiveLoad })),
+      c.culturalResponsiveness && (c.culturalResponsiveness.computeFailed
+        ? React.createElement(FailedDimensionCard, { id: 'audit-culturalResponsiveness', data: c.culturalResponsiveness, label: 'Cultural responsiveness' })
+        : c.culturalResponsiveness.notApplicable
+        ? React.createElement(NotApplicableCard, { id: 'audit-culturalResponsiveness', data: c.culturalResponsiveness, label: 'Cultural responsiveness' })
+        : React.createElement(CulturalResponsivenessSection, { cr: c.culturalResponsiveness }))
     );
   }
 

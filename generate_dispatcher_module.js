@@ -265,12 +265,193 @@ function computeContentAccuracy(harvest) {
   };
 }
 
+// ─── Plan R+ dim: Differentiation coverage ──────────────────────────────
+// UDL-aligned check: does the curriculum offer multiple access paths for
+// learners who differ in reading level, language, processing style, or
+// expression mode? Deterministic detection of accommodation TYPES present
+// across the artifact bundle.
+function computeDifferentiationCoverage(artifacts, harvest) {
+  const has = function (type) { return artifacts.some(function (a) { return a && a.type === type; }); };
+  const flags = {
+    leveledReadingText: false,    // simplified text exists
+    multipleReadingLevels: false, // simplified at multiple levels (look at differentiationGrades)
+    glossarySupport: has('glossary'),
+    sentenceFrames: has('sentence-frames'),
+    visualOrganizer: has('outline') || has('concept-sort') || has('timeline'),
+    quizScaffold: has('quiz'),
+    interactiveOrAdventure: has('adventure') || has('persona'),
+    visualOrImage: has('image'),
+    audioPath: false,             // currently rare; may inflate later as TTS hooks proliferate
+  };
+  artifacts.forEach(function (a) {
+    if (a && a.type === 'simplified') {
+      flags.leveledReadingText = true;
+      var d = a.data || {};
+      // Check if leveled at multiple levels via differentiationGrades or array shape
+      if (Array.isArray(d.versions) && d.versions.length > 1) flags.multipleReadingLevels = true;
+      if (Array.isArray(d.differentiationGrades) && d.differentiationGrades.length > 1) flags.multipleReadingLevels = true;
+    }
+    // Audio detection: any artifact with audioUrl/ttsAudio fields
+    if (a && a.data) {
+      var dd = a.data;
+      if (dd.audioUrl || dd.ttsAudio || dd.audioPath || (dd.audio && (dd.audio.url || dd.audio.path))) flags.audioPath = true;
+    }
+  });
+  // Reuse harvest scaffold counts where available
+  var sf = harvest && harvest.scaffoldCounts ? harvest.scaffoldCounts : {};
+  if ((sf.sentenceFrames || 0) > 0) flags.sentenceFrames = true;
+  if ((sf.simplifiedTexts || 0) > 1) flags.multipleReadingLevels = true;
+  if ((sf.leveledGlossary || 0) > 0) flags.glossarySupport = true;
+
+  const dims = Object.keys(flags);
+  const presentCount = dims.reduce(function (n, k) { return n + (flags[k] ? 1 : 0); }, 0);
+  const coverage = dims.length > 0 ? Math.round((presentCount / dims.length) * 100) : 0;
+  // Status thresholds: 70%+ Aligned, 40-69% Partial, <40% Not Aligned.
+  let status;
+  if (coverage >= 70) status = 'Aligned';
+  else if (coverage >= 40) status = 'Partially Aligned';
+  else status = 'Not Aligned';
+  // Per-row recommendation list
+  const labelMap = {
+    leveledReadingText: 'Leveled / simplified text',
+    multipleReadingLevels: 'Multi-level versions (more than one reading level)',
+    glossarySupport: 'Glossary / vocabulary support',
+    sentenceFrames: 'Sentence frames (writing scaffold)',
+    visualOrganizer: 'Visual organizer (outline / concept sort / timeline)',
+    quizScaffold: 'Formative check / quiz',
+    interactiveOrAdventure: 'Interactive or adventure mode',
+    visualOrImage: 'Visual / image support',
+    audioPath: 'Audio narration path',
+  };
+  const missing = dims.filter(function (k) { return !flags[k]; }).map(function (k) { return labelMap[k]; });
+  const recommendations = [];
+  if (missing.length > 0 && coverage < 70) {
+    recommendations.push('Differentiation gaps: missing ' + missing.slice(0, 4).join(', ') + (missing.length > 4 ? ', and more' : '') + '. Generate at least one of these to broaden access for learners with different needs.');
+  }
+  if (!flags.multipleReadingLevels && flags.leveledReadingText) {
+    recommendations.push('Source text exists at one level only. Generate a second simplified version to support a wider reader range.');
+  }
+  return {
+    status,
+    coverage,
+    presentCount,
+    totalAccommodationTypes: dims.length,
+    flags,
+    missing,
+    recommendations,
+    notes: 'Detects ' + dims.length + ' UDL accommodation types: leveled text, multi-level versions, glossary, sentence frames, visual organizer, quiz, interactive/adventure, image, audio. Coverage = % of types present. Heuristic — does not assess accommodation quality.',
+  };
+}
+
+// ─── Plan R+ dim: Cognitive load / pacing ────────────────────────────────
+// Compares the lesson-plan's claimed segment durations against an estimate of
+// actual time required (reading + activity + quiz). When there's no lesson
+// plan, marks the dimension as Not applicable rather than emitting a misleading
+// score.
+function _parseMinutes(s) {
+  if (!s) return null;
+  var m = String(s).match(/(\d+)\s*(?:min|minute|mins)/i);
+  return m ? parseInt(m[1], 10) : null;
+}
+function computeCognitiveLoad(artifacts, sourceWordCount, gradeLevel) {
+  const lessonPlan = artifacts.slice().reverse().find(function (a) { return a && a.type === 'lesson-plan'; });
+  if (!lessonPlan || !lessonPlan.data) {
+    return {
+      status: 'Not applicable',
+      notApplicable: true,
+      reason: 'No lesson plan in this curriculum. Generate a Lesson Plan to evaluate pacing realism.',
+    };
+  }
+  const d = lessonPlan.data;
+  // Sum claimed time across known segments. Each may live as { duration } or as ' (10 min)' text inside the body.
+  const segments = [
+    { key: 'directInstruction', label: 'Direct instruction' },
+    { key: 'guidedPractice',    label: 'Guided practice' },
+    { key: 'independentPractice', label: 'Independent practice' },
+    { key: 'closure',           label: 'Closure' },
+  ];
+  var claimedTotal = 0;
+  var perSegment = [];
+  segments.forEach(function (s) {
+    var seg = d[s.key];
+    if (!seg) return;
+    var mins = null;
+    if (typeof seg === 'object' && seg.duration) mins = _parseMinutes(seg.duration);
+    if (mins === null && typeof seg === 'string') mins = _parseMinutes(seg);
+    if (mins === null && typeof seg === 'object' && seg.description) mins = _parseMinutes(seg.description);
+    if (mins) {
+      claimedTotal += mins;
+      perSegment.push({ label: s.label, claimedMinutes: mins });
+    } else {
+      perSegment.push({ label: s.label, claimedMinutes: null });
+    }
+  });
+  // Also check activities array
+  if (Array.isArray(d.activities)) {
+    d.activities.forEach(function (act) {
+      var mins = _parseMinutes(act.duration) || _parseMinutes(act.description);
+      if (mins) { claimedTotal += mins; perSegment.push({ label: act.title || act.name || 'Activity', claimedMinutes: mins }); }
+    });
+  }
+  // Estimate actual time required:
+  // - Source reading: words / wpm (grade-band adjusted: 100 wpm K-2, 150 wpm 3-5, 200 wpm 6-8, 250 wpm 9-12)
+  const gradeNum = parseGradeLevelToNum(gradeLevel);
+  let wpm = 200;
+  if (gradeNum <= 2) wpm = 100;
+  else if (gradeNum <= 5) wpm = 150;
+  else if (gradeNum <= 8) wpm = 200;
+  else wpm = 250;
+  const readingMinutes = sourceWordCount > 0 ? Math.round(sourceWordCount / wpm) : 0;
+  // - Quiz: ~1 min per question
+  const quizItem = artifacts.find(function (a) { return a && a.type === 'quiz' && a.data && Array.isArray(a.data.questions); });
+  const quizMinutes = quizItem ? quizItem.data.questions.length * 1 : 0;
+  // - Activities: count distinct artifact types other than reading-only as ~5 min each (rough lower bound)
+  const activityTypes = new Set(artifacts
+    .filter(function (a) { return a && a.type && !['analysis', 'simplified', 'glossary', 'lesson-plan', 'alignment-report', 'udl-advice'].includes(a.type); })
+    .map(function (a) { return a.type; }));
+  const activityMinutes = activityTypes.size * 5;
+  const estimatedTotal = readingMinutes + quizMinutes + activityMinutes;
+  // Score
+  let status, ratio;
+  if (claimedTotal <= 0) {
+    status = 'Partially Aligned'; ratio = null;
+  } else {
+    ratio = estimatedTotal / claimedTotal;
+    if (ratio >= 0.7 && ratio <= 1.4) status = 'Aligned';
+    else if (ratio >= 0.4 && ratio <= 2.0) status = 'Partially Aligned';
+    else status = 'Not Aligned';
+  }
+  const recommendations = [];
+  if (claimedTotal > 0 && ratio !== null) {
+    if (ratio > 1.4) recommendations.push('Lesson plan claims ' + claimedTotal + ' min but content estimates ~' + estimatedTotal + ' min — likely under-scheduled. Consider trimming source text, removing one activity, or adding a second day.');
+    if (ratio < 0.7) recommendations.push('Lesson plan claims ' + claimedTotal + ' min but content estimates ~' + estimatedTotal + ' min — likely over-scheduled (lesson may run short). Consider adding a discussion segment or follow-up activity.');
+  } else if (claimedTotal === 0) {
+    recommendations.push('Lesson plan does not specify segment durations. Add explicit time estimates ("10 min", "15 min") to each segment for realistic pacing.');
+  }
+  return {
+    status,
+    claimedTotalMinutes: claimedTotal,
+    estimatedTotalMinutes: estimatedTotal,
+    ratio: ratio !== null ? Number(ratio.toFixed(2)) : null,
+    perSegment,
+    breakdown: {
+      reading: readingMinutes,
+      quiz: quizMinutes,
+      activities: activityMinutes,
+      wpmAssumption: wpm,
+    },
+    recommendations,
+    notes: 'Estimated time = ' + sourceWordCount + ' source words / ' + wpm + ' wpm + ' + (quizItem ? quizItem.data.questions.length : 0) + ' quiz items × 1 min + ' + activityTypes.size + ' distinct activities × 5 min. Compares against lesson-plan claimed durations. Heuristic — actual classroom pacing varies.',
+  };
+}
+
 // ─── Plan O Step 6: Combined Pass/Revise + Curriculum Readiness Score ──
 // Rolls all comprehensive-audit dimensions into a single 0-100 readiness
 // score + overall status + blocking-issues list. Equal weighting across
-// the 5 dimensions for v1.
+// dimensions; N/A and computeFailed dimensions are excluded from the math
+// but surface in the per-dimension list.
 const STATUS_POINTS = { 'Aligned': 20, 'Partially Aligned': 12, 'Not Aligned': 0 };
-const ALL_DIMENSIONS = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
+const ALL_DIMENSIONS = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy', 'differentiation', 'cognitiveLoad', 'culturalResponsiveness'];
 const DIMENSION_LABELS = {
   standards: 'Standards alignment',
   vocabulary: 'Vocabulary fit',
@@ -278,6 +459,9 @@ const DIMENSION_LABELS = {
   accessibility: 'Content accessibility',
   udl: 'UDL principles',
   accuracy: 'Content accuracy',
+  differentiation: 'Differentiation coverage',
+  cognitiveLoad: 'Cognitive load / pacing',
+  culturalResponsiveness: 'Cultural responsiveness',
 };
 
 function computeReadinessScore(comprehensive) {
@@ -2128,11 +2312,31 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              content.comprehensive.accuracy = failedPlaceholder('Content accuracy', accuracyErr);
          }
 
+         // ---- Plan R+ new dimensions: differentiation + cognitive load ----
+         let differentiation = null;
+         try {
+             differentiation = computeDifferentiationCoverage(artifactsToAudit, auditHarvest);
+             content.comprehensive.differentiation = differentiation;
+         } catch (diffErr) {
+             warnLog('[Alignment] Differentiation computation failed:', diffErr);
+             content.comprehensive.differentiation = failedPlaceholder('Differentiation coverage', diffErr);
+         }
+
+         let cognitiveLoad = null;
+         try {
+             const sourceWords = (vocabFit && typeof vocabFit.sourceWords === 'number') ? vocabFit.sourceWords : 0;
+             cognitiveLoad = computeCognitiveLoad(artifactsToAudit, sourceWords, gradeLevel);
+             content.comprehensive.cognitiveLoad = cognitiveLoad;
+         } catch (clErr) {
+             warnLog('[Alignment] Cognitive load computation failed:', clErr);
+             content.comprehensive.cognitiveLoad = failedPlaceholder('Cognitive load / pacing', clErr);
+         }
+
          // Shared grade band derived once for all dimensions
          const dimGradeBand = (vocabFit && vocabFit.expected && vocabFit.expected.gradeBand) || gradeLevel;
 
          // ---- Async LLM reviews (parallel) ---------------------------------
-         setGenerationStep && setGenerationStep('Running 5 audit dimensions in parallel...');
+         setGenerationStep && setGenerationStep('Running 8 audit dimensions in parallel...');
 
          // Each task is self-contained: build prompt → call → parse → apply.
          // Tasks return null on any failure; failures are logged but don't
@@ -2294,7 +2498,89 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
              } catch (e) { warnLog('[Alignment] Accuracy LLM review failed:', e); }
          })() : Promise.resolve();
 
-         await Promise.all([vocabTask, engagementTask, accessTask, udlTask, accuracyTask]);
+         // ---- Plan R+ Differentiation review (LLM grades the scaffold mix) ---
+         const differentiationTask = (differentiation && !differentiation.computeFailed) ? (async () => {
+             const fp = 'differentiation:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.differentiation.llmReview = cached; return; }
+             try {
+                 const flags = differentiation.flags || {};
+                 const present = Object.keys(flags).filter(function (k) { return flags[k]; });
+                 const missing = differentiation.missing || [];
+                 const prompt = 'You are a UDL specialist reviewing how a curriculum supports learner variability.\n\nDeterministic scaffold inventory (' + differentiation.coverage + '% coverage):\n- Present: ' + (present.join(', ') || '(none)') + '\n- Missing: ' + (missing.join(', ') || '(none)') + '\n\nGrade band: ' + dimGradeBand + '\n\nSource excerpt (first 2000 chars):\n"""\n' + (comprehensiveContext || '').slice(0, 2000) + '\n"""\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the scaffold mix realistically serves the range of learners typical at this grade band. Name the most impactful missing scaffold for THIS content (some content needs visuals more than text-leveling; some needs audio more than visuals).\n2. "priorityAdditions": array of 1-3 specific scaffold-add suggestions ranked by impact for the grade band and topic. Each entry one short sentence.\n3. "qualityFlags": array of 0-2 sentences flagging any present-but-likely-thin scaffolds (e.g., "glossary present but only 4 terms — consider expanding for ELL support").\n\nReturn ONLY a single valid JSON object with exactly these three fields.';
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     priorityAdditions: Array.isArray(review.priorityAdditions) ? review.priorityAdditions.slice(0, 5) : [],
+                     qualityFlags: Array.isArray(review.qualityFlags) ? review.qualityFlags.slice(0, 4) : [],
+                 };
+                 content.comprehensive.differentiation.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Differentiation LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         // ---- Plan R+ Cognitive load review (LLM judges pacing realism) ------
+         const cognitiveLoadTask = (cognitiveLoad && !cognitiveLoad.notApplicable && !cognitiveLoad.computeFailed) ? (async () => {
+             const fp = 'cognitiveLoad:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.cognitiveLoad.llmReview = cached; return; }
+             try {
+                 const segs = (cognitiveLoad.perSegment || []).map(function (s) { return s.label + ': ' + (s.claimedMinutes !== null ? s.claimedMinutes + ' min' : '(no time given)'); }).join('\n - ');
+                 const prompt = 'You are an experienced classroom teacher reviewing a lesson plan for realistic pacing.\n\nClaimed segment durations:\n - ' + (segs || '(none)') + '\nClaimed total: ' + cognitiveLoad.claimedTotalMinutes + ' min\n\nDeterministic estimate of actual time required: ' + cognitiveLoad.estimatedTotalMinutes + ' min\n  - Reading: ' + cognitiveLoad.breakdown.reading + ' min (assumes ' + cognitiveLoad.breakdown.wpmAssumption + ' wpm at this grade)\n  - Quiz: ' + cognitiveLoad.breakdown.quiz + ' min\n  - Activities: ' + cognitiveLoad.breakdown.activities + ' min\n\nClaimed-vs-estimated ratio: ' + (cognitiveLoad.ratio || 'n/a') + '\nGrade band: ' + dimGradeBand + '\n\nProvide:\n1. "narrative": ONE paragraph (2-3 sentences) on whether the pacing is realistic and what the most likely failure mode is (running out of time vs. dead time). Be specific about which segment is most likely the squeeze point.\n2. "specificAdjustments": array of 1-3 concrete adjustments ("trim source text to 800 words", "drop one quiz question", "split into 2 days"). Each entry one short sentence.\n\nReturn ONLY a single valid JSON object with exactly these two fields.';
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 const reviewShape = {
+                     narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                     specificAdjustments: Array.isArray(review.specificAdjustments) ? review.specificAdjustments.slice(0, 5) : [],
+                 };
+                 content.comprehensive.cognitiveLoad.llmReview = reviewShape;
+                 _auditLLMCache.set(fp, reviewShape);
+             } catch (e) { warnLog('[Alignment] Cognitive load LLM review failed:', e); }
+         })() : Promise.resolve();
+
+         // ---- Plan R+ Cultural responsiveness (LLM-detected N/A) ---------------
+         // First gate: does this content have human contexts/examples/perspectives
+         // to evaluate? If not, dimension returns notApplicable and is excluded from
+         // the readiness math.
+         const culturalTask = (async () => {
+             const fp = 'culturalResponsiveness:' + _auditFingerprint(artifactsToAudit, dimGradeBand);
+             const cached = _auditLLMCache.get(fp);
+             if (cached) { content.comprehensive.culturalResponsiveness = cached; return; }
+             try {
+                 const prompt = 'You are an experienced equity-and-inclusion educator reviewing a curriculum for cultural responsiveness.\n\nFIRST decide whether this content has human contexts, examples, perspectives, or named people that representation considerations apply to. Pure mechanics (math equations, phonics drills, titration steps) often do NOT — for those, return { "notApplicable": true, "reason": "Brief explanation of why representation considerations do not apply." }\n\nIf the content DOES have human surface area, evaluate:\n- Diversity of names, examples, settings, and perspectives represented\n- Avoidance of stereotypes or single-story framing\n- Inclusion of underrepresented or non-dominant perspectives where relevant\n- Asset-based (not deficit-based) framing of communities discussed\n\nGrade band: ' + dimGradeBand + '\n\nSource excerpt (first 3500 chars):\n"""\n' + (comprehensiveContext || '').slice(0, 3500) + '\n"""\n\nReturn ONLY a single valid JSON object. EITHER:\n  { "notApplicable": true, "reason": "..." }\nOR (when applicable):\n  {\n    "notApplicable": false,\n    "status": "Aligned" | "Partially Aligned" | "Not Aligned",\n    "narrative": "ONE paragraph (2-3 sentences) honestly assessing the representation. Avoid both inflation and over-criticism — name what is present, what is missing, and what one specific addition would most strengthen the lesson.",\n    "strengths": array of 0-3 specific things this content does well (named, concrete),\n    "gaps": array of 0-3 specific gaps (named, concrete, not generic),\n    "additions": array of 1-3 concrete suggestions for adding underrepresented perspectives, examples, or framings\n  }\n\nNo prose outside the JSON. No markdown fences. Be honest, not performative.';
+                 const result = await callGemini(prompt, true);
+                 const review = JSON.parse(cleanJson(result));
+                 if (review && review.notApplicable === true) {
+                     content.comprehensive.culturalResponsiveness = {
+                         status: 'Not applicable',
+                         notApplicable: true,
+                         reason: typeof review.reason === 'string' ? review.reason : 'Content has no human surface area to evaluate.',
+                         notes: 'LLM judged this content does not have representation considerations to evaluate (e.g., pure mechanics, math equations, phonics drills).',
+                     };
+                 } else {
+                     content.comprehensive.culturalResponsiveness = {
+                         status: typeof review.status === 'string' ? review.status : 'Partially Aligned',
+                         narrative: typeof review.narrative === 'string' ? review.narrative : '',
+                         strengths: Array.isArray(review.strengths) ? review.strengths.slice(0, 5) : [],
+                         gaps: Array.isArray(review.gaps) ? review.gaps.slice(0, 5) : [],
+                         additions: Array.isArray(review.additions) ? review.additions.slice(0, 5) : [],
+                         notes: 'LLM-graded representation review. Inherently judgment-laden — treat findings as a starting point for teacher reflection, not a verdict.',
+                     };
+                 }
+                 _auditLLMCache.set(fp, content.comprehensive.culturalResponsiveness);
+             } catch (e) {
+                 warnLog('[Alignment] Cultural responsiveness LLM call failed:', e);
+                 content.comprehensive.culturalResponsiveness = {
+                     status: 'Compute failed',
+                     computeFailed: true,
+                     error: e && e.message ? String(e.message).slice(0, 240) : 'Cultural responsiveness LLM call failed.',
+                     notes: 'Cultural responsiveness evaluation could not complete.',
+                 };
+             }
+         })();
+
+         await Promise.all([vocabTask, engagementTask, accessTask, udlTask, accuracyTask, differentiationTask, cognitiveLoadTask, culturalTask]);
 
          // ---- Plan O Step 6: Curriculum Readiness Score (roll-up) -----------
          setGenerationStep && setGenerationStep('Computing curriculum readiness score...');
