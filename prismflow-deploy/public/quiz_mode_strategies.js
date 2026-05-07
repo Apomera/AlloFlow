@@ -41,7 +41,7 @@
         // Default mix is mostly MCQ + reflections (familiar shape) with a fill-blank
         // and short-answer to broaden assessment beyond recognition. Sequencing /
         // matching available as opt-in.
-        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer', 'self-explanation', 'sequencing', 'matching'],
+        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer', 'self-explanation', 'sequence-sense', 'relation-mismatch'],
         defaultItemTypeMix: { mcq: 3, 'fill-blank': 1, 'short-answer': 1 },
       },
       render: {
@@ -65,8 +65,8 @@
         // Pre-check benefits from a mix that surfaces different prerequisite types: MCQ
         // for general recognition, fill-blank for vocab recall, short-answer for reasoning,
         // matching for "do you know X is connected to Y" relational knowledge.
-        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer', 'matching'],
-        defaultItemTypeMix: { mcq: 2, 'fill-blank': 1, 'short-answer': 1, 'matching': 1 },
+        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer', 'relation-mismatch'],
+        defaultItemTypeMix: { mcq: 2, 'fill-blank': 1, 'short-answer': 1, 'relation-mismatch': 1 },
       },
       render: {
         intro: 'Let\'s see what you already know. This isn\'t a test — it just helps us know what to review before today\'s lesson.',
@@ -110,8 +110,8 @@
         // sequencing, and matching all force retrieval, far more effective for retention than
         // MCQ recognition. Adding 1 sequencing item by default surfaces process / chronological
         // / cause-effect retention.
-        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer', 'self-explanation', 'sequencing', 'matching'],
-        defaultItemTypeMix: { mcq: 2, 'fill-blank': 1, 'short-answer': 1, 'self-explanation': 2, 'sequencing': 1 },
+        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer', 'self-explanation', 'sequence-sense', 'relation-mismatch'],
+        defaultItemTypeMix: { mcq: 2, 'fill-blank': 1, 'short-answer': 1, 'self-explanation': 2, 'sequence-sense': 1 },
       },
       render: {
         intro: 'Reviewing what we\'ve learned. Missed items get a quick re-explanation so they stick this time.',

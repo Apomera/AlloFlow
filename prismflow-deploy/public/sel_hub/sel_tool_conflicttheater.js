@@ -643,6 +643,12 @@ window.SelHub = window.SelHub || {
       // Cross-session memory: memory[characterId] = { memoryNote, relationshipScore, scenariosPlayed, lastInteraction, lastScenarioId }
       // Persists across sessions via ctx.update → ctx.toolData.conflicttheater pipeline.
       var memory = d.memory || {};
+      // Mid-conversation coach hint (max one per scenario, dismissible)
+      var coachHint = d.coachHint || null;
+      var coachHintShown = !!d.coachHintShown;
+      var coachHintDismissed = !!d.coachHintDismissed;
+      // Per-scenario history of past attempts (for compare-to-previous)
+      var attemptHistory = d.attemptHistory || [];
 
       // ──────────────────────────────────────────────────────────
       // Helper: ensure portrait exists for (characterId, mood)
@@ -827,6 +833,36 @@ window.SelHub = window.SelHub || {
           var newTurnCount = turnCount + 1;
           var ending = _decideEnding(newHarmony, newPrinciples, newTurnCount);
 
+          // Mid-conversation coach hint trigger:
+          // After turn 3+, if no principles touched AND no hint shown yet AND
+          // not already at an ending, generate a contextual hint via Gemini.
+          // Fire-and-forget — the hint shows up when ready.
+          var shouldHint = newTurnCount >= 3
+            && !coachHintShown
+            && !coachHintDismissed
+            && !ending
+            && Object.keys(newPrinciples).length === 0
+            && callGemini;
+          if (shouldHint) {
+            var hintTranscript = updatedDialogue.slice(-8).map(function(m) {
+              var who = m.speaker === 'student' ? 'Mediator' : ((CAST[m.speaker] && CAST[m.speaker].name) || m.speaker);
+              return who + ': ' + m.text;
+            }).join('\n');
+            var missingPrinciples = ['acknowledged feelings', 'made space for both sides', 'named the harm specifically', 'proposed a concrete repair', 'named a need'];
+            var hintPrompt = 'You are a warm SEL coach watching a student mediate a conflict. The student has been at it for ' + newTurnCount + ' turns and the harmony has '
+              + (newHarmony >= scenario.initialHarmony ? 'risen' : 'dropped') + ' from ' + scenario.initialHarmony + ' to ' + Math.round(newHarmony) + '. They have not yet touched any of the restorative principles ('
+              + missingPrinciples.join(', ') + ').\n\nScenario: ' + scenario.setup + '\n\nLast turns:\n' + hintTranscript + '\n\n'
+              + 'Suggest ONE specific thing the student could try in their NEXT message. 1-2 sentences. Concrete and actionable. Reference what the characters have actually said. Speak directly to the student in second person ("Try saying..."). Do not lecture. No quotation marks.';
+            // Use callGemini, suppress errors
+            callGemini(hintPrompt).then(function(rawHint) {
+              if (!rawHint) return;
+              var hint = String(rawHint).trim().replace(/^["']+|["']+$/g, '');
+              if (hint.length > 280) hint = hint.slice(0, 277) + '...';
+              upd({ coachHint: hint, coachHintShown: true });
+              announceSR('Coach hint available.');
+            }).catch(function() { /* silent */ });
+          }
+
           var stateUpdate = {
             dialogue: updatedDialogue,
             charMoods: updatedMoods,
@@ -841,6 +877,18 @@ window.SelHub = window.SelHub || {
             if (ending === 'resolved') { sfxResolve(); celebrate && celebrate(); awardXP && awardXP('conflicttheater', 30); }
             else if (ending === 'deepened') { sfxBreakdown(); }
             else { awardXP && awardXP('conflicttheater', 15); }
+            // Save this attempt to history for future compare-to-previous.
+            // Cap at 12 most-recent attempts to bound state size.
+            var newAttempt = {
+              id: Date.now(),
+              scenarioId: scenario.id,
+              dialogue: updatedDialogue,
+              harmony: newHarmony,
+              principlesUsed: newPrinciples,
+              ending: ending,
+              ts: new Date().toISOString()
+            };
+            stateUpdate.attemptHistory = (attemptHistory || []).concat([newAttempt]).slice(-12);
           }
           upd(stateUpdate);
 
@@ -917,7 +965,10 @@ window.SelHub = window.SelHub || {
           mode: 'scene',
           ending: null,
           _userTier: 0,
-          addressing: 'both'
+          addressing: 'both',
+          coachHint: null,
+          coachHintShown: false,
+          coachHintDismissed: false
         });
       }
 
@@ -937,7 +988,10 @@ window.SelHub = window.SelHub || {
           mode: 'opt-in',
           ending: null,
           _userTier: 0,
-          addressing: 'both'
+          addressing: 'both',
+          coachHint: null,
+          coachHintShown: false,
+          coachHintDismissed: false
         });
       }
 
@@ -1146,6 +1200,16 @@ window.SelHub = window.SelHub || {
               onClick: resetScenario,
               style: { padding: '10px 20px', background: '#14b8a6', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 13, cursor: 'pointer' }
             }, '↺ Try again'),
+            // Compare-to-previous: only show if there are 2+ attempts of THIS scenario
+            (function() {
+              var sameScenario = (attemptHistory || []).filter(function(a) { return a.scenarioId === scenario.id; });
+              if (sameScenario.length < 2) return null;
+              return h('button', {
+                'aria-label': 'Compare this attempt to the previous one',
+                onClick: function() { upd('mode', 'compare'); announceSR('Comparing this attempt to previous attempt.'); },
+                style: { padding: '10px 20px', background: '#0f172a', color: '#a5f3fc', border: '1px solid #0891b2', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+              }, '⇆ Compare to previous');
+            })(),
             h('button', {
               'aria-label': 'Print transcript',
               onClick: function() {
@@ -1172,6 +1236,91 @@ window.SelHub = window.SelHub || {
               onClick: function() { upd({ mode: 'select' }); },
               style: { padding: '10px 20px', background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 10, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
             }, '← Exit')
+          ),
+          window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
+        );
+      }
+
+      // ──────────────────────────────────────────────────────────
+      // MODE: compare (side-by-side this-attempt vs previous-attempt)
+      // ──────────────────────────────────────────────────────────
+      if (mode === 'compare') {
+        var sameScenarioRuns = (attemptHistory || []).filter(function(a) { return a.scenarioId === scenario.id; });
+        var thisAttempt = sameScenarioRuns[sameScenarioRuns.length - 1];
+        var prevAttempt = sameScenarioRuns[sameScenarioRuns.length - 2];
+        if (!thisAttempt || !prevAttempt) {
+          // Defensive: shouldn't reach here, but render a fallback.
+          return h('div', { style: { padding: 24, maxWidth: 560, margin: '0 auto', textAlign: 'center', color: '#94a3b8' } },
+            h('p', null, 'Need at least two attempts to compare. Try the scenario again first.'),
+            h('button', { onClick: function() { upd('mode', 'ending'); }, style: { padding: '8px 16px', background: '#14b8a6', color: '#fff', border: 'none', borderRadius: 8, cursor: 'pointer' } }, '← Back')
+          );
+        }
+        var endingColor = function(end) { return end === 'resolved' ? '#22c55e' : end === 'partial' ? '#eab308' : '#ef4444'; };
+        var endingIcon = function(end) { return end === 'resolved' ? '🌱' : end === 'partial' ? '🌤️' : '⛈️'; };
+        function _renderColumn(att, label) {
+          var transcript = (att.dialogue || []).map(function(m, i) {
+            var who, color;
+            if (m.speaker === 'student') { who = 'You'; color = '#14b8a6'; }
+            else { var c = CAST[m.speaker]; who = c ? c.name : m.speaker; color = '#cbd5e1'; }
+            return h('div', { key: i, style: { fontSize: 11, lineHeight: 1.5, marginBottom: 6, paddingLeft: 8, borderLeft: '2px solid ' + (m.speaker === 'student' ? '#14b8a6' : '#475569') } },
+              h('span', { style: { fontWeight: 700, color: color, fontSize: 10, display: 'block', marginBottom: 1 } }, who),
+              h('span', { style: { color: '#e2e8f0' } }, m.text)
+            );
+          });
+          var principleList = ['acknowledged', 'madeSpace', 'identifiedHarm', 'proposedRepair', 'namedNeed'];
+          var principleLabels = { acknowledged: 'Acknowledged feelings', madeSpace: 'Made space', identifiedHarm: 'Named harm', proposedRepair: 'Proposed repair', namedNeed: 'Named a need' };
+          return h('div', { style: { background: '#1e293b', border: '1px solid #334155', borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 } },
+            // Header
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, paddingBottom: 8, borderBottom: '1px solid #334155' } },
+              h('span', { style: { fontSize: 24 } }, endingIcon(att.ending)),
+              h('div', { style: { flex: 1, minWidth: 0 } },
+                h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' } }, label),
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: endingColor(att.ending), textTransform: 'capitalize' } }, att.ending),
+                h('div', { style: { fontSize: 10, color: '#64748b' } }, 'Harmony: ' + Math.round(att.harmony) + ' / 100')
+              )
+            ),
+            // Principles touched
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
+              principleList.map(function(p) {
+                var hit = !!(att.principlesUsed && att.principlesUsed[p]);
+                return h('span', { key: p, title: principleLabels[p], style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: hit ? '#134e4a' : '#0f172a', color: hit ? '#86efac' : '#475569', fontWeight: 600 } },
+                  (hit ? '✓ ' : '· ') + principleLabels[p]
+                );
+              })
+            ),
+            // Transcript scroll
+            h('div', { style: { maxHeight: 380, overflowY: 'auto', paddingRight: 4 } }, transcript.length ? transcript : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, '(no dialogue)'))
+          );
+        }
+        return h('div', { style: { padding: 16, maxWidth: 1000, margin: '0 auto' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 12, flexWrap: 'wrap' } },
+            h('div', null,
+              h('h3', { style: { fontSize: 18, fontWeight: 800, color: '#f1f5f9', margin: '0 0 2px' } }, 'Comparing attempts'),
+              h('div', { style: { fontSize: 11, color: '#94a3b8' } }, scenario.title)
+            ),
+            h('button', {
+              'aria-label': 'Back to outcome',
+              onClick: function() { upd('mode', 'ending'); },
+              style: { padding: '6px 14px', background: 'transparent', color: '#94a3b8', border: '1px solid #334155', borderRadius: 8, fontSize: 11, cursor: 'pointer' }
+            }, '← Back to outcome')
+          ),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 12, marginBottom: 12 } },
+            _renderColumn(prevAttempt, 'Previous attempt'),
+            _renderColumn(thisAttempt, 'This attempt')
+          ),
+          // Quick delta summary
+          h('div', { style: { padding: 12, background: '#1e293b', border: '1px solid #334155', borderRadius: 10, fontSize: 11, color: '#cbd5e1', lineHeight: 1.6 } },
+            h('div', { style: { fontSize: 10, color: '#94a3b8', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'Delta'),
+            (function() {
+              var dh = Math.round(thisAttempt.harmony) - Math.round(prevAttempt.harmony);
+              var prevP = Object.keys(prevAttempt.principlesUsed || {}).length;
+              var nowP = Object.keys(thisAttempt.principlesUsed || {}).length;
+              var pieces = [];
+              pieces.push('Harmony ' + (dh >= 0 ? '+' : '') + dh);
+              pieces.push('Principles ' + prevP + ' → ' + nowP);
+              if (prevAttempt.ending !== thisAttempt.ending) pieces.push('Outcome shifted: ' + prevAttempt.ending + ' → ' + thisAttempt.ending);
+              return pieces.join(' · ');
+            })()
           ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
@@ -1267,6 +1416,20 @@ window.SelHub = window.SelHub || {
             })
       );
 
+      // Coach hint card (dismissible)
+      var coachHintCard = (coachHint && !coachHintDismissed) ? h('div', { role: 'note', 'aria-label': 'Coach hint', style: { padding: '10px 14px', marginBottom: 8, background: '#0c4a6e', border: '1px solid #0369a1', borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: 10 } },
+        h('span', { 'aria-hidden': 'true', style: { fontSize: 18, lineHeight: 1, flexShrink: 0 } }, '💡'),
+        h('div', { style: { flex: 1 } },
+          h('div', { style: { fontSize: 10, color: '#7dd3fc', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 2 } }, 'Coach has a thought'),
+          h('div', { style: { fontSize: 12, color: '#e0f2fe', lineHeight: 1.5 } }, coachHint)
+        ),
+        h('button', {
+          'aria-label': 'Dismiss coach hint',
+          onClick: function() { upd('coachHintDismissed', true); },
+          style: { padding: '2px 8px', background: 'transparent', color: '#7dd3fc', border: '1px solid #0369a1', borderRadius: 6, fontSize: 10, cursor: 'pointer', flexShrink: 0 }
+        }, 'Got it')
+      ) : null;
+
       // Addressing toggle
       var addrToggle = h('div', { role: 'radiogroup', 'aria-label': 'Address', style: { display: 'flex', gap: 6, marginBottom: 8 } },
         characters.concat([{ id: 'both', name: 'Mediate (both)' }]).map(function(opt) {
@@ -1316,6 +1479,7 @@ window.SelHub = window.SelHub || {
         stage,
         meters,
         dialogueView,
+        coachHintCard,
         addrToggle,
         inputRow,
         exitBtn,

@@ -572,6 +572,32 @@ window.StemLab = window.StemLab || {
           })
         ),
 
+        // ── Topic-accent hero band per mode ──
+        (function() {
+          var MODE_META = {
+            '1d': { accent: '#c026d3', soft: 'rgba(192,38,211,0.10)', icon: '\uD83D\uDCCF', title: 'Number Line \u2014 1D inequalities',                  hint: 'Open circle for < and >, closed for \u2264 and \u2265. Compound inequalities (-2 < x \u2264 5) shade the band BETWEEN the two endpoints. Common Core 6.EE.8, 7.EE.4.' },
+            '2d': { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDCC8', title: '2D Graph \u2014 inequality regions',                hint: 'Solid line for \u2264/\u2265, dashed for </>. Test point (0,0) tells you which side to shade. Multiple constraints overlap into a feasible region \u2014 the foundation of linear programming.' }
+          };
+          var meta = MODE_META[graphMode] || MODE_META['1d'];
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ── Input + presets ──
         h('div', { className: 'flex items-center gap-2 mb-3' },
           h('input', {
