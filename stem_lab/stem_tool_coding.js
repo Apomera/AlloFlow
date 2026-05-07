@@ -1972,6 +1972,33 @@
               }, "❓")
             ),
 
+            // ── Topic-accent hero band per playground mode ──
+            (function() {
+              var MODE_META = {
+                turtle: { accent: '#22c55e', soft: 'rgba(34,197,94,0.14)', icon: '\uD83D\uDC22', title: 'Turtle \u2014 LOGO\u2019s drawing robot, born 1967',           hint: 'Move forward, turn, pen down: a few primitives \u2192 fractals, spirals, polygons. Seymour Papert\u2019s Mindstorms (1980) showed kids could BUILD intuition for math by teaching the turtle, not the other way round.' },
+                robot:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDD16', title: 'Robot \u2014 navigate the grid, collect, solve',           hint: 'Sequencing \u2192 conditionals \u2192 loops \u2192 functions, wrapped in a maze you can SEE. Mirrors Karel the Robot (Stanford 1981) and modern code.org puzzles. Errors become spatial: \u201Cit walked into a wall.\u201D' }
+              };
+              var meta = MODE_META[playgroundMode] || MODE_META.turtle;
+              return React.createElement('div', {
+                className: 'col-span-2',
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 30, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // ══════════════════════════
             // ROBOT GRID MODE UI
             // ══════════════════════════
