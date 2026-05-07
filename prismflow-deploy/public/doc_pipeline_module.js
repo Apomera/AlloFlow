@@ -13262,18 +13262,90 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <div class="quiz-box" data-quiz-id="${item.id}">
                       <h3>${t('output.quiz_mcq')}</h3>
                       ${item.data.questions.map((q, i) => {
+                          const itemType = q.type || 'mcq';
+                          // Plan S Slice 5+: type-aware export rendering. Each item type
+                          // gets a printable form. Teacher view shows answer keys/rubrics;
+                          // student view shows blank space for response.
+                          const stem = `<p><strong>${i+1}. ${q.question || ''}</strong>${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.question_en})</span>` : ''}</p>`;
+                          if (itemType === 'fill-blank') {
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <div style="margin:0.5rem 0;">
+                                      <input type="text" placeholder="Type the missing word…" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>
+                                  </div>
+                                  ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.expectedFill}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.join(', ') + ')</span>' : ''}</p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'short-answer') {
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <textarea placeholder="Type your 1-2 sentence response…" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>
+                                  ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${q.expectedAnswer}</span></p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'self-explanation') {
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <textarea placeholder="Explain in your own words (3-5 sentences)…" rows="5" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>
+                                  ${isTeacher && q.rubric ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">Rubric: <span style="font-weight:normal;font-style:italic">${q.rubric}</span></p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'sequence-sense') {
+                              const items = Array.isArray(q.items) ? q.items : [];
+                              const presentedOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === items.length ? q.presentedOrder : items.map((_, idx) => idx);
+                              const principleOpts = Array.isArray(q.principleOptions) ? q.principleOptions : ['chronological','cause-effect','process','size','hierarchy'];
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">Below is a sequence — verify and explain.</p>
+                                  <ol style="margin:0.5rem 0 0.75rem 1.5rem;">
+                                      ${presentedOrder.map(canonIdx => `<li style="padding:4px 0;">${items[canonIdx] || ''}</li>`).join('')}
+                                  </ol>
+                                  <div style="margin:0.5rem 0;">
+                                      <strong style="font-size:0.9rem;">1. Is this order correct?</strong>
+                                      <label style="margin-left:1rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> Yes</label>
+                                      <label style="margin-left:0.5rem;"><input type="radio" name="ss_${item.id}_${i}_v"/> No, item # ___ is misplaced</label>
+                                  </div>
+                                  <div style="margin:0.5rem 0;">
+                                      <strong style="font-size:0.9rem;">2. What's the ordering principle?</strong>
+                                      <span style="margin-left:0.5rem;color:#475569;">${principleOpts.join(' / ')}</span>
+                                  </div>
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${q.intentionallyWrongIndex === null || q.intentionallyWrongIndex === undefined ? 'order is correct' : 'item #' + (q.intentionallyWrongIndex + 1) + ' is misplaced'} · principle: <em>${q.orderingPrinciple || ''}</em></p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'relation-mismatch') {
+                              const pairs = Array.isArray(q.pairs) ? q.pairs : [];
+                              const candidates = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
+                              return `
+                              <div class="question">
+                                  ${stem}
+                                  <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">One of these pairs is wrong. Find it and pick the correct partner.</p>
+                                  <table style="width:100%;border-collapse:collapse;margin:0.5rem 0;">
+                                      ${pairs.map((pair, idx) => `<tr><td style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:600;">${idx+1}. ${pair.left || ''}</td><td style="padding:6px 8px;border:1px solid #cbd5e1;">↔ ${pair.right || ''}</td></tr>`).join('')}
+                                  </table>
+                                  <div style="margin:0.5rem 0;">
+                                      <strong style="font-size:0.9rem;">Wrong pair: # ___</strong>
+                                  </div>
+                                  ${candidates.length > 0 ? `<div style="margin:0.5rem 0;"><strong style="font-size:0.9rem;">Correct partner:</strong> ${candidates.map(c => `<label style="margin-left:0.5rem;"><input type="radio" name="rm_${item.id}_${i}_p"/> ${c}</label>`).join('')}</div>` : ''}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#16a34a;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(q.wrongPairIndex || 0) + 1} is wrong · correct partner: <em>${q.correctPartnerForWrong || ''}</em></p>` : ''}
+                              </div>`;
+                          }
+                          // Default: MCQ render (existing behavior preserved)
                           const correctIdx = _resolveCorrectIdx(q);
                           const correctAttr = correctIdx >= 0 ? ` data-correct="${correctIdx}"` : '';
+                          const optsArr = Array.isArray(q.options) ? q.options : [];
                           return `
                           <div class="question"${correctAttr}>
-                              <p>
-                                <strong>${i+1}. ${q.question}</strong>
-                                ${q.question_en ? `<br><span style="font-weight:normal; font-style:italic; color:#666">(${q.question_en})</span>` : ''}
-                              </p>
+                              ${stem}
+                              ${q.imageUrl ? `<img src="${q.imageUrl}" alt="${q.question || 'Question image'}" style="max-width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;margin:0.5rem 0;background:#f8fafc"/>` : ''}
                               <div class="options">
-                                  ${q.options.map((opt, optIdx) => `
+                                  ${optsArr.map((opt, optIdx) => `
                                       <label class="mcq-label">
                                           <input aria-label={t('common.text_field')} type="radio" name="q_${item.id}_${i}" value="${optIdx}">
+                                          ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${q.optionImageUrls[optIdx]}" alt="${opt}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
                                           <span>${opt} ${q.options_en && q.options_en[optIdx] ? `<span style="color:#888; font-size:0.9em;">(${q.options_en[optIdx]})</span>` : ''}</span>
                                       </label>
                                   `).join('')}
