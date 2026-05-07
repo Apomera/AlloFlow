@@ -8405,6 +8405,11 @@
         body: 'Attach flashcards, an acronym, free notes (with {cloze} blanks!), or an image-link to ANY decoration. Where you place a deck shapes how you remember it. Method of loci, since 477 BC.'
       },
       {
+        emoji: '🎤',
+        title: 'Talk to a decoration',
+        body: 'Each decoration can hold up to 30 seconds of voice — explain what it means, quiz yourself out loud, or leave a future-you reminder. Add a short caption and the caption prints in your packet (audio plays on screen).'
+      },
+      {
         emoji: '🐱',
         title: 'Meet your buddy',
         body: 'Pick a critter — cat, fox, owl, turtle, or baby dragon. Four color palettes, your name. They notice your activity, celebrate your wins, and gently prompt review when a deck is due.'
@@ -14610,7 +14615,7 @@
                 style: { width: '96px', height: '96px', flexShrink: 0, fontSize: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
               }, '🐉'),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontSize: '16px', fontWeight: 800, color: palette.text, marginBottom: '4px' } },
+                h('h3', { style: { margin: 0, fontSize: '16px', fontWeight: 800, color: palette.text, marginBottom: '4px' } },
                   detail.topic || 'Untitled topic'),
                 h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' } },
                   outcomeChip(detail.outcome)
@@ -14664,7 +14669,7 @@
             ) : null,
             // Per-turn history
             (detail.history || []).length > 0 ? h('div', null,
-              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+              h('h4', { style: { margin: 0, fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
                 'Per-turn detail'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
                 detail.history.map(function (turn, i) {
@@ -16874,8 +16879,22 @@
         },
           // Header
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px' } },
-            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
-              '📊 Reflection insights'),
+            h('div', { style: { minWidth: 0, flex: 1 } },
+              h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+                '📊 Reflection insights'),
+              ins.generatedAt && !ins.loading ? h('div', {
+                style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginTop: '2px' }
+              }, (function() {
+                var ms = Date.now() - new Date(ins.generatedAt).getTime();
+                var mins = Math.round(ms / 60000);
+                if (mins < 1) return 'Just analyzed';
+                if (mins < 60) return 'Analyzed ' + mins + ' min ago';
+                var hrs = Math.round(mins / 60);
+                if (hrs < 24) return 'Analyzed ' + hrs + ' hr ago';
+                var days = Math.round(hrs / 24);
+                return 'Analyzed ' + days + ' day' + (days === 1 ? '' : 's') + ' ago';
+              })()) : null
+            ),
             h('div', { style: { display: 'flex', gap: '6px' } },
               h('button', {
                 onClick: function() { runInsightsAnalysis(); },
