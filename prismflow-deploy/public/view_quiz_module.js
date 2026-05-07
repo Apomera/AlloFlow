@@ -528,6 +528,184 @@
     );
   }
 
+  // ─── LiveResultsDashboard (Plan T Slice Tb) ───────────────────────────
+  // Teacher-only, live-session-only. Reads sessionData.quizState.allResponses
+  // (populated by Slice Ta) + roster, routes to a mode-specific aggregator
+  // via QuizLiveAggregators.aggregateForMode, and renders one of three
+  // visualizations:
+  //
+  //   gradebook       (exit-ticket): per-student score table
+  //   preLessonGap    (pre-check):   concept cards sorted by % missing
+  //   liveHeatmap     (formative + review fallback): per-question correct % bars
+  //
+  // Renders ABOVE the existing TeacherLiveQuizControls (which keeps doing
+  // its presentation-mode option-distribution chart). Additive — no
+  // disturbance to the legacy dashboard.
+  function LiveResultsDashboard(p) {
+    var aggsMod = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (!aggsMod) return null;
+    var sessionData = p.sessionData || {};
+    var quizState = sessionData.quizState || {};
+    var generatedContent = p.generatedContent;
+    var roster = sessionData.roster || {};
+    var mode = (generatedContent && generatedContent.data && generatedContent.data.mode) || 'exit-ticket';
+    var modeLabel = (generatedContent && generatedContent.data && generatedContent.data.modeLabel) || 'Exit Ticket';
+    var modeIcon = (generatedContent && generatedContent.data && generatedContent.data.modeIcon) || '📝';
+
+    var aggResult;
+    try {
+      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster);
+    } catch (e) {
+      console.warn('[LiveResultsDashboard] aggregator failed:', e);
+      return null;
+    }
+    if (!aggResult || !aggResult.data) return null;
+    var data = aggResult.data;
+    var variant = aggResult.variant;
+
+    // Header (shared across variants)
+    var header = React.createElement('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
+      React.createElement('span', { className: 'text-2xl', 'aria-hidden': 'true' }, modeIcon),
+      React.createElement('h3', { className: 'font-black text-lg text-slate-800' }, 'Live Results — ' + modeLabel),
+      React.createElement('span', { className: 'text-xs text-slate-600' },
+        data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's'))
+    );
+
+    // Empty state (no responses yet)
+    var hasAnyResponses = false;
+    if (variant === 'gradebook') {
+      hasAnyResponses = data.studentRows.some(function (r) { return r.totalAnswered > 0; });
+    } else if (variant === 'preLessonGap') {
+      hasAnyResponses = data.conceptCards.some(function (c) { return c.totalAnswered > 0; });
+    } else {
+      hasAnyResponses = data.bars.some(function (b) { return b.total > 0; });
+    }
+
+    if (!hasAnyResponses) {
+      return React.createElement('div', {
+        className: 'p-5 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 mb-4',
+      },
+        header,
+        React.createElement('p', { className: 'text-sm text-slate-600 italic' },
+          'Waiting for student responses. Results will appear here as students submit answers in this live session.')
+      );
+    }
+
+    // Render mode-specific body
+    var body;
+    if (variant === 'gradebook') {
+      // Per-student table
+      body = React.createElement('div', { className: 'overflow-x-auto' },
+        React.createElement('table', { className: 'w-full text-sm border-collapse' },
+          React.createElement('thead', null,
+            React.createElement('tr', { className: 'bg-slate-100' },
+              React.createElement('th', { className: 'text-left px-2 py-1.5 font-bold text-slate-700' }, 'Student'),
+              React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'Answered'),
+              React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'Correct'),
+              React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'IDK')
+            )
+          ),
+          React.createElement('tbody', null,
+            data.studentRows.map(function (row) {
+              var pct = row.totalAnswered > 0 ? Math.round((row.totalCorrect / row.totalAnswered) * 100) : 0;
+              return React.createElement('tr', { key: row.uid, className: 'border-t border-slate-200' },
+                React.createElement('td', { className: 'px-2 py-1.5 text-slate-800' }, row.displayName),
+                React.createElement('td', { className: 'text-center px-2 py-1.5' },
+                  React.createElement('span', { className: 'text-xs font-mono text-slate-600' }, row.totalAnswered + ' / ' + data.totalQuestions)
+                ),
+                React.createElement('td', { className: 'text-center px-2 py-1.5' },
+                  row.totalAnswered > 0
+                    ? React.createElement('span', {
+                        className: 'text-xs font-bold px-2 py-0.5 rounded ' + (pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'),
+                      }, row.totalCorrect + ' (' + pct + '%)')
+                    : React.createElement('span', { className: 'text-xs text-slate-400' }, '—')
+                ),
+                React.createElement('td', { className: 'text-center px-2 py-1.5' },
+                  row.totalIdk > 0
+                    ? React.createElement('span', { className: 'text-xs font-bold px-2 py-0.5 rounded bg-sky-100 text-sky-800' }, row.totalIdk)
+                    : React.createElement('span', { className: 'text-xs text-slate-400' }, '0')
+                )
+              );
+            })
+          )
+        )
+      );
+    } else if (variant === 'preLessonGap') {
+      // Concept gap cards — lowest % first
+      body = React.createElement('div', { className: 'space-y-2' },
+        data.conceptCards.map(function (card) {
+          var color = card.totalAnswered === 0 ? 'slate' :
+                      card.percentCorrect >= 80 ? 'emerald' :
+                      card.percentCorrect >= 50 ? 'amber' : 'rose';
+          var urgency = card.totalAnswered === 0 ? 'no responses' :
+                        card.percentCorrect < 50 ? '⚠ Needs pre-teaching' :
+                        card.percentCorrect < 80 ? 'Review with class' :
+                        'Class is ready';
+          return React.createElement('div', {
+            key: card.questionIdx,
+            className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200',
+          },
+            React.createElement('div', { className: 'flex items-start justify-between gap-3 mb-1' },
+              React.createElement('span', { className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-800' }, urgency),
+              card.totalAnswered > 0 && React.createElement('span', {
+                className: 'text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-200 text-' + color + '-900',
+              }, card.percentCorrect + '% correct')
+            ),
+            React.createElement('p', { className: 'text-sm text-slate-800 mb-2' }, card.conceptText),
+            React.createElement('div', { className: 'flex items-center gap-3 text-xs text-' + color + '-900' },
+              React.createElement('span', null, card.correctCount + ' ✓'),
+              React.createElement('span', null, card.incorrectCount + ' ✗'),
+              card.idkCount > 0 && React.createElement('span', { className: 'text-sky-700' }, card.idkCount + ' 🤔'),
+              React.createElement('span', { className: 'text-slate-500' }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students')
+            )
+          );
+        })
+      );
+    } else {
+      // liveHeatmap — per-question bars
+      body = React.createElement('div', { className: 'space-y-2' },
+        data.bars.map(function (bar) {
+          var color = bar.total === 0 ? 'slate' :
+                      bar.percentCorrect >= 80 ? 'emerald' :
+                      bar.percentCorrect >= 50 ? 'amber' : 'rose';
+          var pctCorrect = bar.total > 0 ? (bar.correct / bar.total) * 100 : 0;
+          var pctIncorrect = bar.total > 0 ? (bar.incorrect / bar.total) * 100 : 0;
+          var pctIdk = bar.total > 0 ? (bar.idk / bar.total) * 100 : 0;
+          var pctSubmitted = bar.total > 0 ? (bar.submitted / bar.total) * 100 : 0;
+          var qLabel = bar.questionText ? bar.questionText.slice(0, 70) + (bar.questionText.length > 70 ? '…' : '') : ('Question ' + (bar.questionIdx + 1));
+          return React.createElement('div', { key: bar.questionIdx, className: 'p-2 rounded bg-white border border-slate-200' },
+            React.createElement('div', { className: 'flex items-start justify-between gap-2 mb-1' },
+              React.createElement('span', { className: 'text-xs text-slate-700 flex-1 min-w-0' }, (bar.questionIdx + 1) + '. ' + qLabel),
+              bar.total > 0 && React.createElement('span', {
+                className: 'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800',
+              }, bar.percentCorrect + '%')
+            ),
+            // Stacked bar
+            bar.total > 0 ? React.createElement('div', { className: 'flex h-3 rounded overflow-hidden border border-slate-200' },
+              pctCorrect > 0 && React.createElement('div', { style: { width: pctCorrect + '%', backgroundColor: '#10b981' }, title: bar.correct + ' correct' }),
+              pctIncorrect > 0 && React.createElement('div', { style: { width: pctIncorrect + '%', backgroundColor: '#ef4444' }, title: bar.incorrect + ' incorrect' }),
+              pctIdk > 0 && React.createElement('div', { style: { width: pctIdk + '%', backgroundColor: '#0ea5e9' }, title: bar.idk + ' IDK' }),
+              pctSubmitted > 0 && React.createElement('div', { style: { width: pctSubmitted + '%', backgroundColor: '#94a3b8' }, title: bar.submitted + ' submitted (ungraded)' })
+            ) : React.createElement('div', { className: 'h-3 rounded bg-slate-100 border border-slate-200' }),
+            React.createElement('div', { className: 'flex items-center gap-3 mt-1 text-[10px] text-slate-600' },
+              React.createElement('span', null, bar.correct + ' ✓'),
+              React.createElement('span', null, bar.incorrect + ' ✗'),
+              bar.idk > 0 && React.createElement('span', { className: 'text-sky-700' }, bar.idk + ' 🤔'),
+              bar.submitted > 0 && React.createElement('span', { className: 'text-slate-500' }, bar.submitted + ' submitted'),
+              React.createElement('span', { className: 'ml-auto text-slate-500' }, bar.total + ' / ' + data.totalStudents)
+            )
+          );
+        })
+      );
+    }
+
+    return React.createElement('div', {
+      className: 'p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm',
+      role: 'region',
+      'aria-label': 'Live Results Dashboard',
+    }, header, body);
+  }
+
   // ─── FreeformItemsBlock (Plan S Slice 2) ──────────────────────────────
   // Renders fill-blank and short-answer items below the MCQ list. Each item
   // is a self-contained card with its own state (response, grading status,
@@ -1105,7 +1283,16 @@
     t: t
   })), isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col gap-4"
-  }, /*#__PURE__*/React.createElement(ErrorBoundary, {
+  },
+    // Plan T Slice Tb: mode-aware Live Results Dashboard. Renders ABOVE the
+    // existing TeacherLiveQuizControls so teachers see per-mode aggregates
+    // (gradebook / pre-lesson concept gaps / live heatmap) without losing
+    // the legacy presentation-mode option-distribution chart below.
+    /*#__PURE__*/React.createElement(LiveResultsDashboard, {
+      sessionData: sessionData,
+      generatedContent: generatedContent,
+    }),
+    /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Live quiz controls encountered an error. Refreshing..."
   }, /*#__PURE__*/React.createElement(TeacherLiveQuizControls, {
     sessionData: sessionData,
