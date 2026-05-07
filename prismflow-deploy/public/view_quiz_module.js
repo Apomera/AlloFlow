@@ -389,6 +389,101 @@
     );
   }
 
+  // ─── McqEnhancements (Plan S Slice 5+) ────────────────────────────────
+  // Self-contained per-MCQ controls: inline AI Explain button, "I don't
+  // know" non-penalized button, confidence rating. Each instance manages
+  // its own state via useState so we don't have to thread per-question
+  // state through QuizView. Mode-aware: only renders the controls the
+  // current mode strategy enables.
+  //
+  // Injected into the existing MCQ render path at the end of each
+  // question card. Mode-agnostic about whether the student answered
+  // correctly — we don't track radio-button selection in standalone
+  // (non-presentation) view, so Explain is always available rather than
+  // gated on "got it wrong."
+  function McqEnhancements(p) {
+    var modeStrat = p.modeStrategy || null;
+    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+    var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+    if (!allowIDK && !allowConfidence && !aiExplainerEnabled) return null;
+
+    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
+    var explainer = explainerState[0]; var setExplainer = explainerState[1];
+    var idkState = React.useState(false);
+    var idkMarked = idkState[0]; var setIdkMarked = idkState[1];
+    var confidenceState = React.useState(null);
+    var confidence = confidenceState[0]; var setConfidence = confidenceState[1];
+
+    function requestExplainer() {
+      if (typeof p.callGemini !== 'function') {
+        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable.' });
+        return;
+      }
+      setExplainer({ open: true, loading: true, text: '', error: '' });
+      var grade = p.gradeLevel || 'middle school';
+      var conceptHint = (p.q && (p.q.question || p.q.correctAnswer)) || '';
+      var prompt = 'You are a patient teacher. A ' + grade + ' student needs a quick refresher on this concept. Question or concept: "' + conceptHint + '". Give a 60-90 word explanation in plain language. Use a concrete example or analogy. End with one sentence checking understanding. Plain text only — no headings, no bullet points.';
+      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
+      }).catch(function (err) {
+        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
+      });
+    }
+
+    function markIDK() {
+      setIdkMarked(true);
+      requestExplainer();
+    }
+
+    return React.createElement('div', { className: 'mt-3 ml-9 space-y-2' },
+      // Action row: Explain / IDK
+      (aiExplainerEnabled || allowIDK) && React.createElement('div', { className: 'flex items-center gap-2 flex-wrap' },
+        aiExplainerEnabled && !explainer.open && React.createElement('button', {
+          type: 'button',
+          onClick: requestExplainer,
+          className: 'text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors',
+          title: 'Get a quick AI explanation of this concept',
+        }, '🤖 Explain this concept'),
+        allowIDK && !idkMarked && React.createElement('button', {
+          type: 'button',
+          onClick: markIDK,
+          className: 'text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors',
+          title: 'Skip — no penalty. The AI will explain the concept.',
+        }, '🤔 I don\'t know'),
+        idkMarked && React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-sky-200 text-sky-900' }, 'Marked "I don\'t know"')
+      ),
+      // Inline explainer panel
+      explainer.open && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
+        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
+        explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
+        explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
+        explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
+        explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
+          type: 'button',
+          onClick: function () { p.callTTS(explainer.text); },
+          className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
+          'aria-label': 'Read aloud',
+        }, '🔊 Read aloud')
+      ),
+      // Confidence rating
+      allowConfidence && React.createElement('div', { className: 'flex items-center gap-2 flex-wrap text-xs' },
+        React.createElement('span', { className: 'text-slate-600 font-semibold' }, 'How sure were you?'),
+        ['knew', 'guessed', 'no-idea'].map(function (lvl) {
+          var labels = { knew: 'I knew this', guessed: 'I guessed', 'no-idea': 'No idea' };
+          var active = confidence === lvl;
+          return React.createElement('button', {
+            key: lvl,
+            type: 'button',
+            onClick: function () { setConfidence(lvl); },
+            className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'),
+          }, labels[lvl]);
+        })
+      )
+    );
+  }
+
   // ─── FreeformItemsBlock (Plan S Slice 2) ──────────────────────────────
   // Renders fill-blank and short-answer items below the MCQ list. Each item
   // is a self-contained card with its own state (response, grading status,
@@ -1403,7 +1498,16 @@
     className: "absolute top-2 right-2 text-green-600"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
-  }))))), q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && /*#__PURE__*/React.createElement("div", {
+  }))))),
+    // Plan S Slice 5+: per-MCQ enhancements (Explain / IDK / confidence) — same parity as freeform items
+    /*#__PURE__*/React.createElement(McqEnhancements, {
+      q: q,
+      modeStrategy: _modeStrat,
+      callGemini: props.callGemini,
+      callTTS: props.callTTS,
+      gradeLevel: props.gradeLevel,
+    }),
+    q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in slide-in-from-top-2 relative"
   }, /*#__PURE__*/React.createElement(Stamp, {
     label: t('quiz.verified_stamp'),
