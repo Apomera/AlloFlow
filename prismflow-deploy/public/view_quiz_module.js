@@ -62,7 +62,7 @@
     var allQuestions = Array.isArray(p.questions) ? p.questions : [];
     var freeform = allQuestions
       .map(function (q, idx) { return { q: q, idx: idx }; })
-      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer'); });
+      .filter(function (entry) { return entry.q && (entry.q.type === 'fill-blank' || entry.q.type === 'short-answer' || entry.q.type === 'self-explanation'); });
     if (freeform.length === 0) return null;
     return React.createElement('div', { className: 'space-y-4 mt-6' },
       React.createElement('h4', { className: 'font-bold text-slate-700 flex items-center gap-2 text-base' },
@@ -76,8 +76,10 @@
           q: entry.q,
           itemNumber: entry.idx + 1,
           callGemini: p.callGemini,
+          callTTS: p.callTTS,
           gradeLevel: p.gradeLevel,
           QuizAIHelpers: p.QuizAIHelpers,
+          modeStrategy: p.modeStrategy,
         });
       })
     );
@@ -85,10 +87,19 @@
 
   function FreeformItemCard(p) {
     var q = p.q;
+    var modeStrat = p.modeStrategy || null;
+    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+    var allowConfidence = !!(modeStrat && modeStrat.render && modeStrat.render.allowConfidenceRating);
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+
     var responseState = React.useState('');
     var response = responseState[0]; var setResponse = responseState[1];
     var gradeState = React.useState({ status: null, feedback: '', loading: false });
     var grade = gradeState[0]; var setGrade = gradeState[1];
+    var confidenceState = React.useState(null); // 'knew' | 'guessed' | 'no-idea' | null
+    var confidence = confidenceState[0]; var setConfidence = confidenceState[1];
+    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
+    var explainer = explainerState[0]; var setExplainer = explainerState[1];
 
     function submitGrade() {
       if (!response || !response.trim()) return;
@@ -108,6 +119,14 @@
         graderArgs.acceptableAlternatives = q.acceptableAlternatives || [];
         graderArgs.studentFill = response;
         promise = p.QuizAIHelpers.gradeFillBlank(graderArgs);
+      } else if (q.type === 'self-explanation') {
+        // Self-explanation grader: rubric-style. Reuses gradeFreeformAnswer with
+        // a synthesized "expectedAnswer" that prompts the LLM to grade for
+        // demonstration of understanding rather than match against a key.
+        graderArgs.question = 'EXPLAIN IN YOUR OWN WORDS: ' + (q.question || '');
+        graderArgs.expectedAnswer = q.rubric || q.expectedAnswer || 'Student demonstrates understanding of the concept in their own words, including key terms and relationships. Avoid grading on memorization of specific phrasing — reward genuine understanding.';
+        graderArgs.studentResponse = response;
+        promise = p.QuizAIHelpers.gradeFreeformAnswer(graderArgs);
       } else {
         graderArgs.question = q.question;
         graderArgs.expectedAnswer = q.expectedAnswer || '';
@@ -121,17 +140,50 @@
       });
     }
 
+    function markIDK() {
+      // Non-penalized: status = 'idk', auto-open the explainer for just-in-time remediation
+      setGrade({ status: 'idk', feedback: 'No worries — here\'s a quick explanation.', loading: false });
+      requestExplainer();
+    }
+
+    function requestExplainer() {
+      if (typeof p.callGemini !== 'function') {
+        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable: callGemini not provided.' });
+        return;
+      }
+      setExplainer({ open: true, loading: true, text: '', error: '' });
+      var grade = p.gradeLevel || 'middle school';
+      // For self-explanation: explain the underlying concept the student was asked about.
+      // For fill-blank: explain the missing term in context.
+      // For short-answer: explain the question's core concept.
+      var conceptHint = q.type === 'fill-blank' ? (q.expectedFill || q.question || '') :
+                        q.type === 'self-explanation' ? (q.question || '') :
+                        (q.question || '');
+      var prompt = 'You are a patient teacher. A ' + grade + ' student needs a quick refresher on this concept so they can answer the question. Concept or question: "' + conceptHint + '". Give a 60-90 word explanation in plain language. Use a concrete example or analogy. End with one sentence checking understanding. Plain text only — no headings, no bullet points.';
+      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
+      }).catch(function (err) {
+        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
+      });
+    }
+
     var statusColor = grade.status === 'correct' ? 'emerald' :
                       grade.status === 'partially-correct' ? 'amber' :
                       grade.status === 'incorrect' ? 'rose' :
                       grade.status === 'error' ? 'rose' :
+                      grade.status === 'idk' ? 'sky' :
                       'slate';
     var statusLabel = grade.status === 'correct' ? '✓ Correct' :
                       grade.status === 'partially-correct' ? '~ Close' :
                       grade.status === 'incorrect' ? '✗ Not yet' :
                       grade.status === 'unclear' ? '? Unclear' :
                       grade.status === 'error' ? '! Error' :
+                      grade.status === 'idk' ? '🤔 Marked "I don\'t know"' :
                       '';
+    var typeLabel = q.type === 'fill-blank' ? 'Fill-in-the-blank' :
+                    q.type === 'self-explanation' ? 'Self-explanation' :
+                    'Short answer';
 
     return React.createElement('div', {
       className: 'bg-white p-5 rounded-xl border border-slate-300 shadow-sm',
@@ -139,12 +191,11 @@
       React.createElement('div', { className: 'flex items-start gap-3 mb-3' },
         React.createElement('span', { className: 'flex-shrink-0 bg-slate-100 text-slate-600 w-6 h-6 rounded-full flex items-center justify-center text-xs mt-0.5' }, p.itemNumber),
         React.createElement('div', { className: 'flex-1 min-w-0' },
-          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' },
-            q.type === 'fill-blank' ? 'Fill-in-the-blank' : 'Short answer'),
+          React.createElement('span', { className: 'inline-block text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700 mb-1' }, typeLabel),
           React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, q.question || '')
         )
       ),
-      // Input area: short text input for fill-blank, multi-line textarea for short-answer
+      // Input area
       q.type === 'fill-blank' ?
         React.createElement('input', {
           type: 'text',
@@ -152,7 +203,7 @@
           onChange: function (ev) { setResponse(ev.target.value); },
           onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); submitGrade(); } },
           placeholder: 'Type the missing word or phrase...',
-          disabled: grade.loading || grade.status === 'correct',
+          disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
           className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50',
           'aria-label': 'Fill in the blank',
         })
@@ -160,23 +211,31 @@
         React.createElement('textarea', {
           value: response,
           onChange: function (ev) { setResponse(ev.target.value); },
-          placeholder: 'Type your 1-2 sentence response...',
-          disabled: grade.loading || grade.status === 'correct',
-          rows: 3,
+          placeholder: q.type === 'self-explanation' ? 'Explain the concept in your own words (3-5 sentences)...' : 'Type your 1-2 sentence response...',
+          disabled: grade.loading || grade.status === 'correct' || grade.status === 'idk',
+          rows: q.type === 'self-explanation' ? 5 : 3,
           className: 'w-full px-3 py-2 rounded-lg border border-slate-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 disabled:bg-slate-50 resize-y',
-          'aria-label': 'Short-answer response',
+          'aria-label': typeLabel + ' response',
         }),
-      // Submit button + retry
-      React.createElement('div', { className: 'flex items-center justify-between gap-2 mt-2' },
-        React.createElement('button', {
+      // Submit button + IDK + retry
+      React.createElement('div', { className: 'flex items-center justify-between gap-2 mt-2 flex-wrap' },
+        React.createElement('div', { className: 'flex items-center gap-2 flex-wrap' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: submitGrade,
+            disabled: !response.trim() || grade.loading || grade.status === 'correct' || grade.status === 'idk',
+            className: 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
+          }, grade.loading ? 'Grading…' : (grade.status === 'correct' || grade.status === 'idk' ? '' : grade.status ? 'Re-check' : 'Grade my answer')),
+          allowIDK && !grade.status && React.createElement('button', {
+            type: 'button',
+            onClick: markIDK,
+            className: 'px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
+            title: 'Skip — no penalty. The AI will explain the concept.',
+          }, '🤔 I don\'t know')
+        ),
+        grade.status && grade.status !== 'correct' && grade.status !== 'idk' && React.createElement('button', {
           type: 'button',
-          onClick: submitGrade,
-          disabled: !response.trim() || grade.loading || grade.status === 'correct',
-          className: 'px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
-        }, grade.loading ? 'Grading…' : (grade.status ? 'Re-check' : 'Grade my answer')),
-        grade.status && grade.status !== 'correct' && React.createElement('button', {
-          type: 'button',
-          onClick: function () { setGrade({ status: null, feedback: '', loading: false }); setResponse(''); },
+          onClick: function () { setGrade({ status: null, feedback: '', loading: false }); setResponse(''); setExplainer({ open: false, loading: false, text: '', error: '' }); },
           className: 'px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors',
         }, 'Try again')
       ),
@@ -186,10 +245,44 @@
         role: 'status',
         'aria-live': 'polite',
       },
-        React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
-          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' }, statusLabel)
+        React.createElement('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
+          React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' }, statusLabel),
+          // Inline Explain button: shown when student got it wrong (or unclear), and mode allows it
+          aiExplainerEnabled && grade.status !== 'correct' && grade.status !== 'idk' && !explainer.open && React.createElement('button', {
+            type: 'button',
+            onClick: requestExplainer,
+            className: 'ml-auto text-xs font-bold px-2 py-0.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors',
+            title: 'Get a quick AI explanation of this concept',
+          }, '🤖 Explain this')
         ),
-        grade.feedback && React.createElement('p', { className: 'text-sm text-' + statusColor + '-900' }, grade.feedback)
+        grade.feedback && React.createElement('p', { className: 'text-sm text-' + statusColor + '-900 mb-2' }, grade.feedback),
+        // Inline explainer panel (collapses below feedback)
+        explainer.open && React.createElement('div', { className: 'mt-2 p-3 bg-white border border-indigo-200 rounded-lg' },
+          React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
+          explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
+          explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
+          explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
+          explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
+            type: 'button',
+            onClick: function () { p.callTTS(explainer.text); },
+            className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
+            'aria-label': 'Read aloud',
+          }, '🔊 Read aloud')
+        )
+      ),
+      // Confidence rating: optional, shown after a grade lands and when mode allows
+      allowConfidence && grade.status && grade.status !== 'idk' && React.createElement('div', { className: 'mt-2 flex items-center gap-2 flex-wrap text-xs' },
+        React.createElement('span', { className: 'text-slate-600 font-semibold' }, 'How sure were you?'),
+        ['knew', 'guessed', 'no-idea'].map(function (lvl) {
+          var labels = { knew: 'I knew this', guessed: 'I guessed', 'no-idea': 'No idea' };
+          var active = confidence === lvl;
+          return React.createElement('button', {
+            key: lvl,
+            type: 'button',
+            onClick: function () { setConfidence(lvl); },
+            className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'),
+          }, labels[lvl]);
+        })
       )
     );
   }
@@ -964,12 +1057,14 @@
     // + AI-graded feedback via QuizAIHelpers. Mode-agnostic — works in any
     // mode that includes these item types in its strategy.
     Array.isArray(generatedContent?.data?.questions) &&
-    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer'); }) &&
+    generatedContent.data.questions.some(function (q) { return q && (q.type === 'fill-blank' || q.type === 'short-answer' || q.type === 'self-explanation'); }) &&
     /*#__PURE__*/React.createElement(FreeformItemsBlock, {
       questions: generatedContent.data.questions,
       callGemini: props.callGemini,
+      callTTS: props.callTTS,
       gradeLevel: props.gradeLevel,
       QuizAIHelpers: window.AlloModules && window.AlloModules.QuizAIHelpers,
+      modeStrategy: _modeStrat,
     }),
     /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"

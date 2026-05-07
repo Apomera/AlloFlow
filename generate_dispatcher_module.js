@@ -1629,20 +1629,28 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _mcqCount = _modeItemMix.mcq || 0;
         const _fillBlankCount = _modeItemMix['fill-blank'] || 0;
         const _shortAnswerCount = _modeItemMix['short-answer'] || 0;
+        const _selfExplanationCount = _modeItemMix['self-explanation'] || 0;
         // Build item-type-specific instruction blocks dynamically
         const _itemTypeBlocks = [];
         if (_mcqCount > 0) _itemTypeBlocks.push(_mcqCount + ' Multiple Choice Question(s) with 4 options each');
         if (_fillBlankCount > 0) _itemTypeBlocks.push(_fillBlankCount + ' Fill-in-the-Blank Question(s)');
         if (_shortAnswerCount > 0) _itemTypeBlocks.push(_shortAnswerCount + ' Short-Answer Question(s) (1-2 sentence response)');
+        if (_selfExplanationCount > 0) _itemTypeBlocks.push(_selfExplanationCount + ' Self-Explanation Prompt(s) (3-5 sentence explanation in own words)');
         const _includeReflections = (_quizMode === 'exit-ticket' && quizReflectionCount > 0);
         if (_includeReflections) _itemTypeBlocks.push(quizReflectionCount + ' Open-Ended Reflection Question(s)');
         const _itemTypeInstructions = _itemTypeBlocks.map(function (s, i) { return (i + 1) + '. ' + s + '.'; }).join('\n          ');
+        // Plan S Slice 3e: misconception probe flag — when in pre-check or formative mode,
+        // tell the LLM to use distractors rooted in COMMON STUDENT MISCONCEPTIONS rather
+        // than random plausibly-wrong options. This catches predictable errors and gives
+        // teachers diagnostic data they couldn't get from random-distractor MCQs.
+        const _useMisconceptionDistractors = (_quizMode === 'pre-check' || _quizMode === 'formative') && _mcqCount > 0;
         // JSON shape varies by what's requested
         const _jsonShape = `{
             "questions": [
               { "type": "mcq", "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }${_fillBlankCount > 0 ? `,
               { "type": "fill-blank", "question": "Sentence with ___ for the blank.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedFill": "...", "acceptableAlternatives": ["alt1", "alt2"] }` : ''}${_shortAnswerCount > 0 ? `,
-              { "type": "short-answer", "question": "Open prompt requiring 1-2 sentence response.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedAnswer": "Concise reference answer (10-30 words) covering the key idea." }` : ''}
+              { "type": "short-answer", "question": "Open prompt requiring 1-2 sentence response.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedAnswer": "Concise reference answer (10-30 words) covering the key idea." }` : ''}${_selfExplanationCount > 0 ? `,
+              { "type": "self-explanation", "question": "Explain X in your own words. Cover the key elements: A, B, C.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"rubric": "Reward: clear explanation of A, accurate description of B, connection to C. Use of student's own words. Avoid grading on memorization of textbook phrasing." }` : ''}
             ]${_includeReflections ? `,
             "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}]` : ''}
           }`;
@@ -1657,8 +1665,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${analysisContext}
           Include the following item types:
           ${_itemTypeInstructions}
+          ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
+          ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
@@ -1696,6 +1706,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     base.acceptableAlternatives = Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [];
                 } else if (itemType === 'short-answer') {
                     base.expectedAnswer = q.expectedAnswer || "";
+                } else if (itemType === 'self-explanation') {
+                    // Self-explanation uses a rubric string for the grader instead of a key answer.
+                    base.rubric = q.rubric || q.expectedAnswer || "";
                 }
                 return base;
             });

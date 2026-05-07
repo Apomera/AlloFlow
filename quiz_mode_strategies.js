@@ -100,9 +100,10 @@
         promptFrame: 'Create a "Spaced Review" quiz that probes retention of PREVIOUSLY taught content (concepts from earlier lessons in the history, not today\'s source). If history concepts are not provided, target concepts from the source that would benefit from re-exposure.',
         questionTargets: 'previously-taught content (retention check, not new learning)',
         defaultItemCount: 6,
-        // Review benefits from active recall — fill-blank + short-answer force retrieval more than MCQ recognition
-        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer'],
-        defaultItemTypeMix: { mcq: 2, 'fill-blank': 2, 'short-answer': 2 },
+        // Review benefits from active recall — fill-blank, short-answer, and self-explanation
+        // all force retrieval, far more effective for retention than MCQ recognition.
+        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer', 'self-explanation'],
+        defaultItemTypeMix: { mcq: 2, 'fill-blank': 1, 'short-answer': 1, 'self-explanation': 2 },
       },
       render: {
         intro: 'Reviewing what we\'ve learned. Missed items get a quick re-explanation so they stick this time.',
