@@ -817,6 +817,34 @@ window.StemLab = window.StemLab || {
 
             ),
 
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                truth:      { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDCCA', title: 'Truth Tables \u2014 every input combination, every output', hint: 'For n variables, the table has 2\u207F rows. AND, OR, NOT, XOR, IFF \u2014 each gate is just a column. Boolean algebra (Boole 1854) underlies every digital circuit, every search query, every conditional in code.' },
+                proof:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83E\uDDE9', title: 'Proof Builder \u2014 derive conclusions step by step',     hint: 'Modus ponens, modus tollens, hypothetical syllogism, disjunctive syllogism \u2014 the eight inference rules cover most introductory propositional logic. Each step justifies itself by NAME, not vibe.' },
+                challenges: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\u26A1',         title: 'Challenges \u2014 graded tautology + contradiction puzzles', hint: 'Tautology = always true; contradiction = always false; contingency = sometimes both. Aristotle\u2019s law of non-contradiction (350 BCE) is the oldest published rule. AP CS Principles practice + intro discrete math.' },
+                gates:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\u26A1\uFE0F', title: 'Logic Gates \u2014 transistors all the way down',         hint: 'NAND is functionally complete \u2014 you can build every other gate from NAND alone. A modern CPU contains ~10 billion transistors implementing the same boolean math you\u2019re building here.' }
+              };
+              var meta = MODE_META[mode] || MODE_META.truth;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
             // ═══ MODE 1: TRUTH TABLES ═══
