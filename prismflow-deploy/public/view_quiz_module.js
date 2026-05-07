@@ -151,9 +151,102 @@
   var TeacherLiveQuizControls = props.TeacherLiveQuizControls;
   var Stamp = props.Stamp;
   var ConfettiExplosion = props.ConfettiExplosion;
+
+  // ─── Plan S: Quiz Mode-aware header + AI explainer ────────────────────
+  // Reads mode + strategy from the resolved quiz item. Default 'exit-ticket'
+  // preserves all existing UX. Other modes render a small intro banner +
+  // (for pre-check + review) an inline AI Concept Explainer panel.
+  var _quizMode = (generatedContent && generatedContent.data && generatedContent.data.mode) || 'exit-ticket';
+  var _qmStrategiesMod = (window.AlloModules && window.AlloModules.QuizModeStrategies) || null;
+  var _modeStrat = _qmStrategiesMod ? _qmStrategiesMod.getStrategy(_quizMode) : null;
+  var _aiExplainerEnabled = !!(_modeStrat && _modeStrat.render && _modeStrat.render.aiExplainerOnFail);
+  var _showModeBanner = _quizMode !== 'exit-ticket' && !!_modeStrat;
+
+  // Local state for the AI Concept Explainer (pre-check + review modes only)
+  var _explainerState = React.useState({ topic: '', loading: false, response: '', error: '' });
+  var explainerData = _explainerState[0]; var setExplainerData = _explainerState[1];
+  var _explainerInput = React.useState('');
+  var explainerInput = _explainerInput[0]; var setExplainerInput = _explainerInput[1];
+
+  function explainConcept(topic) {
+    if (!topic || !topic.trim()) return;
+    if (typeof props.callGemini !== 'function') {
+      setExplainerData({ topic: topic, loading: false, response: '', error: 'Explainer unavailable: callGemini not provided.' });
+      return;
+    }
+    setExplainerData({ topic: topic, loading: true, response: '', error: '' });
+    var grade = props.gradeLevel || 'middle school';
+    var prompt = 'You are a patient teacher explaining a concept to a ' + grade + ' student who needs a quick refresher. Explain "' + topic + '" in 60-90 words. Use simple, concrete language. Use an analogy or example if it helps. End with one sentence checking the student\'s understanding (e.g., "Does that make sense?"). Plain text only — no headings, no bullet points.';
+    Promise.resolve(props.callGemini(prompt, false)).then(function (raw) {
+      var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+      setExplainerData({ topic: topic, loading: false, response: txt.trim(), error: '' });
+    }).catch(function (err) {
+      setExplainerData({ topic: topic, loading: false, response: '', error: err && err.message ? err.message : 'Explainer failed.' });
+    });
+  }
+
+  var modeBanner = _showModeBanner ? React.createElement('div', {
+    key: 'mode-banner',
+    className: 'rounded-xl border-2 p-4 mb-2 ' + (_quizMode === 'pre-check' ? 'border-amber-300 bg-amber-50' : _quizMode === 'review' ? 'border-purple-300 bg-purple-50' : 'border-sky-300 bg-sky-50'),
+    role: 'region',
+    'aria-label': _modeStrat.label,
+  },
+    React.createElement('div', { className: 'flex items-center gap-2 mb-1' },
+      React.createElement('span', { className: 'text-xl', 'aria-hidden': 'true' }, _modeStrat.icon),
+      React.createElement('h3', { className: 'font-black text-base ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.label),
+      React.createElement('span', { className: 'ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (_quizMode === 'pre-check' ? 'bg-amber-200 text-amber-900' : _quizMode === 'review' ? 'bg-purple-200 text-purple-900' : 'bg-sky-200 text-sky-900') }, _quizMode)
+    ),
+    _modeStrat.render.intro && React.createElement('p', { className: 'text-sm leading-relaxed ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.render.intro)
+  ) : null;
+
+  var explainerPanel = _aiExplainerEnabled ? React.createElement('div', {
+    key: 'ai-explainer',
+    className: 'rounded-xl border border-indigo-200 bg-indigo-50 p-4 mb-6',
+    role: 'region',
+    'aria-label': 'AI concept explainer',
+  },
+    React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+      React.createElement('span', { className: 'text-lg', 'aria-hidden': 'true' }, '🤖'),
+      React.createElement('h4', { className: 'font-bold text-sm text-indigo-900' }, 'Don\'t know a concept? Ask for a quick explainer.')
+    ),
+    React.createElement('p', { className: 'text-xs text-indigo-800 mb-2' },
+      'Type any concept from the quiz (or any prior knowledge you\'re unsure about). The AI will give you a 60-90 word explanation tuned to your grade level.'
+    ),
+    React.createElement('div', { className: 'flex items-stretch gap-2' },
+      React.createElement('input', {
+        type: 'text',
+        value: explainerInput,
+        onChange: function (ev) { setExplainerInput(ev.target.value); },
+        onKeyDown: function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); explainConcept(explainerInput); } },
+        placeholder: _quizMode === 'pre-check' ? 'e.g., "what plants need to grow"' : 'e.g., "photosynthesis"',
+        className: 'flex-1 min-w-0 px-3 py-2 rounded-lg border border-indigo-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400',
+        'aria-label': 'Concept to explain',
+      }),
+      React.createElement('button', {
+        type: 'button',
+        onClick: function () { explainConcept(explainerInput); },
+        disabled: !explainerInput.trim() || explainerData.loading,
+        className: 'px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-colors',
+      }, explainerData.loading ? 'Explaining…' : 'Explain')
+    ),
+    explainerData.response && React.createElement('div', { className: 'mt-3 p-3 bg-white border border-indigo-200 rounded-lg' },
+      React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, explainerData.topic),
+      React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainerData.response),
+      typeof props.callTTS === 'function' && React.createElement('button', {
+        type: 'button',
+        onClick: function () { props.callTTS(explainerData.response); },
+        className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
+        'aria-label': 'Read aloud',
+      }, '🔊 Read aloud')
+    ),
+    explainerData.error && React.createElement('div', { className: 'mt-3 p-2 bg-rose-50 border border-rose-200 rounded text-xs text-rose-800' },
+      explainerData.error
+    )
+  ) : null;
+
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, modeBanner, explainerPanel, /*#__PURE__*/React.createElement("div", {
     className: "bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-teal-800 flex-grow"

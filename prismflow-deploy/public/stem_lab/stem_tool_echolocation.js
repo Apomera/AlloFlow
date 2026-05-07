@@ -4611,6 +4611,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         // ── Topic-accent hero band per tab ──
         (function() {
           var TAB_META = {
+            sonar:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.10)',  icon: '\uD83E\uDD87', title: 'Sonar Vision \u2014 hearing as imaging',                  hint: 'Bats emit ultrasonic clicks (20\u2013120 kHz, above human hearing) and read echo delay + frequency shift to build a 3D scene at 100+ targets per second. Donald Griffin coined \u201Cecholocation\u201D in 1944.' },
+            cave3d:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD26', title: '3D Cave \u2014 map by sound',                            hint: 'Each click bounces off cave walls; differential delay between ear canals plus interaural intensity differences locate a surface to ~1 cm. The bat\u2019s brain solves this geometry in real time on a peanut-sized chip.' },
+            waves:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0A', title: 'Sound Waves \u2014 wavelength meets target size',         hint: '\u03BB = c / f. At 60 kHz in air, \u03BB \u2248 5.7 mm \u2014 fine enough to resolve a moth\u2019s wing. Lower frequencies travel further but resolve coarser; higher = sharper but absorbed quickly. Trade-off baked in.' },
+            doppler:  { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',   icon: '\uD83D\uDEA8', title: 'Doppler Effect \u2014 the moving-prey signature',         hint: 'Moths fluttering toward the bat compress echo frequency; moving away stretches it. Horseshoe bats compensate by lowering their call to KEEP echoes in their auditory sweet spot \u2014 a biological phase-locked loop.' },
+            biology:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83E\uDDA0', title: 'Bat Biology \u2014 the auditory specialist',              hint: 'Larynx fires clicks; outer ear pinnae shape reception; massive auditory cortex parses returns. Bats hear over 8 octaves where humans manage ~10. Tongue-clicking humans (Daniel Kish) use the same trick crudely.' },
+            ecology:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: 'Acoustic Ecology \u2014 a soundscape we can\u2019t hear',  hint: 'Tropical rainforests are loud in the ultrasonic. White-nose syndrome has killed 6+ million North American bats since 2006; insect populations downstream are visibly affected. A frequency band we never knew about.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.sonar;
+          return h('div', {
+            style: {
+              margin: '0 0 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)' + (isDark ? ', #0f172a' : ''),
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: (isDark ? '#cbd5e1' : '#475569'), fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
             sonar:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDD87', title: 'Sonar vision \u2014 listen with the bat',  hint: 'Bats "see" by emitting ultrasonic clicks (20\u201380 kHz) and timing the echoes. Time-of-flight \u00d7 speed of sound = distance. Microsecond timing = millimeter resolution.' },
             cave3d:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD26', title: '3D cave \u2014 navigate without sight',    hint: 'Steer through a procedural cave using only echolocation feedback. Bats add Doppler-shift compensation to track moving prey while flying.' },
             waves:   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  icon: '\uD83C\uDF0A', title: 'Sound waves \u2014 the physics',          hint: 'Frequency, wavelength, amplitude. Speed of sound in air \u2248 343 m/s. Higher frequency = better resolution but shorter range (atmospheric absorption rises steeply).' },

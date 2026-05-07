@@ -568,6 +568,7 @@ window.SelHub = window.SelHub || {
       var celebrate = ctx.celebrate;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
+      var onSafetyFlag = ctx.onSafetyFlag || null;
       var t = ctx.t;
       var band = ctx.gradeBand || 'elementary';
 
@@ -624,6 +625,7 @@ window.SelHub = window.SelHub || {
       var matcherFeeling  = d.matcherFeeling || '';
       var matcherResult   = d.matcherResult || null;
       var matcherLoading  = d.matcherLoading || false;
+      var _matcherTier    = d._matcherTier || 0;
 
       // Practice log state
       var practiceLog     = d.practiceLog || []; // { strategyId, type, timestamp, rating, note }
@@ -2059,11 +2061,30 @@ window.SelHub = window.SelHub || {
                 '3. Give one quick tip to get started\n\n' +
                 'Use ' + (band === 'elementary' ? 'simple, warm language for ages 5-10' : band === 'middle' ? 'relatable teen language' : 'mature, evidence-based language') + '. ' +
                 'Format each as a numbered item. Be specific to their situation, not generic.';
-              callGemini(prompt).then(function(resp) {
-                upd({ matcherResult: resp, matcherLoading: false });
+              // Route student input through SelHub.safeCoach (assesses Tier 0–3,
+              // pushes flags for Tier 2+, attaches crisis info to Tier 3 response).
+              // Falls back to direct callGemini when safety layer isn't loaded.
+              var matchFn = (window.SelHub && window.SelHub.safeCoach)
+                ? function() {
+                    return window.SelHub.safeCoach({
+                      studentMessage: matcherFeeling,
+                      coachPrompt: prompt,
+                      toolId: 'coping',
+                      band: band,
+                      callGemini: callGemini,
+                      codename: ctx.codename || 'student',
+                      conversationHistory: [],
+                      onSafetyFlag: onSafetyFlag
+                    });
+                  }
+                : function() {
+                    return callGemini(prompt).then(function(r) { return { response: r, tier: 0, showCrisis: false }; });
+                  };
+              matchFn().then(function(result) {
+                upd({ matcherResult: result.response, matcherLoading: false, _matcherTier: result.tier || 0 });
                 if (soundEnabled) sfxCorrect();
               }).catch(function() {
-                upd({ matcherResult: 'I couldn\'t match strategies right now. Try browsing the Library tab and picking what feels right!', matcherLoading: false });
+                upd({ matcherResult: 'I couldn\'t match strategies right now. Try browsing the Library tab and picking what feels right!', matcherLoading: false, _matcherTier: 0 });
               });
             },
             disabled: matcherLoading,
@@ -2072,6 +2093,9 @@ window.SelHub = window.SelHub || {
             Sparkles ? h(Sparkles, { size: 16 }) : '\u2728',
             matcherLoading ? 'Finding the best strategies...' : 'Match Me!'
           ),
+
+          // Surface crisis resources inline when triangulated assessment hits Tier 3
+          (_matcherTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
 
           matcherResult && h('div', { style: { padding: 20, borderRadius: 14, background: '#14b8a611', border: '1px solid #14b8a633' } },
             h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 } },

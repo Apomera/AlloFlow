@@ -638,6 +638,7 @@ window.SelHub = window.SelHub || {
         var callGemini = ctx.callGemini;
         var callTTS = ctx.callTTS;
         var band = ctx.gradeBand || 'elementary';
+        var onSafetyFlag = ctx.onSafetyFlag || null;
 
         // ── Tool-scoped state ──
         var d = (ctx.toolData && ctx.toolData.journal) || {};
@@ -665,6 +666,7 @@ window.SelHub = window.SelHub || {
 
         // Insights state
         var aiInsight      = d.aiInsight || '';
+        var _journalTier   = d._journalTier || 0;
         var aiLoading      = d.aiLoading || false;
 
         // Badges state
@@ -1801,6 +1803,7 @@ window.SelHub = window.SelHub || {
               // AI Insight
               h('div', { role: 'region', 'aria-label': 'AI-powered mood insight', 'aria-live': 'polite', 'aria-busy': aiLoading ? 'true' : 'false', style: { padding: 16, borderRadius: 14, background: ACCENT_DIM, border: '1px solid ' + ACCENT_MED, marginBottom: 16 } },
                 h('div', { style: { fontSize: 12, color: ACCENT, fontWeight: 700, marginBottom: 8 } }, '\uD83E\uDD16 AI-Powered Insight'),
+                (_journalTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, band) : null,
                 aiInsight ? h('div', null,
                   h('p', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.6 } }, aiInsight),
                   callTTS && h('button', { 'aria-label': 'Read aloud',
@@ -1822,8 +1825,32 @@ window.SelHub = window.SelHub || {
                     var prompt = 'You are a supportive SEL coach for a ' + band + ' school student. Based on their recent mood check-ins: [' + moodSummary + ']. Provide a brief, warm, ' +
                       (band === 'elementary' ? 'simple and encouraging' : band === 'middle' ? 'relatable and supportive' : 'thoughtful and empowering') +
                       ' insight about patterns you notice. Keep it to 2-3 sentences. Be specific about what you observe. Do NOT diagnose or give medical advice.';
-                    callGemini(prompt, false, false, 0.8).then(function(resp) {
-                      upd({ aiInsight: resp, aiLoading: false });
+                    // Run insight generation + triangulated safety assessment in parallel.
+                    // The mood summary may include user-entered trigger text, so we
+                    // assess it the same way coping/upstander/crisiscompanion do.
+                    var safetyP = (window.SelHub && window.SelHub.assessSafety)
+                      ? window.SelHub.assessSafety(moodSummary, band, 'journal', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+                      : Promise.resolve({ tier: 0, rationale: '', category: 'none' });
+                    Promise.all([
+                      callGemini(prompt, false, false, 0.8),
+                      safetyP
+                    ]).then(function(results) {
+                      var resp = results[0];
+                      var safety = results[1] || { tier: 0 };
+                      if (safety.tier >= 2 && onSafetyFlag) {
+                        onSafetyFlag({
+                          category: 'ai_journal_' + (safety.category || 'concerning'),
+                          match: safety.rationale || 'SEL journal safety concern',
+                          severity: safety.tier >= 3 ? 'critical' : 'medium',
+                          source: 'sel_journal',
+                          context: moodSummary.substring(0, 100),
+                          timestamp: new Date().toISOString(),
+                          aiGenerated: true,
+                          confidence: safety.tier >= 3 ? 0.9 : 0.7,
+                          tier: safety.tier
+                        });
+                      }
+                      upd({ aiInsight: resp, aiLoading: false, _journalTier: safety.tier || 0 });
                       awardXP(10);
                       tryAwardBadge('ai_reflector');
                       addToast('Insight generated!', 'success');

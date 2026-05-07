@@ -3090,9 +3090,20 @@
           var polWords = polished.split(/\s+/).filter(Boolean).length;
           if (polished && polWords >= rawWords * 0.75) {
             setDraft(polished);
+          } else if (typeof p.addToast === 'function') {
+            // Polish came back too short / suspicious — keep raw and
+            // tell the student rather than failing silently.
+            p.addToast('Polish skipped — your text is unchanged.');
           }
         })
-        .catch(function() { /* silent — student keeps raw text */ })
+        .catch(function() {
+          // Network or quota failure — surface it via toast so the user
+          // knows Polish didn't run, instead of staring at an unchanged
+          // textarea after a long spinner.
+          if (typeof p.addToast === 'function') {
+            p.addToast('✨ Polish couldn\'t reach the cleaner. Your text is unchanged.');
+          }
+        })
         .then(function() { setIsPolishing(false); });
     }
 
@@ -3254,12 +3265,16 @@
           })() : null
         ),
         // Text area + voice button
-        h('div', { style: { position: 'relative', marginBottom: '8px' } },
+        h('div', {
+          style: { position: 'relative', marginBottom: '8px' },
+          'aria-busy': isPolishing ? 'true' : 'false'
+        },
           h('textarea', {
             value: draft,
             onChange: function(e) { setDraft(e.target.value); },
             placeholder: 'Take your time. Anything goes. Tip: wrap a {word} in braces to make it a fill-in-the-blank for self-quiz later.',
             'aria-label': 'Reflection text',
+            disabled: isPolishing,
             rows: 6,
             style: {
               width: '100%',
@@ -4318,6 +4333,8 @@
           )
         ),
         error ? h('div', {
+          role: 'alert',
+          'aria-live': 'assertive',
           style: {
             padding: '8px 12px',
             background: 'rgba(220,38,38,0.1)',
@@ -9934,6 +9951,7 @@
           onError: function(e) {
             console.warn('[AlloHaven] speech recognition error:', e);
             setIsRecording(false);
+            surfaceVoiceError(e);
           },
           onEnd: function() {
             setIsRecording(false);
@@ -9963,6 +9981,7 @@
         rec.onerror = function(e) {
           console.warn('[AlloHaven] speech recognition error:', e);
           setIsRecording(false);
+          surfaceVoiceError(e);
         };
         rec.onend = function() {
           setIsRecording(false);
@@ -9973,7 +9992,28 @@
       } catch (err) {
         console.warn('[AlloHaven] could not start speech recognition:', err);
         setIsRecording(false);
+        surfaceVoiceError(err);
       }
+    }
+
+    // Translate SpeechRecognition error events into a user-facing toast
+    // so the mic button never silently goes idle. Distinguishes the
+    // permission-denied case from generic mic failures so students get
+    // an actionable hint.
+    function surfaceVoiceError(e) {
+      var code = (e && (e.error || e.name)) || '';
+      var msg;
+      if (code === 'not-allowed' || code === 'NotAllowedError' || code === 'service-not-allowed') {
+        msg = '🎤 Microphone permission denied. Check your browser settings, then try again.';
+      } else if (code === 'no-speech') {
+        // Common, non-actionable — skip the toast.
+        return;
+      } else if (code === 'audio-capture' || code === 'NotFoundError') {
+        msg = '🎤 No microphone found. Plug one in or use the keyboard.';
+      } else {
+        msg = '🎤 Voice input hit a snag. Try again or use the keyboard.';
+      }
+      addToast(msg);
     }
 
     function stopVoiceCapture() {
@@ -16856,6 +16896,8 @@
           }, 'Your entries so far are short or recent — keep journaling and a richer view will surface here.') : null,
           // AI error / fallback notice
           ins.error ? h('p', {
+            role: 'alert',
+            'aria-live': 'polite',
             style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic' }
           }, ins.error) : null,
           // Local stats card — always shown, even on AI failure
@@ -16948,6 +16990,9 @@
         // text. Falls back to a local capitalize-after-period heuristic
         // when callGemini isn't available.
         callGemini: callGemini,
+        // Surface error toasts (e.g. polish-network-fail, voice-mic-denied)
+        // so silent failures get told instead of leaving the user staring.
+        addToast: addToast,
         onSubmit: function(text, promptId, mood, promptTextOverride) {
           submitReflection(text, promptId, mood, promptTextOverride);
         },
@@ -17027,9 +17072,16 @@
               }, '✕')
             )
           ),
-          entries.length === 0 ? h('p', {
-            style: { color: palette.textDim, textAlign: 'center', padding: '24px 12px', fontStyle: 'italic' }
-          }, "No journal entries yet. Write your first reflection — your past words will live here.") : null,
+          entries.length === 0 ? h('div', {
+            style: {
+              padding: '32px 20px', background: palette.surface,
+              border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center'
+            }
+          },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '40px', marginBottom: '10px' } }, '📝'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              "No journal entries yet. Write your first reflection — your past words will live here.")
+          ) : null,
           h('ul', {
             role: 'list',
             'aria-label': 'Journal entries',
@@ -17267,15 +17319,29 @@
           unlockedItems.length > 0 ? h('div', { style: { marginBottom: '14px' } },
             h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
               '✓ Unlocked · ' + unlockedItems.length),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-              unlockedItems.map(function(a) { return renderRow(a, true); })
+            h('ul', {
+              role: 'list',
+              'aria-label': 'Unlocked achievements',
+              style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
+            },
+              unlockedItems.map(function(a) {
+                return h('li', { key: 'ach-li-u-' + a.id, role: 'listitem', style: { listStyle: 'none' } },
+                  renderRow(a, true));
+              })
             )
           ) : null,
           lockedItems.length > 0 ? h('div', { style: { paddingTop: unlockedItems.length > 0 ? '14px' : 0, borderTop: unlockedItems.length > 0 ? '1px solid ' + palette.border : 'none' } },
             h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' } },
               '○ Still ahead · ' + lockedItems.length),
-            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
-              lockedItems.map(function(a) { return renderRow(a, false); })
+            h('ul', {
+              role: 'list',
+              'aria-label': 'Locked achievements',
+              style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
+            },
+              lockedItems.map(function(a) {
+                return h('li', { key: 'ach-li-l-' + a.id, role: 'listitem', style: { listStyle: 'none' } },
+                  renderRow(a, false));
+              })
             )
           ) : null
         )
@@ -17939,7 +18005,11 @@
           ) : null,
 
           // Stories list
-          h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+          sortedStories.length > 0 ? h('ul', {
+            role: 'list',
+            'aria-label': 'Stories',
+            style: { display: 'flex', flexDirection: 'column', gap: '10px', listStyle: 'none', padding: 0, margin: 0 }
+          },
             sortedStories.map(function(s) {
               var walkable = isWalkable(s);
               var stepCount = (s.steps || []).length;
@@ -17955,12 +18025,14 @@
                 else if (days === 1) lastReviewedLabel = 'Walked yesterday';
                 else lastReviewedLabel = 'Walked ' + days + ' days ago';
               }
-              return h('div', {
+              return h('li', {
                 key: 'story-row-' + s.id,
+                role: 'listitem',
                 style: {
                   display: 'flex', gap: '10px', alignItems: 'center',
                   padding: '12px', background: palette.surface,
-                  border: '1px solid ' + palette.border, borderRadius: '8px'
+                  border: '1px solid ' + palette.border, borderRadius: '8px',
+                  listStyle: 'none'
                 }
               },
                 h('div', { style: { flex: 1, minWidth: 0 } },
@@ -17989,7 +18061,7 @@
                 }, 'Edit')
               );
             })
-          )
+          ) : null
         )
       );
     }
