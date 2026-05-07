@@ -433,7 +433,8 @@
       memoryDecks:    true,
       stories:        true,
       journals:       true,
-      bossEncounters: true   // Phase 3b.history
+      bossEncounters: true,  // Phase 3b.history
+      realms:         true   // Realm Builder (Phase B+C)
     },
 
     // ── Arcade (Phase 3a) ──
@@ -8434,6 +8435,11 @@
         body: 'Each decoration can hold up to 30 seconds of voice — explain what it means, quiz yourself out loud, or leave a future-you reminder. Add a short caption and the caption prints in your packet (audio plays on screen).'
       },
       {
+        emoji: '🌱',
+        title: 'Build a realm in the Arcade',
+        body: 'Spend a few tokens in the Arcade to open Realm Builder: pick a topic, then drop your cards into a world that grows. Each card needs a justification — the realm evolves visually when your reasoning lands. Realms persist across sessions, so a Civics or Cell-Biology realm can grow over weeks.'
+      },
+      {
         emoji: '🐱',
         title: 'Meet your buddy',
         body: 'Pick a critter — cat, fox, owl, turtle, or baby dragon. Four color palettes, your name. They notice your activity, celebrate your wins, and gently prompt review when a deck is due.'
@@ -9245,7 +9251,7 @@
       var printDefaults = {
         companion: true, achievements: true, goals: true,
         memoryDecks: true, stories: true, journals: true,
-        bossEncounters: true
+        bossEncounters: true, realms: true
       };
       if (!merged.printOptions || typeof merged.printOptions !== 'object') {
         merged.printOptions = Object.assign({}, printDefaults);
@@ -9274,6 +9280,17 @@
       } else if (merged.bossEncounters.length > 20) {
         // Keep the most recent 20; older records discarded on load.
         merged.bossEncounters = merged.bossEncounters.slice(-20);
+      }
+      // Realm Builder — persistent realms. Backfill the array on older
+      // saves so the new modal sections render without checking for
+      // undefined. Cap at 12 (most-recent-by-update-time wins) — base64
+      // canvas images can blow localStorage if uncapped.
+      if (!Array.isArray(merged.realms)) {
+        merged.realms = [];
+      } else if (merged.realms.length > 12) {
+        merged.realms = merged.realms.slice().sort(function(a, b) {
+          return (a.updatedAt || '').localeCompare(b.updatedAt || '');
+        }).slice(-12);
       }
       return merged;
     });
@@ -14218,7 +14235,8 @@
       { id: 'memoryDecks',    emoji: '📖', label: 'Memory decks',          hint: 'Flashcards, acronyms, notes attached to decorations.' },
       { id: 'stories',        emoji: '📜', label: 'Stories',               hint: 'Walkable story chains across decorations.' },
       { id: 'journals',       emoji: '📝', label: 'Recent reflections',    hint: 'The last several journal entries.' },
-      { id: 'bossEncounters', emoji: '🐉', label: 'Boss Encounters',       hint: 'Past arcade encounters with strongest justification per session.' }
+      { id: 'bossEncounters', emoji: '🐉', label: 'Boss Encounters',       hint: 'Past arcade encounters with strongest justification per session.' },
+      { id: 'realms',         emoji: '🌍', label: 'Realms',                hint: 'Worlds you\'ve built, their zones, milestones, and per-zone justifications.' }
     ];
     // ─────────────────────────────────────────────────
     // ARCADE HUB (Phase 3a) — token-time-gated launcher for modes
@@ -14511,6 +14529,19 @@
                 // Phase 3b.history — plugin calls this with an encounter
                 // record at win/loss/expired/forfeit. AlloHaven persists.
                 onEncounterRecord: function(record) { return recordEncounter(record); },
+                // Realm Builder — incremental persistence; called on every
+                // zone-add. AlloHaven upserts by id and caps total realms.
+                realms: state.realms || [],
+                onRealmUpdate: function(realm) { return saveOrUpdateRealm(realm); },
+                // Single-realm print: plugin can call this from a wrap-up
+                // screen so students/teachers print just the one realm.
+                onPrintRealm: function(realmId) {
+                  setStateField('printScope', { type: 'realm', realmId: realmId });
+                  setTimeout(function() {
+                    try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+                    setTimeout(function() { setStateField('printScope', null); }, 200);
+                  }, 80);
+                },
                 // Phase 3b.full.e — plugin calls this to grant tokens for
                 // arcade rewards (e.g. class-encounter wins). Plugin
                 // de-dups via metadata before calling. AlloHaven persists
@@ -15004,6 +15035,12 @@
           if (et === 0) return { count: 0, label: 'no encounters yet' };
           if (et <= 8) return { count: ec, label: ec + ' encounter' + (ec === 1 ? '' : 's') };
           return { count: ec, label: 'newest 8 of ' + et };
+        }
+        if (secId === 'realms') {
+          var rl = s.realms || [];
+          if (rl.length === 0) return { count: 0, label: 'no realms yet' };
+          var totalZones = rl.reduce(function(sum, r) { return sum + ((r.zones || []).length); }, 0);
+          return { count: rl.length, label: rl.length + ' realm' + (rl.length === 1 ? '' : 's') + ', ' + totalZones + ' total zone' + (totalZones === 1 ? '' : 's') };
         }
       } catch (e) { /* defensive: never let preview math crash the modal */ }
       return null;
@@ -16548,7 +16585,137 @@
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
               draftStories.map(function(s) { return renderStoryOverviewRow(s, palette); })
             )
-          ) : null
+          ) : null,
+
+          // ── My Realms (Realm Builder) ──
+          // Persistent constructive artifacts. Each row shows the canvas
+          // thumbnail, name, topic, zone count, last-updated, and
+          // Continue/Delete actions. Empty state mirrors the dashed-border
+          // pattern used elsewhere in the modal.
+          (function() {
+            var realmsList = state.realms || [];
+            var hasAnyOtherSection = withContent.length > 0 || allStories.length > 0;
+            return h('div', {
+              style: {
+                paddingTop: hasAnyOtherSection ? '14px' : 0,
+                borderTop: hasAnyOtherSection ? '1px solid ' + palette.border : 'none',
+                marginTop: hasAnyOtherSection ? '14px' : 0
+              }
+            },
+              h('div', {
+                style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }
+              }, '🌍 My Realms' + (realmsList.length > 0 ? ' · ' + realmsList.length : '')),
+              realmsList.length === 0 ? h('div', {
+                style: { padding: '24px 16px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center' }
+              },
+                h('div', { 'aria-hidden': 'true', style: { fontSize: '36px', marginBottom: '8px' } }, '🌍'),
+                h('p', { style: { color: palette.textDim, fontSize: '12px', lineHeight: '1.55', margin: 0 } },
+                  'Build a realm in the Arcade to see it here. Each realm holds your card placements, justifications, and an evolving canvas.')
+              ) : h('ul', {
+                role: 'list',
+                'aria-label': 'My Realms',
+                style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
+              },
+                realmsList.slice().sort(function(a, b) {
+                  return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+                }).map(function(realm) {
+                  return h('li', { key: 'rlm-li-' + realm.id, role: 'listitem', style: { listStyle: 'none' } },
+                    renderRealmOverviewRow(realm, palette));
+                })
+              )
+            );
+          })()
+        )
+      );
+    }
+
+    // Memory-overview row for a single realm. Mirrors renderStoryOverviewRow
+    // and renderOverviewRow patterns: thumbnail (the canvas) + label/topic/
+    // zone-count/last-updated + action buttons.
+    function renderRealmOverviewRow(realm, palette) {
+      var zoneCount = (realm.zones || []).length;
+      var milestoneCount = (realm.milestones || []).length;
+      var updated = realm.updatedAt ? new Date(realm.updatedAt) : null;
+      var dayDiff = updated ? Math.floor((Date.now() - updated.getTime()) / (24 * 60 * 60 * 1000)) : null;
+      var updatedLabel;
+      if (dayDiff === null) updatedLabel = 'No timestamp';
+      else if (dayDiff <= 0) updatedLabel = 'Updated today';
+      else if (dayDiff === 1) updatedLabel = 'Updated yesterday';
+      else updatedLabel = 'Updated ' + dayDiff + ' days ago';
+
+      function continueRealm() {
+        // Set the resume sentinel that RealmBuilderMain reads on mount.
+        window.__alloHavenRealmResume = { realmId: realm.id };
+        // Open the arcade hub and launch the realm-builder mode.
+        setStateField('activeModal', 'arcade');
+        // Defer one tick so the modal mounts before the session starts.
+        setTimeout(function() {
+          launchArcadeMode('realm-builder', 10);
+        }, 30);
+      }
+      function printThisRealm() {
+        // Mirror renderPrintCard's pattern — set printScope to this realm,
+        // fire window.print() on the next tick so React paints first, then
+        // clear printScope after the dialog closes.
+        setStateField('printScope', { type: 'realm', realmId: realm.id });
+        setTimeout(function() {
+          try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+          setTimeout(function() { setStateField('printScope', null); }, 200);
+        }, 80);
+      }
+      function confirmDelete() {
+        if (window.confirm && !window.confirm('Delete this realm? Zones and justifications cannot be recovered.')) return;
+        deleteRealm(realm.id);
+      }
+
+      return h('div', {
+        style: {
+          display: 'flex', gap: '10px', alignItems: 'center',
+          padding: '10px 12px', background: palette.surface,
+          border: '1px solid ' + (realm.isComplete ? palette.accent : palette.border),
+          borderLeft: '3px solid ' + (realm.isComplete ? palette.accent : palette.border),
+          borderRadius: '8px'
+        }
+      },
+        // Thumbnail (the canvas)
+        realm.canvas ? h('img', {
+          src: realm.canvas,
+          alt: '',
+          'aria-hidden': 'true',
+          style: { width: '64px', height: '64px', objectFit: 'cover', borderRadius: '6px', border: '1px solid ' + palette.border, flexShrink: 0 }
+        }) : h('div', {
+          'aria-hidden': 'true',
+          style: { width: '64px', height: '64px', flexShrink: 0, fontSize: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px' }
+        }, '🌍'),
+        // Center: name/topic/stats
+        h('div', { style: { flex: 1, minWidth: 0 } },
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+            (realm.name || realm.topic || 'Untitled realm') + (realm.isComplete ? ' ✓' : '')),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
+            realm.topic && realm.topic !== realm.name ? realm.topic + ' · ' : '',
+            zoneCount + ' zone' + (zoneCount === 1 ? '' : 's'),
+            milestoneCount > 0 ? ' · ' + milestoneCount + ' milestone' + (milestoneCount === 1 ? '' : 's') : ''
+          ),
+          h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } }, updatedLabel)
+        ),
+        // Action buttons
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
+          h('button', {
+            onClick: continueRealm,
+            'aria-label': 'Continue ' + (realm.name || realm.topic || 'realm'),
+            style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+          }, '▶ Continue'),
+          h('button', {
+            onClick: printThisRealm,
+            'aria-label': 'Print ' + (realm.name || realm.topic || 'realm'),
+            title: 'Print just this realm (single packet for IEP / parent meeting)',
+            style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🖨'),
+          h('button', {
+            onClick: confirmDelete,
+            'aria-label': 'Delete ' + (realm.name || realm.topic || 'realm'),
+            style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🗑')
         )
       );
     }
@@ -19742,6 +19909,106 @@
       );
     }
 
+    // Single-realm print — focused output for IEP / parent packets where
+    // one ongoing project (e.g. "the cell" or "ancient Rome") is the
+    // evidence. Mirrors renderPrintCard's pattern: standalone scope,
+    // branched at the top of renderPrintPacket.
+    function renderPrintRealm(realmId) {
+      var realm = (state.realms || []).filter(function(r) { return r.id === realmId; })[0];
+      if (!realm) return null;
+      var zones = realm.zones || [];
+      var milestones = realm.milestones || [];
+      var resonant = zones.filter(function(z) { return z.score >= 18; });
+      var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var sectionTitleStyle = { fontSize: '14px', fontWeight: 700, marginBottom: '8px', borderBottom: '1.5px solid #333', paddingBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' };
+      var subTitleStyle = { fontSize: '13px', fontWeight: 700, marginBottom: '4px', color: '#000', marginTop: '14px' };
+      var bodyTextStyle = { fontSize: '11px', color: '#333', lineHeight: 1.5, margin: 0 };
+      var smallMetaStyle = { fontSize: '9px', color: '#666', fontStyle: 'italic' };
+      return h('div', {
+        className: 'ah-print-packet',
+        'aria-hidden': 'true'
+      },
+        // Cover header
+        h('div', { style: { borderBottom: '2px solid #000', paddingBottom: '8px', marginBottom: '14px' } },
+          h('h1', { style: { fontSize: '22px', margin: '0 0 4px 0', fontWeight: 800, color: '#000' } },
+            '🌍 ' + (realm.name || realm.topic || 'Untitled realm')
+            + (realm.isComplete ? ' ✓' : '')),
+          h('p', { style: { margin: 0, fontSize: '12px', color: '#444' } },
+            'Topic: ' + (realm.topic || '?')
+            + ' · ' + zones.length + ' zone' + (zones.length === 1 ? '' : 's') + ' placed'
+            + (milestones.length > 0 ? ' · ' + milestones.length + ' milestone' + (milestones.length === 1 ? '' : 's') : '')),
+          h('p', { style: smallMetaStyle },
+            (realm.createdAt ? 'Started ' + new Date(realm.createdAt).toLocaleDateString() : '')
+            + (realm.updatedAt ? ' · last updated ' + new Date(realm.updatedAt).toLocaleDateString() : '')
+            + ' · printed ' + dateStr)
+        ),
+        // Canvas
+        realm.canvas ? h('img', {
+          src: realm.canvas, alt: 'Canvas for ' + (realm.name || realm.topic),
+          style: { display: 'block', width: '100%', maxHeight: '380px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #999', margin: '0 0 14px 0' }
+        }) : null,
+        // Milestones
+        milestones.length > 0 ? h('div', {
+          style: { padding: '8px 12px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px', color: '#222', marginBottom: '14px' }
+        },
+          h('strong', null, 'Milestones reached: '),
+          milestones.map(function(m, i) {
+            return h('span', { key: 'pmi-' + i }, (i > 0 ? ' · ' : '') + m.emoji + ' ' + m.label
+              + (m.achievedAt ? ' (' + new Date(m.achievedAt).toLocaleDateString() + ')' : ''));
+          })
+        ) : null,
+        // Resonant placements
+        resonant.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+          h('h2', { style: sectionTitleStyle }, '🌟 Resonant Placements · ' + resonant.length),
+          resonant.map(function(z, i) {
+            return h('div', { key: 'pri-' + i, className: 'ah-print-section', style: { marginBottom: '8px', padding: '8px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+              h('p', { style: { margin: '0 0 2px 0', fontSize: '12px', fontWeight: 700, color: '#000' } },
+                z.cardName + ' (' + z.verbLabel + ')'
+                + (z.partnerCardName ? ' ↔ ' + z.partnerCardName : '')
+                + ' · score ' + z.score + '/20'),
+              h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', margin: '2px 0 0 0' }) },
+                '"' + (z.justification || '') + '"'),
+              z.followUp ? h('p', { style: { margin: '4px 0 0 0', fontSize: '10px', color: '#666' } },
+                '↳ Follow-up: ' + z.followUp) : null
+            );
+          })
+        ) : null,
+        // Full zone list
+        zones.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+          h('h2', { style: sectionTitleStyle }, 'All Zones · ' + zones.length),
+          h('ol', { style: { paddingLeft: '22px', margin: '4px 0' } },
+            zones.map(function(z) {
+              var addedStr = z.addedAt ? new Date(z.addedAt).toLocaleDateString() : '';
+              return h('li', { key: 'pra-' + z.id, style: { marginBottom: '8px', fontSize: '11px', color: '#222', lineHeight: 1.5 } },
+                h('strong', null, z.cardName),
+                ' · ', z.verbLabel,
+                z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
+                h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
+                  'score ' + z.score + '/20' + (addedStr ? ' · ' + addedStr : '')
+                  + (z.score >= 18 ? ' · 🌟' : '')
+                  + (z.transformed ? ' · canvas evolved' : '')),
+                z.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
+                  '"' + z.justification + '"') : null,
+                z.ackText ? h('div', { style: { fontSize: '10px', color: '#666', marginTop: '2px' } },
+                  '↳ ' + z.ackText) : null
+              );
+            })
+          )
+        ) : h('p', { style: smallMetaStyle }, 'No zones placed yet.'),
+        // Signature lines
+        h('div', { style: { marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Reviewed with: '),
+            h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' ')),
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Date: '),
+            h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '120px', padding: '0 4px' } }, ' '))
+        ),
+        h('div', { style: { marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
+          'AlloHaven Realm Builder · single-realm packet · printed ' + dateStr)
+      );
+    }
+
     function renderPrintPacket() {
       // Phase 2p.17 — when printScope is a card, render that instead
       if (state.printScope && state.printScope.type === 'card' && state.printScope.decorationId) {
@@ -19751,6 +20018,10 @@
       // student's full AlloHaven journey).
       if (state.printScope && state.printScope.type === 'tenure') {
         return renderPrintTenure();
+      }
+      // Single-realm print — Realm Builder artifact for IEP / parent packets.
+      if (state.printScope && state.printScope.type === 'realm' && state.printScope.realmId) {
+        return renderPrintRealm(state.printScope.realmId);
       }
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
       var allStories = state.stories || [];
@@ -20287,6 +20558,79 @@
         // recent encounters with strongest justification per session.
         // Useful in IEP / parent review packets as evidence of concept-
         // articulation work.
+        // ── Realms section (Realm Builder constructive artifacts) ──
+        // Each realm renders as: header (name+topic+stats) + canvas thumbnail
+        // + milestones strip + resonant placements callout + full zone list
+        // with justifications. Page-break between realms so each gets its
+        // own page in the printed packet — useful for IEP packets that may
+        // pull a single project realm.
+        (state.printOptions && state.printOptions.realms === false) ? null :
+        ((state.realms || []).length > 0 ? (state.realms || []).slice().sort(function(a, b) {
+          return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+        }).map(function(realm, ri) {
+          var zones = realm.zones || [];
+          var milestones = realm.milestones || [];
+          var resonant = zones.filter(function(z) { return z.score >= 18; });
+          return h('div', {
+            key: 'pr-' + realm.id,
+            className: 'ah-print-section' + (ri > 0 ? ' ah-print-page-break' : ''),
+            style: sectionStyle
+          },
+            h('h2', { style: sectionTitleStyle },
+              '🌍 Realm · ' + (realm.name || realm.topic || 'untitled')
+              + (realm.isComplete ? ' ✓' : '')),
+            h('p', { style: smallMetaStyle },
+              'Topic: ' + (realm.topic || '?')
+              + ' · ' + zones.length + ' zone' + (zones.length === 1 ? '' : 's')
+              + (milestones.length > 0 ? ' · ' + milestones.length + ' milestone' + (milestones.length === 1 ? '' : 's') : '')
+              + (realm.updatedAt ? ' · last updated ' + new Date(realm.updatedAt).toLocaleDateString() : '')),
+            // Canvas image
+            realm.canvas ? h('img', {
+              src: realm.canvas, alt: 'Realm canvas for ' + (realm.name || realm.topic),
+              style: { display: 'block', width: '100%', maxHeight: '320px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #999', margin: '10px 0' }
+            }) : null,
+            // Milestones strip
+            milestones.length > 0 ? h('div', {
+              style: { padding: '6px 10px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px', color: '#222', marginBottom: '10px' }
+            },
+              h('strong', null, 'Milestones: '),
+              milestones.map(function(m, i) {
+                return h('span', { key: 'pm-' + i }, (i > 0 ? ' · ' : '') + m.emoji + ' ' + m.label);
+              })
+            ) : null,
+            // Resonant placements (score ≥ 18)
+            resonant.length > 0 ? h('div', { style: { marginBottom: '10px' } },
+              h('h3', { style: subTitleStyle }, '🌟 Resonant placements · ' + resonant.length),
+              resonant.map(function(z, i) {
+                return h('p', { key: 'pres-' + i, style: Object.assign({}, bodyTextStyle, { margin: '2px 0 6px 0' }) },
+                  h('strong', null, z.cardName + ' (' + z.verbLabel + ')'),
+                  z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
+                  ' · score ' + z.score + '/20',
+                  h('br'),
+                  h('span', { style: { fontStyle: 'italic', color: '#444' } }, '"' + (z.justification || '') + '"')
+                );
+              })
+            ) : null,
+            // Full zone list
+            zones.length > 0 ? h('div', null,
+              h('h3', { style: subTitleStyle }, 'Zones · ' + zones.length),
+              h('ol', { style: { paddingLeft: '20px', margin: '4px 0' } },
+                zones.map(function(z) {
+                  var addedStr = z.addedAt ? new Date(z.addedAt).toLocaleDateString() : '';
+                  return h('li', { key: 'pz-' + z.id, style: { marginBottom: '6px', fontSize: '11px', color: '#222', lineHeight: 1.5 } },
+                    h('strong', null, z.cardName),
+                    ' · ', z.verbLabel,
+                    z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
+                    h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
+                      'score ' + z.score + '/20' + (addedStr ? ' · ' + addedStr : '')),
+                    z.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
+                      '"' + z.justification + '"') : null
+                  );
+                })
+              )
+            ) : h('p', { style: smallMetaStyle }, 'No zones placed yet.')
+          );
+        }) : null),
         (state.printOptions && state.printOptions.bossEncounters === false) ? null :
         ((state.bossEncounters || []).length > 0 ? h('div', { style: sectionStyle },
           h('h2', { style: sectionTitleStyle },

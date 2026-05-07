@@ -275,7 +275,8 @@ window.SelHub = window.SelHub || {
       archetype: 'withdrawn',
       bodyVocab: { calm: 'arms relaxed', upset: 'arms crossed, looking at table', 'closing-down': 'turned slightly away', listening: 'leaning slightly forward', regretful: 'shoulders soft, eye contact returning' },
       voice: 'Aoede',
-      speechPattern: 'speaks quietly, uses short sentences, sometimes trails off when overwhelmed'
+      speechPattern: 'speaks quietly, uses short sentences, sometimes trails off when overwhelmed',
+      visualDescription: 'a 12-year-old Latina middle-schooler with shoulder-length wavy brown hair, modest school clothes, soft warm features'
     },
     'jordan': {
       id: 'jordan',
@@ -286,7 +287,8 @@ window.SelHub = window.SelHub || {
       archetype: 'defensive',
       bodyVocab: { calm: 'casual posture', upset: 'arms crossed, jaw set', 'closing-down': 'looking away, small shrugs', listening: 'eye contact returning, less rigid', regretful: 'head down, voice softer' },
       voice: 'Puck',
-      speechPattern: 'fast, sometimes sarcastic when defensive, gets quieter when actually heard'
+      speechPattern: 'fast, sometimes sarcastic when defensive, gets quieter when actually heard',
+      visualDescription: 'a 12-year-old white middle-schooler boy with short sandy-brown hair, casual school clothes (t-shirt, hoodie), boyish features'
     },
     'aria': {
       id: 'aria',
@@ -297,7 +299,8 @@ window.SelHub = window.SelHub || {
       archetype: 'anxious',
       bodyVocab: { calm: 'open posture, watchful', upset: 'shoulders up, looking at hands', 'closing-down': 'long pause, eyes down', listening: 'small nods, leaning in', regretful: 'soft sigh, eye contact returning' },
       voice: 'Leda',
-      speechPattern: 'careful word choice, sometimes pauses to find a word, occasional softer English than her thoughts'
+      speechPattern: 'careful word choice, sometimes pauses to find a word, occasional softer English than her thoughts',
+      visualDescription: 'a 13-year-old Iranian girl with long dark hair pulled back into a low ponytail, modest school clothes (cardigan over a t-shirt), thoughtful watchful eyes'
     },
     'devon': {
       id: 'devon',
@@ -308,7 +311,8 @@ window.SelHub = window.SelHub || {
       archetype: 'frustrated',
       bodyVocab: { calm: 'relaxed but watchful', upset: 'tense shoulders, closed fists', 'closing-down': 'turning away, jaw set', listening: 'unclenching hands, looking up', regretful: 'softer face, head down' },
       voice: 'Fenrir',
-      speechPattern: 'short sentences when angry, longer ones when calm, sometimes drops volume when really listening'
+      speechPattern: 'short sentences when angry, longer ones when calm, sometimes drops volume when really listening',
+      visualDescription: 'a 13-year-old Black middle-schooler boy with short fade haircut, athletic build, school basketball team t-shirt, expressive eyes'
     },
     'sam': {
       id: 'sam',
@@ -319,7 +323,8 @@ window.SelHub = window.SelHub || {
       archetype: 'conflict-avoidant',
       bodyVocab: { calm: 'arms loose, half-smile', upset: 'wrapping arms around self', 'closing-down': 'almost whispered words, looking past you', listening: 'small steady nods', regretful: 'meeting your eyes, voice steadier' },
       voice: 'Zephyr',
-      speechPattern: 'thoughtful, sometimes apologetic before stating a real need, gets clearer when supported'
+      speechPattern: 'thoughtful, sometimes apologetic before stating a real need, gets clearer when supported',
+      visualDescription: 'a 14-year-old white nonbinary teen with short choppy haircut, casual gender-neutral school clothes (button-up over t-shirt), gentle features'
     },
     'riley': {
       id: 'riley',
@@ -330,7 +335,8 @@ window.SelHub = window.SelHub || {
       archetype: 'manipulative',
       bodyVocab: { calm: 'poised, slight smirk', upset: 'eye roll, hand on hip', 'closing-down': 'fake laugh, looking at phone', listening: 'softer face, real curiosity flickering', regretful: 'rare moment of stillness' },
       voice: 'Kore',
-      speechPattern: 'breezy and dismissive on the surface, occasional cracks where the anxiety shows'
+      speechPattern: 'breezy and dismissive on the surface, occasional cracks where the anxiety shows',
+      visualDescription: 'a 12-year-old white middle-schooler girl with long blonde hair, trendy school clothes (cropped sweater, layered necklaces), poised expression'
     },
     'theo': {
       id: 'theo',
@@ -341,7 +347,8 @@ window.SelHub = window.SelHub || {
       archetype: 'withdrawn',
       bodyVocab: { calm: 'still, focused gaze on objects rather than faces', upset: 'rocking slightly, hands together', 'closing-down': 'silence, eyes elsewhere', listening: 'occasional precise eye contact', regretful: 'still, then carefully spoken words' },
       voice: 'Charon',
-      speechPattern: 'literal, precise, sometimes longer pauses than expected, often more honest than the room is ready for'
+      speechPattern: 'literal, precise, sometimes longer pauses than expected, often more honest than the room is ready for',
+      visualDescription: 'a 13-year-old white autistic boy with neat short brown hair, button-up shirt over t-shirt, thoughtful expression with gaze slightly off-center'
     },
     'casey': {
       id: 'casey',
@@ -352,9 +359,41 @@ window.SelHub = window.SelHub || {
       archetype: 'frustrated',
       bodyVocab: { calm: 'guarded but present', upset: 'jaw set, eyes flashing', 'closing-down': 'turning whole body away', listening: 'softening but still watchful', regretful: 'a long exhale, voice quieter' },
       voice: 'Orus',
-      speechPattern: 'sharp when defensive, slower when believed, sometimes a small joke when starting to trust'
+      speechPattern: 'sharp when defensive, slower when believed, sometimes a small joke when starting to trust',
+      visualDescription: 'a 13-year-old Black middle-schooler girl with long box braids pulled back, hoodie or layered casual school clothes, watchful guarded eyes'
     }
   };
+
+  // ══════════════════════════════════════════════════════════════
+  // ── Portrait generation (Imagen + image-edit pipeline) ──
+  // Pattern from personas_module.js (generateCharacterPortrait +
+  // updatePersonaImageReaction). Base portrait via callImagen,
+  // mood variants via window.callGeminiImageEdit with identity-
+  // preserving prompts. Cached per (characterId × mood) on toolData.
+  // ══════════════════════════════════════════════════════════════
+
+  var ART_STYLE = 'warm watercolor illustration in the style of a contemporary middle-grade book cover, soft palette, friendly age-appropriate, neutral background';
+
+  var MOOD_VISUAL = {
+    'calm':         'looking calmly forward, relaxed posture, neutral expression',
+    'upset':        'looking upset and frustrated, brow slightly furrowed, posture tense, arms perhaps crossed',
+    'closing-down': 'looking down or away, withdrawn, body slightly turned, eyes guarded',
+    'listening':    'leaning slightly forward, eyes attentive and softer, present and engaged',
+    'regretful':    'softer eyes, head slightly down, regret showing on the face, body language softer'
+  };
+
+  function _basePortraitPrompt(char) {
+    return 'Portrait of ' + char.visualDescription + '. ' + (MOOD_VISUAL.calm) + '. Style: ' + ART_STYLE + '. Centered composition. STRICTLY NO TEXT, no letters, no watermarks, no speech bubbles.';
+  }
+
+  function _moodEditPrompt(char, mood) {
+    return 'Edit this character portrait to show them ' + (MOOD_VISUAL[mood] || MOOD_VISUAL.calm) + '.\n'
+      + 'Guidelines:\n'
+      + '1. KEEP IDENTITY: Maintain the exact same character features, hair, clothing, ethnicity, age (' + char.visualDescription + ').\n'
+      + '2. ALLOW EXPRESSION CHANGE: Change pose, head angle, eye direction, and facial expression to match.\n'
+      + '3. STRICTLY NO TEXT: No letters, no words, no speech bubbles, no watermarks.\n'
+      + '4. Keep the warm illustration style consistent.';
+  }
 
   // ══════════════════════════════════════════════════════════════
   // ── Scenarios ──
@@ -568,6 +607,7 @@ window.SelHub = window.SelHub || {
       var h = React.createElement;
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
+      var callImagen = ctx.callImagen;
       var awardXP = ctx.awardXP;
       var addToast = ctx.addToast;
       var celebrate = ctx.celebrate;
@@ -598,6 +638,102 @@ window.SelHub = window.SelHub || {
       var _userTier = d._userTier || 0;
       var ttsEnabled = d.ttsEnabled !== false;
       var endingType = d.ending || null;
+      // Portrait cache: portraits[characterId] = { calm, upset, 'closing-down', listening, regretful, _loading: { mood: bool } }
+      var portraits = d.portraits || {};
+      // Cross-session memory: memory[characterId] = { memoryNote, relationshipScore, scenariosPlayed, lastInteraction, lastScenarioId }
+      // Persists across sessions via ctx.update → ctx.toolData.conflicttheater pipeline.
+      var memory = d.memory || {};
+
+      // ──────────────────────────────────────────────────────────
+      // Helper: ensure portrait exists for (characterId, mood)
+      // Lazily generates and caches. Idempotent (no-op if loading or
+      // already cached). Fires-and-forgets via upd().
+      // ──────────────────────────────────────────────────────────
+      function _patchPortrait(charId, patch) {
+        // Re-pull current portraits each time (avoid stale closure overwrites
+        // when multiple ensurePortrait calls race).
+        var cur = (ctx.toolData && ctx.toolData.conflicttheater && ctx.toolData.conflicttheater.portraits) || {};
+        var curEntry = cur[charId] || {};
+        var updated = Object.assign({}, curEntry, patch);
+        var updatedAll = Object.assign({}, cur);
+        updatedAll[charId] = updated;
+        upd('portraits', updatedAll);
+      }
+      function _setLoading(charId, mood, isLoading) {
+        var cur = (ctx.toolData && ctx.toolData.conflicttheater && ctx.toolData.conflicttheater.portraits) || {};
+        var curEntry = cur[charId] || {};
+        var loading = Object.assign({}, curEntry._loading || {});
+        if (isLoading) loading[mood] = true;
+        else delete loading[mood];
+        _patchPortrait(charId, { _loading: loading });
+      }
+
+      function ensurePortrait(charId, mood) {
+        if (!callImagen) return;
+        var char = CAST[charId];
+        if (!char) return;
+        var entry = portraits[charId] || {};
+        if (entry[mood]) return; // already cached
+        if (entry._loading && entry._loading[mood]) return; // in flight
+
+        _setLoading(charId, mood, true);
+
+        if (mood === 'calm') {
+          callImagen(_basePortraitPrompt(char), 320, 0.85)
+            .then(function(url) {
+              if (url) _patchPortrait(charId, { calm: url });
+              _setLoading(charId, mood, false);
+            })
+            .catch(function() { _setLoading(charId, mood, false); });
+          return;
+        }
+
+        // Non-calm mood: need calm first as the base for image-edit.
+        var calmUrl = entry.calm;
+        var calmPromise;
+        if (calmUrl) {
+          calmPromise = Promise.resolve(calmUrl);
+        } else {
+          // Generate calm and cache it under 'calm' (separately from the requested mood).
+          calmPromise = callImagen(_basePortraitPrompt(char), 320, 0.85).then(function(url) {
+            if (url) _patchPortrait(charId, { calm: url });
+            return url;
+          });
+        }
+
+        calmPromise.then(function(baseUrl) {
+          if (!baseUrl) { _setLoading(charId, mood, false); return; }
+          if (!window.callGeminiImageEdit) {
+            // Edit endpoint unavailable: fall back to calm portrait for this mood.
+            var fallbackPatch = {};
+            fallbackPatch[mood] = baseUrl;
+            _patchPortrait(charId, fallbackPatch);
+            _setLoading(charId, mood, false);
+            return;
+          }
+          try {
+            var b64 = baseUrl.split(',')[1];
+            window.callGeminiImageEdit(_moodEditPrompt(char, mood), b64, 320, 0.85)
+              .then(function(editedUrl) {
+                var patch = {};
+                patch[mood] = editedUrl || baseUrl;
+                _patchPortrait(charId, patch);
+                _setLoading(charId, mood, false);
+              })
+              .catch(function() {
+                var patch = {};
+                patch[mood] = baseUrl;
+                _patchPortrait(charId, patch);
+                _setLoading(charId, mood, false);
+              });
+          } catch (e) {
+            var patch = {};
+            patch[mood] = baseUrl;
+            _patchPortrait(charId, patch);
+            _setLoading(charId, mood, false);
+          }
+        }).catch(function() { _setLoading(charId, mood, false); });
+      }
 
       // ──────────────────────────────────────────────────────────
       // Helper: send turn
@@ -623,7 +759,7 @@ window.SelHub = window.SelHub || {
           for (var i = newDialogue.length - 1; i >= 0; i--) {
             if (newDialogue[i].speaker === otherCid) { otherCharLast = newDialogue[i].text; break; }
           }
-          return { cid: cid, char: char, prompt: _buildTurnPrompt(char, role, scenario, charMoods[cid] || 'calm', newDialogue, otherCharLast, msg, null) };
+          return { cid: cid, char: char, prompt: _buildTurnPrompt(char, role, scenario, charMoods[cid] || 'calm', newDialogue, otherCharLast, msg, memory[cid] || null) };
         });
 
         // Parallel: all character calls + safety assessment
@@ -679,6 +815,8 @@ window.SelHub = window.SelHub || {
             if (ttsEnabled && callTTS && parsed.text) {
               ttsQueue.push({ text: parsed.text, voice: p.char.voice });
             }
+            // Lazy-generate portrait for new mood (idempotent — no-op if cached)
+            ensurePortrait(p.cid, parsed.mood);
           });
 
           // Average harmony delta across responders, clamp 0..100
@@ -705,6 +843,43 @@ window.SelHub = window.SelHub || {
             else { awardXP && awardXP('conflicttheater', 15); }
           }
           upd(stateUpdate);
+
+          // Cross-session memory: when scenario ends, generate a per-character
+          // memory note via Gemini and persist to ctx.toolData.conflicttheater.memory.
+          // Fire-and-forget — does not block UI. Falls back gracefully on failure.
+          if (ending && callGemini) {
+            scenario.characterIds.forEach(function(cid) {
+              var ch = CAST[cid];
+              if (!ch) return;
+              var transcript = updatedDialogue.map(function(m) {
+                var who = m.speaker === 'student' ? 'Mediator' : ((CAST[m.speaker] && CAST[m.speaker].name) || m.speaker);
+                return who + ': ' + m.text;
+              }).join('\n');
+              var memoryPrompt = 'You are ' + ch.name + ', a ' + ch.age + '-year-old middle-schooler. You just had a mediated conversation about: "' + scenario.title + '" (' + scenario.setup.slice(0, 120) + '...). The outcome was: ' + ending + ' (final harmony ' + Math.round(newHarmony) + '/100).\n\n'
+                + 'Conversation:\n' + transcript.slice(-1500) + '\n\n'
+                + 'Write 1 to 2 sentences (UNDER 200 characters total) that you, ' + ch.name + ', would carry as your memory of this student mediator. Focus on what they tried, how it landed for you, and what feels unfinished if anything. Write in your own voice as ' + ch.name + ', not as a third-person observer. No quotation marks. Plain text only.';
+              callGemini(memoryPrompt).then(function(noteRaw) {
+                if (!noteRaw) return;
+                var note = String(noteRaw).trim().replace(/^["']+|["']+$/g, '');
+                if (note.length > 220) note = note.slice(0, 217) + '...';
+                // Pull current memory from latest state (avoid stale closure)
+                var curMem = (ctx.toolData && ctx.toolData.conflicttheater && ctx.toolData.conflicttheater.memory) || {};
+                var prev = curMem[cid] || { relationshipScore: 0, scenariosPlayed: 0 };
+                var deltaThisSession = newHarmony - scenario.initialHarmony;
+                var nextEntry = {
+                  memoryNote: note,
+                  relationshipScore: (prev.relationshipScore || 0) + Math.round(deltaThisSession),
+                  scenariosPlayed: (prev.scenariosPlayed || 0) + 1,
+                  lastInteraction: new Date().toISOString(),
+                  lastScenarioId: scenario.id,
+                  lastEnding: ending
+                };
+                var nextMem = Object.assign({}, curMem);
+                nextMem[cid] = nextEntry;
+                upd('memory', nextMem);
+              }).catch(function() { /* silent */ });
+            });
+          }
 
           // Sequential TTS
           if (ttsQueue.length && callTTS) {
@@ -807,6 +982,20 @@ window.SelHub = window.SelHub || {
             })
           ),
           h('p', { style: { fontSize: 10, color: '#64748b', textAlign: 'center', margin: 0 } }, 'Click any scenario to read the full setup and start.'),
+          // Cross-session memory control: forget characters' memory of you
+          Object.keys(memory).length > 0 && h('div', { style: { textAlign: 'center', marginTop: 16, paddingTop: 14, borderTop: '1px solid #1e293b' } },
+            h('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 6 } },
+              'Characters remember ' + Object.keys(memory).length + ' past conversation' + (Object.keys(memory).length === 1 ? '' : 's') + ' with you.'
+            ),
+            h('button', {
+              'aria-label': 'Make characters forget our past conversations',
+              onClick: function() {
+                var ok = (typeof window.confirm === 'function') ? window.confirm('Make all characters forget your past conversations? This cannot be undone.') : true;
+                if (ok) { upd('memory', {}); announceSR('All character memories cleared.'); }
+              },
+              style: { padding: '4px 10px', background: 'transparent', color: '#64748b', border: '1px solid #334155', borderRadius: 8, fontSize: 10, cursor: 'pointer' }
+            }, '🧹 Reset all character memory')
+          ),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
         );
       }
@@ -845,12 +1034,24 @@ window.SelHub = window.SelHub || {
             h('div', { style: { fontSize: 12, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 } }, 'You\'ll be talking with'),
             charsInPlay.map(function(c) {
               var role = scenario.characterRoles[c.id] || '';
-              return h('div', { key: c.id, style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 6 } },
-                h('div', { style: { fontSize: 28, lineHeight: 1, flexShrink: 0 } }, c.avatar),
+              var mem = memory[c.id];
+              var entry = portraits[c.id] || {};
+              var calmUrl = entry.calm || null;
+              return h('div', { key: c.id, style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 } },
+                calmUrl
+                  ? h('img', { src: calmUrl, alt: c.name, style: { width: 44, height: 44, borderRadius: 8, objectFit: 'cover', flexShrink: 0 } })
+                  : h('div', { style: { fontSize: 28, lineHeight: 1, flexShrink: 0, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, c.avatar),
                 h('div', { style: { flex: 1 } },
-                  h('div', { style: { fontSize: 12, fontWeight: 700, color: '#f1f5f9' } }, c.name + ' (' + c.age + ')'),
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+                    h('span', { style: { fontSize: 12, fontWeight: 700, color: '#f1f5f9' } }, c.name + ' (' + c.age + ')'),
+                    mem && h('span', { 'aria-label': 'You have talked with ' + c.name + ' before', title: 'Last interaction: ' + (mem.lastInteraction || '').slice(0, 10) + ' (relationship score ' + (mem.relationshipScore >= 0 ? '+' : '') + (mem.relationshipScore || 0) + ')', style: { fontSize: 9, padding: '2px 6px', borderRadius: 6, background: mem.relationshipScore >= 0 ? '#134e4a' : '#7f1d1d', color: mem.relationshipScore >= 0 ? '#86efac' : '#fca5a5', fontWeight: 700 } }, '🌱 You\'ve met before')
+                  ),
                   role && h('div', { style: { fontSize: 10, color: '#94a3b8', marginBottom: 2, fontStyle: 'italic' } }, role),
-                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, c.backstory)
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5 } }, c.backstory),
+                  mem && mem.memoryNote && h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.5, marginTop: 4, padding: '6px 8px', background: '#0f172a', borderLeft: '2px solid #14b8a6', borderRadius: 4 } },
+                    h('span', { style: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, display: 'block', marginBottom: 2 } }, c.name + ' remembers'),
+                    h('span', { style: { fontStyle: 'italic' } }, '"' + mem.memoryNote + '"')
+                  )
                 )
               );
             })
@@ -906,6 +1107,30 @@ window.SelHub = window.SelHub || {
                 );
               })
             )
+          ),
+          // What each character will remember (memory generation is async — show
+          // loading until it arrives, then the actual note)
+          h('div', { style: { padding: 14, background: '#1e293b', border: '1px solid #334155', borderRadius: 12, marginBottom: 16 } },
+            h('div', { style: { fontSize: 11, color: '#94a3b8', fontWeight: 700, marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } }, 'What they\'ll carry forward'),
+            scenario.characterIds.map(function(cid) {
+              var ch = CAST[cid];
+              if (!ch) return null;
+              var mem = memory[cid];
+              var entry = portraits[cid] || {};
+              var portraitUrl = entry.regretful || entry.calm || entry.listening || null;
+              var thisSessionNote = mem && mem.lastScenarioId === scenario.id && mem.lastEnding === endingType;
+              return h('div', { key: cid, style: { display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 } },
+                portraitUrl
+                  ? h('img', { src: portraitUrl, alt: ch.name, style: { width: 36, height: 36, borderRadius: 8, objectFit: 'cover', flexShrink: 0 } })
+                  : h('span', { style: { fontSize: 22, lineHeight: 1, flexShrink: 0, width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' } }, ch.avatar),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 2 } }, ch.name + ' will remember:'),
+                  thisSessionNote
+                    ? h('div', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, fontStyle: 'italic' } }, '"' + mem.memoryNote + '"')
+                    : h('div', { style: { fontSize: 11, color: '#64748b', fontStyle: 'italic' } }, ch.name + ' is still thinking about this conversation...')
+                )
+              );
+            })
           ),
           // Coach overlay
           scenario.coachingNotes && scenario.coachingNotes.length > 0 && h('div', { style: { padding: 14, background: '#0c4a6e', border: '1px solid #0369a1', borderRadius: 12, marginBottom: 16 } },
@@ -964,18 +1189,49 @@ window.SelHub = window.SelHub || {
         ? window.SelHub.renderCrisisResources(h, band)
         : null;
 
+      // Lazy-trigger calm portrait generation for both characters on scene entry.
+      // Idempotent — no-op if already cached or in flight.
+      characters.forEach(function(c) { ensurePortrait(c.id, 'calm'); });
+      // Also pre-fetch the current mood variant if it differs from calm.
+      characters.forEach(function(c) {
+        var m = charMoods[c.id] || 'calm';
+        if (m !== 'calm') ensurePortrait(c.id, m);
+      });
+
+      // Render a single character's stage portrait: img if cached, emoji fallback.
+      function _renderStagePortrait(c, sideStyle) {
+        var mood = charMoods[c.id] || 'calm';
+        var entry = portraits[c.id] || {};
+        var url = entry[mood] || entry.calm || null;
+        var isLoading = !!(entry._loading && (entry._loading[mood] || entry._loading.calm));
+        var portraitNode;
+        if (url) {
+          portraitNode = h('img', {
+            src: url,
+            alt: c.name + ', ' + mood,
+            className: 'ct-mood-pulse',
+            key: 'img-' + c.id + '-' + mood,
+            style: { width: 88, height: 88, borderRadius: 12, objectFit: 'cover', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', transition: 'opacity 0.3s', display: 'block', margin: '0 auto' }
+          });
+        } else {
+          portraitNode = h('div', {
+            className: 'ct-portrait ct-portrait-' + mood + ' ct-mood-pulse',
+            key: 'emoji-' + c.id + '-' + mood,
+            style: isLoading ? { opacity: 0.6 } : null
+          }, c.avatar);
+        }
+        return h('div', { style: Object.assign({ position: 'absolute', top: 70, textAlign: 'center', pointerEvents: 'none' }, sideStyle) },
+          portraitNode,
+          h('div', { style: { fontSize: 11, fontWeight: 700, color: url ? '#f1f5f9' : '#1e293b', marginTop: 4, textShadow: url ? '0 1px 3px rgba(0,0,0,0.6)' : 'none' } }, c.name),
+          isLoading && !url && h('div', { style: { fontSize: 9, color: '#64748b', marginTop: 2 } }, 'sketching...')
+        );
+      }
+
       // Stage with scene SVG + overlaid character portraits
       var stage = h('div', { className: 'ct-stage', style: { marginBottom: 12 } },
         scene.svg(h),
-        // Character portraits overlaid on the scene
-        h('div', { style: { position: 'absolute', top: 80, left: '12%', textAlign: 'center', pointerEvents: 'none' } },
-          h('div', { className: 'ct-portrait ct-portrait-' + (charMoods[characters[0].id] || 'calm') + ' ct-mood-pulse', key: 'p0-' + (charMoods[characters[0].id] || 'calm') }, characters[0].avatar),
-          h('div', { style: { fontSize: 11, fontWeight: 700, color: '#1e293b', marginTop: 2 } }, characters[0].name)
-        ),
-        h('div', { style: { position: 'absolute', top: 80, right: '12%', textAlign: 'center', pointerEvents: 'none' } },
-          h('div', { className: 'ct-portrait ct-portrait-' + (charMoods[characters[1].id] || 'calm') + ' ct-mood-pulse', key: 'p1-' + (charMoods[characters[1].id] || 'calm') }, characters[1].avatar),
-          h('div', { style: { fontSize: 11, fontWeight: 700, color: '#1e293b', marginTop: 2 } }, characters[1].name)
-        )
+        _renderStagePortrait(characters[0], { left: '8%' }),
+        _renderStagePortrait(characters[1], { right: '8%' })
       );
 
       // Harmony meter + per-character mood pips
