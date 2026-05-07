@@ -41,6 +41,9 @@
   }
 
   waitForRegistry(function () {
+    // Always attach shared helpers, even if this mode is already registered
+    // (a hot-reload could leave the mode flag set but the helpers missing).
+    attachSharedHelpers();
     if (window.AlloHavenArcade.isRegistered && window.AlloHavenArcade.isRegistered('boss-encounter')) {
       return;
     }
@@ -55,7 +58,7 @@
   // The `editPrompt` field is used by Phase 3b.5 for image-to-image scene
   // transformation on critical Sparks (score 18-20). Injected into a larger
   // prompt that ties the transformation back to the topic + card.
-  var SPARK_VERBS = [
+  var COMBAT_VERBS = [
     { id: 'illuminate', label: 'Illuminate', emoji: '💡', hint: 'Reveal something hidden about the topic.',
       editPrompt: 'brighter, with warm light emerging from within, hidden details revealed' },
     { id: 'connect',    label: 'Connect',    emoji: '🔗', hint: 'Bridge this card to a different idea or example.',
@@ -67,10 +70,178 @@
     { id: 'challenge',  label: 'Challenge',  emoji: '⚡', hint: 'Push back on an assumption or test the topic.',
       editPrompt: 'with internal structure being clarified, layers parted to show what\'s inside' }
   ];
+  // Legacy alias — old code paths that reference SPARK_VERBS by name still work.
+  var SPARK_VERBS = COMBAT_VERBS;
+
+  // Realm-Builder mode (sibling plugin) consumes these constructive verbs.
+  // Same shape as COMBAT_VERBS so the shared grading helper is verb-agnostic.
+  // editPrompt phrasings skew constructive (growth, light, integration) instead
+  // of destructive (wound, force, fracture).
+  var BUILDING_VERBS = [
+    { id: 'place',     label: 'Place',     emoji: '📌', hint: 'Drop this card into a specific spot in the realm.',
+      editPrompt: 'with a new landmark settling into the scene, integrated naturally into the existing environment' },
+    { id: 'connect',   label: 'Connect',   emoji: '🔗', hint: 'Link this card to another already in the realm.',
+      editPrompt: 'with a path, bridge, or current of light tracing between two regions of the scene' },
+    { id: 'cultivate', label: 'Cultivate', emoji: '🌱', hint: 'Show how this card grows or sustains the realm.',
+      editPrompt: 'with new growth taking root: foliage, structures, or signs of life sprouting in a region' },
+    { id: 'shelter',   label: 'Shelter',   emoji: '🏛️', hint: 'Show how this card protects or hosts something.',
+      editPrompt: 'with sheltering forms emerging — canopies, walls, or warm interiors that house the inhabitants' },
+    { id: 'disrupt',   label: 'Disrupt',   emoji: '🌪️', hint: 'Introduce productive tension or change to the realm.',
+      editPrompt: 'with weather, change, or productive friction sweeping through one region — not damage, but a turning point' }
+  ];
 
   // Cap on image-to-image transforms per encounter so API cost stays bounded
   // even if the student lands many critical Sparks.
   var MAX_VISUAL_TRANSFORMS = 4;
+
+  // ── Shared card helpers (used by both Boss Encounter and Realm Builder) ──
+  // Build a unified card shape from heterogeneous sources (decoration cards
+  // from AlloHaven, glossary entries from the active lesson). Lifted to
+  // module scope in Phase A so sibling arcade modes can reuse them via
+  // window.AlloHavenArcade.cardHelpers.
+  function decorationToCard(d) {
+    return {
+      id: 'card-deco-' + d.id,
+      source: 'decoration',
+      name: d.templateLabel || d.template || 'card',
+      imageBase64: d.imageBase64 || null,
+      conceptDef: (d.studentReflection || '').trim() || null,
+      tier: null,
+      raw: d
+    };
+  }
+  function glossaryEntryToCard(g, idx) {
+    var img = g.image || null;
+    if (img && img.indexOf('data:') !== 0 && img.length > 200) {
+      // bare base64 — add the prefix so the <img> renders
+      img = 'data:image/png;base64,' + img;
+    }
+    return {
+      id: 'card-gloss-' + (g.term || ('idx-' + idx)).replace(/\s+/g, '-').toLowerCase() + '-' + idx,
+      source: 'glossary',
+      name: g.term || 'concept',
+      imageBase64: img,
+      conceptDef: g.def || null,
+      tier: g.tier || null,
+      raw: g
+    };
+  }
+
+  // ── Shared rubric-response parser (fallback when AlloFlowVoice missing) ──
+  function parseFallback(raw) {
+    var defaults = { score: 10, ackText: '', followUp: '' };
+    if (!raw || typeof raw !== 'string') return defaults;
+    var cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+    var firstBrace = cleaned.indexOf('{');
+    var lastBrace = cleaned.lastIndexOf('}');
+    if (firstBrace === -1 || lastBrace === -1) return defaults;
+    try {
+      var p = JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
+      var s = Number(p.score);
+      if (!isFinite(s) || s < 1) s = 1; if (s > 20) s = 20;
+      return {
+        score: Math.round(s),
+        ackText: typeof p.ackText === 'string' ? p.ackText : '',
+        followUp: typeof p.followUp === 'string' ? p.followUp : ''
+      };
+    } catch (e) { return defaults; }
+  }
+
+  // ── Shared grading helper ──
+  // Card + verb + justification → AI rubric grade. Decoupled from any
+  // particular game state machine: returns {score, ackText, followUp, raw}.
+  // frameAs swaps a single line in the rubric so the same primitive powers
+  // both combat (BRIDGE between card and topic) and building (FIT between
+  // card and realm-being-built). Pedagogy stays identical — generous,
+  // formative, supports distant transfer.
+  function gradeCardJustification(ctx, opts) {
+    if (!ctx || typeof ctx.callGemini !== 'function') {
+      return Promise.reject(new Error('AI grader unavailable.'));
+    }
+    opts = opts || {};
+    var card = opts.card || {};
+    var verb = opts.verb || {};
+    var text = (opts.justification || '').trim();
+    var topic = opts.topic || '';
+    var frameAs = opts.frameAs === 'building' ? 'building' : 'combat';
+    var context = opts.context || {};
+
+    var rubric = {
+      bossTopic: topic,
+      cardName: card.name,
+      cardSource: card.source,
+      conceptDef: card.conceptDef || '',
+      tier: card.tier || 'Tier 2',
+      actionVerb: verb.label
+    };
+
+    var prompt;
+    // Combat path can use AlloFlowVoice's audio rubric helper (text-only adapt).
+    // Building always uses the inline path so the FIT framing is preserved.
+    if (frameAs === 'combat' && window.AlloFlowVoice && typeof window.AlloFlowVoice.buildJustificationRubricPrompt === 'function') {
+      var audioPrompt = window.AlloFlowVoice.buildJustificationRubricPrompt(rubric);
+      prompt = audioPrompt
+        .replace(/"transcript":[^,]+,\s*/, '')
+        .replace('evaluating a student\'s spoken justification', 'evaluating a student\'s written justification');
+      prompt += '\n\nSTUDENT JUSTIFICATION:\n' + text;
+    } else {
+      var coreLine = (frameAs === 'building')
+        ? 'Score 1-20 the QUALITY OF THE FIT between this card and the realm being built.'
+        : 'Score 1-20 the QUALITY OF THE BRIDGE between the card and the topic.';
+      var rewardLine = (frameAs === 'building')
+        ? 'Reward specific placement, vivid sensory detail, and connections to existing zones (' + (context.existingZoneCount || 0) + ' placed so far). A card that names its niche, partners, or function in the realm earns a high score.'
+        : 'Equal reward for distant transfer: a creative bridge between an unrelated card and the topic deserves the SAME high score as a textbook-direct connection.';
+      prompt = [
+        'Score this student\'s justification for a card play in an educational game.',
+        'Topic: ' + topic,
+        'Card: ' + card.name + ' (' + card.source + (card.tier ? ', tier: ' + card.tier : '') + ')',
+        card.conceptDef ? 'Concept definition: ' + card.conceptDef : null,
+        'Action: ' + verb.label,
+        'Justification: ' + text,
+        '',
+        coreLine,
+        rewardLine,
+        'Be GENEROUS with autistic students whose answers may be literal-but-correct.',
+        '',
+        'Respond with ONLY valid JSON, no surrounding prose, no markdown fences:',
+        '{ "score": <int 1-20>, "ackText": "1 short supportive sentence", "followUp": "1 short follow-up question" }'
+      ].filter(function (l) { return l !== null; }).join('\n');
+    }
+
+    return Promise.resolve(ctx.callGemini(prompt)).then(function (raw) {
+      var parsed;
+      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.parseRubricResponse === 'function') {
+        parsed = window.AlloFlowVoice.parseRubricResponse(raw);
+      } else {
+        parsed = parseFallback(raw);
+      }
+      parsed.raw = raw;
+      return parsed;
+    });
+  }
+
+  // ── Expose shared helpers on the AlloHavenArcade registry ──
+  // Idempotent: only sets each helper once. Realm Builder consumes these via
+  // window.AlloHavenArcade.gradeCardJustification etc., so load order between
+  // sibling plugin files doesn't matter as long as both run before the user
+  // opens the arcade.
+  function attachSharedHelpers() {
+    if (!window.AlloHavenArcade) return;
+    if (!window.AlloHavenArcade.cardHelpers) {
+      window.AlloHavenArcade.cardHelpers = {
+        decorationToCard: decorationToCard,
+        glossaryEntryToCard: glossaryEntryToCard
+      };
+    }
+    if (!window.AlloHavenArcade.gradeCardJustification) {
+      window.AlloHavenArcade.gradeCardJustification = gradeCardJustification;
+    }
+    if (!window.AlloHavenArcade.COMBAT_VERBS)   window.AlloHavenArcade.COMBAT_VERBS = COMBAT_VERBS;
+    if (!window.AlloHavenArcade.BUILDING_VERBS) window.AlloHavenArcade.BUILDING_VERBS = BUILDING_VERBS;
+    if (!window.AlloHavenArcade.parseRubricFallback) {
+      window.AlloHavenArcade.parseRubricFallback = parseFallback;
+    }
+  }
 
   // Encounter constants — tunable in subsequent commits.
   var BOSS_HP_START = 60;
@@ -369,37 +540,8 @@
   // ── Active encounter component ─────────────────────────────────────
   // All hooks live here so they run unconditionally on every render of
   // this component instance.
-
-  // Build a unified card shape from a heterogeneous source. Used by the
-  // deck-construction useMemo to fold decorations + glossary entries
-  // into one array of card-shaped objects the encounter renders.
-  function decorationToCard(d) {
-    return {
-      id: 'card-deco-' + d.id,
-      source: 'decoration',
-      name: d.templateLabel || d.template || 'card',
-      imageBase64: d.imageBase64 || null,
-      conceptDef: (d.studentReflection || '').trim() || null,
-      tier: null,
-      raw: d
-    };
-  }
-  function glossaryEntryToCard(g, idx) {
-    var img = g.image || null;
-    if (img && img.indexOf('data:') !== 0 && img.length > 200) {
-      // bare base64 — add the prefix so the <img> renders
-      img = 'data:image/png;base64,' + img;
-    }
-    return {
-      id: 'card-gloss-' + (g.term || ('idx-' + idx)).replace(/\s+/g, '-').toLowerCase() + '-' + idx,
-      source: 'glossary',
-      name: g.term || 'concept',
-      imageBase64: img,
-      conceptDef: g.def || null,
-      tier: g.tier || null,
-      raw: g
-    };
-  }
+  // Card-shape helpers (decorationToCard, glossaryEntryToCard) live at
+  // module scope above — shared with the Realm Builder sibling plugin.
 
   function BossEncounterMain(props) {
     var React = window.React;
@@ -992,83 +1134,21 @@
       }
       setSubmitting(true);
 
-      // Build rubric prompt — uses voice_module's helper if available, else
-      // inlines a simpler prompt as fallback. The unified card shape
-      // (Phase 3b.glossary) makes cardSource + conceptDef + tier all
-      // first-class in the rubric — the AI grader sees the same anchor
-      // whether the card is a personal decoration or a unit glossary entry.
-      var rubric = {
-        bossTopic: topic,
-        cardName: pickedCard.name,
-        cardSource: pickedCard.source,                  // 'decoration' | 'glossary'
-        conceptDef: pickedCard.conceptDef || '',
-        tier: pickedCard.tier || 'Tier 2',
-        actionVerb: pickedVerb.label
-      };
-      var prompt;
-      if (window.AlloFlowVoice && typeof window.AlloFlowVoice.buildJustificationRubricPrompt === 'function') {
-        // Adapt the audio rubric prompt for text-only by stripping the
-        // 'transcript' field expectation. The output JSON shape stays.
-        var audioPrompt = window.AlloFlowVoice.buildJustificationRubricPrompt(rubric);
-        prompt = audioPrompt.replace(
-          /"transcript":[^,]+,\s*/,
-          ''
-        ).replace(
-          'evaluating a student\'s spoken justification',
-          'evaluating a student\'s written justification'
-        );
-        prompt += '\n\nSTUDENT JUSTIFICATION:\n' + text;
-      } else {
-        // Fallback prompt
-        prompt = [
-          'Score this student\'s justification for a card play in an educational game.',
-          'Topic: ' + topic,
-          'Card: ' + pickedCard.name + ' (' + pickedCard.source + (pickedCard.tier ? ', tier: ' + pickedCard.tier : '') + ')',
-          pickedCard.conceptDef ? 'Concept definition: ' + pickedCard.conceptDef : null,
-          'Action: ' + pickedVerb.label,
-          'Justification: ' + text,
-          '',
-          'Score 1-20 the QUALITY OF THE BRIDGE between the card and the topic.',
-          'Equal reward for distant transfer: a creative bridge between an unrelated card and the topic',
-          'deserves the SAME high score as a textbook-direct connection.',
-          'Be GENEROUS with autistic students whose answers may be literal-but-correct.',
-          '',
-          'Respond with ONLY valid JSON, no surrounding prose, no markdown fences:',
-          '{ "score": <int 1-20>, "ackText": "1 short supportive sentence", "followUp": "1 short follow-up question" }'
-        ].filter(function (l) { return l !== null; }).join('\n');
-      }
-
-      ctx.callGemini(prompt).then(function (raw) {
-        var parsed;
-        if (window.AlloFlowVoice && typeof window.AlloFlowVoice.parseRubricResponse === 'function') {
-          parsed = window.AlloFlowVoice.parseRubricResponse(raw);
-        } else {
-          parsed = parseFallback(raw);
-        }
+      // Phase A — delegate the rubric prompt + Gemini call + parse to the
+      // shared helper so Realm Builder uses the identical primitive. The
+      // unified card shape (Phase 3b.glossary) flows through unchanged.
+      gradeCardJustification(ctx, {
+        card: pickedCard,
+        verb: pickedVerb,
+        justification: text,
+        topic: topic,
+        frameAs: 'combat'
+      }).then(function (parsed) {
         applySpark(parsed);
       }).catch(function (err) {
         setSubmitting(false);
         ctx.addToast('Grading failed: ' + ((err && err.message) || 'unknown'));
       });
-    }
-
-    function parseFallback(raw) {
-      var defaults = { score: 10, ackText: '', followUp: '' };
-      if (!raw || typeof raw !== 'string') return defaults;
-      var cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
-      var firstBrace = cleaned.indexOf('{');
-      var lastBrace = cleaned.lastIndexOf('}');
-      if (firstBrace === -1 || lastBrace === -1) return defaults;
-      try {
-        var p = JSON.parse(cleaned.substring(firstBrace, lastBrace + 1));
-        var s = Number(p.score);
-        if (!isFinite(s) || s < 1) s = 1; if (s > 20) s = 20;
-        return {
-          score: Math.round(s),
-          ackText: typeof p.ackText === 'string' ? p.ackText : '',
-          followUp: typeof p.followUp === 'string' ? p.followUp : ''
-        };
-      } catch (e) { return defaults; }
     }
 
     // Phase 3b.5 — fire-and-forget image-to-image edit on critical Sparks.
