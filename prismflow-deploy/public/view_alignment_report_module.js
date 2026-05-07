@@ -60,6 +60,91 @@
     );
   }
 
+  // ─── StandardsSection ─────────────────────────────────────────────────
+  // Plan R+: Standards alignment is now the 6th comprehensive dimension.
+  // Renders the per-standard summary header + the existing per-report cards
+  // inside the same ComprehensiveSection framework as the others.
+  function StandardsSection(p) {
+    var s = p.standards;
+    if (!s) return null;
+    var perStandard = Array.isArray(s.perStandard) ? s.perStandard : [];
+    return React.createElement(ComprehensiveSection, { id: 'audit-standards', icon: '🎯', title: 'Standards alignment', status: s.status },
+      // Top stat row
+      React.createElement('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4' },
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-2xl font-bold text-slate-800' }, s.totalStandards || perStandard.length),
+          React.createElement('div', { className: 'text-xs text-slate-600' }, 'Standard' + ((s.totalStandards || perStandard.length) === 1 ? '' : 's') + ' audited')
+        ),
+        React.createElement('div', { className: 'p-3 bg-emerald-50 rounded text-center border border-emerald-200' },
+          React.createElement('div', { className: 'text-2xl font-bold text-emerald-800' }, s.passCount || 0),
+          React.createElement('div', { className: 'text-xs text-emerald-700' }, 'Pass')
+        ),
+        React.createElement('div', {
+          className: 'p-3 rounded text-center ' + ((s.reviseCount || 0) > 0 ? 'bg-rose-50 border border-rose-200' : 'bg-slate-50 border border-slate-200')
+        },
+          React.createElement('div', { className: 'text-2xl font-bold ' + ((s.reviseCount || 0) > 0 ? 'text-rose-800' : 'text-slate-800') }, s.reviseCount || 0),
+          React.createElement('div', { className: 'text-xs ' + ((s.reviseCount || 0) > 0 ? 'text-rose-700' : 'text-slate-600') }, 'Revise')
+        ),
+        React.createElement('div', { className: 'p-3 bg-slate-50 rounded text-center' },
+          React.createElement('div', { className: 'text-xs font-bold text-slate-800 leading-tight pt-2' }, 'Holistic Lesson Plan Audit'),
+          React.createElement('div', { className: 'text-[10px] text-slate-500 mt-1' }, 'text + activities + assessment')
+        )
+      ),
+      // Per-standard collapsible cards
+      perStandard.length > 0 && React.createElement('div', { className: 'space-y-3' },
+        perStandard.map(function (report, idx) {
+          var passColor = report && report.overallDetermination === 'Pass';
+          return React.createElement('details', {
+            key: idx,
+            open: !passColor,
+            className: 'rounded-lg border ' + (passColor ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'),
+          },
+            React.createElement('summary', {
+              className: 'px-3 py-2 cursor-pointer font-semibold text-sm select-none flex items-center justify-between gap-2 ' + (passColor ? 'text-emerald-800 hover:bg-emerald-100' : 'text-rose-800 hover:bg-rose-100'),
+            },
+              React.createElement('span', { className: 'flex-1 truncate' },
+                (report && report.standard) || 'Standard ' + (idx + 1)
+              ),
+              React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (passColor ? 'bg-emerald-200 text-emerald-900' : 'bg-rose-200 text-rose-900') },
+                (report && report.overallDetermination) || 'Revise'
+              )
+            ),
+            React.createElement('div', { className: 'px-3 pb-3 pt-2 bg-white rounded-b-lg space-y-2 text-xs' },
+              report && report.standardBreakdown && (report.standardBreakdown.cognitiveDemand || report.standardBreakdown.contentFocus) && React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-2 pb-2 border-b border-slate-200' },
+                report.standardBreakdown.cognitiveDemand && React.createElement('div', null,
+                  React.createElement('span', { className: 'font-bold uppercase text-slate-600' }, 'Cognitive demand: '),
+                  React.createElement('span', { className: 'text-slate-800' }, report.standardBreakdown.cognitiveDemand)
+                ),
+                report.standardBreakdown.contentFocus && React.createElement('div', null,
+                  React.createElement('span', { className: 'font-bold uppercase text-slate-600' }, 'Content focus: '),
+                  React.createElement('span', { className: 'text-slate-800' }, report.standardBreakdown.contentFocus)
+                )
+              ),
+              ['textAlignment', 'activityAlignment', 'assessmentAlignment'].map(function (key) {
+                var sec = report && report.analysis && report.analysis[key];
+                if (!sec) return null;
+                var lbl = key === 'textAlignment' ? 'Text' : key === 'activityAlignment' ? 'Activities' : 'Assessment';
+                var stat = sec.status || 'N/A';
+                return React.createElement('div', { key: key, className: 'flex items-start gap-2' },
+                  React.createElement('span', {
+                    className: 'flex-shrink-0 text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + statusBadgeClass(stat),
+                    style: { minWidth: '90px', textAlign: 'center' },
+                  }, lbl + ' · ' + stat),
+                  React.createElement('span', { className: 'text-slate-700 italic' }, sec.evidence ? '"' + sec.evidence + '"' : '—')
+                );
+              }),
+              report && report.adminRecommendation && React.createElement('div', { className: 'mt-2 pt-2 border-t border-slate-200' },
+                React.createElement('span', { className: 'text-[10px] uppercase font-bold text-indigo-700' }, 'Recommendation: '),
+                React.createElement('span', { className: 'text-slate-800' }, report.adminRecommendation)
+              )
+            )
+          );
+        })
+      ),
+      s.notes && React.createElement('div', { className: 'mt-3 text-[11px] text-slate-500 italic' }, s.notes)
+    );
+  }
+
   function VocabularySection(p) {
     var v = p.vocab;
     if (!v) return null;
@@ -584,7 +669,7 @@
     );
   }
 
-  var ALL_DIMENSIONS_FOR_RENDER = ['vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
+  var ALL_DIMENSIONS_FOR_RENDER = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
 
   // ─── ExecutiveSummary helpers ─────────────────────────────────────────
   // Pull and rank the top recommendations across all dimensions so a teacher
@@ -594,6 +679,7 @@
     var all = [];
     if (!comprehensive) return all;
     var dimLabel = {
+      standards: 'Standards',
       vocabulary: 'Vocabulary',
       engagement: 'Engagement',
       accessibility: 'Accessibility',
@@ -605,6 +691,7 @@
     // Reverse-lookup: blocking issues store dimension as a label string ("Content accessibility")
     // — map back to keys ('accessibility') so links resolve.
     var labelToKey = {
+      'Standards alignment': 'standards',
       'Vocabulary fit': 'vocabulary',
       'Engagement variety': 'engagement',
       'Content accessibility': 'accessibility',
@@ -620,7 +707,7 @@
     }
     ALL_DIMENSIONS_FOR_RENDER.forEach(function (dim) {
       var d = comprehensive[dim];
-      if (!d || d.computeFailed || d.status === 'Aligned') return;
+      if (!d || d.computeFailed || d.notApplicable || d.status === 'Aligned') return;
       var priority = d.status === 'Not Aligned' ? 1 : 2;
       var label = dimLabel[dim] || dim;
       if (Array.isArray(d.recommendations)) d.recommendations.forEach(function (r) {
@@ -788,7 +875,8 @@
     var label = p.label;
     if (!d || !d.computeFailed) return null;
     return React.createElement('div', {
-      className: 'bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6',
+      id: p.id || undefined,
+      className: 'bg-amber-50 p-4 rounded-xl border border-amber-300 shadow-sm mb-6 scroll-mt-4',
     },
       React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
         React.createElement('span', { 'aria-hidden': 'true', className: 'text-lg' }, '⚠'),
@@ -803,33 +891,60 @@
     );
   }
 
+  // Plan R+: N/A card for dimensions explicitly flagged as Not Applicable
+  // (e.g., standards alignment when the teacher hasn't entered any target
+  // standards, or the future cultural-responsiveness dimension when content
+  // has no human-context surface area). Excluded from the readiness score.
+  function NotApplicableCard(p) {
+    var d = p.data;
+    var label = p.label;
+    if (!d || !d.notApplicable) return null;
+    return React.createElement('div', {
+      id: p.id || undefined,
+      className: 'bg-slate-50 p-4 rounded-xl border border-dashed border-slate-300 shadow-sm mb-6 scroll-mt-4',
+    },
+      React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+        React.createElement('span', { 'aria-hidden': 'true', className: 'text-lg' }, '➖'),
+        React.createElement('h3', { className: 'font-bold text-slate-700' }, label),
+        React.createElement('span', { className: 'ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-slate-200 text-slate-700' }, 'Not applicable')
+      ),
+      d.reason && React.createElement('p', { className: 'text-sm text-slate-600' }, d.reason)
+    );
+  }
+
   function ComprehensiveBlock(p) {
     var c = p.comp;
     if (!c) return null;
     return React.createElement('div', {
-      className: 'mt-12 pt-8 border-t-4 border-indigo-500 max-w-4xl mx-auto'
+      className: 'mt-8 pt-6 border-t border-slate-200 max-w-4xl mx-auto'
     },
       React.createElement('div', { className: 'mb-6' },
         React.createElement('h2', { className: 'text-xl font-black text-slate-800 uppercase tracking-tight mb-1' },
           'Per-Dimension Findings'),
         React.createElement('p', { className: 'text-sm text-slate-600' },
-          'Detailed evidence and recommendations from each of the five comprehensive audit dimensions. Apply fixes from the summary panel above.')
+          'Detailed evidence and recommendations from each comprehensive audit dimension. Apply fixes from the summary panel above.')
       ),
       c.overall && React.createElement(ReadinessScoreCard, { overall: c.overall }),
+      // Standards rendered first (most teacher-relevant)
+      c.standards && (c.standards.computeFailed
+        ? React.createElement(FailedDimensionCard, { id: 'audit-standards', data: c.standards, label: 'Standards alignment' })
+        : c.standards.notApplicable
+        ? React.createElement(NotApplicableCard, { id: 'audit-standards', data: c.standards, label: 'Standards alignment' })
+        : React.createElement(StandardsSection, { standards: c.standards })),
       c.vocabulary && (c.vocabulary.computeFailed
-        ? React.createElement(FailedDimensionCard, { data: c.vocabulary, label: 'Vocabulary fit' })
+        ? React.createElement(FailedDimensionCard, { id: 'audit-vocabulary', data: c.vocabulary, label: 'Vocabulary fit' })
         : React.createElement(VocabularySection, { vocab: c.vocabulary })),
       c.engagement && (c.engagement.computeFailed
-        ? React.createElement(FailedDimensionCard, { data: c.engagement, label: 'Engagement variety' })
+        ? React.createElement(FailedDimensionCard, { id: 'audit-engagement', data: c.engagement, label: 'Engagement variety' })
         : React.createElement(EngagementSection, { eng: c.engagement })),
       c.accessibility && (c.accessibility.computeFailed
-        ? React.createElement(FailedDimensionCard, { data: c.accessibility, label: 'Content accessibility' })
+        ? React.createElement(FailedDimensionCard, { id: 'audit-accessibility', data: c.accessibility, label: 'Content accessibility' })
         : React.createElement(AccessibilitySection, { access: c.accessibility })),
       c.udl && (c.udl.computeFailed
-        ? React.createElement(FailedDimensionCard, { data: c.udl, label: 'UDL principles' })
+        ? React.createElement(FailedDimensionCard, { id: 'audit-udl', data: c.udl, label: 'UDL principles' })
         : React.createElement(UdlSection, { udl: c.udl })),
       c.accuracy && (c.accuracy.computeFailed
-        ? React.createElement(FailedDimensionCard, { data: c.accuracy, label: 'Content accuracy' })
+        ? React.createElement(FailedDimensionCard, { id: 'audit-accuracy', data: c.accuracy, label: 'Content accuracy' })
         : React.createElement(AccuracySection, { acc: c.accuracy }))
     );
   }

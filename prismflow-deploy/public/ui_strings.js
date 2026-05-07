@@ -1108,7 +1108,7 @@
                                                   "tool_adventure": "Adventure Mode",
                                                     "tool_quiz": "Exit Ticket",
                                                       "tool_fullpack": "Generate Full Resource Pack",
-                                                        "tool_alignment": "Standard Alignment Report",
+                                                        "tool_alignment": "Curriculum Audit",
                                                           "tool_alignment_parent": "What They Are Learning",
                                                             "tool_lesson": "Lesson Plan",
                                                               "tool_bridge": "Gemini Bridge",

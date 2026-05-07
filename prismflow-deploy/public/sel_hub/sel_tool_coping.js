@@ -556,7 +556,6 @@ window.SelHub = window.SelHub || {
     desc: 'Explore and practice coping strategies \u2014 breathing, grounding, movement, and more.',
     color: 'teal',
     category: 'self-management',
-    cleanup: function() { stopBreathTimer(); stopMoveTimer(); },
     render: function(ctx) {
       var React = ctx.React;
       var h = React.createElement;
@@ -1996,6 +1995,26 @@ window.SelHub = window.SelHub || {
                 style: { padding: '8px 16px', borderRadius: 8, border: 'none', background: '#14b8a6', color: '#fff', fontWeight: 700, cursor: planEditing ? 'wait' : 'pointer', fontSize: 12 }
               }, '\uD83D\uDCCB ' + (planEditing ? 'Generating...' : 'Suggest Steps'))
             )
+          ),
+
+          // ── Print my calm plan (take-home artifact) ──
+          h('div', { style: { marginTop: 16, textAlign: 'center' } },
+            h('button', {
+              'aria-label': 'Print my calm plan',
+              onClick: function() {
+                if (!window.SelHub || !window.SelHub.printDoc) return;
+                window.SelHub.printDoc({
+                  title: band === 'elementary' ? 'My Calm-Down Plan' : 'My Personal Calm Plan',
+                  subtitle: 'Bring this with you. Share it with a counselor, parent, or trusted adult so they can help you follow it.',
+                  sections: [
+                    { heading: band === 'elementary' ? 'How I know I’m getting upset' : 'My warning signs', items: plan.warningSigns || [] },
+                    { heading: band === 'elementary' ? 'Steps that help me calm down' : 'My calming steps (in order)', items: plan.steps || [] },
+                    { heading: 'Trusted adults I can talk to', items: plan.trustedAdults || [] }
+                  ]
+                });
+              },
+              style: { padding: '8px 18px', borderRadius: 10, border: '1px solid #475569', background: '#0f172a', color: '#e2e8f0', fontSize: 12, fontWeight: 600, cursor: 'pointer' }
+            }, '🖨 Print my calm plan')
           )
         );
       }

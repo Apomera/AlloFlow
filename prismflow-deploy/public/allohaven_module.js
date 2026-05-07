@@ -112,9 +112,41 @@
     st.id = 'ah-print-css';
     st.textContent = [
       '.ah-print-packet { display: none; }',
+      // On-screen Print Preview overlay: the packet renders inline as a
+      // paper-like document inside a scrollable scrim. The preview is
+      // rendered as a CLONE (`.ah-preview-paper > .ah-preview-clone`)
+      // and is hidden at print time so window.print() always uses the
+      // single canonical `.ah-print-packet` portaled to body.
+      '.ah-preview-scrim {',
+      '  position: fixed; inset: 0; z-index: 200;',
+      '  background: rgba(0,0,0,0.65); overflow: auto;',
+      '  display: flex; flex-direction: column; align-items: center;',
+      '  padding: 20px 0 40px;',
+      '}',
+      '.ah-preview-chrome {',
+      '  position: sticky; top: 12px; z-index: 1;',
+      '  display: flex; gap: 12px; align-items: center;',
+      '  padding: 8px 14px; margin-bottom: 14px;',
+      '  background: #1f2937; color: #fff; border-radius: 999px;',
+      '  box-shadow: 0 6px 20px rgba(0,0,0,0.45);',
+      '  font-family: ui-sans-serif, system-ui, sans-serif; font-size: 13px;',
+      '}',
+      '.ah-preview-paper {',
+      '  width: min(8.5in, calc(100% - 32px));',
+      '  background: white; color: black;',
+      '  padding: 0.5in; box-sizing: border-box;',
+      '  font-family: Georgia, "Times New Roman", serif; line-height: 1.55;',
+      '  box-shadow: 0 10px 40px rgba(0,0,0,0.5);',
+      '  border-radius: 4px;',
+      '}',
+      '.ah-preview-clone { display: block; color: black; }',
+      '.ah-preview-clone h1, .ah-preview-clone h2, .ah-preview-clone h3 { color: black; }',
       '@media print {',
       '  body * { visibility: hidden !important; }',
       '  .ah-print-packet, .ah-print-packet * { visibility: visible !important; }',
+      // Hide the preview overlay entirely during printing — only the
+      // canonical portaled .ah-print-packet should print.
+      '  .ah-preview-scrim { display: none !important; }',
       '  .ah-print-packet {',
       '    display: block !important;',
       '    position: absolute !important;',
@@ -10959,6 +10991,14 @@
     var whisperStatusTuple = useState({ phase: 'idle', progress: null, file: null, tier: null, error: null });
     var whisperStatus = whisperStatusTuple[0];
     var setWhisperStatus = whisperStatusTuple[1];
+
+    // Print preview overlay flag (ephemeral, no need to persist).
+    // When true, the print packet renders inline as a paper-like preview
+    // on screen so the user can see what the toggles will produce before
+    // firing window.print().
+    var printPreviewingTuple = useState(false);
+    var printPreviewing = printPreviewingTuple[0];
+    var setPrintPreviewing = printPreviewingTuple[1];
     useEffect(function() {
       if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.subscribeToVoiceProgress !== 'function') return;
       var unsubscribe = window.AlloFlowVoice.subscribeToVoiceProgress(function(payload) {
@@ -14602,7 +14642,13 @@
             }, '✕')
           ),
           h('p', { style: { fontSize: '12px', color: palette.textDim, fontStyle: 'italic', margin: '0 0 14px 0', lineHeight: '1.5' } },
-            'Each completed encounter is saved here. The most recent 20 are kept. Click any to see per-turn detail.'),
+            (function() {
+              var n = encounters.length;
+              if (n === 0) return 'Each completed encounter is saved here. Click any to see per-turn detail.';
+              var base = n + ' encounter' + (n === 1 ? '' : 's') + ' saved · click any to see per-turn detail.';
+              if (n >= 18) return base + ' Cap is 20; oldest will roll off as you play more.';
+              return base;
+            })()),
           encounters.length === 0
             ? h('div', {
                 style: { padding: '32px 20px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center' }
@@ -14665,6 +14711,52 @@
             }, 'Clear all')
           ) : null
         )
+      );
+    }
+
+    // On-screen preview of the print packet. Renders a CLONE of the
+    // canonical packet element with a different className so the @media
+    // print rule still treats the original (portaled to body) as the
+    // single source of truth. Chrome bar lets the user close or print
+    // immediately; the scrim is hidden at print time.
+    function renderPrintPreview(packetElement) {
+      if (!packetElement || !window.React || !window.React.cloneElement) return null;
+      // Strip the .ah-print-packet class and the aria-hidden attribute
+      // from the clone so it's actually visible on screen.
+      var cloned = window.React.cloneElement(packetElement, {
+        className: 'ah-preview-clone',
+        'aria-hidden': null
+      });
+      function close() { setPrintPreviewing(false); }
+      function printNow() {
+        try { window.print(); }
+        catch (e) { addToast('Print not available in this browser.'); }
+      }
+      // Esc closes — wire via onKeyDown on the scrim itself (focusable
+      // via tabIndex). Click on backdrop also closes.
+      return h('div', {
+        key: 'ah-preview',
+        className: 'ah-preview-scrim',
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Print preview',
+        tabIndex: -1,
+        onClick: function(e) { if (e.target === e.currentTarget) close(); },
+        onKeyDown: function(e) { if (e.key === 'Escape') close(); }
+      },
+        h('div', { className: 'ah-preview-chrome' },
+          h('span', { style: { fontSize: '12px', opacity: 0.85 } }, '🔍 Print preview'),
+          h('button', {
+            onClick: printNow,
+            style: { background: '#16a34a', color: '#fff', border: 'none', borderRadius: '999px', padding: '6px 14px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🖨 Print now'),
+          h('button', {
+            onClick: close,
+            'aria-label': 'Close preview',
+            style: { background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '999px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '✕ Close')
+        ),
+        h('div', { className: 'ah-preview-paper' }, cloned)
       );
     }
 
@@ -14867,11 +14959,27 @@
           },
             h('div', { style: { fontSize: '11px', color: palette.textMute } },
               selectedCount() + ' / ' + PRINT_SECTION_DEFS.length + ' sections'),
-            h('div', { style: { display: 'flex', gap: '8px' } },
+            h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
               h('button', {
                 onClick: function() { setStateMulti({ activeModal: returnTo, generateContext: null }); },
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '8px 14px', fontSize: '12px' })
               }, 'Cancel'),
+              h('button', {
+                onClick: function() {
+                  if (selectedCount() === 0) {
+                    addToast('Pick at least one section to preview.');
+                    return;
+                  }
+                  setStateMulti({ activeModal: returnTo, generateContext: null });
+                  setPrintPreviewing(true);
+                },
+                disabled: selectedCount() === 0,
+                style: Object.assign({}, secondaryBtnStyle(palette), {
+                  padding: '8px 14px', fontSize: '12px',
+                  opacity: selectedCount() === 0 ? 0.5 : 1,
+                  cursor: selectedCount() === 0 ? 'not-allowed' : 'pointer'
+                })
+              }, '🔍 Preview'),
               h('button', {
                 onClick: doPrint,
                 disabled: selectedCount() === 0,
@@ -19546,10 +19654,18 @@
           (state.earnings || []).length + ' token-earning event' + ((state.earnings || []).length === 1 ? '' : 's'),
           ' · ', state.tokens, ' tokens earned and unspent',
           ' · ', (state.journalEntries || []).length, ' journal entr' + ((state.journalEntries || []).length === 1 ? 'y' : 'ies'),
-          // Phase 2p.15 — flag voice-note count (audio itself doesn\'t print)
+          // Phase 2p.15 — flag voice-note count (audio itself doesn\'t print).
+          // Captioned ones print their caption alongside the deck card.
           (function() {
-            var vCount = (state.decorations || []).filter(function(d) { return d.voiceNote && d.voiceNote.base64; }).length;
-            return vCount > 0 ? (' · ' + vCount + ' voice note' + (vCount === 1 ? '' : 's') + ' (audio not printable — see screen view)') : null;
+            var voiced = (state.decorations || []).filter(function(d) { return d.voiceNote && d.voiceNote.base64; });
+            var vCount = voiced.length;
+            if (vCount === 0) return null;
+            var capCount = voiced.filter(function(d) { return d.voiceNote.caption; }).length;
+            var capNote;
+            if (capCount === 0) capNote = ' (audio not printable — see screen view)';
+            else if (capCount === vCount) capNote = ' (captions print below; audio plays in screen view)';
+            else capNote = ' (' + capCount + ' captioned, ' + (vCount - capCount) + ' audio-only — audio plays in screen view)';
+            return ' · ' + vCount + ' voice note' + (vCount === 1 ? '' : 's') + capNote;
           })()
         ),
         // 90-day activity heatmap (Phase 2p.8) — paper-friendly grid
@@ -19908,7 +20024,11 @@
         // articulation work.
         (state.printOptions && state.printOptions.bossEncounters === false) ? null :
         ((state.bossEncounters || []).length > 0 ? h('div', { style: sectionStyle },
-          h('h2', { style: sectionTitleStyle }, '🐉 Boss Encounters · ' + state.bossEncounters.length + ' recent'),
+          h('h2', { style: sectionTitleStyle },
+            '🐉 Boss Encounters · '
+            + (state.bossEncounters.length > 8
+              ? 'newest 8 of ' + state.bossEncounters.length
+              : state.bossEncounters.length + ' encounter' + (state.bossEncounters.length === 1 ? '' : 's'))),
           state.bossEncounters.slice().reverse().slice(0, 8).map(function (enc) {
             var dateStr = enc.savedAt ? new Date(enc.savedAt).toLocaleDateString() : '?';
             var outcomeLabel = enc.outcome === 'won' ? 'Won'
@@ -20026,11 +20146,20 @@
       // "hide everything but .ah-print-packet" works regardless of the
       // ah-root fixed overlay's positioning + overflow context.
       (function() {
+        var packet = renderPrintPacket();
+        // When previewing, wrap the (cloned) packet in an on-screen scrim
+        // with control chrome. The original packet stays mounted with
+        // display:none so window.print() still works the same way; the
+        // preview clone uses the override class `.ah-preview-on` to show.
+        var preview = printPreviewing ? renderPrintPreview(packet) : null;
         var ReactDOM = window.ReactDOM;
         if (ReactDOM && ReactDOM.createPortal && typeof document !== 'undefined' && document.body) {
-          return ReactDOM.createPortal(renderPrintPacket(), document.body);
+          return [
+            ReactDOM.createPortal(packet, document.body),
+            preview ? ReactDOM.createPortal(preview, document.body) : null
+          ];
         }
-        return renderPrintPacket();
+        return [packet, preview];
       })()
     );
   }
