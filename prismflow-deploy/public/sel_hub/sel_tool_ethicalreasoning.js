@@ -682,12 +682,39 @@ window.SelHub = window.SelHub || {
       var callTTS = ctx.callTTS;
       var gradeLevel = ctx.gradeLevel;
       var gradeBand = ctx.gradeBand || 'elementary';
+      var onSafetyFlag = ctx.onSafetyFlag || null;
+
+      // Triangulated safety assessment of student-typed input. Used by both the
+      // dilemma dialogue (askSocratic) and the case-study Socratic flow.
+      var _runSafetyAssess = function(userInput, scope) {
+        if (!window.SelHub || !window.SelHub.assessSafety || !userInput) return;
+        window.SelHub.assessSafety(userInput, gradeBand, 'ethicalreasoning', callGemini)
+          .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+          .then(function(_safety) {
+            _safety = _safety || { tier: 0 };
+            if (_safety.tier >= 2 && onSafetyFlag) {
+              onSafetyFlag({
+                category: 'ai_ethicalreasoning_' + (scope || 'dialogue') + '_' + (_safety.category || 'concerning'),
+                match: _safety.rationale || 'SEL ethical reasoning safety concern',
+                severity: _safety.tier >= 3 ? 'critical' : 'medium',
+                source: 'sel_ethicalreasoning',
+                context: userInput.substring(0, 100),
+                timestamp: new Date().toISOString(),
+                aiGenerated: true,
+                confidence: _safety.tier >= 3 ? 0.9 : 0.7,
+                tier: _safety.tier
+              });
+            }
+            upd('_ethicsTier', _safety.tier || 0);
+          });
+      };
 
       var tab = d.tab || 'dilemmas';
       var selectedDilemma = d.dilemmaId ? DILEMMAS.find(function(dl) { return dl.id === d.dilemmaId; }) : null;
       var selectedFramework = d.frameworkId || null;
       var dialogueHistory = d.dialogue || [];
       var aiLoading = d.aiLoading || false;
+      var _ethicsTier = d._ethicsTier || 0;
 
       // ── Socratic dialogue with AI ──
       var askSocratic = function(userInput) {
@@ -705,6 +732,8 @@ window.SelHub = window.SelHub || {
           'Be warm and encouraging. Keep it to 2-3 sentences max. ' +
           'If they seem to be oversimplifying, gently complicate their thinking. ' +
           'If they seem stuck, offer a helpful framing question.';
+
+        _runSafetyAssess(userInput, 'dilemma');
 
         callGemini(prompt).then(function(resp) {
           var newHistory = dialogueHistory.concat([
@@ -1214,6 +1243,7 @@ window.SelHub = window.SelHub || {
 
           selectedDilemma && h('div', { className: 'space-y-3' },
             // Dialogue history
+            (_ethicsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
             dialogueHistory.length > 0 && h('div', { className: 'space-y-2 max-h-[400px] overflow-y-auto' },
               dialogueHistory.map(function(msg, i) {
                 return h('div', { key: i, className: 'flex ' + (msg.role === 'student' ? 'justify-end' : 'justify-start') },
@@ -1622,6 +1652,7 @@ window.SelHub = window.SelHub || {
                   })
                 ),
 
+                (_ethicsTier >= 3 && window.SelHub && window.SelHub.renderCrisisResources) ? window.SelHub.renderCrisisResources(h, gradeBand) : null,
                 csSocratic.length === 0 && h('p', { className: 'text-xs text-slate-600 italic text-center' }, 'Share your thinking to begin a Socratic dialogue about this case.'),
 
                 // Socratic input
@@ -1637,6 +1668,7 @@ window.SelHub = window.SelHub || {
                           'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
                           histCtx + '\nStudent says: "' + userInput + '"\n\n' +
                           'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
+                        _runSafetyAssess(userInput, 'casestudy');
                         callGemini(prompt).then(function(resp) {
                           var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
                           updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });

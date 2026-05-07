@@ -8106,13 +8106,20 @@
     var minLen = 2;
     var results = q.length < minLen ? null : (function() {
       var out = { decorations: [], stories: [], journals: [] };
-      // Decoration labels + deck content
+      // Decoration labels + deck content + voice-note caption
       (p.decorations || []).forEach(function(d) {
         var label = (d.templateLabel || d.template || '').toLowerCase();
         var labelHit = label.indexOf(q) !== -1;
         var refl = (d.studentReflection || '').toLowerCase();
         var reflHit = refl.indexOf(q) !== -1;
+        // Voice-note caption (Phase 4) — student-authored text companion
+        // to the audio. Indexed here so a search hits captions too.
+        var captionRaw = (d.voiceNote && d.voiceNote.caption) || '';
+        var captionHit = captionRaw.toLowerCase().indexOf(q) !== -1;
         var contentHits = []; // matching content snippets
+        if (captionHit) {
+          contentHits.push('🎤 “' + captionRaw + '”');
+        }
         var lc = d.linkedContent;
         if (lc && lc.data) {
           if (lc.type === 'flashcards' && Array.isArray(lc.data.cards)) {
@@ -8147,11 +8154,12 @@
             }
           }
         }
-        if (labelHit || reflHit || contentHits.length > 0) {
+        if (labelHit || reflHit || captionHit || contentHits.length > 0) {
           out.decorations.push({
             decoration: d,
             labelHit: labelHit,
             reflHit: reflHit,
+            captionHit: captionHit,
             contentHits: contentHits.slice(0, 3) // cap snippets
           });
         }
@@ -11702,14 +11710,26 @@
     // removes the caption (audio stays). No-op if there's no voice note
     // attached to the decoration.
     function setDecorationVoiceNoteCaption(decorationId, caption) {
+      var changed = false;
+      var hadBefore = false;
       var newDecs = state.decorations.map(function(d) {
         if (d.id !== decorationId || !d.voiceNote || !d.voiceNote.base64) return d;
+        hadBefore = !!d.voiceNote.caption;
         var nextVn = Object.assign({}, d.voiceNote);
         if (caption) nextVn.caption = String(caption).slice(0, 80);
         else delete nextVn.caption;
+        changed = true;
         return Object.assign({}, d, { voiceNote: nextVn });
       });
+      if (!changed) return;
       setStateField('decorations', newDecs);
+      // Toast confirmation so the student knows the save landed —
+      // distinguish add vs edit vs remove for tiny but useful clarity.
+      if (caption) {
+        addToast(hadBefore ? '✓ Caption updated.' : '✓ Caption saved.');
+      } else if (hadBefore) {
+        addToast('Caption removed.');
+      }
     }
 
     // "Make similar" — opens the generate modal with the same template +
@@ -14797,16 +14817,24 @@
         catch (e) { addToast('Print not available in this browser.'); }
       }
       // Esc closes — wire via onKeyDown on the scrim itself (focusable
-      // via tabIndex). Click on backdrop also closes.
+      // via tabIndex) and autofocus on mount via callback ref so the
+      // user doesn't have to click into the scrim before Esc works.
+      var scrimRef = function(node) {
+        if (node && typeof node.focus === 'function') {
+          // Defer one tick so React has finished mounting children.
+          setTimeout(function() { try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (_) {} } }, 0);
+        }
+      };
       return h('div', {
         key: 'ah-preview',
+        ref: scrimRef,
         className: 'ah-preview-scrim',
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': 'Print preview',
         tabIndex: -1,
         onClick: function(e) { if (e.target === e.currentTarget) close(); },
-        onKeyDown: function(e) { if (e.key === 'Escape') close(); }
+        onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); close(); } }
       },
         h('div', { className: 'ah-preview-chrome' },
           h('span', { style: { fontSize: '12px', opacity: 0.85 } }, '🔍 Print preview'),
@@ -16611,10 +16639,23 @@
             minWidth: 0
           }
         },
-          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
-            typeIcon + ' ' + label),
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+            h('span', null, typeIcon + ' ' + label),
+            decoration.voiceNote && decoration.voiceNote.base64 ? h('span', {
+              'aria-label': 'Voice note attached'
+                + (decoration.voiceNote.caption ? ': ' + decoration.voiceNote.caption : ''),
+              title: decoration.voiceNote.caption || 'Voice note attached',
+              style: { fontSize: '10px', color: palette.textMute, fontWeight: 600 }
+            }, '🎤') : null
+          ),
           h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
             summary),
+          // Caption surfaced in the row so the student sees the
+          // textual companion to the voice note without opening the
+          // modal. Truncates via CSS to keep the row compact.
+          (decoration.voiceNote && decoration.voiceNote.caption) ? h('div', {
+            style: { fontSize: '10px', color: palette.textDim, fontStyle: 'italic', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+          }, '🎤 “' + decoration.voiceNote.caption + '”') : null,
           h('div', {
             style: {
               fontSize: '10px',
@@ -16894,12 +16935,19 @@
           !ins.loading && s.moodSummary === 'Not enough yet' ? h('p', {
             style: { color: palette.textDim, fontSize: '13px', padding: '12px 4px', lineHeight: '1.6' }
           }, 'Your entries so far are short or recent — keep journaling and a richer view will surface here.') : null,
-          // AI error / fallback notice
-          ins.error ? h('p', {
+          // AI error / fallback notice — explicit Try-again button so
+          // a transient network failure isn't a dead end.
+          ins.error ? h('div', {
             role: 'alert',
             'aria-live': 'polite',
-            style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic' }
-          }, ins.error) : null,
+            style: { color: palette.warn || palette.textDim, fontSize: '12px', padding: '8px 12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px', marginBottom: '12px', fontStyle: 'italic', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }
+          },
+            h('span', { style: { flex: 1, minWidth: 0 } }, ins.error),
+            h('button', {
+              onClick: function() { runInsightsAnalysis(); },
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', flexShrink: 0 })
+            }, '↻ Try again')
+          ) : null,
           // Local stats card — always shown, even on AI failure
           !ins.loading && (s.entriesAnalyzed > 0) ? h('div', {
             style: {

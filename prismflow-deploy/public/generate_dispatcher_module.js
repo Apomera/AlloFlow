@@ -1623,6 +1623,29 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _modeItemCount = (_modeStrategy && _modeStrategy.generation.defaultItemCount) || effectiveQuizCount;
         // Use mode default ONLY when the caller didn't explicitly request a count
         const _resolvedItemCount = (configOverride && configOverride.quizMcqCount) ? configOverride.quizMcqCount : _modeItemCount;
+        // Plan S Slice 2: per-mode item type mix. exit-ticket stays MCQ-only by default
+        // for back-compat; pre-check + review get fill-blank + short-answer in the mix.
+        const _modeItemMix = (_modeStrategy && _modeStrategy.generation.defaultItemTypeMix) || { mcq: _resolvedItemCount };
+        const _mcqCount = _modeItemMix.mcq || 0;
+        const _fillBlankCount = _modeItemMix['fill-blank'] || 0;
+        const _shortAnswerCount = _modeItemMix['short-answer'] || 0;
+        // Build item-type-specific instruction blocks dynamically
+        const _itemTypeBlocks = [];
+        if (_mcqCount > 0) _itemTypeBlocks.push(_mcqCount + ' Multiple Choice Question(s) with 4 options each');
+        if (_fillBlankCount > 0) _itemTypeBlocks.push(_fillBlankCount + ' Fill-in-the-Blank Question(s)');
+        if (_shortAnswerCount > 0) _itemTypeBlocks.push(_shortAnswerCount + ' Short-Answer Question(s) (1-2 sentence response)');
+        const _includeReflections = (_quizMode === 'exit-ticket' && quizReflectionCount > 0);
+        if (_includeReflections) _itemTypeBlocks.push(quizReflectionCount + ' Open-Ended Reflection Question(s)');
+        const _itemTypeInstructions = _itemTypeBlocks.map(function (s, i) { return (i + 1) + '. ' + s + '.'; }).join('\n          ');
+        // JSON shape varies by what's requested
+        const _jsonShape = `{
+            "questions": [
+              { "type": "mcq", "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }${_fillBlankCount > 0 ? `,
+              { "type": "fill-blank", "question": "Sentence with ___ for the blank.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedFill": "...", "acceptableAlternatives": ["alt1", "alt2"] }` : ''}${_shortAnswerCount > 0 ? `,
+              { "type": "short-answer", "question": "Open prompt requiring 1-2 sentence response.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedAnswer": "Concise reference answer (10-30 words) covering the key idea." }` : ''}
+            ]${_includeReflections ? `,
+            "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}]` : ''}
+          }`;
         const prompt = `
           ${_modeFraming}
           Quiz target: ${_modeQuestionTargets}.
@@ -1632,16 +1655,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${dokInstruction}
           ${standardsPromptString ? `Ensure questions align with Standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
-          Include:
-          1. ${_resolvedItemCount} Multiple Choice Questions (with 4 options each).
-          2. ${_quizMode === 'exit-ticket' ? quizReflectionCount : 0} Open-Ended Reflection Question(s).
-          3. The correct answer for the MCQs.
+          Include the following item types:
+          ${_itemTypeInstructions}
+          ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
+          ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
           ${effectiveLanguage !== 'English' ? 'For every question, option, and reflection, provide an English translation field (suffix _en).' : ''}
           ${dialectInstruction}
-          Return ONLY valid JSON format: { "questions": [{ "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }], "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}] }
+          Return ONLY valid JSON: ${_jsonShape}
           ${differentiationContext}
           ${_quizMode === 'exit-ticket' ? `Text: "${textToProcess}"` : `Source text (for context only — do not directly quiz on it for ${_quizMode} mode):\n"${textToProcess}"`}
         `;
@@ -1655,14 +1678,32 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             }
             if (!content.questions || !Array.isArray(content.questions)) content.questions = [];
             if (!content.reflections || !Array.isArray(content.reflections)) content.reflections = [];
-            content.questions = content.questions.map(q => ({
-                ...q,
-                question: q.question || "Question text missing",
-                options: Array.isArray(q.options) ? q.options : ["True", "False"],
-                correctAnswer: q.correctAnswer || "",
-            }));
+            // Plan S Slice 2: type-aware normalization. MCQ keeps its options + correctAnswer
+            // shape; fill-blank requires expectedFill; short-answer requires expectedAnswer.
+            // Items missing a `type` field default to 'mcq' for back-compat.
+            content.questions = content.questions.map(q => {
+                const itemType = q.type || 'mcq';
+                const base = {
+                    ...q,
+                    type: itemType,
+                    question: q.question || "Question text missing",
+                };
+                if (itemType === 'mcq') {
+                    base.options = Array.isArray(q.options) ? q.options : ["True", "False"];
+                    base.correctAnswer = q.correctAnswer || "";
+                } else if (itemType === 'fill-blank') {
+                    base.expectedFill = q.expectedFill || "";
+                    base.acceptableAlternatives = Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : [];
+                } else if (itemType === 'short-answer') {
+                    base.expectedAnswer = q.expectedAnswer || "";
+                }
+                return base;
+            });
             try {
                 const checkedQuestions = await Promise.all(content.questions.map(async (q, idx) => {
+                    // Only fact-check MCQ items — fill-blank and short-answer have their
+                    // own grader at student-response time, no pre-grading needed.
+                    if (q.type && q.type !== 'mcq') return q;
                     setGenerationStep(`${t('status_steps.verifying_answers')} (${idx + 1}/${content.questions.length})...`);
                     await new Promise(resolve => setTimeout(resolve, idx * 200));
                     const checkPrompt = `

@@ -36,6 +36,10 @@
         promptFrame: 'Create a short "Exit Ticket" quiz that checks whether students learned today\'s content.',
         questionTargets: 'today\'s lesson content (the source text just taught)',
         defaultItemCount: 5,
+        // 'mcq' is the existing primary type. Reflection ships separately on the same artifact.
+        // Slice 2 leaves exit-ticket as MCQ-only by default to preserve existing UX.
+        allowedItemTypes: ['mcq'],
+        defaultItemTypeMix: { mcq: 5 },
       },
       render: {
         intro: '',  // No intro banner for exit-ticket — preserves the existing UX.
@@ -54,6 +58,9 @@
         promptFrame: 'Create a short "Readiness Check" that probes whether students have the PRIOR knowledge this lesson assumes — NOT the lesson\'s new content. For each key concept the lesson teaches, identify ONE prerequisite the student should already know, and write a probe for that prerequisite.',
         questionTargets: 'PREREQUISITE knowledge (what students should already know before today\'s lesson can land), not today\'s new content',
         defaultItemCount: 4,
+        // Pre-check benefits from a mix: MCQ for confidence, fill-blank for vocab recall, short-answer for reasoning
+        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer'],
+        defaultItemTypeMix: { mcq: 2, 'fill-blank': 1, 'short-answer': 1 },
       },
       render: {
         intro: 'Let\'s see what you already know. This isn\'t a test — it just helps us know what to review before today\'s lesson.',
@@ -72,6 +79,9 @@
         promptFrame: 'Create a VERY short formative check (1-3 items) for use mid-instruction. Items should probe whether students are following the in-progress lesson — surface common misconceptions if possible.',
         questionTargets: 'in-progress understanding (mid-lesson pulse check)',
         defaultItemCount: 2,
+        // Formative defaults to fast-to-answer types (MCQ + fill-blank). Short-answer is too slow for mid-lesson use.
+        allowedItemTypes: ['mcq', 'fill-blank'],
+        defaultItemTypeMix: { mcq: 2 },
       },
       render: {
         intro: 'Quick check — how\'s it going?',
@@ -90,6 +100,9 @@
         promptFrame: 'Create a "Spaced Review" quiz that probes retention of PREVIOUSLY taught content (concepts from earlier lessons in the history, not today\'s source). If history concepts are not provided, target concepts from the source that would benefit from re-exposure.',
         questionTargets: 'previously-taught content (retention check, not new learning)',
         defaultItemCount: 6,
+        // Review benefits from active recall — fill-blank + short-answer force retrieval more than MCQ recognition
+        allowedItemTypes: ['mcq', 'fill-blank', 'short-answer'],
+        defaultItemTypeMix: { mcq: 2, 'fill-blank': 2, 'short-answer': 2 },
       },
       render: {
         intro: 'Reviewing what we\'ve learned. Missed items get a quick re-explanation so they stick this time.',
