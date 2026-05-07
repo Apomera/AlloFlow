@@ -2098,7 +2098,8 @@ window.SelHub = window.SelHub || {
         scenariosContent,
         journalContent,
         mixerContent,
-        historyContent
+        historyContent,
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

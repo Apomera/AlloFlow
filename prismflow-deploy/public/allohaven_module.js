@@ -456,7 +456,16 @@
     // appends here. Capped at the most recent 20 records to keep
     // state size bounded. Surfaces in a Past Encounters modal +
     // an opt-in section of the print packet for IEP / parent review.
-    bossEncounters: []
+    bossEncounters: [],
+
+    // ── Realms (Realm Builder, constructive sibling to Boss Encounter) ──
+    // Each realm is a long-arc artifact: cards placed into an evolving
+    // world canvas, with full history of justifications + AI grades.
+    // Persistence is incremental — Realm Builder calls ctx.onRealmUpdate
+    // on every zone-add, so a tab close mid-session doesn't lose work.
+    // Realms surface in Memory Overview ("My Realms" section) and the
+    // print packet alongside decks + stories + boss encounters.
+    realms: []
   };
 
   // ─────────────────────────────────────────────────────────
@@ -7095,41 +7104,53 @@
             // Caption row — shown as quoted text when present, "Add a caption"
             // affordance when absent. Caption prints in the packet so the
             // audio (which can't print) still has a textual companion.
-            editingCaption ? h('div', { style: { marginBottom: '10px' } },
-              h('label', {
-                htmlFor: 'ah-vn-caption-' + decoration.id,
-                style: { display: 'block', fontSize: '10px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }
-              }, 'Caption (prints in packet)'),
-              h('input', {
-                id: 'ah-vn-caption-' + decoration.id,
-                type: 'text',
-                value: captionDraft,
-                onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
-                placeholder: 'A few words about this voice note…',
-                maxLength: VOICE_CAPTION_MAX,
-                style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box' }
-              }),
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' } },
-                h('span', { style: { fontSize: '10px', color: palette.textMute } },
-                  captionDraft.length + ' / ' + VOICE_CAPTION_MAX),
-                h('div', { style: { display: 'flex', gap: '6px' } },
-                  h('button', {
-                    onClick: function() { setCaptionDraft(null); },
-                    style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
-                  }, 'Cancel'),
-                  h('button', {
-                    onClick: function() {
-                      var clean = (captionDraft || '').trim().slice(0, VOICE_CAPTION_MAX);
-                      if (typeof p.onSetVoiceNoteCaption === 'function') {
-                        p.onSetVoiceNoteCaption(clean || null);
-                      }
-                      setCaptionDraft(null);
-                    },
-                    style: Object.assign({}, primaryBtnStyle(palette), { padding: '3px 10px', fontSize: '10px' })
-                  }, 'Save caption')
+            editingCaption ? (function() {
+              var saveCaption = function() {
+                var clean = (captionDraft || '').trim().slice(0, VOICE_CAPTION_MAX);
+                if (typeof p.onSetVoiceNoteCaption === 'function') {
+                  p.onSetVoiceNoteCaption(clean || null);
+                }
+                setCaptionDraft(null);
+              };
+              // Color the counter as it approaches the cap so the user
+              // gets a visual cue that they're running out of room.
+              var remain = VOICE_CAPTION_MAX - captionDraft.length;
+              var counterColor = remain <= 5 ? '#dc2626' : (remain <= 15 ? '#d97706' : palette.textMute);
+              return h('div', { style: { marginBottom: '10px' } },
+                h('label', {
+                  htmlFor: 'ah-vn-caption-' + decoration.id,
+                  style: { display: 'block', fontSize: '10px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }
+                }, 'Caption (prints in packet)'),
+                h('input', {
+                  id: 'ah-vn-caption-' + decoration.id,
+                  type: 'text',
+                  value: captionDraft,
+                  onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
+                  onKeyDown: function(e) {
+                    if (e.key === 'Enter') { e.preventDefault(); saveCaption(); }
+                    else if (e.key === 'Escape') { e.preventDefault(); setCaptionDraft(null); }
+                  },
+                  placeholder: 'A few words about this voice note…',
+                  maxLength: VOICE_CAPTION_MAX,
+                  autoFocus: true,
+                  style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box' }
+                }),
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' } },
+                  h('span', { style: { fontSize: '10px', color: counterColor, fontWeight: remain <= 15 ? 700 : 400 } },
+                    captionDraft.length + ' / ' + VOICE_CAPTION_MAX),
+                  h('div', { style: { display: 'flex', gap: '6px' } },
+                    h('button', {
+                      onClick: function() { setCaptionDraft(null); },
+                      style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+                    }, 'Cancel'),
+                    h('button', {
+                      onClick: saveCaption,
+                      style: Object.assign({}, primaryBtnStyle(palette), { padding: '3px 10px', fontSize: '10px' })
+                    }, 'Save caption')
+                  )
                 )
-              )
-            ) : (savedCaption ? h('div', {
+              );
+            })() : (savedCaption ? h('div', {
               style: { marginBottom: '10px', padding: '8px 10px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }
             },
               h('div', { style: { fontSize: '12px', color: palette.text, fontStyle: 'italic', lineHeight: '1.45', flex: 1, minWidth: 0 } },
@@ -7183,6 +7204,8 @@
         // Preview — playback + optional caption + save / discard
         voiceMode === 'preview' && recorded ? (function() {
           var draft = captionDraft == null ? '' : captionDraft;
+          var remain = VOICE_CAPTION_MAX - draft.length;
+          var counterColor = remain <= 5 ? '#dc2626' : (remain <= 15 ? '#d97706' : palette.textMute);
           return h('div', null,
             h('audio', {
               src: recorded.base64,
@@ -7201,11 +7224,12 @@
               type: 'text',
               value: draft,
               onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
+              onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); saveRecording(); } },
               placeholder: 'A few words about this voice note…',
               maxLength: VOICE_CAPTION_MAX,
               style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box', marginBottom: '4px' }
             }),
-            h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '10px' } },
+            h('div', { style: { fontSize: '10px', color: counterColor, fontWeight: remain <= 15 ? 700 : 400, marginBottom: '10px' } },
               draft.length + ' / ' + VOICE_CAPTION_MAX),
             h('div', { style: { display: 'flex', gap: '8px' } },
               h('button', {
@@ -8405,6 +8429,11 @@
         body: 'Attach flashcards, an acronym, free notes (with {cloze} blanks!), or an image-link to ANY decoration. Where you place a deck shapes how you remember it. Method of loci, since 477 BC.'
       },
       {
+        emoji: '🎤',
+        title: 'Talk to a decoration',
+        body: 'Each decoration can hold up to 30 seconds of voice — explain what it means, quiz yourself out loud, or leave a future-you reminder. Add a short caption and the caption prints in your packet (audio plays on screen).'
+      },
+      {
         emoji: '🐱',
         title: 'Meet your buddy',
         body: 'Pick a critter — cat, fox, owl, turtle, or baby dragon. Four color palettes, your name. They notice your activity, celebrate your wins, and gently prompt review when a deck is due.'
@@ -9474,9 +9503,26 @@
     // otherwise closes AlloHaven itself. Active Pomodoro takes precedence
     // — Esc during a focus session is too easy to hit accidentally; users
     // must explicitly use the Cancel button.
+    //
+    // Also wires "/" as a global Search shortcut (matches GitHub-style
+    // keyboard convention) so power users can pop the search modal
+    // without mousing to the header. Suppressed while typing in inputs
+    // so it doesn't intercept literal slashes.
     useEffect(function() {
       if (!props.isOpen) return;
       var handler = function(e) {
+        if (e.key === '/') {
+          var t = e.target;
+          var tag = t && t.tagName ? t.tagName.toUpperCase() : '';
+          var isEditable = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable);
+          if (isEditable) return;
+          if (state.pomodoroState && state.pomodoroState.active) return;
+          if (!state.onboardingSeen) return;
+          if (state.activeModal) return; // don't pop search on top of another modal
+          e.preventDefault();
+          setStateField('activeModal', 'search');
+          return;
+        }
         if (e.key !== 'Escape') return;
         // Ignore Esc during active Pomodoro (accidental cancel guard)
         if (state.pomodoroState && state.pomodoroState.active) return;
@@ -11065,6 +11111,17 @@
     var printPreviewingTuple = useState(false);
     var printPreviewing = printPreviewingTuple[0];
     var setPrintPreviewing = printPreviewingTuple[1];
+
+    // Lock body scroll while the preview overlay is open so the
+    // background app doesn't scroll behind the preview when the user
+    // wheels through the long preview document. Restores prior overflow
+    // on close.
+    useEffect(function() {
+      if (!printPreviewing || typeof document === 'undefined') return;
+      var prev = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return function() { document.body.style.overflow = prev; };
+    }, [printPreviewing]);
     useEffect(function() {
       if (!window.AlloFlowVoice || typeof window.AlloFlowVoice.subscribeToVoiceProgress !== 'function') return;
       var unsubscribe = window.AlloFlowVoice.subscribeToVoiceProgress(function(payload) {
@@ -14267,6 +14324,45 @@
       setStateField('bossEncounters', next);
     }
 
+    // Realm Builder — incremental persistence. Realm Builder calls
+    // ctx.onRealmUpdate(realm) on every zone-add (not just at session end),
+    // so partial work survives mid-session disconnects. Upsert-by-id; cap
+    // at 12 realms total (most-recent-wins) so localStorage stays bounded
+    // even with image canvases. Each canvas is a base64 PNG — the cap is a
+    // pragmatic limit; if Aaron wants more, evict the oldest *complete*
+    // realm first rather than blanket truncating.
+    function saveOrUpdateRealm(realm) {
+      if (!realm || typeof realm !== 'object' || !realm.id) return;
+      var stamped = Object.assign({}, realm, { updatedAt: new Date().toISOString() });
+      var existing = state.realms || [];
+      var idx = -1;
+      for (var i = 0; i < existing.length; i++) { if (existing[i].id === realm.id) { idx = i; break; } }
+      var next;
+      if (idx >= 0) {
+        next = existing.slice();
+        next[idx] = stamped;
+      } else {
+        next = existing.concat([stamped]);
+      }
+      // Cap: keep newest 12. Evict oldest *complete* first; then oldest.
+      if (next.length > 12) {
+        var sorted = next.slice().sort(function (a, b) {
+          // complete + oldest-updated first → goes to the head, will be sliced off
+          if (!!a.isComplete !== !!b.isComplete) return a.isComplete ? -1 : 1;
+          return (a.updatedAt || '').localeCompare(b.updatedAt || '');
+        });
+        var keep = sorted.slice(sorted.length - 12);
+        next = keep;
+      }
+      setStateField('realms', next);
+    }
+
+    function deleteRealm(realmId) {
+      if (!realmId) return;
+      var next = (state.realms || []).filter(function (r) { return r.id !== realmId; });
+      setStateField('realms', next);
+    }
+
     function renderArcadeHubModal() {
       if (state.activeModal !== 'arcade') return null;
       var modes = (window.AlloHavenArcade && window.AlloHavenArcade.getRegisteredModes())
@@ -14610,7 +14706,7 @@
                 style: { width: '96px', height: '96px', flexShrink: 0, fontSize: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
               }, '🐉'),
               h('div', { style: { flex: 1, minWidth: 0 } },
-                h('div', { style: { fontSize: '16px', fontWeight: 800, color: palette.text, marginBottom: '4px' } },
+                h('h3', { style: { margin: 0, fontSize: '16px', fontWeight: 800, color: palette.text, marginBottom: '4px' } },
                   detail.topic || 'Untitled topic'),
                 h('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '6px' } },
                   outcomeChip(detail.outcome)
@@ -14664,7 +14760,7 @@
             ) : null,
             // Per-turn history
             (detail.history || []).length > 0 ? h('div', null,
-              h('div', { style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+              h('h4', { style: { margin: 0, fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
                 'Per-turn detail'),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
                 detail.history.map(function (turn, i) {
@@ -16874,8 +16970,22 @@
         },
           // Header
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', gap: '8px' } },
-            h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
-              '📊 Reflection insights'),
+            h('div', { style: { minWidth: 0, flex: 1 } },
+              h('h3', { style: { margin: 0, color: palette.text, fontSize: '18px', fontWeight: 700 } },
+                '📊 Reflection insights'),
+              ins.generatedAt && !ins.loading ? h('div', {
+                style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginTop: '2px' }
+              }, (function() {
+                var ms = Date.now() - new Date(ins.generatedAt).getTime();
+                var mins = Math.round(ms / 60000);
+                if (mins < 1) return 'Just analyzed';
+                if (mins < 60) return 'Analyzed ' + mins + ' min ago';
+                var hrs = Math.round(mins / 60);
+                if (hrs < 24) return 'Analyzed ' + hrs + ' hr ago';
+                var days = Math.round(hrs / 24);
+                return 'Analyzed ' + days + ' day' + (days === 1 ? '' : 's') + ' ago';
+              })()) : null
+            ),
             h('div', { style: { display: 'flex', gap: '6px' } },
               h('button', {
                 onClick: function() { runInsightsAnalysis(); },

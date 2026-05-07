@@ -594,7 +594,8 @@ window.SelHub = window.SelHub || {
       var content = compassContent || startContent || keepContent || digitalContent || repairContent || endingsContent || coachContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, content)
+        h('div', { style: { flex: 1, overflow: 'auto' } }, content),
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

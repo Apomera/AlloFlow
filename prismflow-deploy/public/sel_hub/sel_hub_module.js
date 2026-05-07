@@ -66,7 +66,7 @@
     var SEL_PATHWAYS = [
       { id: 'morning_check', name: 'Morning Check-In', icon: '\uD83C\uDF05', desc: 'Start the day with a mood check, breathing, and goal setting', tools: ['zones', 'mindfulness', 'goals', 'journal'], casel: 'self-awareness' },
       { id: 'calm_down', name: 'Calm Down Corner', icon: '\uD83E\uDDD8', desc: 'Regulation strategies for when emotions run high', tools: ['zones', 'coping', 'mindfulness'], casel: 'self-management' },
-      { id: 'conflict_unit', name: 'Conflict Resolution Unit', icon: '\u2696\uFE0F', desc: 'Practice resolving disagreements and building repair skills', tools: ['conflict', 'perspective', 'social', 'restorativeCircle'], casel: 'relationship-skills' },
+      { id: 'conflict_unit', name: 'Conflict Resolution Unit', icon: '\u2696\uFE0F', desc: 'Practice resolving disagreements and building repair skills', tools: ['conflict', 'conflicttheater', 'perspective', 'social', 'restorativeCircle'], casel: 'relationship-skills' },
       { id: 'empathy_week', name: 'Empathy & Perspective Week', icon: '\uD83D\uDC53', desc: 'Build empathy through perspective-taking and cultural awareness', tools: ['perspective', 'emotions', 'community', 'cultureExplorer'], casel: 'social-awareness' },
       { id: 'decision_making', name: 'Decision-Making Deep Dive', icon: '\uD83E\uDD14', desc: 'Practice ethical reasoning and responsible choices', tools: ['decisions', 'ethicalReasoning', 'safety'], casel: 'responsible-decision-making' },
       { id: 'self_discovery', name: 'Self-Discovery Journey', icon: '\u2728', desc: 'Explore who you are — strengths, emotions, and growth mindset', tools: ['strengths', 'emotions', 'growthmindset', 'compassion', 'advocacy'], casel: 'self-awareness' },
@@ -528,6 +528,7 @@
         { id: 'voicedetective', icon: '\uD83D\uDD0A', label: 'Voice Detective', desc: 'Listen to voices and identify emotions from tone.', color: 'purple', recommendedRange: 'K-12', _cat: 'social-awareness' },
         { id: 'sociallab', icon: '\uD83C\uDFAD', label: 'Social Skills Lab', desc: 'Practice social scenarios and AI peer roleplay.', color: 'indigo', recommendedRange: 'K-12', _cat: 'relationship-skills' },
         { id: 'peersupport', icon: '\uD83E\uDD1D', label: 'Peer Support Coach', desc: 'Learn OARS listening skills and when to get adult help.', color: 'emerald', recommendedRange: '3-12', _cat: 'relationship-skills' },
+        { id: 'conflicttheater', icon: '\uD83C\uDFAD', label: 'Conflict Theater', desc: 'Mediate a real conflict with two AI characters who have personalities, moods, and reasons of their own. Practice restorative principles in an immersive scene.', color: 'amber', recommendedRange: '5-12', _cat: 'relationship-skills' },
       ];
       // Insert each dynamic tool after its category header
       var _catPositions = { 'self-awareness': '_cat_SelfAwareness', 'self-management': '_cat_SelfManagement', 'social-awareness': '_cat_SocialAwareness', 'relationship-skills': '_cat_RelationshipSkills', 'responsible-decision-making': '_cat_DecisionMaking' };
