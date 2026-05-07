@@ -592,7 +592,8 @@ const PLUGIN_FILES = [
     'sel_hub/sel_tool_transitions.js',
     'sel_hub/sel_tool_friendship.js',
     'sel_hub/sel_tool_compassion.js',
-    'sel_hub/sel_tool_upstander.js'
+    'sel_hub/sel_tool_upstander.js',
+    'sel_hub/sel_tool_conflicttheater.js'
 ];
 
 // ── Source → Module compilation ─────────────────────────────────

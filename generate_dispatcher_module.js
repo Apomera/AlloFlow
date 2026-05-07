@@ -1630,12 +1630,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _fillBlankCount = _modeItemMix['fill-blank'] || 0;
         const _shortAnswerCount = _modeItemMix['short-answer'] || 0;
         const _selfExplanationCount = _modeItemMix['self-explanation'] || 0;
+        const _sequencingCount = _modeItemMix['sequencing'] || 0;
+        const _matchingCount = _modeItemMix['matching'] || 0;
         // Build item-type-specific instruction blocks dynamically
         const _itemTypeBlocks = [];
         if (_mcqCount > 0) _itemTypeBlocks.push(_mcqCount + ' Multiple Choice Question(s) with 4 options each');
         if (_fillBlankCount > 0) _itemTypeBlocks.push(_fillBlankCount + ' Fill-in-the-Blank Question(s)');
         if (_shortAnswerCount > 0) _itemTypeBlocks.push(_shortAnswerCount + ' Short-Answer Question(s) (1-2 sentence response)');
         if (_selfExplanationCount > 0) _itemTypeBlocks.push(_selfExplanationCount + ' Self-Explanation Prompt(s) (3-5 sentence explanation in own words)');
+        if (_sequencingCount > 0) _itemTypeBlocks.push(_sequencingCount + ' Sequencing Question(s) (4-6 items the student must put in correct order)');
+        if (_matchingCount > 0) _itemTypeBlocks.push(_matchingCount + ' Matching Question(s) (4-6 left-right pairs the student must match)');
         const _includeReflections = (_quizMode === 'exit-ticket' && quizReflectionCount > 0);
         if (_includeReflections) _itemTypeBlocks.push(quizReflectionCount + ' Open-Ended Reflection Question(s)');
         const _itemTypeInstructions = _itemTypeBlocks.map(function (s, i) { return (i + 1) + '. ' + s + '.'; }).join('\n          ');
@@ -1650,7 +1654,9 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               { "type": "mcq", "question": "...", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"options": ["..."], ${effectiveLanguage !== 'English' ? '"options_en": ["..."], ' : ''}"correctAnswer": "..." }${_fillBlankCount > 0 ? `,
               { "type": "fill-blank", "question": "Sentence with ___ for the blank.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedFill": "...", "acceptableAlternatives": ["alt1", "alt2"] }` : ''}${_shortAnswerCount > 0 ? `,
               { "type": "short-answer", "question": "Open prompt requiring 1-2 sentence response.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"expectedAnswer": "Concise reference answer (10-30 words) covering the key idea." }` : ''}${_selfExplanationCount > 0 ? `,
-              { "type": "self-explanation", "question": "Explain X in your own words. Cover the key elements: A, B, C.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"rubric": "Reward: clear explanation of A, accurate description of B, connection to C. Use of student's own words. Avoid grading on memorization of textbook phrasing." }` : ''}
+              { "type": "self-explanation", "question": "Explain X in your own words. Cover the key elements: A, B, C.", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"rubric": "Reward: clear explanation of A, accurate description of B, connection to C. Use of student's own words. Avoid grading on memorization of textbook phrasing." }` : ''}${_sequencingCount > 0 ? `,
+              { "type": "sequencing", "question": "Put these in the correct order:", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"items": ["Step 1 / earliest event / cause", "Step 2", "Step 3", "Step 4 / latest event / effect"] }` : ''}${_matchingCount > 0 ? `,
+              { "type": "matching", "question": "Match each item with its pair:", ${effectiveLanguage !== 'English' ? '"question_en": "...", ' : ''}"pairs": [{ "left": "Term A", "right": "Definition A" }, { "left": "Term B", "right": "Definition B" }, { "left": "Term C", "right": "Definition C" }, { "left": "Term D", "right": "Definition D" }] }` : ''}
             ]${_includeReflections ? `,
             "reflections": [${effectiveLanguage !== 'English' ? '{ "text": "...", "text_en": "..." }' : '"Question..."'}]` : ''}
           }`;
@@ -1669,6 +1675,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
           ${_shortAnswerCount > 0 ? 'For each Short-Answer: write a question that requires a 1-2 sentence response demonstrating understanding (not just recall). Provide expectedAnswer as a 10-30 word reference answer the AI grader can compare student responses against.' : ''}
           ${_selfExplanationCount > 0 ? 'For each Self-Explanation Prompt: write a question that asks the student to explain a key concept in their own words (3-5 sentences). Provide a "rubric" string the AI grader can use — describe what a complete explanation should cover (key elements, relationships, examples). Reward genuine understanding over memorized phrasing.' : ''}
+          ${_sequencingCount > 0 ? 'For each Sequencing Question: provide an "items" array of 4-6 strings IN THE CORRECT ORDER (the student will see them shuffled and must drag them back into order via up/down buttons). Choose content where ordering genuinely matters: chronological events, process steps, cause-effect chains, hierarchies. Each item should be one short sentence or phrase.' : ''}
+          ${_matchingCount > 0 ? 'For each Matching Question: provide a "pairs" array of 4-6 objects, each with "left" and "right" strings. The student will see the right column shuffled and must click-pair them with the left items. Choose content where genuine left-right correspondences exist: term-definition, cause-effect, person-contribution, country-capital, etc. Avoid pairs that are too similar to one another.' : ''}
           ${lessonDNA ? `Instruction: Ensure questions align with the "Core Concepts" and test the "Required Vocabulary" listed in the Lesson DNA above.` : ''}
           ${useEmojis ? 'Include relevant emojis in questions and options to support understanding.' : 'Do not use emojis.'}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
@@ -1709,6 +1717,12 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 } else if (itemType === 'self-explanation') {
                     // Self-explanation uses a rubric string for the grader instead of a key answer.
                     base.rubric = q.rubric || q.expectedAnswer || "";
+                } else if (itemType === 'sequencing') {
+                    // Sequencing: items[] holds the canonical correct order; view shuffles for display.
+                    base.items = Array.isArray(q.items) ? q.items.filter(function (it) { return it && (typeof it === 'string' || it.text); }) : [];
+                } else if (itemType === 'matching') {
+                    // Matching: pairs[] holds canonical {left, right}; view shuffles right column for display.
+                    base.pairs = Array.isArray(q.pairs) ? q.pairs.filter(function (pr) { return pr && (pr.left || pr.left_text) && (pr.right || pr.right_text); }) : [];
                 }
                 return base;
             });
