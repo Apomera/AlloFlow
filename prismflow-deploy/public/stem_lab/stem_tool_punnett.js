@@ -1020,6 +1020,38 @@ window.StemLab = window.StemLab || {
               })
             ),
 
+            // ── Topic-accent hero band per sub-tool ──
+            (function() {
+              var TAB_META = {
+                cross:       { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDDEC', title: 'Punnett Cross \u2014 predict offspring ratios',         hint: 'Mendel\u2019s peas (1866). Aa \u00d7 Aa \u2192 1:2:1 genotype, 3:1 phenotype. Codominant + incomplete + X-linked break the simple rule. Mendel\u2019s laws were ignored for 34 years until rediscovered in 1900.' },
+                pedigree:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDC6A', title: 'Pedigree \u2014 trace inheritance through families',     hint: 'Squares = males, circles = females, filled = affected. Autosomal recessive skips generations; autosomal dominant shows in every generation; X-linked recessive shows mostly in males. Real genetic counselors do this daily.' },
+                population:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDCCA', title: 'Population \u2014 Hardy-Weinberg equilibrium',           hint: 'p\u00b2 + 2pq + q\u00b2 = 1. Allele frequencies stay constant when 5 conditions hold (large pop, no migration, no mutation, no selection, random mating). Deviations reveal evolution in action. AP Bio Big Idea 1.A.1.' },
+                traits:      { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDD2C', title: 'Trait Explorer \u2014 real genetic conditions',          hint: 'Sickle cell trait protects against malaria (heterozygote advantage). Cystic fibrosis is recessive but in 1 of 25 carriers in NW European descent. Most \u201Csimple Mendelian\u201D textbook traits are actually polygenic.' },
+                dna2protein: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDEA', title: 'DNA \u2192 Protein \u2014 codon table + translation',    hint: 'Triplet code: 64 codons \u2192 20 amino acids + stop. AUG starts; UAA/UAG/UGA stop. Wobble at the third position lets one tRNA read multiple codons \u2014 evolution\u2019s redundancy buffer.' },
+                challenge:   { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83C\uDFC6', title: 'Challenge \u2014 graded genetics quiz',                  hint: 'Punnett ratios, pedigree analysis, Hardy-Weinberg algebra, dihybrid 9:3:3:1, sex-linked traps. AP Bio Big Idea 3.A.1\u20133. NGSS HS-LS3-1, HS-LS3-2.' },
+                battle:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2694\uFE0F', title: 'Gene Defense \u2014 retrieval as combat',                hint: 'Speed builds automaticity. Once codon-table lookups + Punnett ratios are automatic, your working memory is free for higher-order reasoning like predicting the consequences of a frameshift mutation.' },
+                learn:       { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCD6', title: 'Learn \u2014 genetics concepts by grade',                hint: 'K-2: families pass on traits. 3-5: dominant/recessive. MS: Punnett squares + DNA basics. HS: full Mendelian + transcription/translation + epigenetics. AP Bio adds population genetics + evolutionary inference.' }
+              };
+              var meta = TAB_META[subtool] || TAB_META.cross;
+              return h('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                h('div', { style: { flex: 1, minWidth: 220 } },
+                  h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // ── Badge Panel ──
             showBadgePanel && h('div', { className: 'mb-4 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl p-3 border border-amber-200' },
               h('p', { className: 'text-[11px] font-bold text-amber-600 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 Badges'),
