@@ -832,6 +832,35 @@ return React.createElement("div", { className: "max-w-4xl mx-auto animate-in fad
 
             ),
 
+            // ── Topic-accent hero band per mode ──
+            (function() {
+              var MODE_META = {
+                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: 'Viewer \u2014 ball-and-stick + space-filling',         hint: 'Each atom\u2019s color follows CPK (carbon black, oxygen red, nitrogen blue, hydrogen white). Bond lengths are not arbitrary \u2014 covalent radii from quantum chemistry tables, ~70-150 picometers.' },
+                creator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697',         title: 'Compound Creator \u2014 valence + bonding rules',     hint: 'Octet rule: most atoms want 8 valence electrons. C bonds 4 ways, N 3, O 2, H 1. Lewis dot structures (1916) still drive 90% of intro chemistry intuition.' },
+                build:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDF1', title: 'Build \u2014 drag atoms, draw bonds',                  hint: 'Single, double, triple bonds = 1, 2, 3 shared electron pairs. Triple bonds are shorter and stronger (N\u2261N at 110pm vs N\u2013N at 145pm). Geometry follows VSEPR: pairs repel.' },
+                table:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDC2', title: 'Periodic Table \u2014 Mendeleev\u2019s 1869 grid',     hint: 'Periods (rows) = electron shells; groups (columns) = valence electrons. Mendeleev predicted gallium and germanium\u2019s properties before discovery \u2014 the table predicted reality.' },
+                reactions: { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u2697',         title: 'Reactions \u2014 reactants \u2192 products + ΔH',      hint: 'Conservation of mass (Lavoisier 1789): atoms in = atoms out. Balance the equation, predict the product, classify (synthesis / decomposition / single-replace / double-replace / combustion).' }
+              };
+              var meta = MODE_META[mode] || MODE_META.viewer;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // â”€â”€ Viewer Mode â”€â”€
 
             mode === 'viewer' && React.createElement("div", null,

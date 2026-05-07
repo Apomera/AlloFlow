@@ -2304,7 +2304,7 @@ window.SelHub = window.SelHub || {
         if (document.getElementById('sel-coping-keyframes')) return;
         var s = document.createElement('style');
         s.id = 'sel-coping-keyframes';
-        s.textContent = '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }';
+        s.textContent = '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } } @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
         document.head.appendChild(s);
         return function() { var el = document.getElementById('sel-coping-keyframes'); if (el) el.remove(); };
       }, []);
@@ -2321,7 +2321,8 @@ window.SelHub = window.SelHub || {
         practiceContent,
         planContent,
         matcherContent,
-        logContent
+        logContent,
+        window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
     }
   });

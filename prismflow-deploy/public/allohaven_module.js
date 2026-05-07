@@ -4878,6 +4878,14 @@
     var voicePanelOpen = voicePanelOpenTuple[0];
     var setVoicePanelOpen = voicePanelOpenTuple[1];
 
+    // Caption draft — null = not editing; string = editing (preview attach
+    // OR editing saved caption). Optional ≤80-char text companion to the
+    // voice note that prints in the packet (the audio itself can't print).
+    var VOICE_CAPTION_MAX = 80;
+    var captionDraftTuple = useState(null);
+    var captionDraft = captionDraftTuple[0];
+    var setCaptionDraft = captionDraftTuple[1];
+
     // Smart deck import (Phase 2p.21) — lifted to MemoryModalInner top
     // so the hook order stays stable across edit/view/quiz mode toggles.
     var importPanelOpenTuple = useState(false);
@@ -6964,13 +6972,16 @@
       setRecorded(null);
       setVoiceMode('idle');
       setRecordSeconds(0);
+      setCaptionDraft(null);
     }
     function saveRecording() {
       if (!recorded || typeof p.onSaveVoiceNote !== 'function') return;
-      p.onSaveVoiceNote(recorded.base64, recorded.durationMs);
+      var caption = (captionDraft || '').trim().slice(0, VOICE_CAPTION_MAX);
+      p.onSaveVoiceNote(recorded.base64, recorded.durationMs, caption || null);
       setRecorded(null);
       setVoiceMode('idle');
       setRecordSeconds(0);
+      setCaptionDraft(null);
       setVoicePanelOpen(false);
     }
     // Cleanup on unmount: stop any in-progress recording
@@ -7010,30 +7021,86 @@
             style: { background: 'transparent', border: 'none', color: palette.textMute, fontSize: '11px', cursor: 'pointer' }
           }, '✕')
         ),
-        // Existing saved note — show playback + replace + delete
-        hasNote && voiceMode === 'idle' ? h('div', null,
-          h('audio', {
-            src: savedNote.base64,
-            controls: true,
-            style: { width: '100%', marginBottom: '8px' }
-          }),
-          h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '8px', fontStyle: 'italic' } },
-            'Recorded ' + new Date(savedNote.recordedAt).toLocaleString()
-            + ' · ' + Math.round((savedNote.durationMs || 0) / 1000) + 's'),
-          h('div', { style: { display: 'flex', gap: '8px' } },
-            h('button', {
-              onClick: startRecording,
-              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
-            }, '🎤 Replace'),
-            h('button', {
-              onClick: function() {
-                if (window.confirm && !window.confirm('Delete this voice note?')) return;
-                if (typeof p.onClearVoiceNote === 'function') p.onClearVoiceNote();
-              },
-              style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
-            }, '🗑 Delete')
-          )
-        ) : null,
+        // Existing saved note — show playback + caption + replace + delete
+        hasNote && voiceMode === 'idle' ? (function() {
+          var savedCaption = (savedNote && savedNote.caption) || '';
+          var editingCaption = captionDraft !== null;
+          return h('div', null,
+            h('audio', {
+              src: savedNote.base64,
+              controls: true,
+              style: { width: '100%', marginBottom: '8px' }
+            }),
+            h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '8px', fontStyle: 'italic' } },
+              'Recorded ' + new Date(savedNote.recordedAt).toLocaleString()
+              + ' · ' + Math.round((savedNote.durationMs || 0) / 1000) + 's'),
+            // Caption row — shown as quoted text when present, "Add a caption"
+            // affordance when absent. Caption prints in the packet so the
+            // audio (which can't print) still has a textual companion.
+            editingCaption ? h('div', { style: { marginBottom: '10px' } },
+              h('label', {
+                htmlFor: 'ah-vn-caption-' + decoration.id,
+                style: { display: 'block', fontSize: '10px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }
+              }, 'Caption (prints in packet)'),
+              h('input', {
+                id: 'ah-vn-caption-' + decoration.id,
+                type: 'text',
+                value: captionDraft,
+                onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
+                placeholder: 'A few words about this voice note…',
+                maxLength: VOICE_CAPTION_MAX,
+                style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box' }
+              }),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' } },
+                h('span', { style: { fontSize: '10px', color: palette.textMute } },
+                  captionDraft.length + ' / ' + VOICE_CAPTION_MAX),
+                h('div', { style: { display: 'flex', gap: '6px' } },
+                  h('button', {
+                    onClick: function() { setCaptionDraft(null); },
+                    style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+                  }, 'Cancel'),
+                  h('button', {
+                    onClick: function() {
+                      var clean = (captionDraft || '').trim().slice(0, VOICE_CAPTION_MAX);
+                      if (typeof p.onSetVoiceNoteCaption === 'function') {
+                        p.onSetVoiceNoteCaption(clean || null);
+                      }
+                      setCaptionDraft(null);
+                    },
+                    style: Object.assign({}, primaryBtnStyle(palette), { padding: '3px 10px', fontSize: '10px' })
+                  }, 'Save caption')
+                )
+              )
+            ) : (savedCaption ? h('div', {
+              style: { marginBottom: '10px', padding: '8px 10px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'flex-start' }
+            },
+              h('div', { style: { fontSize: '12px', color: palette.text, fontStyle: 'italic', lineHeight: '1.45', flex: 1, minWidth: 0 } },
+                '“' + savedCaption + '”'),
+              h('button', {
+                onClick: function() { setCaptionDraft(savedCaption); },
+                'aria-label': 'Edit caption',
+                title: 'Edit caption',
+                style: { background: 'transparent', border: 'none', color: palette.textDim, fontSize: '12px', cursor: 'pointer', padding: '0 4px', fontFamily: 'inherit' }
+              }, '✎')
+            ) : h('button', {
+              onClick: function() { setCaptionDraft(''); },
+              style: { background: 'transparent', color: palette.textDim, border: '1px dashed ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit', marginBottom: '10px' }
+            }, '+ Add a caption (prints in packet)')),
+            h('div', { style: { display: 'flex', gap: '8px' } },
+              h('button', {
+                onClick: startRecording,
+                style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+              }, '🎤 Replace'),
+              h('button', {
+                onClick: function() {
+                  if (window.confirm && !window.confirm('Delete this voice note?')) return;
+                  if (typeof p.onClearVoiceNote === 'function') p.onClearVoiceNote();
+                },
+                style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
+              }, '🗑 Delete')
+            )
+          );
+        })() : null,
         // Idle, no saved note — show record button
         !hasNote && voiceMode === 'idle' ? h('div', null,
           h('p', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5', margin: '0 0 10px 0' } },
@@ -7055,26 +7122,45 @@
             style: Object.assign({}, primaryBtnStyle(palette), { padding: '8px 22px', fontSize: '13px' })
           }, '⏹ Stop')
         ) : null,
-        // Preview — playback + save / discard
-        voiceMode === 'preview' && recorded ? h('div', null,
-          h('audio', {
-            src: recorded.base64,
-            controls: true,
-            style: { width: '100%', marginBottom: '8px' }
-          }),
-          h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '8px' } },
-            Math.round(recorded.durationMs / 1000) + ' second' + (Math.round(recorded.durationMs / 1000) === 1 ? '' : 's')),
-          h('div', { style: { display: 'flex', gap: '8px' } },
-            h('button', {
-              onClick: discardRecording,
-              style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
-            }, '✕ Discard'),
-            h('button', {
-              onClick: saveRecording,
-              style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 18px', fontSize: '12px' })
-            }, '✓ Save')
-          )
-        ) : null,
+        // Preview — playback + optional caption + save / discard
+        voiceMode === 'preview' && recorded ? (function() {
+          var draft = captionDraft == null ? '' : captionDraft;
+          return h('div', null,
+            h('audio', {
+              src: recorded.base64,
+              controls: true,
+              style: { width: '100%', marginBottom: '8px' }
+            }),
+            h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '10px' } },
+              Math.round(recorded.durationMs / 1000) + ' second' + (Math.round(recorded.durationMs / 1000) === 1 ? '' : 's')),
+            // Caption attach — optional ≤80 chars; prints in the packet.
+            h('label', {
+              htmlFor: 'ah-vn-newcap-' + decoration.id,
+              style: { display: 'block', fontSize: '10px', fontWeight: 700, color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }
+            }, 'Caption (optional, prints in packet)'),
+            h('input', {
+              id: 'ah-vn-newcap-' + decoration.id,
+              type: 'text',
+              value: draft,
+              onChange: function(e) { setCaptionDraft(e.target.value.slice(0, VOICE_CAPTION_MAX)); },
+              placeholder: 'A few words about this voice note…',
+              maxLength: VOICE_CAPTION_MAX,
+              style: { width: '100%', padding: '6px 8px', fontSize: '12px', fontFamily: 'inherit', color: palette.text, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', boxSizing: 'border-box', marginBottom: '4px' }
+            }),
+            h('div', { style: { fontSize: '10px', color: palette.textMute, marginBottom: '10px' } },
+              draft.length + ' / ' + VOICE_CAPTION_MAX),
+            h('div', { style: { display: 'flex', gap: '8px' } },
+              h('button', {
+                onClick: discardRecording,
+                style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }
+              }, '✕ Discard'),
+              h('button', {
+                onClick: saveRecording,
+                style: Object.assign({}, primaryBtnStyle(palette), { padding: '6px 18px', fontSize: '12px' })
+              }, '✓ Save')
+            )
+          );
+        })() : null,
         voiceError ? h('div', {
           role: 'alert',
           style: { fontSize: '11px', color: '#dc2626', marginTop: '8px', fontStyle: 'italic' }
@@ -11473,18 +11559,21 @@
     // Voice notes (Phase 2p.15) — students record up to 30 seconds of
     // audio per decoration. Stored as base64 webm/opus in localStorage.
     // No token cost — voice is pure expression, not currency.
-    function setDecorationVoiceNote(decorationId, base64, durationMs) {
+    // caption is an optional ≤80-char text companion that prints in the
+    // packet (audio itself can't print). Pass null/undefined to leave it
+    // unset on a fresh recording.
+    function setDecorationVoiceNote(decorationId, base64, durationMs, caption) {
       var hadBefore = false;
       var newDecs = state.decorations.map(function(d) {
         if (d.id !== decorationId) return d;
         hadBefore = !!(d.voiceNote && d.voiceNote.base64);
-        return Object.assign({}, d, {
-          voiceNote: {
-            base64: base64,
-            durationMs: durationMs,
-            recordedAt: new Date().toISOString()
-          }
-        });
+        var vn = {
+          base64: base64,
+          durationMs: durationMs,
+          recordedAt: new Date().toISOString()
+        };
+        if (caption) vn.caption = String(caption).slice(0, 80);
+        return Object.assign({}, d, { voiceNote: vn });
       });
       setStateField('decorations', newDecs);
       // Companion responds to the recording — small relational beat
@@ -11508,6 +11597,19 @@
         var copy = Object.assign({}, d);
         delete copy.voiceNote;
         return copy;
+      });
+      setStateField('decorations', newDecs);
+    }
+    // Update only the caption on an existing voice note. caption=null
+    // removes the caption (audio stays). No-op if there's no voice note
+    // attached to the decoration.
+    function setDecorationVoiceNoteCaption(decorationId, caption) {
+      var newDecs = state.decorations.map(function(d) {
+        if (d.id !== decorationId || !d.voiceNote || !d.voiceNote.base64) return d;
+        var nextVn = Object.assign({}, d.voiceNote);
+        if (caption) nextVn.caption = String(caption).slice(0, 80);
+        else delete nextVn.caption;
+        return Object.assign({}, d, { voiceNote: nextVn });
       });
       setStateField('decorations', newDecs);
     }
@@ -14566,6 +14668,67 @@
       );
     }
 
+    // Compute a per-section preview (count + short label) shown in the
+    // Print Options modal so the student/teacher can see what each
+    // checkbox will actually print before firing window.print(). Counts
+    // mirror what the print packet itself filters for at render time
+    // (e.g. achievements last-30-days, journals newest-5, encounters
+    // newest-8). Returns null when the section has no preview hook.
+    function printSectionPreview(s, secId) {
+      try {
+        if (secId === 'companion') {
+          var has = !!(s.companion && s.companion.species);
+          return { count: has ? 1 : 0, label: has ? '1 companion' : 'no companion yet' };
+        }
+        if (secId === 'achievements') {
+          var ach = s.achievements || {};
+          var nowMs = Date.now();
+          var thirty = 30 * 24 * 60 * 60 * 1000;
+          var recent = (typeof ACHIEVEMENT_CATALOG !== 'undefined' ? ACHIEVEMENT_CATALOG : []).filter(function(a) {
+            if (!ach[a.id] || !ach[a.id].unlockedAt) return false;
+            return (nowMs - new Date(ach[a.id].unlockedAt).getTime()) <= thirty;
+          });
+          var total = Object.keys(ach).length;
+          if (recent.length > 0) return { count: recent.length, label: recent.length + ' recent · ' + total + ' total' };
+          if (total > 0) return { count: 0, label: total + ' total (none in last 30 days)' };
+          return { count: 0, label: 'none yet' };
+        }
+        if (secId === 'goals') {
+          var goals = s.goals || [];
+          var n2 = Date.now();
+          var act = goals.filter(function(g) {
+            if (g.completedAt) return new Date(g.completedAt).getTime() >= n2 - 30 * 24 * 60 * 60 * 1000;
+            var endMs = g.endDate ? new Date(g.endDate).getTime() : Infinity;
+            return endMs >= n2;
+          });
+          return { count: act.length, label: act.length === 0 ? 'none active' : act.length + ' active or recent' };
+        }
+        if (secId === 'memoryDecks') {
+          var withC = (s.decorations || []).filter(function(d) { return !!d.linkedContent; }).length;
+          return { count: withC, label: withC === 0 ? 'no decks yet' : withC + ' deck' + (withC === 1 ? '' : 's') };
+        }
+        if (secId === 'stories') {
+          var n3 = (s.stories || []).length;
+          return { count: n3, label: n3 === 0 ? 'no stories yet' : n3 + ' stor' + (n3 === 1 ? 'y' : 'ies') };
+        }
+        if (secId === 'journals') {
+          var jt = (s.journalEntries || []).length;
+          var jc = Math.min(jt, 5);
+          if (jt === 0) return { count: 0, label: 'no entries yet' };
+          if (jt <= 5) return { count: jc, label: jc + ' entr' + (jc === 1 ? 'y' : 'ies') };
+          return { count: jc, label: 'newest 5 of ' + jt };
+        }
+        if (secId === 'bossEncounters') {
+          var et = (s.bossEncounters || []).length;
+          var ec = Math.min(et, 8);
+          if (et === 0) return { count: 0, label: 'no encounters yet' };
+          if (et <= 8) return { count: ec, label: ec + ' encounter' + (ec === 1 ? '' : 's') };
+          return { count: ec, label: 'newest 8 of ' + et };
+        }
+      } catch (e) { /* defensive: never let preview math crash the modal */ }
+      return null;
+    }
+
     function renderPrintOptionsModal() {
       if (state.activeModal !== 'print-options') return null;
       var opts = state.printOptions || {};
@@ -14654,6 +14817,8 @@
           h('div', { style: { display: 'flex', flexDirection: 'column', gap: '8px' } },
             PRINT_SECTION_DEFS.map(function(sec) {
               var on = !!opts[sec.id];
+              var preview = printSectionPreview(state, sec.id);
+              var willPrint = !!(preview && preview.count > 0);
               return h('label', {
                 key: 'po-' + sec.id,
                 style: {
@@ -14662,7 +14827,8 @@
                   background: on ? palette.surface : 'transparent',
                   border: '1.5px solid ' + (on ? palette.accent : palette.border),
                   borderRadius: '8px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  opacity: on ? 1 : 0.55
                 }
               },
                 h('input', {
@@ -14673,9 +14839,23 @@
                   style: { marginTop: '3px', cursor: 'pointer', width: '18px', height: '18px', accentColor: palette.accent }
                 }),
                 h('div', { style: { flex: 1, minWidth: 0 } },
-                  h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } },
-                    sec.emoji + ' ' + sec.label),
-                  h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45', marginTop: '2px' } }, sec.hint)
+                  h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
+                    h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } },
+                      sec.emoji + ' ' + sec.label),
+                    preview ? h('span', {
+                      style: {
+                        fontSize: '10px', fontWeight: 700,
+                        padding: '2px 8px', borderRadius: '999px',
+                        background: willPrint ? palette.surface : 'transparent',
+                        color: willPrint ? palette.accent : palette.textMute,
+                        border: '1px solid ' + (willPrint ? palette.accent : palette.border)
+                      }
+                    }, preview.label) : null
+                  ),
+                  h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.45', marginTop: '2px' } }, sec.hint),
+                  (on && preview && preview.count === 0) ? h('div', {
+                    style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic', marginTop: '4px' }
+                  }, 'Nothing to print here yet — section will be skipped.') : null
                 )
               );
             })
@@ -16401,8 +16581,9 @@
         onSetSubjects: function(subjectIds) { setDecorationSubjects(decorationId, subjectIds); },
         onToggleFavorite: function() { toggleDecorationFavorite(decorationId); },
         onMakeSimilar: function() { makeSimilarTo(decorationId); },
-        onSaveVoiceNote: function(base64, durationMs) { setDecorationVoiceNote(decorationId, base64, durationMs); },
+        onSaveVoiceNote: function(base64, durationMs, caption) { setDecorationVoiceNote(decorationId, base64, durationMs, caption); },
         onClearVoiceNote: function() { clearDecorationVoiceNote(decorationId); },
+        onSetVoiceNoteCaption: function(caption) { setDecorationVoiceNoteCaption(decorationId, caption); },
         onPrintCard: function() {
           // Phase 2p.17 — set printScope to the decoration, paint, fire
           // window.print(), then reset printScope after the dialog closes.
@@ -19167,8 +19348,12 @@
               subjectLabels.join(' · ')) : null,
             d.studentReflection ? h('p', { style: { margin: '0 0 6px 0', fontStyle: 'italic' } },
               '"' + d.studentReflection + '"') : null,
-            d.voiceNote ? h('p', { style: { margin: '0 0 6px 0', fontSize: '11px', color: '#666' } },
-              '🎤 Voice note attached (' + Math.round((d.voiceNote.durationMs || 0) / 1000) + 's, audio not printable)') : null
+            d.voiceNote ? h('div', { style: { margin: '0 0 6px 0' } },
+              h('p', { style: { margin: 0, fontSize: '11px', color: '#666' } },
+                '🎤 Voice note attached (' + Math.round((d.voiceNote.durationMs || 0) / 1000) + 's, audio not printable)'),
+              d.voiceNote.caption ? h('p', { style: { margin: '2px 0 0 0', fontSize: '11px', color: '#222', fontStyle: 'italic' } },
+                '“' + d.voiceNote.caption + '”') : null
+            ) : null
           )
         ),
         contentBody ? h('div', { style: { padding: '12px 14px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', marginBottom: '20px' } }, contentBody) : null,
@@ -19282,6 +19467,10 @@
         }
 
         var moodOpt = decoration.mood ? getMoodOption(decoration.mood) : null;
+        var vn = decoration.voiceNote;
+        var vnRow = vn ? h('p', { style: Object.assign({}, smallMetaStyle, { color: '#666', margin: '4px 0 0 0' }) },
+          '🎤 Voice note · ' + Math.round((vn.durationMs || 0) / 1000) + 's'
+          + (vn.caption ? ' · “' + vn.caption + '”' : ' (audio not printable)')) : null;
         return h('div', {
           key: 'pd-' + decoration.id,
           className: 'ah-print-section'
@@ -19293,7 +19482,8 @@
               ' · ' + moodOpt.emoji + ' ' + moodOpt.label) : null
           ),
           h('p', { style: smallMetaStyle }, meta),
-          body
+          body,
+          vnRow
         );
       }
 

@@ -291,6 +291,26 @@
     );
   };
 
+  // Always-on resource strip for tools that touch sensitive content.
+  // Quieter than renderCrisisResources (no role="alert" / aria-live) so screen
+  // readers don't announce on every render. Use as a persistent footer.
+  window.SelHub.renderResourceFooter = function(h, band) {
+    var isYoung = band === 'elementary';
+    return h('div', {
+      role: 'complementary',
+      'aria-label': 'Crisis support resources',
+      style: { background: '#fff7ed', border: '1px solid #fdba74', borderRadius: 12, padding: '10px 14px', marginTop: 16, fontSize: 12, color: '#7c2d12' }
+    },
+      h('div', { style: { fontWeight: 700, marginBottom: 4 } }, isYoung ? 'You\u2019re not alone. Help is here:' : 'You\u2019re not alone. If you need help, reach out:'),
+      h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 14px' } },
+        !isYoung && h('span', null, '\uD83D\uDCDE 988 (call or text)'),
+        !isYoung && h('span', null, '\uD83D\uDCF1 Text HOME to 741741'),
+        !isYoung && h('span', null, '\uD83C\uDF08 Trevor (LGBTQ+): 1-866-488-7386'),
+        h('span', null, '\uD83C\uDFEB Trusted adult at school')
+      )
+    );
+  };
+
   window.SelHub.getSessionFlagLog = function() { return _flagLog.slice(); };
 
   console.log('[SelHub] Safety layer v1.1 loaded (Canvas-compatible, in-memory)');

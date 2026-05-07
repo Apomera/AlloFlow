@@ -1672,7 +1672,8 @@ window.SelHub = window.SelHub || {
         s.textContent = [
           '@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }',
           '@keyframes scaleIn { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }',
-          '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }'
+          '@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }',
+          '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }'
         ].join('\n');
         document.head.appendChild(s);
         return function() { var el = document.getElementById('sel-zones-keyframes'); if (el) el.remove(); };

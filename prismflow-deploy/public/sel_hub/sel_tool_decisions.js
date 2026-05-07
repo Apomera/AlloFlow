@@ -29,6 +29,14 @@ window.SelHub = window.SelHub || {
     document.body.appendChild(liveRegion);
   })();
 
+  // ── WCAG 2.3.3: Reduced-motion guard ──
+  (function() {
+    if (document.getElementById('allo-decisions-rm-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-decisions-rm-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    document.head.appendChild(st);
+  })();
 
   // ══════════════════════════════════════════════════════════════
   // ── Sound Effects Engine (Web Audio API) ──
