@@ -270,8 +270,9 @@ function computeContentAccuracy(harvest) {
 // score + overall status + blocking-issues list. Equal weighting across
 // the 5 dimensions for v1.
 const STATUS_POINTS = { 'Aligned': 20, 'Partially Aligned': 12, 'Not Aligned': 0 };
-const ALL_DIMENSIONS = ['vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
+const ALL_DIMENSIONS = ['standards', 'vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'];
 const DIMENSION_LABELS = {
+  standards: 'Standards alignment',
   vocabulary: 'Vocabulary fit',
   engagement: 'Engagement variety',
   accessibility: 'Content accessibility',
@@ -289,9 +290,14 @@ function computeReadinessScore(comprehensive) {
   ALL_DIMENSIONS.forEach(dim => {
     const data = comprehensive[dim];
     if (!data) return;
-    // Skip placeholder failures from the readiness math but still surface them in the report.
+    // Skip placeholder failures and N/A dimensions from the readiness math
+    // but still surface them in the per-dimension list so the teacher can see them.
     if (data.computeFailed) {
       dimensionScores[dim] = { status: 'Compute failed', points: 0, computeFailed: true };
+      return;
+    }
+    if (data.notApplicable) {
+      dimensionScores[dim] = { status: 'Not applicable', points: 0, notApplicable: true };
       return;
     }
     dimensionsEvaluated++;
@@ -302,7 +308,10 @@ function computeReadinessScore(comprehensive) {
     if (status === 'Not Aligned') {
       // Pull a representative issue per blocked dimension
       let issue = '';
-      if (dim === 'vocabulary' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
+      if (dim === 'standards' && Array.isArray(data.perStandard) && data.perStandard[0]) {
+        issue = data.perStandard[0].adminRecommendation || ('Standard ' + (data.perStandard[0].standard || 'unknown') + ' did not pass.');
+      }
+      else if (dim === 'vocabulary' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
       else if (dim === 'engagement' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
       else if (dim === 'accessibility' && Array.isArray(data.recommendations) && data.recommendations[0]) issue = data.recommendations[0];
       else if (dim === 'udl' && data.overallNarrative) issue = data.overallNarrative;
@@ -2031,6 +2040,46 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
          // wall-clock from ~30-60s sequential to ~10s.
          const auditHarvest = harvestExistingAuditSignals(artifactsToAudit);
          content.comprehensive = content.comprehensive || {};
+
+         // ---- Plan R+: Standards alignment as 6th dimension -----------------
+         // Fold the standards-alignment data (already produced by the LLM call
+         // above when targetStandards exist) into comprehensive.standards so it
+         // counts toward the readiness score and renders in the same dimension
+         // framework as the others. content.reports is kept as a back-compat
+         // alias but the canonical shape going forward is comprehensive.standards.
+         (function buildStandardsDimension() {
+             const reports = Array.isArray(content.reports) ? content.reports : [];
+             if (reports.length === 0) {
+                 // No standards entered → not applicable, exclude from score math.
+                 content.comprehensive.standards = {
+                     status: 'Not applicable',
+                     notApplicable: true,
+                     reason: 'No target standards entered. Add a standard in the settings panel to include standards alignment in the audit.',
+                     perStandard: [],
+                 };
+                 return;
+             }
+             let passCount = 0; let reviseCount = 0;
+             const recs = [];
+             reports.forEach(function (r) {
+                 if (r && r.overallDetermination === 'Pass') passCount++;
+                 else reviseCount++;
+                 if (r && r.adminRecommendation) recs.push(r.adminRecommendation);
+             });
+             let status;
+             if (reviseCount === 0) status = 'Aligned';
+             else if (passCount === 0) status = 'Not Aligned';
+             else status = 'Partially Aligned';
+             content.comprehensive.standards = {
+                 status,
+                 perStandard: reports,
+                 totalStandards: reports.length,
+                 passCount,
+                 reviseCount,
+                 recommendations: recs.slice(0, 5),
+                 notes: reports.length + ' standard' + (reports.length === 1 ? '' : 's') + ' audited via Holistic Lesson Plan Audit. Each standard evaluated for text-, activity-, and assessment-alignment + cognitive demand.',
+             };
+         })();
 
          // ---- Sync deterministic compute (Steps 1, 2, 3, 5 stats) -----------
          // On compute failure, write a placeholder marker so the teacher sees

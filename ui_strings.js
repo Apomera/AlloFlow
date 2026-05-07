@@ -1108,7 +1108,7 @@
                                                   "tool_adventure": "Adventure Mode",
                                                     "tool_quiz": "Exit Ticket",
                                                       "tool_fullpack": "Generate Full Resource Pack",
-                                                        "tool_alignment": "Standard Alignment Report",
+                                                        "tool_alignment": "Curriculum Audit",
                                                           "tool_alignment_parent": "What They Are Learning",
                                                             "tool_lesson": "Lesson Plan",
                                                               "tool_bridge": "Gemini Bridge",
@@ -3032,6 +3032,10 @@
                                                                               "image_scale_label": "Card image size",
                                                                                 "image_scale_hint": "Scales card visuals in the review panel and during play.",
                                                                                   "image_size_word": "Size",
+                                                                                    "pre_activity_help": "Edit categories and items before students play. AI outputs sometimes need tweaks.",
+                                                                                      "auto_remove_label": "Auto-remove text",
+                                                                                        "auto_remove_aria": "Auto-remove text from generated images",
+                                                                                          "auto_remove_tooltip": "Run an image-to-image edit after each generation to remove leftover text/labels",
                                                                                     "actions": {
                                                                                       "image_regenerated": "Image regenerated.",
                                                                                         "image_regen_failed": "Image regeneration failed. Try again or upload your own.",
@@ -3039,8 +3043,18 @@
                                                                                             "upload_too_large": "Image is too large (max 5 MB).",
                                                                                               "image_uploaded": "Image uploaded.",
                                                                                                 "upload_failed": "Upload failed.",
-                                                                                                  "image_cleared": "Image removed."
-                                                                                    }
+                                                                                                  "image_cleared": "Image removed.",
+                                                                                                    "no_image_refine": "No image to refine — generate or upload one first.",
+                                                                                                      "refining_image": "Refining image...",
+                                                                                                        "image_refined": "Image refined.",
+                                                                                                          "image_refine_failed": "Image refinement failed. Try again or rephrase the prompt."
+                                                                                    },
+    "announce": {
+      "moved_to": "moved to",
+      "checked": "Sorted {correct} of {total} correctly. {incorrect} need to move.",
+      "checked_perfect": "All items sorted correctly. Activity complete.",
+      "reset": "Board reset. All items returned to deck."
+    }
   },
   "dbq": {
     "title": "Document Analysis (DBQ)",
