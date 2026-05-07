@@ -1625,7 +1625,26 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _resolvedItemCount = (configOverride && configOverride.quizMcqCount) ? configOverride.quizMcqCount : _modeItemCount;
         // Plan S Slice 2: per-mode item type mix. exit-ticket stays MCQ-only by default
         // for back-compat; pre-check + review get fill-blank + short-answer in the mix.
-        const _modeItemMix = (_modeStrategy && _modeStrategy.generation.defaultItemTypeMix) || { mcq: _resolvedItemCount };
+        // Plan S Slice 5+: smart-suggestion — when the curriculum already has a Timeline
+        // or Glossary, drop the corresponding new item type from the quiz mix to avoid
+        // redundant overlap with the dedicated tool. Teachers can still opt back in via
+        // explicit configOverride.itemTypes if they want both.
+        const _resolvedMix = Object.assign({}, (_modeStrategy && _modeStrategy.generation.defaultItemTypeMix) || { mcq: _resolvedItemCount });
+        const _hasTimelineArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'timeline'; });
+        const _hasGlossaryArtifact = Array.isArray(history) && history.some(function (h) { return h && h.type === 'glossary'; });
+        const _smartSkips = [];
+        if (_hasTimelineArtifact && _resolvedMix['sequence-sense']) {
+            delete _resolvedMix['sequence-sense'];
+            _smartSkips.push('sequence-sense (Timeline exists)');
+        }
+        if (_hasGlossaryArtifact && _resolvedMix['relation-mismatch']) {
+            delete _resolvedMix['relation-mismatch'];
+            _smartSkips.push('relation-mismatch (Glossary exists)');
+        }
+        // Allow explicit caller override: if configOverride.itemTypes is provided, use it as-is.
+        const _modeItemMix = (configOverride && configOverride.itemTypes && typeof configOverride.itemTypes === 'object')
+            ? configOverride.itemTypes
+            : _resolvedMix;
         const _mcqCount = _modeItemMix.mcq || 0;
         const _fillBlankCount = _modeItemMix['fill-blank'] || 0;
         const _shortAnswerCount = _modeItemMix['short-answer'] || 0;
@@ -1854,7 +1873,13 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             content.mcqVisualMode = _mcqVisualMode;
         }
         const _modeMetaPrefix = _modeStrategy && _quizMode !== 'exit-ticket' ? _modeStrategy.label + ' · ' : '';
-        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_resolvedItemCount}MC/${_quizMode === 'exit-ticket' ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}`;
+        const _smartSkipSuffix = _smartSkips.length > 0 ? ` · skipped: ${_smartSkips.join(', ')}` : '';
+        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_resolvedItemCount}MC/${_quizMode === 'exit-ticket' ? quizReflectionCount : 0}Ref)${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${_smartSkipSuffix}`;
+        // Stamp smart-skip info onto the quiz content so the view module can
+        // optionally surface it to teachers (future enhancement).
+        if (content && typeof content === 'object' && _smartSkips.length > 0) {
+            content.smartSkips = _smartSkips.slice();
+        }
       } else if (type === 'analysis') {
         let verificationContext = "";
         let collectedSources = [];

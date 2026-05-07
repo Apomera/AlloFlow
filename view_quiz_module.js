@@ -767,6 +767,12 @@
     });
   }
 
+  // Plan S Slice 5+: surface smart-skip notice when the dispatcher dropped an
+  // item type because the curriculum already has the dedicated tool (Timeline /
+  // Glossary). Helps teachers understand why their pre-check or review didn't
+  // include certain mechanics.
+  var _smartSkips = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.smartSkips)) ? generatedContent.data.smartSkips : [];
+
   var modeBanner = _showModeBanner ? React.createElement('div', {
     key: 'mode-banner',
     className: 'rounded-xl border-2 p-4 mb-2 ' + (_quizMode === 'pre-check' ? 'border-amber-300 bg-amber-50' : _quizMode === 'review' ? 'border-purple-300 bg-purple-50' : 'border-sky-300 bg-sky-50'),
@@ -778,7 +784,10 @@
       React.createElement('h3', { className: 'font-black text-base ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.label),
       React.createElement('span', { className: 'ml-auto text-[10px] uppercase font-bold px-2 py-0.5 rounded ' + (_quizMode === 'pre-check' ? 'bg-amber-200 text-amber-900' : _quizMode === 'review' ? 'bg-purple-200 text-purple-900' : 'bg-sky-200 text-sky-900') }, _quizMode)
     ),
-    _modeStrat.render.intro && React.createElement('p', { className: 'text-sm leading-relaxed ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.render.intro)
+    _modeStrat.render.intro && React.createElement('p', { className: 'text-sm leading-relaxed ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.render.intro),
+    _smartSkips.length > 0 && React.createElement('p', { className: 'text-xs italic mt-2 ' + (_quizMode === 'pre-check' ? 'text-amber-800' : _quizMode === 'review' ? 'text-purple-800' : 'text-sky-800') },
+      'ℹ️ Skipped ' + _smartSkips.join(' and ') + ' — using the dedicated tool instead avoids redundancy.'
+    )
   ) : null;
 
   var explainerPanel = _aiExplainerEnabled ? React.createElement('div', {
