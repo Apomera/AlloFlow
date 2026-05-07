@@ -38,7 +38,15 @@ function detectIcons() {
   stripped = stripped.replace(/\/\*[\s\S]*?\*\//g, '');
   stripped = stripped.replace(/'(?:\\.|[^'\\\n])*'/g, "''");
   stripped = stripped.replace(/"(?:\\.|[^"\\\n])*"/g, '""');
-  stripped = stripped.replace(/`([^`\\]|\\.)*`/g, '``');
+  // NOTE: do NOT strip template literals here. The regex
+  // `([^`\\]|\\.)*` cannot handle nested templates like
+  // className={`...${expr}...`} — backticks pair up wrong and the regex
+  // can gobble hundreds of lines, dropping <Type>, <Eye>, <Search> etc.
+  // from the icon scan and producing runtime "X is not defined" errors.
+  // (See May 2026: <Type> at line 5586 vanished this way and broke
+  // WordSoundsModal / StudentAnalytics on the deployed build.)
+  // We tolerate the rare false positive of catching <Capitalized> inside
+  // a string literal — it'd just yield an alias that's harmless if unused.
 
   const jsxRefs = new Set();
   const jsxRe = /<\s*([A-Z][A-Za-z0-9]+)\b/g;
