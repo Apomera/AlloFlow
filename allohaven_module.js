@@ -7063,6 +7063,82 @@
       };
     }, []);
 
+    // Phase F — cross-mode card memory.
+    // Surfaces realm placements + boss-encounter count for this card so
+    // students see continuity across modes ("this decoration has lived
+    // in your Cell Biology realm and 3 boss encounters"). Renders nothing
+    // when the card has no cross-mode usage. Pre-computed by host.
+    function renderCardHistory() {
+      var hist = p.cardHistory;
+      if (!hist) return null;
+      var realmRows = (hist.realmZones || []).slice(0, 4);
+      var moreRealmCount = (hist.realmZones || []).length - realmRows.length;
+      return h('div', {
+        style: {
+          padding: '10px 12px',
+          marginBottom: '12px',
+          background: palette.surface,
+          border: '1px solid ' + palette.border,
+          borderRadius: '10px'
+        }
+      },
+        h('div', {
+          style: { fontSize: '11px', fontWeight: 700, color: palette.textMute || palette.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' }
+        }, '📚 Card history'),
+        // Realm zones
+        realmRows.length > 0 ? h('ul', {
+          role: 'list',
+          'aria-label': 'Realm zones containing this card',
+          style: { display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: '0 0 6px 0' }
+        },
+          realmRows.map(function (z) {
+            return h('li', { key: 'ch-r-' + z.realmId + '-' + (z.addedAt || ''), role: 'listitem', style: { listStyle: 'none' } },
+              h('button', {
+                onClick: function () {
+                  if (typeof p.onOpenRealm === 'function') p.onOpenRealm(z.realmId);
+                },
+                'aria-label': 'Open realm: ' + z.realmName,
+                style: {
+                  display: 'flex', alignItems: 'center', gap: '6px',
+                  width: '100%', textAlign: 'left',
+                  background: 'transparent', border: 'none',
+                  padding: '4px 0', cursor: 'pointer', fontFamily: 'inherit',
+                  color: palette.text, fontSize: '12px'
+                }
+              },
+                h('span', { 'aria-hidden': 'true' }, z.resonant ? '🌟' : '🌍'),
+                h('span', { style: { fontWeight: 700 } }, z.realmName),
+                h('span', { style: { color: palette.textDim } },
+                  ' · ' + z.verbLabel + (z.role === 'partner' ? ' (linked)' : '')
+                  + ' · ' + z.score + '/20')
+              )
+            );
+          })
+        ) : null,
+        moreRealmCount > 0 ? h('div', { style: { fontSize: '10px', color: palette.textMute || palette.textDim, fontStyle: 'italic', marginBottom: '6px' } },
+          '+ ' + moreRealmCount + ' more realm placement' + (moreRealmCount === 1 ? '' : 's') + ' (see print packet)') : null,
+        // Boss encounters
+        hist.bossEncountersUsed > 0 ? h('button', {
+          onClick: function () {
+            if (typeof p.onOpenPastEncounters === 'function') p.onOpenPastEncounters();
+          },
+          'aria-label': 'Open past boss encounters',
+          style: {
+            display: 'flex', alignItems: 'center', gap: '6px',
+            width: '100%', textAlign: 'left',
+            background: 'transparent', border: 'none',
+            padding: '4px 0', cursor: 'pointer', fontFamily: 'inherit',
+            color: palette.text, fontSize: '12px'
+          }
+        },
+          h('span', { 'aria-hidden': 'true' }, '🐉'),
+          h('span', null,
+            'Played in ' + hist.bossEncountersUsed + ' boss encounter' + (hist.bossEncountersUsed === 1 ? '' : 's')
+            + (hist.bossHighestScore ? ' · best Spark ' + hist.bossHighestScore + '/20' : ''))
+        ) : null
+      );
+    }
+
     function renderVoiceNotePanel() {
       var savedNote = decoration.voiceNote;
       var hasNote = !!(savedNote && savedNote.base64);
@@ -7485,6 +7561,7 @@
           })
         ) : null,
         renderVoiceNotePanel(),
+        renderCardHistory(),
         renderTabs(),
         // Wrap body in a tabpanel when the tabs are visible (modes
         // view/edit/quiz). For 'pick-type' there are no tabs so render
@@ -11071,6 +11148,56 @@
     //
     //   Never reviewed → always due (encourages first-pass review)
     //   No quiz primitive (notes without cloze) → never auto-due
+    // Phase F — cross-mode card memory.
+    // Scans bossEncounters[].history and realms[].zones for plays of the
+    // given decoration. Realm zones match by cardId ('card-deco-' + id);
+    // boss encounter history (which doesn't store cardId) matches by
+    // cardName + cardSource='decoration'. Returns a small summary object
+    // the Memory modal renders as a "📚 Card history" section. Returns
+    // null when the decoration has never been used in either mode.
+    function getCardCrossModeHistory(s, decoration) {
+      if (!decoration) return null;
+      var cardId = 'card-deco-' + decoration.id;
+      var cardName = decoration.templateLabel || decoration.template || '';
+      var realmZones = [];
+      (s.realms || []).forEach(function (r) {
+        (r.zones || []).forEach(function (z) {
+          if (z.cardId === cardId || z.partnerCardId === cardId) {
+            realmZones.push({
+              realmId: r.id,
+              realmName: r.name || r.topic || 'Untitled realm',
+              realmTopic: r.topic,
+              role: z.cardId === cardId ? 'placed' : 'partner',
+              verbLabel: z.verbLabel,
+              score: z.score,
+              resonant: !!z.resonant,
+              addedAt: z.addedAt
+            });
+          }
+        });
+      });
+      var bossEncountersUsed = 0;
+      var bossHighestScore = 0;
+      (s.bossEncounters || []).forEach(function (enc) {
+        var anyHit = false;
+        (enc.history || []).forEach(function (hRow) {
+          if (hRow.cardName === cardName && hRow.cardSource === 'decoration') {
+            anyHit = true;
+            if ((hRow.score || 0) > bossHighestScore) bossHighestScore = hRow.score || 0;
+          }
+        });
+        if (anyHit) bossEncountersUsed++;
+      });
+      if (realmZones.length === 0 && bossEncountersUsed === 0) return null;
+      // Sort realm zones newest-first
+      realmZones.sort(function (a, b) { return (b.addedAt || '').localeCompare(a.addedAt || ''); });
+      return {
+        realmZones: realmZones,
+        bossEncountersUsed: bossEncountersUsed,
+        bossHighestScore: bossHighestScore
+      };
+    }
+
     function isMemoryDue(decoration) {
       var lc = decoration.linkedContent;
       if (!lc) return false;
@@ -12577,6 +12704,16 @@
         var hasMemoryContent = !!decoration.linkedContent;
         var memoryDue = isMemoryDue(decoration);
         var memoryDueSoon = !memoryDue && isMemoryDueSoon(decoration);
+        // Phase F — small 🌍 indicator if this decoration has been
+        // placed in (or partnered into) any realm. Bounded scan: realms
+        // capped at 12, zones at ~12 each, so worst-case ~144 comparisons
+        // per cell render — fine for solo-student datasets.
+        var usedInRealmCardId = 'card-deco-' + decoration.id;
+        var usedInRealm = (state.realms || []).some(function (r) {
+          return (r.zones || []).some(function (z) {
+            return z.cardId === usedInRealmCardId || z.partnerCardId === usedInRealmCardId;
+          });
+        });
         var memoryDescription = '';
         if (hasMemoryContent) {
           var lc = decoration.linkedContent;
@@ -12757,6 +12894,26 @@
               zIndex: 1
             }
           }, '⭐') : null,
+          // Realm-presence 🌍 overlay (Phase F) — indicates this card has
+          // been placed in (or linked into) at least one realm. Click the
+          // decoration to open the memory modal where the full Card History
+          // section shows which realms.
+          usedInRealm ? h('span', {
+            'aria-label': 'Used in a realm',
+            title: 'This card lives in one of your realms — open it to see where',
+            style: {
+              position: 'absolute',
+              top: '2px',
+              right: decoration.isFavorite ? '26px' : '4px',
+              fontSize: '11px',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              background: 'rgba(0,0,0,0.45)',
+              lineHeight: 1,
+              pointerEvents: 'none',
+              zIndex: 1
+            }
+          }, '🌍') : null,
           // Voice note 🎤 overlay (Phase 2p.15) — small mic top-left
           // adjacent to mood emoji. Indicates audio is attached.
           decoration.voiceNote ? h('span', {
@@ -17033,6 +17190,20 @@
         palette: palette,
         autoStartQuiz: !!ctx.autoStartQuiz,
         queueInfo: queueInfo,
+        // Cross-mode history (Phase F) — where else this card has lived.
+        // Pre-computed here so the modal stays a pure presentational
+        // component and doesn't need state.realms / state.bossEncounters
+        // baked into its prop list.
+        cardHistory: getCardCrossModeHistory(state, decoration),
+        onOpenRealm: function(realmId) {
+          // Set resume sentinel + open arcade + launch realm-builder.
+          window.__alloHavenRealmResume = { realmId: realmId };
+          setStateMulti({ activeModal: 'arcade', generateContext: null });
+          setTimeout(function() { launchArcadeMode('realm-builder', 10); }, 30);
+        },
+        onOpenPastEncounters: function() {
+          setStateMulti({ activeModal: 'past-encounters', generateContext: null });
+        },
         // Voice input (Phase 2p.20) — let acronym + image-link quizzes
         // accept spoken answers via Web Speech API
         speechSupported: speechSupported,
