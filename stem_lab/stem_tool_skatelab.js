@@ -3365,7 +3365,12 @@ window.StemLab = window.StemLab || {
           var rangeWind = rangeCalm + 0.5 * aWind * hangG * hangG;
           var peakG = (v * v * Math.sin(theta) * Math.sin(theta)) / (2 * g);
           var Eq = function(label, expr, value, unit) {
+            // Phase: derive a stable key from the label so the array-form
+            // children below don't trigger React's missing-key warning.
+            // Labels start with "1.", "2.", etc. so they're already unique
+            // within both the halfpipe and gap-jump branches.
             return h('div', {
+              key: 'eq-' + label,
               style: { fontFamily: 'monospace', fontSize: 11, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 4 }
             },
               h('span', { style: { color: '#7dd3fc', fontWeight: 700, marginRight: 6 } }, label),
