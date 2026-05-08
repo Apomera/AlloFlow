@@ -255,17 +255,119 @@
     };
   }
 
-  // ─── Aggregator: retention curve (review v3 stub) ─────────────────────
-  // Falls back to liveHeatmap for v2.
-  function aggregateRetentionCurve(quizState, generatedContent, roster) {
-    return aggregateLiveHeatmap(quizState, generatedContent, roster);
+  // ─── Aggregator: retention curve (review v3 — real implementation) ────
+  // Reads cross-session concept mastery (pre-fetched by the dashboard from
+  // artifacts/{appId}/public/data/conceptMastery/{uid}). For each concept
+  // probed in the current review quiz, surfaces per-student retention info:
+  // days-since-last-attempt, recent attempt statuses, success rate.
+  //
+  // Falls back to live-heatmap shape if conceptMasteryByUid is missing or
+  // empty (e.g., dashboard hasn't fetched yet, or this is the very first
+  // session capturing concept data).
+  function aggregateRetentionCurve(quizState, generatedContent, roster, conceptMasteryByUid) {
+    if (!conceptMasteryByUid || typeof conceptMasteryByUid !== 'object' || Object.keys(conceptMasteryByUid).length === 0) {
+      // No mastery data yet — return live-heatmap shape so dashboard renders
+      // something useful instead of empty state. Dashboard recognizes this
+      // via aggResult.variant.
+      return aggregateLiveHeatmap(quizState, generatedContent, roster);
+    }
+    var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+    var rosterObj = roster && typeof roster === 'object' ? roster : {};
+    var nowMs = Date.now();
+    var DAY_MS = 24 * 60 * 60 * 1000;
+
+    // For each question with a conceptLabel, build a row
+    var conceptRows = [];
+    var seenConcepts = {};
+    questions.forEach(function (q, idx) {
+      var label = (q && q.conceptLabel) || '';
+      if (!label) return;
+      var conceptId = label.trim().toLowerCase();
+      if (!conceptId || seenConcepts[conceptId]) return; // dedupe per concept
+      seenConcepts[conceptId] = true;
+
+      // Per-student mastery lookup
+      var students = [];
+      Object.keys(rosterObj).forEach(function (uid) {
+        var rEntry = rosterObj[uid] || {};
+        var displayName = rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + uid.slice(0, 4));
+        var mastery = conceptMasteryByUid[uid] && conceptMasteryByUid[uid].attempts && conceptMasteryByUid[uid].attempts[conceptId];
+        if (!mastery) {
+          students.push({
+            uid: uid,
+            displayName: displayName,
+            seen: false,
+            daysSinceLast: null,
+            recent: [],
+            totalAttempts: 0,
+            correctAttempts: 0,
+            successRate: null,
+          });
+          return;
+        }
+        var lastTs = mastery.lastAttemptTs || 0;
+        var days = lastTs > 0 ? Math.round((nowMs - lastTs) / DAY_MS) : null;
+        var total = mastery.totalAttempts || 0;
+        var correct = mastery.correctAttempts || 0;
+        var rate = total > 0 ? Math.round((correct / total) * 100) : null;
+        students.push({
+          uid: uid,
+          displayName: displayName,
+          seen: true,
+          daysSinceLast: days,
+          recent: Array.isArray(mastery.recent) ? mastery.recent.slice(-10) : [],
+          totalAttempts: total,
+          correctAttempts: correct,
+          successRate: rate,
+          lastResult: mastery.lastResult || null,
+        });
+      });
+
+      // Compute concept-level priority: max daysSinceLast (oldest forgotten = most urgent)
+      // Concepts where some students have never seen = also urgent (high priority)
+      var maxDays = 0;
+      var unseenCount = 0;
+      students.forEach(function (s) {
+        if (!s.seen) unseenCount++;
+        else if (typeof s.daysSinceLast === 'number' && s.daysSinceLast > maxDays) maxDays = s.daysSinceLast;
+      });
+
+      conceptRows.push({
+        conceptId: conceptId,
+        label: label,
+        questionIdx: idx,
+        questionText: q.question || '',
+        students: students,
+        maxDaysSinceLast: maxDays,
+        unseenCount: unseenCount,
+        priority: unseenCount * 100 + maxDays, // unseen weights heavier than days
+      });
+    });
+
+    // Sort by priority desc (most urgent first)
+    conceptRows.sort(function (a, b) { return b.priority - a.priority; });
+
+    return {
+      conceptRows: conceptRows,
+      totalConcepts: conceptRows.length,
+      totalStudents: Object.keys(rosterObj).length,
+      hasCrossSessionData: true,
+    };
   }
 
   // ─── Mode → aggregator router ─────────────────────────────────────────
-  function aggregateForMode(mode, quizState, generatedContent, roster) {
+  // For review mode, requires conceptMasteryByUid argument; falls back to
+  // liveHeatmap if not provided.
+  function aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid) {
     if (mode === 'pre-check') return { variant: 'preLessonGap', data: aggregatePreLessonGap(quizState, generatedContent, roster) };
     if (mode === 'formative') return { variant: 'liveHeatmap', data: aggregateLiveHeatmap(quizState, generatedContent, roster) };
-    if (mode === 'review') return { variant: 'retentionCurve', data: aggregateRetentionCurve(quizState, generatedContent, roster) };
+    if (mode === 'review') {
+      var retData = aggregateRetentionCurve(quizState, generatedContent, roster, conceptMasteryByUid);
+      // If retention data has cross-session info, render as retentionCurve;
+      // otherwise it returned heatmap shape, render as liveHeatmap.
+      var variant = retData.hasCrossSessionData ? 'retentionCurve' : 'liveHeatmap';
+      return { variant: variant, data: retData };
+    }
     // exit-ticket default
     return { variant: 'gradebook', data: aggregateGradebook(quizState, generatedContent, roster) };
   }

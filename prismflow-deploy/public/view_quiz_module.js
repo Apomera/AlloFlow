@@ -141,6 +141,7 @@
           p.onSubmitLiveAnswer({
             questionIdx: p.questionIdx,
             itemType: 'sequence-sense',
+            conceptLabel: (q && q.conceptLabel) || '',
             answer: {
               verifyAnswer: verifyAnswer,
               clickedIdx: clickedIdx,
@@ -309,6 +310,7 @@
           p.onSubmitLiveAnswer({
             questionIdx: p.questionIdx,
             itemType: 'relation-mismatch',
+            conceptLabel: (q && q.conceptLabel) || '',
             answer: {
               clickedPairIdx: clickedPairIdx,
               partnerAnswer: ans,
@@ -474,6 +476,7 @@
           p.onSubmitLiveAnswer({
             questionIdx: p.questionIdx,
             itemType: 'mcq',
+            conceptLabel: (p.q && p.q.conceptLabel) || '',
             answer: { idk: true },
             timestamp: Date.now(),
           });
@@ -551,10 +554,44 @@
     var mode = (generatedContent && generatedContent.data && generatedContent.data.mode) || 'exit-ticket';
     var modeLabel = (generatedContent && generatedContent.data && generatedContent.data.modeLabel) || 'Exit Ticket';
     var modeIcon = (generatedContent && generatedContent.data && generatedContent.data.modeIcon) || '📝';
+    var appId = p.appId;
+
+    // Plan T v3: for review mode, fetch concept-mastery docs for each student
+    // in roster so the retention aggregator has cross-session data. Refetches
+    // when roster key set changes. Uses __alloFirebase exposed at host.
+    var conceptMasteryState = React.useState(null);
+    var conceptMasteryByUid = conceptMasteryState[0]; var setConceptMasteryByUid = conceptMasteryState[1];
+    var rosterKeysSig = Object.keys(roster).sort().join(',');
+    React.useEffect(function () {
+      if (mode !== 'review') { setConceptMasteryByUid(null); return; }
+      var fb = window.__alloFirebase;
+      if (!fb || !fb.doc || !fb.getDoc || !appId) { setConceptMasteryByUid({}); return; }
+      var uids = Object.keys(roster);
+      if (uids.length === 0) { setConceptMasteryByUid({}); return; }
+      var cancelled = false;
+      Promise.all(uids.map(function (uid) {
+        try {
+          var ref = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'conceptMastery', uid);
+          return fb.getDoc(ref).then(function (snap) {
+            return [uid, snap.exists() ? snap.data() : null];
+          }).catch(function () { return [uid, null]; });
+        } catch (e) { return Promise.resolve([uid, null]); }
+      })).then(function (results) {
+        if (cancelled) return;
+        var map = {};
+        results.forEach(function (entry) {
+          if (entry && entry[1]) map[entry[0]] = entry[1];
+        });
+        setConceptMasteryByUid(map);
+      }).catch(function () {
+        if (!cancelled) setConceptMasteryByUid({});
+      });
+      return function () { cancelled = true; };
+    }, [mode, rosterKeysSig, appId]);
 
     var aggResult;
     try {
-      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster);
+      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid);
     } catch (e) {
       console.warn('[LiveResultsDashboard] aggregator failed:', e);
       return null;
@@ -577,6 +614,10 @@
       hasAnyResponses = data.studentRows.some(function (r) { return r.totalAnswered > 0; });
     } else if (variant === 'preLessonGap') {
       hasAnyResponses = data.conceptCards.some(function (c) { return c.totalAnswered > 0; });
+    } else if (variant === 'retentionCurve') {
+      hasAnyResponses = Array.isArray(data.conceptRows) && data.conceptRows.some(function (row) {
+        return row.students.some(function (s) { return s.seen; });
+      });
     } else {
       hasAnyResponses = data.bars.some(function (b) { return b.total > 0; });
     }
@@ -657,6 +698,72 @@
               React.createElement('span', null, card.incorrectCount + ' ✗'),
               card.idkCount > 0 && React.createElement('span', { className: 'text-sky-700' }, card.idkCount + ' 🤔'),
               React.createElement('span', { className: 'text-slate-500' }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students')
+            )
+          );
+        })
+      );
+    } else if (variant === 'retentionCurve') {
+      // retentionCurve — per-concept rows with cross-session mastery sparklines
+      body = React.createElement('div', { className: 'space-y-3' },
+        React.createElement('p', { className: 'text-xs text-slate-600 italic mb-1' },
+          'Cross-session retention. Concepts with longer time-since-last-attempt or unseen students surface first. Recent attempts shown as colored dots (green=correct, red=miss, sky=IDK).'),
+        data.conceptRows.map(function (row) {
+          // Sort students by urgency (unseen first, then longest days)
+          var sortedStudents = row.students.slice().sort(function (a, b) {
+            if (!a.seen && b.seen) return -1;
+            if (a.seen && !b.seen) return 1;
+            if (!a.seen && !b.seen) return 0;
+            return (b.daysSinceLast || 0) - (a.daysSinceLast || 0);
+          });
+          var color = row.unseenCount > 0 ? 'rose' :
+                      row.maxDaysSinceLast >= 14 ? 'rose' :
+                      row.maxDaysSinceLast >= 7 ? 'amber' :
+                      'emerald';
+          return React.createElement('div', {
+            key: row.conceptId,
+            className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200',
+          },
+            React.createElement('div', { className: 'flex items-center gap-2 mb-2' },
+              React.createElement('span', { className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-800' }, row.label),
+              React.createElement('span', { className: 'ml-auto text-[10px] text-' + color + '-700' },
+                row.unseenCount > 0
+                  ? row.unseenCount + ' unseen · '
+                  : '',
+                'max ' + row.maxDaysSinceLast + 'd since seen'
+              )
+            ),
+            React.createElement('div', { className: 'space-y-1' },
+              sortedStudents.map(function (s) {
+                var dayBadgeColor = !s.seen ? 'rose' :
+                                    s.daysSinceLast >= 14 ? 'rose' :
+                                    s.daysSinceLast >= 7 ? 'amber' :
+                                    'emerald';
+                return React.createElement('div', {
+                  key: s.uid,
+                  className: 'flex items-center gap-2 text-xs',
+                },
+                  React.createElement('span', { className: 'flex-shrink-0 text-slate-700 font-semibold w-32 truncate' }, s.displayName),
+                  !s.seen
+                    ? React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-rose-100 text-rose-800' }, 'never seen')
+                    : React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + dayBadgeColor + '-100 text-' + dayBadgeColor + '-800' }, s.daysSinceLast + 'd ago'),
+                  s.seen && React.createElement('span', { className: 'flex items-center gap-0.5' },
+                    s.recent.map(function (att, attIdx) {
+                      var dotColor = att.status === 'correct' ? '#10b981' :
+                                     att.status === 'incorrect' ? '#ef4444' :
+                                     att.status === 'idk' ? '#0ea5e9' :
+                                     '#94a3b8';
+                      return React.createElement('span', {
+                        key: attIdx,
+                        className: 'inline-block rounded-full',
+                        style: { width: '8px', height: '8px', backgroundColor: dotColor },
+                        title: att.status + ' on ' + new Date(att.ts).toLocaleDateString(),
+                      });
+                    })
+                  ),
+                  s.seen && typeof s.successRate === 'number' && React.createElement('span', { className: 'text-slate-500 ml-auto' },
+                    s.correctAttempts + '/' + s.totalAttempts + ' (' + s.successRate + '%)')
+                );
+              })
             )
           );
         })
@@ -781,6 +888,7 @@
           p.onSubmitLiveAnswer({
             questionIdx: p.questionIdx,
             itemType: q.type || 'short-answer',
+            conceptLabel: (q && q.conceptLabel) || '',
             answer: { text: response },
             timestamp: Date.now(),
           });
@@ -1291,6 +1399,7 @@
     /*#__PURE__*/React.createElement(LiveResultsDashboard, {
       sessionData: sessionData,
       generatedContent: generatedContent,
+      appId: appId,
     }),
     /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Live quiz controls encountered an error. Refreshing..."

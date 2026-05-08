@@ -1694,6 +1694,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           Include the following item types:
           ${_itemTypeInstructions}
           ${_useMisconceptionDistractors ? 'CRITICAL FOR MCQ DISTRACTORS: For each MCQ, build the 3 wrong options from COMMON STUDENT MISCONCEPTIONS or predictable errors at this grade level — not random plausibly-wrong options. Each distractor should encode an error a real student would make. This makes the quiz a diagnostic of misconceptions, not just a check of knowledge.' : ''}
+          IMPORTANT — concept tagging for retention tracking: For EVERY item (regardless of type), additionally provide a "conceptLabel" field — a 2-4 word stable concept tag describing what the item tests (e.g., "photosynthesis basics", "subject-verb agreement", "fraction equivalents"). Use lowercase. Use the SAME label across items that test the same underlying concept. This enables cross-session retention tracking — students who saw "photosynthesis basics" in last week's exit-ticket and again in today's review get tracked as the same concept.
           ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery. Example: "A simple labeled diagram of the water cycle showing evaporation, condensation, and precipitation, in a clean educational illustration style."' : ''}
           ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each is a 1-sentence prompt depicting that option\'s answer concretely. Example for "Which planet is Mars?": ["A red rocky planet with thin atmosphere", "A large striped gas giant with a great red spot", ...]' : ''}
           ${_fillBlankCount > 0 ? 'For each Fill-in-the-Blank: write a complete sentence with the target term replaced by "___" (3 underscores). Provide expectedFill (the precise word/phrase) AND a short list of acceptableAlternatives (synonyms or common variants — typos NOT included; the grader handles those).' : ''}
@@ -1725,10 +1726,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             // Items missing a `type` field default to 'mcq' for back-compat.
             content.questions = content.questions.map(q => {
                 const itemType = q.type || 'mcq';
+                // Plan T v3: stable conceptLabel for cross-session retention tracking.
+                // Lowercase + trimmed for use as concept identifier downstream.
+                const _rawConceptLabel = (typeof q.conceptLabel === 'string' && q.conceptLabel.trim())
+                    ? q.conceptLabel.trim().toLowerCase()
+                    : '';
                 const base = {
                     ...q,
                     type: itemType,
                     question: q.question || "Question text missing",
+                    conceptLabel: _rawConceptLabel,
                 };
                 if (itemType === 'mcq') {
                     base.options = Array.isArray(q.options) ? q.options : ["True", "False"];
