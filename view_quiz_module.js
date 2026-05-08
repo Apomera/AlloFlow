@@ -743,6 +743,7 @@
     }
     function closeExplainer() {
       setExplainerModal({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
+      setPushState({ pushing: false, pushed: false, error: '' });
     }
     function copyExplainer() {
       if (!explainerModal.text) return;
@@ -751,6 +752,37 @@
     function playExplainer() {
       if (!explainerModal.text || typeof p.callTTS !== 'function') return;
       try { p.callTTS(explainerModal.text); } catch (e) { /* noop */ }
+    }
+    // Plan T v3+ Chunk 2: push the generated explainer to all students in the
+    // active session. Writes to quizState.classExplainer; students subscribe
+    // and render a banner. Only one explainer at a time — newer push replaces.
+    var pushStateState = React.useState({ pushing: false, pushed: false, error: '' });
+    var pushState = pushStateState[0]; var setPushState = pushStateState[1];
+    function pushExplainerToStudents() {
+      if (!explainerModal.text || pushState.pushing) return;
+      var fb = window.__alloFirebase;
+      if (!fb || !fb.db || !fb.doc || !fb.updateDoc || !appId || !p.activeSessionCode) {
+        setPushState({ pushing: false, pushed: false, error: 'Push unavailable: live session not active.' });
+        return;
+      }
+      setPushState({ pushing: true, pushed: false, error: '' });
+      try {
+        var sessionRef = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'sessions', p.activeSessionCode);
+        Promise.resolve(fb.updateDoc(sessionRef, {
+          'quizState.classExplainer': {
+            conceptIdx: explainerModal.conceptIdx,
+            conceptText: explainerModal.conceptText,
+            text: explainerModal.text,
+            ts: Date.now(),
+          },
+        })).then(function () {
+          setPushState({ pushing: false, pushed: true, error: '' });
+        }).catch(function (err) {
+          setPushState({ pushing: false, pushed: false, error: (err && err.message) || 'Push failed.' });
+        });
+      } catch (e) {
+        setPushState({ pushing: false, pushed: false, error: (e && e.message) || 'Push failed.' });
+      }
     }
 
     var aggResult;
@@ -1148,6 +1180,20 @@
             className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100',
             title: 'Play explainer aloud',
           }, '🔊 Play aloud'),
+          // Plan T v3+ Chunk 2: push to all students in the live session
+          !explainerModal.loading && !explainerModal.error && p.activeSessionCode && React.createElement('button', {
+            type: 'button',
+            onClick: pushExplainerToStudents,
+            disabled: pushState.pushing,
+            className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed
+              ? 'bg-emerald-600 text-white'
+              : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
+            title: 'Send this explainer to every student\'s screen now',
+          }, pushState.pushing ? 'Pushing…' : pushState.pushed ? '✓ Pushed to students' : '📡 Push to all students'),
+          pushState.error && React.createElement('span', {
+            className: 'text-[10px] text-rose-700 italic',
+            role: 'alert',
+          }, pushState.error),
           React.createElement('button', {
             type: 'button',
             onClick: closeExplainer,
@@ -1721,6 +1767,48 @@
   // include certain mechanics.
   var _smartSkips = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.smartSkips)) ? generatedContent.data.smartSkips : [];
 
+  // Plan T v3+ Chunk 2: ClassExplainerBanner — students see the teacher's
+  // pushed explainer at the top of their quiz. Per-student dismiss tracked
+  // by ts (component state); a NEW push (different ts) re-shows the banner.
+  // Hidden in edit mode, presentation mode, and for the teacher themselves.
+  var _pushedExplainer = sessionData && sessionData.quizState && sessionData.quizState.classExplainer;
+  var dismissedExplainerTsState = React.useState(0);
+  var dismissedExplainerTs = dismissedExplainerTsState[0]; var setDismissedExplainerTs = dismissedExplainerTsState[1];
+  var _showClassExplainer = !!_pushedExplainer
+    && _pushedExplainer.text
+    && _pushedExplainer.ts !== dismissedExplainerTs
+    && !isEditingQuiz
+    && !isPresentationMode
+    && !isTeacherMode; // teacher already saw it in the modal
+  var classExplainerBanner = _showClassExplainer ? React.createElement('div', {
+    key: 'class-explainer-banner',
+    className: 'rounded-xl border-2 border-amber-300 bg-amber-50 p-4 mb-2 shadow-sm animate-in fade-in slide-in-from-top-2',
+    role: 'region',
+    'aria-label': 'Teacher explanation',
+  },
+    React.createElement('div', { className: 'flex items-start gap-3' },
+      React.createElement('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📡'),
+      React.createElement('div', { className: 'flex-grow min-w-0' },
+        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-amber-800 mb-1' }, 'From your teacher · pause and read'),
+        _pushedExplainer.conceptText && React.createElement('p', { className: 'text-xs italic text-amber-700 mb-1' }, '"' + _pushedExplainer.conceptText + '"'),
+        React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed whitespace-pre-wrap' }, _pushedExplainer.text),
+        React.createElement('div', { className: 'flex items-center gap-2 mt-3 flex-wrap' },
+          typeof props.callTTS === 'function' && React.createElement('button', {
+            type: 'button',
+            onClick: function () { try { props.callTTS(_pushedExplainer.text); } catch (e) { /* noop */ } },
+            className: 'text-xs font-bold px-3 py-1 rounded bg-white border border-amber-300 text-amber-900 hover:bg-amber-100',
+            'aria-label': 'Read aloud',
+          }, '🔊 Read aloud'),
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { setDismissedExplainerTs(_pushedExplainer.ts); },
+            className: 'text-xs font-bold px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-700',
+          }, '✓ Got it')
+        )
+      )
+    )
+  ) : null;
+
   var modeBanner = _showModeBanner ? React.createElement('div', {
     key: 'mode-banner',
     className: 'rounded-xl border-2 p-4 mb-2 ' + (_quizMode === 'pre-check' ? 'border-amber-300 bg-amber-50' : _quizMode === 'review' ? 'border-purple-300 bg-purple-50' : 'border-sky-300 bg-sky-50'),
@@ -1785,7 +1873,7 @@
 
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, modeBanner, explainerPanel, /*#__PURE__*/React.createElement("div", {
+  }, classExplainerBanner, modeBanner, explainerPanel, /*#__PURE__*/React.createElement("div", {
     className: "bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-teal-800 flex-grow"
@@ -1899,6 +1987,7 @@
       sessionData: sessionData,
       generatedContent: generatedContent,
       appId: appId,
+      activeSessionCode: activeSessionCode,
       callGemini: props.callGemini,
       callTTS: props.callTTS,
       gradeLevel: props.gradeLevel,

@@ -1767,6 +1767,48 @@
   // include certain mechanics.
   var _smartSkips = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.smartSkips)) ? generatedContent.data.smartSkips : [];
 
+  // Plan T v3+ Chunk 2: ClassExplainerBanner — students see the teacher's
+  // pushed explainer at the top of their quiz. Per-student dismiss tracked
+  // by ts (component state); a NEW push (different ts) re-shows the banner.
+  // Hidden in edit mode, presentation mode, and for the teacher themselves.
+  var _pushedExplainer = sessionData && sessionData.quizState && sessionData.quizState.classExplainer;
+  var dismissedExplainerTsState = React.useState(0);
+  var dismissedExplainerTs = dismissedExplainerTsState[0]; var setDismissedExplainerTs = dismissedExplainerTsState[1];
+  var _showClassExplainer = !!_pushedExplainer
+    && _pushedExplainer.text
+    && _pushedExplainer.ts !== dismissedExplainerTs
+    && !isEditingQuiz
+    && !isPresentationMode
+    && !isTeacherMode; // teacher already saw it in the modal
+  var classExplainerBanner = _showClassExplainer ? React.createElement('div', {
+    key: 'class-explainer-banner',
+    className: 'rounded-xl border-2 border-amber-300 bg-amber-50 p-4 mb-2 shadow-sm animate-in fade-in slide-in-from-top-2',
+    role: 'region',
+    'aria-label': 'Teacher explanation',
+  },
+    React.createElement('div', { className: 'flex items-start gap-3' },
+      React.createElement('span', { className: 'text-2xl flex-shrink-0', 'aria-hidden': 'true' }, '📡'),
+      React.createElement('div', { className: 'flex-grow min-w-0' },
+        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-amber-800 mb-1' }, 'From your teacher · pause and read'),
+        _pushedExplainer.conceptText && React.createElement('p', { className: 'text-xs italic text-amber-700 mb-1' }, '"' + _pushedExplainer.conceptText + '"'),
+        React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed whitespace-pre-wrap' }, _pushedExplainer.text),
+        React.createElement('div', { className: 'flex items-center gap-2 mt-3 flex-wrap' },
+          typeof props.callTTS === 'function' && React.createElement('button', {
+            type: 'button',
+            onClick: function () { try { props.callTTS(_pushedExplainer.text); } catch (e) { /* noop */ } },
+            className: 'text-xs font-bold px-3 py-1 rounded bg-white border border-amber-300 text-amber-900 hover:bg-amber-100',
+            'aria-label': 'Read aloud',
+          }, '🔊 Read aloud'),
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { setDismissedExplainerTs(_pushedExplainer.ts); },
+            className: 'text-xs font-bold px-3 py-1 rounded bg-amber-600 text-white hover:bg-amber-700',
+          }, '✓ Got it')
+        )
+      )
+    )
+  ) : null;
+
   var modeBanner = _showModeBanner ? React.createElement('div', {
     key: 'mode-banner',
     className: 'rounded-xl border-2 p-4 mb-2 ' + (_quizMode === 'pre-check' ? 'border-amber-300 bg-amber-50' : _quizMode === 'review' ? 'border-purple-300 bg-purple-50' : 'border-sky-300 bg-sky-50'),
@@ -1831,7 +1873,7 @@
 
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
-  }, modeBanner, explainerPanel, /*#__PURE__*/React.createElement("div", {
+  }, classExplainerBanner, modeBanner, explainerPanel, /*#__PURE__*/React.createElement("div", {
     className: "bg-teal-50 p-4 rounded-lg border border-teal-100 mb-6 flex justify-between items-center flex-wrap gap-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-teal-800 flex-grow"
