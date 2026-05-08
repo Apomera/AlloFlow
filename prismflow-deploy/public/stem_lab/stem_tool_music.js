@@ -1888,6 +1888,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
               )
             ),
 
+            // ── Topic-accent hero band per synth tab ──
+            (function() {
+              var TAB_META = {
+                play:       { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFB9', title: 'Play \u2014 piano keys + presets',                 hint: 'Equal temperament: 12 notes per octave, ratio 2^(1/12). A4 = 440 Hz; A5 = 880 Hz. Bach\u2019s Well-Tempered Clavier (1722) sold the world on this compromise. Every note you play here lives on that grid.' },
+                scales:     { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83C\uDFB5', title: 'Scales \u2014 the major + minor + modal grammar', hint: 'Major: W-W-H-W-W-W-H. Minor: W-H-W-W-H-W-W. The 7 modes (Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian) come from rotating the major-scale interval pattern.' },
+                chords:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFB6', title: 'Chords \u2014 stacked thirds + inversions',         hint: 'Triads: root + third + fifth. Major (4+3 semitones), minor (3+4), diminished (3+3), augmented (4+4). 7th chords add another third. Pop music = ~6 chords on repeat; jazz uses extensions and substitutions.' },
+                harmonypad: { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF1F', title: 'Harmony Pad \u2014 voiced pads + drones',          hint: 'Sustained chord textures \u2014 the bed under almost every cinematic score. Try iv-V-i in minor, or i-VI-VII for that Hans Zimmer feel. Drones in fifths underpin Indian classical and bagpipe traditions.' },
+                beatpad:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDD41', title: 'Beat Pad \u2014 sample-based drums',                hint: 'Most popular music sits at 4/4, 90-130 BPM. Hip-hop ~85-95, house 120-130, drum-and-bass ~170 (half-time feel). The kick on 1+3, snare on 2+4 = backbeat \u2014 the foundation of rock + pop.' },
+                theory:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDCDA', title: 'Theory \u2014 the math behind the sound',           hint: 'Pythagoras (~500 BCE) discovered consonance from integer frequency ratios: octave 2:1, fifth 3:2, fourth 4:3. Helmholtz extended this in 1862. Sound = compression waves; music = patterns we agree to call beautiful.' }
+              };
+              var meta = TAB_META[synthTab] || TAB_META.play;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
             // ═══════════ TAB: PLAY ═══════════
             synthTab === 'play' && React.createElement("div", null,
               // Preset bar

@@ -668,6 +668,18 @@
       });
     }
 
+    // Plan T v3+: heatmap drill-down — expand a per-question bar to see
+    // per-student status. Click a bar with responses to toggle.
+    var expandedBarsState = React.useState({});
+    var expandedBars = expandedBarsState[0]; var setExpandedBars = expandedBarsState[1];
+    function toggleBarExpanded(qIdx) {
+      setExpandedBars(function (prev) {
+        var next = Object.assign({}, prev);
+        if (next[qIdx]) delete next[qIdx]; else next[qIdx] = true;
+        return next;
+      });
+    }
+
     // Plan T v3+: "Explain to class" — when a Pre-Check gap surfaces a concept
     // most students missed, teacher can click 🎓 to generate a 60-90 word
     // age-appropriate explainer they can immediately read aloud. Modal shows
