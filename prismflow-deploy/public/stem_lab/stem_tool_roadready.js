@@ -614,7 +614,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     // ── Maine annual vehicle inspection sticker ──
     { q: 'Every passenger vehicle registered in Maine must:', a: ['Pass an annual safety inspection at a state-licensed station and display a sticker on the windshield', 'Pass an emissions test only', 'Be inspected once when first registered', 'Have no inspection requirement'], correct: 0, exp: 'Maine requires an ANNUAL safety inspection at a Maine BMV/State-Police-licensed inspection station. The sticker goes on the inside of the windshield, lower-left, and shows the month and year it expires. Driving with an expired sticker is a citation.', category: 'maintenance' },
-    { q: 'The fee for a standard Maine annual passenger-car safety inspection is approximately:', a: ['Free', '$12.50', '$50', '$100'], correct: 1, exp: 'Maine sets the inspection fee by statute at about $12.50 for standard passenger cars (heavier or commercial vehicles cost more). Pay it at any licensed inspection station — independent garages and dealerships hold most of the licenses.', category: 'maintenance' }
+    { q: 'The fee for a standard Maine annual passenger-car safety inspection is approximately:', a: ['Free', '$12.50', '$50', '$100'], correct: 1, exp: 'Maine sets the inspection fee by statute at about $12.50 for standard passenger cars (heavier or commercial vehicles cost more). Pay it at any licensed inspection station — independent garages and dealerships hold most of the licenses.', category: 'maintenance' },
+
+    // ── Bicycle dooring (real urban hazard, real Maine law) ──
+    { q: 'Before opening your driver-side door after parking on a street, you should:', a: ['Open it quickly so traffic does not pile up', 'Glance at the side mirror only', 'Use the "Dutch reach" — open with your far hand so your body turns and you check over your shoulder for cyclists', 'Honk first to warn'], correct: 2, exp: 'The "Dutch reach": open the driver door with your RIGHT hand. The body twist forces you to look back through the side window for cyclists. Maine has a 3-foot passing law for cyclists, but a door swinging into the bike lane causes the same crash. Drivers can be cited if their door causes a cyclist to crash.', category: 'pedestrian' },
+    { q: 'You parked on a city street and your passenger is about to open the curb-side door. The risk to watch for is:', a: ['Nothing — passengers are always safe', 'A cyclist or scooter rider on the sidewalk-side bike lane', 'Police giving them a ticket', 'A door alarm'], correct: 1, exp: 'Some Maine cities (Portland, Bangor) have curb-protected or buffered bike lanes where cyclists ride between the parked cars and the curb. Passengers must look back over their shoulder before opening. Tell anyone you carry to do the same.', category: 'pedestrian' },
+
+    // ── Wildlife strike reporting (29-A and Maine Game Warden practice) ──
+    { q: 'You hit a deer on a rural Maine road and the animal is killed. Maine law requires you to:', a: ['Take the deer home with you immediately', 'Leave the scene quickly to avoid blame', 'Report the collision to law enforcement (State Police, Game Warden, or local police) — the deer cannot be removed without their authorization', 'Bury the deer'], correct: 2, exp: 'Maine law: report any deer/moose/bear collision to law enforcement. The Game Warden Service or State Police will issue a "possession tag" if you (or the next motorist who calls) want to keep the animal. Removing it without a tag is illegal. Report number: dial 911 (or *SP for State Police).', category: 'emergency' },
+    { q: 'You strike a moose on Route 201 at night. The animal is on the shoulder and your car is drivable. The MOST important first action is:', a: ['Inspect the moose for damage', 'Get yourself and any passengers out of the travel lane (turn on hazard lights, get clear of the road) and then call 911 — secondary collisions are the next biggest risk', 'Move the moose off the road', 'Drive home and call later'], correct: 1, exp: 'After a wildlife strike: hazards on, get OFF the travel lane, call 911 — and stay clear of the carcass (a moose can weigh 1,200 lbs and other drivers can hit it). Only after the scene is safe do you assess the car. Reporting also documents the crash for insurance.', category: 'emergency' },
+
+    // ── Maine winter conditions (frost heaves, salt damage) ──
+    { q: 'Driving on a Maine secondary road in late March, you notice the pavement has uneven bumps and dips that throw your steering off. These are:', a: ['Speed bumps', 'Frost heaves — caused by frozen soil expanding under the road', 'Potholes', 'Construction'], correct: 1, exp: 'Frost heaves form when frozen ground swells under pavement, then settles unevenly when it thaws. Common on Maine\'s secondary and rural roads from late winter through spring (Mar–May). Slow down: heaves can launch a wheel off the ground at speed. The Maine DOT prioritizes patching them after mud season.', category: 'winter' },
+    { q: 'After a winter of road salt, the area on your car most prone to rust is:', a: ['The roof', 'The undercarriage — frame rails, brake lines, fuel tank straps, and exhaust', 'The windshield', 'The interior'], correct: 1, exp: 'Maine\'s salt + brine treatment is excellent for ice but eats steel from below. Wash the undercarriage at any "underbody wash" car wash through winter and again in spring. Rusted brake lines fail without warning at the worst moment — a Maine inspection should catch them but a wash habit prevents the rust in the first place.', category: 'maintenance' },
+    { q: 'You hit a deep pothole at speed in early Maine spring and feel the steering pull to one side. The most likely problem is:', a: ['Low oil', 'Bent wheel, blown tire sidewall, or knocked-out alignment — pull over safely and inspect', 'A flat battery', 'A clogged air filter'], correct: 1, exp: 'Pothole impact damages: bent rim (steering vibrates), torn tire sidewall (bulge or rapid leak), or shifted alignment (steering pulls). Pull over, look at all four tires, check for visible damage. If steering is off, drive slowly to a tire shop. Maine\'s post-winter potholes are a real claim hazard.', category: 'maintenance' }
   ];
 
   console.log('[RoadReady] Loaded ' + PERMIT_BANK.length + ' permit questions');
@@ -947,19 +960,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Instantaneous MPG estimate given current speed, acceleration, and vehicle.
   // Simplified: engine does work against drag + rolling + acceleration.
   // Output in mpg (gasoline equivalent). Handles EV by reporting MPGe.
-  // options.coldStart: true → 15% efficiency penalty (engine + cabin + drivetrain
+  //
+  // options.coldStart: 15% efficiency penalty (engine + cabin + drivetrain
   //   warmup; EPA says 10–15% for first ~5 min on gas, ~3% on EV).
-  // options.winter: true → 5% efficiency penalty (cold air = denser, ethanol
-  //   blend, longer warmup, accessory load). Independent of weather='snow' which
+  // options.winter:    5% efficiency penalty (dense air, ethanol blend,
+  //   longer warmup, accessory load). Independent of weather='snow' which
   //   only changes friction and rolling coefficient.
+  // options.tireUnderinflated: rolling-resistance penalty (~0.3% MPG per PSI
+  //   under spec, summed over 4 tires). Modeled as a 1.25× rolling-coef
+  //   multiplier (~3 PSI low, all 4 tires — typical real-world).
+  // options.acOn:      AC compressor parasitic draw. Worst at low speed
+  //   where it's a larger fraction of engine output (~10–15% city, ~3–5%
+  //   highway). Modeled as a fixed kW load on the powertrain.
+  // options.headwindMph: subtract from velocity for drag calculation only.
+  //   A 20 mph headwind at 60 mph cruise = drag of an 80 mph car. Tail-
+  //   winds (negative value) reduce drag.
   function instantMPG(v_mph, accel_g, vehicle, weather, tireOk, options) {
     if (v_mph < 1) return 0;
     var opts = options || {};
     var v_ms = v_mph * MPH_TO_MS;
-    var Fd = dragForce(v_ms, vehicle.cd, vehicle.area);
-    var Fr = rollingForce(vehicle.mass, rollingCoef(weather, tireOk));
+    // Headwind shifts the relative airspeed used for drag. Drag is signed
+    // by relative-velocity sign squared, so a tailwind reduces it.
+    var relAir_ms = (v_mph + (opts.headwindMph || 0)) * MPH_TO_MS;
+    var Fd = dragForce(relAir_ms, vehicle.cd, vehicle.area);
+    // Tire-underinflation penalty: bumps rolling-resistance coefficient.
+    var rollCoefMult = opts.tireUnderinflated ? 1.25 : 1.0;
+    var Fr = rollingForce(vehicle.mass, rollingCoef(weather, tireOk)) * rollCoefMult;
     var Fa = Math.max(0, vehicle.mass * accel_g * 9.81); // only accel costs; decel is free / regen
-    var powerW = (Fd + Fr + Fa) * v_ms;
+    var mechPowerW = (Fd + Fr + Fa) * v_ms;
+    // AC compressor: ~3 kW peak at full cooling, modeled as a parasitic load
+    // on the engine's output. Real cars vary widely (1.5–5 kW); 2.5 kW is a
+    // mid-range fixed-displacement compressor. EVs pay it directly from the
+    // pack with no engine-eff loss.
+    var acPowerW = opts.acOn ? 2500 : 0;
+    var powerW = mechPowerW + acPowerW;
     // Gas engine efficiency ≈ 0.25 under good conditions; idle losses increase at low speed.
     var engineEff = vehicle.type === 'electric' ? 0.88 : (vehicle.type === 'hybrid' ? 0.34 : 0.25);
     // Low-speed penalty for gas engines (not EVs)
@@ -26593,7 +26627,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var fwh = normalizeWeather(weatherChoice);
         var hyperWinter = !!d.hyperWinter;
         var hyperColdStart = !!d.hyperColdStart;
-        var hyperOpts = { winter: hyperWinter, coldStart: hyperColdStart };
+        var hyperTireLow = !!d.hyperTireLow;
+        var hyperAcOn = !!d.hyperAcOn;
+        var hyperHeadwind = typeof d.hyperHeadwind === 'number' ? d.hyperHeadwind : 0;
+        var hyperOpts = { winter: hyperWinter, coldStart: hyperColdStart, tireUnderinflated: hyperTireLow, acOn: hyperAcOn, headwindMph: hyperHeadwind };
         var speeds = [];
         for (var sp = 15; sp <= 85; sp += 5) speeds.push(sp);
         var mpgs = speeds.map(function(s) { return cruiseMPG(s, currentVehicle, fwh, true, hyperOpts); });
@@ -26647,7 +26684,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', { onClick: function() { upd('hyperColdStart', !hyperColdStart); },
                 'aria-pressed': hyperColdStart ? 'true' : 'false',
                 style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperColdStart ? '#10b981' : '#334155'), background: hyperColdStart ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
-                (hyperColdStart ? '✓ ' : '') + '🥶 Cold start (−15%)')
+                (hyperColdStart ? '✓ ' : '') + '🥶 Cold start (−15%)'),
+              // Tire pressure: 25% rolling-coef bump models ~3 PSI low across all 4 tires
+              h('button', { onClick: function() { upd('hyperTireLow', !hyperTireLow); },
+                'aria-pressed': hyperTireLow ? 'true' : 'false',
+                title: 'Underinflated tires (~3 PSI low across all 4 tires) raise rolling resistance ~25%, costing roughly 3% MPG.',
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperTireLow ? '#10b981' : '#334155'), background: hyperTireLow ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                (hyperTireLow ? '✓ ' : '') + '🛞 Low tires (~−3%)'),
+              // AC load: ~2.5 kW parasitic draw on the engine — bigger impact at low speed
+              h('button', { onClick: function() { upd('hyperAcOn', !hyperAcOn); },
+                'aria-pressed': hyperAcOn ? 'true' : 'false',
+                title: 'Air conditioning compressor pulls ~2.5 kW. Hits hardest in city driving (10–15% MPG); tiny on the highway (~3%).',
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperAcOn ? '#10b981' : '#334155'), background: hyperAcOn ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                (hyperAcOn ? '✓ ' : '') + '❄️ A/C on (−10% city, −3% hwy)')
+            ),
+            // Headwind / tailwind slider
+            h('div', { style: { marginTop: '8px', padding: '8px 10px', background: '#0b1220', borderRadius: '6px', border: '1px solid #1e293b' } },
+              h('label', { htmlFor: 'rr-hyper-wind', style: { fontSize: '10px', fontWeight: 700, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                h('span', null, '💨 Wind (mph relative to your direction)'),
+                h('span', { style: { color: hyperHeadwind > 0 ? '#fca5a5' : hyperHeadwind < 0 ? '#86efac' : '#94a3b8', fontWeight: 800 } }, (hyperHeadwind > 0 ? '+' : '') + hyperHeadwind + (hyperHeadwind > 0 ? ' headwind' : hyperHeadwind < 0 ? ' tailwind' : ' calm'))
+              ),
+              h('input', {
+                id: 'rr-hyper-wind',
+                type: 'range', min: -25, max: 25, step: 5, value: hyperHeadwind,
+                onChange: function(e) { upd('hyperHeadwind', parseInt(e.target.value, 10) || 0); },
+                'aria-label': 'Wind: positive is headwind (slows you), negative is tailwind',
+                style: { width: '100%', marginTop: '4px' }
+              }),
+              h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, 'Drag scales with relative airspeed squared — a 20 mph headwind at 60 mph cruise is the same drag as an 80 mph car in still air.')
             ),
             h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' } },
               'Idle burn for ' + currentVehicle.name + ': ',

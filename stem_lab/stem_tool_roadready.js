@@ -486,7 +486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'You approach a school bus on a highway with a PHYSICAL MEDIAN (grass, guardrail, or concrete barrier separating the directions). The bus is on the OTHER side with red flashing lights. You must:', a: ['Stop completely', 'Slow down but proceed', 'Continue at normal speed (you do not need to stop)', 'Speed up'], correct: 2, exp: 'On a divided highway with a physical median (not a painted center stripe), only traffic on the SAME side as the bus must stop. On undivided roads — including 4-lane roads with only paint separating the directions — both directions stop.', category: 'pedestrian' },
     { q: 'In an emergency stop with ABS brakes, you should:', a: ['Pump the brake pedal rapidly', 'Press and HOLD the brake pedal firmly while steering', 'Apply gentle pressure', 'Use the parking brake'], correct: 1, exp: 'ABS does the pumping for you. Press and HOLD firmly. You will feel pulsing in the pedal — that is normal. The pulsing means it is working. Steer through the stop.', category: 'emergency' },
     { q: 'A "no zone" refers to:', a: ['A speed-limit-free area', 'The blind spots around large trucks', 'A no-passing zone', 'A school zone at night'], correct: 1, exp: 'Large trucks have huge blind spots called "no zones" — directly behind, directly in front, and along both sides. If you can\'t see the driver\'s mirrors, they can\'t see you.', category: 'general' },
-    { q: 'You can be charged with DUI in Maine for driving while impaired by:', a: ['Alcohol only', 'Alcohol and illegal drugs only', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only if BAC is over 0.08'], correct: 2, exp: 'DUI laws cover ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
+    { q: 'You can be charged with OUI (Operating Under Influence) in Maine for driving while impaired by:', a: ['Alcohol only', 'Alcohol and illegal drugs only', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only if BAC is over 0.08'], correct: 2, exp: 'Maine OUI law covers ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
     { q: 'Cell phone use while driving in Maine is:', a: ['Always legal', 'Banned for handheld; hands-free is OK for adults', 'Banned only for teens', 'Banned only at school zones'], correct: 1, exp: 'Maine bans ALL handheld phone use. Hands-free is legal for adults but banned for drivers under 18 with intermediate licenses. Texting is fully banned for everyone.', category: 'dui' },
     { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at posted speed', 'Honk and pass quickly', 'Move over one lane if safe, or slow down significantly', 'Stop completely'], correct: 2, exp: 'Maine\'s "Move Over" law requires drivers to change lanes if safe, or slow down. Roadside workers die every year from drivers passing too close.', category: 'emergency' },
     // ── Accident aftermath + advanced ──
@@ -500,7 +500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'The two-second rule should be increased to four or more seconds when:', a: ['Driving a small car', 'Road conditions are wet, icy, or visibility is poor', 'Driving during the day', 'Driving below the speed limit'], correct: 1, exp: 'Wet roads: 4+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Following a motorcycle or large truck: 4+ seconds. At night: 4+ seconds. When in doubt, add more distance.', category: 'winter' },
     { q: 'You are driving and smell gasoline inside the car. You should:', a: ['Ignore it — cars always smell like gas', 'Open windows, do NOT smoke, pull over when safe, and check for leaks', 'Speed up to blow the fumes out', 'Turn on the AC to recirculate air'], correct: 1, exp: 'A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.', category: 'emergency' },
     { q: 'What does it mean when your steering wheel vibrates at highway speed?', a: ['Normal road vibration', 'Likely wheel balance issue, alignment problem, or tire damage — have it inspected', 'The engine is overheating', 'You need new brakes'], correct: 1, exp: 'Steering vibration typically means: unbalanced wheels (most common, cheap fix), worn tie rod ends, or tire damage. If vibration is only when braking, it\'s warped rotors.', category: 'maintenance' },
-    { q: 'In Maine, what is the penalty for a first-offense DUI?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI (Operating Under Influence): minimum 96 hours jail (or 48 hrs community service), $500+ fine, 150-day license suspension. Second offense: mandatory 7 days jail.', category: 'dui' },
+    { q: 'In Maine, what is the penalty for a first-offense OUI (Operating Under Influence)?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI: minimum 96 hours jail (or 48 hrs community service), $500+ fine, 150-day license suspension. Second offense: mandatory 7 days jail. Maine uses "OUI" rather than the "DUI" / "DWI" terms used in other states.', category: 'dui' },
     { q: 'You are approaching a green light that has been green for a long time (stale green). You should:', a: ['Speed up to make it through', 'Cover the brake and be ready for it to change', 'Honk to warn cross traffic', 'Stop and wait for the next green'], correct: 1, exp: 'A "stale green" is likely to turn yellow soon. Cover your brake pedal (hover your foot over it) so you can react instantly. This reduces reaction time by ~0.5 seconds.', category: 'general' },
     { q: 'The "Dutch reach" is a technique for:', a: ['Parallel parking', 'Opening your car door safely by reaching with the far hand to check for cyclists', 'Merging onto a highway', 'Adjusting mirrors'], correct: 1, exp: 'Open your door with the hand farthest from the door (right hand for driver side). This naturally turns your body to look over your shoulder, checking for cyclists. Prevents "dooring" — a leading cause of cyclist injury.', category: 'general' },
     { q: 'Your car starts to hydroplane. The correct response is:', a: ['Brake hard', 'Turn the steering wheel sharply', 'Ease off the gas, do not brake or steer sharply, and let the tires regain contact', 'Accelerate to push through'], correct: 2, exp: 'Hydroplaning = tires riding on a film of water, not the road. Braking or sharp steering = loss of control. Ease off gas smoothly and wait for tires to contact pavement again.', category: 'emergency' },
@@ -529,13 +529,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ── Expanded category coverage (DUI / Winter / Pedestrian / Emergency / Maintenance / GDL / Signs) ──
     // ── DUI / impaired ──
     { q: 'In Maine, the BAC limit for drivers UNDER 21 is:', a: ['0.08%', '0.05%', '0.02% (zero tolerance)', 'No limit'], correct: 2, exp: 'Maine has zero tolerance: ANY measurable alcohol (0.02% or higher) for under-21 drivers triggers a license suspension. The 0.08% limit only applies to adults 21+.', category: 'dui' },
-    { q: 'How long does an OUI (Operating Under Influence) conviction stay on your Maine driving record?', a: ['1 year', '5 years', '10 years', 'Forever'], correct: 2, exp: 'In Maine, OUI convictions stay on your driving record for 10 years. They affect insurance rates, employment background checks, and any subsequent DUI charges (which carry escalating penalties).', category: 'dui' },
-    { q: 'Maine\'s "implied consent" law means that refusing a breath test after a traffic stop:', a: ['Has no consequences', 'Triggers an automatic license suspension', 'Is always smart legal advice', 'Only matters if you fail it'], correct: 1, exp: 'By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any DUI charges.', category: 'dui' },
+    { q: 'How long does an OUI (Operating Under Influence) conviction stay on your Maine driving record?', a: ['1 year', '5 years', '10 years', 'Forever'], correct: 2, exp: 'In Maine, OUI convictions stay on your driving record for 10 years. They affect insurance rates, employment background checks, and any subsequent OUI charges (which carry escalating penalties).', category: 'dui' },
+    { q: 'Maine\'s "implied consent" law means that refusing a breath test after a traffic stop:', a: ['Has no consequences', 'Triggers an automatic license suspension', 'Is always smart legal advice', 'Only matters if you fail it'], correct: 1, exp: 'By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any OUI charges.', category: 'dui' },
     { q: 'You went out for drinks and feel "okay to drive." The safest choice is:', a: ['Drive carefully and slowly', 'Wait 30 minutes and reassess', 'Use a rideshare, taxi, or designated driver', 'Drink coffee for 15 minutes first'], correct: 2, exp: 'You cannot reliably self-assess your impairment — alcohol affects judgment FIRST. The only safe choice is not driving. Coffee speeds nothing; only TIME (about 1 hour per standard drink) lowers BAC.', category: 'dui' },
     { q: 'Approximately how long does it take your body to metabolize ONE standard drink (12 oz beer, 5 oz wine, 1.5 oz liquor)?', a: ['10 minutes', '1 hour', '4 hours', '24 hours'], correct: 1, exp: 'About 1 hour per drink for a typical adult. There is no shortcut — coffee, food, cold air, and exercise do not speed metabolism. Plan drinks-and-driving math BEFORE you start.', category: 'dui' },
     { q: 'Combining alcohol with sleep deprivation is dangerous because:', a: ['Sleep deprivation cancels out alcohol\'s effects', 'Their effects multiply — being tired AND drunk impairs you far more than either alone', 'It only matters at 0.08% BAC', 'It only affects taller drivers'], correct: 1, exp: 'Fatigue + alcohol is exponentially worse than either alone. Studies show being awake 18+ hours alongside a "legal" 0.05% BAC gives you the impairment of a 0.10% drunk driver.', category: 'dui' },
     { q: 'Which over-the-counter medication is MOST likely to impair driving?', a: ['Vitamin C', 'Diphenhydramine (Benadryl) and other sedating antihistamines', 'Tylenol', 'Daily aspirin'], correct: 1, exp: 'Sedating antihistamines (Benadryl, NyQuil, Advil PM) cause drowsiness comparable to alcohol. Read labels: "may cause drowsiness" means do not drive. Non-drowsy options (Claritin, Zyrtec) are safer.', category: 'dui' },
-    { q: 'Recreational marijuana is legal in Maine for adults 21+, but driving while impaired by marijuana is:', a: ['Legal if you have a medical card', 'Legal as long as you can pass the breath test', 'A criminal OUI offense — same penalties as alcohol DUI', 'Only a fine'], correct: 2, exp: 'Cannabis OUI in Maine carries the same penalties as alcohol OUI: license suspension, fines, and possible jail. Officers can request a blood test if they suspect impairment. The "legal at home" status does not extend to driving.', category: 'dui' },
+    { q: 'Recreational marijuana is legal in Maine for adults 21+, but driving while impaired by marijuana is:', a: ['Legal if you have a medical card', 'Legal as long as you can pass the breath test', 'A criminal OUI offense — same penalties as alcohol OUI', 'Only a fine'], correct: 2, exp: 'Cannabis OUI in Maine carries the same penalties as alcohol OUI: license suspension, fines, and possible jail. Officers can request a blood test if they suspect impairment. The "legal at home" status does not extend to driving.', category: 'dui' },
     { q: 'How does cannabis impairment differ from alcohol impairment behind the wheel?', a: ['Cannabis only slows reflexes; alcohol does the rest', 'Cannabis can impair attention, reaction time, lane keeping, and decision-making — many alcohol-like effects', 'Cannabis improves driving', 'They are identical'], correct: 1, exp: 'THC slows reaction time, narrows attention, distorts time perception, and degrades multitasking. Effects last 4-8 hours after smoking and longer after edibles. There is no equivalent of "one drink is fine" for cannabis.', category: 'dui' },
     { q: 'Your friend has had several drinks and insists they\'re fine to drive. The best action is:', a: ['Trust their judgment', 'Take their keys, offer a ride or call them a rideshare', 'Drive slowly behind them as a backup', 'Let them sleep in the car for an hour first'], correct: 1, exp: 'Friends do not let friends drive impaired. Take the keys. Offer a ride, call a rideshare, or let them sleep on your couch. An hour of sleep does not metabolize alcohol — only time does.', category: 'dui' },
 
@@ -614,7 +614,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
 
     // ── Maine annual vehicle inspection sticker ──
     { q: 'Every passenger vehicle registered in Maine must:', a: ['Pass an annual safety inspection at a state-licensed station and display a sticker on the windshield', 'Pass an emissions test only', 'Be inspected once when first registered', 'Have no inspection requirement'], correct: 0, exp: 'Maine requires an ANNUAL safety inspection at a Maine BMV/State-Police-licensed inspection station. The sticker goes on the inside of the windshield, lower-left, and shows the month and year it expires. Driving with an expired sticker is a citation.', category: 'maintenance' },
-    { q: 'The fee for a standard Maine annual passenger-car safety inspection is approximately:', a: ['Free', '$12.50', '$50', '$100'], correct: 1, exp: 'Maine sets the inspection fee by statute at about $12.50 for standard passenger cars (heavier or commercial vehicles cost more). Pay it at any licensed inspection station — independent garages and dealerships hold most of the licenses.', category: 'maintenance' }
+    { q: 'The fee for a standard Maine annual passenger-car safety inspection is approximately:', a: ['Free', '$12.50', '$50', '$100'], correct: 1, exp: 'Maine sets the inspection fee by statute at about $12.50 for standard passenger cars (heavier or commercial vehicles cost more). Pay it at any licensed inspection station — independent garages and dealerships hold most of the licenses.', category: 'maintenance' },
+
+    // ── Bicycle dooring (real urban hazard, real Maine law) ──
+    { q: 'Before opening your driver-side door after parking on a street, you should:', a: ['Open it quickly so traffic does not pile up', 'Glance at the side mirror only', 'Use the "Dutch reach" — open with your far hand so your body turns and you check over your shoulder for cyclists', 'Honk first to warn'], correct: 2, exp: 'The "Dutch reach": open the driver door with your RIGHT hand. The body twist forces you to look back through the side window for cyclists. Maine has a 3-foot passing law for cyclists, but a door swinging into the bike lane causes the same crash. Drivers can be cited if their door causes a cyclist to crash.', category: 'pedestrian' },
+    { q: 'You parked on a city street and your passenger is about to open the curb-side door. The risk to watch for is:', a: ['Nothing — passengers are always safe', 'A cyclist or scooter rider on the sidewalk-side bike lane', 'Police giving them a ticket', 'A door alarm'], correct: 1, exp: 'Some Maine cities (Portland, Bangor) have curb-protected or buffered bike lanes where cyclists ride between the parked cars and the curb. Passengers must look back over their shoulder before opening. Tell anyone you carry to do the same.', category: 'pedestrian' },
+
+    // ── Wildlife strike reporting (29-A and Maine Game Warden practice) ──
+    { q: 'You hit a deer on a rural Maine road and the animal is killed. Maine law requires you to:', a: ['Take the deer home with you immediately', 'Leave the scene quickly to avoid blame', 'Report the collision to law enforcement (State Police, Game Warden, or local police) — the deer cannot be removed without their authorization', 'Bury the deer'], correct: 2, exp: 'Maine law: report any deer/moose/bear collision to law enforcement. The Game Warden Service or State Police will issue a "possession tag" if you (or the next motorist who calls) want to keep the animal. Removing it without a tag is illegal. Report number: dial 911 (or *SP for State Police).', category: 'emergency' },
+    { q: 'You strike a moose on Route 201 at night. The animal is on the shoulder and your car is drivable. The MOST important first action is:', a: ['Inspect the moose for damage', 'Get yourself and any passengers out of the travel lane (turn on hazard lights, get clear of the road) and then call 911 — secondary collisions are the next biggest risk', 'Move the moose off the road', 'Drive home and call later'], correct: 1, exp: 'After a wildlife strike: hazards on, get OFF the travel lane, call 911 — and stay clear of the carcass (a moose can weigh 1,200 lbs and other drivers can hit it). Only after the scene is safe do you assess the car. Reporting also documents the crash for insurance.', category: 'emergency' },
+
+    // ── Maine winter conditions (frost heaves, salt damage) ──
+    { q: 'Driving on a Maine secondary road in late March, you notice the pavement has uneven bumps and dips that throw your steering off. These are:', a: ['Speed bumps', 'Frost heaves — caused by frozen soil expanding under the road', 'Potholes', 'Construction'], correct: 1, exp: 'Frost heaves form when frozen ground swells under pavement, then settles unevenly when it thaws. Common on Maine\'s secondary and rural roads from late winter through spring (Mar–May). Slow down: heaves can launch a wheel off the ground at speed. The Maine DOT prioritizes patching them after mud season.', category: 'winter' },
+    { q: 'After a winter of road salt, the area on your car most prone to rust is:', a: ['The roof', 'The undercarriage — frame rails, brake lines, fuel tank straps, and exhaust', 'The windshield', 'The interior'], correct: 1, exp: 'Maine\'s salt + brine treatment is excellent for ice but eats steel from below. Wash the undercarriage at any "underbody wash" car wash through winter and again in spring. Rusted brake lines fail without warning at the worst moment — a Maine inspection should catch them but a wash habit prevents the rust in the first place.', category: 'maintenance' },
+    { q: 'You hit a deep pothole at speed in early Maine spring and feel the steering pull to one side. The most likely problem is:', a: ['Low oil', 'Bent wheel, blown tire sidewall, or knocked-out alignment — pull over safely and inspect', 'A flat battery', 'A clogged air filter'], correct: 1, exp: 'Pothole impact damages: bent rim (steering vibrates), torn tire sidewall (bulge or rapid leak), or shifted alignment (steering pulls). Pull over, look at all four tires, check for visible damage. If steering is off, drive slowly to a tire shop. Maine\'s post-winter potholes are a real claim hazard.', category: 'maintenance' }
   ];
 
   console.log('[RoadReady] Loaded ' + PERMIT_BANK.length + ' permit questions');
@@ -623,7 +636,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var PERMIT_CATEGORIES = [
     { id: 'signs',       label: 'Signs & Signals',        icon: '🛑' },
     { id: 'gdl',         label: 'Maine Teen Licensing',   icon: '🆔' },
-    { id: 'dui',         label: 'DUI & Impaired Driving', icon: '🍺' },
+    { id: 'dui',         label: 'OUI & Impaired Driving', icon: '🍺' },
     { id: 'winter',      label: 'Winter & Wildlife',      icon: '❄️' },
     { id: 'pedestrian',  label: 'Pedestrian & School',    icon: '🚸' },
     { id: 'emergency',   label: 'Emergency Situations',   icon: '🚨' },
@@ -880,6 +893,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var MPH_TO_MS = 0.44704;
   var MS_TO_MPH = 2.23694;
   var FT_PER_M = 3.28084;
+  var METERS_PER_MILE = 1609.344; // 1 statute mile (NIST exact)
   var AIR_DENSITY = 1.225; // kg/m³ at sea level
 
   // Scenarios use 'clear' internally; lab views expose the friendlier 'dry' to users.
@@ -946,19 +960,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Instantaneous MPG estimate given current speed, acceleration, and vehicle.
   // Simplified: engine does work against drag + rolling + acceleration.
   // Output in mpg (gasoline equivalent). Handles EV by reporting MPGe.
-  // options.coldStart: true → 15% efficiency penalty (engine + cabin + drivetrain
+  //
+  // options.coldStart: 15% efficiency penalty (engine + cabin + drivetrain
   //   warmup; EPA says 10–15% for first ~5 min on gas, ~3% on EV).
-  // options.winter: true → 5% efficiency penalty (cold air = denser, ethanol
-  //   blend, longer warmup, accessory load). Independent of weather='snow' which
+  // options.winter:    5% efficiency penalty (dense air, ethanol blend,
+  //   longer warmup, accessory load). Independent of weather='snow' which
   //   only changes friction and rolling coefficient.
+  // options.tireUnderinflated: rolling-resistance penalty (~0.3% MPG per PSI
+  //   under spec, summed over 4 tires). Modeled as a 1.25× rolling-coef
+  //   multiplier (~3 PSI low, all 4 tires — typical real-world).
+  // options.acOn:      AC compressor parasitic draw. Worst at low speed
+  //   where it's a larger fraction of engine output (~10–15% city, ~3–5%
+  //   highway). Modeled as a fixed kW load on the powertrain.
+  // options.headwindMph: subtract from velocity for drag calculation only.
+  //   A 20 mph headwind at 60 mph cruise = drag of an 80 mph car. Tail-
+  //   winds (negative value) reduce drag.
   function instantMPG(v_mph, accel_g, vehicle, weather, tireOk, options) {
     if (v_mph < 1) return 0;
     var opts = options || {};
     var v_ms = v_mph * MPH_TO_MS;
-    var Fd = dragForce(v_ms, vehicle.cd, vehicle.area);
-    var Fr = rollingForce(vehicle.mass, rollingCoef(weather, tireOk));
+    // Headwind shifts the relative airspeed used for drag. Drag is signed
+    // by relative-velocity sign squared, so a tailwind reduces it.
+    var relAir_ms = (v_mph + (opts.headwindMph || 0)) * MPH_TO_MS;
+    var Fd = dragForce(relAir_ms, vehicle.cd, vehicle.area);
+    // Tire-underinflation penalty: bumps rolling-resistance coefficient.
+    var rollCoefMult = opts.tireUnderinflated ? 1.25 : 1.0;
+    var Fr = rollingForce(vehicle.mass, rollingCoef(weather, tireOk)) * rollCoefMult;
     var Fa = Math.max(0, vehicle.mass * accel_g * 9.81); // only accel costs; decel is free / regen
-    var powerW = (Fd + Fr + Fa) * v_ms;
+    var mechPowerW = (Fd + Fr + Fa) * v_ms;
+    // AC compressor: ~3 kW peak at full cooling, modeled as a parasitic load
+    // on the engine's output. Real cars vary widely (1.5–5 kW); 2.5 kW is a
+    // mid-range fixed-displacement compressor. EVs pay it directly from the
+    // pack with no engine-eff loss.
+    var acPowerW = opts.acOn ? 2500 : 0;
+    var powerW = mechPowerW + acPowerW;
     // Gas engine efficiency ≈ 0.25 under good conditions; idle losses increase at low speed.
     var engineEff = vehicle.type === 'electric' ? 0.88 : (vehicle.type === 'hybrid' ? 0.34 : 0.25);
     // Low-speed penalty for gas engines (not EVs)
@@ -1910,7 +1945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       duration: 90,
       check: function(ctx) {
         if (ctx._startDist === undefined) { ctx._startDist = ctx.stats.distance; ctx._fuelStart = ctx.stats.fuelUsed || 0; }
-        var miles = (ctx.stats.distance - ctx._startDist) / 1609;
+        var miles = (ctx.stats.distance - ctx._startDist) / METERS_PER_MILE;
         var gal = Math.max(0.0001, (ctx.stats.fuelUsed || 0) - ctx._fuelStart);
         if (miles >= 0.3) {
           var mpg = miles / gal;
@@ -4422,7 +4457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           parentRef.current.active = false;
         }
         // Seal the journal with a closing entry and persist so the menu can export it.
-        journalLog('end', '🏁', 'Drive ended — safety ' + Math.max(0, Math.round(s.safetyScore)) + ', eco ' + Math.max(0, Math.round(s.efficiencyScore)) + ', ' + (s.distance / 1609).toFixed(2) + ' mi');
+        journalLog('end', '🏁', 'Drive ended — safety ' + Math.max(0, Math.round(s.safetyScore)) + ', eco ' + Math.max(0, Math.round(s.efficiencyScore)) + ', ' + (s.distance / METERS_PER_MILE).toFixed(2) + ' mi');
         var sealedJournal = Object.assign({}, journalRef.current, { endedAt: Date.now(), durationSec: Math.round((Date.now() - journalRef.current.startedAt) / 1000) });
         // ── Logbook: append this drive's journal to the running log, capped at 100 sessions ──
         try {
@@ -4487,7 +4522,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scenario: currentScenario.name,
             vehicle: currentVehicle.name,
             time: minutes + ':' + String(seconds).padStart(2, '0'),
-            distance_mi: (s.distance / 1609).toFixed(2),
+            distance_mi: (s.distance / METERS_PER_MILE).toFixed(2),
             maxSpeed: Math.round(s.maxSpeed * MS_TO_MPH),
             avgMPG: avgMPG.toFixed(1),
             safetyScore: Math.max(0, Math.round(s.safetyScore)),
@@ -4661,6 +4696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             checkCyclistPassing();
             checkBusCompliance();
             checkPedestrianYield();
+            scanSpatialHazards();
             checkCollisions();
             // ── Quest / destination system (Free Explore) ──
             // Now anchored to REAL landmarks in the procedural world. The quest engine
@@ -4960,7 +4996,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var rideViolSec = endSnap.speedViolations - rsArr.startSnapshot.speedViolations;
                       var rideSkidSec = endSnap.skidSeconds - rsArr.startSnapshot.skidSeconds;
                       var rideCrashes = endSnap.crashes - rsArr.startSnapshot.crashes;
-                      var rideDistMi = (endSnap.distance - rsArr.startSnapshot.distance) / 1609;
+                      var rideDistMi = (endSnap.distance - rsArr.startSnapshot.distance) / METERS_PER_MILE;
                       var rideDur = endSnap.t - rsArr.startSnapshot.t;
                       // ── Weather surge + comfort penalty multipliers ──
                       // Real rideshare economics: bad weather = higher base fare (demand
@@ -6087,7 +6123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (Math.abs(car.speed) > 1) {
             statsRef.current.mpgSum += mpg;
             statsRef.current.mpgSamples++;
-            statsRef.current.fuelUsed += (Math.abs(deltaDist) / 1609) / Math.max(1, mpg);
+            statsRef.current.fuelUsed += (Math.abs(deltaDist) / METERS_PER_MILE) / Math.max(1, mpg);
           } else if (gear !== 'P' && gear !== 'N') {
             // Idle: engine still running, fuel still burning (gas/hybrid). EVs
             // get 0. Models the "drive-thru / red light / parked-but-running"
@@ -8463,6 +8499,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             p.x += p.vx * dt * 2;
             p.y += p.vy * dt * 2;
           });
+        };
+
+        // ──────────────────────────────────────────────────────────
+        // scanSpatialHazards: announce nearby pedestrians, vehicles,
+        // and cyclists for screen-reader and low-vision drivers via the
+        // existing rrAnnounce live-region path. Heavily debounced so the
+        // status region doesn't get spammed.
+        //
+        // Cadence model:
+        //   - Per-type cooldown (4-6s) so each hazard category announces
+        //     at most once per window.
+        //   - Min-distance ratchet: when a closer instance of the same
+        //     type appears, allow re-announcement at half the window.
+        //   - Direction is derived from the car's heading (left/right/
+        //     ahead) using the same dot-product technique used elsewhere
+        //     for collision detection — keeps semantics consistent on
+        //     curved roads.
+        // ──────────────────────────────────────────────────────────
+        var _spatial = { lastT: { ped: 0, traffic: 0, cyclist: 0 }, lastDist: { ped: 999, traffic: 999, cyclist: 999 } };
+        var scanSpatialHazards = function() {
+          if (typeof rrAnnounce !== 'function') return;
+          var car = carRef.current;
+          if (!car) return;
+          var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+          var cosH = Math.cos(car.heading), sinH = Math.sin(car.heading);
+          // Helper: classify position relative to car heading. Returns
+          // { ahead: signed-along-heading, lat: signed-perpendicular, dist }.
+          function relTo(ox, oy) {
+            var dx = ox - car.x, dy = oy - car.y;
+            return { ahead: cosH * dx + sinH * dy, lat: -sinH * dx + cosH * dy, dist: Math.hypot(dx, dy) };
+          }
+          function tryAnnounce(type, msg, dist, windowMs) {
+            var lt = _spatial.lastT[type] || 0;
+            var ld = _spatial.lastDist[type] || 999;
+            var elapsed = nowMs - lt;
+            if (elapsed < windowMs && dist >= ld * 0.7) return false; // still in cooldown and not meaningfully closer
+            rrAnnounce(msg);
+            _spatial.lastT[type] = nowMs;
+            _spatial.lastDist[type] = dist;
+            return true;
+          }
+          // Pedestrians: announce within 12 cells if ahead AND lateral within 4
+          var peds = pedsRef.current || [];
+          for (var pi = 0; pi < peds.length; pi++) {
+            var p = peds[pi];
+            if (!p) continue;
+            var pr = relTo(p.x, p.y);
+            if (pr.ahead > 0 && pr.ahead < 12 && Math.abs(pr.lat) < 4) {
+              var pSide = pr.lat > 1.5 ? ' on the right' : pr.lat < -1.5 ? ' on the left' : ' ahead';
+              var pDart = (p.kind === 'kid' && (p.crossing || (p.dartCooldown != null && p.dartCooldown < 1)));
+              var pMsg = pDart ? 'Child crossing' + pSide + '.' : (p.crossing ? 'Pedestrian crossing' + pSide + '.' : 'Pedestrian' + pSide + '.');
+              if (tryAnnounce('ped', pMsg, pr.dist, 4000)) return; // one announcement per scan
+            }
+          }
+          // Traffic: blind-spot warning (lateral, slightly behind, very close)
+          var traffic = trafficRef.current || [];
+          for (var ti = 0; ti < traffic.length; ti++) {
+            var t = traffic[ti];
+            if (!t) continue;
+            var tr = relTo(t.x, t.y);
+            // Blind spot: ahead in [-2, 0.5], lateral in [1.5, 4.5] either side
+            if (tr.ahead > -2 && tr.ahead < 0.5 && Math.abs(tr.lat) > 1.5 && Math.abs(tr.lat) < 4.5) {
+              var tSide = tr.lat > 0 ? ' right' : ' left';
+              if (tryAnnounce('traffic', 'Vehicle in your' + tSide + ' blind spot.', tr.dist, 5000)) return;
+            }
+          }
+          // Cyclists: announce when overtaking close (within 4 cells lateral, ahead < 6)
+          var cyclists = (cyclistsRef.current || []);
+          for (var ci = 0; ci < cyclists.length; ci++) {
+            var cy = cyclists[ci];
+            if (!cy) continue;
+            var cr = relTo(cy.x, cy.y);
+            if (cr.ahead > 0 && cr.ahead < 6 && Math.abs(cr.lat) < 4) {
+              var cSide = cr.lat > 0 ? ' on the right' : ' on the left';
+              if (tryAnnounce('cyclist', 'Cyclist' + cSide + ', give space.', cr.dist, 5000)) return;
+            }
+          }
         };
 
         var checkCollisions = function() {
@@ -17647,7 +17760,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText('ECO', W - 100, H - 35);
 
           // Odometer / trip meter / landmark counter
-          var distMi = (stats.distance / 1609).toFixed(2);
+          var distMi = (stats.distance / METERS_PER_MILE).toFixed(2);
           var elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
           var elMin = Math.floor(elapsed / 60);
           var elSec = elapsed % 60;
@@ -18544,7 +18657,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.fillText('Comfort ' + Math.round(liveComfort), rsX + rsW - 8, starBaseY);
                 // Distance remaining + fare preview. Surge mirrors dropoff math.
                 var rsRemaining = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
-                var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / 1609;
+                var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / METERS_PER_MILE;
                 var rsWHud = (scn && scn.weather) || 'clear';
                 var rsSurgeHud = rsWHud === 'snow' ? 1.5 : rsWHud === 'fog' ? 1.3 : rsWHud === 'rain' ? 1.2 : 1.0;
                 var estFare = (3.5 + Math.max(0.3, distSoFar) * 1.2) * rsSurgeHud;
@@ -20273,7 +20386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Speed limit display
             h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '4px' } }, 'Limit: ' + currentScenario.speedLimit + ' mph'),
             // Distance driven
-            h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / 1609).toFixed(2) + ' mi'),
+            h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / METERS_PER_MILE).toFixed(2) + ' mi'),
             // Infinite world info + current town
             infiniteWorldRef.current ? h('div', null,
               challengeRef.current && challengeRef.current.currentTown ? h('div', { style: { fontSize: '10px', color: '#fbbf24', textAlign: 'center', marginTop: '3px', fontWeight: 700 } },
@@ -20698,9 +20811,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('h2', { style: { fontSize: '24px', fontWeight: 900, marginBottom: '6px' } }, passed ? 'PASSED!' : 'Keep Studying'),
               h('div', { style: { fontSize: '16px', color: passed ? '#4ade80' : '#fca5a5', marginBottom: '14px' } }, 'Score: ' + permitState.score + ' / ' + permitTotal + ' (' + Math.round(permitState.score / permitTotal * 100) + '%)'),
               h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '16px' } }, passed ? 'You would pass the real test. Keep practicing in the simulator to build real driving skills!' : 'Need ' + permitPassThreshold + '/' + permitTotal + ' (80%) to pass. Review the explanations, re-read the lessons, and try again.'),
-              h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+              h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
                 h('button', { onClick: function() { upd('view', 'permitStart'); },
                   style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#fbbf24', color: '#78350f', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, '🔁 Retake'),
+                // Certificate print: only on pass + when the SelHub.printDoc helper
+                // is available (graceful fallback if SEL Hub module isn't loaded).
+                passed && window.SelHub && window.SelHub.printDoc && h('button', {
+                  'aria-label': 'Print practice-pass certificate',
+                  onClick: function() {
+                    var pct = Math.round(permitState.score / permitTotal * 100);
+                    // Tally categories that appeared in this run for the certificate body.
+                    var catCounts = {};
+                    (permitState.questions || []).forEach(function(qq) {
+                      var cid = qq.category || 'general';
+                      catCounts[cid] = (catCounts[cid] || 0) + 1;
+                    });
+                    var catLines = Object.keys(catCounts).map(function(cid) {
+                      var meta = (PERMIT_CATEGORIES || []).find(function(pc) { return pc.id === cid; });
+                      return ((meta && meta.label) || cid) + ': ' + catCounts[cid] + ' question' + (catCounts[cid] === 1 ? '' : 's');
+                    });
+                    window.SelHub.printDoc({
+                      title: 'Maine Permit Practice — Certificate of Mastery',
+                      subtitle: 'RoadReady · ' + permitState.score + ' / ' + permitTotal + ' (' + pct + '%) · ' + new Date().toLocaleDateString(),
+                      sections: [
+                        { heading: 'About this certificate', paragraphs: ['This certifies that the student passed the RoadReady Maine permit practice test at the 80% mastery threshold. The questions are written to the 2024 Maine BMV Driver\'s Manual and 29-A M.R.S. (Motor Vehicles).'] },
+                        { heading: 'Categories tested', items: catLines },
+                        { heading: 'Important', paragraphs: ['This is a PRACTICE certificate, not a Maine permit. To get a Maine learner\'s permit you must take the official BMV exam, present required documents, and meet the GDL age requirement (15+).'] }
+                      ]
+                    });
+                  },
+                  style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#10b981', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                }, '🖨 Print certificate'),
                 h('button', { onClick: function() { upd('view', 'menu'); },
                   style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #64748b', background: 'transparent', color: '#cbd5e1', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '🏠 Menu')
               )
@@ -21594,7 +21735,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '📔'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Driving Logbook'),
-            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, logbook.length + ' sessions · ' + totalHrs + ' hours total · Maine needs 70 hours supervised')
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, logbook.length + ' sessions · ' + totalHrs + ' hours total · Maine needs 70 hours supervised'),
+            // Print logbook for parent / instructor signature.
+            logbook.length > 0 && window.SelHub && window.SelHub.printDoc && h('button', {
+              'aria-label': 'Print logbook for parent or instructor',
+              onClick: function() {
+                var lines = logbook.map(function(j) {
+                  var dt = new Date(j.endedAt || j.startedAt || Date.now());
+                  var mm2 = Math.floor((j.durationSec || 0) / 60);
+                  var cond = j.conditions ? (j.conditions.weather || '') + ' / ' + (j.conditions.time || '') : '';
+                  return dt.toLocaleDateString() + ' · ' + (j.scenario || 'Drive') + ' · ' + (j.vehicle || '') + ' · ' + mm2 + ' min' + (cond ? ' · ' + cond : '') + ' · score ' + (typeof j.score === 'number' ? j.score : '–');
+                });
+                window.SelHub.printDoc({
+                  title: 'RoadReady — Practice Driving Log',
+                  subtitle: logbook.length + ' sessions · ' + totalHrs + ' hours · Maine GDL requires 70 supervised hours (10 of which at night) before the road test.',
+                  sections: [
+                    { heading: 'Sessions (newest first)', items: lines },
+                    { heading: 'Parent / instructor signature', paragraphs: ['I confirm that I supervised the practice sessions listed above.', '', 'Signed: ____________________________      Date: ____________'] },
+                    { heading: 'Note', paragraphs: ['These hours come from RoadReady\'s practice simulator. Maine\'s 70-hour supervised driving requirement applies to ON-ROAD driving with a licensed adult — sim time supplements but does not replace it. Use this log as a reflection record alongside your real-road hours.'] }
+                  ]
+                });
+              },
+              style: { marginTop: '10px', padding: '6px 14px', borderRadius: '8px', border: 'none', background: '#10b981', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, '🖨 Print log for parent / instructor')
           ),
           // Progress toward 70 hour goal
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },
@@ -21829,7 +21992,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'duiDrill') {
         return renderDrill({
-          icon: '⚖️', title: 'DUI / Impaired-Driving Drill', subtitle: 'Maine limits, zero-tolerance, implied consent',
+          icon: '⚖️', title: 'OUI / Impaired-Driving Drill', subtitle: 'Maine limits, zero-tolerance, implied consent',
           factsTitle: 'Key rules',
           gradientFrom: '#7f1d1d', gradientTo: '#0f172a',
           borderColor: '#f87171', subtitleColor: '#fecaca', accentBorder: '#ef4444',
@@ -21881,7 +22044,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 'Only until midnight'
               ],
               correct: 1,
-              exp: 'Under 21 in Maine: 0.02 BAC is the limit. That\'s essentially any measurable alcohol in your system. Penalties are close to full DUI: license suspension, fine, DEEP program. The law is strict because crashes per mile driven are highest in the under-21 age group and alcohol makes it exponentially worse.' },
+              exp: 'Under 21 in Maine: 0.02 BAC is the limit. That\'s essentially any measurable alcohol in your system. Penalties are close to a full adult OUI: license suspension, fine, DEEP program. The law is strict because crashes per mile driven are highest in the under-21 age group and alcohol makes it exponentially worse.' },
             { id: 'weed_legal', icon: '🍃', title: 'Recreational marijuana + driving',
               q: 'Maine legalized recreational marijuana for adults 21+. You\'re 22, used it 90 minutes ago, still feel relaxed. Can you drive?',
               choices: [
@@ -24787,7 +24950,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'winterDriving', goal: 'safety', icon: '❄️', name: 'Winter Driving Drill', desc: 'Black ice, skid recovery, plow etiquette, and the 4WD myth.' },
           { view: 'constructionZone', goal: 'safety', icon: '🚧', name: 'Construction Zone Drill', desc: 'Flaggers, zipper merges, barrels, pilot cars — fines doubled.' },
           { view: 'roundaboutDrill', goal: 'safety', icon: '🔄', name: 'Roundabout Drill', desc: 'Yield, signal timing, multi-lane trucks, pedestrians — Maine is adding these fast.' },
-          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: 'DUI / Impaired-Driving Drill', desc: 'Maine 0.02 BAC zero-tolerance, implied consent, Rx + marijuana rules.' },
+          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: 'OUI / Impaired-Driving Drill', desc: 'Maine 0.02 BAC zero-tolerance, implied consent, Rx + marijuana rules.' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },
@@ -24933,7 +25096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             choices: [
               { text: 'Let them drive — they seem okay', safe: false, reply: 'Two beers puts most teens over .04 BAC — more than half the legal limit for adults, and Maine has ZERO tolerance for under 21. Not "okay" — impaired.' },
               { text: 'Take their keys and drive them home yourself', safe: true, reply: 'Lifesaver move. This is the moment that saves their life — and possibly someone else\'s. Their momentary anger is worth nothing compared to their life.' },
-              { text: 'Call an Uber / rideshare for them', safe: true, reply: 'Another great option. Uber/Lyft are cheaper than a DUI, insurance hike, legal fees, or funerals. Most cities have free teen ride programs too.' }
+              { text: 'Call an Uber / rideshare for them', safe: true, reply: 'Another great option. Uber/Lyft are cheaper than an OUI, insurance hike, legal fees, or funerals. Most cities have free teen ride programs too.' }
             ] },
           { id: 'weed', friend: 'Pat', text: '"Weed actually makes me a BETTER driver — slower and more cautious. Seriously."',
             context: 'Pat wants to drive to get food after smoking.',
@@ -26464,7 +26627,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
         var fwh = normalizeWeather(weatherChoice);
         var hyperWinter = !!d.hyperWinter;
         var hyperColdStart = !!d.hyperColdStart;
-        var hyperOpts = { winter: hyperWinter, coldStart: hyperColdStart };
+        var hyperTireLow = !!d.hyperTireLow;
+        var hyperAcOn = !!d.hyperAcOn;
+        var hyperHeadwind = typeof d.hyperHeadwind === 'number' ? d.hyperHeadwind : 0;
+        var hyperOpts = { winter: hyperWinter, coldStart: hyperColdStart, tireUnderinflated: hyperTireLow, acOn: hyperAcOn, headwindMph: hyperHeadwind };
         var speeds = [];
         for (var sp = 15; sp <= 85; sp += 5) speeds.push(sp);
         var mpgs = speeds.map(function(s) { return cruiseMPG(s, currentVehicle, fwh, true, hyperOpts); });
@@ -26518,7 +26684,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('button', { onClick: function() { upd('hyperColdStart', !hyperColdStart); },
                 'aria-pressed': hyperColdStart ? 'true' : 'false',
                 style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperColdStart ? '#10b981' : '#334155'), background: hyperColdStart ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
-                (hyperColdStart ? '✓ ' : '') + '🥶 Cold start (−15%)')
+                (hyperColdStart ? '✓ ' : '') + '🥶 Cold start (−15%)'),
+              // Tire pressure: 25% rolling-coef bump models ~3 PSI low across all 4 tires
+              h('button', { onClick: function() { upd('hyperTireLow', !hyperTireLow); },
+                'aria-pressed': hyperTireLow ? 'true' : 'false',
+                title: 'Underinflated tires (~3 PSI low across all 4 tires) raise rolling resistance ~25%, costing roughly 3% MPG.',
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperTireLow ? '#10b981' : '#334155'), background: hyperTireLow ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                (hyperTireLow ? '✓ ' : '') + '🛞 Low tires (~−3%)'),
+              // AC load: ~2.5 kW parasitic draw on the engine — bigger impact at low speed
+              h('button', { onClick: function() { upd('hyperAcOn', !hyperAcOn); },
+                'aria-pressed': hyperAcOn ? 'true' : 'false',
+                title: 'Air conditioning compressor pulls ~2.5 kW. Hits hardest in city driving (10–15% MPG); tiny on the highway (~3%).',
+                style: { padding: '6px 10px', borderRadius: '6px', border: '1px solid ' + (hyperAcOn ? '#10b981' : '#334155'), background: hyperAcOn ? '#064e3b' : '#1e293b', color: '#fff', cursor: 'pointer', fontSize: '10px', fontWeight: 700 } },
+                (hyperAcOn ? '✓ ' : '') + '❄️ A/C on (−10% city, −3% hwy)')
+            ),
+            // Headwind / tailwind slider
+            h('div', { style: { marginTop: '8px', padding: '8px 10px', background: '#0b1220', borderRadius: '6px', border: '1px solid #1e293b' } },
+              h('label', { htmlFor: 'rr-hyper-wind', style: { fontSize: '10px', fontWeight: 700, color: '#cbd5e1', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
+                h('span', null, '💨 Wind (mph relative to your direction)'),
+                h('span', { style: { color: hyperHeadwind > 0 ? '#fca5a5' : hyperHeadwind < 0 ? '#86efac' : '#94a3b8', fontWeight: 800 } }, (hyperHeadwind > 0 ? '+' : '') + hyperHeadwind + (hyperHeadwind > 0 ? ' headwind' : hyperHeadwind < 0 ? ' tailwind' : ' calm'))
+              ),
+              h('input', {
+                id: 'rr-hyper-wind',
+                type: 'range', min: -25, max: 25, step: 5, value: hyperHeadwind,
+                onChange: function(e) { upd('hyperHeadwind', parseInt(e.target.value, 10) || 0); },
+                'aria-label': 'Wind: positive is headwind (slows you), negative is tailwind',
+                style: { width: '100%', marginTop: '4px' }
+              }),
+              h('div', { style: { fontSize: '9px', color: '#64748b', marginTop: '2px' } }, 'Drag scales with relative airspeed squared — a 20 mph headwind at 60 mph cruise is the same drag as an 80 mph car in still air.')
             ),
             h('div', { style: { marginTop: '8px', fontSize: '10px', color: '#94a3b8', lineHeight: '1.4' } },
               'Idle burn for ' + currentVehicle.name + ': ',
