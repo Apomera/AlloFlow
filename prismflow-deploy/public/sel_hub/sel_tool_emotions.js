@@ -689,6 +689,39 @@ window.SelHub = window.SelHub || {
       );
 
       // ══════════════════════════════════════════════════════════
+      // ── Topic-accent hero band per tab ──
+      // ══════════════════════════════════════════════════════════
+      var heroBand = (function() {
+        var TAB_META = {
+          wheel:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)',  icon: '\uD83C\uDF08', title: 'Emotion Wheel \u2014 28 feelings, more precision',     hint: 'Plutchik\u2019s 1980 wheel of 8 primaries; Robert Feldman\u2019s nuance map adds intermediates. Naming a feeling specifically (\u201Cresentful\u201D vs \u201Cmad\u201D) reduces amygdala reactivity \u2014 Lieberman 2007 fMRI \u201Caffect labeling.\u201D' },
+          checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCDD', title: 'Check-In \u2014 daily 1-minute pulse',                  hint: 'Mood + intensity + brief context = the data set. Over weeks, patterns emerge: which days, which classes, which sleep amounts shift mood. Self-tracking IS the intervention. RULER + Yale CSEI evidence base.' },
+          faces:     { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)',  icon: '\uD83D\uDE04', title: 'Face Reader \u2014 Ekman\u2019s 7 universal emotions',  hint: 'Anger, fear, disgust, surprise, sadness, happiness, contempt. Paul Ekman 1971 cross-cultural studies showed these are read the same in remote tribes as in Manhattan. Micro-expressions last 1/15\u20131/25 of a second.' },
+          scenarios: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 \u201CWhat would YOU feel?\u201D',     hint: 'Theory-of-mind practice. Predict + reason + check. The same triggering event lands very different on different people, depending on history + interpretation \u2014 a core CBT insight (Beck 1960s).' },
+          journal:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',   icon: '\uD83D\uDCD3', title: 'Journal \u2014 expressive writing as research',         hint: 'Pennebaker\u2019s 1986 expressive-writing studies: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism appears to be turning chaos into narrative.' },
+          mixer:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83E\uDDEA', title: 'Mixer \u2014 emotions blend, they don\u2019t replace',  hint: 'Joy + trust = love. Fear + surprise = awe. Disgust + anger = contempt. Most real moments are blends, not pure feelings. The mixer makes that visible \u2014 your gut already knows; the wheel just gives you the words.' },
+          history:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'History \u2014 30 days of you',                          hint: 'Your check-ins as a chart. Look for triggers (school day vs weekend, before vs after lunch, before vs after sleep). Patterns you can SHOW someone (counselor, parent) are 10\u00d7 more useful than \u201CI just feel bad sometimes.\u201D' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.wheel;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
+      // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
       var badgePopup = null;
@@ -2091,6 +2124,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
         tabBar,
+        heroBand,
         badgePopup,
         wheelContent,
         checkinContent,

@@ -743,6 +743,7 @@
     }
     function closeExplainer() {
       setExplainerModal({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
+      setPushState({ pushing: false, pushed: false, error: '' });
     }
     function copyExplainer() {
       if (!explainerModal.text) return;
@@ -751,6 +752,37 @@
     function playExplainer() {
       if (!explainerModal.text || typeof p.callTTS !== 'function') return;
       try { p.callTTS(explainerModal.text); } catch (e) { /* noop */ }
+    }
+    // Plan T v3+ Chunk 2: push the generated explainer to all students in the
+    // active session. Writes to quizState.classExplainer; students subscribe
+    // and render a banner. Only one explainer at a time — newer push replaces.
+    var pushStateState = React.useState({ pushing: false, pushed: false, error: '' });
+    var pushState = pushStateState[0]; var setPushState = pushStateState[1];
+    function pushExplainerToStudents() {
+      if (!explainerModal.text || pushState.pushing) return;
+      var fb = window.__alloFirebase;
+      if (!fb || !fb.db || !fb.doc || !fb.updateDoc || !appId || !p.activeSessionCode) {
+        setPushState({ pushing: false, pushed: false, error: 'Push unavailable: live session not active.' });
+        return;
+      }
+      setPushState({ pushing: true, pushed: false, error: '' });
+      try {
+        var sessionRef = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'sessions', p.activeSessionCode);
+        Promise.resolve(fb.updateDoc(sessionRef, {
+          'quizState.classExplainer': {
+            conceptIdx: explainerModal.conceptIdx,
+            conceptText: explainerModal.conceptText,
+            text: explainerModal.text,
+            ts: Date.now(),
+          },
+        })).then(function () {
+          setPushState({ pushing: false, pushed: true, error: '' });
+        }).catch(function (err) {
+          setPushState({ pushing: false, pushed: false, error: (err && err.message) || 'Push failed.' });
+        });
+      } catch (e) {
+        setPushState({ pushing: false, pushed: false, error: (e && e.message) || 'Push failed.' });
+      }
     }
 
     var aggResult;
@@ -1148,6 +1180,20 @@
             className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100',
             title: 'Play explainer aloud',
           }, '🔊 Play aloud'),
+          // Plan T v3+ Chunk 2: push to all students in the live session
+          !explainerModal.loading && !explainerModal.error && p.activeSessionCode && React.createElement('button', {
+            type: 'button',
+            onClick: pushExplainerToStudents,
+            disabled: pushState.pushing,
+            className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed
+              ? 'bg-emerald-600 text-white'
+              : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
+            title: 'Send this explainer to every student\'s screen now',
+          }, pushState.pushing ? 'Pushing…' : pushState.pushed ? '✓ Pushed to students' : '📡 Push to all students'),
+          pushState.error && React.createElement('span', {
+            className: 'text-[10px] text-rose-700 italic',
+            role: 'alert',
+          }, pushState.error),
           React.createElement('button', {
             type: 'button',
             onClick: closeExplainer,
@@ -1899,6 +1945,7 @@
       sessionData: sessionData,
       generatedContent: generatedContent,
       appId: appId,
+      activeSessionCode: activeSessionCode,
       callGemini: props.callGemini,
       callTTS: props.callTTS,
       gradeLevel: props.gradeLevel,
