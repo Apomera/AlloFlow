@@ -589,9 +589,75 @@
       return function () { cancelled = true; };
     }, [mode, rosterKeysSig, appId]);
 
+    // Plan T v3+: async LLM grading for freeform responses (short-answer +
+    // self-explanation). Walks responses, finds ungraded freeform text, calls
+    // QuizAIHelpers.gradeFreeformAnswer in parallel, caches by '<uid>:<qIdx>'.
+    // The cache is passed to the aggregator, which overrides 'submitted' →
+    // 'correct'/'incorrect' so freeform items contribute to gradebook scores.
+    var aiGradedState = React.useState({});
+    var aiGradedCache = aiGradedState[0]; var setAiGradedCache = aiGradedState[1];
+    var aiGradedInFlightRef = React.useRef({});
+    var allResponsesSig = React.useMemo(function () {
+      try { return JSON.stringify(quizState.allResponses || {}); } catch (e) { return ''; }
+    }, [quizState.allResponses]);
+    React.useEffect(function () {
+      var aiHelpers = window.AlloModules && window.AlloModules.QuizAIHelpers;
+      if (!aiHelpers || typeof p.callGemini !== 'function') return;
+      var allResponses = quizState.allResponses || {};
+      var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+      var pending = [];
+      Object.keys(allResponses).forEach(function (uid) {
+        var perStudent = allResponses[uid] || {};
+        Object.keys(perStudent).forEach(function (qKey) {
+          var qIdx = parseInt(qKey, 10);
+          if (isNaN(qIdx) || !questions[qIdx]) return;
+          var response = perStudent[qKey];
+          if (!response || !response.answer || response.answer.idk) return;
+          var q = questions[qIdx];
+          var t = response.itemType || (q && q.type);
+          if (t !== 'short-answer' && t !== 'self-explanation') return;
+          var text = (response.answer && response.answer.text) || '';
+          if (!text || !text.trim()) return;
+          var key = uid + ':' + qIdx;
+          if (aiGradedCache[key] || aiGradedInFlightRef.current[key]) return;
+          pending.push({ key: key, q: q, text: text });
+        });
+      });
+      if (pending.length === 0) return;
+      pending.forEach(function (item) { aiGradedInFlightRef.current[item.key] = true; });
+      Promise.all(pending.map(function (item) {
+        return aiHelpers.gradeFreeformAnswer({
+          question: item.q.question || item.q.contextSentence || '',
+          expectedAnswer: item.q.expectedAnswer || item.q.exemplarAnswer || item.q.expectedFill || '',
+          studentResponse: item.text,
+          gradeLevel: p.gradeLevel,
+          callGemini: p.callGemini,
+        }).then(function (result) {
+          return { key: item.key, result: result };
+        }).catch(function (err) {
+          return { key: item.key, result: { status: 'error', feedback: (err && err.message) || 'Grader failed.' } };
+        });
+      })).then(function (results) {
+        setAiGradedCache(function (prev) {
+          var next = Object.assign({}, prev);
+          results.forEach(function (r) {
+            next[r.key] = r.result;
+            delete aiGradedInFlightRef.current[r.key];
+          });
+          return next;
+        });
+      }).catch(function () {
+        // On unexpected failure, clear in-flight markers so they can retry next render
+        pending.forEach(function (item) { delete aiGradedInFlightRef.current[item.key]; });
+      });
+    }, [allResponsesSig, generatedContent && generatedContent.id]);
+
+    // Count in-flight grades for the header badge
+    var inFlightCount = Object.keys(aiGradedInFlightRef.current || {}).length;
+
     var aggResult;
     try {
-      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid);
+      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache);
     } catch (e) {
       console.warn('[LiveResultsDashboard] aggregator failed:', e);
       return null;
@@ -600,12 +666,18 @@
     var data = aggResult.data;
     var variant = aggResult.variant;
 
-    // Header (shared across variants)
+    // Header (shared across variants). When freeform responses are still being
+    // graded by the LLM, surface a small spinner-style badge so the teacher
+    // knows the gradebook numbers will rise as grading completes.
     var header = React.createElement('div', { className: 'flex items-center gap-2 mb-3 flex-wrap' },
       React.createElement('span', { className: 'text-2xl', 'aria-hidden': 'true' }, modeIcon),
       React.createElement('h3', { className: 'font-black text-lg text-slate-800' }, 'Live Results — ' + modeLabel),
       React.createElement('span', { className: 'text-xs text-slate-600' },
-        data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's'))
+        data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')),
+      inFlightCount > 0 && React.createElement('span', {
+        className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse',
+        title: inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI',
+      }, '✨ AI grading ' + inFlightCount + '…')
     );
 
     // Empty state (no responses yet)
@@ -1425,6 +1497,8 @@
       sessionData: sessionData,
       generatedContent: generatedContent,
       appId: appId,
+      callGemini: props.callGemini,
+      gradeLevel: props.gradeLevel,
     }),
     /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Live quiz controls encountered an error. Refreshing..."
