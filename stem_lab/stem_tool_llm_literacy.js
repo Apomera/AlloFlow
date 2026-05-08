@@ -6011,14 +6011,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('llmLiteracy'))
       // ═══════════════════════════════════════════════════════
       // Main render
       // ═══════════════════════════════════════════════════════
+      // Sections must render via h(Component), NOT as plain function calls.
+      // Each sub-section uses React hooks (useState, useMemo, etc.) — calling
+      // them directly would attach all of them to StemPluginBridge, and switching
+      // sections would change hook count mid-render → "Rendered more hooks than
+      // during the previous render" violation. h(Component) gives each section
+      // its own component scope and isolated hook list.
       function renderSection() {
-        if (section === 'tokens')  return HowLLMsWork();
-        if (section === 'fails')   return WhyLLMsFail();
-        if (section === 'prompt')  return PromptCraft();
-        if (section === 'anatomy') return PromptAnatomy();
-        if (section === 'spotter') return HallucinationSpotter();
-        if (section === 'udl')     return UDLRubric();
-        if (section === 'ref')     return QuickReference();
+        if (section === 'tokens')  return h(HowLLMsWork);
+        if (section === 'fails')   return h(WhyLLMsFail);
+        if (section === 'prompt')  return h(PromptCraft);
+        if (section === 'anatomy') return h(PromptAnatomy);
+        if (section === 'spotter') return h(HallucinationSpotter);
+        if (section === 'udl')     return h(UDLRubric);
+        if (section === 'ref')     return h(QuickReference);
         return renderHome();
       }
       try {
