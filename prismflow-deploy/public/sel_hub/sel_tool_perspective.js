@@ -1059,6 +1059,42 @@ window.SelHub = window.SelHub || {
         }, '\uD83C\uDFC5 ' + Object.keys(earnedBadges).length + '/' + BADGES.length)
       );
 
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          scenarios: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 step into another\u2019s shoes',         hint: 'Theory of mind: separating what YOU know from what THEY know develops fully ~age 4 (Sally-Anne test). Practice keeps it sharp into adulthood. The skill that makes friendships, IEPs, and leadership possible.' },
+          swap:      { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83D\uDD04', title: 'Viewpoint Swap \u2014 same scene, two narrators',           hint: 'The Rashomon effect: same event, irreconcilable accounts. Both are usually \u201Ctrue\u201D from the narrator\u2019s vantage. Hearing both sides isn\u2019t neutrality \u2014 it\u2019s the basic move that prevents stuck conflicts.' },
+          stories:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCD6', title: 'Empathy Stories \u2014 narrative builds the muscle',        hint: 'Reading literary fiction (Kidd + Castano 2013) measurably improves theory-of-mind scores. Genre fiction doesn\u2019t. Why: literary characters require you to fill in interiors. The brain treats it as social practice.' },
+          exercises: { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDC5F', title: 'Exercises \u2014 perspective sprints',                       hint: 'Quick reps: walking-in-shoes prompts, age-shift, role-shift, time-shift. Iyengar 2013: deliberate cognitive flexibility practice transfers to harder real-world disagreements months later.' },
+          biases:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\uD83E\uDDD0', title: 'Bias Explorer \u2014 the lenses you don\u2019t see',         hint: 'Confirmation, fundamental attribution error, in-group favoritism, halo effect, just-world. Kahneman + Tversky 1974-2011: knowing the bias is necessary; assuming you\u2019re above it is itself a bias. Friends help.' },
+          empathy:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDDFA', title: 'Empathy Map \u2014 think/feel/say/do',                       hint: 'IDEO design tool, also a perspective-taking scaffold. For a chosen person, fill 4 quadrants: what they think, feel, say, do. Splits cognitive (think/say) from affective (feel/do) empathy \u2014 different brain systems.' },
+          hidden:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDD0D', title: 'Hidden Feelings \u2014 the iceberg below behavior',         hint: 'Behavior = tip of iceberg; feelings, needs, fears, history sit underneath. \u201CWhy did they do that?\u201D rarely answered by the act alone. The teacher framing for student outbursts is the same framing for adult ones.' },
+          journal:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCD4', title: 'Journal \u2014 your perspective-taking log',                hint: 'Pennebaker 1986: writing about hard interactions (especially from the OTHER person\u2019s view) shows measurable health gains 6 months out. Loosens stuck narratives. Keep entries short \u2014 frequency wins.' },
+          guidedJ:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.14)', icon: '\uD83D\uDCDD', title: 'Perspective Journal \u2014 prompts that pull you in',       hint: 'Structured prompts walk you through stages of perspective-taking on a specific situation. Useful when free journaling stalls. \u201CWrite the conversation as a script with both voices\u201D is a power move.' },
+          respond:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\u270D',         title: '\u201CWhat Would You Do?\u201D \u2014 micro-dilemmas',     hint: 'Quick branching ethical-perspective scenarios. Stakes are low; the practice is in noticing what you assumed without examining. Builds the habit of pausing before reacting in the higher-stakes real version.' },
+          coach:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\u2728',         title: 'AI Coach \u2014 perspective sparring partner',             hint: 'Type a stuck conflict; the coach plays the other side\u2019s most charitable interpretation. Not to settle who\u2019s right \u2014 to surface the steel-man you didn\u2019t consider. Lower-stakes than asking the actual person.' },
+          progress:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDCCA', title: 'Progress \u2014 patterns over time',                       hint: 'Which perspectives keep landing for you? Which stay invisible? Track over weeks; the gaps you see become the work you can choose to do. Self-knowledge IS the upgrade \u2014 not a personality test, an ongoing log.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.scenarios;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
       // ── Badge Popup ──
       var badgePopup = null;
       if (showBadgePopup) {
@@ -2343,6 +2379,7 @@ window.SelHub = window.SelHub || {
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
+        heroBand,
         badgePopup,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)
       );

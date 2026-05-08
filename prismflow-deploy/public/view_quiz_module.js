@@ -269,8 +269,9 @@
             type: 'button',
             onClick: markIDK,
             className: 'px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
+            'aria-label': 'I don\'t know — skip without penalty',
             title: 'Skip — no penalty. The AI will explain.',
-          }, '🤔 I don\'t know')
+          }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know')
         )
       ),
       // Step 2: click the misplaced
@@ -495,8 +496,9 @@
             type: 'button',
             onClick: markIDK,
             className: 'px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
+            'aria-label': 'I don\'t know — skip without penalty',
             title: 'Skip — no penalty. The AI will explain.',
-          }, '🤔 I don\'t know')
+          }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know')
         )
       ),
       // Step 2: pick the correct partner
@@ -855,7 +857,14 @@
     // teacher-side; no push to student screens in this slice.
     var explainerModalState = React.useState({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
     var explainerModal = explainerModalState[0]; var setExplainerModal = explainerModalState[1];
+    // Plan T v3+ Chunk 12: refs for modal Escape-key + focus-return WCAG
+    // remediation. prevFocusRef captures the trigger button when the modal
+    // opens so we can restore focus on close. closeBtnRef receives focus
+    // when the modal opens so screen readers announce the dialog name.
+    var prevFocusRef = React.useRef(null);
+    var explainerCloseBtnRef = React.useRef(null);
     function openExplainer(conceptIdx, conceptText) {
+      try { prevFocusRef.current = document.activeElement; } catch (e) { /* noop */ }
       setExplainerModal({ open: true, conceptIdx: conceptIdx, conceptText: conceptText, loading: true, text: '', error: '' });
       runExplainerCall(conceptText);
     }
@@ -877,7 +886,36 @@
     function closeExplainer() {
       setExplainerModal({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
       setPushState({ pushing: false, pushed: false, error: '' });
+      // Plan T v3+ Chunk 12: restore focus to the trigger button so the
+      // teacher's keyboard position is preserved.
+      try {
+        if (prevFocusRef.current && typeof prevFocusRef.current.focus === 'function') {
+          prevFocusRef.current.focus();
+        }
+      } catch (e) { /* noop */ }
     }
+    // Plan T v3+ Chunk 12: Escape-key listener + auto-focus on the modal's
+    // Close button when it opens. Runs only while the modal is open.
+    React.useEffect(function () {
+      if (!explainerModal.open) return;
+      function onKey(e) { if (e.key === 'Escape') closeExplainer(); }
+      document.addEventListener('keydown', onKey);
+      // Auto-focus close button after render. RAF gives React time to mount
+      // the modal DOM node before we read the ref.
+      var raf = (typeof requestAnimationFrame === 'function')
+        ? requestAnimationFrame(function () {
+            try { explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus(); } catch (e) { /* noop */ }
+          })
+        : setTimeout(function () {
+            try { explainerCloseBtnRef.current && explainerCloseBtnRef.current.focus(); } catch (e) { /* noop */ }
+          }, 0);
+      return function () {
+        document.removeEventListener('keydown', onKey);
+        if (typeof cancelAnimationFrame === 'function' && raf) {
+          try { cancelAnimationFrame(raf); } catch (e) { /* noop */ }
+        }
+      };
+    }, [explainerModal.open]);
     function copyExplainer() {
       if (!explainerModal.text) return;
       try { navigator.clipboard.writeText(explainerModal.text); } catch (e) { /* noop */ }
@@ -958,9 +996,13 @@
       React.createElement('span', { className: 'text-xs text-slate-600' },
         data.totalStudents + ' student' + (data.totalStudents === 1 ? '' : 's') + ' · ' + data.totalQuestions + ' question' + (data.totalQuestions === 1 ? '' : 's')),
       inFlightCount > 0 && React.createElement('span', {
-        className: 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse',
+        className: 'text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-100 text-indigo-800 animate-pulse',
+        role: 'status',
+        'aria-live': 'polite',
+        'aria-label': 'AI grading ' + inFlightCount + ' open response' + (inFlightCount === 1 ? '' : 's'),
         title: inFlightCount + ' open-response answer' + (inFlightCount === 1 ? '' : 's') + ' being graded by AI',
-      }, '✨ AI grading ' + inFlightCount + '…')
+      }, React.createElement('span', { 'aria-hidden': 'true' }, '✨ '),
+         'AI grading ' + inFlightCount + '…')
     );
 
     // Empty state (no responses yet)
@@ -1155,29 +1197,32 @@
                         cell && p.activeSessionCode && React.createElement('div', {
                           className: 'mt-1 flex items-center gap-1 flex-wrap',
                         },
-                          React.createElement('span', { className: 'text-[10px] text-slate-500 font-semibold mr-1' }, 'Override:'),
+                          React.createElement('span', { className: 'text-xs text-slate-700 font-semibold mr-1' }, 'Override:'),
                           [
-                            { s: 'correct', icon: '✓', color: 'emerald' },
-                            { s: 'incorrect', icon: '✗', color: 'rose' },
-                            { s: 'partially-correct', icon: '◐', color: 'amber' },
+                            { s: 'correct', icon: '✓', color: 'emerald', label: 'correct' },
+                            { s: 'incorrect', icon: '✗', color: 'rose', label: 'incorrect' },
+                            { s: 'partially-correct', icon: '◐', color: 'amber', label: 'partially correct' },
                           ].map(function (opt) {
                             var isActive = cell.teacherOverridden && cell.status === opt.s;
                             return React.createElement('button', {
                               key: opt.s,
                               type: 'button',
                               onClick: function (e) { e.stopPropagation(); setTeacherOverride(row.uid, qIdx, isActive ? null : opt.s); },
-                              className: 'text-[10px] font-bold w-6 h-6 rounded transition-colors ' + (isActive
+                              className: 'text-xs font-bold w-6 h-6 rounded transition-colors ' + (isActive
                                 ? ('bg-' + opt.color + '-600 text-white border border-' + opt.color + '-700')
-                                : ('bg-white text-slate-600 border border-slate-300 hover:bg-' + opt.color + '-50 hover:border-' + opt.color + '-300')),
+                                : ('bg-white text-slate-700 border border-slate-300 hover:bg-' + opt.color + '-50 hover:border-' + opt.color + '-300')),
+                              'aria-label': 'Override status to ' + opt.label + (isActive ? ' (currently set, click to undo)' : ''),
+                              'aria-pressed': isActive,
                               title: 'Set status to ' + opt.s + (isActive ? ' (click again to undo)' : ''),
-                            }, opt.icon);
+                            }, React.createElement('span', { 'aria-hidden': 'true' }, opt.icon));
                           }),
                           cell.teacherOverridden && React.createElement('button', {
                             type: 'button',
                             onClick: function (e) { e.stopPropagation(); setTeacherOverride(row.uid, qIdx, null); },
-                            className: 'text-[10px] font-bold px-2 h-6 rounded bg-white text-slate-600 border border-slate-300 hover:bg-slate-100',
+                            className: 'text-xs font-bold px-2 h-6 rounded bg-white text-slate-700 border border-slate-300 hover:bg-slate-100',
+                            'aria-label': 'Remove teacher override and revert to AI or deterministic grade',
                             title: 'Remove teacher override (revert to AI / deterministic grade)',
-                          }, '↺ undo')
+                          }, React.createElement('span', { 'aria-hidden': 'true' }, '↺ '), 'undo')
                         )
                       );
                     })
@@ -1397,9 +1442,10 @@
           ),
           React.createElement('button', {
             type: 'button',
+            ref: explainerCloseBtnRef,
             onClick: closeExplainer,
-            'aria-label': 'Close',
-            className: 'flex-shrink-0 text-slate-400 hover:text-slate-700 text-xl leading-none',
+            'aria-label': 'Close concept explainer',
+            className: 'flex-shrink-0 text-slate-500 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded',
           }, '×')
         ),
         explainerModal.loading
@@ -2134,6 +2180,7 @@
             }
           },
           placeholder: 'Describe how to refine this image (e.g. "make the background pure white", "add a clearer label")…',
+          'aria-label': 'Image refinement instructions',
           rows: 2,
           className: 'w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none resize-y',
           disabled: isLoading,
@@ -2379,9 +2426,14 @@
           type: 'button',
           onClick: bulkImproveDistractors,
           disabled: isBulkImproving,
-          className: 'inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors',
+          className: 'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors',
+          'aria-label': isBulkImproving
+            ? 'Rewriting ' + weakCount + ' weak distractors'
+            : 'Rewrite all ' + weakCount + ' flagged distractors in one batch',
           title: 'Rewrite all ' + weakCount + ' flagged distractor' + (weakCount === 1 ? '' : 's') + ' in one batch',
-        }, isBulkImproving ? '✨ Rewriting ' + weakCount + '…' : '✨ Improve all ' + weakCount);
+        },
+          React.createElement('span', { 'aria-hidden': 'true' }, '✨ '),
+          isBulkImproving ? 'Rewriting ' + weakCount + '…' : 'Improve all ' + weakCount);
       })()
     )
   ) : null;
