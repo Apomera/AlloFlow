@@ -4408,20 +4408,34 @@
         )
       );
     } else if (step === 'generating') {
-      stepBody = h('div', { style: { textAlign: 'center', padding: '40px 20px' } },
-        h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '✨'),
+      stepBody = h('div', {
+        style: {
+          textAlign: 'center', padding: '40px 20px',
+          // Subtle accent halo so the loading state feels alive, not idle.
+          backgroundImage: 'radial-gradient(ellipse at center top, ' + (palette.accent || '#60a5fa') + '14, transparent 65%)',
+          borderRadius: '12px'
+        }
+      },
+        h('div', {
+          'aria-hidden': 'true',
+          className: 'ah-tour-emoji',
+          style: { fontSize: '52px', marginBottom: '12px', display: 'inline-block' }
+        }, '✨'),
         h('div', { style: { fontSize: '16px', fontWeight: 700, color: palette.text, marginBottom: '6px' } }, 'Generating your decoration...'),
         h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.5' } }, 'AI is crafting a one-of-a-kind item for your room. Usually 5-15 seconds.'),
         h('div', {
           'aria-hidden': 'true',
+          'aria-busy': 'true',
+          role: 'progressbar',
           style: {
             marginTop: '20px',
-            height: '4px',
+            height: '6px',
             width: '100%',
             background: palette.surface,
             borderRadius: '999px',
             overflow: 'hidden',
-            position: 'relative'
+            position: 'relative',
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.3)'
           }
         },
           h('div', {
@@ -4429,7 +4443,8 @@
               position: 'absolute',
               top: 0, left: 0, bottom: 0,
               width: '40%',
-              background: palette.accent,
+              background: 'linear-gradient(90deg, transparent, ' + palette.accent + ', transparent)',
+              borderRadius: '999px',
               animation: 'ah-loading-slide 1.4s ease-in-out infinite'
             }
           })
@@ -14072,7 +14087,7 @@
         role: 'dialog',
         'aria-label': 'Welcome to AlloHaven',
         'aria-modal': 'true',
-        className: 'ah-welcome',
+        className: 'ah-welcome ah-tour-step',
         style: {
           position: 'fixed',
           top: '50%',
@@ -14080,17 +14095,26 @@
           transform: 'translate(-50%, -50%)',
           maxWidth: '460px',
           width: 'calc(100vw - 40px)',
-          padding: '24px',
-          background: palette.surface,
+          padding: '28px',
+          backgroundColor: palette.surface,
+          // Subtle accent halo at top — matches the tour modal treatment
+          // from Phase K so the first two surfaces a new student sees
+          // share a visual language.
+          backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '28, transparent 60%)',
           border: '2px solid ' + palette.accent,
-          borderRadius: '14px',
+          borderRadius: '16px',
           zIndex: 200,
-          boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.55)',
           color: palette.text,
-          lineHeight: '1.6'
+          lineHeight: '1.6',
+          overflow: 'hidden'
         }
       },
-        h('div', { style: { fontSize: '32px', marginBottom: '8px', textAlign: 'center' } }, '🌱'),
+        h('div', {
+          className: 'ah-tour-emoji',
+          'aria-hidden': 'true',
+          style: { fontSize: '52px', marginBottom: '10px', textAlign: 'center', lineHeight: 1 }
+        }, '🌱'),
         h('h3', {
           style: {
             margin: '0 0 12px 0',
@@ -14211,17 +14235,26 @@
       },
         h('div', {
           style: {
-            background: palette.bg,
+            backgroundColor: palette.bg,
+            // Soft accent halo from the top — gives the focus dialog a
+            // gentle glow without competing with the timer.
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
             border: '2px solid ' + palette.accent,
             borderRadius: '20px',
-            padding: '40px 32px',
+            padding: '44px 32px',
             maxWidth: '440px',
             width: '100%',
             textAlign: 'center',
-            boxShadow: '0 30px 70px rgba(0,0,0,0.5)'
+            boxShadow: '0 30px 70px rgba(0,0,0,0.55)'
           }
         },
-          h('div', { style: { fontSize: '48px', marginBottom: '8px' } }, phaseEmoji),
+          h('div', {
+            'aria-hidden': 'true',
+            // Phase emoji: gentle float during focus phase only — break
+            // emojis stay still since the student is supposed to rest.
+            className: phase === 'focus' ? 'ah-tour-emoji' : '',
+            style: { fontSize: '52px', marginBottom: '10px', display: 'inline-block', lineHeight: 1 }
+          }, phaseEmoji),
           h('div', {
             style: {
               fontSize: '13px',
@@ -14239,27 +14272,32 @@
               color: palette.accent,
               fontVariantNumeric: 'tabular-nums',
               lineHeight: '1.1',
-              letterSpacing: '0.02em'
+              letterSpacing: '0.02em',
+              // Subtle text glow gives the timer presence without being loud.
+              textShadow: '0 0 24px ' + (palette.accent || '#60a5fa') + '55'
             }
           }, timeStr),
-          // Progress bar
+          // Progress bar — gradient fill + inset shadow on the track
           h('div', {
             'aria-hidden': 'true',
             style: {
               marginTop: '18px',
               marginBottom: '6px',
-              height: '6px',
+              height: '8px',
               background: palette.surface,
               borderRadius: '999px',
               overflow: 'hidden',
-              border: '1px solid ' + palette.border
+              border: '1px solid ' + palette.border,
+              boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.32)'
             }
           },
             h('div', {
               style: {
                 width: progressPct + '%',
                 height: '100%',
-                background: palette.accent,
+                background: 'linear-gradient(180deg, ' + palette.accent + ' 0%, ' + palette.accent + 'cc 100%)',
+                boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18)',
+                borderRadius: '999px',
                 transition: 'width 250ms linear'
               }
             })
@@ -18082,13 +18120,22 @@
         return h('div', {
           key: 'ach-' + ach.id,
           role: 'group',
+          className: isUnlocked ? 'ah-deck-row' : '',
           'aria-label': ach.label + (isUnlocked ? ', unlocked ' + stamp : ', not yet unlocked')
             + ', ' + ach.desc,
           style: {
             display: 'flex', gap: '12px', alignItems: 'center',
             padding: '10px 12px',
             background: isUnlocked ? palette.surface : palette.bg,
+            // Unlocked rows get a subtle accent halo on the left edge so
+            // the unlocked set reads as a celebration band when scanned.
+            backgroundImage: isUnlocked
+              ? 'radial-gradient(ellipse at left center, ' + (palette.accent || '#60a5fa') + '18, transparent 60%)'
+              : 'none',
             border: '1px solid ' + (isUnlocked ? palette.accent : palette.border),
+            borderLeft: isUnlocked
+              ? '3px solid ' + (palette.accent || '#60a5fa')
+              : '1px solid ' + palette.border,
             borderRadius: '8px'
             // Phase 2p.7: removed `opacity: 0.55` on locked rows — the
             // emoji greyscale is enough visual signal, and the opacity
@@ -18098,8 +18145,11 @@
         },
           h('div', {
             'aria-hidden': 'true',
+            // Unlocked emoji wears ah-tour-emoji for a gentle float,
+            // making the unlocked rows feel celebratory at a glance.
+            className: isUnlocked ? 'ah-tour-emoji' : '',
             style: {
-              fontSize: '24px', flexShrink: 0,
+              fontSize: '26px', flexShrink: 0,
               filter: isUnlocked ? 'none' : 'grayscale(0.85)',
               opacity: isUnlocked ? 1 : 0.6
             }

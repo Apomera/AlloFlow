@@ -126,6 +126,11 @@
             };
           }
         }
+        // Plan T v3+ Chunk 1B: preserve confidence rating if student set one.
+        // Surfaced in dashboard drill-downs as a diagnostic chip.
+        if (response && (response.confidence === 'knew' || response.confidence === 'guessed' || response.confidence === 'no-idea')) {
+          grade.confidence = response.confidence;
+        }
         out.push({ uid: uid, questionIdx: qIdx, response: response, question: question, grade: grade });
       });
     });
@@ -251,6 +256,56 @@
     };
   }
 
+  // ─── Aggregator: reflections (Chunk 1A) ───────────────────────────────
+  // Walks allResponses for keys matching /^r\d+$/ (the convention QuizView
+  // uses for reflection submissions). Groups by reflection prompt index,
+  // returns per-prompt list of { uid, displayName, text, timestamp }.
+  // Returns null when there are no reflections in the quiz so the dashboard
+  // can hide the section entirely.
+  function aggregateReflections(quizState, generatedContent, roster) {
+    var reflections = (generatedContent && generatedContent.data && generatedContent.data.reflections);
+    if (!Array.isArray(reflections) || reflections.length === 0) return null;
+    var allResponses = (quizState && quizState.allResponses) || {};
+    var rosterObj = roster && typeof roster === 'object' ? roster : {};
+    // Build per-reflection-index buckets
+    var buckets = reflections.map(function (ref, idx) {
+      var promptText = (typeof ref === 'string') ? ref : (ref && ref.text) || ('Reflection ' + (idx + 1));
+      return { reflectionIdx: idx, promptText: promptText, responses: [] };
+    });
+    var anyResponses = false;
+    Object.keys(allResponses).forEach(function (uid) {
+      var perStudent = allResponses[uid];
+      if (!perStudent || typeof perStudent !== 'object') return;
+      Object.keys(perStudent).forEach(function (key) {
+        var m = /^r(\d+)$/.exec(key);
+        if (!m) return;
+        var rIdx = parseInt(m[1], 10);
+        if (isNaN(rIdx) || rIdx < 0 || rIdx >= buckets.length) return;
+        var resp = perStudent[key];
+        var text = (resp && resp.answer && typeof resp.answer.text === 'string') ? resp.answer.text : '';
+        if (!text) return;
+        var rEntry = rosterObj[uid] || {};
+        buckets[rIdx].responses.push({
+          uid: uid,
+          displayName: rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + uid.slice(0, 4)),
+          text: text,
+          timestamp: (resp && resp.timestamp) || 0,
+        });
+        anyResponses = true;
+      });
+    });
+    if (!anyResponses) return null;
+    // Sort each bucket's responses by displayName for stable display
+    buckets.forEach(function (b) {
+      b.responses.sort(function (a, c) { return a.displayName.localeCompare(c.displayName); });
+    });
+    return {
+      buckets: buckets,
+      totalReflections: buckets.length,
+      totalStudents: Object.keys(rosterObj).length,
+    };
+  }
+
   // ─── Aggregator: live heatmap (formative; review fallback) ────────────
   // Per-question bar: { questionIdx, questionText, correct, incorrect, idk, total, percentCorrect }
   function aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache) {
@@ -306,6 +361,7 @@
         answerSummary: answerSummary,
         questionType: qType,
         questionText: qText,
+        confidence: g.grade.confidence || null,
       });
     });
     // Sort each bar's byStudent by displayName for stable display
@@ -447,6 +503,7 @@
     aggregatePreLessonGap: aggregatePreLessonGap,
     aggregateLiveHeatmap: aggregateLiveHeatmap,
     aggregateRetentionCurve: aggregateRetentionCurve,
+    aggregateReflections: aggregateReflections,
     aggregateForMode: aggregateForMode,
     gradeResponseForItem: gradeResponseForItem,
   };
