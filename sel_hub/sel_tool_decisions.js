@@ -663,6 +663,39 @@ window.SelHub = window.SelHub || {
         )
       );
 
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          decision:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF33', title: 'Decision Tree \u2014 branch the choice + the consequences', hint: 'List options \u2192 list outcomes per option \u2192 weight by likelihood + magnitude. Decision-theory framework (Howard 1968) used by everyone from doctors to portfolio managers. Slows snap judgments without paralyzing them.' },
+          dilemma:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\u2696',         title: 'Ethical Dilemmas \u2014 trolley problems + Heinz', hint: 'Kohlberg 1958: 6 stages of moral reasoning, from \u201Cwill I get caught\u201D up through universal principles. Most adults reason at stages 3-4 day-to-day. Practicing dilemmas raises the ceiling without forcing one answer.' },
+          consequence: { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDD17', title: 'Consequence Map \u2014 ripples in 4 directions',     hint: 'Self, others, near, far. Most regret is from underweighting one of the four. \u201CIt\u2019s just me\u201D usually misses ripple effects on family / friends. \u201CIt won\u2019t matter\u201D usually misses 6-months-from-now you.' },
+          bias:        { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE0', title: 'Bias Check \u2014 spot your shortcuts',               hint: 'Confirmation bias, sunk cost, availability, anchoring, dunning-kruger. Kahneman + Tversky\u2019s decades of research (1974\u20132011): we\u2019re predictably irrational. Knowing the trap is half the work \u2014 the other half is asking a friend.' },
+          values:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDCCF', title: 'Values Sort \u2014 what actually matters to YOU',     hint: 'Schwartz 1992: 10 universal values in 4 clusters. Decisions feel \u201Cright\u201D when they line up with your top values; \u201Coff\u201D when they don\u2019t \u2014 even if they look good on paper. Sort yours, then test against past choices.' },
+          realworld:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF0D', title: 'Real-World \u2014 college, money, relationships',     hint: 'Higher-stakes practice scenarios. Pre-rehearse decisions you\u2019ll actually face: which college, asking someone out, whether to share something on social. \u201CFuture self interview\u201D \u2014 ask the version of you in 5 years what they wish you\u2019d done.' },
+          compass:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDDED', title: 'Moral Compass \u2014 quick gut-check',                  hint: 'Three-question test: would I tell my grandmother? would I want it on the front page? does it match who I say I am? Imperfect but fast. Used by ethics boards, journalists, military codes \u2014 and you, in 30 seconds.' },
+          advisor:     { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\u2728',         title: 'AI Advisor \u2014 a sounding board, not the boss',     hint: 'Type the situation; the AI walks the framework with you. Use it to see angles you missed, not to outsource the call. Final decisions still go through YOUR values + your context, not a model\u2019s training data.' },
+          progress:    { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Progress \u2014 patterns over time',                   hint: 'Which decisions did you regret? Which felt right? Track over weeks: most patterns repeat. Spotting your patterns turns reactive choices into deliberate ones. Self-knowledge IS the upgrade.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.decision;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
       // ── Badge Popup ──
       var badgePopup = null;
       if (showBadgePopup) {
@@ -1830,6 +1863,7 @@ window.SelHub = window.SelHub || {
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
+        heroBand,
         badgePopup,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)
       );
