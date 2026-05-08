@@ -294,7 +294,13 @@
       // streaks, no pressure to complete daily — just an additional
       // gentle nudge that fits the no-guilt design language.
       questIds: [],                  // 3 quest ids chosen for today
-      questsClaimed: false           // user clicked the trifecta-claim button
+      questsClaimed: false,          // user clicked the trifecta-claim button
+      // ── Daily reps queue bonus (Phase P) ──
+      // Once-per-day +2 token reward when a student finishes a review
+      // queue of ≥3 decks. Stored as today's date string ('YYYY-MM-DD');
+      // bonus only fires if this !== today. No streaks, no shame —
+      // gentle marker for completing a daily ritual.
+      queueBonusEarnedDate: null
     },
 
     // ── Pomodoro ──
@@ -9610,7 +9616,8 @@
           // Pick 3 quests for the new day, deterministic by date so the
           // student sees the same trio if they reload mid-day.
           questIds: pickQuestsForDate(todayStr, 3),
-          questsClaimed: false
+          questsClaimed: false,
+          queueBonusEarnedDate: null
         });
       } else if (!Array.isArray(state.dailyState.questIds) || state.dailyState.questIds.length === 0) {
         // Backfill — first session after the quest system shipped won't
@@ -10436,11 +10443,38 @@
       }]);
       var nextIdx = q.currentIdx + 1;
       if (nextIdx >= q.decks.length) {
-        // Queue complete — show summary
-        setStateMulti({
-          activeModal: 'review-queue-summary',
-          generateContext: { reviewQueue: Object.assign({}, q, { results: newResults }) }
-        });
+        // Queue complete — show summary.
+        // Phase P: award a one-per-day +2 token bonus for completing a
+        // queue of ≥3 decks. Gentle marker, no streaks. Per-deck quiz
+        // tokens already accrue inside recordQuizSession independently.
+        var todayStr = new Date().toISOString().slice(0, 10);
+        var bonusAlreadyEarned = (state.dailyState && state.dailyState.queueBonusEarnedDate) === todayStr;
+        var bonusEligible = newResults.length >= 3 && !bonusAlreadyEarned;
+        var bonusAmount = bonusEligible ? 2 : 0;
+        var summaryCtx = { reviewQueue: Object.assign({}, q, { results: newResults }) };
+        if (bonusAmount > 0) summaryCtx.queueBonus = bonusAmount;
+        if (bonusAmount > 0) {
+          var avgPct = Math.round(newResults.reduce(function(s, r) { return s + (r.scorePct || 0); }, 0) / newResults.length);
+          var bonusEntry = {
+            source: 'review-queue-bonus',
+            tokens: bonusAmount,
+            date: new Date().toISOString(),
+            metadata: { decksReviewed: newResults.length, avgPct: avgPct }
+          };
+          setStateMulti({
+            tokens: state.tokens + bonusAmount,
+            earnings: (state.earnings || []).concat([bonusEntry]),
+            dailyState: Object.assign({}, state.dailyState, { queueBonusEarnedDate: todayStr }),
+            activeModal: 'review-queue-summary',
+            generateContext: summaryCtx
+          });
+          addToast('🪙 +' + bonusAmount + ' daily-reps bonus');
+        } else {
+          setStateMulti({
+            activeModal: 'review-queue-summary',
+            generateContext: summaryCtx
+          });
+        }
       } else {
         // Advance to next deck
         setStateMulti({
