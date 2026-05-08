@@ -1726,10 +1726,16 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             // Items missing a `type` field default to 'mcq' for back-compat.
             content.questions = content.questions.map(q => {
                 const itemType = q.type || 'mcq';
-                // Plan T v3: stable conceptLabel for cross-session retention tracking.
-                // Lowercase + trimmed for use as concept identifier downstream.
+                // Plan T v3 + Chunk 5: stable conceptLabel for cross-session
+                // retention tracking. Use shared normalizer so generation,
+                // write, and read paths all agree on the canonical form.
+                // Falls back to trim+lowercase if module not loaded.
+                const _qla = (typeof window !== 'undefined') && window.AlloModules && window.AlloModules.QuizLiveAggregators;
+                const _norm = (_qla && typeof _qla.normalizeConceptId === 'function')
+                    ? _qla.normalizeConceptId
+                    : (s => (typeof s === 'string' ? s.trim().toLowerCase() : ''));
                 const _rawConceptLabel = (typeof q.conceptLabel === 'string' && q.conceptLabel.trim())
-                    ? q.conceptLabel.trim().toLowerCase()
+                    ? _norm(q.conceptLabel)
                     : '';
                 const base = {
                     ...q,

@@ -26,6 +26,35 @@
     return;
   }
 
+  // ─── Helper: normalize a concept label into a stable identifier ───────
+  // Plan T v3+ Chunk 5: cross-session retention tracking treats two labels
+  // as the same concept when their normalized form matches. Without this,
+  // "Photosynthesis", "the photosynthesis process", and "photosynthesis."
+  // would each be a separate concept and fragment retention data.
+  //
+  // Rules (in order):
+  //   1. trim whitespace, lowercase
+  //   2. strip surrounding quote / paren chars
+  //   3. strip leading articles (the / a / an), repeatedly
+  //   4. collapse internal whitespace runs to single space
+  //   5. strip trailing punctuation (. , ; : ! ?)
+  //
+  // Empty / missing input → ''. Used both by handleSubmitLiveAnswer (write
+  // path) and aggregateRetentionCurve (read path) so they always agree on
+  // which concept a label refers to.
+  function normalizeConceptId(label) {
+    if (label == null) return '';
+    var s = String(label).trim().toLowerCase();
+    if (!s) return '';
+    s = s.replace(/^["'`(\[]+|["'`)\]]+$/g, '');
+    while (/^(the |a |an )/.test(s)) {
+      s = s.replace(/^(the |a |an )/, '');
+    }
+    s = s.replace(/\s+/g, ' ');
+    s = s.replace(/[.,;:!?]+$/, '');
+    return s.trim();
+  }
+
   // ─── Helper: resolve correct option index for an MCQ ──────────────────
   // Mirrors the export pipeline's _resolveCorrectIdx (doc_pipeline:13235).
   function resolveCorrectIdx(q) {
@@ -407,7 +436,7 @@
     questions.forEach(function (q, idx) {
       var label = (q && q.conceptLabel) || '';
       if (!label) return;
-      var conceptId = label.trim().toLowerCase();
+      var conceptId = normalizeConceptId(label);
       if (!conceptId || seenConcepts[conceptId]) return; // dedupe per concept
       seenConcepts[conceptId] = true;
 
@@ -506,6 +535,7 @@
     aggregateReflections: aggregateReflections,
     aggregateForMode: aggregateForMode,
     gradeResponseForItem: gradeResponseForItem,
+    normalizeConceptId: normalizeConceptId,
   };
   console.log('[CDN] QuizLiveAggregators loaded');
 })();
