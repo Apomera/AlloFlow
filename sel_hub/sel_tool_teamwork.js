@@ -690,6 +690,40 @@ window.SelHub = window.SelHub || {
           )
         );
 
+        // ── Topic-accent hero band per tab ──
+        var heroBand = (function() {
+          var TAB_META = {
+            roles:        { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC51', title: 'Roles \u2014 Belbin\u2019s 9 team archetypes',                  hint: 'Belbin 1981: Plant, Resource Investigator, Coordinator, Shaper, Monitor Evaluator, Teamworker, Implementer, Completer Finisher, Specialist. Balanced teams beat all-stars; complementary roles outperform homogeneous talent.' },
+            challenges:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDFD7', title: 'Challenges \u2014 the 5 dysfunctions',                       hint: 'Lencioni 2002: absence of trust \u2192 fear of conflict \u2192 lack of commitment \u2192 avoidance of accountability \u2192 inattention to results. Each layer rests on the one below; teams fail bottom-up.' },
+            scenarios:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 practice on others first',                hint: 'Behavioral rehearsal (Bandura) lowers in-the-moment freezing. Free-rider, dominator, missed deadline, idea-stealer \u2014 the patterns repeat. Walking through them off-stage builds the script for on-stage moments.' },
+            commstyle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDDE3', title: 'Comm Style \u2014 know your default',                       hint: 'DiSC, MBTI-style preferences. Each style has gifts + traps. Driver gets things done but bulldozes; analytical thinks deeply but slows. Pair complementary styles + name them \u2014 the friction disappears.' },
+            virtualteam:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCBB', title: 'Virtual Team \u2014 distance changes the rules',           hint: 'Async-first beats sync-first; written norms matter more without hallway clarification. Mark-of-attention (camera on / quick reply) IS the trust signal. Watson 2018: virtual teams underperform on creativity, beat in-person on focused output.' },
+            conflicttool: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u267B',         title: 'Conflict \u2192 Collab \u2014 turn friction into output',  hint: 'Task conflict (about ideas) helps; relationship conflict (about people) hurts. Jehn 1995: high-performing teams have MORE task conflict than average ones. Reframe \u201Cwe disagree\u201D from threat to data.' },
+            retro:        { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDD04', title: 'Retro \u2014 keep / start / stop / drop',                  hint: 'Agile retrospective format. Without retros, teams repeat their failure modes; with retros, they upgrade them. Schedule before you need one \u2014 cadence beats crisis. Keep it short, action-oriented, blame-free.' },
+            quiz:         { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83D\uDCCA', title: 'Quiz \u2014 self-knowledge check',                          hint: 'When are you the team accelerator? When are you the bottleneck? Both are normal. Pattern recognition turns reactive collaboration into deliberate. The quiz is a mirror, not a verdict.' },
+            contract:     { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCDC', title: 'Contract \u2014 the team agreement',                       hint: 'Working agreements set norms BEFORE the friction (response times, decision rules, conflict handling). Edmondson 2018 psychological safety research: explicit norms predict speak-up rates more than personality.' },
+            progress:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCC8', title: 'Progress \u2014 team-skill growth over time',              hint: 'Track which collaboration skills you\u2019ve flexed. Progress is invisible without measurement. Show the chart to your team \u2014 vulnerability about growth predicts trust (Brown 2018).' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.roles;
+          return h('div', {
+            style: {
+              margin: '8px 12px 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })();
+
         // ── Badge Popup ──
         var badgePopup = null;
         if (showBadgePopup) {
@@ -2162,6 +2196,7 @@ window.SelHub = window.SelHub || {
 
         return h('div', { className: 'selh-teamwork', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
+          heroBand,
           badgePopup,
           h('div', { style: { flex: 1, overflow: 'auto' } }, content)
         );
