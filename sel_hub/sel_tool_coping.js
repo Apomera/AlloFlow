@@ -789,6 +789,37 @@ window.SelHub = window.SelHub || {
       );
 
       // ══════════════════════════════════════════════════════════
+      // ── Topic-accent hero band per tab ──
+      // ══════════════════════════════════════════════════════════
+      var heroBand = (function() {
+        var TAB_META = {
+          library:  { accent: '#14b8a6', soft: 'rgba(20,184,166,0.14)',  icon: '\uD83D\uDCDA', title: 'Library \u2014 the coping toolkit',                hint: 'Cognitive (reframe, name it to tame it), behavioral (move, breathe, ground), social (call a friend, share). Multiple strategies in your back pocket beats one silver bullet \u2014 different stress states need different tools.' },
+          practice: { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83C\uDFAF', title: 'Practice \u2014 box breathing, 5-4-3-2-1, body scan',  hint: 'Box breathing (4-4-4-4) is what Navy SEALs use to manage acute stress. 5-4-3-2-1 grounding pulls anxious attention back into the present via the senses. Both work because they change physiology, not thoughts.' },
+          plan:     { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDCCB', title: 'My Calm Plan \u2014 your personalized go-to list',     hint: 'Pre-commit to specific responses BEFORE you\u2019re activated. Implementation intentions (Gollwitzer 1999): \u201Cif X happens, then I\u2019ll do Y\u201D \u2014 doubles follow-through compared to vague intentions to cope.' },
+          matcher:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\u2728',         title: 'Matcher \u2014 right tool for the right zone',         hint: 'Yellow-zone overwhelm needs different strategies than red-zone shutdown. Zones of Regulation (Kuypers) gives a shared language; this matcher gives the strategy. Self-knowledge IS regulation.' },
+          log:      { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Practice Log \u2014 what worked and when',             hint: 'Tracking turns coping from reactive to deliberate. Patterns emerge over weeks: which strategy works for which trigger. The log itself becomes a self-knowledge artifact you can show a counselor or trusted adult.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.library;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
+      // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
       var badgePopup = null;
@@ -2357,6 +2388,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
         tabBar,
+        heroBand,
         dailyCheckin,
         dailyRecBanner,
         badgePopup,
