@@ -880,6 +880,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var MPH_TO_MS = 0.44704;
   var MS_TO_MPH = 2.23694;
   var FT_PER_M = 3.28084;
+  var METERS_PER_MILE = 1609.344; // 1 statute mile (NIST exact)
   var AIR_DENSITY = 1.225; // kg/m³ at sea level
 
   // Scenarios use 'clear' internally; lab views expose the friendlier 'dry' to users.
@@ -1910,7 +1911,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       duration: 90,
       check: function(ctx) {
         if (ctx._startDist === undefined) { ctx._startDist = ctx.stats.distance; ctx._fuelStart = ctx.stats.fuelUsed || 0; }
-        var miles = (ctx.stats.distance - ctx._startDist) / 1609;
+        var miles = (ctx.stats.distance - ctx._startDist) / METERS_PER_MILE;
         var gal = Math.max(0.0001, (ctx.stats.fuelUsed || 0) - ctx._fuelStart);
         if (miles >= 0.3) {
           var mpg = miles / gal;
@@ -4422,7 +4423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           parentRef.current.active = false;
         }
         // Seal the journal with a closing entry and persist so the menu can export it.
-        journalLog('end', '🏁', 'Drive ended — safety ' + Math.max(0, Math.round(s.safetyScore)) + ', eco ' + Math.max(0, Math.round(s.efficiencyScore)) + ', ' + (s.distance / 1609).toFixed(2) + ' mi');
+        journalLog('end', '🏁', 'Drive ended — safety ' + Math.max(0, Math.round(s.safetyScore)) + ', eco ' + Math.max(0, Math.round(s.efficiencyScore)) + ', ' + (s.distance / METERS_PER_MILE).toFixed(2) + ' mi');
         var sealedJournal = Object.assign({}, journalRef.current, { endedAt: Date.now(), durationSec: Math.round((Date.now() - journalRef.current.startedAt) / 1000) });
         // ── Logbook: append this drive's journal to the running log, capped at 100 sessions ──
         try {
@@ -4487,7 +4488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scenario: currentScenario.name,
             vehicle: currentVehicle.name,
             time: minutes + ':' + String(seconds).padStart(2, '0'),
-            distance_mi: (s.distance / 1609).toFixed(2),
+            distance_mi: (s.distance / METERS_PER_MILE).toFixed(2),
             maxSpeed: Math.round(s.maxSpeed * MS_TO_MPH),
             avgMPG: avgMPG.toFixed(1),
             safetyScore: Math.max(0, Math.round(s.safetyScore)),
@@ -4661,6 +4662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             checkCyclistPassing();
             checkBusCompliance();
             checkPedestrianYield();
+            scanSpatialHazards();
             checkCollisions();
             // ── Quest / destination system (Free Explore) ──
             // Now anchored to REAL landmarks in the procedural world. The quest engine
@@ -4960,7 +4962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var rideViolSec = endSnap.speedViolations - rsArr.startSnapshot.speedViolations;
                       var rideSkidSec = endSnap.skidSeconds - rsArr.startSnapshot.skidSeconds;
                       var rideCrashes = endSnap.crashes - rsArr.startSnapshot.crashes;
-                      var rideDistMi = (endSnap.distance - rsArr.startSnapshot.distance) / 1609;
+                      var rideDistMi = (endSnap.distance - rsArr.startSnapshot.distance) / METERS_PER_MILE;
                       var rideDur = endSnap.t - rsArr.startSnapshot.t;
                       // ── Weather surge + comfort penalty multipliers ──
                       // Real rideshare economics: bad weather = higher base fare (demand
@@ -6087,7 +6089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           if (Math.abs(car.speed) > 1) {
             statsRef.current.mpgSum += mpg;
             statsRef.current.mpgSamples++;
-            statsRef.current.fuelUsed += (Math.abs(deltaDist) / 1609) / Math.max(1, mpg);
+            statsRef.current.fuelUsed += (Math.abs(deltaDist) / METERS_PER_MILE) / Math.max(1, mpg);
           } else if (gear !== 'P' && gear !== 'N') {
             // Idle: engine still running, fuel still burning (gas/hybrid). EVs
             // get 0. Models the "drive-thru / red light / parked-but-running"
@@ -8463,6 +8465,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             p.x += p.vx * dt * 2;
             p.y += p.vy * dt * 2;
           });
+        };
+
+        // ──────────────────────────────────────────────────────────
+        // scanSpatialHazards: announce nearby pedestrians, vehicles,
+        // and cyclists for screen-reader and low-vision drivers via the
+        // existing rrAnnounce live-region path. Heavily debounced so the
+        // status region doesn't get spammed.
+        //
+        // Cadence model:
+        //   - Per-type cooldown (4-6s) so each hazard category announces
+        //     at most once per window.
+        //   - Min-distance ratchet: when a closer instance of the same
+        //     type appears, allow re-announcement at half the window.
+        //   - Direction is derived from the car's heading (left/right/
+        //     ahead) using the same dot-product technique used elsewhere
+        //     for collision detection — keeps semantics consistent on
+        //     curved roads.
+        // ──────────────────────────────────────────────────────────
+        var _spatial = { lastT: { ped: 0, traffic: 0, cyclist: 0 }, lastDist: { ped: 999, traffic: 999, cyclist: 999 } };
+        var scanSpatialHazards = function() {
+          if (typeof rrAnnounce !== 'function') return;
+          var car = carRef.current;
+          if (!car) return;
+          var nowMs = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+          var cosH = Math.cos(car.heading), sinH = Math.sin(car.heading);
+          // Helper: classify position relative to car heading. Returns
+          // { ahead: signed-along-heading, lat: signed-perpendicular, dist }.
+          function relTo(ox, oy) {
+            var dx = ox - car.x, dy = oy - car.y;
+            return { ahead: cosH * dx + sinH * dy, lat: -sinH * dx + cosH * dy, dist: Math.hypot(dx, dy) };
+          }
+          function tryAnnounce(type, msg, dist, windowMs) {
+            var lt = _spatial.lastT[type] || 0;
+            var ld = _spatial.lastDist[type] || 999;
+            var elapsed = nowMs - lt;
+            if (elapsed < windowMs && dist >= ld * 0.7) return false; // still in cooldown and not meaningfully closer
+            rrAnnounce(msg);
+            _spatial.lastT[type] = nowMs;
+            _spatial.lastDist[type] = dist;
+            return true;
+          }
+          // Pedestrians: announce within 12 cells if ahead AND lateral within 4
+          var peds = pedsRef.current || [];
+          for (var pi = 0; pi < peds.length; pi++) {
+            var p = peds[pi];
+            if (!p) continue;
+            var pr = relTo(p.x, p.y);
+            if (pr.ahead > 0 && pr.ahead < 12 && Math.abs(pr.lat) < 4) {
+              var pSide = pr.lat > 1.5 ? ' on the right' : pr.lat < -1.5 ? ' on the left' : ' ahead';
+              var pDart = (p.kind === 'kid' && (p.crossing || (p.dartCooldown != null && p.dartCooldown < 1)));
+              var pMsg = pDart ? 'Child crossing' + pSide + '.' : (p.crossing ? 'Pedestrian crossing' + pSide + '.' : 'Pedestrian' + pSide + '.');
+              if (tryAnnounce('ped', pMsg, pr.dist, 4000)) return; // one announcement per scan
+            }
+          }
+          // Traffic: blind-spot warning (lateral, slightly behind, very close)
+          var traffic = trafficRef.current || [];
+          for (var ti = 0; ti < traffic.length; ti++) {
+            var t = traffic[ti];
+            if (!t) continue;
+            var tr = relTo(t.x, t.y);
+            // Blind spot: ahead in [-2, 0.5], lateral in [1.5, 4.5] either side
+            if (tr.ahead > -2 && tr.ahead < 0.5 && Math.abs(tr.lat) > 1.5 && Math.abs(tr.lat) < 4.5) {
+              var tSide = tr.lat > 0 ? ' right' : ' left';
+              if (tryAnnounce('traffic', 'Vehicle in your' + tSide + ' blind spot.', tr.dist, 5000)) return;
+            }
+          }
+          // Cyclists: announce when overtaking close (within 4 cells lateral, ahead < 6)
+          var cyclists = (cyclistsRef.current || []);
+          for (var ci = 0; ci < cyclists.length; ci++) {
+            var cy = cyclists[ci];
+            if (!cy) continue;
+            var cr = relTo(cy.x, cy.y);
+            if (cr.ahead > 0 && cr.ahead < 6 && Math.abs(cr.lat) < 4) {
+              var cSide = cr.lat > 0 ? ' on the right' : ' on the left';
+              if (tryAnnounce('cyclist', 'Cyclist' + cSide + ', give space.', cr.dist, 5000)) return;
+            }
+          }
         };
 
         var checkCollisions = function() {
@@ -17647,7 +17726,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillText('ECO', W - 100, H - 35);
 
           // Odometer / trip meter / landmark counter
-          var distMi = (stats.distance / 1609).toFixed(2);
+          var distMi = (stats.distance / METERS_PER_MILE).toFixed(2);
           var elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
           var elMin = Math.floor(elapsed / 60);
           var elSec = elapsed % 60;
@@ -18544,7 +18623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 gfx.fillText('Comfort ' + Math.round(liveComfort), rsX + rsW - 8, starBaseY);
                 // Distance remaining + fare preview. Surge mirrors dropoff math.
                 var rsRemaining = Math.hypot(carRef.current.x - rsTarget.x, carRef.current.y - rsTarget.y) * 0.1;
-                var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / 1609;
+                var distSoFar = ((statsRef.current.distance || 0) - rsHud.startSnapshot.distance) / METERS_PER_MILE;
                 var rsWHud = (scn && scn.weather) || 'clear';
                 var rsSurgeHud = rsWHud === 'snow' ? 1.5 : rsWHud === 'fog' ? 1.3 : rsWHud === 'rain' ? 1.2 : 1.0;
                 var estFare = (3.5 + Math.max(0.3, distSoFar) * 1.2) * rsSurgeHud;
@@ -20273,7 +20352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // Speed limit display
             h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '4px' } }, 'Limit: ' + currentScenario.speedLimit + ' mph'),
             // Distance driven
-            h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / 1609).toFixed(2) + ' mi'),
+            h('div', { style: { fontSize: '9px', color: '#94a3b8', textAlign: 'center', marginTop: '2px' } }, 'Dist: ' + (statsRef.current.distance / METERS_PER_MILE).toFixed(2) + ' mi'),
             // Infinite world info + current town
             infiniteWorldRef.current ? h('div', null,
               challengeRef.current && challengeRef.current.currentTown ? h('div', { style: { fontSize: '10px', color: '#fbbf24', textAlign: 'center', marginTop: '3px', fontWeight: 700 } },
@@ -21622,7 +21701,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'linear-gradient(135deg, #78350f, #0f172a)', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '📔'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, 'Driving Logbook'),
-            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, logbook.length + ' sessions · ' + totalHrs + ' hours total · Maine needs 70 hours supervised')
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, logbook.length + ' sessions · ' + totalHrs + ' hours total · Maine needs 70 hours supervised'),
+            // Print logbook for parent / instructor signature.
+            logbook.length > 0 && window.SelHub && window.SelHub.printDoc && h('button', {
+              'aria-label': 'Print logbook for parent or instructor',
+              onClick: function() {
+                var lines = logbook.map(function(j) {
+                  var dt = new Date(j.endedAt || j.startedAt || Date.now());
+                  var mm2 = Math.floor((j.durationSec || 0) / 60);
+                  var cond = j.conditions ? (j.conditions.weather || '') + ' / ' + (j.conditions.time || '') : '';
+                  return dt.toLocaleDateString() + ' · ' + (j.scenario || 'Drive') + ' · ' + (j.vehicle || '') + ' · ' + mm2 + ' min' + (cond ? ' · ' + cond : '') + ' · score ' + (typeof j.score === 'number' ? j.score : '–');
+                });
+                window.SelHub.printDoc({
+                  title: 'RoadReady — Practice Driving Log',
+                  subtitle: logbook.length + ' sessions · ' + totalHrs + ' hours · Maine GDL requires 70 supervised hours (10 of which at night) before the road test.',
+                  sections: [
+                    { heading: 'Sessions (newest first)', items: lines },
+                    { heading: 'Parent / instructor signature', paragraphs: ['I confirm that I supervised the practice sessions listed above.', '', 'Signed: ____________________________      Date: ____________'] },
+                    { heading: 'Note', paragraphs: ['These hours come from RoadReady\'s practice simulator. Maine\'s 70-hour supervised driving requirement applies to ON-ROAD driving with a licensed adult — sim time supplements but does not replace it. Use this log as a reflection record alongside your real-road hours.'] }
+                  ]
+                });
+              },
+              style: { marginTop: '10px', padding: '6px 14px', borderRadius: '8px', border: 'none', background: '#10b981', color: '#fff', fontSize: '11px', fontWeight: 700, cursor: 'pointer' }
+            }, '🖨 Print log for parent / instructor')
           ),
           // Progress toward 70 hour goal
           h('div', { style: { background: '#0f172a', borderRadius: '10px', padding: '14px', border: '1px solid #334155', marginBottom: '14px' } },

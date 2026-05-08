@@ -1501,6 +1501,38 @@ var d = labToolData || {};
 
             ),
 
+            // ── Topic-accent hero band per tab ──
+            (function() {
+              var TAB_META = {
+                findCountry:  { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)', icon: '\uD83D\uDDFA', title: 'Find Country \u2014 the visual atlas',                hint: '195 sovereign nations recognized by the UN. Mercator projection distorts size near the poles \u2014 Greenland looks the size of Africa but is 14\u00d7 smaller. Equal-area projections (Goode, Robinson) trade angle accuracy for honest area.' },
+                capitals:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFDB', title: 'Capitals \u2014 govt seats + cultural anchors',         hint: 'Most capitals also house head-of-state, supreme court, parliament. South Africa has 3 (Pretoria executive, Cape Town legislative, Bloemfontein judicial). Bolivia, Tanzania, Switzerland, Honduras, Eswatini also split.' },
+                continents:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF0D', title: 'Continents \u2014 7 (or 5, depending who you ask)',     hint: '7-continent model (US/UK): Africa, Antarctica, Asia, Australia, Europe, N. America, S. America. Many countries teach 6 (combining N+S America) or 5 (combining Europe+Asia into Eurasia). Russia + Turkey straddle two.' },
+                landmarks:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFD4', title: 'Landmarks \u2014 the visual mnemonics',                hint: 'Eiffel (Paris), Christ the Redeemer (Rio), Sydney Opera House, Petra (Jordan), Burj Khalifa (Dubai). Cultural anchoring: when students learn the building, the country sticks 10\u00d7 better.' },
+                sizeCompare:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCF', title: 'Size Compare \u2014 fight Mercator distortion',          hint: 'Russia is 17M km\u00b2 (largest). USA + China + India fit inside Russia with room to spare. Africa is 30M km\u00b2 \u2014 fits USA + China + India + Mexico + Western Europe combined. Maps lie about scale.' },
+                globeView:    { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDF10', title: 'Globe View \u2014 honest spherical geometry',           hint: 'Earth is an oblate spheroid \u2014 21 km wider at the equator than pole-to-pole. The shortest path between two cities is a great-circle arc, not a straight line on a flat map. Why flights bend over the Arctic.' },
+                quizBuilder:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDFC6', title: 'Quiz Builder \u2014 graded geography practice',         hint: 'Mix country / capital / continent / landmark items at chosen difficulty. Spaced retrieval beats cramming for long-term recall (Karpicke 2008). NCSS curriculum standards aligned through grade 8.' },
+                distance:     { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83D\uDCCD', title: 'Distance \u2014 great-circle math',                    hint: 'Haversine formula gives the great-circle distance between two lat/lng pairs. NYC to Tokyo \u2248 10,840 km going north over the pole \u2014 shorter than the flat-map straight line. Pilot routes prove it daily.' }
+              };
+              var meta = TAB_META[geoTab] || TAB_META.findCountry;
+              return React.createElement('div', {
+                style: {
+                  margin: '0 0 12px',
+                  padding: '12px 14px',
+                  borderRadius: 12,
+                  background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+                  border: '1px solid ' + meta.accent + '55',
+                  borderLeft: '4px solid ' + meta.accent,
+                  display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                }
+              },
+                React.createElement('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+                React.createElement('div', { style: { flex: 1, minWidth: 220 } },
+                  React.createElement('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                  React.createElement('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+                )
+              );
+            })(),
+
 
 
             // ── Feedback bar ──
