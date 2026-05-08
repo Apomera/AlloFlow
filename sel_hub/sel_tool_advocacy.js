@@ -1285,6 +1285,39 @@ window.SelHub = window.SelHub || {
         )
       );
 
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          scenarios:        { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCE2', title: 'Scenarios \u2014 \u201CHere\u2019s the moment, what do I do?\u201D',  hint: 'Self-advocacy = naming what you need + asking for it. Practice on low-stakes situations builds the muscle for higher-stakes ones (IEP meetings, doctor visits, jobs). The first \u201Cno\u201D is the hardest one.' },
+          scripts:          { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCDD', title: 'Scripts \u2014 borrowed words for hard moments',           hint: 'Pre-written sentences to start a tough ask: \u201CI noticed\u2026\u201D, \u201CCan we talk about\u2026\u201D, \u201CI need\u2026 because\u2026\u201D. Reading off paper IS allowed and counts. Implementation intentions (Gollwitzer 1999) double follow-through.' },
+          advocacy_scripts: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFA4', title: 'Practice \u2014 say it out loud first',                  hint: 'Bandura: behavioral rehearsal predicts self-efficacy more than any other variable. Hearing yourself say it makes the real version 10\u00d7 easier. Use the AI partner; the bathroom mirror; record + play back.' },
+          rights:           { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u2696',         title: 'Rights \u2014 the law has your back',                   hint: 'IDEA (FAPE + LRE), Section 504, ADA, FERPA. You have the RIGHT to ask, the right to bring a parent / advocate, the right to a formal complaint. Knowing the rule changes the room. ada.gov + ed.gov are free.' },
+          voice:            { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFA4', title: 'Voice \u2014 your tone IS information',                  hint: 'Calm + specific + asking-not-demanding lands better than loud + vague + ultimatum. Volume up = listener defenses up. Practice saying the same words 3 ways: pleading, demanding, calmly assertive. Last one wins.' },
+          phrases:          { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDCAC', title: 'Phrases \u2014 your back-pocket arsenal',                hint: '\u201CCan you say more about that?\u201D \u201CI need a minute to think.\u201D \u201CThat doesn\u2019t work for me \u2014 here\u2019s what would.\u201D Memorize 5; pull them out under stress. Reduces \u201Cspoke when I shouldn\u2019t / froze when I should.\u201D' },
+          assessment:       { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCCB', title: 'Quiz \u2014 self-knowledge check',                       hint: 'When do you advocate for yourself well? When do you fold? Pattern recognition is half the work; the other half is one specific situation you commit to handling differently next time. Start small.' },
+          letters:          { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u2709',         title: 'Letters \u2014 paper has weight phone calls don\u2019t',  hint: 'Formal letter = creates a record; harder to brush off. Useful for IEP requests, accommodation appeals, school grievances. Even an email saved as PDF is heavier than a verbal ask. The system listens to documentation.' },
+          progress:         { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCCA', title: 'Progress \u2014 advocacy gets easier',                   hint: 'Track wins + struggles over weeks. Patterns emerge: which settings, which people, which asks. Confidence builds from accumulated small wins, not from a single big breakthrough. Show this log to your support people.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.scenarios;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
       // ── Badge Popup ──
       var badgePopup = null;
       if (showBadgePopup) {
@@ -2305,6 +2338,7 @@ window.SelHub = window.SelHub || {
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
+        heroBand,
         badgePopup,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
