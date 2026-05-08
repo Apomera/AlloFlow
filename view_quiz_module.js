@@ -970,6 +970,54 @@
     // Render mode-specific body
     var body;
     if (variant === 'gradebook') {
+      // Plan T v3+ Chunk 4: CSV export of gradebook. Wide format — one row
+      // per student, header includes summary cols + per-question detail
+      // (status / answer / confidence / AI feedback). RFC-4180-ish escaping:
+      // wrap any cell containing comma/newline/double-quote in "" with
+      // internal " escaped as "". UTF-8 BOM included so Excel auto-detects.
+      var csvEscape = function (v) {
+        var s = (v == null) ? '' : String(v);
+        if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+        return s;
+      };
+      var buildGradebookCsv = function () {
+        var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
+        var header = ['Student', 'Answered', 'Correct', 'IDK', 'Score %'];
+        questions.forEach(function (_, idx) {
+          header.push('Q' + (idx + 1) + ' Status', 'Q' + (idx + 1) + ' Answer', 'Q' + (idx + 1) + ' Confidence', 'Q' + (idx + 1) + ' AI Feedback');
+        });
+        var lines = [header.map(csvEscape).join(',')];
+        data.studentRows.forEach(function (row) {
+          var pct = row.totalAnswered > 0 ? Math.round((row.totalCorrect / row.totalAnswered) * 100) : 0;
+          var line = [row.displayName, row.totalAnswered, row.totalCorrect, row.totalIdk, pct + '%'];
+          for (var i = 0; i < questions.length; i++) {
+            var cell = row.byQuestion[i];
+            if (!cell) {
+              line.push('', '', '', '');
+            } else {
+              line.push(cell.status || '', cell.answerSummary || '', cell.confidence || '', cell.aiFeedback || '');
+            }
+          }
+          lines.push(line.map(csvEscape).join(','));
+        });
+        return '﻿' + lines.join('\r\n');
+      };
+      var exportCsv = function () {
+        try {
+          var csv = buildGradebookCsv();
+          var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          var d = new Date();
+          var stamp = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+          a.href = url;
+          a.download = 'quiz-gradebook-' + stamp + '-' + (mode || 'exit-ticket') + '.csv';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          setTimeout(function () { URL.revokeObjectURL(url); }, 100);
+        } catch (e) { /* swallow */ }
+      };
       // Per-student table with expand-to-drill-down per row
       var statusBadge = function (cell) {
         if (!cell) return React.createElement('span', { className: 'text-slate-300', title: 'No response' }, '—');
@@ -979,7 +1027,17 @@
         if (cell.status === 'partially-correct') return React.createElement('span', { className: 'text-amber-600', title: 'Partially correct' }, '◐');
         return React.createElement('span', { className: 'text-slate-400', title: 'Submitted (ungraded)' }, '·');
       };
-      body = React.createElement('div', { className: 'overflow-x-auto' },
+      body = React.createElement('div', null,
+        // Toolbar above the table — CSV export
+        React.createElement('div', { className: 'flex items-center justify-end mb-2' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: exportCsv,
+            className: 'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors',
+            title: 'Download gradebook as CSV — opens in Excel / Google Sheets / Numbers',
+          }, '📥 Export CSV')
+        ),
+        React.createElement('div', { className: 'overflow-x-auto' },
         React.createElement('table', { className: 'w-full text-sm border-collapse' },
           React.createElement('thead', null,
             React.createElement('tr', { className: 'bg-slate-100' },
@@ -1076,7 +1134,8 @@
             })
           )
         )
-      );
+        )  // close React.createElement('div', { className: 'overflow-x-auto' }, ...)
+      );    // close outer React.createElement('div', null, toolbar, tableDiv)
     } else if (variant === 'preLessonGap') {
       // Concept gap cards — lowest % first. Cards where the class is below
       // 80% correct get an "Explain to class" button that opens the AI
