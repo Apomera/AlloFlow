@@ -1964,6 +1964,47 @@
       });
     }
   }
+  // Plan T v3+ Chunk 9: distractor auto-improve. When Chunk 7's
+  // distractorQuality flagged a distractor as not encoding a misconception,
+  // teacher can click "✨ improve" to ask Gemini to rewrite it as a real
+  // misconception. Replaces in place via handleQuizChange. Per-(qIdx, optIdx)
+  // loading state so multiple distractors can improve concurrently.
+  var isImprovingDistractorState = React.useState({});
+  var isImprovingDistractor = isImprovingDistractorState[0];
+  var setIsImprovingDistractor = isImprovingDistractorState[1];
+  async function improveDistractor(qIdx, optIdx, currentDistractor, weakReason) {
+    var key = qIdx + ':' + optIdx;
+    if (isImprovingDistractor[key]) return;
+    if (typeof props.callGemini !== 'function' || typeof handleQuizChange !== 'function') return;
+    var q = generatedContent && generatedContent.data && generatedContent.data.questions && generatedContent.data.questions[qIdx];
+    if (!q) return;
+    setIsImprovingDistractor(function (prev) {
+      var next = Object.assign({}, prev); next[key] = true; return next;
+    });
+    try {
+      var grade = props.gradeLevel || 'middle school';
+      var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n'
+        + 'QUESTION: "' + (q.question || '') + '"\n'
+        + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n'
+        + 'CURRENT WEAK DISTRACTOR: "' + currentDistractor + '"\n'
+        + 'WHY IT IS WEAK: "' + (weakReason || 'does not encode a specific misconception') + '"\n\n'
+        + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
+      var raw = await props.callGemini(prompt, false);
+      var newText = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+      newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
+      if (!newText) throw new Error('Empty rewrite');
+      // Replace via existing host helper
+      handleQuizChange(qIdx, 'option', newText, optIdx);
+      if (typeof addToast === 'function') addToast('Distractor rewritten.', 'success');
+    } catch (err) {
+      if (typeof addToast === 'function') addToast((err && err.message) || 'Rewrite failed.', 'error');
+    } finally {
+      setIsImprovingDistractor(function (prev) {
+        var next = Object.assign({}, prev); delete next[key]; return next;
+      });
+    }
+  }
+
   // Reusable refine UI block — overlay pencil button + collapsible input panel.
   // Caller picks target ('question' | 'option') + optIdx; gets back a fragment
   // to drop into the JSX.
@@ -2882,7 +2923,36 @@
     className: "absolute top-2 right-2 text-green-600"
   }, /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
-  }))))),
+  })),
+    // Plan T v3+ Chunk 9: per-distractor quality badge. Surfaces Chunk 7's
+    // distractorQuality data inline (only in edit mode, only on distractors,
+    // not on the correct answer). 🎯 misconception (green) or ⚠ generic
+    // (amber) with the LLM's reason as a tooltip; the amber case also gets
+    // a "✨ improve" button that calls improveDistractor to rewrite via LLM.
+    isEditingQuiz && opt !== q.correctAnswer && Array.isArray(q.distractorQuality) && (function () {
+      var dq = q.distractorQuality.find(function (d) { return d && d.distractor === opt; });
+      if (!dq) return null;
+      return /*#__PURE__*/React.createElement("div", { className: "mt-1.5 ml-1 flex items-center gap-1.5 flex-wrap" },
+        dq.encodesMisconception
+          ? /*#__PURE__*/React.createElement("span", {
+              className: "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800",
+              title: dq.reason || 'Encodes a known student misconception',
+            }, "🎯 misconception")
+          : /*#__PURE__*/React.createElement(React.Fragment, null,
+              /*#__PURE__*/React.createElement("span", {
+                className: "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800",
+                title: dq.reason || 'Generic distractor — does not encode a specific misconception',
+              }, "⚠ generic"),
+              /*#__PURE__*/React.createElement("button", {
+                type: "button",
+                onClick: function (e) { e.stopPropagation(); improveDistractor(i, optIdx, opt, dq.reason || ''); },
+                disabled: !!isImprovingDistractor[i + ':' + optIdx],
+                className: "text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
+                title: "Rewrite this distractor to encode a real misconception",
+              }, isImprovingDistractor[i + ':' + optIdx] ? '✨ rewriting…' : '✨ improve')
+            )
+      );
+    })()))),
     // Plan S Slice 5+: per-MCQ enhancements (Explain / IDK / confidence) — same parity as freeform items
     /*#__PURE__*/React.createElement(McqEnhancements, {
       q: q,
