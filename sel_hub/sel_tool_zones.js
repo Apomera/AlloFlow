@@ -531,6 +531,39 @@ window.SelHub = window.SelHub || {
       );
 
       // ══════════════════════════════════════════════════════════
+      // ── Topic-accent hero band per tab ──
+      // ══════════════════════════════════════════════════════════
+      var heroBand = (function() {
+        var TAB_META = {
+          checkin:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDEA6', title: 'Check-In \u2014 which zone right now?',                  hint: 'Kuypers\u2019 Zones of Regulation (2011): blue (low energy), green (calm + ready), yellow (alert + frustrated), red (overwhelm). Naming the zone IS the first regulation move \u2014 amygdala calms when prefrontal labels.' },
+          explore:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDD0D', title: 'Explore \u2014 the 4-zone landscape',                    hint: 'Each zone has its own \u201Cright tools\u201D \u2014 yellow needs different strategies than red. Zones is about mapping internal experience to a shared vocabulary so support people (parents, teachers, friends) can help.' },
+          breathe:   { accent: '#06b6d4', soft: 'rgba(6,182,212,0.14)',  icon: '\uD83C\uDF2C', title: 'Breathe \u2014 cross-zone reset',                       hint: '4-7-8 breath, box breath, physiological sigh. The exhale activates parasympathetic; longer exhale than inhale tells the body \u201Csafe.\u201D Works for both yellow (over-activated) and blue (under-activated) zones.' },
+          body:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDDD1', title: 'Body Map \u2014 where stress lives',                     hint: 'Stress shows up physically before language: tight chest, clenched jaw, knot in stomach. Naming the body sensation often catches dysregulation earlier than naming the feeling. Interoception is trainable.' },
+          scenarios: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 zone-spotting practice',                hint: 'Read the situation; pick the likely zone for each character. Builds the noticing skill on lower-stakes others before applying it to higher-stakes self. Same skill, easier reps.' },
+          toolbox:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83E\uDDF0', title: 'My Toolbox \u2014 your personalized strategies',         hint: 'Each zone gets its own toolkit. What worked for YOU last week, in YOUR body. Pre-commit to specific moves so they\u2019re ready when you\u2019re activated \u2014 implementation intentions (Gollwitzer 1999).' },
+          history:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCCA', title: 'History \u2014 your patterns over time',                hint: 'Which days drift to yellow? Which class periods? After lunch vs before? Patterns you can SHOW someone (counselor, parent, teacher) are 10\u00d7 more useful than \u201CI just feel off sometimes.\u201D' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.checkin;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
+      // ══════════════════════════════════════════════════════════
       // ── Badge Popup Overlay ──
       // ══════════════════════════════════════════════════════════
       var badgePopup = null;
@@ -1717,6 +1750,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
         tabBar,
+        heroBand,
         badgePopup,
         checkinContent,
         exploreContent,
