@@ -181,6 +181,24 @@
       '@media (prefers-reduced-motion: no-preference) {',
       '  .ah-deck-row:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(96,165,250,0.14); }',
       '  .ah-deck-row:focus-within { box-shadow: 0 0 0 2px rgba(96,165,250,0.4); }',
+      '}',
+      // Cloze blank focus + correct/incorrect tinting (Phase O).
+      // These apply to inputs that opt in via className ah-cloze-blank;
+      // the wrapper sets data-state to 'idle' / 'correct' / 'incorrect'
+      // for color-coded feedback after a quiz attempt.
+      '.ah-cloze-blank { transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }',
+      '.ah-cloze-blank:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,165,250,0.55); border-color: rgba(96,165,250,0.85) !important; }',
+      // Generic primary input lift (used by ah-prominent-input class):
+      '.ah-prominent-input { transition: border-color 160ms ease, box-shadow 160ms ease; }',
+      '.ah-prominent-input:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,165,250,0.4); }',
+      // Breathing pacer scale-pulse for paced inhale/exhale rendering:
+      '@keyframes ah-breath-inhale {',
+      '  0%   { transform: scale(0.7); opacity: 0.7; }',
+      '  100% { transform: scale(1.15); opacity: 1; }',
+      '}',
+      '@keyframes ah-breath-exhale {',
+      '  0%   { transform: scale(1.15); opacity: 1; }',
+      '  100% { transform: scale(0.7); opacity: 0.7; }',
       '}'
     ].join('\n');
     if (document.head) document.head.appendChild(st);
@@ -3615,6 +3633,7 @@
                 return h('input', {
                   key: 'jq-' + i,
                   type: 'text',
+                  className: 'ah-cloze-blank',
                   value: quiz.guesses[seg.blankIdx] || '',
                   onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
                   'aria-label': 'Blank ' + (seg.blankIdx + 1),
@@ -3622,9 +3641,9 @@
                   style: {
                     background: palette.surface,
                     border: '1px solid ' + palette.border,
-                    borderRadius: '4px',
+                    borderRadius: '6px',
                     color: palette.text,
-                    padding: '2px 8px',
+                    padding: '3px 9px',
                     fontSize: 'inherit',
                     fontFamily: 'inherit',
                     margin: '0 2px',
@@ -6334,6 +6353,7 @@
             return h('input', {
               key: 'cs-' + i,
               type: 'text',
+              className: 'ah-cloze-blank',
               value: quiz.guesses[seg.blankIdx] || '',
               onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
               'aria-label': 'Blank ' + (seg.blankIdx + 1) + ' of ' + totalBlanks,
@@ -7883,6 +7903,7 @@
             var dec = findDecoration(step.decorationId);
             return h('div', {
               key: 'step-' + idx,
+              className: 'ah-deck-row',
               style: {
                 display: 'flex', gap: '10px', alignItems: 'flex-start',
                 padding: '10px', background: palette.surface,
@@ -8163,6 +8184,7 @@
               return h('input', {
                 key: 'wn-' + i,
                 type: 'text',
+                className: 'ah-cloze-blank',
                 value: stepClozeState.guesses[seg.blankIdx] || '',
                 onChange: function(e) { updateStepGuess(seg.blankIdx, e.target.value); },
                 'aria-label': 'Step ' + (idx + 1) + ' blank ' + (seg.blankIdx + 1),
@@ -14473,8 +14495,10 @@
         }
       },
         h('div', {
+          className: 'ah-tour-step',
           style: {
-            background: palette.bg,
+            backgroundColor: palette.bg,
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
             border: '2px solid ' + palette.accent,
             borderRadius: '20px',
             padding: '32px 28px',
@@ -15755,6 +15779,7 @@
             }, 'Teach a new phrase'),
             h('textarea', {
               id: 'ah-phrase-input',
+              className: 'ah-prominent-input',
               value: phraseDraft,
               onChange: function(e) { setPhraseDraft(e.target.value.slice(0, COMPANION_PHRASE_LIMIT)); },
               placeholder: 'Anything you want — an inside joke, a reminder, a little wisdom...',
@@ -15842,8 +15867,11 @@
         }
       },
         h('div', {
+          className: 'ah-tour-step',
           style: {
-            background: palette.bg, border: '2px solid ' + palette.accent,
+            backgroundColor: palette.bg,
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
+            border: '2px solid ' + palette.accent,
             borderRadius: '20px', padding: '28px',
             maxWidth: '420px', width: '100%',
             boxShadow: '0 30px 70px rgba(0,0,0,0.55)'
@@ -15889,9 +15917,11 @@
           ),
 
           // Step body OR completion
-          !done ? h('div', null,
+          // Step content keyed by idx so each step transition triggers
+          // the ah-tour-step fade-slide-in entrance.
+          !done ? h('div', { key: 'gnd-step-' + idx, className: 'ah-tour-step' },
             h('div', { style: { textAlign: 'center', marginBottom: '6px' } },
-              h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', lineHeight: 1 } }, stepDef.emoji),
+              h('div', { 'aria-hidden': 'true', className: 'ah-tour-emoji', style: { fontSize: '56px', lineHeight: 1, display: 'inline-block' } }, stepDef.emoji),
               h('div', {
                 style: {
                   fontSize: '22px', fontWeight: 800, color: palette.text,
