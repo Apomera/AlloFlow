@@ -240,6 +240,35 @@ window.SelHub = window.SelHub || {
         )
       );
 
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          pillars:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDC9C', title: 'Three Pillars \u2014 Neff\u2019s self-compassion model',     hint: 'Self-kindness, common humanity, mindfulness. Kristen Neff (2003) showed self-compassion predicts well-being BETTER than self-esteem \u2014 and without the comparison-to-others trap. Three pillars are the entire framework.' },
+          critic:   { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDDE3', title: 'Inner Friend \u2014 swap critic for ally',              hint: 'You\u2019d never talk to a friend the way you talk to yourself. The exercise: write what your inner critic says, then rewrite it as a trusted friend would. Bandura: changing self-talk changes self-efficacy.' },
+          practice: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83E\uDDD8', title: 'Practice \u2014 short reps, real change',               hint: 'Loving-kindness meditation (metta): \u201Cmay I be safe, may I be well, may I be at peace.\u201D Then expand to friend, neutral person, difficult person, all beings. 5 min/day for 8 weeks shows brain changes (Hutcherson 2008).' },
+          letter:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\u2709',         title: 'Kind Letter \u2014 write what you needed to hear',     hint: 'Compose a letter to yourself from the perspective of someone who loves you unconditionally. Pennebaker\u2019s expressive-writing protocol shows lasting health benefits 6 months out. The letter often surprises the writer.' },
+          coach:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83E\uDD16', title: 'Compassion Coach \u2014 AI as gentle mirror',           hint: 'Type what you\u2019re struggling with; the coach reflects back with self-compassion language, not advice or fixing. Practice ground for re-parenting your own difficult moments. Most users keep going because the tone feels different.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.pillars;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
       // ── Three Pillars ──
       var pillarsContent = null;
       if (activeTab === 'pillars') {
@@ -597,6 +626,7 @@ window.SelHub = window.SelHub || {
       var content = pillarsContent || criticContent || practiceContent || letterContent || coachContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
+        heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content)
       );
     }
