@@ -1909,16 +1909,23 @@
           transition: 'box-shadow 320ms ease, border-color 320ms ease'
         }
       },
+        // Boss image — `ah-realm-canvas` reuses the radial vignette from
+        // Phase J for a window-into-a-world feel. Shadow gives the
+        // Guardian some weight; transform overlay pulses the ✨.
         h('div', {
+          className: 'ah-realm-canvas',
           style: {
             position: 'relative',
-            width: '72px', height: '72px', flexShrink: 0
+            width: '72px', height: '72px', flexShrink: 0,
+            borderRadius: '8px',
+            overflow: 'hidden',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.32)'
           }
         },
           bossImage ? h('img', {
             src: bossImage,
             alt: 'Concept Guardian for ' + topic,
-            style: { width: '72px', height: '72px', objectFit: 'cover', borderRadius: '8px', border: '1px solid ' + palette.border, display: 'block' }
+            style: { width: '72px', height: '72px', objectFit: 'cover', border: '1px solid ' + palette.border, display: 'block', borderRadius: '8px' }
           }) : h('div', {
             'aria-hidden': 'true',
             style: { width: '72px', height: '72px', fontSize: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' }
@@ -1929,21 +1936,45 @@
             style: {
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(0,0,0,0.45)',
+              background: 'rgba(0,0,0,0.55)',
               borderRadius: '8px',
-              fontSize: '18px',
-              animation: 'none'
+              fontSize: '22px'
             }
-          }, '✨') : null
+          }, h('span', { className: 'ah-resonant-pulse' }, '✨')) : null
         ),
         h('div', { style: { flex: 1, minWidth: 0 } },
           h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '4px' } }, 'Concept Guardian: ' + topic),
-          h('div', {
-            'aria-label': 'Boss HP ' + displayHp + ' of ' + BOSS_HP_START,
-            style: { height: '12px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '999px', overflow: 'hidden', marginBottom: '4px' }
-          },
-            h('div', { style: { width: hpPct + '%', height: '100%', background: palette.accent, transition: 'width 320ms ease' } })
-          ),
+          // HP bar (Phase L) — track has inset shadow, fill is a tiered
+          // gradient: green when boss is healthy (>50% HP), amber mid
+          // (25-50%), red low (<25%). Smooth 320ms width transition + a
+          // subtle highlight stripe on the fill so it reads as energy,
+          // not just a flat color block.
+          (function () {
+            var fillBase = hpPct > 50 ? '#16a34a'
+                         : hpPct > 25 ? '#d97706'
+                         :              '#dc2626';
+            var fillBright = hpPct > 50 ? '#22c55e'
+                           : hpPct > 25 ? '#f59e0b'
+                           :              '#ef4444';
+            return h('div', {
+              'aria-label': 'Boss HP ' + displayHp + ' of ' + BOSS_HP_START,
+              role: 'progressbar',
+              'aria-valuenow': displayHp,
+              'aria-valuemin': 0,
+              'aria-valuemax': BOSS_HP_START,
+              style: { height: '14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '999px', overflow: 'hidden', marginBottom: '4px', boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)' }
+            },
+              h('div', {
+                style: {
+                  width: hpPct + '%', height: '100%',
+                  background: 'linear-gradient(180deg, ' + fillBright + ' 0%, ' + fillBase + ' 100%)',
+                  transition: 'width 320ms ease, background 240ms ease',
+                  boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18)',
+                  borderRadius: '999px'
+                }
+              })
+            );
+          })(),
           h('div', { style: { fontSize: '10px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' } },
             (function () {
               if (isClassMode && classView) {
@@ -2103,11 +2134,32 @@
           marginBottom: '12px'
         }
       },
-        h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '2px' } },
-          (lastResult.score >= 18 ? '✨ Critical Spark · ' : lastResult.score >= 11 ? '💡 Spark landed · ' : '🌫️ Spark fizzled · ')
-          + 'score ' + lastResult.score + ' / 20 · '
-          + (lastResult.damage > 0 ? lastResult.damage + ' damage' : 'no damage')
-          + (lastResult.willTransform ? ' · 🎨 transforming the Guardian' : '')),
+        // Last-result header — pulsing ✨ on critical, score chip with
+        // pop animation matching Realm Builder / Concept Atlas treatment.
+        h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+          h('span', {
+            className: lastResult.score >= 18 ? 'ah-resonant-pulse' : '',
+            'aria-hidden': 'true',
+            style: { fontSize: lastResult.score >= 18 ? '16px' : '14px' }
+          }, lastResult.score >= 18 ? '✨' : lastResult.score >= 11 ? '💡' : '🌫️'),
+          h('span', null,
+            (lastResult.score >= 18 ? 'Critical Spark · ' : lastResult.score >= 11 ? 'Spark landed · ' : 'Spark fizzled · ')
+            + (lastResult.damage > 0 ? lastResult.damage + ' damage' : 'no damage')
+            + (lastResult.willTransform ? ' · 🎨 transforming' : '')),
+          h('span', {
+            key: 'sp-' + lastResult.score + '-' + (lastResult.damage || 0),
+            className: 'ah-score-pop',
+            style: {
+              marginLeft: 'auto',
+              fontVariantNumeric: 'tabular-nums',
+              background: lastResult.score >= 18 ? (palette.accent || '#60a5fa') : (lastResult.score >= 11 ? (palette.accent + '22' || 'rgba(96,165,250,0.18)') : 'transparent'),
+              color: lastResult.score >= 18 ? (palette.onAccent || '#0f172a') : (lastResult.score >= 11 ? (palette.accent || '#60a5fa') : (palette.textMute || '#94a3b8')),
+              padding: '2px 9px', borderRadius: '999px',
+              fontWeight: lastResult.score >= 18 ? 800 : 700,
+              fontSize: '11px', letterSpacing: 0
+            }
+          }, lastResult.score + '/20')
+        ),
         lastResult.ackText ? h('div', { style: { fontSize: '11px', color: palette.textDim, lineHeight: '1.5', marginBottom: lastResult.followUp ? '4px' : 0 } },
           lastResult.ackText) : null,
         lastResult.followUp ? h('div', { style: { fontSize: '11px', color: palette.textMute, fontStyle: 'italic', lineHeight: '1.45' } },
