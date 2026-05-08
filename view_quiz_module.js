@@ -2008,6 +2008,83 @@
       });
     }
   }
+  // Plan T v3+ Chunk 11: bulk-improve all weak distractors in one click.
+  // Walks every MCQ's distractorQuality, fires improvements in parallel,
+  // applies the resulting rewrites in a single batched host write to avoid
+  // closure-stomping that would happen with N sequential handleQuizChange calls.
+  var isBulkImprovingState = React.useState(false);
+  var isBulkImproving = isBulkImprovingState[0];
+  var setIsBulkImproving = isBulkImprovingState[1];
+  async function bulkImproveDistractors() {
+    if (isBulkImproving) return;
+    if (!generatedContent || !generatedContent.data || !Array.isArray(generatedContent.data.questions)) return;
+    if (typeof props.callGemini !== 'function' || typeof handleQuizBulkOptionChange !== 'function') {
+      if (typeof addToast === 'function') addToast('Bulk improve unavailable.', 'error');
+      return;
+    }
+    // Collect tasks: (qIdx, optIdx, currentDistractor, reason) for every weak distractor
+    var tasks = [];
+    generatedContent.data.questions.forEach(function (q, qIdx) {
+      if (!q || (q.type && q.type !== 'mcq')) return;
+      if (!Array.isArray(q.distractorQuality) || !Array.isArray(q.options)) return;
+      q.distractorQuality.forEach(function (dq) {
+        if (!dq || dq.encodesMisconception !== false) return;
+        var optIdx = q.options.indexOf(dq.distractor);
+        if (optIdx < 0) return;
+        if (q.options[optIdx] === q.correctAnswer) return;
+        tasks.push({ qIdx: qIdx, optIdx: optIdx, currentDistractor: dq.distractor, reason: dq.reason || '' });
+      });
+    });
+    if (tasks.length === 0) {
+      if (typeof addToast === 'function') addToast('No weak distractors to improve.', 'info');
+      return;
+    }
+    setIsBulkImproving(true);
+    // Mark all per-cell as in-flight too so individual badges show 'rewriting…'
+    setIsImprovingDistractor(function (prev) {
+      var next = Object.assign({}, prev);
+      tasks.forEach(function (t) { next[t.qIdx + ':' + t.optIdx] = true; });
+      return next;
+    });
+    if (typeof addToast === 'function') addToast('Rewriting ' + tasks.length + ' weak distractor' + (tasks.length === 1 ? '' : 's') + '…', 'info');
+    var grade = props.gradeLevel || 'middle school';
+    var results = await Promise.all(tasks.map(function (task) {
+      var q = generatedContent.data.questions[task.qIdx];
+      var prompt = 'You are an assessment-design expert. Rewrite a single MCQ distractor to encode a REAL common student misconception (a predictable error students at the ' + grade + ' level make in their thinking).\n\n'
+        + 'QUESTION: "' + (q.question || '') + '"\n'
+        + 'CORRECT ANSWER: "' + (q.correctAnswer || '') + '"\n'
+        + 'CURRENT WEAK DISTRACTOR: "' + task.currentDistractor + '"\n'
+        + 'WHY IT IS WEAK: "' + task.reason + '"\n\n'
+        + 'Return ONLY the rewritten distractor text — a single short phrase or sentence at most ~15 words. No quotes, no labels, no explanation, no JSON. Just the new distractor text on a single line.';
+      return Promise.resolve(props.callGemini(prompt, false))
+        .then(function (raw) {
+          var newText = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+          newText = newText.trim().replace(/^["'`]+|["'`]+$/g, '').replace(/^\s*Distractor:\s*/i, '').trim();
+          if (!newText) return { ok: false, task: task };
+          return { ok: true, task: task, newText: newText };
+        })
+        .catch(function () { return { ok: false, task: task }; });
+    }));
+    // Apply all successful rewrites in one atomic host write
+    var updates = results.filter(function (r) { return r.ok; }).map(function (r) {
+      return { qIdx: r.task.qIdx, optIdx: r.task.optIdx, newText: r.newText };
+    });
+    if (updates.length > 0) {
+      handleQuizBulkOptionChange(updates);
+    }
+    // Clear in-flight markers
+    setIsImprovingDistractor(function (prev) {
+      var next = Object.assign({}, prev);
+      tasks.forEach(function (t) { delete next[t.qIdx + ':' + t.optIdx]; });
+      return next;
+    });
+    setIsBulkImproving(false);
+    var failures = tasks.length - updates.length;
+    if (typeof addToast === 'function') {
+      if (failures === 0) addToast('Rewrote ' + updates.length + ' distractor' + (updates.length === 1 ? '' : 's') + '.', 'success');
+      else addToast('Rewrote ' + updates.length + ' / ' + tasks.length + ' (' + failures + ' failed — try again).', failures > updates.length ? 'error' : 'success');
+    }
+  }
 
   // Reusable refine UI block — overlay pencil button + collapsible input panel.
   // Caller picks target ('question' | 'option') + optIdx; gets back a fragment
@@ -2125,6 +2202,7 @@
   var resetPresentation = props.resetPresentation;
   var handleQuizChange = props.handleQuizChange;
   var handleQuizImageRefine = props.handleQuizImageRefine;
+  var handleQuizBulkOptionChange = props.handleQuizBulkOptionChange;
   var handleReflectionChange = props.handleReflectionChange;
   var handleFactCheck = props.handleFactCheck;
   // Escape room handlers
@@ -2268,18 +2346,43 @@
     // Plan T v3+ Chunk 7: distractor-review summary (only on pre-check / formative
     // where misconception flag was used). Visible to teachers only — students
     // don't need to see grading-time validation.
-    isTeacherMode && generatedContent && generatedContent.data && generatedContent.data.distractorReview && React.createElement('p', {
-      className: 'text-xs italic mt-2 ' + (_quizMode === 'pre-check' ? 'text-amber-800' : 'text-sky-800'),
-      title: (generatedContent.data.distractorReview.weakItems || []).length > 0
-        ? 'Weak items: Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q')
-        : 'All MCQs have at least half their distractors encoding a known misconception',
+    isTeacherMode && generatedContent && generatedContent.data && generatedContent.data.distractorReview && React.createElement('div', {
+      className: 'mt-2 flex items-center gap-2 flex-wrap'
     },
-      '🎯 Distractor review: ' + (generatedContent.data.distractorReview.misconceptionCount || 0)
-        + ' of ' + (generatedContent.data.distractorReview.totalDistractors || 0)
-        + ' distractors encode a misconception (' + (generatedContent.data.distractorReview.quality != null ? generatedContent.data.distractorReview.quality + '%' : '—') + ')'
-        + ((generatedContent.data.distractorReview.weakItems || []).length > 0
-            ? ' — review Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q') + ' before deploying'
-            : ' — looks solid')
+      React.createElement('p', {
+        className: 'text-xs italic ' + (_quizMode === 'pre-check' ? 'text-amber-800' : 'text-sky-800'),
+        title: (generatedContent.data.distractorReview.weakItems || []).length > 0
+          ? 'Weak items: Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q')
+          : 'All MCQs have at least half their distractors encoding a known misconception',
+      },
+        '🎯 Distractor review: ' + (generatedContent.data.distractorReview.misconceptionCount || 0)
+          + ' of ' + (generatedContent.data.distractorReview.totalDistractors || 0)
+          + ' distractors encode a misconception (' + (generatedContent.data.distractorReview.quality != null ? generatedContent.data.distractorReview.quality + '%' : '—') + ')'
+          + ((generatedContent.data.distractorReview.weakItems || []).length > 0
+              ? ' — review Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q') + ' before deploying'
+              : ' — looks solid')
+      ),
+      // Plan T v3+ Chunk 11: bulk-improve button — only in edit mode AND when
+      // at least one weak distractor exists. One click rewrites all flagged
+      // distractors in parallel via Gemini, applies in a single batched write.
+      isEditingQuiz && (function () {
+        var weakCount = (Array.isArray(generatedContent.data.questions) ? generatedContent.data.questions : [])
+          .reduce(function (sum, q) {
+            if (!q || (q.type && q.type !== 'mcq')) return sum;
+            if (!Array.isArray(q.distractorQuality)) return sum;
+            return sum + q.distractorQuality.filter(function (dq) {
+              return dq && dq.encodesMisconception === false && Array.isArray(q.options) && q.options.indexOf(dq.distractor) >= 0 && q.options[q.options.indexOf(dq.distractor)] !== q.correctAnswer;
+            }).length;
+          }, 0);
+        if (weakCount === 0) return null;
+        return React.createElement('button', {
+          type: 'button',
+          onClick: bulkImproveDistractors,
+          disabled: isBulkImproving,
+          className: 'inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 transition-colors',
+          title: 'Rewrite all ' + weakCount + ' flagged distractor' + (weakCount === 1 ? '' : 's') + ' in one batch',
+        }, isBulkImproving ? '✨ Rewriting ' + weakCount + '…' : '✨ Improve all ' + weakCount);
+      })()
     )
   ) : null;
 
