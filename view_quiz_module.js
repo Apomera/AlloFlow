@@ -1099,6 +1099,7 @@
             onClick: exportCsv,
             className: 'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors',
             'aria-label': 'Export gradebook as CSV',
+            'data-help-key': 'quiz_csv_export_btn',
             title: 'Download gradebook as CSV — opens in Excel / Google Sheets / Numbers',
           }, React.createElement('span', { 'aria-hidden': 'true' }, '📥 '), 'Export CSV')
         ),
@@ -1201,6 +1202,7 @@
                         // ↺ removes the override. Active button highlighted.
                         cell && p.activeSessionCode && React.createElement('div', {
                           className: 'mt-1 flex items-center gap-1 flex-wrap',
+                          'data-help-key': 'quiz_teacher_override_row',
                         },
                           React.createElement('span', { className: 'text-xs text-slate-700 font-semibold mr-1' }, 'Override:'),
                           [
@@ -1275,6 +1277,7 @@
                 onClick: function () { openExplainer(card.questionIdx, card.conceptText); },
                 className: 'ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors',
                 'aria-label': 'Explain this concept to the class',
+                'data-help-key': 'quiz_explain_to_class_btn',
                 title: 'Generate a 60-90 word concept explainer for the class',
               }, React.createElement('span', { 'aria-hidden': 'true' }, '🎓 '), 'Explain to class')
             )
@@ -1488,6 +1491,7 @@
               ? 'bg-emerald-600 text-white'
               : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
             'aria-label': pushState.pushed ? 'Explainer pushed to all students' : 'Push this explainer to every student\'s screen',
+            'data-help-key': 'quiz_push_to_students_btn',
             title: 'Send this explainer to every student\'s screen now',
           }, pushState.pushing
               ? 'Pushing…'
@@ -2164,6 +2168,7 @@
         className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors disabled:opacity-50',
         title: isLoading ? 'Refining…' : 'Refine this image',
         'aria-label': 'Refine image',
+        'data-help-key': 'quiz_image_refine_btn',
       }, isLoading ? '⋯' : '✏️'),
       // Inline panel below the image
       isOpen && React.createElement('div', {
@@ -2408,7 +2413,8 @@
     // where misconception flag was used). Visible to teachers only — students
     // don't need to see grading-time validation.
     isTeacherMode && generatedContent && generatedContent.data && generatedContent.data.distractorReview && React.createElement('div', {
-      className: 'mt-2 flex items-center gap-2 flex-wrap'
+      className: 'mt-2 flex items-center gap-2 flex-wrap',
+      'data-help-key': 'quiz_distractor_review_summary',
     },
       React.createElement('p', {
         className: 'text-xs italic ' + (_quizMode === 'pre-check' ? 'text-amber-800' : 'text-sky-800'),
@@ -2445,6 +2451,7 @@
           'aria-label': isBulkImproving
             ? 'Rewriting ' + weakCount + ' weak distractors'
             : 'Rewrite all ' + weakCount + ' flagged distractors in one batch',
+          'data-help-key': 'quiz_bulk_improve_btn',
           title: 'Rewrite all ' + weakCount + ' flagged distractor' + (weakCount === 1 ? '' : 's') + ' in one batch',
         },
           React.createElement('span', { 'aria-hidden': 'true' }, '✨ '),

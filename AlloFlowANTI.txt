@@ -1619,133 +1619,15 @@ export const LanguageProvider = ({ children }) => {
     </LanguageContext.Provider>
   );
 };
-const UiLanguageSelector = () => {
-  const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = React.useContext(LanguageContext);
-  const [manualInput, setManualInput] = useState('');
-  const fileInputRef = useRef(null);
-  const commonLanguages = ["English", "Spanish", "French", "Arabic", "Chinese (Mandarin)", "Vietnamese", "Russian", "Portuguese"];
-  const handleChange = (e) => {
-    const val = e.target.value;
-    if (val !== "Custom") {
-        setUiLanguage(val);
-        setManualInput('');
-    }
-  };
-  const handleManualSubmit = () => {
-    if (manualInput.trim()) {
-        setUiLanguage(manualInput.trim());
-        setManualInput('');
-    }
-  };
-  const handleRegenerate = () => {
-      setConfirmDialog({ message: t('language_selector.confirm_regenerate') || 'Regenerate language pack?', onConfirm: () => {
-          regenerateLanguage();
-      }});
-  };
-  if (isTranslating) {
-      return (
-          <div className="flex flex-col justify-center min-w-[260px] px-4 py-3 select-none bg-white rounded-lg border border-indigo-100 shadow-md animate-in fade-in zoom-in-95" role="status" aria-live="polite">
-              <div className="flex justify-between text-[11px] font-black text-indigo-800 mb-3 uppercase tracking-wider items-center">
-                  <span className="truncate max-w-[180px]">{statusMessage || "Translating..."}</span>
-                  <span className="shrink-0 ml-2">{progress}%</span>
-              </div>
-              <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden border border-slate-400 inner-shadow mb-2" dir="ltr">
-                  <div
-                      className="bg-indigo-600 h-full transition-all duration-300 ease-out"
-                      style={{ width: `${progress}%` }}
-                  ></div>
-              </div>
-              <div className="flex justify-start items-center gap-1 text-[11px] text-indigo-600 font-bold uppercase tracking-wider animate-pulse">
-                  <RefreshCw size={12} className="animate-spin" /> Generating...
-              </div>
-          </div>
-      );
-  }
-  return (
-    <div className="relative group z-50 pointer-events-auto flex flex-col gap-1.5 items-end">
-        <div className="bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-xl shadow-sm p-1 flex items-center gap-1 transition-all hover:shadow-md hover:border-indigo-300">
-            <div className="bg-indigo-100 p-1.5 rounded-lg text-indigo-600">
-                <Globe size={14} />
-            </div>
-            <select
-                value={commonLanguages.includes(currentUiLanguage) ? currentUiLanguage : "Custom"}
-                onChange={handleChange}
-                className="bg-transparent text-xs font-bold text-slate-600 outline-none focus:ring-2 focus:ring-indigo-400 cursor-pointer py-1 pr-1 w-24 truncate"
-                aria-label={t('language_selector.select_label')}
-                data-help-key="ui_language_select"
-            >
-                {commonLanguages.map(lang => (
-                    <option key={lang} value={lang}>{t(`languages_list.${lang}`) || lang}</option>
-                ))}
-                <option value="Custom">{t('language_selector.custom_option')}</option>
-            </select>
-            {currentUiLanguage !== 'English' && (
-                <button
-                    onClick={handleRegenerate}
-                    className="p-1 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors"
-                    title={t('language_selector.regenerate_tooltip')}
-                    aria-label={t('language_selector.regenerate_tooltip')}
-                    data-help-key="ui_lang_regenerate_btn"
-                >
-                    <RefreshCw size={12} />
-                </button>
-            )}
-        </div>
-        <div className="flex items-center gap-1">
-            <div className="flex gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300">
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={(e) => importLanguagePack(e.target.files[0])}
-                    className="hidden"
-                    accept=".json"
-                    aria-label={t('language_selector.upload_tooltip')}
-                    data-help-key="ui_lang_import_btn"
-                />
-                <button
-                    onClick={() => fileInputRef.current.click()} data-help-key="source_upload_btn"
-                    className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                    title={t('language_selector.upload_tooltip')}
-                    aria-label={t('language_selector.upload_tooltip')}
-                >
-                    <FolderOpen size={12} />
-                </button>
-                {currentUiLanguage !== 'English' && (
-                    <button
-                        onClick={exportLanguagePack}
-                        className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
-                        title={t('language_selector.download_tooltip')}
-                        aria-label={t('language_selector.download_tooltip')}
-                        data-help-key="ui_lang_export_btn"
-                    >
-                        <Download size={12} />
-                    </button>
-                )}
-            </div>
-            <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-indigo-100 rounded-lg p-1 shadow-sm transition-all hover:shadow-md hover:border-indigo-300">
-                <input
-                    type="text"
-                    value={manualInput}
-                    onChange={(e) => setManualInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleManualSubmit()}
-                    placeholder={t('language_selector.search_placeholder')}
-                    className="text-[11px] bg-transparent outline-none focus:ring-2 focus:ring-indigo-400 w-20 px-1 text-slate-600 placeholder:text-slate-600"
-                    aria-label={t('language_selector.search_placeholder')}
-                    data-help-key="ui_lang_manual_input"
-                />
-                <button
-                    onClick={handleManualSubmit}
-                    disabled={!manualInput.trim()}
-                    className="p-1 bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    aria-label={t('language_selector.set_custom_label')}
-                    data-help-key="ui_lang_manual_submit"
-                >
-                    <ArrowRight size={10} />
-                </button>
-            </div>
-        </div>
-    </div>
-  );
+// ── UiLanguageSelector extracted to ui_language_selector_module.js (CDN) ──
+const UiLanguageSelector = (props) => {
+    const Ext = window.AlloModules && window.AlloModules.UILanguageSelector;
+    if (Ext) return <Ext {...(props || {})} />;
+    return null;
+};
+window._upgradeUILanguageSelector = function () {
+    // No-op upgrade hook — the live-indirection shim re-checks on every render,
+    // so the upgrade is automatic. Hook present so the module can call back without TypeError.
 };
 const StudentSubmitModal = React.memo((props) => {
     const Ext = window.AlloModules && window.AlloModules.StudentSubmitModal;
@@ -4139,101 +4021,102 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/canvas_tips_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/label_positions_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/canvas_tips_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/ui_language_selector_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4244,7 +4127,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@791f557/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@38e8b7d/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -6048,6 +5931,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       { id: 'tour-tool-faq', text: t('tour.faq_text'), title: t('tour.faq_title') },
       { id: 'tour-tool-scaffolds', text: t('tour.scaffolds_text'), title: t('tour.scaffolds_title') },
       { id: 'ui-tool-quiz', text: t('tour.quiz_text'), title: t('tour.quiz_title') },
+      { id: 'quiz-mode-select', text: t('tour.quiz_mode_text') || 'Choose what this quiz is for. Exit Ticket checks today\'s learning. Pre-Check probes prior knowledge before teaching and surfaces gaps as concept cards with a one-click "Explain to class" AI broadcast. Formative Check is a quick mid-lesson pulse. Spaced Review tracks each student\'s cross-session retention with a per-concept sparkline. Each mode tunes prompts, item-type mix, and the live dashboard layout.', title: t('tour.quiz_mode_title') || 'Pick the right quiz mode' },
       { id: 'tour-tool-brainstorm', text: t('tour.brainstorm_text'), title: t('tour.brainstorm_title') },
       { id: 'tour-tool-persona', text: t('tour.persona_text'), title: t('tour.persona_title') },
       { id: 'tour-tool-timeline', text: t('tour.timeline_text'), title: t('tour.timeline_title') },
@@ -26517,6 +26401,7 @@ Return ONLY valid JSON in this format:
                          value={quizMode}
                          onChange={(ev) => setQuizMode(ev.target.value)}
                          disabled={isProcessing}
+                         data-help-key="quiz_pedagogical_mode_select"
                          className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50"
                          aria-label="Quiz mode"
                          title="Quiz mode: choose what this quiz is for. Pre-check probes prerequisites; Exit Ticket assesses today's content; Formative is a quick mid-lesson pulse; Spaced Review re-tests prior content."
@@ -26534,6 +26419,7 @@ Return ONLY valid JSON in this format:
                          value={mcqVisualMode}
                          onChange={(ev) => setMcqVisualMode(ev.target.value)}
                          disabled={isProcessing}
+                         data-help-key="quiz_visual_mode_select"
                          className="flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50"
                          aria-label="MCQ visual mode"
                          title="Visuals (MCQ items only): None = text-only (free, fastest). Question = generate one image per question stem. Options = generate 4 images per question (one per option). Both = question + options. Image gen takes ~3-5s per image and uses Imagen credits."
@@ -26555,6 +26441,7 @@ Return ONLY valid JSON in this format:
                          value={imageStyle}
                          onChange={(ev) => setImageStyle(ev.target.value)}
                          disabled={isProcessing}
+                         data-help-key="quiz_image_style_input"
                          placeholder="e.g. watercolor, flat vector, photorealistic, line drawing"
                          maxLength={120}
                          className="flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white hover:border-indigo-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all disabled:opacity-50 placeholder:italic placeholder:text-slate-400"
