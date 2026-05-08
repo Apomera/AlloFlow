@@ -1061,6 +1061,40 @@ window.SelHub = window.SelHub || {
         )
       );
 
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          theater:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\uD83C\uDFAD', title: 'Conflict Theater \u2014 watch + diagnose',                hint: 'Conflict has 5 stages (Pondy 1967): latent, perceived, felt, manifest, aftermath. Watching it play out from the outside builds the frame you can use when you\u2019re INSIDE the next one.' },
+          istate:     { accent: '#3b82f6', soft: 'rgba(59,130,246,0.14)', icon: '\uD83D\uDDE3', title: 'I-Statements \u2014 own the experience',                  hint: '\u201CI feel ___ when ___ because ___; what I need is ___.\u201D Thomas Gordon\u2019s 1970 PET model. \u201CYou-statements\u201D escalate; I-statements describe a felt experience the other person can hear without defending.' },
+          deescalate: { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\u270B',         title: 'De-Escalation \u2014 lower the temperature first',     hint: 'When activated, the prefrontal cortex goes offline. No solution lands until you\u2019re back below threshold. CPI techniques: tone, pace, distance, voice. Dr. Bruce Perry\u2019s 3 R\u2019s: regulate \u2192 relate \u2192 reason.' },
+          repair:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDC9A', title: 'Repair \u2014 rebuild after the rupture',                hint: 'Gottman: every relationship has rupture; thriving ones have repair attempts. The bid (\u201Chey, are we OK?\u201D) matters more than perfection. Restorative practice loops: name harm \u2192 hear impact \u2192 plan repair \u2192 follow up.' },
+          styles:     { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE9', title: 'My Style \u2014 know your defaults',                     hint: 'Thomas-Kilmann: 5 styles \u2014 competing, accommodating, avoiding, collaborating, compromising. Each fits some moments; trouble comes when you only have ONE. Self-knowledge is half the battle.' },
+          apology:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDC8C', title: 'Apology Lab \u2014 the 6 elements',                       hint: 'Lewicki 2016: name what you did, take responsibility (no \u201Cif/but\u201D), express regret, explain, offer repair, ask forgiveness. \u201CSorry IF\u201D is not an apology. The most healing move: do all 6.' },
+          cooldown:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83E\uDDD8', title: 'Cool Down \u2014 buy yourself a window',                  hint: 'Cortisol/adrenaline drop ~20 min after the trigger ends. Walk away IS the strategy, not the failure. \u201CCan we talk after lunch?\u201D works on parents, partners, principals \u2014 anyone with a brain.' },
+          mediator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\u2728',         title: 'AI Mediator \u2014 a third voice in the room',           hint: 'Mediators don\u2019t pick winners; they help both sides be heard. Type both perspectives; the AI surfaces shared interests + reframes positions into needs. Practice ground for the harder real conversation.' },
+          roleplay:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Role-Play \u2014 rehearse before you live it',          hint: 'Worst case scripted in advance lowers in-the-moment activation. Bandura: behavioral rehearsal is one of the strongest predictors of self-efficacy. Try the hard talk here first; do it for real second.' },
+          progress:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCCA', title: 'Progress \u2014 track patterns over time',                hint: 'Which conflicts repeat? With whom? Around what? Patterns you can NAME you can also work on \u2014 with a counselor, with the other person, or alone. Data > vibes when you\u2019re trying to change something hard.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.theater;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
       // ── Badge Popup ──
       var badgePopup = null;
       if (showBadgePopup) {
@@ -2475,6 +2509,7 @@ window.SelHub = window.SelHub || {
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
+        heroBand,
         badgePopup,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
