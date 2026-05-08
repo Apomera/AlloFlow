@@ -45,6 +45,7 @@
   }
 
   waitForRegistry(function () {
+    attachAtlasDiagramHelper();
     if (window.AlloHavenArcade.isRegistered && window.AlloHavenArcade.isRegistered('concept-atlas')) {
       return;
     }
@@ -73,6 +74,292 @@
 
   function newAtlasId() {
     return 'atlas-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ──────────────────────────────────────────────────────────────────
+  // SVG ATLAS DIAGRAM (Phase I — visual refinement)
+  // ──────────────────────────────────────────────────────────────────
+  // Pure render helper: takes an atlas + options, returns a React SVG
+  // element. Radial layout — nodes evenly spaced around a circle, edges
+  // as lines (with arrowheads), edge labels via emoji at midpoint.
+  // Resonant edges (score ≥ 18) get a thicker accent-colored stroke.
+  // No force simulation; deterministic positions so the same atlas
+  // always renders the same way.
+  //
+  // Exposed on window.AlloHavenArcade.renderAtlasDiagram so AlloHaven
+  // (single-atlas print packet, overview thumbnails) can render the
+  // same visualization without depending on this plugin internally.
+  //
+  // Options:
+  //   width, height: SVG canvas size in CSS px (defaults to 600 × 400)
+  //   accent, muted, bg, text: theme colors (defaults to black/white)
+  //   showLabels: bool — show card name labels under nodes
+  //   showEdgeLabels: bool — show verb emoji at edge midpoint
+  //   highlightCardId: optional cardId to ring (used for "this card"
+  //                    cross-mode jumps)
+  //   isPrint: bool — uses ink-friendly colors (black/grey on white),
+  //                   thicker strokes for paper readability
+  function renderAtlasDiagram(atlas, opts) {
+    if (!atlas || !window.React) return null;
+    var React = window.React;
+    var h = React.createElement;
+    opts = opts || {};
+    var width = opts.width || 600;
+    var height = opts.height || 400;
+    var nodes = (atlas.nodes || []).slice();
+    var edges = (atlas.edges || []).slice();
+    var isPrint = !!opts.isPrint;
+    var bg = opts.bg || (isPrint ? '#ffffff' : 'transparent');
+    var text = opts.text || (isPrint ? '#000000' : '#e2e8f0');
+    var muted = opts.muted || (isPrint ? '#666666' : '#94a3b8');
+    var accent = opts.accent || (isPrint ? '#1e40af' : '#60a5fa');
+    var resonantColor = opts.resonantColor || (isPrint ? '#92400e' : '#f59e0b');
+    var nodeFill = opts.nodeFill || (isPrint ? '#fafafa' : '#1e293b');
+    var nodeStroke = opts.nodeStroke || (isPrint ? '#666666' : '#334155');
+    var showLabels = opts.showLabels !== false;
+    var showEdgeLabels = opts.showEdgeLabels !== false;
+    var highlightCardId = opts.highlightCardId || null;
+    var showLegend = opts.showLegend === true;
+    var nodeRadius = opts.nodeRadius || (nodes.length > 8 ? 18 : 22);
+    if (opts.size === 'mini') {
+      nodeRadius = 8;
+      showLabels = false;
+      showEdgeLabels = false;
+    }
+
+    // Empty-state stub
+    if (nodes.length === 0) {
+      return h('svg', {
+        viewBox: '0 0 ' + width + ' ' + height,
+        width: '100%',
+        height: '100%',
+        style: { background: bg, borderRadius: '8px' },
+        'aria-label': 'Empty atlas'
+      },
+        h('text', {
+          x: width / 2, y: height / 2,
+          textAnchor: 'middle',
+          fill: muted,
+          fontSize: '14',
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontStyle: 'italic'
+        }, 'No nodes yet')
+      );
+    }
+
+    // Layout: radial, first node at top (12 o\'clock), clockwise.
+    // Center reserved for label/title; outer radius leaves margin for
+    // node circles and labels not to clip.
+    var cx = width / 2;
+    var cy = height / 2;
+    var labelMargin = showLabels ? 18 : 4;
+    var radius = Math.min(width, height) / 2 - nodeRadius - labelMargin - 6;
+    if (radius < 60) radius = 60;
+    var nodePos = {};
+    nodes.forEach(function (n, i) {
+      var angle;
+      if (nodes.length === 1) {
+        angle = -Math.PI / 2;
+      } else {
+        angle = (i / nodes.length) * 2 * Math.PI - Math.PI / 2;
+      }
+      var x = cx + radius * Math.cos(angle);
+      var y = cy + radius * Math.sin(angle);
+      nodePos[n.cardId] = { x: x, y: y, angle: angle, node: n };
+    });
+
+    // Build defs (arrowheads + clip paths for image-bearing nodes).
+    var defs = [
+      h('marker', {
+        key: 'arrow-mu',
+        id: 'ah-atlas-arrow-mu',
+        viewBox: '0 0 10 10',
+        refX: 9, refY: 5,
+        markerWidth: 6, markerHeight: 6,
+        orient: 'auto-start-reverse'
+      }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: muted })),
+      h('marker', {
+        key: 'arrow-ac',
+        id: 'ah-atlas-arrow-ac',
+        viewBox: '0 0 10 10',
+        refX: 9, refY: 5,
+        markerWidth: 7, markerHeight: 7,
+        orient: 'auto-start-reverse'
+      }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: resonantColor }))
+    ];
+    nodes.forEach(function (n) {
+      if (n.cardImageBase64) {
+        defs.push(h('clipPath', { key: 'cp-' + n.cardId, id: 'ah-atlas-cp-' + n.cardId },
+          h('circle', {
+            cx: nodePos[n.cardId].x,
+            cy: nodePos[n.cardId].y,
+            r: nodeRadius - 1.5
+          })
+        ));
+      }
+    });
+
+    // Render edges first (under nodes).
+    var edgeEls = edges.map(function (e, i) {
+      var fromP = nodePos[e.fromCardId];
+      var toP = nodePos[e.toCardId];
+      if (!fromP || !toP) return null;
+      // Trim line endpoints to node-radius so the arrowhead lands on the
+      // edge of the destination circle, not its center.
+      var dx = toP.x - fromP.x;
+      var dy = toP.y - fromP.y;
+      var dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      var ux = dx / dist;
+      var uy = dy / dist;
+      var x1 = fromP.x + ux * nodeRadius;
+      var y1 = fromP.y + uy * nodeRadius;
+      var x2 = toP.x - ux * nodeRadius;
+      var y2 = toP.y - uy * nodeRadius;
+      var stroke = e.resonant ? resonantColor : muted;
+      var strokeW = e.resonant ? 2.5 : 1.25;
+      if (isPrint) strokeW += 0.5;
+      var marker = e.resonant ? 'url(#ah-atlas-arrow-ac)' : 'url(#ah-atlas-arrow-mu)';
+      var els = [
+        h('line', {
+          key: 'eln-' + e.id + '-' + i,
+          x1: x1, y1: y1, x2: x2, y2: y2,
+          stroke: stroke,
+          strokeWidth: strokeW,
+          strokeOpacity: e.resonant ? 1 : 0.8,
+          markerEnd: marker
+        })
+      ];
+      if (showEdgeLabels) {
+        var mx = (x1 + x2) / 2;
+        var my = (y1 + y2) / 2;
+        // Verb emoji at midpoint, with a small backing rect for legibility.
+        var emojiByVerb = {
+          illuminates: '💡', connects: '🔗', transforms: '✨', supports: '🛡️', contrasts: '⚡'
+        };
+        var emoji = emojiByVerb[e.edgeType] || '·';
+        els.push(h('rect', {
+          key: 'erl-' + e.id + '-' + i,
+          x: mx - 8, y: my - 9,
+          width: 16, height: 16,
+          rx: 8, ry: 8,
+          fill: bg === 'transparent' ? '#0f172a' : bg,
+          fillOpacity: 0.85
+        }));
+        els.push(h('text', {
+          key: 'etl-' + e.id + '-' + i,
+          x: mx, y: my + 4,
+          textAnchor: 'middle',
+          fontSize: '11'
+        }, emoji));
+      }
+      return h('g', { key: 'eg-' + e.id + '-' + i }, els);
+    }).filter(Boolean);
+
+    // Render nodes (circles + optional images + labels).
+    var nodeEls = nodes.map(function (n) {
+      var p = nodePos[n.cardId];
+      if (!p) return null;
+      var isHi = highlightCardId && n.cardId === highlightCardId;
+      var inner = [];
+      // Halo for highlighted node
+      if (isHi) {
+        inner.push(h('circle', {
+          key: 'h-' + n.cardId,
+          cx: p.x, cy: p.y, r: nodeRadius + 5,
+          fill: 'none',
+          stroke: accent,
+          strokeWidth: 2,
+          strokeOpacity: 0.55
+        }));
+      }
+      // Outer ring (always)
+      inner.push(h('circle', {
+        key: 'r-' + n.cardId,
+        cx: p.x, cy: p.y, r: nodeRadius,
+        fill: nodeFill,
+        stroke: nodeStroke,
+        strokeWidth: 1.5
+      }));
+      // Image (if present)
+      if (n.cardImageBase64) {
+        inner.push(h('image', {
+          key: 'i-' + n.cardId,
+          href: n.cardImageBase64,
+          xlinkHref: n.cardImageBase64,
+          x: p.x - (nodeRadius - 1.5),
+          y: p.y - (nodeRadius - 1.5),
+          width: (nodeRadius - 1.5) * 2,
+          height: (nodeRadius - 1.5) * 2,
+          clipPath: 'url(#ah-atlas-cp-' + n.cardId + ')',
+          preserveAspectRatio: 'xMidYMid slice'
+        }));
+      } else {
+        // Letter fallback
+        var letter = (n.cardName || '?').slice(0, 1).toUpperCase();
+        inner.push(h('text', {
+          key: 't-' + n.cardId,
+          x: p.x, y: p.y + (nodeRadius / 3),
+          textAnchor: 'middle',
+          fill: text,
+          fontSize: nodeRadius,
+          fontWeight: 700,
+          fontFamily: 'Georgia, "Times New Roman", serif'
+        }, letter));
+      }
+      // Label below node
+      if (showLabels) {
+        var labelY = p.y + nodeRadius + 11;
+        // Truncate names to ~14 chars; let CSS handle longer
+        var name = (n.cardName || '?');
+        if (name.length > 16) name = name.slice(0, 15) + '…';
+        inner.push(h('text', {
+          key: 'l-' + n.cardId,
+          x: p.x, y: labelY,
+          textAnchor: 'middle',
+          fill: text,
+          fontSize: '10',
+          fontWeight: 600,
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }, name));
+      }
+      return h('g', { key: 'ng-' + n.cardId }, inner);
+    }).filter(Boolean);
+
+    // Optional legend in the corner — used for print packets where
+    // teachers may not know what 🌟 / 💡 / 🔗 etc. mean.
+    var legend = null;
+    if (showLegend) {
+      var lx = 8, ly = height - 70;
+      legend = h('g', { key: 'legend' },
+        h('rect', { x: lx, y: ly, width: 170, height: 62, rx: 6, fill: bg === 'transparent' ? '#1e293b' : '#fafafa', stroke: nodeStroke, strokeWidth: 0.5 }),
+        h('text', { x: lx + 8, y: ly + 14, fill: text, fontSize: '9', fontWeight: 700 }, 'Relations'),
+        h('text', { x: lx + 8, y: ly + 28, fill: muted, fontSize: '9' }, '💡 illuminates  🔗 connects'),
+        h('text', { x: lx + 8, y: ly + 41, fill: muted, fontSize: '9' }, '✨ transforms  🛡️ supports'),
+        h('text', { x: lx + 8, y: ly + 54, fill: muted, fontSize: '9' }, '⚡ contrasts  · 🌟 = resonant')
+      );
+    }
+
+    return h('svg', {
+      viewBox: '0 0 ' + width + ' ' + height,
+      width: '100%',
+      height: '100%',
+      style: { background: bg, borderRadius: isPrint ? '4px' : '8px', display: 'block' },
+      role: 'img',
+      'aria-label': 'Atlas diagram: ' + nodes.length + ' nodes, ' + edges.length + ' edges'
+    },
+      h('defs', null, defs),
+      edgeEls,
+      nodeEls,
+      legend
+    );
+  }
+
+  // Expose to AlloHaven host (idempotent).
+  function attachAtlasDiagramHelper() {
+    if (!window.AlloHavenArcade) return;
+    if (!window.AlloHavenArcade.renderAtlasDiagram) {
+      window.AlloHavenArcade.renderAtlasDiagram = renderAtlasDiagram;
+    }
   }
 
   function emptyAtlas() {
@@ -797,6 +1084,31 @@
                     && !submitting && voiceMode !== 'transcribing';
       return h('div', { style: { padding: '12px' } },
         renderHeader(),
+        // Atlas diagram — visual heart of the experience. Updates live as
+        // edges are added. Highlighted node = the FROM card the student
+        // is currently selecting (gives spatial feedback).
+        (atlas.nodes || []).length > 0 ? h('div', {
+          style: {
+            marginBottom: '12px',
+            padding: '8px',
+            background: palette.surface || '#1e293b',
+            border: '1px solid ' + (palette.border || '#334155'),
+            borderRadius: '10px'
+          }
+        },
+          renderAtlasDiagram(atlas, {
+            width: 600,
+            height: 320,
+            accent: palette.accent || '#60a5fa',
+            muted: palette.textDim || '#94a3b8',
+            text: palette.text || '#e2e8f0',
+            nodeFill: palette.bg || '#0f172a',
+            nodeStroke: palette.border || '#334155',
+            highlightCardId: fromCard ? fromCard.id : (toCard ? toCard.id : null),
+            showLabels: true,
+            showEdgeLabels: true
+          })
+        ) : null,
         // Last-feedback callout
         lastFeedback ? h('div', {
           role: 'status', 'aria-live': 'polite',
@@ -948,7 +1260,27 @@
                 h('strong', { style: { color: palette.text || '#e2e8f0' } }, e.fromCardName),
                 h('span', null, ' — ' + e.edgeLabel + ' →'),
                 h('strong', { style: { color: palette.text || '#e2e8f0' } }, ' ' + e.toCardName),
-                h('span', { style: { marginLeft: 'auto', fontVariantNumeric: 'tabular-nums', color: palette.textMute || '#94a3b8' } }, e.score + '/20')
+                // Score chip color-coded by bucket (Phase I): low (1-10)
+                // muted, mid (11-17) accent-tinted, high (18-20) accent-bold.
+                (function () {
+                  var sc = e.score || 0;
+                  var bg, fg;
+                  if (sc >= 18) { bg = (palette.accent || '#60a5fa'); fg = (palette.onAccent || '#0f172a'); }
+                  else if (sc >= 11) { bg = (palette.accent + '22' || 'rgba(96,165,250,0.18)'); fg = (palette.accent || '#60a5fa'); }
+                  else { bg = 'transparent'; fg = (palette.textMute || '#94a3b8'); }
+                  return h('span', {
+                    style: {
+                      marginLeft: 'auto',
+                      fontVariantNumeric: 'tabular-nums',
+                      background: bg,
+                      color: fg,
+                      padding: sc >= 11 ? '1px 6px' : '0',
+                      borderRadius: '999px',
+                      fontWeight: sc >= 18 ? 700 : 400,
+                      fontSize: '10px'
+                    }
+                  }, sc + '/20');
+                })()
               );
             })
           ),

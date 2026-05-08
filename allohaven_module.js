@@ -17030,11 +17030,36 @@
           borderRadius: '8px'
         }
       },
-        // Atlas glyph (no canvas image)
-        h('div', {
-          'aria-hidden': 'true',
-          style: { width: '64px', height: '64px', flexShrink: 0, fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px' }
-        }, '🗺'),
+        // Mini-diagram thumbnail (Phase I) — falls back to a static glyph
+        // when the diagram helper isn't yet attached. The mini diagram
+        // is parameterized to drop labels and use small node radii so
+        // it reads as a constellation at thumbnail size.
+        (function () {
+          var hasHelper = window.AlloHavenArcade && typeof window.AlloHavenArcade.renderAtlasDiagram === 'function';
+          if (!hasHelper || (atlas.nodes || []).length === 0) {
+            return h('div', {
+              'aria-hidden': 'true',
+              style: { width: '64px', height: '64px', flexShrink: 0, fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px' }
+            }, '🗺');
+          }
+          return h('div', {
+            'aria-label': 'Atlas mini-diagram preview',
+            style: { width: '64px', height: '64px', flexShrink: 0, background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', overflow: 'hidden' }
+          },
+            window.AlloHavenArcade.renderAtlasDiagram(atlas, {
+              width: 100, height: 100,
+              size: 'mini',
+              nodeRadius: 6,
+              accent: palette.accent,
+              muted: palette.textDim,
+              text: palette.text,
+              nodeFill: palette.surface,
+              nodeStroke: palette.border,
+              showLabels: false,
+              showEdgeLabels: false
+            })
+          );
+        })(),
         // Center: name/topic/stats
         h('div', { style: { flex: 1, minWidth: 0 } },
           h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
@@ -20501,6 +20526,20 @@
             + (atlas.updatedAt ? ' · last updated ' + new Date(atlas.updatedAt).toLocaleDateString() : '')
             + ' · printed ' + dateStr)
         ),
+        // Atlas diagram (Phase I) — visual centerpiece for IEP packets.
+        // Print-mode: ink-friendly colors, thicker strokes, legend on.
+        nodes.length > 0 && window.AlloHavenArcade && typeof window.AlloHavenArcade.renderAtlasDiagram === 'function'
+          ? h('div', { style: { width: '100%', maxHeight: '420px', margin: '0 0 14px 0', background: '#ffffff', border: '1px solid #999', borderRadius: '4px', padding: '8px' } },
+              window.AlloHavenArcade.renderAtlasDiagram(atlas, {
+                width: 700,
+                height: 420,
+                isPrint: true,
+                showLabels: true,
+                showEdgeLabels: true,
+                showLegend: true
+              })
+            )
+          : null,
         // Nodes section
         nodes.length > 0 ? h('div', { style: { marginBottom: '14px' } },
           h('h2', { style: sectionTitleStyle }, 'Nodes · ' + nodes.length),

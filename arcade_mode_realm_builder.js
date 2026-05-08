@@ -1671,7 +1671,27 @@
                 z.contributorNickname ? h('span', {
                   style: { fontSize: '10px', color: palette.textMute || '#94a3b8', fontStyle: 'italic' }
                 }, ' · by ' + z.contributorNickname) : null,
-                h('span', { style: { marginLeft: 'auto', fontVariantNumeric: 'tabular-nums', color: palette.textMute || '#94a3b8' } }, z.score + '/20')
+                // Score chip color-coded by bucket (Phase I): low (1-10)
+                // muted, mid (11-17) accent-tinted, high (18-20) accent-bold.
+                (function () {
+                  var sc = z.score || 0;
+                  var bg, fg;
+                  if (sc >= 18) { bg = (palette.accent || '#60a5fa'); fg = (palette.onAccent || '#0f172a'); }
+                  else if (sc >= 11) { bg = (palette.accent + '22' || 'rgba(96,165,250,0.18)'); fg = (palette.accent || '#60a5fa'); }
+                  else { bg = 'transparent'; fg = (palette.textMute || '#94a3b8'); }
+                  return h('span', {
+                    style: {
+                      marginLeft: 'auto',
+                      fontVariantNumeric: 'tabular-nums',
+                      background: bg,
+                      color: fg,
+                      padding: sc >= 11 ? '1px 6px' : '0',
+                      borderRadius: '999px',
+                      fontWeight: sc >= 18 ? 700 : 400,
+                      fontSize: '10px'
+                    }
+                  }, sc + '/20');
+                })()
               );
             })
           ),
