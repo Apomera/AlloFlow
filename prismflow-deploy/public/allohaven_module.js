@@ -13292,9 +13292,11 @@
           }, '🗺') : null,
           // Voice note 🎤 overlay (Phase 2p.15) — small mic top-left
           // adjacent to mood emoji. Indicates audio is attached.
+          // Phase R — tooltip points to the new Voice Notes index for
+          // one-tap playback without opening the memory modal first.
           decoration.voiceNote ? h('span', {
             'aria-label': 'Voice note attached',
-            title: 'Voice note attached · click decoration to play',
+            title: 'Voice note attached · open Memory → 🎤 Voice notes to play',
             style: {
               position: 'absolute',
               top: '2px',
@@ -16899,6 +16901,19 @@
                 title: 'Quick 7-day snapshot — what you did, how you felt, what you unlocked',
                 style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
               }, '🗓️ Last 7 days'),
+              // Phase R — voice-notes index button only when notes exist
+              (function() {
+                var vCount = (state.decorations || []).filter(function(d) {
+                  return d.voiceNote && d.voiceNote.base64;
+                }).length;
+                if (vCount === 0) return null;
+                return h('button', {
+                  onClick: function() { setStateField('activeModal', 'voice-notes'); },
+                  'aria-label': 'Open voice notes index — ' + vCount + ' note' + (vCount === 1 ? '' : 's'),
+                  title: 'Listen to every voice note you\'ve recorded',
+                  style: Object.assign({}, secondaryBtnStyle(palette), { padding: '6px 12px', fontSize: '12px' })
+                }, '🎤 Voice notes · ' + vCount);
+              })(),
               (totalDecks > 0 || allStories.length > 0) ? h('button', {
                 onClick: function() { setStateField('activeModal', 'clinical-review'); },
                 'aria-label': 'Review packet on screen',
@@ -17622,23 +17637,45 @@
       var leftBorder = (isDue || isSoon)
         ? ('3px solid ' + borderColor)
         : ('1px solid ' + palette.border);
+      // Voice-note inline player (Phase R) — single row open at a time,
+      // tracked on generateContext.expandedVoiceRow so it doesn't survive
+      // modal close.
+      var hasVoiceNote = !!(decoration.voiceNote && decoration.voiceNote.base64);
+      var voiceExpanded = hasVoiceNote
+        && state.generateContext
+        && state.generateContext.expandedVoiceRow === decoration.id;
+      function toggleVoiceRow() {
+        var nextCtx = Object.assign({}, state.generateContext || {}, {
+          expandedVoiceRow: voiceExpanded ? null : decoration.id
+        });
+        setStateField('generateContext', nextCtx);
+      }
       return h('div', {
         key: 'mr-' + decoration.id,
         role: 'group',
         className: 'ah-deck-row',
         'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel
-          + (isSoon ? ', due soon' : ''),
+          + (isSoon ? ', due soon' : '')
+          + (hasVoiceNote ? ', voice note attached' : ''),
         style: {
           display: 'flex',
-          gap: '10px',
-          alignItems: 'center',
-          padding: '10px 12px',
+          flexDirection: 'column',
           background: palette.surface,
           border: '1px solid ' + borderColor,
           borderLeft: leftBorder,
-          borderRadius: '8px'
+          borderRadius: '8px',
+          overflow: 'hidden'
         }
       },
+        // Inner row — original thumbnail + center button + actions
+        h('div', {
+          style: {
+            display: 'flex',
+            gap: '10px',
+            alignItems: 'center',
+            padding: '10px 12px'
+          }
+        },
         // Thumbnail
         decoration.imageBase64 ? h('img', {
           src: decoration.imageBase64,
@@ -17697,6 +17734,28 @@
           },
             isSoon ? (reviewedLabel + ' · due soon') : reviewedLabel)
         ),
+        // Voice-note inline play toggle (Phase R) — sits between center
+        // and Review so the row's primary action stays on the right.
+        hasVoiceNote ? h('button', {
+          onClick: function(e) { e.stopPropagation(); toggleVoiceRow(); },
+          'aria-pressed': voiceExpanded ? 'true' : 'false',
+          'aria-expanded': voiceExpanded ? 'true' : 'false',
+          'aria-controls': 'ah-vn-row-' + decoration.id,
+          'aria-label': voiceExpanded ? 'Hide voice note player' : 'Play voice note',
+          title: voiceExpanded ? 'Hide voice note' : 'Tap to play this voice note',
+          style: {
+            background: voiceExpanded ? palette.accent : 'transparent',
+            color: voiceExpanded ? palette.onAccent : palette.accent,
+            border: '1px solid ' + palette.accent,
+            borderRadius: '8px',
+            padding: '7px 10px',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            flexShrink: 0
+          }
+        }, voiceExpanded ? '🎤 ▾' : '🎤 ▶') : null,
         // Review action button (only for quizzable types)
         quizAvailable ? h('button', {
           onClick: function() { openMemoryModal(decoration.id, true); },
@@ -17729,6 +17788,49 @@
             flexShrink: 0
           }
         }, 'View')
+        ),
+        // Inline audio panel — collapses below the row when expanded.
+        // autoPlay because the toggle was the explicit user gesture.
+        hasVoiceNote && voiceExpanded ? h('div', {
+          id: 'ah-vn-row-' + decoration.id,
+          role: 'region',
+          'aria-label': 'Voice note for ' + label,
+          style: {
+            padding: '10px 12px',
+            borderTop: '1px solid ' + palette.border,
+            background: palette.bg
+          }
+        },
+          h('audio', {
+            key: 'au-' + decoration.id,
+            src: decoration.voiceNote.base64,
+            controls: true,
+            autoPlay: true,
+            preload: 'metadata',
+            style: { width: '100%', display: 'block' }
+          }),
+          h('div', {
+            style: {
+              fontSize: '10px',
+              color: palette.textMute,
+              marginTop: '6px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              gap: '8px',
+              flexWrap: 'wrap',
+              alignItems: 'baseline'
+            }
+          },
+            h('span', null,
+              '🎤 ' + Math.round((decoration.voiceNote.durationMs || 0) / 1000) + 's'
+              + (decoration.voiceNote.recordedAt
+                  ? ' · ' + new Date(decoration.voiceNote.recordedAt).toLocaleDateString()
+                  : '')),
+            decoration.voiceNote.caption ? h('span', {
+              style: { fontStyle: 'italic', color: palette.textDim, flex: 1, textAlign: 'right', minWidth: 0 }
+            }, '"' + decoration.voiceNote.caption + '"') : null
+          )
+        ) : null
       );
     }
 
@@ -17765,6 +17867,181 @@
             marginTop: '4px'
           }
         }, label)
+      );
+    }
+
+    // ─────────────────────────────────────────────────
+    // VOICE NOTES INDEX (Phase R) — surfaces every decoration that has
+    // a voice note attached, regardless of whether it also holds linked
+    // memory content. Plain decorations with audio (e.g. a starter the
+    // student recorded a feeling about) live here and only here.
+    // ─────────────────────────────────────────────────
+    function renderVoiceNotesIndexModal() {
+      if (state.activeModal !== 'voice-notes') return null;
+      var voiced = (state.decorations || []).filter(function(d) {
+        return d.voiceNote && d.voiceNote.base64;
+      });
+      voiced.sort(function(a, b) {
+        var aR = (a.voiceNote && a.voiceNote.recordedAt) || '';
+        var bR = (b.voiceNote && b.voiceNote.recordedAt) || '';
+        return bR.localeCompare(aR);
+      });
+      var capCount = voiced.filter(function(d) { return d.voiceNote.caption; }).length;
+      var totalSec = voiced.reduce(function(sum, d) {
+        return sum + Math.round(((d.voiceNote && d.voiceNote.durationMs) || 0) / 1000);
+      }, 0);
+
+      function formatRecorded(iso) {
+        if (!iso) return '';
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return '';
+        var now = new Date();
+        var sameDay = d.toDateString() === now.toDateString();
+        if (sameDay) return 'Today · ' + d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+        var daysAgo = Math.floor((now.getTime() - d.getTime()) / (24 * 60 * 60 * 1000));
+        if (daysAgo === 1) return 'Yesterday';
+        if (daysAgo < 7) return daysAgo + ' days ago';
+        return d.toLocaleDateString();
+      }
+
+      function renderVoiceRow(decoration) {
+        var vn = decoration.voiceNote;
+        var label = decoration.templateLabel || decoration.template || 'item';
+        var dur = Math.round((vn.durationMs || 0) / 1000);
+        var meta = formatRecorded(vn.recordedAt) + (dur ? ' · ' + dur + 's' : '');
+        var hasContent = !!decoration.linkedContent;
+        return h('div', {
+          key: 'vni-' + decoration.id,
+          role: 'group',
+          className: 'ah-deck-row',
+          'aria-label': 'Voice note on ' + label + (vn.caption ? ': ' + vn.caption : '') + ', ' + meta,
+          style: {
+            display: 'flex',
+            flexDirection: 'column',
+            background: palette.surface,
+            border: '1px solid ' + palette.border,
+            borderRadius: '8px',
+            padding: '10px 12px',
+            gap: '8px'
+          }
+        },
+          // Header row: thumbnail + label + meta + "Open"
+          h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center' } },
+            decoration.imageBase64 ? h('img', {
+              src: decoration.imageBase64,
+              alt: '', 'aria-hidden': 'true',
+              style: {
+                width: '40px', height: '40px', borderRadius: '6px', objectFit: 'contain',
+                background: palette.bg, border: '1px solid ' + palette.border, flexShrink: 0
+              }
+            }) : h('div', {
+              'aria-hidden': 'true',
+              style: {
+                width: '40px', height: '40px', borderRadius: '6px',
+                background: palette.bg, border: '1px dashed ' + palette.border,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: palette.textMute, fontSize: '20px', flexShrink: 0
+              }
+            }, '🎤'),
+            h('div', { style: { flex: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text } }, label),
+              h('div', { style: { fontSize: '10px', color: palette.textMute } }, meta)
+            ),
+            h('button', {
+              onClick: function() {
+                setStateMulti({
+                  activeModal: 'memory',
+                  generateContext: { decorationId: decoration.id, returnTo: 'voice-notes' }
+                });
+              },
+              'aria-label': 'Open memory modal for ' + label,
+              title: hasContent ? 'Open deck (also lets you re-record)' : 'Open decoration (lets you re-record or add content)',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '5px 10px', fontSize: '11px', flexShrink: 0 })
+            }, 'Open ↗')
+          ),
+          // Always-visible audio player
+          h('audio', {
+            src: vn.base64,
+            controls: true,
+            preload: 'metadata',
+            style: { width: '100%', display: 'block' }
+          }),
+          // Caption (when present)
+          vn.caption ? h('div', {
+            style: {
+              fontSize: '12px', color: palette.text, fontStyle: 'italic',
+              padding: '6px 10px', background: palette.bg,
+              border: '1px solid ' + palette.border, borderRadius: '6px',
+              lineHeight: 1.45
+            }
+          }, '"' + vn.caption + '"') : h('div', {
+            style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' }
+          }, 'No caption · open to add one')
+        );
+      }
+
+      return h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': 'Voice notes index',
+        onClick: function(e) {
+          if (e.target === e.currentTarget) setStateField('activeModal', null);
+        },
+        style: {
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.55)',
+          zIndex: 180,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }
+      },
+        h('div', {
+          className: 'ah-tour-step',
+          style: {
+            background: palette.bg,
+            border: '1px solid ' + palette.border,
+            borderRadius: '14px',
+            padding: '24px',
+            maxWidth: '560px',
+            width: '100%',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            backgroundImage: 'radial-gradient(ellipse at top, ' + palette.accent + '24, transparent 65%)'
+          }
+        },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', gap: '8px' } },
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '20px', fontWeight: 700 } },
+              '🎤 Voice notes · ' + voiced.length),
+            h('button', {
+              onClick: function() { setStateField('activeModal', null); },
+              'aria-label': 'Close voice notes index',
+              style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px' })
+            }, '✕')
+          ),
+          voiced.length === 0 ? h('div', {
+            style: {
+              padding: '32px 20px', background: palette.surface,
+              border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center'
+            }
+          },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '40px', marginBottom: '10px' } }, '🎤'),
+            h('p', { style: { color: palette.textDim, fontSize: '13px', lineHeight: '1.55', margin: 0 } },
+              'No voice notes yet. Open any decoration in your room and tap the 🎤 button in its memory modal to record up to 30 seconds.')
+          ) : h('div', null,
+            h('p', {
+              style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: 1.5 }
+            },
+              voiced.length + ' note' + (voiced.length === 1 ? '' : 's')
+              + ' · ' + capCount + ' captioned'
+              + ' · ' + totalSec + 's total · newest first'),
+            h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
+              voiced.map(renderVoiceRow))
+          )
+        )
       );
     }
 
@@ -21880,6 +22157,7 @@
       renderGenerateModal(),
       renderMemoryModal(),
       renderMemoryOverviewModal(),
+      renderVoiceNotesIndexModal(),
       renderClinicalReviewModal(),
       renderStoriesListModal(),
       renderStoryBuilderModal(),
