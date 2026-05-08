@@ -918,9 +918,29 @@
       }
     }
 
+    // Plan T v3+ Chunk 6: teacher overrides — beats AI cache + deterministic.
+    // Read from sessionData; write directly via __alloFirebase (same pattern
+    // as Chunk 2's class explainer push). Schema:
+    //   quizState.teacherOverrides[uid][qIdx] = { status, ts, teacherUid? }
+    var teacherOverrides = (quizState && quizState.teacherOverrides) || {};
+    function setTeacherOverride(uid, qIdx, newStatus) {
+      var fb = window.__alloFirebase;
+      if (!fb || !fb.db || !fb.doc || !fb.updateDoc || !fb.deleteField || !appId || !p.activeSessionCode) return;
+      var sessionRef = fb.doc(fb.db, 'artifacts', appId, 'public', 'data', 'sessions', p.activeSessionCode);
+      var path = 'quizState.teacherOverrides.' + uid + '.' + qIdx;
+      var update = {};
+      if (newStatus == null) {
+        // Undo: remove the override
+        update[path] = fb.deleteField();
+      } else {
+        update[path] = { status: newStatus, ts: Date.now() };
+      }
+      try { fb.updateDoc(sessionRef, update); } catch (e) { /* swallow */ }
+    }
+
     var aggResult;
     try {
-      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache);
+      aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides);
     } catch (e) {
       console.warn('[LiveResultsDashboard] aggregator failed:', e);
       return null;
@@ -1120,11 +1140,45 @@
                             className: 'flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800',
                             title: 'Graded by AI (' + cell.aiStatus + ')',
                           }, '✨ AI'),
+                          cell && cell.teacherOverridden && React.createElement('span', {
+                            className: 'flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800',
+                            title: 'Teacher override (was: ' + (cell.priorStatus || '?') + ')',
+                          }, '🖊 Teacher'),
                           cell && confidenceChip(cell.confidence, cell.status)
                         ),
                         cell && cell.aiFeedback && React.createElement('p', {
                           className: 'text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1',
-                        }, '"', cell.aiFeedback, '"')
+                        }, '"', cell.aiFeedback, '"'),
+                        // Plan T v3+ Chunk 6: teacher override toggles. Visible to teachers
+                        // for any cell that has a response. Click a status to set override;
+                        // ↺ removes the override. Active button highlighted.
+                        cell && p.activeSessionCode && React.createElement('div', {
+                          className: 'mt-1 flex items-center gap-1 flex-wrap',
+                        },
+                          React.createElement('span', { className: 'text-[10px] text-slate-500 font-semibold mr-1' }, 'Override:'),
+                          [
+                            { s: 'correct', icon: '✓', color: 'emerald' },
+                            { s: 'incorrect', icon: '✗', color: 'rose' },
+                            { s: 'partially-correct', icon: '◐', color: 'amber' },
+                          ].map(function (opt) {
+                            var isActive = cell.teacherOverridden && cell.status === opt.s;
+                            return React.createElement('button', {
+                              key: opt.s,
+                              type: 'button',
+                              onClick: function (e) { e.stopPropagation(); setTeacherOverride(row.uid, qIdx, isActive ? null : opt.s); },
+                              className: 'text-[10px] font-bold w-6 h-6 rounded transition-colors ' + (isActive
+                                ? ('bg-' + opt.color + '-600 text-white border border-' + opt.color + '-700')
+                                : ('bg-white text-slate-600 border border-slate-300 hover:bg-' + opt.color + '-50 hover:border-' + opt.color + '-300')),
+                              title: 'Set status to ' + opt.s + (isActive ? ' (click again to undo)' : ''),
+                            }, opt.icon);
+                          }),
+                          cell.teacherOverridden && React.createElement('button', {
+                            type: 'button',
+                            onClick: function (e) { e.stopPropagation(); setTeacherOverride(row.uid, qIdx, null); },
+                            className: 'text-[10px] font-bold px-2 h-6 rounded bg-white text-slate-600 border border-slate-300 hover:bg-slate-100',
+                            title: 'Remove teacher override (revert to AI / deterministic grade)',
+                          }, '↺ undo')
+                        )
                       );
                     })
                   )

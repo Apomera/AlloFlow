@@ -127,7 +127,9 @@
   // Optional aiGradedCache: { '<uid>:<qIdx>': { status, feedback } } overrides
   // the deterministic 'submitted' status for short-answer / self-explanation
   // responses with the LLM-graded result. Other types unaffected.
-  function collectAllGradedResponses(allResponses, questions, aiGradedCache) {
+  // Optional teacherOverrides: nested { [uid]: { [qIdx]: { status, ts } } }
+  // — beats AI override and deterministic. Highest authority on grade.
+  function collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides) {
     var out = [];
     if (!allResponses || typeof allResponses !== 'object') return out;
     if (!Array.isArray(questions)) return out;
@@ -160,6 +162,21 @@
         if (response && (response.confidence === 'knew' || response.confidence === 'guessed' || response.confidence === 'no-idea')) {
           grade.confidence = response.confidence;
         }
+        // Plan T v3+ Chunk 6: teacher override beats everything else. Only
+        // when the override status is one of the recognized values; an empty
+        // or 'undo' status clears any override (handled at write time, not
+        // here — a missing entry means no override).
+        if (teacherOverrides && teacherOverrides[uid] && teacherOverrides[uid][qIdxKey]) {
+          var ov = teacherOverrides[uid][qIdxKey];
+          if (ov && ov.status && (ov.status === 'correct' || ov.status === 'incorrect' || ov.status === 'partially-correct' || ov.status === 'idk')) {
+            grade = Object.assign({}, grade, {
+              status: ov.status,
+              teacherOverridden: true,
+              teacherOverrideTs: ov.ts || 0,
+              priorStatus: grade.status,
+            });
+          }
+        }
         out.push({ uid: uid, questionIdx: qIdx, response: response, question: question, grade: grade });
       });
     });
@@ -168,10 +185,10 @@
 
   // ─── Aggregator: gradebook (exit-ticket) ──────────────────────────────
   // Per-student row: { uid, displayName, totalAnswered, totalCorrect, byQuestion }
-  function aggregateGradebook(quizState, generatedContent, roster, aiGradedCache) {
+  function aggregateGradebook(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache);
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
     var rosterObj = roster && typeof roster === 'object' ? roster : {};
     // Build per-student aggregation
     var studentMap = {};
@@ -237,10 +254,10 @@
   // ─── Aggregator: pre-lesson dashboard (pre-check) ─────────────────────
   // Per-question card: { questionIdx, questionText, totalAnswered, correctCount,
   //   percentCorrect, idkCount, conceptText (best-effort label) }
-  function aggregatePreLessonGap(quizState, generatedContent, roster, aiGradedCache) {
+  function aggregatePreLessonGap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache);
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
     var rosterCount = roster ? Object.keys(roster).length : 0;
     var perQuestion = questions.map(function (q, idx) {
       // Best-effort concept label: first 80 chars of question text or expectedFill
@@ -337,10 +354,10 @@
 
   // ─── Aggregator: live heatmap (formative; review fallback) ────────────
   // Per-question bar: { questionIdx, questionText, correct, incorrect, idk, total, percentCorrect }
-  function aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache) {
+  function aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) {
     var allResponses = (quizState && quizState.allResponses) || {};
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
-    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache);
+    var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache, teacherOverrides);
     var rosterCount = roster ? Object.keys(roster).length : 0;
     var rosterObj = roster && typeof roster === 'object' ? roster : {};
     var bars = questions.map(function (q, idx) {
@@ -418,12 +435,12 @@
   // Falls back to live-heatmap shape if conceptMasteryByUid is missing or
   // empty (e.g., dashboard hasn't fetched yet, or this is the very first
   // session capturing concept data).
-  function aggregateRetentionCurve(quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache) {
+  function aggregateRetentionCurve(quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides) {
     if (!conceptMasteryByUid || typeof conceptMasteryByUid !== 'object' || Object.keys(conceptMasteryByUid).length === 0) {
       // No mastery data yet — return live-heatmap shape so dashboard renders
       // something useful instead of empty state. Dashboard recognizes this
       // via aggResult.variant.
-      return aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache);
+      return aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides);
     }
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
     var rosterObj = roster && typeof roster === 'object' ? roster : {};
@@ -512,18 +529,18 @@
   // ─── Mode → aggregator router ─────────────────────────────────────────
   // For review mode, requires conceptMasteryByUid argument; falls back to
   // liveHeatmap if not provided.
-  function aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache) {
-    if (mode === 'pre-check') return { variant: 'preLessonGap', data: aggregatePreLessonGap(quizState, generatedContent, roster, aiGradedCache) };
-    if (mode === 'formative') return { variant: 'liveHeatmap', data: aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache) };
+  function aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides) {
+    if (mode === 'pre-check') return { variant: 'preLessonGap', data: aggregatePreLessonGap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) };
+    if (mode === 'formative') return { variant: 'liveHeatmap', data: aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) };
     if (mode === 'review') {
-      var retData = aggregateRetentionCurve(quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache);
+      var retData = aggregateRetentionCurve(quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides);
       // If retention data has cross-session info, render as retentionCurve;
       // otherwise it returned heatmap shape, render as liveHeatmap.
       var variant = retData.hasCrossSessionData ? 'retentionCurve' : 'liveHeatmap';
       return { variant: variant, data: retData };
     }
     // exit-ticket default
-    return { variant: 'gradebook', data: aggregateGradebook(quizState, generatedContent, roster, aiGradedCache) };
+    return { variant: 'gradebook', data: aggregateGradebook(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) };
   }
 
   window.AlloModules = window.AlloModules || {};
