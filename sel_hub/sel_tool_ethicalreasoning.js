@@ -883,6 +883,42 @@ window.SelHub = window.SelHub || {
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            dilemmas:     { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDD25', title: 'Dilemmas \u2014 the trolley problem and friends',         hint: 'Foot 1967 → Thomson 1976 → Greene 2001 fMRI: utilitarian vs deontological responses use different brain regions. Dilemmas don\u2019t have right answers — they expose the values you didn\u2019t know you held.' },
+            branching:    { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83C\uDF33', title: 'Scenarios \u2014 choices that lead somewhere',           hint: 'Branching paths reveal SECOND-order consequences \u2014 the part most ethics-of-the-moment skips. \u201CThen what happened?\u201D is the question that separates intuition from reasoning.' },
+            casestudies:  { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCD6', title: 'Cases \u2014 historical and current',                      hint: 'Tuskegee, Stanford Prison Experiment, Cambridge Analytica, Theranos. Real cases test frameworks against complexity. Hindsight is 20/20; the harder skill is foresight, which only practice builds.' },
+            frameworks:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83C\uDFDB', title: 'Frameworks \u2014 the toolkit',                            hint: 'Consequentialism (Mill), deontology (Kant), virtue ethics (Aristotle), care ethics (Gilligan), rights-based, contractualism (Rawls). No single framework wins; competent reasoning uses multiple lenses.' },
+            explore:      { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDD0D', title: 'Explore \u2014 your guided deep-dive',                    hint: 'Pick a topic, follow the through-line. Reading 30 minutes on bioethics beats 5 minutes each on six issues. Curiosity rewards depth; ethics rewards re-reading.' },
+            dialogue:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDCAC', title: 'Socratic \u2014 the question that reveals',               hint: 'Socrates didn\u2019t lecture; he asked. Best Socratic move: \u201CWhat would have to be true for that to be wrong?\u201D \u2014 forces interlocutor to specify the principle, not just the conclusion.' },
+            values:       { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDC8E', title: 'Values \u2014 your moral inventory',                       hint: 'Schwartz 1992: 10 universal value clusters. Ranking your top 5 reveals what your future-self will defend at cost. Decisions feel \u201Cright\u201D when they line up; \u201Coff\u201D when they don\u2019t.' },
+            decisiontree: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83C\uDF32', title: 'Tree \u2014 walk the choice down to its leaves',         hint: 'Branch the options, weight each leaf by likelihood + magnitude. Howard 1968 decision-theory framework. Slows snap judgments without paralyzing them.' },
+            philosophy:   { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDD0', title: 'Thinkers \u2014 the standing-on-shoulders',               hint: 'Aristotle, Confucius, Kant, Mill, Wollstonecraft, Du Bois, Arendt, Nussbaum, Singer. Ethics has 2,500+ years of receipts; reading the source beats reading paraphrase.' },
+            kohlberg:     { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83E\uDDE0', title: 'Reasoning \u2014 Kohlberg\u2019s 6 stages',                hint: 'Kohlberg 1958: pre-conventional (will I get caught?) → conventional (what do others expect?) → post-conventional (universal principles). Most adults reason at stages 3-4; practice raises the ceiling.' },
+            debate:       { accent: '#ea580c', soft: 'rgba(234,88,12,0.10)',  icon: '\uD83C\uDFA4', title: 'Debate \u2014 steelman before you strike',                hint: 'Argue the OTHER side\u2019s strongest version first \u2014 if you can\u2019t, you don\u2019t understand it yet. Habermas\u2019 \u201Cideal speech\u201D: free participation, sincerity, no coercion. Rare in practice; aspirational anyway.' },
+            badges:       { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones in moral thinking',              hint: 'Acknowledges sustained engagement, not certainty. The badges are the side effect; the dilemmas you\u2019ve sat with + the cases you\u2019ve worked through are the point.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.dilemmas;
+          return h('div', {
+            style: {
+              margin: '12px 0 0',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ DILEMMAS TAB ═══
         tab === 'dilemmas' && !selectedDilemma && h('div', {  className: 'space-y-3' },
           h('p', { className: 'text-sm text-slate-600 text-center' }, 'Choose a dilemma to explore. Each one has no single right answer.'),
