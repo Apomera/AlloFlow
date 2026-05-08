@@ -794,6 +794,40 @@ window.SelHub = window.SelHub || {
           }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07')
         );
 
+        // ── Topic-accent hero band per tab ──
+        var heroBand = (function() {
+          var TAB_META = {
+            learn:     { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCDA', title: 'Learn \u2014 the foundations',                          hint: 'Personal safety = body autonomy + boundaries + reading situations + naming what feels off. The 5-finger trick: people on each finger you can talk to. Knowing words for the situation IS half the safety.' },
+            digital:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83D\uDD10', title: 'Digital \u2014 online has different rules',              hint: 'Things to never share: address, school name, photos with location, real-time location. Strangers age + claim friends; \u201Cdon\u2019t tell your parents\u201D = the loudest red flag. NCMEC + Common Sense Media research-backed.' },
+            circle:    { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDC9A', title: 'My Circle \u2014 trusted adults are EVERYTHING',          hint: 'Pick 5 adults you can go to. List them BEFORE you need them \u2014 finding someone in crisis is too late. The Circle of Trust idea (Ross Greene) underpins most safe-school programs.' },
+            scenarios: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 walk through it before it happens',     hint: 'Behavioral rehearsal (Bandura) lowers in-the-moment freezing. Going through what-ifs with a trusted adult \u2014 lost in store, separated from group, online stranger \u2014 builds the script you\u2019ll use under stress.' },
+            assertive: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\uD83D\uDCAA', title: 'Assertive \u2014 your NO matters',                       hint: 'Passive (\u201Cmaybe\u201D), aggressive (\u201Cback off!\u201D), assertive (\u201CI\u2019m not okay with that\u201D). Assertive is the only one that reliably keeps both safety and relationships intact. Practice loud + neutral.' },
+            quiz:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83E\uDDE0', title: 'Quiz \u2014 self-knowledge check',                       hint: 'When do you tend to override gut feelings? When do you tend to go along to be polite? Both are normal responses; both have safer alternatives. The pattern recognition is the work.' },
+            flags:     { accent: '#ef4444', soft: 'rgba(239,68,68,0.14)',  icon: '\uD83D\uDEA9', title: 'Flags \u2014 the patterns that mean LEAVE',              hint: 'Isolation, secrets, age gaps, gifts that come with strings, \u201Cnobody understands you like I do.\u201D Naming patterns lets the gut feeling become a checklist. Trust the discomfort even before you can articulate why.' },
+            emergency: { accent: '#b91c1c', soft: 'rgba(185,28,28,0.14)',  icon: '\uD83D\uDE92', title: 'Emergency \u2014 what to do RIGHT NOW',                  hint: '911 (US), 988 (Suicide + Crisis Lifeline), text HOME to 741741 (Crisis Text Line), 1-800-422-4453 (Childhelp). Knowing the number IS half the work \u2014 the other half is permission to dial.' },
+            plan:      { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCCB', title: 'Plan \u2014 your written safety steps',                  hint: 'Pre-commit (Gollwitzer 1999): \u201CIf X happens, I\u2019ll do Y, then call Z.\u201D Doubles follow-through over good intentions alone. Suicide-prevention safety plans use the same template (Stanley + Brown 2012).' },
+            badges:    { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones in self-protection',           hint: 'Skill-of-the-week, scenarios completed, trusted-adult conversations had. Acknowledges competence without coercion (Deci + Ryan 1985). The badges are the side effect; the conversations are the point.' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.learn;
+          return h('div', {
+            style: {
+              margin: '8px 12px 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })();
+
         // ── Badge Popup ──
         var badgePopup = null;
         if (showBadgePopup) {
@@ -2138,6 +2172,7 @@ window.SelHub = window.SelHub || {
 
         return h('div', { className: 'selh-safety', style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
+          heroBand,
           badgePopup,
           h('div', { style: { flex: 1, overflow: 'auto' } }, content),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
