@@ -761,6 +761,37 @@ window.SelHub = window.SelHub || {
         );
 
         // ══════════════════════════════════════════════════════
+        // ── Topic-accent hero band per tab ──
+        // ══════════════════════════════════════════════════════
+        var heroBand = (function() {
+          var TAB_META = {
+            checkin:  { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDE42', title: 'Check-In \u2014 daily 1-minute pulse',                       hint: 'Mood + intensity + brief context. The act of LOGGING shifts behavior even before you analyze the data \u2014 self-monitoring (Latham 1981) is one of the most-replicated effects in behavior science.' },
+            journal:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u270D',         title: 'Journal \u2014 expressive writing as research',           hint: 'Pennebaker 1986: 15-20 min, 3-4 days, about something difficult \u2192 measurable physical + mental health gains 6 months later. The mechanism: turning chaos into narrative gives the brain handles.' },
+            calendar: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 streaks + heat map',                       hint: 'Visual streak ladders harness consistency-bias: missing one day stings; missing two stings less. Don\u2019t miss twice. Pattern visibility \u2014 when do you tend to skip? \u2014 is the diagnostic, not the goal.' },
+            insights: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDCCA', title: 'Insights \u2014 your patterns over time',                  hint: 'Mood-vs-day, mood-vs-sleep, mood-vs-week. Most regulation patterns hide in plain sight until you SEE them. Insights you can show a counselor or trusted adult are 10\u00d7 more useful than \u201CI feel off sometimes.\u201D' },
+            badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones make consistency visible',          hint: 'Self-determination theory (Deci + Ryan 1985): autonomy + competence + relatedness drive intrinsic motivation. Badges acknowledge competence without coercing \u2014 you set the streak, the system just notices.' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.checkin;
+          return h('div', {
+            style: {
+              margin: '8px 12px 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })();
+
+        // ══════════════════════════════════════════════════════
         // ── Badge Popup Overlay ──
         // ══════════════════════════════════════════════════════
         var badgePopup = null;
@@ -1915,6 +1946,7 @@ window.SelHub = window.SelHub || {
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
+          heroBand,
           badgePopup,
           h('div', { style: { flex: 1, overflow: 'auto' } }, content),
           window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
