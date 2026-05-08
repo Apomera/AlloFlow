@@ -486,7 +486,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'You approach a school bus on a highway with a PHYSICAL MEDIAN (grass, guardrail, or concrete barrier separating the directions). The bus is on the OTHER side with red flashing lights. You must:', a: ['Stop completely', 'Slow down but proceed', 'Continue at normal speed (you do not need to stop)', 'Speed up'], correct: 2, exp: 'On a divided highway with a physical median (not a painted center stripe), only traffic on the SAME side as the bus must stop. On undivided roads — including 4-lane roads with only paint separating the directions — both directions stop.', category: 'pedestrian' },
     { q: 'In an emergency stop with ABS brakes, you should:', a: ['Pump the brake pedal rapidly', 'Press and HOLD the brake pedal firmly while steering', 'Apply gentle pressure', 'Use the parking brake'], correct: 1, exp: 'ABS does the pumping for you. Press and HOLD firmly. You will feel pulsing in the pedal — that is normal. The pulsing means it is working. Steer through the stop.', category: 'emergency' },
     { q: 'A "no zone" refers to:', a: ['A speed-limit-free area', 'The blind spots around large trucks', 'A no-passing zone', 'A school zone at night'], correct: 1, exp: 'Large trucks have huge blind spots called "no zones" — directly behind, directly in front, and along both sides. If you can\'t see the driver\'s mirrors, they can\'t see you.', category: 'general' },
-    { q: 'You can be charged with DUI in Maine for driving while impaired by:', a: ['Alcohol only', 'Alcohol and illegal drugs only', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only if BAC is over 0.08'], correct: 2, exp: 'DUI laws cover ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
+    { q: 'You can be charged with OUI (Operating Under Influence) in Maine for driving while impaired by:', a: ['Alcohol only', 'Alcohol and illegal drugs only', 'Alcohol, illegal drugs, AND prescription/over-the-counter medications that impair', 'Only if BAC is over 0.08'], correct: 2, exp: 'Maine OUI law covers ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.', category: 'dui' },
     { q: 'Cell phone use while driving in Maine is:', a: ['Always legal', 'Banned for handheld; hands-free is OK for adults', 'Banned only for teens', 'Banned only at school zones'], correct: 1, exp: 'Maine bans ALL handheld phone use. Hands-free is legal for adults but banned for drivers under 18 with intermediate licenses. Texting is fully banned for everyone.', category: 'dui' },
     { q: 'When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:', a: ['Continue at posted speed', 'Honk and pass quickly', 'Move over one lane if safe, or slow down significantly', 'Stop completely'], correct: 2, exp: 'Maine\'s "Move Over" law requires drivers to change lanes if safe, or slow down. Roadside workers die every year from drivers passing too close.', category: 'emergency' },
     // ── Accident aftermath + advanced ──
@@ -500,7 +500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     { q: 'The two-second rule should be increased to four or more seconds when:', a: ['Driving a small car', 'Road conditions are wet, icy, or visibility is poor', 'Driving during the day', 'Driving below the speed limit'], correct: 1, exp: 'Wet roads: 4+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Following a motorcycle or large truck: 4+ seconds. At night: 4+ seconds. When in doubt, add more distance.', category: 'winter' },
     { q: 'You are driving and smell gasoline inside the car. You should:', a: ['Ignore it — cars always smell like gas', 'Open windows, do NOT smoke, pull over when safe, and check for leaks', 'Speed up to blow the fumes out', 'Turn on the AC to recirculate air'], correct: 1, exp: 'A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.', category: 'emergency' },
     { q: 'What does it mean when your steering wheel vibrates at highway speed?', a: ['Normal road vibration', 'Likely wheel balance issue, alignment problem, or tire damage — have it inspected', 'The engine is overheating', 'You need new brakes'], correct: 1, exp: 'Steering vibration typically means: unbalanced wheels (most common, cheap fix), worn tie rod ends, or tire damage. If vibration is only when braking, it\'s warped rotors.', category: 'maintenance' },
-    { q: 'In Maine, what is the penalty for a first-offense DUI?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI (Operating Under Influence): minimum 96 hours jail (or 48 hrs community service), $500+ fine, 150-day license suspension. Second offense: mandatory 7 days jail.', category: 'dui' },
+    { q: 'In Maine, what is the penalty for a first-offense OUI (Operating Under Influence)?', a: ['$100 fine', 'Warning only', 'Minimum 150-day license suspension, $500+ fine, possible jail time', 'Loss of car registration only'], correct: 2, exp: 'Maine first-offense OUI: minimum 96 hours jail (or 48 hrs community service), $500+ fine, 150-day license suspension. Second offense: mandatory 7 days jail. Maine uses "OUI" rather than the "DUI" / "DWI" terms used in other states.', category: 'dui' },
     { q: 'You are approaching a green light that has been green for a long time (stale green). You should:', a: ['Speed up to make it through', 'Cover the brake and be ready for it to change', 'Honk to warn cross traffic', 'Stop and wait for the next green'], correct: 1, exp: 'A "stale green" is likely to turn yellow soon. Cover your brake pedal (hover your foot over it) so you can react instantly. This reduces reaction time by ~0.5 seconds.', category: 'general' },
     { q: 'The "Dutch reach" is a technique for:', a: ['Parallel parking', 'Opening your car door safely by reaching with the far hand to check for cyclists', 'Merging onto a highway', 'Adjusting mirrors'], correct: 1, exp: 'Open your door with the hand farthest from the door (right hand for driver side). This naturally turns your body to look over your shoulder, checking for cyclists. Prevents "dooring" — a leading cause of cyclist injury.', category: 'general' },
     { q: 'Your car starts to hydroplane. The correct response is:', a: ['Brake hard', 'Turn the steering wheel sharply', 'Ease off the gas, do not brake or steer sharply, and let the tires regain contact', 'Accelerate to push through'], correct: 2, exp: 'Hydroplaning = tires riding on a film of water, not the road. Braking or sharp steering = loss of control. Ease off gas smoothly and wait for tires to contact pavement again.', category: 'emergency' },
@@ -529,13 +529,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     // ── Expanded category coverage (DUI / Winter / Pedestrian / Emergency / Maintenance / GDL / Signs) ──
     // ── DUI / impaired ──
     { q: 'In Maine, the BAC limit for drivers UNDER 21 is:', a: ['0.08%', '0.05%', '0.02% (zero tolerance)', 'No limit'], correct: 2, exp: 'Maine has zero tolerance: ANY measurable alcohol (0.02% or higher) for under-21 drivers triggers a license suspension. The 0.08% limit only applies to adults 21+.', category: 'dui' },
-    { q: 'How long does an OUI (Operating Under Influence) conviction stay on your Maine driving record?', a: ['1 year', '5 years', '10 years', 'Forever'], correct: 2, exp: 'In Maine, OUI convictions stay on your driving record for 10 years. They affect insurance rates, employment background checks, and any subsequent DUI charges (which carry escalating penalties).', category: 'dui' },
-    { q: 'Maine\'s "implied consent" law means that refusing a breath test after a traffic stop:', a: ['Has no consequences', 'Triggers an automatic license suspension', 'Is always smart legal advice', 'Only matters if you fail it'], correct: 1, exp: 'By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any DUI charges.', category: 'dui' },
+    { q: 'How long does an OUI (Operating Under Influence) conviction stay on your Maine driving record?', a: ['1 year', '5 years', '10 years', 'Forever'], correct: 2, exp: 'In Maine, OUI convictions stay on your driving record for 10 years. They affect insurance rates, employment background checks, and any subsequent OUI charges (which carry escalating penalties).', category: 'dui' },
+    { q: 'Maine\'s "implied consent" law means that refusing a breath test after a traffic stop:', a: ['Has no consequences', 'Triggers an automatic license suspension', 'Is always smart legal advice', 'Only matters if you fail it'], correct: 1, exp: 'By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any OUI charges.', category: 'dui' },
     { q: 'You went out for drinks and feel "okay to drive." The safest choice is:', a: ['Drive carefully and slowly', 'Wait 30 minutes and reassess', 'Use a rideshare, taxi, or designated driver', 'Drink coffee for 15 minutes first'], correct: 2, exp: 'You cannot reliably self-assess your impairment — alcohol affects judgment FIRST. The only safe choice is not driving. Coffee speeds nothing; only TIME (about 1 hour per standard drink) lowers BAC.', category: 'dui' },
     { q: 'Approximately how long does it take your body to metabolize ONE standard drink (12 oz beer, 5 oz wine, 1.5 oz liquor)?', a: ['10 minutes', '1 hour', '4 hours', '24 hours'], correct: 1, exp: 'About 1 hour per drink for a typical adult. There is no shortcut — coffee, food, cold air, and exercise do not speed metabolism. Plan drinks-and-driving math BEFORE you start.', category: 'dui' },
     { q: 'Combining alcohol with sleep deprivation is dangerous because:', a: ['Sleep deprivation cancels out alcohol\'s effects', 'Their effects multiply — being tired AND drunk impairs you far more than either alone', 'It only matters at 0.08% BAC', 'It only affects taller drivers'], correct: 1, exp: 'Fatigue + alcohol is exponentially worse than either alone. Studies show being awake 18+ hours alongside a "legal" 0.05% BAC gives you the impairment of a 0.10% drunk driver.', category: 'dui' },
     { q: 'Which over-the-counter medication is MOST likely to impair driving?', a: ['Vitamin C', 'Diphenhydramine (Benadryl) and other sedating antihistamines', 'Tylenol', 'Daily aspirin'], correct: 1, exp: 'Sedating antihistamines (Benadryl, NyQuil, Advil PM) cause drowsiness comparable to alcohol. Read labels: "may cause drowsiness" means do not drive. Non-drowsy options (Claritin, Zyrtec) are safer.', category: 'dui' },
-    { q: 'Recreational marijuana is legal in Maine for adults 21+, but driving while impaired by marijuana is:', a: ['Legal if you have a medical card', 'Legal as long as you can pass the breath test', 'A criminal OUI offense — same penalties as alcohol DUI', 'Only a fine'], correct: 2, exp: 'Cannabis OUI in Maine carries the same penalties as alcohol OUI: license suspension, fines, and possible jail. Officers can request a blood test if they suspect impairment. The "legal at home" status does not extend to driving.', category: 'dui' },
+    { q: 'Recreational marijuana is legal in Maine for adults 21+, but driving while impaired by marijuana is:', a: ['Legal if you have a medical card', 'Legal as long as you can pass the breath test', 'A criminal OUI offense — same penalties as alcohol OUI', 'Only a fine'], correct: 2, exp: 'Cannabis OUI in Maine carries the same penalties as alcohol OUI: license suspension, fines, and possible jail. Officers can request a blood test if they suspect impairment. The "legal at home" status does not extend to driving.', category: 'dui' },
     { q: 'How does cannabis impairment differ from alcohol impairment behind the wheel?', a: ['Cannabis only slows reflexes; alcohol does the rest', 'Cannabis can impair attention, reaction time, lane keeping, and decision-making — many alcohol-like effects', 'Cannabis improves driving', 'They are identical'], correct: 1, exp: 'THC slows reaction time, narrows attention, distorts time perception, and degrades multitasking. Effects last 4-8 hours after smoking and longer after edibles. There is no equivalent of "one drink is fine" for cannabis.', category: 'dui' },
     { q: 'Your friend has had several drinks and insists they\'re fine to drive. The best action is:', a: ['Trust their judgment', 'Take their keys, offer a ride or call them a rideshare', 'Drive slowly behind them as a backup', 'Let them sleep in the car for an hour first'], correct: 1, exp: 'Friends do not let friends drive impaired. Take the keys. Offer a ride, call a rideshare, or let them sleep on your couch. An hour of sleep does not metabolize alcohol — only time does.', category: 'dui' },
 
@@ -623,7 +623,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var PERMIT_CATEGORIES = [
     { id: 'signs',       label: 'Signs & Signals',        icon: '🛑' },
     { id: 'gdl',         label: 'Maine Teen Licensing',   icon: '🆔' },
-    { id: 'dui',         label: 'DUI & Impaired Driving', icon: '🍺' },
+    { id: 'dui',         label: 'OUI & Impaired Driving', icon: '🍺' },
     { id: 'winter',      label: 'Winter & Wildlife',      icon: '❄️' },
     { id: 'pedestrian',  label: 'Pedestrian & School',    icon: '🚸' },
     { id: 'emergency',   label: 'Emergency Situations',   icon: '🚨' },
@@ -20698,9 +20698,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               h('h2', { style: { fontSize: '24px', fontWeight: 900, marginBottom: '6px' } }, passed ? 'PASSED!' : 'Keep Studying'),
               h('div', { style: { fontSize: '16px', color: passed ? '#4ade80' : '#fca5a5', marginBottom: '14px' } }, 'Score: ' + permitState.score + ' / ' + permitTotal + ' (' + Math.round(permitState.score / permitTotal * 100) + '%)'),
               h('div', { style: { fontSize: '12px', color: '#cbd5e1', marginBottom: '16px' } }, passed ? 'You would pass the real test. Keep practicing in the simulator to build real driving skills!' : 'Need ' + permitPassThreshold + '/' + permitTotal + ' (80%) to pass. Review the explanations, re-read the lessons, and try again.'),
-              h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center' } },
+              h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
                 h('button', { onClick: function() { upd('view', 'permitStart'); },
                   style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#fbbf24', color: '#78350f', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, '🔁 Retake'),
+                // Certificate print: only on pass + when the SelHub.printDoc helper
+                // is available (graceful fallback if SEL Hub module isn't loaded).
+                passed && window.SelHub && window.SelHub.printDoc && h('button', {
+                  'aria-label': 'Print practice-pass certificate',
+                  onClick: function() {
+                    var pct = Math.round(permitState.score / permitTotal * 100);
+                    // Tally categories that appeared in this run for the certificate body.
+                    var catCounts = {};
+                    (permitState.questions || []).forEach(function(qq) {
+                      var cid = qq.category || 'general';
+                      catCounts[cid] = (catCounts[cid] || 0) + 1;
+                    });
+                    var catLines = Object.keys(catCounts).map(function(cid) {
+                      var meta = (PERMIT_CATEGORIES || []).find(function(pc) { return pc.id === cid; });
+                      return ((meta && meta.label) || cid) + ': ' + catCounts[cid] + ' question' + (catCounts[cid] === 1 ? '' : 's');
+                    });
+                    window.SelHub.printDoc({
+                      title: 'Maine Permit Practice — Certificate of Mastery',
+                      subtitle: 'RoadReady · ' + permitState.score + ' / ' + permitTotal + ' (' + pct + '%) · ' + new Date().toLocaleDateString(),
+                      sections: [
+                        { heading: 'About this certificate', paragraphs: ['This certifies that the student passed the RoadReady Maine permit practice test at the 80% mastery threshold. The questions are written to the 2024 Maine BMV Driver\'s Manual and 29-A M.R.S. (Motor Vehicles).'] },
+                        { heading: 'Categories tested', items: catLines },
+                        { heading: 'Important', paragraphs: ['This is a PRACTICE certificate, not a Maine permit. To get a Maine learner\'s permit you must take the official BMV exam, present required documents, and meet the GDL age requirement (15+).'] }
+                      ]
+                    });
+                  },
+                  style: { padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#10b981', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
+                }, '🖨 Print certificate'),
                 h('button', { onClick: function() { upd('view', 'menu'); },
                   style: { padding: '10px 20px', borderRadius: '8px', border: '1px solid #64748b', background: 'transparent', color: '#cbd5e1', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, '🏠 Menu')
               )
@@ -21829,7 +21857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // ══════════════════════════════════════════════════════════
       if (view === 'duiDrill') {
         return renderDrill({
-          icon: '⚖️', title: 'DUI / Impaired-Driving Drill', subtitle: 'Maine limits, zero-tolerance, implied consent',
+          icon: '⚖️', title: 'OUI / Impaired-Driving Drill', subtitle: 'Maine limits, zero-tolerance, implied consent',
           factsTitle: 'Key rules',
           gradientFrom: '#7f1d1d', gradientTo: '#0f172a',
           borderColor: '#f87171', subtitleColor: '#fecaca', accentBorder: '#ef4444',
@@ -21881,7 +21909,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 'Only until midnight'
               ],
               correct: 1,
-              exp: 'Under 21 in Maine: 0.02 BAC is the limit. That\'s essentially any measurable alcohol in your system. Penalties are close to full DUI: license suspension, fine, DEEP program. The law is strict because crashes per mile driven are highest in the under-21 age group and alcohol makes it exponentially worse.' },
+              exp: 'Under 21 in Maine: 0.02 BAC is the limit. That\'s essentially any measurable alcohol in your system. Penalties are close to a full adult OUI: license suspension, fine, DEEP program. The law is strict because crashes per mile driven are highest in the under-21 age group and alcohol makes it exponentially worse.' },
             { id: 'weed_legal', icon: '🍃', title: 'Recreational marijuana + driving',
               q: 'Maine legalized recreational marijuana for adults 21+. You\'re 22, used it 90 minutes ago, still feel relaxed. Can you drive?',
               choices: [
@@ -24787,7 +24815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           { view: 'winterDriving', goal: 'safety', icon: '❄️', name: 'Winter Driving Drill', desc: 'Black ice, skid recovery, plow etiquette, and the 4WD myth.' },
           { view: 'constructionZone', goal: 'safety', icon: '🚧', name: 'Construction Zone Drill', desc: 'Flaggers, zipper merges, barrels, pilot cars — fines doubled.' },
           { view: 'roundaboutDrill', goal: 'safety', icon: '🔄', name: 'Roundabout Drill', desc: 'Yield, signal timing, multi-lane trucks, pedestrians — Maine is adding these fast.' },
-          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: 'DUI / Impaired-Driving Drill', desc: 'Maine 0.02 BAC zero-tolerance, implied consent, Rx + marijuana rules.' },
+          { view: 'duiDrill', goal: 'safety', icon: '⚖️', name: 'OUI / Impaired-Driving Drill', desc: 'Maine 0.02 BAC zero-tolerance, implied consent, Rx + marijuana rules.' },
           { view: 'peerPressure', goal: 'safety', icon: '🙅', name: 'Peer Pressure Practice', desc: '8 real teen situations: say no like you mean it.' },
           { view: 'distractedLab', goal: 'safety', icon: '📱', name: 'Distracted Driving Lab', desc: 'Visualize the cost of a 3-second phone glance.' },
           { view: 'reactionTest', goal: 'safety', icon: '⚡', name: 'Reaction Time Test', desc: 'Your baseline vs simulated 0.08 BAC.' },
@@ -24933,7 +24961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             choices: [
               { text: 'Let them drive — they seem okay', safe: false, reply: 'Two beers puts most teens over .04 BAC — more than half the legal limit for adults, and Maine has ZERO tolerance for under 21. Not "okay" — impaired.' },
               { text: 'Take their keys and drive them home yourself', safe: true, reply: 'Lifesaver move. This is the moment that saves their life — and possibly someone else\'s. Their momentary anger is worth nothing compared to their life.' },
-              { text: 'Call an Uber / rideshare for them', safe: true, reply: 'Another great option. Uber/Lyft are cheaper than a DUI, insurance hike, legal fees, or funerals. Most cities have free teen ride programs too.' }
+              { text: 'Call an Uber / rideshare for them', safe: true, reply: 'Another great option. Uber/Lyft are cheaper than an OUI, insurance hike, legal fees, or funerals. Most cities have free teen ride programs too.' }
             ] },
           { id: 'weed', friend: 'Pat', text: '"Weed actually makes me a BETTER driver — slower and more cautious. Seriously."',
             context: 'Pat wants to drive to get food after smoking.',
