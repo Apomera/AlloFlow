@@ -193,6 +193,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       var upd = function(key, val) { ctx.update('weldLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[WeldLab]', msg); };
 
+      // ── Persisted-state helper ──
+      // Replaces the useState + useEffect→upd pair that was causing
+      // infinite remount loops when sub-components (defined inside this
+      // render function) mounted, fired the effect on mount, called upd
+      // → ctx.update produced a new toolData reference → parent re-rendered
+      // → sub-component got a fresh function ref → remounted → loop.
+      // This helper folds both into one call and skips the mount-fire via
+      // a first-render ref guard. The persisted value still hydrates from
+      // d[key] on (re)mount, so saved state survives.
+      function usePersistedState(key, defaultValue) {
+        var s = useState(d[key] != null ? d[key] : defaultValue);
+        var firstRef = useRef(true);
+        useEffect(function () {
+          if (firstRef.current) { firstRef.current = false; return; }
+          upd(key, s[0]);
+        }, [s[0]]);
+        return s;
+      }
+
       // Hydrate persisted state once on mount.
       var _hydratedRef = useRef(false);
       if (!_hydratedRef.current) {
@@ -635,19 +654,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // MODULE 1: HEAT INPUT CALCULATOR
       // ─────────────────────────────────────────────────────
       function HeatInputCalculator() {
-        var V_state = useState(d.hi_V != null ? d.hi_V : 22);
-        var A_state = useState(d.hi_A != null ? d.hi_A : 180);
-        var TS_state = useState(d.hi_TS != null ? d.hi_TS : 12);
-        var P_state = useState(d.hi_process || 'mig');
+        var V_state = usePersistedState('hi_V', 22);
+        var A_state = usePersistedState('hi_A', 180);
+        var TS_state = usePersistedState('hi_TS', 12);
+        var P_state = usePersistedState('hi_process', 'mig');
         var V = V_state[0], setV = V_state[1];
         var A = A_state[0], setA = A_state[1];
         var TS = TS_state[0], setTS = TS_state[1];
         var P = P_state[0], setP = P_state[1];
-
-        useEffect(function() { upd('hi_V', V); }, [V]);
-        useEffect(function() { upd('hi_A', A); }, [A]);
-        useEffect(function() { upd('hi_TS', TS); }, [TS]);
-        useEffect(function() { upd('hi_process', P); }, [P]);
 
         var gross = heatInputGross(V, A, TS);
         var eta = ARC_EFFICIENCY[P];
@@ -800,25 +814,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // MODULE 2: WELD BEAD LAB
       // ─────────────────────────────────────────────────────
       function WeldBeadLab() {
-        var V_state = useState(d.bl_V != null ? d.bl_V : 22);
-        var A_state = useState(d.bl_A != null ? d.bl_A : 180);
-        var TS_state = useState(d.bl_TS != null ? d.bl_TS : 12);
-        var P_state = useState(d.bl_process || 'mig');
-        var M_state = useState(d.bl_material || 'steel');
-        var TH_state = useState(d.bl_thickness != null ? d.bl_thickness : 0.25);
+        var V_state = usePersistedState('bl_V', 22);
+        var A_state = usePersistedState('bl_A', 180);
+        var TS_state = usePersistedState('bl_TS', 12);
+        var P_state = usePersistedState('bl_process', 'mig');
+        var M_state = usePersistedState('bl_material', 'steel');
+        var TH_state = usePersistedState('bl_thickness', 0.25);
         var V = V_state[0], setV = V_state[1];
         var A = A_state[0], setA = A_state[1];
         var TS = TS_state[0], setTS = TS_state[1];
         var P = P_state[0], setP = P_state[1];
         var M = M_state[0], setM = M_state[1];
         var TH = TH_state[0], setTH = TH_state[1];
-
-        useEffect(function() { upd('bl_V', V); }, [V]);
-        useEffect(function() { upd('bl_A', A); }, [A]);
-        useEffect(function() { upd('bl_TS', TS); }, [TS]);
-        useEffect(function() { upd('bl_process', P); }, [P]);
-        useEffect(function() { upd('bl_material', M); }, [M]);
-        useEffect(function() { upd('bl_thickness', TH); }, [TH]);
 
         var net = heatInputNet(V, A, TS, P);
         var mat = MATERIAL[M];
@@ -1188,7 +1195,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       ];
 
       function DefectHuntLab() {
-        var sampleIdx_state = useState(d.dh_sampleIdx != null ? d.dh_sampleIdx : 0);
+        var sampleIdx_state = usePersistedState('dh_sampleIdx', 0);
         var sampleIdx = sampleIdx_state[0], setSampleIdx = sampleIdx_state[1];
         var found_state = useState({});
         var found = found_state[0], setFound = found_state[1];
@@ -1196,8 +1203,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var falseReads = falseReads_state[0], setFalseReads = falseReads_state[1];
         var revealAll_state = useState(false);
         var revealAll = revealAll_state[0], setRevealAll = revealAll_state[1];
-
-        useEffect(function() { upd('dh_sampleIdx', sampleIdx); }, [sampleIdx]);
 
         var sample = DEFECT_SAMPLES[sampleIdx];
 
@@ -1934,7 +1939,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       }
 
       function JointCatalog() {
-        var tab_state = useState(d.jc_tab || 'butt');
+        var tab_state = usePersistedState('jc_tab', 'butt');
         var tab = tab_state[0], setTab = tab_state[1];
         var quizMode_state = useState(false);
         var quizMode = quizMode_state[0], setQuizMode = quizMode_state[1];
@@ -1948,8 +1953,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var quizFeedback = quizFeedback_state[0], setQuizFeedback = quizFeedback_state[1];
         var quizAnswers_state = useState([]);
         var quizAnswers = quizAnswers_state[0], setQuizAnswers = quizAnswers_state[1];
-
-        useEffect(function() { upd('jc_tab', tab); }, [tab]);
 
         function startQuiz() {
           setQuizPool(buildQuizPool());
@@ -2368,14 +2371,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       ];
 
       function SymbolsReader() {
-        var view_state = useState(d.sr_view || 'anatomy');
+        var view_state = usePersistedState('sr_view', 'anatomy');
         var view = view_state[0], setLocalView = view_state[1];
         var challengeIdx_state = useState(0);
         var challengeIdx = challengeIdx_state[0], setChallengeIdx = challengeIdx_state[1];
         var answers_state = useState({});
         var answers = answers_state[0], setAnswers = answers_state[1];
-
-        useEffect(function() { upd('sr_view', view); }, [view]);
 
         function answer(qIdx, choice) {
           var key = challengeIdx + '_' + qIdx;
@@ -2685,7 +2686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       ];
 
       function PPESafetyLab() {
-        var view_state = useState(d.ps_view || 'gear');
+        var view_state = usePersistedState('ps_view', 'gear');
         var view = view_state[0], setLocalView = view_state[1];
         var geared_state = useState({});
         var geared = geared_state[0], setGeared = geared_state[1];
@@ -2693,8 +2694,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var scenarioIdx = scenarioIdx_state[0], setScenarioIdx = scenarioIdx_state[1];
         var scenarioPick_state = useState({});
         var scenarioPick = scenarioPick_state[0], setScenarioPick = scenarioPick_state[1];
-
-        useEffect(function() { upd('ps_view', view); }, [view]);
 
         function toggleGear(id) {
           var next = Object.assign({}, geared);
@@ -3045,10 +3044,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       ];
 
       function CareerPathways() {
-        var view_state = useState(d.cp_view || 'overview');
+        var view_state = usePersistedState('cp_view', 'overview');
         var view = view_state[0], setLocalView = view_state[1];
-
-        useEffect(function() { upd('cp_view', view); }, [view]);
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🛠️', title: 'Career Pathways' }),
@@ -3232,16 +3229,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // arc and shortens its visible plume. Real career hook for students:
       // commercial dive school + AWS underwater cert is a real, hireable path.
       function UnderwaterLab() {
-        var view_state = useState(d.uw_view || 'intro');
+        var view_state = usePersistedState('uw_view', 'intro');
         var view = view_state[0], setLocalView = view_state[1];
-        var depth_state = useState(d.uw_depth != null ? d.uw_depth : 30);
+        var depth_state = usePersistedState('uw_depth', 30);
         var depth = depth_state[0], setDepth = depth_state[1];
-        var technique_state = useState(d.uw_tech || 'wet');
+        var technique_state = usePersistedState('uw_tech', 'wet');
         var technique = technique_state[0], setTech = technique_state[1];
-
-        useEffect(function() { upd('uw_view', view); }, [view]);
-        useEffect(function() { upd('uw_depth', depth); }, [depth]);
-        useEffect(function() { upd('uw_tech', technique); }, [technique]);
 
         // Physics: 33 ft of seawater ≈ 1 atm gauge. Cooling rate is highly
         // depth-dependent for wet welding (water always cooler at depth) and
@@ -4014,7 +4007,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       var SPEED_OPTIMAL = { V: 22, A: 180 };
 
       function SpeedChallenge() {
-        var tier_state = useState(d.sc_tier || 'apprentice');
+        var tier_state = usePersistedState('sc_tier', 'apprentice');
         var tier = tier_state[0], setTier = tier_state[1];
         var V_state = useState(SPEED_OPTIMAL.V);
         var A_state = useState(SPEED_OPTIMAL.A);
@@ -4030,8 +4023,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           return lsGet('weldLab.speed.best.v1', { apprentice: 0, pro: 0, biw: 0 });
         });
         var bestScores = bestScores_state[0], setBestScores = bestScores_state[1];
-
-        useEffect(function() { upd('sc_tier', tier); }, [tier]);
 
         var T = SPEED_TIERS[tier];
 
