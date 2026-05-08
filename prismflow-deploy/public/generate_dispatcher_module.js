@@ -1654,6 +1654,11 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _relationMismatchCount = _modeItemMix['relation-mismatch'] || 0;
         // Slice 5: visual MCQ mode read from configOverride
         const _mcqVisualMode = (configOverride && configOverride.mcqVisualMode) || 'none';
+        // Plan T v3+ Chunk 10: optional image-style hint. Empty preserves
+        // today's default behavior. Trimmed + length-clamped defensively.
+        const _imageStyleRaw = (configOverride && typeof configOverride.imageStyle === 'string') ? configOverride.imageStyle : '';
+        const _imageStyle = _imageStyleRaw.trim().slice(0, 120);
+        const _imageStyleSuffix = _imageStyle ? ' Style: ' + _imageStyle + '.' : '';
         // Build item-type-specific instruction blocks dynamically
         const _itemTypeBlocks = [];
         if (_mcqCount > 0) _itemTypeBlocks.push(_mcqCount + ' Multiple Choice Question(s) with 4 options each');
@@ -1841,7 +1846,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                             _imgTasks.push({
                                 target: q,
                                 key: 'imageUrl',
-                                prompt: q.imagePrompt,
+                                prompt: q.imagePrompt + _imageStyleSuffix,
                             });
                         }
                         if (_wantOptionImages && Array.isArray(q.optionImagePrompts)) {
@@ -1851,7 +1856,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                                     target: q,
                                     key: 'optionImageUrls',
                                     optIdx: optIdx,
-                                    prompt: prompt,
+                                    prompt: prompt + _imageStyleSuffix,
                                 });
                             });
                         }
@@ -1963,6 +1968,8 @@ ${_itemsBlock}`;
             content.modeLabel = _modeStrategy ? _modeStrategy.label : 'Exit Ticket';
             content.modeIcon = _modeStrategy ? _modeStrategy.icon : '📝';
             content.mcqVisualMode = _mcqVisualMode;
+            // Plan T v3+ Chunk 10: persist style hint for the refine pipeline.
+            if (_imageStyle) content.imageStyle = _imageStyle;
         }
         const _modeMetaPrefix = _modeStrategy && _quizMode !== 'exit-ticket' ? _modeStrategy.label + ' · ' : '';
         const _smartSkipSuffix = _smartSkips.length > 0 ? ` · skipped: ${_smartSkips.join(', ')}` : '';

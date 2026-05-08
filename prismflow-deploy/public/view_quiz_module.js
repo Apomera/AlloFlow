@@ -1943,7 +1943,11 @@
     try {
       var rawBase64 = currentUrl.split(',')[1];
       var grade = props.gradeLevel || 'middle school';
-      var prompt = 'Edit this educational quiz illustration. Maintain the same general visual style (colors, line weight, complexity). Audience: ' + grade + ' level students. Edit instruction: "' + instruction + '"';
+      // Plan T v3+ Chunk 10: read persisted style hint (from generation) and
+      // include in the style-preservation prompt so refines stay on-brand.
+      var styleHint = (generatedContent && generatedContent.data && generatedContent.data.imageStyle) || '';
+      var styleClause = styleHint ? ' Required visual style: ' + styleHint + '.' : '';
+      var prompt = 'Edit this educational quiz illustration. Maintain the same general visual style (colors, line weight, complexity).' + styleClause + ' Audience: ' + grade + ' level students. Edit instruction: "' + instruction + '"';
       var refinedUrl = await callGeminiImageEdit(prompt, rawBase64);
       if (typeof handleQuizImageRefine === 'function') {
         handleQuizImageRefine(qIdx, target, optIdx, refinedUrl);
