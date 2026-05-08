@@ -447,8 +447,13 @@
     var explainer = explainerState[0]; var setExplainer = explainerState[1];
     var idkState = React.useState(false);
     var idkMarked = idkState[0]; var setIdkMarked = idkState[1];
-    var confidenceState = React.useState(null);
-    var confidence = confidenceState[0]; var setConfidence = confidenceState[1];
+    // Plan T v3+ Chunk 1B: confidence is owned by the parent (so QuizView can
+    // re-emit the live-session payload with the new value). Parent passes
+    // currentConfidence + onSetConfidence; fall back to local state if missing.
+    var localConfidenceState = React.useState(null);
+    var hasParentConfidence = (typeof p.onSetConfidence === 'function');
+    var confidence = hasParentConfidence ? p.currentConfidence : localConfidenceState[0];
+    var setConfidence = hasParentConfidence ? p.onSetConfidence : localConfidenceState[1];
 
     function requestExplainer() {
       if (typeof p.callGemini !== 'function') {
@@ -680,6 +685,36 @@
       });
     }
 
+    // Plan T v3+ Chunk 1B: confidence chip — diagnostic color logic crosses
+    // confidence × correctness. Returns null when confidence wasn't rated.
+    //   knew + correct        → slate (expected)
+    //   guessed + correct     → amber (lucky right)
+    //   no-idea + correct     → rose (concerning right — gaming?)
+    //   knew + incorrect      → rose (overconfident — flag for follow-up)
+    //   guessed + incorrect   → slate (honest gap)
+    //   no-idea + incorrect   → sky (productive admission of not knowing)
+    function confidenceChip(confidence, status) {
+      if (!confidence) return null;
+      var labels = { knew: 'knew', guessed: 'guessed', 'no-idea': 'no idea' };
+      var color = 'slate';
+      var note = '';
+      if (status === 'correct') {
+        if (confidence === 'guessed') { color = 'amber'; note = ' (lucky)'; }
+        else if (confidence === 'no-idea') { color = 'rose'; note = ' (?)'; }
+      } else if (status === 'incorrect' || status === 'partially-correct') {
+        if (confidence === 'knew') { color = 'rose'; note = ' (overconfident)'; }
+        else if (confidence === 'no-idea') { color = 'sky'; note = ''; }
+      }
+      var bgClass = color === 'amber' ? 'bg-amber-100 text-amber-800' :
+                    color === 'rose' ? 'bg-rose-100 text-rose-800' :
+                    color === 'sky' ? 'bg-sky-100 text-sky-800' :
+                    'bg-slate-100 text-slate-700';
+      return React.createElement('span', {
+        className: 'flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ' + bgClass,
+        title: 'Student rated: ' + labels[confidence] + note,
+      }, '🎯 ' + labels[confidence]);
+    }
+
     // Plan T v3+: "Explain to class" — when a Pre-Check gap surfaces a concept
     // most students missed, teacher can click 🎓 to generate a 60-90 word
     // age-appropriate explainer they can immediately read aloud. Modal shows
@@ -861,7 +896,8 @@
                           cell && cell.aiGraded && React.createElement('span', {
                             className: 'flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800',
                             title: 'Graded by AI (' + cell.aiStatus + ')',
-                          }, '✨ AI')
+                          }, '✨ AI'),
+                          cell && confidenceChip(cell.confidence, cell.status)
                         ),
                         cell && cell.aiFeedback && React.createElement('p', {
                           className: 'text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1',
@@ -1052,6 +1088,7 @@
                   className: 'flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-indigo-100 text-indigo-800',
                   title: 'AI-graded',
                 }, '✨'),
+                confidenceChip(s.confidence, s.status),
                 s.aiFeedback && React.createElement('span', {
                   className: 'flex-shrink-0 italic text-[10px] text-indigo-800 truncate max-w-[12rem]',
                   title: s.aiFeedback,
@@ -1120,11 +1157,57 @@
       )
     ) : null;
 
+    // Plan T v3+ Chunk 1A: Reflections section. Shown below the main aggregator
+    // when the quiz has reflection prompts AND at least one student submitted.
+    var reflectionsData = null;
+    try {
+      reflectionsData = aggsMod.aggregateReflections && aggsMod.aggregateReflections(quizState, generatedContent, roster);
+    } catch (e) { reflectionsData = null; }
+    var reflectionsExpandedState = React.useState(true);
+    var reflectionsExpanded = reflectionsExpandedState[0]; var setReflectionsExpanded = reflectionsExpandedState[1];
+    var reflectionsEl = reflectionsData ? React.createElement('div', {
+      className: 'mt-4 pt-4 border-t-2 border-indigo-100',
+    },
+      React.createElement('button', {
+        type: 'button',
+        onClick: function () { setReflectionsExpanded(!reflectionsExpanded); },
+        'aria-expanded': reflectionsExpanded,
+        className: 'flex items-center gap-2 text-sm font-bold text-indigo-800 hover:text-indigo-900',
+      },
+        React.createElement('span', { className: 'text-xs font-mono' }, reflectionsExpanded ? '▼' : '▶'),
+        React.createElement('span', null, '✏️ Reflections (' + reflectionsData.totalReflections + ')')
+      ),
+      reflectionsExpanded && React.createElement('div', { className: 'mt-3 space-y-3' },
+        reflectionsData.buckets.map(function (bucket) {
+          return React.createElement('div', {
+            key: bucket.reflectionIdx,
+            className: 'p-3 rounded-lg bg-indigo-50/50 border border-indigo-100',
+          },
+            React.createElement('p', { className: 'text-xs font-semibold uppercase tracking-wider text-indigo-700 mb-1' }, 'Prompt ' + (bucket.reflectionIdx + 1)),
+            React.createElement('p', { className: 'text-sm italic text-slate-700 mb-2' }, bucket.promptText),
+            bucket.responses.length === 0
+              ? React.createElement('p', { className: 'text-xs italic text-slate-500' }, 'No responses yet.')
+              : React.createElement('div', { className: 'space-y-2' },
+                  bucket.responses.map(function (r) {
+                    return React.createElement('div', {
+                      key: r.uid,
+                      className: 'p-2 rounded bg-white border border-indigo-100',
+                    },
+                      React.createElement('p', { className: 'text-xs font-bold text-slate-700 mb-0.5' }, r.displayName),
+                      React.createElement('p', { className: 'text-sm text-slate-800 whitespace-pre-wrap break-words' }, r.text)
+                    );
+                  })
+                )
+          );
+        })
+      )
+    ) : null;
+
     return React.createElement('div', {
       className: 'p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm',
       role: 'region',
       'aria-label': 'Live Results Dashboard',
-    }, header, body, explainerModalEl);
+    }, header, body, reflectionsEl, explainerModalEl);
   }
 
   // ─── FreeformItemsBlock (Plan S Slice 2) ──────────────────────────────
@@ -1194,20 +1277,24 @@
     var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
     var explainer = explainerState[0]; var setExplainer = explainerState[1];
 
+    function emitLiveAnswer(extraConfidence) {
+      // Plan T Slice Ta + Chunk 1B: live-session write w/ optional confidence.
+      // Used both at initial submit and when student updates confidence later.
+      if (typeof p.onSubmitLiveAnswer !== 'function' || typeof p.questionIdx !== 'number') return;
+      try {
+        p.onSubmitLiveAnswer({
+          questionIdx: p.questionIdx,
+          itemType: q.type || 'short-answer',
+          conceptLabel: (q && q.conceptLabel) || '',
+          answer: { text: response },
+          confidence: typeof extraConfidence !== 'undefined' ? extraConfidence : (confidence || null),
+          timestamp: Date.now(),
+        });
+      } catch (e) { /* swallow — local grading still proceeds */ }
+    }
     function submitGrade() {
       if (!response || !response.trim()) return;
-      // Plan T Slice Ta: write the raw response to live session if active.
-      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
-        try {
-          p.onSubmitLiveAnswer({
-            questionIdx: p.questionIdx,
-            itemType: q.type || 'short-answer',
-            conceptLabel: (q && q.conceptLabel) || '',
-            answer: { text: response },
-            timestamp: Date.now(),
-          });
-        } catch (e) { /* swallow — local grading still proceeds */ }
-      }
+      emitLiveAnswer();
       if (!p.QuizAIHelpers) {
         setGrade({ status: 'error', feedback: 'Grader unavailable: QuizAIHelpers not loaded.', loading: false });
         return;
@@ -1384,7 +1471,11 @@
           return React.createElement('button', {
             key: lvl,
             type: 'button',
-            onClick: function () { setConfidence(lvl); },
+            onClick: function () {
+              setConfidence(lvl);
+              // Plan T v3+ Chunk 1B: re-emit live-session payload with new confidence
+              emitLiveAnswer(lvl);
+            },
             className: 'px-2 py-0.5 rounded border transition-colors ' + (active ? 'bg-indigo-600 text-white border-indigo-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'),
           }, labels[lvl]);
         })
@@ -1414,6 +1505,12 @@
   var mcqAnswersState = React.useState({});
   var studentMcqAnswers = mcqAnswersState[0];
   var setStudentMcqAnswers = mcqAnswersState[1];
+  // Plan T v3+ Chunk 1B: per-MCQ confidence rating ('knew'/'guessed'/'no-idea').
+  // Captured in the live-session payload. Updates fire a fresh write — Firestore
+  // overwrites the same slot. Default null means "not rated yet."
+  var mcqConfidenceState = React.useState({});
+  var studentMcqConfidence = mcqConfidenceState[0];
+  var setStudentMcqConfidence = mcqConfidenceState[1];
   function selectMcqOption(qIdx, optIdx, optText, q) {
     setStudentMcqAnswers(function (prev) {
       var next = Object.assign({}, prev);
@@ -1427,10 +1524,73 @@
           itemType: 'mcq',
           conceptLabel: (q && q.conceptLabel) || '',
           answer: { optionIdx: optIdx, optionText: optText },
+          confidence: studentMcqConfidence[qIdx] || null,
           timestamp: Date.now(),
         });
       } catch (e) { /* swallow — local selection still works */ }
     }
+  }
+  function setMcqConfidence(qIdx, confidenceValue, q) {
+    setStudentMcqConfidence(function (prev) {
+      var next = Object.assign({}, prev);
+      next[qIdx] = confidenceValue;
+      return next;
+    });
+    // Re-emit existing answer with new confidence so dashboard updates.
+    var prevOptIdx = studentMcqAnswers[qIdx];
+    if (typeof prevOptIdx !== 'number' || typeof onSubmitLiveAnswer !== 'function') return;
+    try {
+      onSubmitLiveAnswer({
+        questionIdx: qIdx,
+        itemType: 'mcq',
+        conceptLabel: (q && q.conceptLabel) || '',
+        answer: { optionIdx: prevOptIdx, optionText: q.options[prevOptIdx] },
+        confidence: confidenceValue,
+        timestamp: Date.now(),
+      });
+    } catch (e) { /* swallow */ }
+  }
+  // Plan T v3+ Chunk 1A: per-reflection state. Reflections live in
+  // generatedContent.data.reflections[] (separate from data.questions[]).
+  // Stored under string-keyed slots in quizState.allResponses (e.g. 'r0', 'r1')
+  // so the existing aggregator's parseInt-NaN filter naturally skips them
+  // out of the gradebook score path. Surfaced via aggregateReflections.
+  var reflectionAnswersState = React.useState({});
+  var reflectionAnswers = reflectionAnswersState[0];
+  var setReflectionAnswers = reflectionAnswersState[1];
+  function setReflectionDraft(rIdx, text) {
+    setReflectionAnswers(function (prev) {
+      var next = Object.assign({}, prev);
+      next[rIdx] = Object.assign({}, next[rIdx] || {}, { draft: text });
+      return next;
+    });
+  }
+  function submitReflection(rIdx) {
+    var entry = reflectionAnswers[rIdx] || {};
+    var text = (entry.draft || '').trim();
+    if (!text) return;
+    setReflectionAnswers(function (prev) {
+      var next = Object.assign({}, prev);
+      next[rIdx] = { draft: text, submitted: true, submittedText: text };
+      return next;
+    });
+    if (typeof onSubmitLiveAnswer !== 'function') return;
+    try {
+      onSubmitLiveAnswer({
+        questionIdx: 'r' + rIdx,
+        itemType: 'reflection',
+        conceptLabel: '',
+        answer: { text: text },
+        timestamp: Date.now(),
+      });
+    } catch (e) { /* swallow — local state still reflects submission */ }
+  }
+  function reopenReflection(rIdx) {
+    setReflectionAnswers(function (prev) {
+      var next = Object.assign({}, prev);
+      next[rIdx] = Object.assign({}, next[rIdx] || {}, { submitted: false });
+      return next;
+    });
   }
   var isPresentationMode = props.isPresentationMode;
   var isReviewGame = props.isReviewGame;
@@ -2219,6 +2379,8 @@
       callTTS: props.callTTS,
       gradeLevel: props.gradeLevel,
       onSubmitLiveAnswer: onSubmitLiveAnswer,
+      currentConfidence: studentMcqConfidence[i] || null,
+      onSetConfidence: function (lvl) { setMcqConfidence(i, lvl, q); },
     }),
     q.factCheck && isTeacherMode && (!isIndependentMode || showQuizAnswers) && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 ml-9 p-3 pr-20 bg-yellow-50 border border-yellow-100 rounded-lg text-xs text-yellow-800 flex gap-2 items-start animate-in slide-in-from-top-2 relative"
@@ -2269,6 +2431,13 @@
   }, generatedContent?.data.reflections.map((ref, i) => {
     const text = typeof ref === 'string' ? ref : ref.text;
     const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
+    // Plan T v3+ Chunk 1A: reflection capture (replaces inert dashed-line space).
+    // In presentation mode, keep the inert space (the prompt is meant to be
+    // read aloud, not typed into). In standalone non-edit mode, show a real
+    // textarea + submit button + submitted state.
+    var refEntry = reflectionAnswers[i] || {};
+    var refSubmitted = !!refEntry.submitted;
+    var refDraft = refEntry.draft || '';
     return /*#__PURE__*/React.createElement("div", {
       key: i
     }, isEditingQuiz ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("textarea", {
@@ -2288,9 +2457,40 @@
       className: "text-indigo-800 mb-1 italic text-sm px-2 py-1"
     }, text), textEn && /*#__PURE__*/React.createElement("p", {
       className: "text-indigo-600 mb-4 text-xs px-2 py-1 italic"
-    }, textEn)), /*#__PURE__*/React.createElement("div", {
-      className: "h-24 border-b border-indigo-200 border-dashed"
-    }));
+    }, textEn)),
+    // Student input area (only when NOT editing the quiz)
+    !isEditingQuiz && (isPresentationMode
+      ? /*#__PURE__*/React.createElement("div", { className: "h-24 border-b border-indigo-200 border-dashed" })
+      : refSubmitted
+        ? /*#__PURE__*/React.createElement("div", { className: "mt-2 p-3 rounded-lg bg-white border border-indigo-200" },
+            /*#__PURE__*/React.createElement("div", { className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1" }, '✓ Reflection submitted'),
+            /*#__PURE__*/React.createElement("p", { className: "text-sm text-slate-800 whitespace-pre-wrap" }, refEntry.submittedText || refDraft),
+            /*#__PURE__*/React.createElement("button", {
+              type: 'button',
+              onClick: function () { reopenReflection(i); },
+              className: 'mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
+            }, 'Edit response')
+          )
+        : /*#__PURE__*/React.createElement("div", { className: "mt-2" },
+            /*#__PURE__*/React.createElement("textarea", {
+              "aria-label": 'Your reflection',
+              value: refDraft,
+              onChange: function (e) { setReflectionDraft(i, e.target.value); },
+              placeholder: 'Type your reflection here…',
+              className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
+              rows: 4,
+            }),
+            /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mt-2" },
+              /*#__PURE__*/React.createElement("button", {
+                type: 'button',
+                onClick: function () { submitReflection(i); },
+                disabled: !refDraft.trim(),
+                className: 'text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed',
+              }, 'Submit reflection'),
+              !refDraft.trim() && /*#__PURE__*/React.createElement("span", { className: 'text-[11px] italic text-slate-500' }, 'Type a response to enable submit')
+            )
+          )
+    ));
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-indigo-800 mb-4 italic text-sm"
   }, generatedContent?.data.reflection), /*#__PURE__*/React.createElement("div", {
