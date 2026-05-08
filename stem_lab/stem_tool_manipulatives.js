@@ -596,7 +596,35 @@ window.StemLab = window.StemLab || {
                 (manipMode === m.id ? 'bg-white text-orange-800 shadow-sm' : 'text-slate-600 hover:text-slate-700 hover:bg-slate-50')
             }, m.icon + ' ' + m.label);
           })
-        )
+        ),
+
+        // ── Topic-accent hero band per mode ──
+        (function() {
+          var MODE_META = {
+            blocks:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83E\uDDF1', title: 'Base-10 Blocks \u2014 ones, tens, hundreds, thousands',  hint: 'The whole point of place value made TANGIBLE. 10 ones = 1 ten; 10 tens = 1 hundred; 10 hundreds = 1 thousand. Regrouping (carrying / borrowing) becomes obvious when you have to physically swap blocks.' },
+            abacus:    { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83E\uDDEE', title: 'Abacus \u2014 4,500 years of mental arithmetic',         hint: 'Soroban (Japanese) and Suanpan (Chinese) are still taught \u2014 advanced users beat calculators on speed for many problems. Each rod is a place value; bead-state IS the number. Concrete \u2192 mental in months.' },
+            slideRule: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDCCF', title: 'Slide Rule \u2014 logarithms in your hand',              hint: 'How engineers multiplied before electronic calculators: align logarithmic scales, read the answer. Apollo 11 (1969) did orbital math with slide rules. Replaced en masse only after the HP-35 dropped in 1972.' },
+            quiz:      { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDE0', title: 'Quiz \u2014 graded place-value + arithmetic',           hint: 'CCSS 1.NBT, 2.NBT, 3.NBT, 4.NBT progression. Mixed concrete-pictorial-abstract sequencing (CPA, Bruner 1966) is the spine of every well-designed elementary math curriculum.' }
+          };
+          var meta = MODE_META[manipMode] || MODE_META.blocks;
+          return h('div', {
+            style: {
+              margin: '8px 0 0',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })()
       );
 
       // ═══════════════════════════════════════════════════════════════
