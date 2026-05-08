@@ -4423,6 +4423,15 @@
             };
           }
           var _safeSetLabToolData = _deferSafe(setLabToolData);
+          // Wrap every parent-state setter exposed to plugins so any
+          // during-render call gets deferred. Previously only setLabToolData
+          // had this protection; plugins that called setStemLabTool /
+          // setStemLabTab / setToolSnapshots / shared explore setters during
+          // render could trigger "Cannot update a component while rendering
+          // a different component" because those setters were raw.
+          var _safeSetStemLabTool = typeof setStemLabTool === 'function' ? _deferSafe(setStemLabTool) : function() {};
+          var _safeSetStemLabTab = typeof setStemLabTab === 'function' ? _deferSafe(setStemLabTab) : function() {};
+          var _safeSetToolSnapshots = typeof setToolSnapshots === 'function' ? _deferSafe(setToolSnapshots) : function() {};
           var _ctx = {
             React: React,
             toolData: labToolData,
@@ -4442,12 +4451,12 @@
                 return Object.assign({}, prev, patch);
               });
             },
-            setStemLabTool: setStemLabTool,
-            setStemLabTab: setStemLabTab,
+            setStemLabTool: _safeSetStemLabTool,
+            setStemLabTab: _safeSetStemLabTab,
             stemLabTab: stemLabTab,
             stemLabTool: stemLabTool,
             toolSnapshots: toolSnapshots,
-            setToolSnapshots: setToolSnapshots,
+            setToolSnapshots: _safeSetToolSnapshots,
             // Wrap addToast so every plugin toast also announces to screen readers.
             // This gives all 57 STEM tools SR announcements without modifying each plugin.
             addToast: function(msg, type) {
@@ -4473,7 +4482,7 @@
             _codingCanvasRef: typeof _codingCanvasRef !== 'undefined' ? _codingCanvasRef : null,
             saveSnapshot: function(toolId, label, data) {
               if (typeof setToolSnapshots === 'function') {
-                setToolSnapshots(function(prev) {
+                _safeSetToolSnapshots(function(prev) {
                   return (prev || []).concat([{ id: toolId + '-' + Date.now(), tool: toolId, label: label, data: data, ts: Date.now() }]);
                 });
               }
@@ -4509,30 +4518,32 @@
             theme: _stemTheme,
             pal: _pal,
             // ── Shared explore state ──
+            // Setters wrapped via _deferSafe so plugins calling them during
+            // render don't trip "Cannot update component while rendering" warnings.
             exploreScore: exploreScore || { correct: 0, total: 0 },
-            setExploreScore: typeof setExploreScore === 'function' ? setExploreScore : function() {},
+            setExploreScore: typeof setExploreScore === 'function' ? _deferSafe(setExploreScore) : function() {},
             exploreDifficulty: exploreDifficulty,
-            setExploreDifficulty: typeof setExploreDifficulty === 'function' ? setExploreDifficulty : function() {},
+            setExploreDifficulty: typeof setExploreDifficulty === 'function' ? _deferSafe(setExploreDifficulty) : function() {},
             // ── Angle Explorer state ──
             angleValue: typeof angleValue !== 'undefined' ? angleValue : 45,
-            setAngleValue: typeof setAngleValue === 'function' ? setAngleValue : function() {},
+            setAngleValue: typeof setAngleValue === 'function' ? _deferSafe(setAngleValue) : function() {},
             angleChallenge: typeof angleChallenge !== 'undefined' ? angleChallenge : null,
-            setAngleChallenge: typeof setAngleChallenge === 'function' ? setAngleChallenge : function() {},
+            setAngleChallenge: typeof setAngleChallenge === 'function' ? _deferSafe(setAngleChallenge) : function() {},
             angleFeedback: typeof angleFeedback !== 'undefined' ? angleFeedback : null,
-            setAngleFeedback: typeof setAngleFeedback === 'function' ? setAngleFeedback : function() {},
+            setAngleFeedback: typeof setAngleFeedback === 'function' ? _deferSafe(setAngleFeedback) : function() {},
             // ── Multiplication Table state ──
             multTableAnswer: typeof multTableAnswer !== 'undefined' ? multTableAnswer : '',
-            setMultTableAnswer: typeof setMultTableAnswer === 'function' ? setMultTableAnswer : function() {},
+            setMultTableAnswer: typeof setMultTableAnswer === 'function' ? _deferSafe(setMultTableAnswer) : function() {},
             multTableChallenge: typeof multTableChallenge !== 'undefined' ? multTableChallenge : null,
-            setMultTableChallenge: typeof setMultTableChallenge === 'function' ? setMultTableChallenge : function() {},
+            setMultTableChallenge: typeof setMultTableChallenge === 'function' ? _deferSafe(setMultTableChallenge) : function() {},
             multTableFeedback: typeof multTableFeedback !== 'undefined' ? multTableFeedback : null,
-            setMultTableFeedback: typeof setMultTableFeedback === 'function' ? setMultTableFeedback : function() {},
+            setMultTableFeedback: typeof setMultTableFeedback === 'function' ? _deferSafe(setMultTableFeedback) : function() {},
             multTableHidden: typeof multTableHidden !== 'undefined' ? multTableHidden : false,
-            setMultTableHidden: typeof setMultTableHidden === 'function' ? setMultTableHidden : function() {},
+            setMultTableHidden: typeof setMultTableHidden === 'function' ? _deferSafe(setMultTableHidden) : function() {},
             multTableHover: typeof multTableHover !== 'undefined' ? multTableHover : null,
-            setMultTableHover: typeof setMultTableHover === 'function' ? setMultTableHover : function() {},
+            setMultTableHover: typeof setMultTableHover === 'function' ? _deferSafe(setMultTableHover) : function() {},
             multTableRevealed: typeof multTableRevealed !== 'undefined' ? multTableRevealed : new Set(),
-            setMultTableRevealed: typeof setMultTableRevealed === 'function' ? setMultTableRevealed : function() {},
+            setMultTableRevealed: typeof setMultTableRevealed === 'function' ? _deferSafe(setMultTableRevealed) : function() {},
             // ── Shared labToolData ──
             labToolData: labToolData || {},
             setLabToolData: _safeSetLabToolData,
