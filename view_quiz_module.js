@@ -80,6 +80,45 @@
     var principleOptions = Array.isArray(q.principleOptions) && q.principleOptions.length >= 2
       ? q.principleOptions
       : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
+    // Plan T v3+ Chunk 3: explainer + IDK parity with MCQ / freeform.
+    var modeStrat = p.modeStrategy || null;
+    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
+    var explainer = explainerState[0]; var setExplainer = explainerState[1];
+    function requestExplainer() {
+      if (typeof p.callGemini !== 'function') {
+        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable.' });
+        return;
+      }
+      setExplainer({ open: true, loading: true, text: '', error: '' });
+      var grade = p.gradeLevel || 'middle school';
+      var conceptHint = (q.question || '') + ' — Items in canonical order: ' + canonicalItems.join(', ') + '. Ordering principle: ' + orderingPrinciple + '.';
+      var prompt = 'You are a patient teacher. A ' + grade + ' student is working a sequencing item and needs help. ' + conceptHint + '\n\nGive a 60-90 word explanation in plain language: name the ordering principle, walk through one or two items as a concrete example, and end with a sentence checking understanding. Plain text only — no headings, no bullet points.';
+      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
+      }).catch(function (err) {
+        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
+      });
+    }
+    function markIDK() {
+      // Skip remaining steps; record IDK in live session; auto-open explainer.
+      setStep('done');
+      setGrade({ step1Correct: false, step2Correct: false, step3Correct: false, status: 'idk', score: 0 });
+      if (aiExplainerEnabled) requestExplainer();
+      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+        try {
+          p.onSubmitLiveAnswer({
+            questionIdx: p.questionIdx,
+            itemType: 'sequence-sense',
+            conceptLabel: (q && q.conceptLabel) || '',
+            answer: { idk: true },
+            timestamp: Date.now(),
+          });
+        } catch (e) { /* swallow */ }
+      }
+    }
 
     // Derive presentedOrder: use q.presentedOrder if provided, else shuffle once on first render.
     var presentedOrderState = React.useState(function () {
@@ -215,7 +254,7 @@
       // Step 1: verify
       step === 1 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
         React.createElement('div', { className: 'text-sm font-semibold text-indigo-900 mb-2' }, 'Step 1 of 3 — Is this order correct?'),
-        React.createElement('div', { className: 'flex gap-2' },
+        React.createElement('div', { className: 'flex gap-2 flex-wrap' },
           React.createElement('button', {
             type: 'button',
             onClick: function () { answerVerify('yes'); },
@@ -225,7 +264,13 @@
             type: 'button',
             onClick: function () { answerVerify('no'); },
             className: 'flex-1 px-3 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-sm font-bold transition-colors',
-          }, '✗ No, something is off')
+          }, '✗ No, something is off'),
+          allowIDK && React.createElement('button', {
+            type: 'button',
+            onClick: markIDK,
+            className: 'px-3 py-2 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
+            title: 'Skip — no penalty. The AI will explain.',
+          }, '🤔 I don\'t know')
         )
       ),
       // Step 2: click the misplaced
@@ -254,18 +299,38 @@
       },
         React.createElement('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
           React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' },
-            grade.score + ' / 3 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
+            grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 3 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
         ),
-        React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
+        grade.status !== 'idk' && React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
           React.createElement('li', null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Verify: ' + (intentionallyWrongIndex === null ? 'order was correct' : 'order had one misplaced item') + (grade.step1Correct ? '' : ' (you said "' + verifyAnswer + '")')),
           verifyAnswer === 'no' && React.createElement('li', null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Diagnose: ' + (grade.step2Correct ? 'you found the misplaced item' : 'the misplaced item was item #' + ((intentionallyWrongIndex || 0) + 1))),
           React.createElement('li', null, (grade.step3Correct ? '✓ ' : '✗ ') + 'Principle: ' + (grade.step3Correct ? '"' + orderingPrinciple + '"' : 'correct answer was "' + orderingPrinciple + '" (you picked "' + principleAnswer + '")'))
         ),
-        React.createElement('button', {
+        React.createElement('div', { className: 'mt-2 flex items-center gap-2 flex-wrap' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: reset,
+            className: 'px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
+          }, 'Try again'),
+          aiExplainerEnabled && !explainer.open && React.createElement('button', {
+            type: 'button',
+            onClick: requestExplainer,
+            className: 'px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold',
+          }, '🤖 Explain this concept')
+        )
+      ),
+      // Inline explainer panel
+      explainer.open && React.createElement('div', { className: 'mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
+        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
+        explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
+        explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
+        explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
+        explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
           type: 'button',
-          onClick: reset,
-          className: 'mt-2 px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
-        }, 'Try again')
+          onClick: function () { try { p.callTTS(explainer.text); } catch (e) { /* noop */ } },
+          className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
+          'aria-label': 'Read aloud',
+        }, '🔊 Read aloud')
       )
     );
   }
@@ -290,6 +355,46 @@
     var partnerAnswer = partnerAnswerState[0]; var setPartnerAnswer = partnerAnswerState[1];
     var gradeState = React.useState(null);
     var grade = gradeState[0]; var setGrade = gradeState[1];
+    // Plan T v3+ Chunk 3: explainer + IDK parity with MCQ / freeform.
+    var modeStrat = p.modeStrategy || null;
+    var allowIDK = !!(modeStrat && modeStrat.render && modeStrat.render.allowIDontKnow);
+    var aiExplainerEnabled = !!(modeStrat && modeStrat.render && modeStrat.render.aiExplainerOnFail);
+    var explainerState = React.useState({ open: false, loading: false, text: '', error: '' });
+    var explainer = explainerState[0]; var setExplainer = explainerState[1];
+    function requestExplainer() {
+      if (typeof p.callGemini !== 'function') {
+        setExplainer({ open: true, loading: false, text: '', error: 'Explainer unavailable.' });
+        return;
+      }
+      setExplainer({ open: true, loading: true, text: '', error: '' });
+      var grade = p.gradeLevel || 'middle school';
+      var leftSide = pairs[wrongPairIndex] ? pairs[wrongPairIndex].left : '';
+      var conceptHint = (q.question || '') + ' — The correct relationship is "' + leftSide + '" ↔ "' + correctPartnerForWrong + '".';
+      var prompt = 'You are a patient teacher. A ' + grade + ' student is working a relation-mismatch item and needs help. ' + conceptHint + '\n\nGive a 60-90 word explanation in plain language: name what makes this relationship correct, and contrast it with the wrong pair the student saw. End with a sentence checking understanding. Plain text only — no headings, no bullet points.';
+      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+        var txt = (raw && typeof raw === 'object' && raw.text) ? raw.text : String(raw || '');
+        setExplainer({ open: true, loading: false, text: txt.trim(), error: '' });
+      }).catch(function (err) {
+        setExplainer({ open: true, loading: false, text: '', error: (err && err.message) ? err.message : 'Explainer failed.' });
+      });
+    }
+    function markIDK() {
+      // Skip remaining steps; record IDK in live session; auto-open explainer.
+      setStep('done');
+      setGrade({ step1Correct: false, step2Correct: false, status: 'idk', score: 0 });
+      if (aiExplainerEnabled) requestExplainer();
+      if (typeof p.onSubmitLiveAnswer === 'function' && typeof p.questionIdx === 'number') {
+        try {
+          p.onSubmitLiveAnswer({
+            questionIdx: p.questionIdx,
+            itemType: 'relation-mismatch',
+            conceptLabel: (q && q.conceptLabel) || '',
+            answer: { idk: true },
+            timestamp: Date.now(),
+          });
+        } catch (e) { /* swallow */ }
+      }
+    }
 
     function answerWhichWrong(idx) {
       setClickedPairIdx(idx);
@@ -384,7 +489,15 @@
       ),
       // Step 1 prompt
       step === 1 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
-        React.createElement('div', { className: 'text-sm font-semibold text-indigo-900' }, 'Step 1 of 2 — Click the pair that\'s wrong above.')
+        React.createElement('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+          React.createElement('div', { className: 'text-sm font-semibold text-indigo-900' }, 'Step 1 of 2 — Click the pair that\'s wrong above.'),
+          allowIDK && React.createElement('button', {
+            type: 'button',
+            onClick: markIDK,
+            className: 'px-2 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
+            title: 'Skip — no penalty. The AI will explain.',
+          }, '🤔 I don\'t know')
+        )
       ),
       // Step 2: pick the correct partner
       step === 2 && React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border border-indigo-200' },
@@ -409,17 +522,37 @@
       },
         React.createElement('div', { className: 'flex items-center gap-2 mb-2 flex-wrap' },
           React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-' + statusColor + '-200 text-' + statusColor + '-900' },
-            grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
+            grade.status === 'idk' ? '🤔 Marked "I don\'t know"' : grade.score + ' / 2 — ' + (grade.status === 'correct' ? 'All correct' : grade.status === 'partially-correct' ? 'Partial' : 'Needs review'))
         ),
-        React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
+        grade.status !== 'idk' && React.createElement('ul', { className: 'space-y-1 text-sm text-' + statusColor + '-900' },
           React.createElement('li', null, (grade.step1Correct ? '✓ ' : '✗ ') + 'Find: ' + (grade.step1Correct ? 'you spotted the wrong pair' : 'the wrong pair was "' + wrongPairLeft + ' ↔ ' + (pairs[wrongPairIndex] ? pairs[wrongPairIndex].right : '') + '"')),
           React.createElement('li', null, (grade.step2Correct ? '✓ ' : '✗ ') + 'Fix: ' + (grade.step2Correct ? 'correct partner — "' + correctPartnerForWrong + '"' : 'correct partner was "' + correctPartnerForWrong + '" (you picked "' + partnerAnswer + '")'))
         ),
-        React.createElement('button', {
+        React.createElement('div', { className: 'mt-2 flex items-center gap-2 flex-wrap' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: reset,
+            className: 'px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
+          }, 'Try again'),
+          aiExplainerEnabled && !explainer.open && React.createElement('button', {
+            type: 'button',
+            onClick: requestExplainer,
+            className: 'px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold',
+          }, '🤖 Explain this concept')
+        )
+      ),
+      // Inline explainer panel
+      explainer.open && React.createElement('div', { className: 'mt-3 p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
+        React.createElement('div', { className: 'text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1' }, '🤖 Quick explanation'),
+        explainer.loading && React.createElement('p', { className: 'text-sm text-indigo-700 italic' }, 'Generating explanation…'),
+        explainer.text && React.createElement('p', { className: 'text-sm text-slate-800 leading-relaxed' }, explainer.text),
+        explainer.error && React.createElement('p', { className: 'text-sm text-rose-700' }, explainer.error),
+        explainer.text && typeof p.callTTS === 'function' && React.createElement('button', {
           type: 'button',
-          onClick: reset,
-          className: 'mt-2 px-3 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-300',
-        }, 'Try again')
+          onClick: function () { try { p.callTTS(explainer.text); } catch (e) { /* noop */ } },
+          className: 'mt-2 inline-flex items-center gap-1 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
+          'aria-label': 'Read aloud',
+        }, '🔊 Read aloud')
       )
     );
   }
@@ -1280,6 +1413,10 @@
             itemNumber: entry.idx + 1,
             questionIdx: entry.idx,
             onSubmitLiveAnswer: p.onSubmitLiveAnswer,
+            modeStrategy: p.modeStrategy,
+            callGemini: p.callGemini,
+            callTTS: p.callTTS,
+            gradeLevel: p.gradeLevel,
           });
         }
         if (entry.q.type === 'relation-mismatch') {
@@ -1289,6 +1426,10 @@
             itemNumber: entry.idx + 1,
             questionIdx: entry.idx,
             onSubmitLiveAnswer: p.onSubmitLiveAnswer,
+            modeStrategy: p.modeStrategy,
+            callGemini: p.callGemini,
+            callTTS: p.callTTS,
+            gradeLevel: p.gradeLevel,
           });
         }
         return React.createElement(FreeformItemCard, {
