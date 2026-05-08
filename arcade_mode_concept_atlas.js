@@ -405,6 +405,8 @@
   function AtlasLauncherCard(props) {
     var React = window.React;
     var h = React.createElement;
+    var useState = React.useState;
+    var useEffect = React.useEffect;
     var ctx = props.ctx;
     var palette = ctx.palette || {};
     var session = ctx.session;
@@ -420,6 +422,22 @@
     var atlases = (ctx.atlases || []).filter(function (a) { return a && !a.isComplete; });
     var resumable = atlases.length > 0 ? atlases[atlases.length - 1] : null;
 
+    // ── Phase S1 — Live session subscription so the launcher sees an
+    // open class atlas (lets students join with one click).
+    var sessionStateTuple = useState(ctx.session || null);
+    var sessionState = sessionStateTuple[0];
+    var setSessionState = sessionStateTuple[1];
+    useEffect(function () {
+      if (!ctx.sessionCode || typeof ctx.sessionSubscribe !== 'function') return;
+      var unsubscribe = ctx.sessionSubscribe(function (data) { setSessionState(data); });
+      return typeof unsubscribe === 'function' ? unsubscribe : function () {};
+    }, [ctx.sessionCode]);
+
+    var classAtlas = sessionState && sessionState.conceptAtlas;
+    var hasOpenClassAtlas = !!(classAtlas && classAtlas.status === 'open');
+    var isInSession = !!ctx.sessionCode;
+    var canHostClass = isInSession && typeof ctx.sessionUpdate === 'function';
+
     function handleLaunch() {
       if (disabled) return;
       if (deckSize < MIN_DECK_FOR_LAUNCH) {
@@ -427,12 +445,53 @@
         return;
       }
       window.__alloHavenAtlasResume = null;
+      window.__alloHavenAtlasClassMode = null;
       ctx.onLaunch(minutesAsked);
     }
 
     function handleResume() {
       if (disabled || !resumable) return;
       window.__alloHavenAtlasResume = { atlasId: resumable.id };
+      window.__alloHavenAtlasClassMode = null;
+      ctx.onLaunch(minutesAsked);
+    }
+
+    function handleStartClassAtlas() {
+      if (disabled) return;
+      if (deckSize < MIN_DECK_FOR_LAUNCH) {
+        ctx.addToast('You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to play.');
+        return;
+      }
+      if (typeof ctx.sessionUpdate !== 'function') {
+        ctx.addToast('Class mode unavailable — Firestore plumbing missing.');
+        return;
+      }
+      window.__alloHavenAtlasResume = null;
+      window.__alloHavenAtlasClassMode = {
+        role: 'host',
+        hostNickname: ctx.studentNickname || 'Teacher',
+        startedAt: new Date().toISOString()
+      };
+      ctx.onLaunch(minutesAsked);
+    }
+
+    function handleJoinClassAtlas() {
+      if (disabled) return;
+      if (!classAtlas) {
+        ctx.addToast('No class atlas is open right now.');
+        return;
+      }
+      if (deckSize < MIN_DECK_FOR_LAUNCH) {
+        ctx.addToast('You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to play.');
+        return;
+      }
+      window.__alloHavenAtlasResume = null;
+      window.__alloHavenAtlasClassMode = {
+        role: 'student',
+        hostNickname: classAtlas.hostNickname || 'Teacher',
+        joinFromSession: true,
+        startedAt: new Date().toISOString()
+      };
       ctx.onLaunch(minutesAsked);
     }
 
@@ -505,6 +564,65 @@
             tokensCost + ' 🪙 · ' + minutesAsked + ' min · ' + deckSize + ' cards in deck')
         )
       ),
+      // ── Phase S1 — Class-mode launchers ──
+      // Two buttons: host (visible when a class atlas could be hosted) and
+      // join (visible when a class atlas is already open in this session).
+      hasOpenClassAtlas ? h('button', {
+        onClick: handleJoinClassAtlas,
+        disabled: disabled || !canAfford,
+        'aria-label': 'Join class atlas hosted by ' + (classAtlas.hostNickname || 'Teacher'),
+        title: 'Submit cards into the teacher\'s shared atlas',
+        style: {
+          display: 'flex', gap: '12px', alignItems: 'center',
+          width: '100%',
+          padding: '10px 12px',
+          background: 'transparent',
+          border: '1.5px dashed ' + (palette.accent || '#60a5fa'),
+          borderRadius: '8px',
+          cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
+          fontFamily: 'inherit',
+          color: palette.text || '#e2e8f0',
+          textAlign: 'left',
+          marginTop: '10px',
+          opacity: (disabled || !canAfford) ? 0.6 : 1
+        }
+      },
+        h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, '🌐'),
+        h('span', { style: { flex: 1 } },
+          h('div', { style: { fontSize: '13px', fontWeight: 700 } },
+            'Join class atlas · ' + (classAtlas.hostNickname || 'Teacher')),
+          h('div', { style: { fontSize: '11px', opacity: 0.85, marginTop: '2px' } },
+            'Topic: ' + (classAtlas.topic || '…') + ' · ' + (classAtlas.edges || []).length + ' edge'
+            + ((classAtlas.edges || []).length === 1 ? '' : 's') + ' so far')
+        )
+      ) : null,
+      (canHostClass && !hasOpenClassAtlas) ? h('button', {
+        onClick: handleStartClassAtlas,
+        disabled: disabled || !canAfford,
+        'aria-label': 'Host a class atlas',
+        title: 'Open a shared atlas other students can join with the session code',
+        style: {
+          display: 'flex', gap: '12px', alignItems: 'center',
+          width: '100%',
+          padding: '10px 12px',
+          background: 'transparent',
+          border: '1.5px solid ' + (palette.border || '#334155'),
+          borderRadius: '8px',
+          cursor: (disabled || !canAfford) ? 'not-allowed' : 'pointer',
+          fontFamily: 'inherit',
+          color: palette.text || '#e2e8f0',
+          textAlign: 'left',
+          marginTop: '10px',
+          opacity: (disabled || !canAfford) ? 0.6 : 1
+        }
+      },
+        h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, '🌐'),
+        h('span', { style: { flex: 1 } },
+          h('div', { style: { fontSize: '13px', fontWeight: 700 } }, 'Host class atlas'),
+          h('div', { style: { fontSize: '11px', opacity: 0.85, marginTop: '2px' } },
+            'Open a shared atlas — students join with the session code')
+        )
+      ) : null,
       deckSize < MIN_DECK_FOR_LAUNCH ? h('div', {
         style: { fontSize: '11px', color: palette.warn || '#f59e0b', marginTop: '8px', fontStyle: 'italic', lineHeight: '1.45' }
       }, 'You need at least ' + MIN_DECK_FOR_LAUNCH + ' cards to map. Earn decorations or generate a unit glossary first.') : null
@@ -539,6 +657,33 @@
     var hostAtlases = ctx.atlases || [];
     var hydrate = resumeId ? hostAtlases.filter(function (a) { return a.id === resumeId; })[0] : null;
 
+    // ── Phase S — Class mode sentinel ──
+    // Captured-once-on-mount, then zeroed to prevent re-trigger on re-mount.
+    // Mirrors Realm Builder Phase D pattern.
+    var classModeRef = useRef(null);
+    if (classModeRef.current === null) {
+      classModeRef.current = window.__alloHavenAtlasClassMode || { role: 'solo' };
+      window.__alloHavenAtlasClassMode = null;
+    }
+    var classRole = (classModeRef.current && classModeRef.current.role) || 'solo';
+    var hostNicknameFromJoin = (classModeRef.current && classModeRef.current.hostNickname) || 'Teacher';
+    var isClassHost = classRole === 'host';
+    var isClassStudent = classRole === 'student';
+    var isClass = isClassHost || isClassStudent;
+
+    // Live session-state subscription (host writes, students read).
+    var sessionStateTuple = useState(ctx.session || null);
+    var sessionState = sessionStateTuple[0];
+    var setSessionState = sessionStateTuple[1];
+    useEffect(function () {
+      if (!ctx.sessionCode || typeof ctx.sessionSubscribe !== 'function') return;
+      var unsubscribe = ctx.sessionSubscribe(function (data) { setSessionState(data); });
+      return typeof unsubscribe === 'function' ? unsubscribe : function () {};
+    }, [ctx.sessionCode]);
+
+    var classAtlas = sessionState && sessionState.conceptAtlas;
+    var hasOpenClassAtlas = !!(classAtlas && classAtlas.status === 'open');
+
     // Deck — same shape as Realm Builder / Boss Encounter
     var deck = useMemo(function () {
       var decoCards = (ctx.decorations || []).map(helpers.decorationToCard || function () { return null; })
@@ -563,8 +708,21 @@
       if (hydrate && hydrate.topic) return 'play';
       return 'topic';
     });
-    var phase = phaseTuple[0];
-    var setPhase = phaseTuple[1];
+    var localPhase = phaseTuple[0];
+    var setLocalPhase = phaseTuple[1];
+
+    // Phase S — students derive phase from broadcast classAtlas; host/solo
+    // use local state. setPhase is a no-op for students (host owns flow).
+    var phase = (function () {
+      if (!isClassStudent) return localPhase;
+      if (!classAtlas || !classAtlas.topic) return 'topic';
+      if (classAtlas.status === 'closed') return 'complete';
+      return 'play';
+    })();
+    function setPhase(p) {
+      if (isClassStudent) return;
+      setLocalPhase(p);
+    }
 
     var topicDraftTuple = useState(atlas.topic || '');
     var topicDraft = topicDraftTuple[0];
@@ -652,6 +810,175 @@
         ctx.onAtlasUpdate(atlas);
       }
     }, [atlas]); // eslint-disable-line
+
+    // ── Phase S4 — Host broadcast effect ──
+    // Mirrors Realm Builder Phase D. Fires on every atlas change while
+    // hosting; writes canonical conceptAtlas snapshot for students.
+    // S7 — also includes classRewardKey when atlas closes with ≥5 edges
+    // so students can claim a small bonus for contributing.
+    useEffect(function () {
+      if (!isClassHost) return;
+      if (typeof ctx.sessionUpdate !== 'function') return;
+      if (!atlas.topic) return; // wait until host sets a topic
+      var edgeCount = (atlas.edges || []).length;
+      var conceptAtlas = {
+        status: atlas.isComplete ? 'closed' : 'open',
+        hostNickname: nickname,
+        startedAt: atlas.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        atlasId: atlas.id,
+        topic: atlas.topic || '',
+        name: atlas.name || '',
+        nodes: atlas.nodes || [],
+        edges: atlas.edges || [],
+        milestones: atlas.milestones || [],
+        isComplete: !!atlas.isComplete
+      };
+      // S7 reward: deterministic key from atlas.id so re-broadcasts don't
+      // multiply rewards. Threshold of 5 edges keeps trivial sessions out.
+      if (atlas.isComplete && edgeCount >= 5) {
+        conceptAtlas.classRewardKey = 'atlas-' + atlas.id;
+        conceptAtlas.classRewardTokens = 3;
+        conceptAtlas.classRewardEdgeCount = edgeCount;
+      }
+      Promise.resolve(ctx.sessionUpdate({ conceptAtlas: conceptAtlas })).catch(function () {});
+    }, [atlas, isClassHost]); // eslint-disable-line
+
+    // ── Phase S7 — Student class-reward claim ──
+    // Awards tokens once per atlas (server-of-record dedupe via getEarnings
+    // metadata.classRewardKey). Mirrors Realm Builder Phase D reward flow.
+    var claimedRewardRef = useRef({});
+    useEffect(function () {
+      if (!isClassStudent) return;
+      if (!sessionState || !sessionState.conceptAtlas) return;
+      var ca = sessionState.conceptAtlas;
+      var key = ca.classRewardKey;
+      var amount = ca.classRewardTokens;
+      if (!key || !amount) return;
+      if (claimedRewardRef.current[key]) return;
+      if (typeof ctx.getEarnings === 'function') {
+        var earnings = ctx.getEarnings() || [];
+        var alreadyClaimed = earnings.some(function (e) {
+          return e && e.metadata && e.metadata.classRewardKey === key;
+        });
+        if (alreadyClaimed) {
+          claimedRewardRef.current[key] = true;
+          return;
+        }
+      }
+      claimedRewardRef.current[key] = true;
+      if (typeof ctx.onAwardTokens === 'function') {
+        ctx.onAwardTokens(amount, 'atlas-class-reward', { classRewardKey: key, atlasId: ca.atlasId });
+        ctx.addToast('+' + amount + ' 🪙 · class atlas reward · thanks for contributing');
+      }
+    }, [sessionState, isClassStudent]); // eslint-disable-line
+
+    // ── Phase S5 — Host drainer effect ──
+    // Consumes session.conceptAtlas.submissions, applies each as an edge
+    // to local atlas, then clears the submission. processedSubsRef dedupes
+    // so the same UUID isn't applied twice across re-renders.
+    var processedSubsRef = useRef({});
+    useEffect(function () {
+      if (!isClassHost) return;
+      if (!sessionState || !sessionState.conceptAtlas) return;
+      var subs = sessionState.conceptAtlas.submissions || {};
+      var keys = Object.keys(subs);
+      if (keys.length === 0) return;
+      // Order by submittedAt so simultaneous submits stay deterministic.
+      keys.sort(function (a, b) {
+        var sa = (subs[a] && subs[a].submittedAt) || '';
+        var sb = (subs[b] && subs[b].submittedAt) || '';
+        return sa.localeCompare(sb);
+      });
+      var processed = processedSubsRef.current;
+      keys.forEach(function (k) {
+        if (processed[k]) return;
+        var sub = subs[k];
+        if (!sub || !sub.fromCardName || !sub.toCardName || !sub.verb) return;
+        processed[k] = true;
+        applyEdgeFromSubmission(sub);
+        // Clear the submission from Firestore so the queue stays small.
+        var clearPayload = { conceptAtlas: { submissions: {} } };
+        clearPayload.conceptAtlas.submissions[k] = null;
+        Promise.resolve(ctx.sessionUpdate(clearPayload)).catch(function () {});
+      });
+    }, [sessionState, isClassHost]); // eslint-disable-line
+
+    // Helper used by drainer — analog of applyEdge but takes a submission
+    // object instead of using closure state. Reconstructs FROM/TO cards
+    // and reuses the milestone/completion path.
+    function applyEdgeFromSubmission(sub) {
+      var score = sub.score || 1;
+      var isResonant = score >= 18;
+      var nowIso = new Date().toISOString();
+      var contributorNickname = sub.nickname || 'Student';
+      var fromCard = {
+        id: sub.fromCardId, name: sub.fromCardName,
+        imageBase64: sub.fromCardImageBase64 || null,
+        source: sub.fromCardSource || null
+      };
+      var toCard = {
+        id: sub.toCardId, name: sub.toCardName,
+        imageBase64: sub.toCardImageBase64 || null,
+        source: sub.toCardSource || null
+      };
+      var newEdge = {
+        id: 'edge-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
+        fromCardId: fromCard.id,
+        fromCardName: fromCard.name,
+        toCardId: toCard.id,
+        toCardName: toCard.name,
+        edgeType: sub.verb,
+        edgeLabel: sub.verbLabel,
+        justification: (sub.justification || '').trim(),
+        score: score,
+        ackText: sub.ackText || '',
+        followUp: sub.followUp || '',
+        addedAt: nowIso,
+        resonant: isResonant,
+        contributorNickname: contributorNickname
+      };
+      var nextEdgeCount = (atlas.edges || []).length + 1;
+      var alreadyLevels = (atlas.milestones || []).map(function (m) { return m.level; });
+      var newMilestones = MILESTONES.filter(function (m) {
+        return nextEdgeCount >= m.edges && alreadyLevels.indexOf(m.level) === -1;
+      }).map(function (m) {
+        return { level: m.level, label: m.label, emoji: m.emoji, edges: m.edges, achievedAt: nowIso, tokensAwarded: m.tokens };
+      });
+      if (newMilestones.length > 0 && typeof ctx.onAwardTokens === 'function') {
+        newMilestones.forEach(function (m) {
+          ctx.onAwardTokens(m.tokens, 'atlas-milestone', { atlasId: atlas.id, level: m.level });
+          ctx.addToast(m.emoji + ' ' + m.label + ' unlocked · +' + m.tokens + ' 🪙');
+        });
+      }
+      var isComplete = atlas.isComplete || nextEdgeCount >= MILESTONES[MILESTONES.length - 1].edges;
+      setAtlas(function (prev) {
+        var nodes = prev.nodes || [];
+        function addNodeIfMissing(card) {
+          if (!card || !card.id) return;
+          var found = nodes.some(function (n) { return n.cardId === card.id; });
+          if (found) return;
+          nodes = nodes.concat([{
+            cardId: card.id,
+            cardName: card.name,
+            cardImageBase64: card.imageBase64 || null,
+            cardSource: card.source,
+            addedAt: nowIso,
+            contributorNickname: contributorNickname
+          }]);
+        }
+        addNodeIfMissing(fromCard);
+        addNodeIfMissing(toCard);
+        return Object.assign({}, prev, {
+          nodes: nodes,
+          edges: (prev.edges || []).concat([newEdge]),
+          milestones: (prev.milestones || []).concat(newMilestones),
+          isComplete: isComplete,
+          updatedAt: nowIso
+        });
+      });
+      ctx.addToast(contributorNickname + ' · ' + sub.fromCardName + ' ' + sub.verbLabel + ' ' + sub.toCardName + ' (' + score + '/20)');
+    }
 
     // ──────────────────────────────────────────────────────────────────
     // VOICE HELPERS (mirror Phase G)
@@ -794,6 +1121,62 @@
     // ──────────────────────────────────────────────────────────────────
     // PHASE: PLAY — submit an edge
     // ──────────────────────────────────────────────────────────────────
+    // Phase S6 — Student-side: write a graded edge to the host's
+    // submissions queue. Host's drainer applies it as a real edge.
+    function submitToClassQueue(parsed) {
+      if (typeof ctx.sessionUpdate !== 'function') {
+        ctx.addToast('Class mode unavailable — session update missing.');
+        setSubmitting(false);
+        return;
+      }
+      var subId = 'sub-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+      var nowIso = new Date().toISOString();
+      var payload = { conceptAtlas: { submissions: {} } };
+      payload.conceptAtlas.submissions[subId] = {
+        subId: subId,
+        nickname: nickname,
+        fromCardId: fromCard.id,
+        fromCardName: fromCard.name,
+        fromCardImageBase64: fromCard.imageBase64 || null,
+        fromCardSource: fromCard.source || null,
+        toCardId: toCard.id,
+        toCardName: toCard.name,
+        toCardImageBase64: toCard.imageBase64 || null,
+        toCardSource: toCard.source || null,
+        verb: pickedVerb.id,
+        verbLabel: pickedVerb.label,
+        justification: (justification || '').trim(),
+        score: parsed.score || 1,
+        ackText: parsed.ackText || '',
+        followUp: parsed.followUp || '',
+        submittedAt: nowIso
+      };
+      Promise.resolve(ctx.sessionUpdate(payload))
+        .then(function () {
+          // Show student feedback locally so they see their grade.
+          setLastFeedback({
+            score: parsed.score || 1,
+            ackText: parsed.ackText || '',
+            followUp: parsed.followUp || '',
+            fromCardName: fromCard.name,
+            toCardName: toCard.name,
+            verbLabel: pickedVerb.label,
+            resonant: (parsed.score || 1) >= 18,
+            submittedToClass: true
+          });
+          ctx.addToast('Submitted to ' + hostNicknameFromJoin + '\'s atlas (' + (parsed.score || 1) + '/20)');
+          // Reset per-edge UI so they can play another card.
+          setFromCard(null); setToCard(null);
+          setPickedVerb(null); setJustification('');
+          setSubmitting(false);
+          refreshHand();
+        })
+        .catch(function (err) {
+          setSubmitting(false);
+          ctx.addToast('Submission failed: ' + ((err && err.message) || 'unknown'));
+        });
+    }
+
     function submitEdge() {
       if (!fromCard || !toCard) {
         ctx.addToast('Pick a FROM card and a TO card first.');
@@ -818,16 +1201,28 @@
       }
       setSubmitting(true);
 
+      // Student class-mode submissions go to host's queue (Phase S6).
+      // Host/solo path is unchanged: applyEdge directly.
+      var topicForGrader = isClassStudent
+        ? ((classAtlas && classAtlas.topic) || '')
+        : atlas.topic;
+      var existingEdgeCount = isClassStudent
+        ? ((classAtlas && classAtlas.edges) || []).length
+        : (atlas.edges || []).length;
       grader(ctx, {
         card: fromCard,
         partnerCard: toCard,
         verb: pickedVerb,
         justification: text,
-        topic: atlas.topic,
+        topic: topicForGrader,
         frameAs: 'atlas',
-        context: { existingEdgeCount: (atlas.edges || []).length }
+        context: { existingEdgeCount: existingEdgeCount }
       }).then(function (parsed) {
-        applyEdge(parsed);
+        if (isClassStudent) {
+          submitToClassQueue(parsed);
+        } else {
+          applyEdge(parsed);
+        }
       }).catch(function (err) {
         setSubmitting(false);
         ctx.addToast('Grading failed: ' + ((err && err.message) || 'unknown'));
@@ -932,20 +1327,59 @@
     // RENDER
     // ──────────────────────────────────────────────────────────────────
     function renderHeader() {
+      // Phase S — students see broadcast atlas counts; host sees local
+      var viewAtlas = isClassStudent ? (classAtlas || {}) : atlas;
+      var contributors = (function () {
+        if (!isClassHost) return 0;
+        var seen = {};
+        (atlas.edges || []).forEach(function (e) {
+          var k = e.contributorNickname || '';
+          if (k && k !== nickname) seen[k] = true;
+        });
+        return Object.keys(seen).length;
+      })();
+      var classBadge = null;
+      if (isClassHost) {
+        classBadge = h('span', {
+          'aria-label': 'Hosting class atlas — ' + contributors + ' contributor' + (contributors === 1 ? '' : 's'),
+          title: 'Class atlas open — students can join via the session code',
+          style: {
+            fontSize: '10px', fontWeight: 700, padding: '3px 8px',
+            background: (palette.accent || '#60a5fa') + '22',
+            color: palette.accent || '#60a5fa',
+            border: '1px solid ' + (palette.accent || '#60a5fa'),
+            borderRadius: '999px', whiteSpace: 'nowrap'
+          }
+        }, '🌐 Hosting' + (contributors > 0 ? ' · ' + contributors + ' contributor' + (contributors === 1 ? '' : 's') : ''));
+      } else if (isClassStudent) {
+        classBadge = h('span', {
+          'aria-label': 'Joined class atlas hosted by ' + hostNicknameFromJoin,
+          title: 'You\'re in a class atlas — your submissions go to the teacher\'s diagram',
+          style: {
+            fontSize: '10px', fontWeight: 700, padding: '3px 8px',
+            background: (palette.accent || '#60a5fa') + '22',
+            color: palette.accent || '#60a5fa',
+            border: '1px solid ' + (palette.accent || '#60a5fa'),
+            borderRadius: '999px', whiteSpace: 'nowrap'
+          }
+        }, '🌐 Joined · ' + hostNicknameFromJoin);
+      }
       return h('div', {
-        style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }
+        style: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px', flexWrap: 'wrap' }
       },
         h('span', { 'aria-hidden': 'true', style: { fontSize: '28px' } }, '🗺'),
         h('div', { style: { flex: 1, minWidth: 0 } },
           h('h2', { style: { margin: 0, fontSize: '17px', fontWeight: 700, color: palette.text || '#e2e8f0' } },
-            atlas.name || atlas.topic || 'New atlas'),
-          atlas.topic ? h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1' } },
-            (atlas.nodes || []).length + ' node' + ((atlas.nodes || []).length === 1 ? '' : 's')
-            + ' · ' + (atlas.edges || []).length + ' edge' + ((atlas.edges || []).length === 1 ? '' : 's')
-            + ((atlas.milestones || []).length > 0 ? ' · last milestone: ' + atlas.milestones[atlas.milestones.length - 1].label : '')
+            viewAtlas.name || viewAtlas.topic || 'New atlas'),
+          viewAtlas.topic ? h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1' } },
+            (viewAtlas.nodes || []).length + ' node' + ((viewAtlas.nodes || []).length === 1 ? '' : 's')
+            + ' · ' + (viewAtlas.edges || []).length + ' edge' + ((viewAtlas.edges || []).length === 1 ? '' : 's')
+            + ((viewAtlas.milestones || []).length > 0 ? ' · last milestone: ' + viewAtlas.milestones[viewAtlas.milestones.length - 1].label : '')
           ) : null
         ),
-        phase === 'play' ? h('button', {
+        classBadge,
+        // Wrap-up only for host/solo; students wait for host to close.
+        (phase === 'play' && !isClassStudent) ? h('button', {
           onClick: endAtlas,
           'aria-label': 'Wrap up this atlas',
           style: { background: 'transparent', color: palette.textDim || '#cbd5e1', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '8px', padding: '4px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }
@@ -959,6 +1393,23 @@
     }
 
     function renderTopicPhase() {
+      // Phase S — students see a "waiting for teacher" placeholder, since
+      // they can't set the topic. Teacher's choice arrives via broadcast.
+      if (isClassStudent) {
+        return h('div', { style: { padding: '12px' } },
+          renderHeader(),
+          h('div', {
+            role: 'status', 'aria-live': 'polite',
+            style: { padding: '24px 18px', background: palette.surface || '#1e293b', border: '1px dashed ' + (palette.border || '#334155'), borderRadius: '10px', textAlign: 'center' }
+          },
+            h('div', { 'aria-hidden': 'true', style: { fontSize: '40px', marginBottom: '10px' } }, '🗺'),
+            h('h3', { style: { margin: '0 0 8px 0', color: palette.text || '#e2e8f0', fontSize: '15px', fontWeight: 700 } },
+              'Waiting for ' + hostNicknameFromJoin),
+            h('p', { style: { margin: 0, color: palette.textDim || '#cbd5e1', fontSize: '12px', lineHeight: '1.55' } },
+              'Your teacher hasn\'t chosen a topic yet. As soon as they do, the atlas will appear here and you\'ll be able to play cards into it.')
+          )
+        );
+      }
       return h('div', { style: { padding: '12px' } },
         renderHeader(),
         h('div', { style: { padding: '20px 16px', background: palette.surface || '#1e293b', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '10px' } },
@@ -1035,8 +1486,11 @@
 
     // Combined picker source: existing nodes (so students can re-use already-placed
     // concepts) + current hand (to add new cards as nodes).
+    // Phase S — students read from broadcast classAtlas so they can pick
+    // any node already on the shared diagram.
     function pickerSourceList() {
-      var nodeCards = (atlas.nodes || []).map(function (n) {
+      var srcAtlas = isClassStudent ? (classAtlas || { nodes: [] }) : atlas;
+      var nodeCards = (srcAtlas.nodes || []).map(function (n) {
         return {
           id: n.cardId, name: n.cardName, source: n.cardSource,
           imageBase64: n.cardImageBase64, conceptDef: null, tier: null, raw: n,
@@ -1086,6 +1540,8 @@
     }
 
     function renderPlayPhase() {
+      // Phase S8 — students see broadcast atlas; host/solo see local
+      var viewAtlas = isClassStudent ? (classAtlas || { nodes: [], edges: [] }) : atlas;
       var canSubmit = !!fromCard && !!toCard && fromCard.id !== toCard.id
                     && !!pickedVerb && (justification || '').trim().length >= 10
                     && !submitting && voiceMode !== 'transcribing';
@@ -1094,7 +1550,7 @@
         // Atlas diagram — visual heart of the experience. Updates live as
         // edges are added. Highlighted node = the FROM card the student
         // is currently selecting (gives spatial feedback).
-        (atlas.nodes || []).length > 0 ? h('div', {
+        (viewAtlas.nodes || []).length > 0 ? h('div', {
           style: {
             marginBottom: '12px',
             padding: '8px',
@@ -1103,7 +1559,7 @@
             borderRadius: '10px'
           }
         },
-          renderAtlasDiagram(atlas, {
+          renderAtlasDiagram(viewAtlas, {
             width: 600,
             height: 320,
             accent: palette.accent || '#60a5fa',
@@ -1317,21 +1773,33 @@
     }
 
     function renderCompletePhase() {
-      var resonantCount = (atlas.edges || []).filter(function (e) { return e.score >= 18; }).length;
-      var canPrint = typeof ctx.onPrintAtlas === 'function';
+      // Phase S — students read from broadcast classAtlas
+      var viewAtlas = isClassStudent ? (classAtlas || { nodes: [], edges: [], topic: '' }) : atlas;
+      var resonantCount = (viewAtlas.edges || []).filter(function (e) { return e.score >= 18; }).length;
+      var canPrint = !isClassStudent && typeof ctx.onPrintAtlas === 'function';
       function printAtlas() { if (canPrint) ctx.onPrintAtlas(atlas.id); }
+      var headline = isClassStudent
+        ? hostNicknameFromJoin + ' wrapped the atlas'
+        : 'Atlas wrapped';
+      var summary = isClassStudent
+        ? 'The class mapped ' + (viewAtlas.nodes || []).length + ' concept' + ((viewAtlas.nodes || []).length === 1 ? '' : 's')
+          + ' and drew ' + (viewAtlas.edges || []).length + ' edge' + ((viewAtlas.edges || []).length === 1 ? '' : 's')
+          + ' across "' + (viewAtlas.topic || '') + '"'
+          + (resonantCount > 0 ? ' · 🌟 ' + resonantCount + ' resonant relation' + (resonantCount === 1 ? '' : 's') : '')
+          + '. Thanks for contributing.'
+        : 'You mapped ' + (viewAtlas.nodes || []).length + ' concept' + ((viewAtlas.nodes || []).length === 1 ? '' : 's')
+          + ' and drew ' + (viewAtlas.edges || []).length + ' edge' + ((viewAtlas.edges || []).length === 1 ? '' : 's')
+          + ' across "' + (viewAtlas.topic || '') + '"'
+          + (resonantCount > 0 ? ' · 🌟 ' + resonantCount + ' resonant relation' + (resonantCount === 1 ? '' : 's') : '')
+          + '. Reopen this atlas any time from the Memory Overview to keep mapping.';
       return h('div', { style: { padding: '12px' } },
         renderHeader(),
         h('div', { style: { padding: '20px 16px', background: palette.surface || '#1e293b', border: '1.5px solid ' + (palette.accent || '#60a5fa'), borderRadius: '10px', textAlign: 'center' } },
           h('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '🗺'),
           h('h3', { style: { margin: '0 0 8px 0', color: palette.text || '#e2e8f0', fontSize: '17px', fontWeight: 700 } },
-            'Atlas wrapped'),
+            headline),
           h('p', { style: { margin: '0 0 14px 0', color: palette.textDim || '#cbd5e1', fontSize: '13px', lineHeight: '1.55' } },
-            'You mapped ' + (atlas.nodes || []).length + ' concept' + ((atlas.nodes || []).length === 1 ? '' : 's')
-            + ' and drew ' + (atlas.edges || []).length + ' edge' + ((atlas.edges || []).length === 1 ? '' : 's')
-            + ' across "' + atlas.topic + '"'
-            + (resonantCount > 0 ? ' · 🌟 ' + resonantCount + ' resonant relation' + (resonantCount === 1 ? '' : 's') : '')
-            + '. Reopen this atlas any time from the Memory Overview to keep mapping.'),
+            summary),
           h('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
             canPrint ? h('button', {
               onClick: printAtlas,
