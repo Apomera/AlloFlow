@@ -162,6 +162,25 @@
       '  .ah-print-section { page-break-inside: avoid !important; margin-bottom: 18px; }',
       '  .ah-print-page-break { page-break-before: always !important; }',
       '  @page { margin: 0.5in; }',
+      '}',
+      // ── Tour modal animations (Phase K) ──
+      '@keyframes ah-tour-step-in {',
+      '  0%   { opacity: 0; transform: translateY(8px); }',
+      '  100% { opacity: 1; transform: translateY(0); }',
+      '}',
+      '@keyframes ah-tour-emoji-float {',
+      '  0%, 100% { transform: translateY(0); }',
+      '  50%      { transform: translateY(-4px); }',
+      '}',
+      '@media (prefers-reduced-motion: no-preference) {',
+      '  .ah-tour-step { animation: ah-tour-step-in 320ms ease-out both; }',
+      '  .ah-tour-emoji { animation: ah-tour-emoji-float 3.5s ease-in-out infinite; display: inline-block; }',
+      '}',
+      '.ah-tour-dot { transition: width 220ms ease, background 220ms ease, transform 180ms ease; }',
+      '.ah-deck-row { transition: transform 140ms ease, box-shadow 140ms ease; }',
+      '@media (prefers-reduced-motion: no-preference) {',
+      '  .ah-deck-row:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(96,165,250,0.14); }',
+      '  .ah-deck-row:focus-within { box-shadow: 0 0 0 2px rgba(96,165,250,0.4); }',
       '}'
     ].join('\n');
     if (document.head) document.head.appendChild(st);
@@ -8606,31 +8625,52 @@
     },
       h('div', {
         style: {
-          background: palette.bg, border: '2px solid ' + palette.accent,
+          // Subtle gradient backdrop layered on the base bg — gives each
+          // step a slight "spotlight" aura without changing its theme.
+          background: palette.bg + ' radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '14, transparent 60%)',
+          backgroundColor: palette.bg,
+          backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 60%)',
+          border: '2px solid ' + palette.accent,
           borderRadius: '16px', padding: '28px',
           maxWidth: '480px', width: '100%',
           boxShadow: '0 20px 50px rgba(0,0,0,0.55)',
-          color: palette.text, textAlign: 'center'
+          color: palette.text, textAlign: 'center',
+          overflow: 'hidden',
+          position: 'relative'
         }
       },
-        h('div', { 'aria-hidden': 'true', style: { fontSize: '48px', marginBottom: '10px' } }, current.emoji),
-        h('h3', { style: { margin: '0 0 12px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
-          current.title),
-        h('p', { style: { margin: '0 0 20px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
-          current.body),
-        // Progress dots
+        // Step content — keyed by step index so it remounts and the
+        // ah-tour-step keyframe re-fires on each Next/Back.
+        h('div', {
+          key: 'tour-step-' + step,
+          className: 'ah-tour-step'
+        },
+          h('div', {
+            'aria-hidden': 'true',
+            className: 'ah-tour-emoji',
+            style: { fontSize: '52px', marginBottom: '12px', lineHeight: 1 }
+          }, current.emoji),
+          h('h3', { style: { margin: '0 0 12px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
+            current.title),
+          h('p', { style: { margin: '0 0 20px 0', fontSize: '14px', color: palette.textDim, lineHeight: '1.6' } },
+            current.body)
+        ),
+        // Progress dots — active dot wider AND slightly elevated
         h('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', marginBottom: '20px' } },
           steps.map(function(_, i) {
+            var isActive = i === step;
+            var isVisited = i <= step;
             return h('span', {
               key: 'td-' + i,
               'aria-hidden': 'true',
+              className: 'ah-tour-dot',
               style: {
-                width: i === step ? '20px' : '8px',
+                width: isActive ? '22px' : '8px',
                 height: '8px',
                 borderRadius: '999px',
-                background: i <= step ? palette.accent : palette.surface,
-                border: '1px solid ' + (i <= step ? palette.accent : palette.border),
-                transition: 'width 200ms'
+                background: isVisited ? palette.accent : palette.surface,
+                border: '1px solid ' + (isVisited ? palette.accent : palette.border),
+                transform: isActive ? 'translateY(-1px)' : 'translateY(0)'
               }
             });
           })
@@ -17022,6 +17062,7 @@
       }
 
       return h('div', {
+        className: 'ah-deck-row',
         style: {
           display: 'flex', gap: '10px', alignItems: 'center',
           padding: '10px 12px', background: palette.surface,
@@ -17134,6 +17175,7 @@
       }
 
       return h('div', {
+        className: 'ah-deck-row',
         style: {
           display: 'flex', gap: '10px', alignItems: 'center',
           padding: '10px 12px', background: palette.surface,
@@ -17324,6 +17366,7 @@
       return h('div', {
         key: 'mr-' + decoration.id,
         role: 'group',
+        className: 'ah-deck-row',
         'aria-label': label + ', ' + lc.type + ', ' + summary + ', ' + reviewedLabel
           + (isSoon ? ', due soon' : ''),
         style: {
