@@ -1892,6 +1892,147 @@
       return next;
     });
   }
+
+  // Plan T v3+ Chunk 8: img2img refinement for Visual MCQ images. Mirrors the
+  // Glossary refinement pattern (handleRefineGlossaryImage in App.jsx). State
+  // is keyed by '<qIdx>:question' for the question stimulus or '<qIdx>:o<optIdx>'
+  // for option images so a teacher can refine multiple images concurrently.
+  var quizImageRefineInputsState = React.useState({});
+  var quizImageRefineInputs = quizImageRefineInputsState[0];
+  var setQuizImageRefineInputs = quizImageRefineInputsState[1];
+  var isRefiningQuizImageState = React.useState({});
+  var isRefiningQuizImage = isRefiningQuizImageState[0];
+  var setIsRefiningQuizImage = isRefiningQuizImageState[1];
+  // Open/close the refine panel per image (collapsed by default — overlay
+  // pencil button toggles it).
+  var refineOpenState = React.useState({});
+  var refineOpen = refineOpenState[0];
+  var setRefineOpen = refineOpenState[1];
+  function refineKey(qIdx, target, optIdx) {
+    return target === 'question' ? (qIdx + ':question') : (qIdx + ':o' + optIdx);
+  }
+  function toggleRefinePanel(key) {
+    setRefineOpen(function (prev) {
+      var next = Object.assign({}, prev);
+      if (next[key]) delete next[key]; else next[key] = true;
+      return next;
+    });
+  }
+  async function refineQuizImage(qIdx, target, optIdx, instructionOverride) {
+    var key = refineKey(qIdx, target, optIdx);
+    var instruction = (typeof instructionOverride === 'string')
+      ? instructionOverride
+      : (quizImageRefineInputs[key] || '').trim();
+    if (!instruction) return;
+    var q = generatedContent && generatedContent.data && generatedContent.data.questions && generatedContent.data.questions[qIdx];
+    if (!q) return;
+    var currentUrl = (target === 'question')
+      ? q.imageUrl
+      : (Array.isArray(q.optionImageUrls) ? q.optionImageUrls[optIdx] : null);
+    if (!currentUrl || typeof currentUrl !== 'string' || currentUrl.indexOf(',') === -1) {
+      if (typeof addToast === 'function') addToast('No image to refine yet.', 'error');
+      return;
+    }
+    if (typeof callGeminiImageEdit !== 'function') {
+      if (typeof addToast === 'function') addToast('Image edit unavailable: callGeminiImageEdit not provided.', 'error');
+      return;
+    }
+    setIsRefiningQuizImage(function (prev) {
+      var next = Object.assign({}, prev); next[key] = true; return next;
+    });
+    try {
+      var rawBase64 = currentUrl.split(',')[1];
+      var grade = props.gradeLevel || 'middle school';
+      var prompt = 'Edit this educational quiz illustration. Maintain the same general visual style (colors, line weight, complexity). Audience: ' + grade + ' level students. Edit instruction: "' + instruction + '"';
+      var refinedUrl = await callGeminiImageEdit(prompt, rawBase64);
+      if (typeof handleQuizImageRefine === 'function') {
+        handleQuizImageRefine(qIdx, target, optIdx, refinedUrl);
+      }
+      // Clear input + close panel after success
+      setQuizImageRefineInputs(function (prev) {
+        var next = Object.assign({}, prev); delete next[key]; return next;
+      });
+      setRefineOpen(function (prev) {
+        var next = Object.assign({}, prev); delete next[key]; return next;
+      });
+      if (typeof addToast === 'function') addToast('Image refined.', 'success');
+    } catch (err) {
+      if (typeof addToast === 'function') addToast((err && err.message) || 'Refine failed — try again.', 'error');
+    } finally {
+      setIsRefiningQuizImage(function (prev) {
+        var next = Object.assign({}, prev); delete next[key]; return next;
+      });
+    }
+  }
+  // Reusable refine UI block — overlay pencil button + collapsible input panel.
+  // Caller picks target ('question' | 'option') + optIdx; gets back a fragment
+  // to drop into the JSX.
+  function renderImageRefineOverlay(qIdx, target, optIdx, isCompact) {
+    if (!isEditingQuiz) return null;
+    var key = refineKey(qIdx, target, optIdx);
+    var isOpen = !!refineOpen[key];
+    var isLoading = !!isRefiningQuizImage[key];
+    var inputValue = quizImageRefineInputs[key] || '';
+    var btnSize = isCompact ? 'h-6 w-6 text-[10px]' : 'h-7 w-7 text-xs';
+    return React.createElement(React.Fragment, null,
+      // Floating pencil button overlay (top-right of image)
+      React.createElement('button', {
+        type: 'button',
+        onClick: function (e) { e.stopPropagation(); toggleRefinePanel(key); },
+        disabled: isLoading,
+        className: 'absolute top-1 right-1 ' + btnSize + ' rounded-full bg-white/90 hover:bg-indigo-50 border border-slate-300 hover:border-indigo-400 text-slate-700 shadow-sm flex items-center justify-center transition-colors disabled:opacity-50',
+        title: isLoading ? 'Refining…' : 'Refine this image',
+        'aria-label': 'Refine image',
+      }, isLoading ? '⋯' : '✏️'),
+      // Inline panel below the image
+      isOpen && React.createElement('div', {
+        className: 'mt-2 p-2 rounded border border-indigo-200 bg-indigo-50 text-xs',
+      },
+        React.createElement('div', { className: 'flex items-center gap-2 mb-1.5 flex-wrap' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { refineQuizImage(qIdx, target, optIdx, 'Remove all text and labels from this image. Keep everything else identical.'); },
+            disabled: isLoading,
+            className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50',
+            title: 'One-click: remove text from this image',
+          }, '🧹 Remove text')
+        ),
+        React.createElement('textarea', {
+          value: inputValue,
+          onChange: function (e) {
+            var v = e.target.value;
+            setQuizImageRefineInputs(function (prev) {
+              var next = Object.assign({}, prev); next[key] = v; return next;
+            });
+          },
+          onKeyDown: function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              refineQuizImage(qIdx, target, optIdx);
+            }
+          },
+          placeholder: 'Describe how to refine this image (e.g. "make the background pure white", "add a clearer label")…',
+          rows: 2,
+          className: 'w-full text-xs p-1.5 rounded border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 outline-none resize-y',
+          disabled: isLoading,
+        }),
+        React.createElement('div', { className: 'flex items-center gap-2 mt-1.5' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { refineQuizImage(qIdx, target, optIdx); },
+            disabled: isLoading || !inputValue.trim(),
+            className: 'text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed',
+          }, isLoading ? 'Refining…' : 'Submit'),
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { toggleRefinePanel(key); },
+            disabled: isLoading,
+            className: 'text-xs font-semibold px-2.5 py-1 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50',
+          }, 'Cancel')
+        )
+      )
+    );
+  }
   var isPresentationMode = props.isPresentationMode;
   var isReviewGame = props.isReviewGame;
   var isEditingQuiz = props.isEditingQuiz;
@@ -1938,6 +2079,7 @@
   var togglePresentationExplanation = props.togglePresentationExplanation;
   var resetPresentation = props.resetPresentation;
   var handleQuizChange = props.handleQuizChange;
+  var handleQuizImageRefine = props.handleQuizImageRefine;
   var handleReflectionChange = props.handleReflectionChange;
   var handleFactCheck = props.handleFactCheck;
   // Escape room handlers
@@ -2638,13 +2780,19 @@
     key: i,
     className: "bg-white p-6 rounded-xl border border-slate-400 shadow-sm relative group/question"
   },
-    // Plan S Slice 5: Visual MCQ — question image stimulus when present
-    q.imageUrl && /*#__PURE__*/React.createElement("img", {
-      src: q.imageUrl,
-      alt: q.question || 'Question image',
-      loading: "lazy",
-      className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 mb-3 bg-slate-50",
-    }),
+    // Plan S Slice 5: Visual MCQ — question image stimulus when present.
+    // Plan T v3+ Chunk 8: wrapped in relative container so refine overlay sits.
+    q.imageUrl && /*#__PURE__*/React.createElement("div", {
+      className: "relative mb-3",
+    },
+      /*#__PURE__*/React.createElement("img", {
+        src: q.imageUrl,
+        alt: q.question || 'Question image',
+        loading: "lazy",
+        className: "w-full max-h-64 object-contain rounded-lg border border-slate-200 bg-slate-50",
+      }),
+      renderImageRefineOverlay(i, 'question', null, false)
+    ),
     /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-start mb-4 gap-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -2694,13 +2842,19 @@
     onKeyDown: !isEditingQuiz ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectMcqOption(i, optIdx, opt, q); } } : undefined,
     className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : (studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100')}`
   },
-    // Plan S Slice 5: Visual MCQ — option image thumbnail when present
-    Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("img", {
-      src: q.optionImageUrls[optIdx],
-      alt: opt,
-      loading: "lazy",
-      className: "w-full h-24 object-contain rounded mb-2 bg-white border border-slate-200",
-    }),
+    // Plan S Slice 5: Visual MCQ — option image thumbnail when present.
+    // Plan T v3+ Chunk 8: wrapped in relative container so refine overlay sits.
+    Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("div", {
+      className: "relative mb-2",
+    },
+      /*#__PURE__*/React.createElement("img", {
+        src: q.optionImageUrls[optIdx],
+        alt: opt,
+        loading: "lazy",
+        className: "w-full h-24 object-contain rounded bg-white border border-slate-200",
+      }),
+      renderImageRefineOverlay(i, 'option', optIdx, true)
+    ),
     /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-2"
   }, /*#__PURE__*/React.createElement("span", {
