@@ -1188,6 +1188,37 @@ window.SelHub = window.SelHub || {
             })
           ),
 
+          // ── Topic-accent hero band per tab ──
+          (function() {
+            var TAB_META = {
+              goals:    { accent: '#6366f1', soft: 'rgba(99,102,241,0.14)',  icon: '\uD83C\uDFAF', title: 'Goals \u2014 the gap between now and next',                hint: 'Locke + Latham 1990: specific + difficult goals beat \u201Cdo your best.\u201D Write down what success looks like before you start; that one act predicts follow-through more than motivation.' },
+              habits:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)',  icon: '\uD83D\uDD01', title: 'Habits \u2014 the engine behind every goal',               hint: 'Cue \u2192 routine \u2192 reward (Duhigg 2012). Habits run on ~40% of daily behavior. Stack tiny new habits onto existing ones (Fogg 2019: \u201Cafter I brush my teeth, I\u2019ll \u2026\u201D). Friction reduction wins.' },
+              vision:   { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)',  icon: '\uD83C\uDF1F', title: 'Vision \u2014 the picture above the to-do list',          hint: 'Most weeks fail to a vague vision \u2014 not lack of effort. Specifying \u201Cwhat does done LOOK like?\u201D in vivid detail engages the same brain regions as actual experience (Schacter 2007).' },
+              smart:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)',  icon: '\uD83E\uDDE0', title: 'SMART \u2014 specific, measurable, achievable, relevant, time-bound', hint: 'Doran 1981. Drains the romance from goals to install the structure that makes them real. \u201CRead more\u201D \u2192 \u201CRead 10 pages each weeknight, 9-9:30pm, in bed, for 4 weeks.\u201D' },
+              coach:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)',  icon: '\uD83E\uDD16', title: 'Coach \u2014 reflective conversation partner',             hint: 'Type a stuck goal; the AI walks you through why-stuck \u2192 what-changed \u2192 next-tiny-step. Not advice; reflection prompts. Useful when the goal feels heavy and you don\u2019t know where to start again.' },
+              checkin:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)',  icon: '\uD83D\uDCDD', title: 'Check-In \u2014 the daily 1-minute rep',                  hint: 'Self-monitoring (Latham 1981, ~40 yrs of replicated studies) is the single biggest behavior-change lever after goal-setting. The act of TRACKING shifts behavior even before you analyze the data.' },
+              progress: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',   icon: '\uD83D\uDCCA', title: 'Progress \u2014 the chart that proves it',                hint: 'Visible progress predicts persistence (Amabile 2011 \u201Cprogress principle\u201D). Even small gains shown daily are stronger motivators than rare big wins. Show the chart \u2014 to yourself, to the people supporting you.' }
+            };
+            var meta = TAB_META[tab] || TAB_META.goals;
+            return h('div', {
+              style: {
+                margin: '8px 12px 0',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
           // Badge panel
           showBadges ? h('div', { style: { padding: 12, background: 'rgba(167,139,250,0.08)', borderBottom: '1px solid rgba(167,139,250,0.15)' } },
             h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 8 } }, '\uD83C\uDFC5 Badges \u2014 ' + badgeCount + '/' + Object.keys(BADGES).length),
