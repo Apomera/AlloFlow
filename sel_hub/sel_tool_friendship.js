@@ -243,6 +243,37 @@ window.SelHub = window.SelHub || {
         )
       );
 
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          compass: { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83E\uDDED', title: 'My Style \u2014 how you show you care',                hint: 'Loyalist, encourager, advisor, peacekeeper, jokester, listener, adventurer. Most people lean on 1-2. Knowing yours is half the work \u2014 the other half is recognizing your friend\u2019s default is probably different.' },
+          start:   { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83D\uDCAC', title: 'Starting \u2014 the open + the follow-up',             hint: 'Mere-exposure effect (Zajonc 1968): repeated low-stakes contact predicts liking better than charm. Pair-share, lunch tables, shared activities. \u201CI like your shoes\u201D is corny because it WORKS.' },
+          keep:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDC9B', title: 'Keeping \u2014 maintenance is everything',              hint: 'Dunbar 1992: humans top out at ~150 stable relationships, ~5 close ones. Sustaining ANY of those takes regular small bids \u2014 a text, a memory mentioned, a check-in. Drift is the default.' },
+          digital: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '📱',           title: 'Digital \u2014 different rules, same friendship',     hint: 'No tone-of-voice; punctuation matters more than you think. Read receipts feel like power moves but rarely intend to be. Posting + tagging = public; DM = private \u2014 picking the wrong channel breaks trust.' },
+          repair:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83E\uDE79', title: 'Repair \u2014 the strongest friendships have ruptures', hint: 'Gottman: rupture is universal; thriving relationships repair quickly. Name what you did, hear what landed, plan repair, follow up. Apologies that include \u201CIF\u201D are not apologies.' },
+          endings: { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83C\uDF43', title: 'Endings \u2014 some friendships finish gracefully',  hint: 'Not every friendship is forever, and that\u2019s OK. Drift is normal; explicit goodbyes are sometimes kinder than ghosting. \u201CI think we\u2019ve grown different ways\u201D leaves both people room to be sad without being mad.' },
+          coach:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDD16', title: 'Practice \u2014 rehearse the hard talks',             hint: 'Bandura 1977: behavioral rehearsal is one of the strongest predictors of self-efficacy. Try the difficult conversation here first. The AI plays the friend; you practice the script you\u2019ll use later.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.compass;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
       // ── My Style (Friendship Compass) ──
       var compassContent = null;
       if (activeTab === 'compass') {
@@ -594,6 +625,7 @@ window.SelHub = window.SelHub || {
       var content = compassContent || startContent || keepContent || digitalContent || repairContent || endingsContent || coachContent;
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
+        heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         window.SelHub && window.SelHub.renderResourceFooter && window.SelHub.renderResourceFooter(h, band)
       );
