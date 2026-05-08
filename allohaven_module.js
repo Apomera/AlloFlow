@@ -3501,6 +3501,7 @@
 
     return h('div', {
       role: 'article',
+      className: 'ah-deck-row',
       'aria-label': 'Journal entry from ' + dateStr,
       style: {
         background: palette.surface,
@@ -8099,8 +8100,14 @@
           maxWidth: '720px', width: '100%', margin: '0 auto'
         }
       },
+        // Story-walk step image — gets the realm-canvas vignette frame
+        // for parity with the arcade modes (Phase L). Adds a celebratory
+        // weight so each step feels like an anchor point in the
+        // memory-palace journey.
         h('div', {
+          className: 'ah-realm-canvas',
           style: {
+            position: 'relative',
             background: palette.surface,
             border: '2px solid ' + palette.accent,
             borderRadius: '14px',
@@ -8110,7 +8117,9 @@
             justifyContent: 'center',
             width: '100%',
             maxWidth: '480px',
-            marginBottom: '20px'
+            marginBottom: '20px',
+            overflow: 'hidden',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.32)'
           }
         },
           dec.imageBase64 ? h('img', {
@@ -15123,11 +15132,18 @@
               }, '✕')
             ),
             h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '14px', marginBottom: '14px' } },
-              detail.bossImageBase64 ? h('img', {
-                src: detail.bossImageBase64,
-                alt: 'Concept Guardian for ' + detail.topic,
-                style: { width: '96px', height: '96px', objectFit: 'cover', borderRadius: '10px', border: '1px solid ' + palette.border, flexShrink: 0 }
-              }) : h('div', {
+              // Boss image with vignette frame (Phase N — parity with
+              // Boss Encounter's live boss-image treatment from Phase L).
+              detail.bossImageBase64 ? h('div', {
+                className: 'ah-realm-canvas',
+                style: { position: 'relative', width: '96px', height: '96px', flexShrink: 0, borderRadius: '10px', overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.32)' }
+              },
+                h('img', {
+                  src: detail.bossImageBase64,
+                  alt: 'Concept Guardian for ' + detail.topic,
+                  style: { width: '96px', height: '96px', objectFit: 'cover', border: '1px solid ' + palette.border, borderRadius: '10px', display: 'block' }
+                })
+              ) : h('div', {
                 'aria-hidden': 'true',
                 style: { width: '96px', height: '96px', flexShrink: 0, fontSize: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '10px' }
               }, '🐉'),
@@ -15268,6 +15284,7 @@
                 return h('li', { key: 'enc-li-' + enc.id, role: 'listitem', style: { listStyle: 'none' } },
                 h('button', {
                   key: 'enc-' + enc.id,
+                  className: 'ah-deck-row',
                   onClick: function () { openDetail(enc.id); },
                   style: {
                     background: palette.surface,
@@ -18351,8 +18368,13 @@
         }
       },
         h('div', {
+          className: 'ah-tour-step',
           style: {
-            background: palette.bg, border: '2px solid ' + palette.accent,
+            backgroundColor: palette.bg,
+            // Celebratory accent halo from the top — frames the recap
+            // as a moment of reflection rather than a raw stats dump.
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
+            border: '2px solid ' + palette.accent,
             borderRadius: '16px', padding: '28px',
             maxWidth: '640px', width: '100%', maxHeight: '90vh',
             overflowY: 'auto', boxShadow: '0 30px 70px rgba(0,0,0,0.5)'
@@ -18360,8 +18382,9 @@
         },
           // Header
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
-            h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800 } },
-              '🌱 Your AlloHaven journey'),
+            h('h3', { style: { margin: 0, color: palette.text, fontSize: '22px', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: '8px' } },
+              h('span', { className: 'ah-tour-emoji', 'aria-hidden': 'true' }, '🌱'),
+              h('span', null, 'Your AlloHaven journey')),
             h('button', {
               onClick: function() { setStateField('activeModal', 'achievements'); },
               'aria-label': 'Close recap',
@@ -18543,9 +18566,15 @@
         return h('div', {
           key: 'gr-' + g.id,
           role: 'group',
+          className: 'ah-deck-row',
           'aria-label': g.title + ', ' + prog.current + ' of ' + prog.target + ', ' + dateLabel,
           style: {
             padding: '12px 14px', background: palette.surface,
+            // Done goals get a subtle accent halo from the left, like
+            // unlocked achievements get in Phase M4.
+            backgroundImage: status === 'done'
+              ? 'radial-gradient(ellipse at left center, ' + (palette.accent || '#60a5fa') + '14, transparent 60%)'
+              : 'none',
             border: '1px solid ' + palette.border,
             borderLeft: '3px solid ' + barColor,
             borderRadius: '8px'
@@ -18562,16 +18591,22 @@
               style: { fontSize: '13px', fontWeight: 800, color: barColor, fontVariantNumeric: 'tabular-nums' }
             }, prog.current + '/' + prog.target)
           ),
-          // Progress bar
+          // Progress bar — gradient fill + inset shadow on track for
+          // visual parity with HP bar / Pomodoro / generation loading.
           h('div', {
             'aria-hidden': 'true',
-            style: { height: '6px', background: palette.bg, borderRadius: '3px', overflow: 'hidden', marginBottom: '6px' }
+            role: 'progressbar',
+            'aria-valuenow': prog.current,
+            'aria-valuemax': prog.target,
+            style: { height: '8px', background: palette.bg, borderRadius: '999px', overflow: 'hidden', marginBottom: '6px', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.32)' }
           },
             h('div', {
               style: {
                 width: prog.pct + '%', height: '100%',
-                background: barColor, transition: 'width 300ms ease',
-                borderRadius: '3px'
+                background: 'linear-gradient(180deg, ' + barColor + ' 0%, ' + barColor + 'cc 100%)',
+                boxShadow: 'inset 0 -1px 2px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18)',
+                transition: 'width 300ms ease',
+                borderRadius: '999px'
               }
             })
           ),
