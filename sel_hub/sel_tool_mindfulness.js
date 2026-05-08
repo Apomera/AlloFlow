@@ -705,6 +705,41 @@ window.SelHub = window.SelHub || {
       );
 
       // ══════════════════════════════════════════════════════════
+      // ── Topic-accent hero band per tab ──
+      // ══════════════════════════════════════════════════════════
+      var heroBand = (function() {
+        var TAB_META = {
+          breathe:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF2C', title: 'Breathe \u2014 the slowest lever you have',                  hint: 'Slow + diaphragmatic breathing flips the parasympathetic switch in seconds. Box breathing (4-4-4-4) is what Navy SEALs use under fire. The ratio matters more than the count: longer exhale than inhale tells the vagus nerve \u201Csafe.\u201D' },
+          meditate:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDDD8', title: 'Meditate \u2014 attention training, not emptying',         hint: 'The skill isn\u2019t a quiet mind \u2014 it\u2019s noticing when you\u2019ve drifted and returning gently. 10-12 minutes/day for 8 weeks shows measurable structural changes (Hölzel 2011 fMRI of MBSR participants).' },
+          scan:       { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83E\uDEC0', title: 'Body Scan \u2014 sweep attention head-to-toe',             hint: 'Noticing without changing. Tension you didn\u2019t know was there comes up first; just observing it often releases it. Foundational practice in MBSR (Kabat-Zinn 1979) and now in trauma-informed therapy.' },
+          ground:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF0D', title: 'Grounding \u2014 5-4-3-2-1 senses',                          hint: '5 things you see, 4 hear, 3 touch, 2 smell, 1 taste. Pulls anxious attention out of the future + past and into the present sensory reality. The fastest research-backed way to shorten a panic spiral.' },
+          techniques: { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\u2693',         title: 'Techniques \u2014 the toolkit beyond breathing',         hint: 'Loving-kindness (metta), open monitoring, focused attention, walking meditation, RAIN (recognize / allow / investigate / nurture). Different practices target different states; matching technique to need is the skill.' },
+          movement:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83D\uDEB6', title: 'Movement \u2014 mindfulness for non-sitters',              hint: 'Walking meditation, gentle yoga, qigong, simple stretches \u2014 same brain effects, less still. ADHD + anxious bodies often regulate BETTER while moving than seated. \u201CYou don\u2019t have to sit cross-legged\u201D is liberating to many.' },
+          gratitude:  { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDE4F', title: 'Gratitude \u2014 attention training with a twist',         hint: 'Emmons + McCullough 2003: 3-times-a-week gratitude journaling \u2192 measurable mood + sleep + relationship gains in 10 weeks. Specifics work better than \u201CI\u2019m grateful for my family\u201D \u2014 name the moment, the gesture, the why.' },
+          moments:    { accent: '#7c3aed', soft: 'rgba(124,58,237,0.14)', icon: '\uD83C\uDF3F', title: 'Moments \u2014 micro-mindfulness in the day',              hint: 'Bell rings? Breathe. Door opens? Notice the air. STOP technique: Stop / Take a breath / Observe / Proceed. 30-second resets, ten times a day, beat one 30-minute session most weeks. Frequency wins.' },
+          log:        { accent: '#475569', soft: 'rgba(71,85,105,0.14)',  icon: '\uD83D\uDCCA', title: 'Log \u2014 streaks + what worked',                          hint: 'What you measured shows up; what you didn\u2019t fades. Track which practices actually helped, on which days, in which moods. Builds your personalized toolkit \u2014 not the one a book or app prescribed.' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.breathe;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
+      // ══════════════════════════════════════════════════════════
       // ── Badge Popup ──
       // ══════════════════════════════════════════════════════════
       var badgePopup = null;
@@ -2255,6 +2290,7 @@ window.SelHub = window.SelHub || {
       // ══════════════════════════════════════════════════════════
       return h('div', { style: { minHeight: '100%' } },
         tabBar,
+        heroBand,
         badgePopup,
         breatheContent,
         meditateContent,
