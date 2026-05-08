@@ -925,6 +925,42 @@ window.SelHub = window.SelHub || {
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            choose:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDDFA', title: 'Cultures \u2014 explore by region',                       hint: 'Curiosity beats checklist. Every culture holds wisdom worth meeting on its own terms (Geertz 1973). Start with one that interests you, not one assigned. Depth > breadth in this work.' },
+            worldmap: { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83C\uDF0E', title: 'World Map \u2014 culture meets geography',               hint: 'Climate, terrain, trade routes shape what people eat, build, sing, and worship. Diamond 1997 (\u201CGuns, Germs, and Steel\u201D) traces it; modern critiques refine it. Geography matters; it isn\u2019t destiny.' },
+            recipes:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83C\uDF72', title: 'Recipes \u2014 food carries memory',                     hint: 'Fischler 1988: food is identity made edible. Every diaspora keeps its grandmother\u2019s dishes longer than its grandmother\u2019s language. The taste IS the inheritance.' },
+            music:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\uD83C\uDFB5', title: 'Music \u2014 cross-cultural patterns',                  hint: 'Pentatonic scales appear independently in Chinese, West African, Celtic, Andean, and Native American traditions \u2014 evidence that some musical patterns are nearly universal. Different keys, shared math.' },
+            stories:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83D\uDCDA', title: 'Stories \u2014 the inheritances we tell',                hint: 'Campbell 1949 hero\u2019s journey is one frame; many cultures center community-not-individual heroism (Vogler critiques). Read folklore as both human-universal AND culture-specific \u2014 both are true at the same time.' },
+            calendar: { accent: '#10b981', soft: 'rgba(16,185,129,0.10)', icon: '\uD83D\uDCC5', title: 'Calendar \u2014 holidays + sacred time',                  hint: 'Lunar (Hijri, Hebrew, Chinese), solar (Gregorian, Persian), lunisolar (Hindu) \u2014 different cultures count time differently. Ramadan shifts 11 days/year because it follows the moon. Every calendar is a values statement.' },
+            language: { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83D\uDDE3', title: 'Languages \u2014 ~7,000 spoken worldwide',                hint: 'Sapir-Whorf weak version: language shapes thought (modern fMRI evidence: Boroditsky 2009). Hello in 100 languages is a starting move; learning the polite forms is where actual cross-cultural respect lives.' },
+            compare:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)', icon: '\uD83D\uDD0D', title: 'Compare \u2014 across and within',                       hint: 'Within-culture variation often exceeds between-culture variation. Stereotyping = treating a culture\u2019s mode as the whole distribution. Compare carefully \u2014 differences exist + are interesting; people are individuals first.' },
+            explore:  { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83D\uDD2C', title: 'Explore \u2014 your guided deep-dive',                    hint: 'Pick a culture, follow the through-line: history \u2192 daily life \u2192 art \u2192 modern moment. Reading 30 minutes about a place beats 5 minutes each on six. Curiosity rewards depth.' },
+            quiz:     { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)', icon: '\uD83C\uDFC6', title: 'Quiz \u2014 retrieval-practice on what you\u2019ve met',  hint: 'Roediger + Karpicke 2006: testing IS learning, not just measuring. Pulling the answer out of memory strengthens it more than re-reading. Misses are diagnostic, not failure \u2014 they show what to revisit.' },
+            journal:  { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCD3', title: 'Journal \u2014 your reflections',                       hint: 'Pennebaker 1986: writing about what you\u2019re learning embeds it. \u201CWhat surprised me?\u201D + \u201CWhat will I read next?\u201D + \u201CWho can I ask about this?\u201D \u2014 simple prompts, surprising depth.' },
+            badges:   { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones across cultures explored',     hint: 'Acknowledges sustained curiosity \u2014 not encyclopedic mastery. The badges are the side effect; the conversations + foods + music + people you\u2019ve actually met are the point. Show the streak; the streak shows the practice.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.choose;
+          return h('div', {
+            style: {
+              margin: '12px 0 0',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ CHOOSE CULTURE ═══
         tab === 'choose' && h('div', { className: 'space-y-4' },
 
