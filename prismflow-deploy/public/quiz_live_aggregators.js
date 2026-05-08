@@ -157,7 +157,26 @@
       row.totalAnswered++;
       if (g.grade.status === 'correct') row.totalCorrect++;
       if (g.grade.status === 'idk') row.totalIdk++;
-      row.byQuestion[g.questionIdx] = g.grade;
+      // Extended cell: grade fields + question/answer snippets so the dashboard
+      // can render drill-down detail without re-walking allResponses.
+      var qText = (g.question && (g.question.question || g.question.contextSentence || g.question.expectedFill)) || '';
+      var qType = (g.response && g.response.itemType) || (g.question && g.question.type) || 'mcq';
+      var answerSummary = '';
+      if (g.response && g.response.answer) {
+        var a = g.response.answer;
+        if (a.idk) answerSummary = '🤔 I don\'t know';
+        else if (typeof a.optionIdx === 'number' && g.question && Array.isArray(g.question.options))
+          answerSummary = String.fromCharCode(65 + a.optionIdx) + '. ' + (g.question.options[a.optionIdx] || '');
+        else if (typeof a.text === 'string') answerSummary = a.text;
+        else if (qType === 'sequence-sense') answerSummary = (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
+        else if (qType === 'relation-mismatch') answerSummary = (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
+        else { try { answerSummary = JSON.stringify(a); } catch (e) { answerSummary = ''; } }
+      }
+      row.byQuestion[g.questionIdx] = Object.assign({}, g.grade, {
+        questionText: qText,
+        questionType: qType,
+        answerSummary: answerSummary,
+      });
     });
     // Include roster students who haven't responded yet
     Object.keys(rosterObj).forEach(function (uid) {

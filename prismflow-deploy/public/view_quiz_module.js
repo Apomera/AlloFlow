@@ -655,6 +655,19 @@
     // Count in-flight grades for the header badge
     var inFlightCount = Object.keys(aiGradedInFlightRef.current || {}).length;
 
+    // Plan T v3+: gradebook drill-down — track which student rows are expanded
+    // so teacher can see per-question student responses (incl. AI feedback for
+    // freeform answers). Only used by the gradebook variant; safe no-op for others.
+    var expandedRowsState = React.useState({});
+    var expandedRows = expandedRowsState[0]; var setExpandedRows = expandedRowsState[1];
+    function toggleRowExpanded(uid) {
+      setExpandedRows(function (prev) {
+        var next = Object.assign({}, prev);
+        if (next[uid]) delete next[uid]; else next[uid] = true;
+        return next;
+      });
+    }
+
     var aggResult;
     try {
       aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache);
@@ -707,11 +720,20 @@
     // Render mode-specific body
     var body;
     if (variant === 'gradebook') {
-      // Per-student table
+      // Per-student table with expand-to-drill-down per row
+      var statusBadge = function (cell) {
+        if (!cell) return React.createElement('span', { className: 'text-slate-300', title: 'No response' }, '—');
+        if (cell.status === 'correct') return React.createElement('span', { className: 'text-emerald-600', title: cell.aiGraded ? 'AI-graded correct' : 'Correct' }, '✓');
+        if (cell.status === 'incorrect') return React.createElement('span', { className: 'text-rose-600', title: cell.aiGraded ? 'AI-graded incorrect' : 'Incorrect' }, '✗');
+        if (cell.status === 'idk') return React.createElement('span', { className: 'text-sky-600', title: 'Marked I don\'t know' }, '🤔');
+        if (cell.status === 'partially-correct') return React.createElement('span', { className: 'text-amber-600', title: 'Partially correct' }, '◐');
+        return React.createElement('span', { className: 'text-slate-400', title: 'Submitted (ungraded)' }, '·');
+      };
       body = React.createElement('div', { className: 'overflow-x-auto' },
         React.createElement('table', { className: 'w-full text-sm border-collapse' },
           React.createElement('thead', null,
             React.createElement('tr', { className: 'bg-slate-100' },
+              React.createElement('th', { className: 'w-7 px-1 py-1.5', 'aria-label': 'Expand row' }),
               React.createElement('th', { className: 'text-left px-2 py-1.5 font-bold text-slate-700' }, 'Student'),
               React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'Answered'),
               React.createElement('th', { className: 'text-center px-2 py-1.5 font-bold text-slate-700' }, 'Correct'),
@@ -721,7 +743,24 @@
           React.createElement('tbody', null,
             data.studentRows.map(function (row) {
               var pct = row.totalAnswered > 0 ? Math.round((row.totalCorrect / row.totalAnswered) * 100) : 0;
-              return React.createElement('tr', { key: row.uid, className: 'border-t border-slate-200' },
+              var isExpanded = !!expandedRows[row.uid];
+              var canExpand = row.totalAnswered > 0;
+              var summaryRow = React.createElement('tr', {
+                key: row.uid + ':summary',
+                className: 'border-t border-slate-200 ' + (canExpand ? 'cursor-pointer hover:bg-indigo-50/40' : ''),
+                onClick: canExpand ? function () { toggleRowExpanded(row.uid); } : undefined,
+              },
+                React.createElement('td', { className: 'text-center px-1 py-1.5' },
+                  canExpand
+                    ? React.createElement('button', {
+                        type: 'button',
+                        'aria-expanded': isExpanded,
+                        'aria-label': (isExpanded ? 'Collapse' : 'Expand') + ' ' + row.displayName + ' details',
+                        className: 'text-slate-500 hover:text-indigo-600 transition-colors text-xs font-mono',
+                        onClick: function (e) { e.stopPropagation(); toggleRowExpanded(row.uid); },
+                      }, isExpanded ? '▼' : '▶')
+                    : React.createElement('span', { className: 'text-slate-300 text-xs' }, '·')
+                ),
                 React.createElement('td', { className: 'px-2 py-1.5 text-slate-800' }, row.displayName),
                 React.createElement('td', { className: 'text-center px-2 py-1.5' },
                   React.createElement('span', { className: 'text-xs font-mono text-slate-600' }, row.totalAnswered + ' / ' + data.totalQuestions)
@@ -739,6 +778,50 @@
                     : React.createElement('span', { className: 'text-xs text-slate-400' }, '0')
                 )
               );
+              if (!isExpanded) return summaryRow;
+              // Detail row: per-question card grid
+              var detailRow = React.createElement('tr', {
+                key: row.uid + ':detail',
+                className: 'border-t border-slate-100 bg-indigo-50/30',
+              },
+                React.createElement('td', { colSpan: 5, className: 'px-3 py-3' },
+                  React.createElement('div', { className: 'space-y-2' },
+                    row.byQuestion.map(function (cell, qIdx) {
+                      var qNum = qIdx + 1;
+                      var qSnippet = cell && cell.questionText ? cell.questionText.slice(0, 90) + (cell.questionText.length > 90 ? '…' : '') : 'Question ' + qNum;
+                      var border = !cell ? 'border-slate-200 bg-white' :
+                                   cell.status === 'correct' ? 'border-emerald-200 bg-emerald-50/50' :
+                                   cell.status === 'incorrect' ? 'border-rose-200 bg-rose-50/50' :
+                                   cell.status === 'idk' ? 'border-sky-200 bg-sky-50/50' :
+                                   'border-slate-200 bg-white';
+                      return React.createElement('div', {
+                        key: qIdx,
+                        className: 'p-2 rounded border ' + border,
+                      },
+                        React.createElement('div', { className: 'flex items-start gap-2 mb-1' },
+                          React.createElement('span', { className: 'text-base mt-0.5 leading-none' }, statusBadge(cell)),
+                          React.createElement('div', { className: 'flex-grow min-w-0' },
+                            React.createElement('p', { className: 'text-xs font-semibold text-slate-700 mb-0.5' }, 'Q' + qNum + '. ' + qSnippet),
+                            cell && cell.answerSummary
+                              ? React.createElement('p', { className: 'text-xs text-slate-800 break-words' },
+                                  React.createElement('span', { className: 'text-slate-500' }, 'Answered: '),
+                                  cell.answerSummary)
+                              : !cell && React.createElement('p', { className: 'text-xs italic text-slate-400' }, 'No response yet')
+                          ),
+                          cell && cell.aiGraded && React.createElement('span', {
+                            className: 'flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800',
+                            title: 'Graded by AI (' + cell.aiStatus + ')',
+                          }, '✨ AI')
+                        ),
+                        cell && cell.aiFeedback && React.createElement('p', {
+                          className: 'text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1',
+                        }, '"', cell.aiFeedback, '"')
+                      );
+                    })
+                  )
+                )
+              );
+              return [summaryRow, detailRow];
             })
           )
         )
