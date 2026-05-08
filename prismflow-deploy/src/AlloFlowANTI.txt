@@ -418,6 +418,7 @@ function getAudio(category, key) {
     if (_AUDIO_BANK['misc'] && _AUDIO_BANK['misc'][key]) return _AUDIO_BANK['misc'][key];
     return null;
 }
+window.getAudio = getAudio;
 async function _initAudioBank() {
     console.log("Initializing Audio Bank from " + _AUDIO_BANK_URL);
     try {
@@ -431,13 +432,8 @@ async function _initAudioBank() {
     }
 }
 _initAudioBank();
-window.addEventListener('audio_bank_loaded', () => {
-    try { _CACHE_PHONEME_AUDIO_BANK = null; } catch(e) {}
-    try { _CACHE_INSTRUCTION_AUDIO = null; } catch(e) {}
-    try { _CACHE_LETTER_NAME_AUDIO = null; } catch(e) {}
-    try { _CACHE_ISOLATION_AUDIO = null; } catch(e) {}
-    console.log("[AudioBank] Caches invalidated - audio data now available.");
-});
+// Audio-bank cache invalidation moved into audio_banks_module.js, which
+// listens for 'audio_bank_loaded' and clears its internal _CACHE_* vars.
 let _CACHE_WORD_AUDIO_BANK = null;
 async function loadWordAudioBank() {
     if (_CACHE_WORD_AUDIO_BANK) return;
@@ -836,304 +832,24 @@ const _DEPLOY_MODELS = {
   quality: 'gemini-3.1-pro-preview', // For clinical reports, high-stakes operations
 };
 
-function _LOAD_LETTER_NAME_AUDIO_RAW() { return {
-    "a": getAudio('letters', 'a'),
-    "b": getAudio('letters', 'b'),
-    "c": getAudio('letters', 'c'),
-    "d": getAudio('letters', 'd'),
-    "e": getAudio('letters', 'e'),
-    "f": getAudio('letters', 'f'),
-    "g": getAudio('letters', 'g'),
-    "h": getAudio('letters', 'h'),
-    "i": getAudio('letters', 'i'),
-    "j": getAudio('letters', 'j'),
-    "k": getAudio('letters', 'k'),
-    "l": getAudio('letters', 'l'),
-    "m": getAudio('letters', 'm'),
-    "n": getAudio('letters', 'n'),
-    "o": getAudio('letters', 'o'),
-    "p": getAudio('letters', 'p'),
-    "q": getAudio('letters', 'q'),
-    "r": getAudio('letters', 'r'),
-    "s": getAudio('letters', 's'),
-    "t": getAudio('letters', 't'),
-    "u": getAudio('letters', 'u'),
-    "v": getAudio('letters', 'v'),
-    "w": getAudio('letters', 'w'),
-    "x": getAudio('letters', 'x'),
-    "y": getAudio('letters', 'y'),
-    "z": getAudio('letters', 'z'),
-}; }
-let _CACHE_LETTER_NAME_AUDIO = null;
-const LETTER_NAME_AUDIO = new Proxy({}, { get: function(target, prop) { if (!_CACHE_LETTER_NAME_AUDIO) _CACHE_LETTER_NAME_AUDIO = _LOAD_LETTER_NAME_AUDIO_RAW(); return _CACHE_LETTER_NAME_AUDIO[prop]; } });
-let _CACHE_INSTRUCTION_AUDIO = null;
-function _LOAD_INSTRUCTION_AUDIO_RAW() {
-  return {
-    counting: getAudio('instructions', 'counting'),
-    blending: getAudio('instructions', 'blending'),
-    which_word_did_you_hear: getAudio('instructions', 'inst_which_word_did_you_hear'),
-    segmentation: getAudio('instructions', 'segmentation'),
-    mapping: getAudio('instructions', 'mapping'),
-    sound_sort: getAudio('instructions', 'word_families'),
-    unscramble: getAudio('instructions', 'unscramble'),
-inst_rhyming: getAudio('instructions', 'inst_rhyming'),
-trace_letter: getAudio('instructions', 'trace_letter'),
-"for": getAudio('instructions', 'for'),
-    sound_match_end: getAudio('instructions', 'sound_match_end'),
-    sound_sort_house: getAudio('instructions', 'word_families'),
-    tap_letters: getAudio('instructions', 'mapping'),
-    now_try_lowercase: getAudio('instructions', 'now_try_lowercase'),
-    sound_match_start: getAudio('instructions', 'sound_match_start'),
-  };
-}
-const INSTRUCTION_AUDIO = new Proxy({}, {
-  get: function(target, prop) {
-    if (prop === 'raw_ref') return null; // Debug hook
-    if (!_CACHE_INSTRUCTION_AUDIO) {
-      _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
-    }
-    return _CACHE_INSTRUCTION_AUDIO[prop];
-  },
-  has: function(target, prop) {
-    if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
-    return prop in _CACHE_INSTRUCTION_AUDIO;
-  },
-  ownKeys: function(target) {
-    if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
-    return Reflect.ownKeys(_CACHE_INSTRUCTION_AUDIO);
-  },
-  getOwnPropertyDescriptor: function(target, prop) {
-    if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_amazing', getAudio('instructions', 'fb_amazing'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_excellent', getAudio('instructions', 'fb_excellent'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_great_job', getAudio('instructions', 'fb_great_job'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_nice', getAudio('instructions', 'fb_nice'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_way_to_go', getAudio('instructions', 'fb_way_to_go'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_you_got_it', getAudio('instructions', 'fb_you_got_it'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_perfect', getAudio('instructions', 'fb_perfect'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_correct', getAudio('instructions', 'fb_correct'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_on_fire', getAudio('instructions', 'fb_on_fire'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_keep_going', getAudio('instructions', 'fb_keep_going'));
-_LOAD_INSTRUCTION_AUDIO_RAW('now_try_lowercase', getAudio('instructions', 'now_try_lowercase'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_try_again', getAudio('instructions', 'fb_try_again'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_listen_again', getAudio('instructions', 'fb_listen_again'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_super', getAudio('instructions', 'fb_super'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_terrific', getAudio('instructions', 'fb_terrific'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_wow', getAudio('instructions', 'fb_wow'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_almost', getAudio('instructions', 'fb_almost'));
-_LOAD_INSTRUCTION_AUDIO_RAW('fb_try_again_listen', getAudio('instructions', 'fb_try_again_listen'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_orthography', getAudio('instructions', 'inst_orthography'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_spelling_bee', getAudio('instructions', 'inst_spelling_bee'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_word_scramble', getAudio('instructions', 'inst_word_scramble'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_missing_letter', getAudio('instructions', 'inst_missing_letter'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_counting', getAudio('instructions', 'inst_counting'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_blending', getAudio('instructions', 'inst_blending'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_which_word_did_you_hear', getAudio('instructions', 'inst_which_word_did_you_hear'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_segmentation', getAudio('instructions', 'inst_segmentation'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_rhyming', getAudio('instructions', 'inst_rhyming'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_letter_tracing', getAudio('instructions', 'inst_letter_tracing'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_for', getAudio('instructions', 'inst_for'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_which_word', getAudio('instructions', 'inst_which_word'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_find_start_sound', getAudio('instructions', 'inst_find_start_sound'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_find_end_sound', getAudio('instructions', 'inst_find_end_sound'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_tap_letters', getAudio('instructions', 'inst_tap_letters'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_sound_sort', getAudio('instructions', 'inst_word_families'));
-_LOAD_INSTRUCTION_AUDIO_RAW('inst_sound_scramble', getAudio('instructions', 'inst_sound_scramble'));
-_LOAD_INSTRUCTION_AUDIO_RAW('sound_match_start', getAudio('instructions', 'sound_match_start'));
-_LOAD_INSTRUCTION_AUDIO_RAW('mapping', getAudio('instructions', 'mapping'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_a', getAudio('instructions', 'letter_a'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_b', getAudio('instructions', 'letter_b'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_c', getAudio('instructions', 'letter_c'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_d', getAudio('instructions', 'letter_d'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_e', getAudio('instructions', 'letter_e'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_f', getAudio('instructions', 'letter_f'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_g', getAudio('instructions', 'letter_g'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_h', getAudio('instructions', 'letter_h'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_i', getAudio('instructions', 'letter_i'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_j', getAudio('instructions', 'letter_j'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_k', getAudio('instructions', 'letter_k'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_l', getAudio('instructions', 'letter_l'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_m', getAudio('instructions', 'letter_m'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_n', getAudio('instructions', 'letter_n'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_o', getAudio('instructions', 'letter_o'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_p', getAudio('instructions', 'letter_p'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_q', getAudio('instructions', 'letter_q'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_r', getAudio('instructions', 'letter_r'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_s', getAudio('instructions', 'letter_s'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_t', getAudio('instructions', 'letter_t'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_u', getAudio('instructions', 'letter_u'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_v', getAudio('instructions', 'letter_v'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_w', getAudio('instructions', 'letter_w'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_x', getAudio('instructions', 'letter_x'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_y', getAudio('instructions', 'letter_y'));
-_LOAD_INSTRUCTION_AUDIO_RAW('letter_z', getAudio('instructions', 'letter_z'));
-    const desc = Reflect.getOwnPropertyDescriptor(_CACHE_INSTRUCTION_AUDIO, prop); if (desc) { desc.configurable = true; desc.writable = true; } return desc;
-  },
-  set: function(target, prop, value) {
-    if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
-    _CACHE_INSTRUCTION_AUDIO[prop] = value;
-    return true;
-  },
-  defineProperty: function(target, prop, descriptor) {
-    if (!_CACHE_INSTRUCTION_AUDIO) _CACHE_INSTRUCTION_AUDIO = _LOAD_INSTRUCTION_AUDIO_RAW();
-    Object.defineProperty(_CACHE_INSTRUCTION_AUDIO, prop, descriptor);
-    return true;
-  }
-});
-window.__ALLO_INSTRUCTION_AUDIO = INSTRUCTION_AUDIO;
-let _CACHE_ISOLATION_AUDIO = null;
-function _LOAD_ISOLATION_AUDIO_RAW() {
-  return {
-    '1st': getAudio('isolation', '1st'),
-    '2nd': getAudio('isolation', '2nd'),
-    '3rd': getAudio('isolation', '3rd'),
-    '4th': getAudio('isolation', '4th'),
-    '5th': getAudio('isolation', '5th'),
-    '6th': getAudio('isolation', '6th'),
-    '7th': getAudio('isolation', '7th'),
-    '8th': getAudio('isolation', '8th'),
-    '9th': getAudio('isolation', '9th'),
-    '10th': getAudio('isolation', '10th'),
-    'fallback': null
-  };
-}
-const ISOLATION_AUDIO = new Proxy({}, {
-  get: function(target, prop) {
-    if (prop === 'raw_ref') return null; // Debug hook
-    if (!_CACHE_ISOLATION_AUDIO) {
-      _CACHE_ISOLATION_AUDIO = _LOAD_ISOLATION_AUDIO_RAW();
-    }
-    return _CACHE_ISOLATION_AUDIO[prop];
-  },
-  has: function(target, prop) {
-    if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _LOAD_ISOLATION_AUDIO_RAW();
-    return prop in _CACHE_ISOLATION_AUDIO;
-  },
-  ownKeys: function(target) {
-    if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _LOAD_ISOLATION_AUDIO_RAW();
-    return Reflect.ownKeys(_CACHE_ISOLATION_AUDIO);
-  },
-  getOwnPropertyDescriptor: function(target, prop) {
-    if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _LOAD_ISOLATION_AUDIO_RAW();
-    const desc = Reflect.getOwnPropertyDescriptor(_CACHE_ISOLATION_AUDIO, prop); if (desc) { desc.configurable = true; desc.writable = true; } return desc;
-  },
-  set: function(target, prop, value) {
-    if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _LOAD_ISOLATION_AUDIO_RAW();
-    _CACHE_ISOLATION_AUDIO[prop] = value;
-    return true;
-  },
-  defineProperty: function(target, prop, descriptor) {
-    if (!_CACHE_ISOLATION_AUDIO) _CACHE_ISOLATION_AUDIO = _LOAD_ISOLATION_AUDIO_RAW();
-    Object.defineProperty(_CACHE_ISOLATION_AUDIO, prop, descriptor);
-    return true;
-  }
-});
-window.__ALLO_ISOLATION_AUDIO = ISOLATION_AUDIO;
-let _CACHE_PHONEME_AUDIO_BANK = null;
-function _LOAD_PHONEME_AUDIO_BANK_RAW() {
-  return {
-    'ear': getAudio('phonemes', 'ear'),
-    'ow': getAudio('phonemes', 'ow'),
-    'th': getAudio('phonemes', 'th'),
-    'l': getAudio('phonemes', 'l'),
-    'ie': getAudio('phonemes', 'ie'),
-    'e': getAudio('phonemes', 'e'),
-    'y': getAudio('phonemes', 'y'),
-    'wh': getAudio('phonemes', 'wh'),
-    'k': getAudio('phonemes', 'k'),
-    'u': getAudio('phonemes', 'u'),
-    'q': getAudio('phonemes', 'q'),
-    'n': getAudio('phonemes', 'n'),
-    'h': getAudio('phonemes', 'h'),
-    'b': getAudio('phonemes', 'b'),
-    'oy': getAudio('phonemes', 'oy'),
-    'ph': getAudio('phonemes', 'ph'),
-    'd': getAudio('phonemes', 'd'),
-    'oo': getAudio('phonemes', 'oo'),
-    'z': getAudio('phonemes', 'z'),
-    's': getAudio('phonemes', 's'),
-    'er': getAudio('phonemes', 'er'),
-    'sh': getAudio('phonemes', 'sh'),
-    'g': getAudio('phonemes', 'g'),
-    'ng': getAudio('phonemes', 'ng'),
-    'oa': getAudio('phonemes', 'oa'),
-    'a': getAudio('phonemes', 'a'),
-    'r': getAudio('phonemes', 'r'),
-    'v': getAudio('phonemes', 'v'),
-    'ck': getAudio('phonemes', 'ck'),
-    'ee': getAudio('phonemes', 'ee'),
-    'c': getAudio('phonemes', 'c'),
-    't': getAudio('phonemes', 't'),
-    'p': getAudio('phonemes', 'p'),
-    'm': getAudio('phonemes', 'm'),
-    'ch': getAudio('phonemes', 'ch'),
-    'w': getAudio('phonemes', 'w'),
-    'ar': getAudio('phonemes', 'ar'),
-    'o': getAudio('phonemes', 'o'),
-    'f': getAudio('phonemes', 'f'),
-    'i': getAudio('phonemes', 'i'),
-    'ay': getAudio('phonemes', 'ay'),
-    'j': getAudio('phonemes', 'j'),
-    'ir': getAudio('phonemes', 'ir'),
-    'ur': getAudio('phonemes', 'ur'),
-    'or': getAudio('phonemes', 'or'),
-    'air': getAudio('phonemes', 'air'),
-  };
-}
-const PHONEME_AUDIO_BANK = new Proxy({}, {
-  get: function(target, prop) {
-    if (prop === 'raw_ref') return null; // Debug hook
-    if (!_CACHE_PHONEME_AUDIO_BANK) {
-      _CACHE_PHONEME_AUDIO_BANK = _LOAD_PHONEME_AUDIO_BANK_RAW();
-    }
-    return _CACHE_PHONEME_AUDIO_BANK[prop];
-  },
-  has: function(target, prop) {
-    if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _LOAD_PHONEME_AUDIO_BANK_RAW();
-    return prop in _CACHE_PHONEME_AUDIO_BANK;
-  },
-  ownKeys: function(target) {
-    if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _LOAD_PHONEME_AUDIO_BANK_RAW();
-    return Reflect.ownKeys(_CACHE_PHONEME_AUDIO_BANK);
-  },
-  getOwnPropertyDescriptor: function(target, prop) {
-    if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _LOAD_PHONEME_AUDIO_BANK_RAW();
-    const desc = Reflect.getOwnPropertyDescriptor(_CACHE_PHONEME_AUDIO_BANK, prop); if (desc) { desc.configurable = true; desc.writable = true; } return desc;
-  },
-  set: function(target, prop, value) {
-    if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _LOAD_PHONEME_AUDIO_BANK_RAW();
-    _CACHE_PHONEME_AUDIO_BANK[prop] = value;
-    return true;
-  },
-  defineProperty: function(target, prop, descriptor) {
-    if (!_CACHE_PHONEME_AUDIO_BANK) _CACHE_PHONEME_AUDIO_BANK = _LOAD_PHONEME_AUDIO_BANK_RAW();
-    Object.defineProperty(_CACHE_PHONEME_AUDIO_BANK, prop, descriptor);
-    return true;
-  }
-});
-window.__ALLO_INSTRUCTION_AUDIO = INSTRUCTION_AUDIO;
-window.__ALLO_ISOLATION_AUDIO = ISOLATION_AUDIO;
-window.__ALLO_PHONEME_AUDIO_BANK = PHONEME_AUDIO_BANK;
-PHONEME_AUDIO_BANK['aw'] = getAudio('phonemes', 'aw');
-PHONEME_AUDIO_BANK['dh'] = getAudio('phonemes', 'dh');
-PHONEME_AUDIO_BANK['ee'] = getAudio('phonemes', 'ee');
-PHONEME_AUDIO_BANK['g'] = getAudio('phonemes', 'g');
-PHONEME_AUDIO_BANK['k'] = getAudio('phonemes', 'k');
-PHONEME_AUDIO_BANK['oo_short'] = getAudio('phonemes', 'oo_short');
-PHONEME_AUDIO_BANK['or'] = getAudio('phonemes', 'or');
-PHONEME_AUDIO_BANK['p'] = getAudio('phonemes', 'p');
-PHONEME_AUDIO_BANK['th'] = getAudio('phonemes', 'th');
-PHONEME_AUDIO_BANK['ue'] = getAudio('phonemes', 'ue');
-PHONEME_AUDIO_BANK['zh'] = getAudio('phonemes', 'zh');
-PHONEME_AUDIO_BANK['sh'] = getAudio('phonemes', 'sh');
-PHONEME_AUDIO_BANK['ch'] = getAudio('phonemes', 'ch');
-if (!PHONEME_AUDIO_BANK['ch'] && PHONEME_AUDIO_BANK['sh']) PHONEME_AUDIO_BANK['ch'] = PHONEME_AUDIO_BANK['sh'];
-if (typeof PHONEME_AUDIO_BANK !== 'undefined') {
-    if (PHONEME_AUDIO_BANK['or'] && !PHONEME_AUDIO_BANK['orr']) PHONEME_AUDIO_BANK['orr'] = PHONEME_AUDIO_BANK['or'];
-    if (PHONEME_AUDIO_BANK['ar'] && !PHONEME_AUDIO_BANK['ahrr']) PHONEME_AUDIO_BANK['ahrr'] = PHONEME_AUDIO_BANK['ar'];
-    if (PHONEME_AUDIO_BANK['er'] && !PHONEME_AUDIO_BANK['err']) PHONEME_AUDIO_BANK['err'] = PHONEME_AUDIO_BANK['er'];
-}
-window.__ALLO_PHONEME_AUDIO_BANK = PHONEME_AUDIO_BANK;
+// ── AudioBanks extracted to audio_banks_module.js (CDN) ──
+// Four lazy Proxy-backed audio lookup tables. Host shims are null until
+// the CDN module loads; the upgrade hook then rebinds them. The only
+// host-scope consumer (glossary warm-up at line ~9340) is null-guarded,
+// and all other consumers are CDN modules loaded in the same batch.
+let LETTER_NAME_AUDIO = null;
+let INSTRUCTION_AUDIO = null;
+let ISOLATION_AUDIO = null;
+let PHONEME_AUDIO_BANK = null;
+window._upgradeAudioBanks = function () {
+    const m = window.AlloModules && window.AlloModules.AudioBanks;
+    if (!m) return;
+    LETTER_NAME_AUDIO = m.LETTER_NAME_AUDIO;
+    INSTRUCTION_AUDIO = m.INSTRUCTION_AUDIO;
+    ISOLATION_AUDIO = m.ISOLATION_AUDIO;
+    PHONEME_AUDIO_BANK = m.PHONEME_AUDIO_BANK;
+};
+if (window.AlloModules && window.AlloModules.AudioBanks) window._upgradeAudioBanks();
 // ── LabelPositions extracted to label_positions_module.js (CDN) ──
 var LABEL_POSITIONS = {};
 window._upgradeLabelPositions = function () {
@@ -4021,102 +3737,103 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/canvas_tips_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/label_positions_module.js');
-    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/ui_language_selector_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/canvas_tips_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/audio_banks_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -4127,7 +3844,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@351b633/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@10559ec/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
