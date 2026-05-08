@@ -668,6 +668,44 @@
       });
     }
 
+    // Plan T v3+: "Explain to class" — when a Pre-Check gap surfaces a concept
+    // most students missed, teacher can click 🎓 to generate a 60-90 word
+    // age-appropriate explainer they can immediately read aloud. Modal shows
+    // the explainer with regen / copy / play-aloud (TTS) / close. Pure
+    // teacher-side; no push to student screens in this slice.
+    var explainerModalState = React.useState({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
+    var explainerModal = explainerModalState[0]; var setExplainerModal = explainerModalState[1];
+    function openExplainer(conceptIdx, conceptText) {
+      setExplainerModal({ open: true, conceptIdx: conceptIdx, conceptText: conceptText, loading: true, text: '', error: '' });
+      runExplainerCall(conceptText);
+    }
+    function runExplainerCall(conceptText) {
+      if (typeof p.callGemini !== 'function') {
+        setExplainerModal(function (prev) { return Object.assign({}, prev, { loading: false, error: 'Explainer unavailable: callGemini not provided.' }); });
+        return;
+      }
+      var grade = p.gradeLevel || 'middle school';
+      var prompt = 'You are explaining a concept to ' + grade + ' students who do not yet understand it. They just took a pre-check and got it wrong as a class. Write a 60-90 word explainer that: (1) names the concept clearly, (2) gives ONE concrete relatable example, (3) avoids jargon, (4) reads aloud naturally. Plain text only. No markdown, no fences, no headers.\n\nCONCEPT (from the pre-check question that the class missed):\n"' + String(conceptText || '').slice(0, 400) + '"\n\nReturn ONLY the explainer text.';
+      Promise.resolve(p.callGemini(prompt, false)).then(function (raw) {
+        var txt = (typeof raw === 'object' && raw && raw.text) ? raw.text : String(raw || '');
+        txt = txt.replace(/^```(?:[a-z]+)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+        setExplainerModal(function (prev) { return Object.assign({}, prev, { loading: false, text: txt, error: '' }); });
+      }).catch(function (err) {
+        setExplainerModal(function (prev) { return Object.assign({}, prev, { loading: false, error: (err && err.message) || 'Explainer call failed.' }); });
+      });
+    }
+    function closeExplainer() {
+      setExplainerModal({ open: false, conceptIdx: null, conceptText: '', loading: false, text: '', error: '' });
+    }
+    function copyExplainer() {
+      if (!explainerModal.text) return;
+      try { navigator.clipboard.writeText(explainerModal.text); } catch (e) { /* noop */ }
+    }
+    function playExplainer() {
+      if (!explainerModal.text || typeof p.callTTS !== 'function') return;
+      try { p.callTTS(explainerModal.text); } catch (e) { /* noop */ }
+    }
+
     var aggResult;
     try {
       aggResult = aggsMod.aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache);
@@ -827,7 +865,9 @@
         )
       );
     } else if (variant === 'preLessonGap') {
-      // Concept gap cards — lowest % first
+      // Concept gap cards — lowest % first. Cards where the class is below
+      // 80% correct get an "Explain to class" button that opens the AI
+      // explainer modal.
       body = React.createElement('div', { className: 'space-y-2' },
         data.conceptCards.map(function (card) {
           var color = card.totalAnswered === 0 ? 'slate' :
@@ -837,6 +877,7 @@
                         card.percentCorrect < 50 ? '⚠ Needs pre-teaching' :
                         card.percentCorrect < 80 ? 'Review with class' :
                         'Class is ready';
+          var showExplainBtn = card.totalAnswered > 0 && card.percentCorrect < 80 && typeof p.callGemini === 'function';
           return React.createElement('div', {
             key: card.questionIdx,
             className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200',
@@ -852,7 +893,13 @@
               React.createElement('span', null, card.correctCount + ' ✓'),
               React.createElement('span', null, card.incorrectCount + ' ✗'),
               card.idkCount > 0 && React.createElement('span', { className: 'text-sky-700' }, card.idkCount + ' 🤔'),
-              React.createElement('span', { className: 'text-slate-500' }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students')
+              React.createElement('span', { className: 'text-slate-500' }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students'),
+              showExplainBtn && React.createElement('button', {
+                type: 'button',
+                onClick: function () { openExplainer(card.questionIdx, card.conceptText); },
+                className: 'ml-auto inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors',
+                title: 'Generate a 60-90 word concept explainer for the class',
+              }, '🎓 Explain to class')
             )
           );
         })
@@ -961,11 +1008,68 @@
       );
     }
 
+    // Concept explainer modal (preLessonGap "Explain to class" button)
+    var explainerModalEl = explainerModal.open ? React.createElement('div', {
+      className: 'fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 p-4',
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-label': 'Concept explainer',
+      onClick: function (e) { if (e.target === e.currentTarget) closeExplainer(); },
+    },
+      React.createElement('div', {
+        className: 'bg-white rounded-xl shadow-2xl max-w-lg w-full p-5 border-2 border-indigo-300',
+      },
+        React.createElement('div', { className: 'flex items-start justify-between gap-3 mb-3' },
+          React.createElement('div', null,
+            React.createElement('h4', { className: 'font-black text-base text-slate-800' }, '🎓 Explain to class'),
+            React.createElement('p', { className: 'text-xs text-slate-600 mt-0.5' }, 'Concept the class missed:'),
+            React.createElement('p', { className: 'text-xs italic text-slate-700 mt-0.5' }, '"' + (explainerModal.conceptText || '') + '"')
+          ),
+          React.createElement('button', {
+            type: 'button',
+            onClick: closeExplainer,
+            'aria-label': 'Close',
+            className: 'flex-shrink-0 text-slate-400 hover:text-slate-700 text-xl leading-none',
+          }, '×')
+        ),
+        explainerModal.loading
+          ? React.createElement('div', { className: 'p-4 text-center text-sm text-slate-600' },
+              React.createElement('span', { className: 'inline-block animate-pulse' }, '✨ Generating explainer…'))
+          : explainerModal.error
+            ? React.createElement('div', { className: 'p-3 rounded bg-rose-50 border border-rose-200 text-sm text-rose-800' }, explainerModal.error)
+            : React.createElement('div', { className: 'p-3 rounded bg-indigo-50 border border-indigo-200 text-sm text-slate-800 leading-relaxed whitespace-pre-wrap' }, explainerModal.text),
+        React.createElement('div', { className: 'flex items-center gap-2 mt-4 flex-wrap' },
+          React.createElement('button', {
+            type: 'button',
+            onClick: function () { runExplainerCall(explainerModal.conceptText); },
+            disabled: explainerModal.loading,
+            className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 disabled:opacity-50',
+          }, '↻ Regenerate'),
+          !explainerModal.loading && !explainerModal.error && React.createElement('button', {
+            type: 'button',
+            onClick: copyExplainer,
+            className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100',
+          }, '📋 Copy'),
+          !explainerModal.loading && !explainerModal.error && typeof p.callTTS === 'function' && React.createElement('button', {
+            type: 'button',
+            onClick: playExplainer,
+            className: 'text-xs font-bold px-3 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100',
+            title: 'Play explainer aloud',
+          }, '🔊 Play aloud'),
+          React.createElement('button', {
+            type: 'button',
+            onClick: closeExplainer,
+            className: 'ml-auto text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700',
+          }, 'Close')
+        )
+      )
+    ) : null;
+
     return React.createElement('div', {
       className: 'p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm',
       role: 'region',
       'aria-label': 'Live Results Dashboard',
-    }, header, body);
+    }, header, body, explainerModalEl);
   }
 
   // ─── FreeformItemsBlock (Plan S Slice 2) ──────────────────────────────
@@ -1581,6 +1685,7 @@
       generatedContent: generatedContent,
       appId: appId,
       callGemini: props.callGemini,
+      callTTS: props.callTTS,
       gradeLevel: props.gradeLevel,
     }),
     /*#__PURE__*/React.createElement(ErrorBoundary, {
