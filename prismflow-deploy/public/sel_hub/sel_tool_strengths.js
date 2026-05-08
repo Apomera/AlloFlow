@@ -1075,6 +1075,44 @@ window.SelHub = window.SelHub || {
             })
           ),
 
+          // ── Topic-accent hero band per tab ──
+          (function() {
+            var TAB_META = {
+              discover:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\u2B50',          title: 'Discover \u2014 your top 5 character strengths',     hint: 'VIA Institute (Peterson + Seligman 2004): 24 character strengths grouped in 6 virtues. Your top 5 \u201Csignature strengths\u201D show up unbidden, energize you, and feel like you. Use them = predicts well-being.' },
+              interview: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF99', title: 'Interview \u2014 someone who knows you well',       hint: 'Strengths-spotting from outside often catches what you can\u2019t see in yourself. \u201CWhen am I at my best?\u201D from a parent / friend / teacher \u2014 their answers are data you can use.' },
+              scenarios: { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 strengths in real moments',         hint: 'Strengths show up most clearly under pressure: a deadline, a conflict, a hard ask. Mapping each scenario to a strength builds the language for self-narrative \u2014 \u201Cthat was my curiosity\u201D, not just \u201CI did it.\u201D' },
+              quiz:      { accent: '#10b981', soft: 'rgba(16,185,129,0.14)', icon: '\uD83E\uDDE9', title: 'Quiz \u2014 self-assessment',                         hint: 'Forced-choice strengths quiz. Roughly correlates with full VIA-72 results in a fraction of the time. Use as a starting hypothesis, then triangulate against scenarios + interview + your own gut feel.' },
+              reflect:   { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\uD83D\uDCDD', title: 'Reflect \u2014 written self-knowledge',               hint: 'Pennebaker 1986 expressive writing protocol; 15 min, focused on a specific moment. Strengths-focused reflection (vs. problem-focused) builds approach motivation rather than avoidance \u2014 Fredrickson broaden-and-build.' },
+              stories:   { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83D\uDCD6', title: 'Stories \u2014 strengths-spotting in narrative',     hint: 'Practice on characters first; safer than self. McAdams 1985 narrative-identity research: the way you tell your life story IS your identity. Strengths language gives the story handles.' },
+              compare:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDD0D', title: 'Compare \u2014 you vs. your past self',               hint: 'NOT you vs. peers (which crushes most people). Past-self comparison shows growth without inviting envy. \u201CWhat could I do this year I couldn\u2019t a year ago?\u201D \u2014 the most generative question.' },
+              challenge: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\u26A1',         title: 'Challenge \u2014 use a strength in a new way',       hint: 'Seligman 2005: \u201Cuse a signature strength in a new way\u201D \u2192 measurable mood gains 6 months later. Tiny novel applications outperform big new commitments. Stretch the strength, don\u2019t add a habit.' },
+              gratitude: { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83D\uDE4F', title: 'Gratitude \u2014 spot strengths in others',          hint: 'Specific gratitude (\u201CI noticed your patience when ___\u201D) builds connection AND surfaces strengths you might not have named in yourself. Pay-it-forward effect (Algoe 2008): receivers tend to express it back.' },
+              planner:   { accent: '#7c3aed', soft: 'rgba(124,58,237,0.14)', icon: '\uD83D\uDCCB', title: 'Planner \u2014 strengths-based week ahead',           hint: 'Map this week\u2019s commitments to your strengths. Predicts which days will energize vs. drain BEFORE they hit. Doesn\u2019t change the obligations \u2014 changes the framing + the recovery time you build in.' },
+              peers:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83D\uDC65', title: 'Peers \u2014 give + get strengths feedback',         hint: 'Quaker Strengths Bombardment (1960s) + modern variant: a small group names each other\u2019s strengths in a structured circle. Almost universally moving experience. Builds the muscle for noticing strengths in real life.' },
+              affirm:    { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83D\uDCAC', title: 'Affirm \u2014 self-talk reframes',                    hint: 'Affirmations work when SPECIFIC + tied to evidence (Wood 2009: vague affirmations BACKFIRE on low self-esteem). \u201CI was patient yesterday with my brother\u201D > \u201CI am loving.\u201D Specifics build the muscle.' },
+              coach:     { accent: '#6366f1', soft: 'rgba(99,102,241,0.14)', icon: '\uD83E\uDD16', title: 'Coach \u2014 AI sounding board',                       hint: 'Type a stuck moment; the AI surfaces the strengths underneath what feels like failure. Reframe practice. Not a substitute for therapy or a trusted human \u2014 a rehearsal space for the easier reframes.' },
+              profile:   { accent: '#ea580c', soft: 'rgba(234,88,12,0.14)',  icon: '\uD83D\uDCCA', title: 'Profile \u2014 your strengths over time',           hint: 'Strengths shift across life stages (Park + Peterson 2010). Track yours; the changes ARE the data. \u201CWhich strength has grown? Which has gone dormant? Which do I want to develop?\u201D' }
+            };
+            var meta = TAB_META[tab] || TAB_META.discover;
+            return h('div', {
+              style: {
+                margin: '8px 12px 0',
+                padding: '12px 14px',
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+                border: '1px solid ' + meta.accent + '55',
+                borderLeft: '4px solid ' + meta.accent,
+                display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+              }
+            },
+              h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+              h('div', { style: { flex: 1, minWidth: 220 } },
+                h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              )
+            );
+          })(),
+
           // Badge panel
           showBadges ? h('div', { style: { padding: 12, background: 'rgba(167,139,250,0.08)', borderBottom: '1px solid rgba(167,139,250,0.15)' } },
             h('div', { style: { fontSize: 12, fontWeight: 'bold', color: '#c4b5fd', marginBottom: 8 } }, '\uD83C\uDFC5 Badges \u2014 ' + badgeCount + '/' + Object.keys(BADGES).length),
