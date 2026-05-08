@@ -244,7 +244,7 @@
             tabIndex: isClickable ? 0 : undefined,
             onKeyDown: isClickable ? function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); answerMisplaced(displayIdx); } } : undefined,
           },
-            React.createElement('span', { className: 'flex-shrink-0 text-xs font-bold text-slate-500 w-6' }, (displayIdx + 1) + '.'),
+            React.createElement('span', { className: 'flex-shrink-0 text-xs font-bold text-slate-600 w-6' }, (displayIdx + 1) + '.'),
             React.createElement('span', { className: 'flex-1 text-sm text-slate-800' }, item),
             showCorrectness && thisIsActuallyMisplaced && React.createElement('span', { className: 'text-xs font-bold text-amber-700' }, '↔ misplaced'),
             showCorrectness && isClicked && !thisIsActuallyMisplaced && React.createElement('span', { className: 'text-xs font-bold text-rose-700' }, '✗')
@@ -631,15 +631,17 @@
           type: 'button',
           onClick: requestExplainer,
           className: 'text-xs font-bold px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-white transition-colors',
+          'aria-label': 'Explain this concept',
           title: 'Get a quick AI explanation of this concept',
-        }, '🤖 Explain this concept'),
+        }, React.createElement('span', { 'aria-hidden': 'true' }, '🤖 '), 'Explain this concept'),
         allowIDK && !idkMarked && React.createElement('button', {
           type: 'button',
           onClick: markIDK,
           className: 'text-xs font-semibold px-2.5 py-1 rounded bg-sky-100 hover:bg-sky-200 text-sky-800 transition-colors',
+          'aria-label': 'I don\'t know — skip without penalty',
           title: 'Skip — no penalty. The AI will explain the concept.',
-        }, '🤔 I don\'t know'),
-        idkMarked && React.createElement('span', { className: 'text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-sky-200 text-sky-900' }, 'Marked "I don\'t know"')
+        }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know'),
+        idkMarked && React.createElement('span', { className: 'text-xs uppercase font-bold px-2 py-0.5 rounded bg-sky-200 text-sky-900' }, 'Marked "I don\'t know"')
       ),
       // Inline explainer panel
       explainer.open && React.createElement('div', { className: 'p-3 bg-indigo-50 border border-indigo-200 rounded-lg' },
@@ -1096,8 +1098,9 @@
             type: 'button',
             onClick: exportCsv,
             className: 'inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded border border-slate-300 text-slate-700 bg-white hover:bg-slate-100 transition-colors',
+            'aria-label': 'Export gradebook as CSV',
             title: 'Download gradebook as CSV — opens in Excel / Google Sheets / Numbers',
-          }, '📥 Export CSV')
+          }, React.createElement('span', { 'aria-hidden': 'true' }, '📥 '), 'Export CSV')
         ),
         React.createElement('div', { className: 'overflow-x-auto' },
         React.createElement('table', { className: 'w-full text-sm border-collapse' },
@@ -1126,7 +1129,7 @@
                         type: 'button',
                         'aria-expanded': isExpanded,
                         'aria-label': (isExpanded ? 'Collapse' : 'Expand') + ' ' + row.displayName + ' details',
-                        className: 'text-slate-500 hover:text-indigo-600 transition-colors text-xs font-mono',
+                        className: 'text-slate-600 hover:text-indigo-600 transition-colors text-xs font-mono',
                         onClick: function (e) { e.stopPropagation(); toggleRowExpanded(row.uid); },
                       }, isExpanded ? '▼' : '▶')
                     : React.createElement('span', { className: 'text-slate-300 text-xs' }, '·')
@@ -1174,18 +1177,20 @@
                             React.createElement('p', { className: 'text-xs font-semibold text-slate-700 mb-0.5' }, 'Q' + qNum + '. ' + qSnippet),
                             cell && cell.answerSummary
                               ? React.createElement('p', { className: 'text-xs text-slate-800 break-words' },
-                                  React.createElement('span', { className: 'text-slate-500' }, 'Answered: '),
+                                  React.createElement('span', { className: 'text-slate-600' }, 'Answered: '),
                                   cell.answerSummary)
                               : !cell && React.createElement('p', { className: 'text-xs italic text-slate-400' }, 'No response yet')
                           ),
                           cell && cell.aiGraded && React.createElement('span', {
-                            className: 'flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800',
+                            className: 'flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800',
+                            'aria-label': 'Graded by AI as ' + cell.aiStatus,
                             title: 'Graded by AI (' + cell.aiStatus + ')',
-                          }, '✨ AI'),
+                          }, React.createElement('span', { 'aria-hidden': 'true' }, '✨ '), 'AI'),
                           cell && cell.teacherOverridden && React.createElement('span', {
-                            className: 'flex-shrink-0 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800',
+                            className: 'flex-shrink-0 text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-purple-100 text-purple-800',
+                            'aria-label': 'Teacher override applied, was previously ' + (cell.priorStatus || 'unknown'),
                             title: 'Teacher override (was: ' + (cell.priorStatus || '?') + ')',
-                          }, '🖊 Teacher'),
+                          }, React.createElement('span', { 'aria-hidden': 'true' }, '🖊 '), 'Teacher'),
                           cell && confidenceChip(cell.confidence, cell.status)
                         ),
                         cell && cell.aiFeedback && React.createElement('p', {
@@ -1264,13 +1269,14 @@
               React.createElement('span', null, card.correctCount + ' ✓'),
               React.createElement('span', null, card.incorrectCount + ' ✗'),
               card.idkCount > 0 && React.createElement('span', { className: 'text-sky-700' }, card.idkCount + ' 🤔'),
-              React.createElement('span', { className: 'text-slate-500' }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students'),
+              React.createElement('span', { className: 'text-slate-600' }, '· ' + card.totalAnswered + ' / ' + data.totalStudents + ' students'),
               showExplainBtn && React.createElement('button', {
                 type: 'button',
                 onClick: function () { openExplainer(card.questionIdx, card.conceptText); },
-                className: 'ml-auto inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors',
+                className: 'ml-auto inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded bg-indigo-600 text-white hover:bg-indigo-700 transition-colors',
+                'aria-label': 'Explain this concept to the class',
                 title: 'Generate a 60-90 word concept explainer for the class',
-              }, '🎓 Explain to class')
+              }, React.createElement('span', { 'aria-hidden': 'true' }, '🎓 '), 'Explain to class')
             )
           );
         })
@@ -1333,7 +1339,7 @@
                       });
                     })
                   ),
-                  s.seen && typeof s.successRate === 'number' && React.createElement('span', { className: 'text-slate-500 ml-auto' },
+                  s.seen && typeof s.successRate === 'number' && React.createElement('span', { className: 'text-slate-600 ml-auto' },
                     s.correctAttempts + '/' + s.totalAttempts + ' (' + s.successRate + '%)')
                 );
               })
@@ -1375,7 +1381,7 @@
               'aria-label': canExpand ? ((isExpanded ? 'Collapse' : 'Expand') + ' question ' + (bar.questionIdx + 1) + ' student detail') : undefined,
               onKeyDown: canExpand ? function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBarExpanded(bar.questionIdx); } } : undefined,
             },
-              canExpand && React.createElement('span', { className: 'text-slate-500 hover:text-indigo-600 text-[10px] font-mono mt-0.5' }, isExpanded ? '▼' : '▶'),
+              canExpand && React.createElement('span', { className: 'text-slate-600 hover:text-indigo-600 text-[10px] font-mono mt-0.5' }, isExpanded ? '▼' : '▶'),
               React.createElement('span', { className: 'text-xs text-slate-700 flex-1 min-w-0' }, (bar.questionIdx + 1) + '. ' + qLabel),
               bar.total > 0 && React.createElement('span', {
                 className: 'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800',
@@ -1392,8 +1398,8 @@
               React.createElement('span', null, bar.correct + ' ✓'),
               React.createElement('span', null, bar.incorrect + ' ✗'),
               bar.idk > 0 && React.createElement('span', { className: 'text-sky-700' }, bar.idk + ' 🤔'),
-              bar.submitted > 0 && React.createElement('span', { className: 'text-slate-500' }, bar.submitted + ' submitted'),
-              React.createElement('span', { className: 'ml-auto text-slate-500' }, bar.total + ' / ' + data.totalStudents)
+              bar.submitted > 0 && React.createElement('span', { className: 'text-slate-600' }, bar.submitted + ' submitted'),
+              React.createElement('span', { className: 'ml-auto text-slate-600' }, bar.total + ' / ' + data.totalStudents)
             ),
             // Per-student detail when expanded
             isExpanded && Array.isArray(bar.byStudent) && bar.byStudent.length > 0 && React.createElement('div', {
@@ -1436,7 +1442,8 @@
       },
         React.createElement('div', { className: 'flex items-start justify-between gap-3 mb-3' },
           React.createElement('div', null,
-            React.createElement('h4', { className: 'font-black text-base text-slate-800' }, '🎓 Explain to class'),
+            React.createElement('h4', { className: 'font-black text-base text-slate-800' },
+              React.createElement('span', { 'aria-hidden': 'true' }, '🎓 '), 'Explain to class'),
             React.createElement('p', { className: 'text-xs text-slate-600 mt-0.5' }, 'Concept the class missed:'),
             React.createElement('p', { className: 'text-xs italic text-slate-700 mt-0.5' }, '"' + (explainerModal.conceptText || '') + '"')
           ),
@@ -1445,7 +1452,7 @@
             ref: explainerCloseBtnRef,
             onClick: closeExplainer,
             'aria-label': 'Close concept explainer',
-            className: 'flex-shrink-0 text-slate-500 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded',
+            className: 'flex-shrink-0 text-slate-600 hover:text-slate-700 text-xl leading-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 rounded',
           }, '×')
         ),
         explainerModal.loading
@@ -1480,8 +1487,13 @@
             className: 'text-xs font-bold px-3 py-1.5 rounded ' + (pushState.pushed
               ? 'bg-emerald-600 text-white'
               : 'bg-amber-500 hover:bg-amber-600 text-white') + ' disabled:opacity-50',
+            'aria-label': pushState.pushed ? 'Explainer pushed to all students' : 'Push this explainer to every student\'s screen',
             title: 'Send this explainer to every student\'s screen now',
-          }, pushState.pushing ? 'Pushing…' : pushState.pushed ? '✓ Pushed to students' : '📡 Push to all students'),
+          }, pushState.pushing
+              ? 'Pushing…'
+              : pushState.pushed
+                ? React.createElement(React.Fragment, null, React.createElement('span', { 'aria-hidden': 'true' }, '✓ '), 'Pushed to students')
+                : React.createElement(React.Fragment, null, React.createElement('span', { 'aria-hidden': 'true' }, '📡 '), 'Push to all students')),
           pushState.error && React.createElement('span', {
             className: 'text-[10px] text-rose-700 italic',
             role: 'alert',
@@ -1524,7 +1536,7 @@
             React.createElement('p', { className: 'text-xs font-semibold uppercase tracking-wider text-indigo-700 mb-1' }, 'Prompt ' + (bucket.reflectionIdx + 1)),
             React.createElement('p', { className: 'text-sm italic text-slate-700 mb-2' }, bucket.promptText),
             bucket.responses.length === 0
-              ? React.createElement('p', { className: 'text-xs italic text-slate-500' }, 'No responses yet.')
+              ? React.createElement('p', { className: 'text-xs italic text-slate-600' }, 'No responses yet.')
               : React.createElement('div', { className: 'space-y-2' },
                   bucket.responses.map(function (r) {
                     return React.createElement('div', {
@@ -1768,8 +1780,9 @@
             type: 'button',
             onClick: markIDK,
             className: 'px-3 py-1.5 rounded-lg bg-sky-100 hover:bg-sky-200 text-sky-800 text-xs font-semibold transition-colors',
+            'aria-label': 'I don\'t know — skip without penalty',
             title: 'Skip — no penalty. The AI will explain the concept.',
-          }, '🤔 I don\'t know')
+          }, React.createElement('span', { 'aria-hidden': 'true' }, '🤔 '), 'I don\'t know')
         ),
         grade.status && grade.status !== 'correct' && grade.status !== 'idk' && React.createElement('button', {
           type: 'button',
@@ -2161,9 +2174,10 @@
             type: 'button',
             onClick: function () { refineQuizImage(qIdx, target, optIdx, 'Remove all text and labels from this image. Keep everything else identical.'); },
             disabled: isLoading,
-            className: 'text-[10px] font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50',
+            className: 'text-xs font-bold px-2 py-0.5 rounded bg-white border border-slate-300 hover:bg-slate-100 disabled:opacity-50',
+            'aria-label': 'Remove text from this image',
             title: 'One-click: remove text from this image',
-          }, '🧹 Remove text')
+          }, React.createElement('span', { 'aria-hidden': 'true' }, '🧹 '), 'Remove text')
         ),
         React.createElement('textarea', {
           value: inputValue,
@@ -2402,7 +2416,8 @@
           ? 'Weak items: Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q')
           : 'All MCQs have at least half their distractors encoding a known misconception',
       },
-        '🎯 Distractor review: ' + (generatedContent.data.distractorReview.misconceptionCount || 0)
+        React.createElement('span', { 'aria-hidden': 'true' }, '🎯 '),
+        'Distractor review: ' + (generatedContent.data.distractorReview.misconceptionCount || 0)
           + ' of ' + (generatedContent.data.distractorReview.totalDistractors || 0)
           + ' distractors encode a misconception (' + (generatedContent.data.distractorReview.quality != null ? generatedContent.data.distractorReview.quality + '%' : '—') + ')'
           + ((generatedContent.data.distractorReview.weakItems || []).length > 0
@@ -3094,21 +3109,25 @@
       return /*#__PURE__*/React.createElement("div", { className: "mt-1.5 ml-1 flex items-center gap-1.5 flex-wrap" },
         dq.encodesMisconception
           ? /*#__PURE__*/React.createElement("span", {
-              className: "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800",
+              className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800",
+              'aria-label': 'This distractor encodes a known student misconception. ' + (dq.reason || ''),
               title: dq.reason || 'Encodes a known student misconception',
-            }, "🎯 misconception")
+            }, /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true' }, '🎯 '), 'misconception')
           : /*#__PURE__*/React.createElement(React.Fragment, null,
               /*#__PURE__*/React.createElement("span", {
-                className: "text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800",
+                className: "text-xs font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-100 text-amber-800",
+                'aria-label': 'Generic distractor — does not encode a specific misconception. ' + (dq.reason || ''),
                 title: dq.reason || 'Generic distractor — does not encode a specific misconception',
-              }, "⚠ generic"),
+              }, /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true' }, '⚠ '), 'generic'),
               /*#__PURE__*/React.createElement("button", {
                 type: "button",
                 onClick: function (e) { e.stopPropagation(); improveDistractor(i, optIdx, opt, dq.reason || ''); },
                 disabled: !!isImprovingDistractor[i + ':' + optIdx],
-                className: "text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
+                className: "text-xs font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50",
+                'aria-label': isImprovingDistractor[i + ':' + optIdx] ? 'Rewriting distractor' : 'Rewrite this distractor to encode a real misconception',
                 title: "Rewrite this distractor to encode a real misconception",
-              }, isImprovingDistractor[i + ':' + optIdx] ? '✨ rewriting…' : '✨ improve')
+              }, /*#__PURE__*/React.createElement('span', { 'aria-hidden': 'true' }, '✨ '),
+                 isImprovingDistractor[i + ':' + optIdx] ? 'rewriting…' : 'improve')
             )
       );
     })()))),
@@ -3229,7 +3248,7 @@
                 disabled: !refDraft.trim(),
                 className: 'text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed',
               }, 'Submit reflection'),
-              !refDraft.trim() && /*#__PURE__*/React.createElement("span", { className: 'text-[11px] italic text-slate-500' }, 'Type a response to enable submit')
+              !refDraft.trim() && /*#__PURE__*/React.createElement("span", { className: 'text-[11px] italic text-slate-600' }, 'Type a response to enable submit')
             )
           )
     ));
