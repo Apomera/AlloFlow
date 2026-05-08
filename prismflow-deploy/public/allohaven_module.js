@@ -3041,6 +3041,21 @@
       // wrapper, leaving the inner pose / tail / wings animations intact.
       '@keyframes ah-companion-stroll-kf { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(2px); } 75% { transform: translateX(7px); } }',
       '.ah-root .ah-companion-stroll { animation: ah-companion-stroll-kf 24s ease-in-out infinite; }',
+      // ── Phase U3 — Learning-state decoration cues ──
+      // Yearning: a slow anticipatory lift ("reaching" toward the student)
+      // for due decks. Subtle vertical bob with warm halo every ~12s.
+      '@keyframes ah-deco-yearning-kf { 0%, 70%, 100% { transform: translateY(0); box-shadow: 0 0 0 0 rgba(255,200,120,0); } 80% { transform: translateY(-4px); box-shadow: 0 0 14px 3px rgba(255,200,120,0.45); } 90% { transform: translateY(-2px); box-shadow: 0 0 10px 2px rgba(255,200,120,0.3); } }',
+      '.ah-root .ah-deco-yearning { animation: ah-deco-yearning-kf 12s ease-in-out infinite; border-radius: 8px; }',
+      // Satisfied: a soft persistent warm halo for decks reviewed in the
+      // last 2 hours. Static glow, no motion — the "felt sense" of recent
+      // mastery without flashing.
+      '.ah-root .ah-deco-satisfied { box-shadow: 0 0 12px 1px rgba(180,220,180,0.4); border-radius: 8px; }',
+      // ── Phase U1 — Knowledge constellation lines ──
+      // Faint glow connecting decorations linked through atlases or stories.
+      // Gentle pulse so the connections breathe without strobing.
+      '@keyframes ah-constellation-pulse { 0%, 100% { opacity: 0.32; } 50% { opacity: 0.55; } }',
+      '.ah-root .ah-constellation-line { opacity: 0.4; animation: ah-constellation-pulse 6s ease-in-out infinite; filter: drop-shadow(0 0 2px currentColor); }',
+      '.ah-root .ah-constellation-layer { mix-blend-mode: screen; }',
       // Breathing pacer (Phase 2p.28) — gentle box-breathing circle.
       // The .ah-breathe-orb element gets a state class (-in, -hold-in,
       // -out, -hold-out) toggled from React; the keyframes drive the
@@ -3068,6 +3083,8 @@
       '  .ah-root .ah-starlight,',
       '  .ah-root .ah-idle-sparkle,',
       '  .ah-root .ah-companion-stroll,',
+      '  .ah-root .ah-deco-yearning,',
+      '  .ah-root .ah-constellation-line,',
       '  .ah-root .ah-companion-confetti-piece { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible,',
@@ -11058,6 +11075,35 @@
         }
       }
 
+      // ── Phase U2 — Due-deck nudge ──
+      // The companion surfaces a specific deck the student should review.
+      // Pushed early so it wins priority when learning state warrants it,
+      // but only when ≥1 deck is genuinely due (oldest one named).
+      // Tap-to-jump is wired through state.companion.lastBubbleDecorationId
+      // which the bubble click handler reads.
+      var dueNow = (state.decorations || []).filter(function (d) {
+        return d.linkedContent && typeof isMemoryDue === 'function' && isMemoryDue(d);
+      });
+      if (dueNow.length > 0) {
+        // Oldest-reviewed-first so "stalest" deck gets surfaced
+        dueNow.sort(function (a, b) {
+          var aIso = (a.linkedContent && a.linkedContent.lastReviewedAt) || '';
+          var bIso = (b.linkedContent && b.linkedContent.lastReviewedAt) || '';
+          return aIso.localeCompare(bIso);
+        });
+        var stalest = dueNow[0];
+        var stalestLabel = stalest.templateLabel || stalest.template || 'a deck';
+        var nudgeLines = [
+          pickOpener() + '"' + stalestLabel + '" is ready for another look.',
+          pickOpener() + 'shall we revisit "' + stalestLabel + '"?',
+          pickOpener() + 'it\'s been a while since we walked through "' + stalestLabel + '".'
+        ];
+        // Pick one variant; cycle on each call to avoid identical repeats.
+        candidates.push(nudgeLines[Math.floor(Math.random() * nudgeLines.length)]);
+        // Stash the target id so the bubble click can jump there.
+        candidates.__nudgeTargetId = stalest.id;
+      }
+
       // Recent decoration (last 24h)
       var newDecs = (state.decorations || []).filter(function(d) {
         if (d.isStarter || !d.earnedAt) return false;
@@ -11262,20 +11308,45 @@
       };
       (fillers[species] || fillers.cat).forEach(function(f) { candidates.push(f); });
 
-      // Pick first candidate that isn't the same as last (or first overall if all same)
+      // Pick first candidate that isn't the same as last (or first overall if all same).
+      // If the picked candidate is the due-deck nudge (always at index 0
+      // following customPhrases), surface its targetId so the bubble can
+      // jump to that decoration's memory modal on tap.
+      var pickedText = null;
       for (var k = 0; k < candidates.length; k++) {
-        if (candidates[k] !== lastBubble) return candidates[k];
+        if (candidates[k] !== lastBubble) { pickedText = candidates[k]; break; }
       }
-      return candidates[0] || 'Hi.';
+      if (pickedText === null) pickedText = candidates[0] || 'Hi.';
+      // Was the picked candidate the due-deck nudge?
+      var nudgeId = null;
+      if (candidates.__nudgeTargetId) {
+        // The first 0-1 candidates are customPhrases (only ~25% of the time);
+        // due-deck nudge sits right after. We don't know the exact index
+        // without recomputing, so we just match on substring — the nudge
+        // lines all contain a quoted decoration label.
+        // Simpler heuristic: if the picked text exactly matches one of
+        // our nudge lines, surface the id.
+        var nudgeMarkers = ['ready for another look', 'shall we revisit', 'it\'s been a while since we walked'];
+        for (var nm = 0; nm < nudgeMarkers.length; nm++) {
+          if (pickedText.indexOf(nudgeMarkers[nm]) !== -1) {
+            nudgeId = candidates.__nudgeTargetId;
+            break;
+          }
+        }
+      }
+      return { text: pickedText, targetId: nudgeId };
     }
 
     // Triggered on click OR auto-fired once on first render-with-companion
     function refreshCompanionBubble() {
       if (!state.companion || !state.companion.species) return;
-      var text = generateBubbleText(state, state.companion.species);
+      var result = generateBubbleText(state, state.companion.species);
+      // Backward-compat: if a caller still returns a string, normalize.
+      if (typeof result === 'string') result = { text: result, targetId: null };
       saveCompanion({
         lastBubbleAt: new Date().toISOString(),
-        lastBubbleText: text
+        lastBubbleText: result.text,
+        lastBubbleTargetId: result.targetId || null
       });
     }
 
@@ -12918,6 +12989,7 @@
               gap: '12px'
             }
           }, wallCells),
+          renderConstellationLayer('wall'),
           renderWeatherLayer('wall'),
           renderAmbientLayer('wall')
         ),
@@ -12962,6 +13034,7 @@
               gap: '10px'
             }
           }, floorCells),
+          renderConstellationLayer('floor'),
           renderWeatherLayer('floor'),
           renderAmbientLayer('floor'),
           renderCompanionOverlay()
@@ -13211,7 +13284,26 @@
             // Phase T3 — idle sparkle cue: applied to one decoration at a
             // time when the student has been idle for a while. CSS halo +
             // gentle pulse, 1.8s before clearing.
-            + (idleSparkleId === decoration.id ? ' ah-idle-sparkle' : ''),
+            + (idleSparkleId === decoration.id ? ' ah-idle-sparkle' : '')
+            // Phase U3 — learning-state cues. Yearning = due deck reaching
+            // for attention. Satisfied = reviewed in the last 2 hours.
+            // These layer onto existing micro-animations without conflict
+            // because they animate different properties (box-shadow vs
+            // transform).
+            + (function () {
+                if (!decoration.linkedContent) return '';
+                if (typeof isMemoryDue === 'function' && isMemoryDue(decoration)) {
+                  return ' ah-deco-yearning';
+                }
+                var lr = decoration.linkedContent.lastReviewedAt;
+                if (lr) {
+                  var ageMs = Date.now() - new Date(lr).getTime();
+                  if (ageMs >= 0 && ageMs < 2 * 60 * 60 * 1000) {
+                    return ' ah-deco-satisfied';
+                  }
+                }
+                return '';
+              })(),
           title: hoverTitle,
           // Drag-to-rearrange (Phase 2p.10) — only enabled in Build mode.
           // Sets a drag image hint via dataTransfer; on drop in another
@@ -13706,6 +13798,115 @@
       }, particles);
     }
 
+    // ── Phase U1 — Knowledge constellation lines ──
+    // Faint SVG lines connecting decorations that share an atlas edge or
+    // a sequential story step. Makes the method-of-loci pedagogy visible:
+    // the student literally sees the structure of what they've learned
+    // mapped onto the spatial layout of their room.
+    //
+    // Pair sources (capped at 8 strongest, most-recent-first):
+    //   - atlas edges (fromCardId/toCardId -> matching decoration IDs)
+    //   - sequential story steps (decorationId N → decorationId N+1)
+    //
+    // Surface-scoped: skips cross-surface pairs (wall-to-floor) since
+    // they'd render through the grid divider awkwardly. Highlights atlas
+    // pairs in accent, story pairs in success color.
+    function renderConstellationLayer(surface) {
+      if (inherited.highContrast) return null;
+      var roomId = state.activeRoomId || 'main';
+      var room = (state.rooms || []).filter(function (r) { return r.id === roomId; })[0];
+      if (!room) return null;
+      var cols = surface === 'wall' ? 4 : 6;
+      var slots = surface === 'wall' ? (room.wallSlots || 8) : (room.floorSlots || 12);
+      var rows = Math.max(1, Math.ceil(slots / cols));
+
+      var surfaceDecs = (state.decorations || []).filter(function (d) {
+        return d.placement && (d.placement.roomId || 'main') === roomId
+          && d.placement.surface === surface
+          && typeof d.placement.cellIndex === 'number';
+      });
+      if (surfaceDecs.length < 2) return null;
+      var decById = {};
+      surfaceDecs.forEach(function (d) { decById[d.id] = d; });
+
+      var pairs = [];
+      (state.atlases || []).forEach(function (atlas) {
+        (atlas.edges || []).forEach(function (e) {
+          if (!e.fromCardId || !e.toCardId) return;
+          if (e.fromCardId.indexOf('card-deco-') !== 0 || e.toCardId.indexOf('card-deco-') !== 0) return;
+          var fromId = e.fromCardId.replace('card-deco-', '');
+          var toId = e.toCardId.replace('card-deco-', '');
+          var a = decById[fromId], b = decById[toId];
+          if (!a || !b || a.id === b.id) return;
+          pairs.push({
+            a: a, b: b, source: 'atlas',
+            label: atlas.name || atlas.topic || 'atlas',
+            ts: e.addedAt || atlas.updatedAt || ''
+          });
+        });
+      });
+      (state.stories || []).forEach(function (story) {
+        var steps = story.steps || [];
+        for (var si = 0; si < steps.length - 1; si++) {
+          var aId = steps[si].decorationId;
+          var bId = steps[si + 1].decorationId;
+          if (!aId || !bId) continue;
+          var a = decById[aId], b = decById[bId];
+          if (!a || !b || a.id === b.id) continue;
+          pairs.push({
+            a: a, b: b, source: 'story',
+            label: story.title || 'story',
+            ts: story.lastReviewedAt || story.updatedAt || ''
+          });
+        }
+      });
+
+      if (pairs.length === 0) return null;
+      // Newest first, cap at 8 to keep the room from becoming a graph dump
+      pairs.sort(function (x, y) { return (y.ts || '').localeCompare(x.ts || ''); });
+      pairs = pairs.slice(0, 8);
+
+      var atlasColor = palette.accent || '#60a5fa';
+      var storyColor = palette.success || '#34d399';
+      var lineEls = pairs.map(function (p, i) {
+        var aIdx = p.a.placement.cellIndex;
+        var bIdx = p.b.placement.cellIndex;
+        var aCol = aIdx % cols, aRow = Math.floor(aIdx / cols);
+        var bCol = bIdx % cols, bRow = Math.floor(bIdx / cols);
+        var color = p.source === 'atlas' ? atlasColor : storyColor;
+        // <line> with vector-effect:non-scaling-stroke keeps the stroke
+        // visually consistent regardless of viewBox stretching.
+        return h('g', { key: 'cl-' + i },
+          h('line', {
+            x1: aCol + 0.5, y1: aRow + 0.5,
+            x2: bCol + 0.5, y2: bRow + 0.5,
+            stroke: color,
+            strokeWidth: 1.5,
+            strokeLinecap: 'round',
+            className: 'ah-constellation-line',
+            vectorEffect: 'non-scaling-stroke'
+          },
+            h('title', null, p.source === 'atlas' ? ('Atlas: ' + p.label) : ('Story: ' + p.label))
+          )
+        );
+      });
+
+      return h('svg', {
+        className: 'ah-constellation-layer',
+        'aria-hidden': 'true',
+        viewBox: '0 0 ' + cols + ' ' + rows,
+        preserveAspectRatio: 'none',
+        style: {
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          pointerEvents: 'none',
+          zIndex: 1
+        }
+      }, lineEls);
+    }
+
     function renderWeatherLayer(surface) {
       var weather = (state.atmosphere && state.atmosphere.weather) || 'clear';
       if (weather === 'clear') return null;
@@ -13987,25 +14188,46 @@
           );
         })(),
         // Thought bubble (regular state-aware observation, only when NOT
-        // showing the quiz prompt above)
-        (showBubble && !shouldOfferQuizPrompt()) ? h('div', {
-          className: 'ah-companion-bubble',
-          role: 'status',
-          'aria-live': 'polite',
-          style: {
+        // showing the quiz prompt above). Phase U2 — when the bubble carries
+        // a targetDecorationId (due-deck nudge), it becomes a tappable
+        // button that opens that deck's memory modal.
+        (showBubble && !shouldOfferQuizPrompt()) ? (function () {
+          var targetId = companion.lastBubbleTargetId;
+          var hasTarget = !!(targetId && (state.decorations || []).some(function (d) { return d.id === targetId; }));
+          var bubbleStyle = {
             maxWidth: '220px',
             padding: '8px 12px',
             background: palette.surface,
-            border: '1px solid ' + palette.border,
+            border: '1px solid ' + (hasTarget ? palette.accent : palette.border),
             borderRadius: '12px',
             borderBottomRightRadius: '4px',
             fontSize: '11.5px',
             color: palette.text,
             lineHeight: '1.45',
             boxShadow: '0 4px 12px rgba(0,0,0,0.25)',
-            pointerEvents: 'auto'
+            pointerEvents: 'auto',
+            fontFamily: 'inherit',
+            textAlign: 'left'
+          };
+          if (hasTarget) {
+            return h('button', {
+              className: 'ah-companion-bubble',
+              onClick: function () { openMemoryModal(targetId, false); },
+              'aria-label': 'Open ' + bubbleText + ' (tap to review)',
+              title: 'Tap to open this deck',
+              style: Object.assign({}, bubbleStyle, { cursor: 'pointer' })
+            },
+              h('span', { style: { display: 'block' } }, bubbleText),
+              h('span', { style: { fontSize: '10px', color: palette.accent, fontWeight: 700, marginTop: '4px', display: 'block' } }, '→ tap to review')
+            );
           }
-        }, bubbleText) : null,
+          return h('div', {
+            className: 'ah-companion-bubble',
+            role: 'status',
+            'aria-live': 'polite',
+            style: bubbleStyle
+          }, bubbleText);
+        })() : null,
         // The companion itself — sleep pose in Live mode
         (function() {
           var sleeping = state.roomMode === 'live';
