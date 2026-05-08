@@ -434,7 +434,8 @@
       stories:        true,
       journals:       true,
       bossEncounters: true,  // Phase 3b.history
-      realms:         true   // Realm Builder (Phase B+C)
+      realms:         true,  // Realm Builder (Phase B+C)
+      atlases:        true   // Concept Atlas (Phase H)
     },
 
     // ── Arcade (Phase 3a) ──
@@ -466,7 +467,15 @@
     // on every zone-add, so a tab close mid-session doesn't lose work.
     // Realms surface in Memory Overview ("My Realms" section) and the
     // print packet alongside decks + stories + boss encounters.
-    realms: []
+    realms: [],
+
+    // ── Atlases (Concept Atlas, relational-graph constructive mode) ──
+    // Sibling artifact type to realms. Each atlas is a directed labeled
+    // graph: nodes (cards placed) + edges (labeled relations between
+    // them with justifications + AI grades). Same persistence rhythm
+    // as realms — Concept Atlas calls ctx.onAtlasUpdate on every edge
+    // added; oldest-complete evicted at the cap of 12.
+    atlases: []
   };
 
   // ─────────────────────────────────────────────────────────
@@ -7117,6 +7126,46 @@
         ) : null,
         moreRealmCount > 0 ? h('div', { style: { fontSize: '10px', color: palette.textMute || palette.textDim, fontStyle: 'italic', marginBottom: '6px' } },
           '+ ' + moreRealmCount + ' more realm placement' + (moreRealmCount === 1 ? '' : 's') + ' (see print packet)') : null,
+        // Atlas edges (Phase H — cross-mode extension)
+        (function() {
+          var atlasRows = (hist.atlasEdges || []).slice(0, 4);
+          var moreAtlasCount = (hist.atlasEdges || []).length - atlasRows.length;
+          if (atlasRows.length === 0) return null;
+          return h('div', { style: { marginBottom: '6px' } },
+            h('ul', {
+              role: 'list',
+              'aria-label': 'Atlas edges containing this card',
+              style: { display: 'flex', flexDirection: 'column', gap: '4px', listStyle: 'none', padding: 0, margin: 0 }
+            },
+              atlasRows.map(function (e) {
+                return h('li', { key: 'ch-a-' + e.atlasId + '-' + (e.addedAt || ''), role: 'listitem', style: { listStyle: 'none' } },
+                  h('button', {
+                    onClick: function () {
+                      if (typeof p.onOpenAtlas === 'function') p.onOpenAtlas(e.atlasId);
+                    },
+                    'aria-label': 'Open atlas: ' + e.atlasName,
+                    style: {
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      width: '100%', textAlign: 'left',
+                      background: 'transparent', border: 'none',
+                      padding: '4px 0', cursor: 'pointer', fontFamily: 'inherit',
+                      color: palette.text, fontSize: '12px'
+                    }
+                  },
+                    h('span', { 'aria-hidden': 'true' }, e.resonant ? '🌟' : '🗺'),
+                    h('span', { style: { fontWeight: 700 } }, e.atlasName),
+                    h('span', { style: { color: palette.textDim } },
+                      ' · ' + e.edgeLabel
+                      + (e.partnerCardName ? ' ' + (e.role === 'from' ? '→ ' : '← ') + e.partnerCardName : '')
+                      + ' · ' + e.score + '/20')
+                  )
+                );
+              })
+            ),
+            moreAtlasCount > 0 ? h('div', { style: { fontSize: '10px', color: palette.textMute || palette.textDim, fontStyle: 'italic', marginTop: '2px' } },
+              '+ ' + moreAtlasCount + ' more atlas edge' + (moreAtlasCount === 1 ? '' : 's')) : null
+          );
+        })(),
         // Boss encounters
         hist.bossEncountersUsed > 0 ? h('button', {
           onClick: function () {
@@ -8517,6 +8566,11 @@
         body: 'Spend a few tokens in the Arcade to open Realm Builder: pick a topic, then drop your cards into a world that grows. Each card needs a justification — the realm evolves visually when your reasoning lands. Realms persist across sessions, so a Civics or Cell-Biology realm can grow over weeks.'
       },
       {
+        emoji: '🗺',
+        title: 'Or map relations in Concept Atlas',
+        body: 'Same cards, different lens. Concept Atlas lets you draw labeled edges between two cards — illuminates / connects / transforms / supports / contrasts — and explain how the relation works. Builds an explicit graph of your understanding. Strong for science (causal chains), ELA (theme webs), or any subject where the *how* of a relation matters.'
+      },
+      {
         emoji: '🐱',
         title: 'Meet your buddy',
         body: 'Pick a critter — cat, fox, owl, turtle, or baby dragon. Four color palettes, your name. They notice your activity, celebrate your wins, and gently prompt review when a deck is due.'
@@ -9328,7 +9382,7 @@
       var printDefaults = {
         companion: true, achievements: true, goals: true,
         memoryDecks: true, stories: true, journals: true,
-        bossEncounters: true, realms: true
+        bossEncounters: true, realms: true, atlases: true
       };
       if (!merged.printOptions || typeof merged.printOptions !== 'object') {
         merged.printOptions = Object.assign({}, printDefaults);
@@ -9366,6 +9420,16 @@
         merged.realms = [];
       } else if (merged.realms.length > 12) {
         merged.realms = merged.realms.slice().sort(function(a, b) {
+          return (a.updatedAt || '').localeCompare(b.updatedAt || '');
+        }).slice(-12);
+      }
+      // Concept Atlas — persistent atlases. Same backfill + cap as realms.
+      // Atlases store no canvas image (nodes + edges are text-light), so
+      // localStorage pressure is much lower — cap kept conservative anyway.
+      if (!Array.isArray(merged.atlases)) {
+        merged.atlases = [];
+      } else if (merged.atlases.length > 12) {
+        merged.atlases = merged.atlases.slice().sort(function(a, b) {
           return (a.updatedAt || '').localeCompare(b.updatedAt || '');
         }).slice(-12);
       }
@@ -11176,6 +11240,26 @@
           }
         });
       });
+      // Concept Atlas edges — match either FROM or TO position so a card
+      // appears in its history regardless of edge direction.
+      var atlasEdges = [];
+      (s.atlases || []).forEach(function (a) {
+        (a.edges || []).forEach(function (e) {
+          if (e.fromCardId === cardId || e.toCardId === cardId) {
+            atlasEdges.push({
+              atlasId: a.id,
+              atlasName: a.name || a.topic || 'Untitled atlas',
+              atlasTopic: a.topic,
+              role: e.fromCardId === cardId ? 'from' : 'to',
+              edgeLabel: e.edgeLabel,
+              partnerCardName: e.fromCardId === cardId ? e.toCardName : e.fromCardName,
+              score: e.score,
+              resonant: !!e.resonant,
+              addedAt: e.addedAt
+            });
+          }
+        });
+      });
       var bossEncountersUsed = 0;
       var bossHighestScore = 0;
       (s.bossEncounters || []).forEach(function (enc) {
@@ -11188,11 +11272,12 @@
         });
         if (anyHit) bossEncountersUsed++;
       });
-      if (realmZones.length === 0 && bossEncountersUsed === 0) return null;
-      // Sort realm zones newest-first
+      if (realmZones.length === 0 && atlasEdges.length === 0 && bossEncountersUsed === 0) return null;
       realmZones.sort(function (a, b) { return (b.addedAt || '').localeCompare(a.addedAt || ''); });
+      atlasEdges.sort(function (a, b) { return (b.addedAt || '').localeCompare(a.addedAt || ''); });
       return {
         realmZones: realmZones,
+        atlasEdges: atlasEdges,
         bossEncountersUsed: bossEncountersUsed,
         bossHighestScore: bossHighestScore
       };
@@ -12705,13 +12790,20 @@
         var memoryDue = isMemoryDue(decoration);
         var memoryDueSoon = !memoryDue && isMemoryDueSoon(decoration);
         // Phase F — small 🌍 indicator if this decoration has been
-        // placed in (or partnered into) any realm. Bounded scan: realms
-        // capped at 12, zones at ~12 each, so worst-case ~144 comparisons
-        // per cell render — fine for solo-student datasets.
+        // placed in (or partnered into) any realm. Phase H extended to
+        // also flag atlas presence with 🗺. Bounded scans: realms +
+        // atlases capped at 12 each, zones/edges ~12-24 each, so
+        // worst-case ~500 comparisons per cell — fine for solo-student
+        // datasets.
         var usedInRealmCardId = 'card-deco-' + decoration.id;
         var usedInRealm = (state.realms || []).some(function (r) {
           return (r.zones || []).some(function (z) {
             return z.cardId === usedInRealmCardId || z.partnerCardId === usedInRealmCardId;
+          });
+        });
+        var usedInAtlas = (state.atlases || []).some(function (a) {
+          return (a.edges || []).some(function (e) {
+            return e.fromCardId === usedInRealmCardId || e.toCardId === usedInRealmCardId;
           });
         });
         var memoryDescription = '';
@@ -12914,6 +13006,30 @@
               zIndex: 1
             }
           }, '🌍') : null,
+          // Atlas-presence 🗺 overlay (Phase H). Stacks left of the realm
+          // badge when both are present; positioning shifts based on
+          // favorite + realm combinations.
+          usedInAtlas ? h('span', {
+            'aria-label': 'Used in an atlas',
+            title: 'This card has a relation in one of your atlases — open it to see where',
+            style: {
+              position: 'absolute',
+              top: '2px',
+              right: (function () {
+                var offset = 4;
+                if (decoration.isFavorite) offset += 22;
+                if (usedInRealm) offset += 22;
+                return offset + 'px';
+              })(),
+              fontSize: '11px',
+              padding: '1px 4px',
+              borderRadius: '3px',
+              background: 'rgba(0,0,0,0.45)',
+              lineHeight: 1,
+              pointerEvents: 'none',
+              zIndex: 1
+            }
+          }, '🗺') : null,
           // Voice note 🎤 overlay (Phase 2p.15) — small mic top-left
           // adjacent to mood emoji. Indicates audio is attached.
           decoration.voiceNote ? h('span', {
@@ -14393,7 +14509,8 @@
       { id: 'stories',        emoji: '📜', label: 'Stories',               hint: 'Walkable story chains across decorations.' },
       { id: 'journals',       emoji: '📝', label: 'Recent reflections',    hint: 'The last several journal entries.' },
       { id: 'bossEncounters', emoji: '🐉', label: 'Boss Encounters',       hint: 'Past arcade encounters with strongest justification per session.' },
-      { id: 'realms',         emoji: '🌍', label: 'Realms',                hint: 'Worlds you\'ve built, their zones, milestones, and per-zone justifications.' }
+      { id: 'realms',         emoji: '🌍', label: 'Realms',                hint: 'Worlds you\'ve built, their zones, milestones, and per-zone justifications.' },
+      { id: 'atlases',        emoji: '🗺', label: 'Atlases',               hint: 'Concept maps you\'ve built — labeled relations between cards with per-edge justifications.' }
     ];
     // ─────────────────────────────────────────────────
     // ARCADE HUB (Phase 3a) — token-time-gated launcher for modes
@@ -14536,6 +14653,38 @@
       if (!realmId) return;
       var next = (state.realms || []).filter(function (r) { return r.id !== realmId; });
       setStateField('realms', next);
+    }
+
+    // Concept Atlas — incremental persistence, same shape as Realm Builder.
+    // Concept Atlas calls ctx.onAtlasUpdate(atlas) on every edge-add.
+    // Cap at 12; eviction policy mirrors realms (oldest-complete first,
+    // then oldest-by-updatedAt).
+    function saveOrUpdateAtlas(atlas) {
+      if (!atlas || typeof atlas !== 'object' || !atlas.id) return;
+      var stamped = Object.assign({}, atlas, { updatedAt: new Date().toISOString() });
+      var existing = state.atlases || [];
+      var idx = -1;
+      for (var i = 0; i < existing.length; i++) { if (existing[i].id === atlas.id) { idx = i; break; } }
+      var next;
+      if (idx >= 0) {
+        next = existing.slice();
+        next[idx] = stamped;
+      } else {
+        next = existing.concat([stamped]);
+      }
+      if (next.length > 12) {
+        var sorted = next.slice().sort(function (a, b) {
+          if (!!a.isComplete !== !!b.isComplete) return a.isComplete ? -1 : 1;
+          return (a.updatedAt || '').localeCompare(b.updatedAt || '');
+        });
+        next = sorted.slice(sorted.length - 12);
+      }
+      setStateField('atlases', next);
+    }
+    function deleteAtlas(atlasId) {
+      if (!atlasId) return;
+      var next = (state.atlases || []).filter(function (a) { return a.id !== atlasId; });
+      setStateField('atlases', next);
     }
 
     function renderArcadeHubModal() {
@@ -14694,6 +14843,17 @@
                 // screen so students/teachers print just the one realm.
                 onPrintRealm: function(realmId) {
                   setStateField('printScope', { type: 'realm', realmId: realmId });
+                  setTimeout(function() {
+                    try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+                    setTimeout(function() { setStateField('printScope', null); }, 200);
+                  }, 80);
+                },
+                // Concept Atlas — same wiring shape as realms. Plugin
+                // calls onAtlasUpdate on every edge added.
+                atlases: state.atlases || [],
+                onAtlasUpdate: function(atlas) { return saveOrUpdateAtlas(atlas); },
+                onPrintAtlas: function(atlasId) {
+                  setStateField('printScope', { type: 'atlas', atlasId: atlasId });
                   setTimeout(function() {
                     try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
                     setTimeout(function() { setStateField('printScope', null); }, 200);
@@ -15198,6 +15358,13 @@
           if (rl.length === 0) return { count: 0, label: 'no realms yet' };
           var totalZones = rl.reduce(function(sum, r) { return sum + ((r.zones || []).length); }, 0);
           return { count: rl.length, label: rl.length + ' realm' + (rl.length === 1 ? '' : 's') + ', ' + totalZones + ' total zone' + (totalZones === 1 ? '' : 's') };
+        }
+        if (secId === 'atlases') {
+          var al = s.atlases || [];
+          if (al.length === 0) return { count: 0, label: 'no atlases yet' };
+          var totalNodes = al.reduce(function(sum, a) { return sum + ((a.nodes || []).length); }, 0);
+          var totalEdges = al.reduce(function(sum, a) { return sum + ((a.edges || []).length); }, 0);
+          return { count: al.length, label: al.length + ' atlas' + (al.length === 1 ? '' : 'es') + ', ' + totalNodes + ' node' + (totalNodes === 1 ? '' : 's') + ', ' + totalEdges + ' edge' + (totalEdges === 1 ? '' : 's') };
         }
       } catch (e) { /* defensive: never let preview math crash the modal */ }
       return null;
@@ -16781,7 +16948,123 @@
                 })
               )
             );
+          })(),
+
+          // ── My Atlases (Concept Atlas) ──
+          // Sibling to My Realms; same row pattern with edge counts in
+          // place of zone counts.
+          (function() {
+            var atlasesList = state.atlases || [];
+            return h('div', {
+              style: {
+                paddingTop: '14px',
+                borderTop: '1px solid ' + palette.border,
+                marginTop: '14px'
+              }
+            },
+              h('div', {
+                style: { fontSize: '11px', color: palette.textMute, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }
+              }, '🗺 My Atlases' + (atlasesList.length > 0 ? ' · ' + atlasesList.length : '')),
+              atlasesList.length === 0 ? h('div', {
+                style: { padding: '24px 16px', background: palette.surface, border: '1px dashed ' + palette.border, borderRadius: '10px', textAlign: 'center' }
+              },
+                h('div', { 'aria-hidden': 'true', style: { fontSize: '36px', marginBottom: '8px' } }, '🗺'),
+                h('p', { style: { color: palette.textDim, fontSize: '12px', lineHeight: '1.55', margin: 0 } },
+                  'Map a topic in Concept Atlas (Arcade) to see it here. Each atlas is a graph of how concepts relate.')
+              ) : h('ul', {
+                role: 'list',
+                'aria-label': 'My Atlases',
+                style: { display: 'flex', flexDirection: 'column', gap: '8px', listStyle: 'none', padding: 0, margin: 0 }
+              },
+                atlasesList.slice().sort(function(a, b) {
+                  return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+                }).map(function(atlas) {
+                  return h('li', { key: 'atl-li-' + atlas.id, role: 'listitem', style: { listStyle: 'none' } },
+                    renderAtlasOverviewRow(atlas, palette));
+                })
+              )
+            );
           })()
+        )
+      );
+    }
+
+    // Memory-overview row for a single atlas. Mirrors renderRealmOverviewRow.
+    // No canvas thumbnail (atlas has no image); show node + edge counts
+    // and the most recent edge as a quick preview.
+    function renderAtlasOverviewRow(atlas, palette) {
+      var nodeCount = (atlas.nodes || []).length;
+      var edgeCount = (atlas.edges || []).length;
+      var milestoneCount = (atlas.milestones || []).length;
+      var updated = atlas.updatedAt ? new Date(atlas.updatedAt) : null;
+      var dayDiff = updated ? Math.floor((Date.now() - updated.getTime()) / (24 * 60 * 60 * 1000)) : null;
+      var updatedLabel;
+      if (dayDiff === null) updatedLabel = 'No timestamp';
+      else if (dayDiff <= 0) updatedLabel = 'Updated today';
+      else if (dayDiff === 1) updatedLabel = 'Updated yesterday';
+      else updatedLabel = 'Updated ' + dayDiff + ' days ago';
+
+      function continueAtlas() {
+        window.__alloHavenAtlasResume = { atlasId: atlas.id };
+        setStateField('activeModal', 'arcade');
+        setTimeout(function() { launchArcadeMode('concept-atlas', 10); }, 30);
+      }
+      function printThisAtlas() {
+        setStateField('printScope', { type: 'atlas', atlasId: atlas.id });
+        setTimeout(function() {
+          try { window.print(); } catch (e) { addToast('Print not available in this browser.'); }
+          setTimeout(function() { setStateField('printScope', null); }, 200);
+        }, 80);
+      }
+      function confirmDelete() {
+        if (window.confirm && !window.confirm('Delete this atlas? Edges and justifications cannot be recovered.')) return;
+        deleteAtlas(atlas.id);
+      }
+
+      return h('div', {
+        style: {
+          display: 'flex', gap: '10px', alignItems: 'center',
+          padding: '10px 12px', background: palette.surface,
+          border: '1px solid ' + (atlas.isComplete ? palette.accent : palette.border),
+          borderLeft: '3px solid ' + (atlas.isComplete ? palette.accent : palette.border),
+          borderRadius: '8px'
+        }
+      },
+        // Atlas glyph (no canvas image)
+        h('div', {
+          'aria-hidden': 'true',
+          style: { width: '64px', height: '64px', flexShrink: 0, fontSize: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px' }
+        }, '🗺'),
+        // Center: name/topic/stats
+        h('div', { style: { flex: 1, minWidth: 0 } },
+          h('div', { style: { fontSize: '13px', fontWeight: 700, color: palette.text, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+            (atlas.name || atlas.topic || 'Untitled atlas') + (atlas.isComplete ? ' ✓' : '')),
+          h('div', { style: { fontSize: '11px', color: palette.textDim, marginBottom: '2px' } },
+            atlas.topic && atlas.topic !== atlas.name ? atlas.topic + ' · ' : '',
+            nodeCount + ' node' + (nodeCount === 1 ? '' : 's'),
+            ' · ' + edgeCount + ' edge' + (edgeCount === 1 ? '' : 's'),
+            milestoneCount > 0 ? ' · ' + milestoneCount + ' milestone' + (milestoneCount === 1 ? '' : 's') : ''
+          ),
+          h('div', { style: { fontSize: '10px', color: palette.textMute, fontStyle: 'italic' } }, updatedLabel)
+        ),
+        // Action buttons
+        h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
+          h('button', {
+            onClick: continueAtlas,
+            'aria-label': 'Continue ' + (atlas.name || atlas.topic || 'atlas'),
+            style: { background: palette.accent, color: palette.onAccent, border: 'none', borderRadius: '6px', padding: '5px 10px', fontSize: '11px', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit' }
+          }, '▶ Continue'),
+          h('button', {
+            onClick: printThisAtlas,
+            'aria-label': 'Print ' + (atlas.name || atlas.topic || 'atlas'),
+            title: 'Print just this atlas (single packet for IEP / parent meeting)',
+            style: { background: 'transparent', color: palette.textDim, border: '1px solid ' + palette.border, borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🖨'),
+          h('button', {
+            onClick: confirmDelete,
+            'aria-label': 'Delete ' + (atlas.name || atlas.topic || 'atlas'),
+            style: { background: 'transparent', color: '#dc2626', border: '1px solid rgba(220,38,38,0.4)', borderRadius: '6px', padding: '4px 10px', fontSize: '10px', cursor: 'pointer', fontFamily: 'inherit' }
+          }, '🗑')
         )
       );
     }
@@ -17200,6 +17483,12 @@
           window.__alloHavenRealmResume = { realmId: realmId };
           setStateMulti({ activeModal: 'arcade', generateContext: null });
           setTimeout(function() { launchArcadeMode('realm-builder', 10); }, 30);
+        },
+        onOpenAtlas: function(atlasId) {
+          // Same pattern for Concept Atlas.
+          window.__alloHavenAtlasResume = { atlasId: atlasId };
+          setStateMulti({ activeModal: 'arcade', generateContext: null });
+          setTimeout(function() { launchArcadeMode('concept-atlas', 10); }, 30);
         },
         onOpenPastEncounters: function() {
           setStateMulti({ activeModal: 'past-encounters', generateContext: null });
@@ -20180,6 +20469,112 @@
       );
     }
 
+    // Single-atlas print — Concept Atlas artifact for IEP / parent packets.
+    // Mirrors renderPrintRealm but with nodes + edges instead of zones.
+    function renderPrintAtlas(atlasId) {
+      var atlas = (state.atlases || []).filter(function (a) { return a.id === atlasId; })[0];
+      if (!atlas) return null;
+      var nodes = atlas.nodes || [];
+      var edges = atlas.edges || [];
+      var milestones = atlas.milestones || [];
+      var resonant = edges.filter(function (e) { return e.score >= 18; });
+      var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      var sectionTitleStyle = { fontSize: '14px', fontWeight: 700, marginBottom: '8px', borderBottom: '1.5px solid #333', paddingBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#000' };
+      var subTitleStyle = { fontSize: '13px', fontWeight: 700, marginBottom: '4px', color: '#000', marginTop: '14px' };
+      var bodyTextStyle = { fontSize: '11px', color: '#333', lineHeight: 1.5, margin: 0 };
+      var smallMetaStyle = { fontSize: '9px', color: '#666', fontStyle: 'italic' };
+      return h('div', {
+        className: 'ah-print-packet',
+        'aria-hidden': 'true'
+      },
+        h('div', { style: { borderBottom: '2px solid #000', paddingBottom: '8px', marginBottom: '14px' } },
+          h('h1', { style: { fontSize: '22px', margin: '0 0 4px 0', fontWeight: 800, color: '#000' } },
+            '🗺 ' + (atlas.name || atlas.topic || 'Untitled atlas')
+            + (atlas.isComplete ? ' ✓' : '')),
+          h('p', { style: { margin: 0, fontSize: '12px', color: '#444' } },
+            'Topic: ' + (atlas.topic || '?')
+            + ' · ' + nodes.length + ' node' + (nodes.length === 1 ? '' : 's')
+            + ' · ' + edges.length + ' edge' + (edges.length === 1 ? '' : 's')
+            + (milestones.length > 0 ? ' · ' + milestones.length + ' milestone' + (milestones.length === 1 ? '' : 's') : '')),
+          h('p', { style: smallMetaStyle },
+            (atlas.createdAt ? 'Started ' + new Date(atlas.createdAt).toLocaleDateString() : '')
+            + (atlas.updatedAt ? ' · last updated ' + new Date(atlas.updatedAt).toLocaleDateString() : '')
+            + ' · printed ' + dateStr)
+        ),
+        // Nodes section
+        nodes.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+          h('h2', { style: sectionTitleStyle }, 'Nodes · ' + nodes.length),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '8px' } },
+            nodes.map(function (n) {
+              return h('div', { key: 'pan-' + n.cardId, style: { padding: '6px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px', textAlign: 'center' } },
+                n.cardImageBase64 ? h('img', {
+                  src: n.cardImageBase64, alt: '',
+                  style: { width: '50px', height: '50px', objectFit: 'cover', border: '1px solid #999', borderRadius: '4px' }
+                }) : h('div', { style: { fontSize: '24px' } }, n.cardSource === 'glossary' ? '📖' : '🎴'),
+                h('div', { style: { fontSize: '10px', fontWeight: 700, marginTop: '4px', color: '#000', wordBreak: 'break-word' } }, n.cardName)
+              );
+            })
+          )
+        ) : null,
+        // Milestones strip
+        milestones.length > 0 ? h('div', {
+          style: { padding: '8px 12px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px', color: '#222', marginBottom: '14px' }
+        },
+          h('strong', null, 'Milestones reached: '),
+          milestones.map(function (m, i) {
+            return h('span', { key: 'pami-' + i }, (i > 0 ? ' · ' : '') + m.emoji + ' ' + m.label
+              + (m.achievedAt ? ' (' + new Date(m.achievedAt).toLocaleDateString() + ')' : ''));
+          })
+        ) : null,
+        // Resonant relations callout
+        resonant.length > 0 ? h('div', { style: { marginBottom: '14px' } },
+          h('h2', { style: sectionTitleStyle }, '🌟 Resonant Relations · ' + resonant.length),
+          resonant.map(function (e, i) {
+            return h('div', { key: 'pari-' + i, className: 'ah-print-section', style: { marginBottom: '8px', padding: '8px 10px', background: '#fafafa', border: '1px solid #ddd', borderRadius: '4px' } },
+              h('p', { style: { margin: '0 0 2px 0', fontSize: '12px', fontWeight: 700, color: '#000' } },
+                e.fromCardName + ' — ' + e.edgeLabel + ' → ' + e.toCardName + ' · score ' + e.score + '/20'),
+              h('p', { style: Object.assign({}, bodyTextStyle, { fontStyle: 'italic', margin: '2px 0 0 0' }) },
+                '"' + (e.justification || '') + '"'),
+              e.followUp ? h('p', { style: { margin: '4px 0 0 0', fontSize: '10px', color: '#666' } },
+                '↳ Follow-up: ' + e.followUp) : null
+            );
+          })
+        ) : null,
+        // All edges
+        edges.length > 0 ? h('div', null,
+          h('h2', { style: sectionTitleStyle }, 'All Edges · ' + edges.length),
+          h('ol', { style: { paddingLeft: '22px', margin: '4px 0' } },
+            edges.map(function (e) {
+              var addedStr = e.addedAt ? new Date(e.addedAt).toLocaleDateString() : '';
+              return h('li', { key: 'pae-' + e.id, style: { marginBottom: '8px', fontSize: '11px', color: '#222', lineHeight: 1.5 } },
+                h('strong', null, e.fromCardName),
+                ' — ', e.edgeLabel, ' → ',
+                h('strong', null, e.toCardName),
+                h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
+                  'score ' + e.score + '/20' + (addedStr ? ' · ' + addedStr : '')
+                  + (e.score >= 18 ? ' · 🌟' : '')),
+                e.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
+                  '"' + e.justification + '"') : null,
+                e.ackText ? h('div', { style: { fontSize: '10px', color: '#666', marginTop: '2px' } },
+                  '↳ ' + e.ackText) : null
+              );
+            })
+          )
+        ) : h('p', { style: smallMetaStyle }, 'No edges drawn yet.'),
+        // Signature lines
+        h('div', { style: { marginTop: '24px', display: 'flex', gap: '24px', flexWrap: 'wrap' } },
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Reviewed with: '),
+            h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '180px', padding: '0 4px' } }, ' ')),
+          h('div', { style: { fontSize: '11px' } },
+            h('strong', null, 'Date: '),
+            h('span', { style: { borderBottom: '1px solid #000', display: 'inline-block', minWidth: '120px', padding: '0 4px' } }, ' '))
+        ),
+        h('div', { style: { marginTop: '20px', paddingTop: '10px', borderTop: '1px solid #999', fontSize: '9px', color: '#666', textAlign: 'center' } },
+          'AlloHaven Concept Atlas · single-atlas packet · printed ' + dateStr)
+      );
+    }
+
     function renderPrintPacket() {
       // Phase 2p.17 — when printScope is a card, render that instead
       if (state.printScope && state.printScope.type === 'card' && state.printScope.decorationId) {
@@ -20193,6 +20588,10 @@
       // Single-realm print — Realm Builder artifact for IEP / parent packets.
       if (state.printScope && state.printScope.type === 'realm' && state.printScope.realmId) {
         return renderPrintRealm(state.printScope.realmId);
+      }
+      // Single-atlas print — Concept Atlas artifact for IEP / parent packets.
+      if (state.printScope && state.printScope.type === 'atlas' && state.printScope.atlasId) {
+        return renderPrintAtlas(state.printScope.atlasId);
       }
       var withContent = state.decorations.filter(function(d) { return !!d.linkedContent; });
       var allStories = state.stories || [];
@@ -20800,6 +21199,70 @@
                 })
               )
             ) : h('p', { style: smallMetaStyle }, 'No zones placed yet.')
+          );
+        }) : null),
+        // ── Atlases section (Concept Atlas constructive artifacts) ──
+        // Mirrors realms structure: header + node grid + edge list per atlas.
+        // Page-break between atlases for IEP packets.
+        (state.printOptions && state.printOptions.atlases === false) ? null :
+        ((state.atlases || []).length > 0 ? (state.atlases || []).slice().sort(function(a, b) {
+          return (b.updatedAt || '').localeCompare(a.updatedAt || '');
+        }).map(function(atlas, ai) {
+          var atlasNodes = atlas.nodes || [];
+          var atlasEdges = atlas.edges || [];
+          var atlasMilestones = atlas.milestones || [];
+          var atlasResonant = atlasEdges.filter(function(e) { return e.score >= 18; });
+          return h('div', {
+            key: 'pa-' + atlas.id,
+            className: 'ah-print-section ah-print-page-break',
+            style: sectionStyle
+          },
+            h('h2', { style: sectionTitleStyle },
+              '🗺 Atlas · ' + (atlas.name || atlas.topic || 'untitled')
+              + (atlas.isComplete ? ' ✓' : '')),
+            h('p', { style: smallMetaStyle },
+              'Topic: ' + (atlas.topic || '?')
+              + ' · ' + atlasNodes.length + ' node' + (atlasNodes.length === 1 ? '' : 's')
+              + ' · ' + atlasEdges.length + ' edge' + (atlasEdges.length === 1 ? '' : 's')
+              + (atlasMilestones.length > 0 ? ' · ' + atlasMilestones.length + ' milestone' + (atlasMilestones.length === 1 ? '' : 's') : '')
+              + (atlas.updatedAt ? ' · last updated ' + new Date(atlas.updatedAt).toLocaleDateString() : '')),
+            atlasMilestones.length > 0 ? h('div', {
+              style: { padding: '6px 10px', background: '#f5f5f5', border: '1px solid #ccc', borderRadius: '4px', fontSize: '11px', color: '#222', margin: '10px 0' }
+            },
+              h('strong', null, 'Milestones: '),
+              atlasMilestones.map(function(m, i) {
+                return h('span', { key: 'pamb-' + i }, (i > 0 ? ' · ' : '') + m.emoji + ' ' + m.label);
+              })
+            ) : null,
+            atlasResonant.length > 0 ? h('div', { style: { marginBottom: '10px' } },
+              h('h3', { style: subTitleStyle }, '🌟 Resonant relations · ' + atlasResonant.length),
+              atlasResonant.map(function(e, i) {
+                return h('p', { key: 'paresb-' + i, style: Object.assign({}, bodyTextStyle, { margin: '2px 0 6px 0' }) },
+                  h('strong', null, e.fromCardName + ' — ' + e.edgeLabel + ' → ' + e.toCardName),
+                  ' · score ' + e.score + '/20',
+                  h('br'),
+                  h('span', { style: { fontStyle: 'italic', color: '#444' } }, '"' + (e.justification || '') + '"')
+                );
+              })
+            ) : null,
+            atlasEdges.length > 0 ? h('div', null,
+              h('h3', { style: subTitleStyle }, 'Edges · ' + atlasEdges.length),
+              h('ol', { style: { paddingLeft: '20px', margin: '4px 0' } },
+                atlasEdges.map(function(e) {
+                  var addedStr = e.addedAt ? new Date(e.addedAt).toLocaleDateString() : '';
+                  return h('li', { key: 'paeb-' + e.id, style: { marginBottom: '6px', fontSize: '11px', color: '#222', lineHeight: 1.5 } },
+                    h('strong', null, e.fromCardName),
+                    ' — ', e.edgeLabel, ' → ',
+                    h('strong', null, e.toCardName),
+                    h('span', { style: { color: '#666', fontVariantNumeric: 'tabular-nums', marginLeft: '6px' } },
+                      'score ' + e.score + '/20' + (addedStr ? ' · ' + addedStr : '')
+                      + (e.score >= 18 ? ' · 🌟' : '')),
+                    e.justification ? h('div', { style: { fontStyle: 'italic', color: '#444', marginTop: '2px' } },
+                      '"' + e.justification + '"') : null
+                  );
+                })
+              )
+            ) : h('p', { style: smallMetaStyle }, 'No edges drawn yet.')
           );
         }) : null),
         (state.printOptions && state.printOptions.bossEncounters === false) ? null :

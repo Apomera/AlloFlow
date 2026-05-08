@@ -90,6 +90,23 @@
       editPrompt: 'with weather, change, or productive friction sweeping through one region — not damage, but a turning point' }
   ];
 
+  // Concept-Atlas mode (Phase H sibling plugin). Verbs are *relation types*,
+  // not actions: each play articulates how two concepts relate. Same shape
+  // as the other verb sets; editPrompt unused for v1 (no canvas to evolve)
+  // but kept for future "relation halo" effects.
+  var ATLAS_VERBS = [
+    { id: 'illuminates', label: 'Illuminates', emoji: '💡', hint: 'This card reveals understanding of the other.',
+      editPrompt: '' },
+    { id: 'connects',    label: 'Connects',    emoji: '🔗', hint: 'This card depends on or relates to the other.',
+      editPrompt: '' },
+    { id: 'transforms',  label: 'Transforms',  emoji: '✨', hint: 'This card becomes or produces the other under a condition.',
+      editPrompt: '' },
+    { id: 'supports',    label: 'Supports',    emoji: '🛡️', hint: 'This card is the foundation for the other.',
+      editPrompt: '' },
+    { id: 'contrasts',   label: 'Contrasts',   emoji: '⚡', hint: 'This card differs from the other in this specific way.',
+      editPrompt: '' }
+  ];
+
   // Cap on image-to-image transforms per encounter so API cost stays bounded
   // even if the student lands many critical Sparks.
   var MAX_VISUAL_TRANSFORMS = 4;
@@ -150,10 +167,12 @@
   // ── Shared grading helper ──
   // Card + verb + justification → AI rubric grade. Decoupled from any
   // particular game state machine: returns {score, ackText, followUp, raw}.
-  // frameAs swaps a single line in the rubric so the same primitive powers
-  // both combat (BRIDGE between card and topic) and building (FIT between
-  // card and realm-being-built). Pedagogy stays identical — generous,
-  // formative, supports distant transfer.
+  // frameAs swaps a single line in the rubric so the same primitive powers:
+  //   combat   → BRIDGE between card and topic   (Boss Encounter)
+  //   building → FIT between card and realm      (Realm Builder)
+  //   atlas    → RELATION between two cards      (Concept Atlas — Phase H)
+  // Pedagogy stays identical — generous, formative, supports distant transfer.
+  // Atlas frame additionally takes opts.partnerCard (the TO card).
   function gradeCardJustification(ctx, opts) {
     if (!ctx || typeof ctx.callGemini !== 'function') {
       return Promise.reject(new Error('AI grader unavailable.'));
@@ -163,8 +182,9 @@
     var verb = opts.verb || {};
     var text = (opts.justification || '').trim();
     var topic = opts.topic || '';
-    var frameAs = opts.frameAs === 'building' ? 'building' : 'combat';
+    var frameAs = (opts.frameAs === 'building' || opts.frameAs === 'atlas') ? opts.frameAs : 'combat';
     var context = opts.context || {};
+    var partnerCard = opts.partnerCard || null;
 
     var rubric = {
       bossTopic: topic,
@@ -177,13 +197,39 @@
 
     var prompt;
     // Combat path can use AlloFlowVoice's audio rubric helper (text-only adapt).
-    // Building always uses the inline path so the FIT framing is preserved.
+    // Building / atlas always use the inline path so their framing is preserved.
     if (frameAs === 'combat' && window.AlloFlowVoice && typeof window.AlloFlowVoice.buildJustificationRubricPrompt === 'function') {
       var audioPrompt = window.AlloFlowVoice.buildJustificationRubricPrompt(rubric);
       prompt = audioPrompt
         .replace(/"transcript":[^,]+,\s*/, '')
         .replace('evaluating a student\'s spoken justification', 'evaluating a student\'s written justification');
       prompt += '\n\nSTUDENT JUSTIFICATION:\n' + text;
+    } else if (frameAs === 'atlas') {
+      // Atlas: the rubric grades a *relation* between two named concepts.
+      // Two cards (from + to) are first-class; the topic frames the
+      // domain ("the cell", "ancient Rome").
+      var partnerName = (partnerCard && partnerCard.name) || '?';
+      var partnerDef = (partnerCard && partnerCard.conceptDef) || '';
+      prompt = [
+        'Score this student\'s justification for a labeled relation in a concept-atlas (educational graph).',
+        'Topic / domain: ' + topic,
+        'FROM card: ' + card.name + (card.tier ? ' (tier: ' + card.tier + ')' : ''),
+        card.conceptDef ? 'FROM definition: ' + card.conceptDef : null,
+        'TO card: ' + partnerName,
+        partnerDef ? 'TO definition: ' + partnerDef : null,
+        'Relation type: ' + verb.label + ' (' + (verb.hint || '') + ')',
+        'Justification: ' + text,
+        '',
+        'Score 1-20 the QUALITY OF THE RELATION articulated between these two concepts.',
+        'Reward specificity (does the justification name the mechanism, direction, or condition?).',
+        'Reward rigor (is the relation testable or evidence-grounded — not just association?).',
+        'Reward generative thinking (does the relation suggest follow-up questions or further edges?).',
+        'Existing edges in this atlas: ' + (context.existingEdgeCount || 0) + ' so far.',
+        'Be GENEROUS with autistic students whose answers may be literal-but-correct.',
+        '',
+        'Respond with ONLY valid JSON, no surrounding prose, no markdown fences:',
+        '{ "score": <int 1-20>, "ackText": "1 short supportive sentence", "followUp": "1 short follow-up question" }'
+      ].filter(function (l) { return l !== null; }).join('\n');
     } else {
       var coreLine = (frameAs === 'building')
         ? 'Score 1-20 the QUALITY OF THE FIT between this card and the realm being built.'
@@ -238,6 +284,7 @@
     }
     if (!window.AlloHavenArcade.COMBAT_VERBS)   window.AlloHavenArcade.COMBAT_VERBS = COMBAT_VERBS;
     if (!window.AlloHavenArcade.BUILDING_VERBS) window.AlloHavenArcade.BUILDING_VERBS = BUILDING_VERBS;
+    if (!window.AlloHavenArcade.ATLAS_VERBS)    window.AlloHavenArcade.ATLAS_VERBS = ATLAS_VERBS;
     if (!window.AlloHavenArcade.parseRubricFallback) {
       window.AlloHavenArcade.parseRubricFallback = parseFallback;
     }
