@@ -1877,6 +1877,85 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 // Don't throw — quiz still works without visuals
             }
         }
+        // Plan T v3+ Chunk 7: misconception-distractor validation pass. When
+        // pre-check / formative MCQs were generated with the misconception flag,
+        // the LLM was *instructed* to encode common student errors as distractors —
+        // but there's no validation that it actually did. Run a single batched
+        // secondary LLM call that scores each distractor on whether it encodes
+        // a recognized misconception. Surfaces a "distractor review" summary so
+        // teachers know which MCQs to inspect / edit before deploying. Cheap
+        // (one Gemini call regardless of MCQ count) and never blocks: failures
+        // are silent and leave content.distractorReview undefined.
+        if (_useMisconceptionDistractors && Array.isArray(content.questions)) {
+            try {
+                const _mcqsForReview = content.questions
+                    .map((q, qIdx) => ({ q, qIdx }))
+                    .filter(entry => entry.q && (entry.q.type === 'mcq' || !entry.q.type) && Array.isArray(entry.q.options) && entry.q.correctAnswer != null);
+                if (_mcqsForReview.length > 0) {
+                    setGenerationStep && setGenerationStep('Reviewing distractor quality...');
+                    const _itemsBlock = _mcqsForReview.map(entry => {
+                        const distractors = entry.q.options.filter(o => o !== entry.q.correctAnswer);
+                        return `Q${entry.qIdx + 1}: "${entry.q.question}"\n  Correct: "${entry.q.correctAnswer}"\n  Distractors: ${distractors.map((d, di) => `(${di + 1}) "${d}"`).join(' / ')}`;
+                    }).join('\n\n');
+                    const reviewPrompt = `You are an assessment-design expert evaluating MCQ distractors for a ${gradeLevel} level quiz on this topic. For each MCQ below, evaluate whether each distractor encodes a REAL student misconception (a common, predictable error students make in their thinking) versus a random plausibly-wrong answer that doesn't reflect any specific misunderstanding.
+
+Return ONLY a single valid JSON object with this exact shape:
+{
+  "reviews": [
+    {
+      "qIdx": 0,
+      "distractorScores": [
+        { "distractor": "...", "encodesMisconception": true, "reason": "ONE sentence: what misconception this catches" }
+      ]
+    }
+  ]
+}
+
+Be strict: a distractor only encodes a misconception if a teacher could point to a specific wrong belief or reasoning error students hold. "Plausible-but-random" wrong answers should be marked encodesMisconception: false with a reason like "no specific misconception encoded".
+
+MCQs:
+
+${_itemsBlock}`;
+                    try {
+                        const reviewRaw = await callGemini(reviewPrompt, true);
+                        const reviewParsed = (typeof reviewRaw === 'string') ? JSON.parse(reviewRaw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim()) : reviewRaw;
+                        if (reviewParsed && Array.isArray(reviewParsed.reviews)) {
+                            let totalDistractors = 0;
+                            let misconceptionCount = 0;
+                            const weakItems = [];
+                            reviewParsed.reviews.forEach(review => {
+                                if (typeof review.qIdx !== 'number' || !Array.isArray(review.distractorScores)) return;
+                                const target = content.questions[review.qIdx];
+                                if (!target) return;
+                                const scoresByDistractor = review.distractorScores.map(d => ({
+                                    distractor: String(d.distractor || ''),
+                                    encodesMisconception: !!d.encodesMisconception,
+                                    reason: String(d.reason || ''),
+                                }));
+                                target.distractorQuality = scoresByDistractor;
+                                const itemMisconceptionCount = scoresByDistractor.filter(s => s.encodesMisconception).length;
+                                totalDistractors += scoresByDistractor.length;
+                                misconceptionCount += itemMisconceptionCount;
+                                // Flag items where < half of distractors encode a misconception
+                                if (scoresByDistractor.length > 0 && itemMisconceptionCount * 2 < scoresByDistractor.length) {
+                                    weakItems.push(review.qIdx);
+                                }
+                            });
+                            content.distractorReview = {
+                                totalDistractors,
+                                misconceptionCount,
+                                weakItems,
+                                quality: totalDistractors > 0 ? Math.round((misconceptionCount / totalDistractors) * 100) : null,
+                            };
+                        }
+                    } catch (reviewErr) {
+                        warnLog('[Quiz] Distractor validation pass failed (non-fatal):', reviewErr);
+                    }
+                }
+            } catch (outerErr) {
+                warnLog('[Quiz] Distractor validation outer error:', outerErr);
+            }
+        }
         // Plan S: stamp the mode onto the content so the view can render
         // mode-aware behavior (intro banner, AI explainer, confidence rating).
         if (content && typeof content === 'object') {

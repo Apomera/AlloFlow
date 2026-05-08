@@ -2077,6 +2077,22 @@
     _modeStrat.render.intro && React.createElement('p', { className: 'text-sm leading-relaxed ' + (_quizMode === 'pre-check' ? 'text-amber-900' : _quizMode === 'review' ? 'text-purple-900' : 'text-sky-900') }, _modeStrat.render.intro),
     _smartSkips.length > 0 && React.createElement('p', { className: 'text-xs italic mt-2 ' + (_quizMode === 'pre-check' ? 'text-amber-800' : _quizMode === 'review' ? 'text-purple-800' : 'text-sky-800') },
       'ℹ️ Skipped ' + _smartSkips.join(' and ') + ' — using the dedicated tool instead avoids redundancy.'
+    ),
+    // Plan T v3+ Chunk 7: distractor-review summary (only on pre-check / formative
+    // where misconception flag was used). Visible to teachers only — students
+    // don't need to see grading-time validation.
+    isTeacherMode && generatedContent && generatedContent.data && generatedContent.data.distractorReview && React.createElement('p', {
+      className: 'text-xs italic mt-2 ' + (_quizMode === 'pre-check' ? 'text-amber-800' : 'text-sky-800'),
+      title: (generatedContent.data.distractorReview.weakItems || []).length > 0
+        ? 'Weak items: Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q')
+        : 'All MCQs have at least half their distractors encoding a known misconception',
+    },
+      '🎯 Distractor review: ' + (generatedContent.data.distractorReview.misconceptionCount || 0)
+        + ' of ' + (generatedContent.data.distractorReview.totalDistractors || 0)
+        + ' distractors encode a misconception (' + (generatedContent.data.distractorReview.quality != null ? generatedContent.data.distractorReview.quality + '%' : '—') + ')'
+        + ((generatedContent.data.distractorReview.weakItems || []).length > 0
+            ? ' — review Q' + generatedContent.data.distractorReview.weakItems.map(function (i) { return i + 1; }).join(', Q') + ' before deploying'
+            : ' — looks solid')
     )
   ) : null;
 
