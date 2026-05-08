@@ -258,6 +258,7 @@
     var questions = (generatedContent && generatedContent.data && generatedContent.data.questions) || [];
     var graded = collectAllGradedResponses(allResponses, questions, aiGradedCache);
     var rosterCount = roster ? Object.keys(roster).length : 0;
+    var rosterObj = roster && typeof roster === 'object' ? roster : {};
     var bars = questions.map(function (q, idx) {
       return {
         questionIdx: idx,
@@ -269,6 +270,7 @@
         submitted: 0,
         total: 0,
         percentCorrect: 0,
+        byStudent: [],
       };
     });
     graded.forEach(function (g) {
@@ -279,6 +281,36 @@
       else if (g.grade.status === 'incorrect') bar.incorrect++;
       else if (g.grade.status === 'idk') bar.idk++;
       else bar.submitted++;
+      // Per-student entry for drill-down
+      var rEntry = rosterObj[g.uid] || {};
+      var displayName = rEntry.displayName || rEntry.name || rEntry.nickname || ('Student ' + g.uid.slice(0, 4));
+      var qText = (g.question && (g.question.question || g.question.contextSentence || g.question.expectedFill)) || '';
+      var qType = (g.response && g.response.itemType) || (g.question && g.question.type) || 'mcq';
+      var answerSummary = '';
+      if (g.response && g.response.answer) {
+        var a = g.response.answer;
+        if (a.idk) answerSummary = '🤔 I don\'t know';
+        else if (typeof a.optionIdx === 'number' && g.question && Array.isArray(g.question.options))
+          answerSummary = String.fromCharCode(65 + a.optionIdx) + '. ' + (g.question.options[a.optionIdx] || '');
+        else if (typeof a.text === 'string') answerSummary = a.text;
+        else if (qType === 'sequence-sense') answerSummary = (a.principleAnswer ? 'Principle: ' + a.principleAnswer : '') + (a.verifyAnswer ? ' · Verify: ' + a.verifyAnswer : '');
+        else if (qType === 'relation-mismatch') answerSummary = (typeof a.clickedPairIdx === 'number' ? 'Clicked pair ' + (a.clickedPairIdx + 1) : '') + (a.partnerAnswer ? ' · Partner: ' + a.partnerAnswer : '');
+        else { try { answerSummary = JSON.stringify(a); } catch (e) { answerSummary = ''; } }
+      }
+      bar.byStudent.push({
+        uid: g.uid,
+        displayName: displayName,
+        status: g.grade.status,
+        aiGraded: !!g.grade.aiGraded,
+        aiFeedback: g.grade.aiFeedback || '',
+        answerSummary: answerSummary,
+        questionType: qType,
+        questionText: qText,
+      });
+    });
+    // Sort each bar's byStudent by displayName for stable display
+    bars.forEach(function (bar) {
+      bar.byStudent.sort(function (a, b) { return a.displayName.localeCompare(b.displayName); });
     });
     bars.forEach(function (bar) {
       if (bar.total > 0) {

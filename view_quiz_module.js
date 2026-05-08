@@ -668,6 +668,18 @@
       });
     }
 
+    // Plan T v3+: heatmap drill-down — expand a per-question bar to see
+    // per-student status. Click a bar with responses to toggle.
+    var expandedBarsState = React.useState({});
+    var expandedBars = expandedBarsState[0]; var setExpandedBars = expandedBarsState[1];
+    function toggleBarExpanded(qIdx) {
+      setExpandedBars(function (prev) {
+        var next = Object.assign({}, prev);
+        if (next[qIdx]) delete next[qIdx]; else next[qIdx] = true;
+        return next;
+      });
+    }
+
     // Plan T v3+: "Explain to class" — when a Pre-Check gap surfaces a concept
     // most students missed, teacher can click 🎓 to generate a 60-90 word
     // age-appropriate explainer they can immediately read aloud. Modal shows
@@ -971,7 +983,14 @@
         })
       );
     } else {
-      // liveHeatmap — per-question bars
+      // liveHeatmap — per-question bars; click to expand and see per-student status
+      var statusColor = function (s) {
+        if (s === 'correct') return { bg: 'bg-emerald-100', text: 'text-emerald-800', icon: '✓' };
+        if (s === 'incorrect') return { bg: 'bg-rose-100', text: 'text-rose-800', icon: '✗' };
+        if (s === 'idk') return { bg: 'bg-sky-100', text: 'text-sky-800', icon: '🤔' };
+        if (s === 'partially-correct') return { bg: 'bg-amber-100', text: 'text-amber-800', icon: '◐' };
+        return { bg: 'bg-slate-100', text: 'text-slate-700', icon: '·' };
+      };
       body = React.createElement('div', { className: 'space-y-2' },
         data.bars.map(function (bar) {
           var color = bar.total === 0 ? 'slate' :
@@ -982,8 +1001,22 @@
           var pctIdk = bar.total > 0 ? (bar.idk / bar.total) * 100 : 0;
           var pctSubmitted = bar.total > 0 ? (bar.submitted / bar.total) * 100 : 0;
           var qLabel = bar.questionText ? bar.questionText.slice(0, 70) + (bar.questionText.length > 70 ? '…' : '') : ('Question ' + (bar.questionIdx + 1));
-          return React.createElement('div', { key: bar.questionIdx, className: 'p-2 rounded bg-white border border-slate-200' },
-            React.createElement('div', { className: 'flex items-start justify-between gap-2 mb-1' },
+          var canExpand = bar.total > 0;
+          var isExpanded = !!expandedBars[bar.questionIdx];
+          return React.createElement('div', {
+            key: bar.questionIdx,
+            className: 'p-2 rounded bg-white border border-slate-200',
+          },
+            React.createElement('div', {
+              className: 'flex items-start gap-2 mb-1' + (canExpand ? ' cursor-pointer' : ''),
+              onClick: canExpand ? function () { toggleBarExpanded(bar.questionIdx); } : undefined,
+              role: canExpand ? 'button' : undefined,
+              tabIndex: canExpand ? 0 : undefined,
+              'aria-expanded': canExpand ? isExpanded : undefined,
+              'aria-label': canExpand ? ((isExpanded ? 'Collapse' : 'Expand') + ' question ' + (bar.questionIdx + 1) + ' student detail') : undefined,
+              onKeyDown: canExpand ? function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleBarExpanded(bar.questionIdx); } } : undefined,
+            },
+              canExpand && React.createElement('span', { className: 'text-slate-500 hover:text-indigo-600 text-[10px] font-mono mt-0.5' }, isExpanded ? '▼' : '▶'),
               React.createElement('span', { className: 'text-xs text-slate-700 flex-1 min-w-0' }, (bar.questionIdx + 1) + '. ' + qLabel),
               bar.total > 0 && React.createElement('span', {
                 className: 'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800',
@@ -1002,7 +1035,29 @@
               bar.idk > 0 && React.createElement('span', { className: 'text-sky-700' }, bar.idk + ' 🤔'),
               bar.submitted > 0 && React.createElement('span', { className: 'text-slate-500' }, bar.submitted + ' submitted'),
               React.createElement('span', { className: 'ml-auto text-slate-500' }, bar.total + ' / ' + data.totalStudents)
-            )
+            ),
+            // Per-student detail when expanded
+            isExpanded && Array.isArray(bar.byStudent) && bar.byStudent.length > 0 && React.createElement('div', {
+              className: 'mt-2 pt-2 border-t border-slate-100 space-y-1',
+            }, bar.byStudent.map(function (s) {
+              var sc = statusColor(s.status);
+              return React.createElement('div', {
+                key: s.uid,
+                className: 'flex items-start gap-2 text-xs',
+              },
+                React.createElement('span', { className: 'flex-shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded ' + sc.bg + ' ' + sc.text }, sc.icon),
+                React.createElement('span', { className: 'flex-shrink-0 font-semibold text-slate-700 w-32 truncate' }, s.displayName),
+                React.createElement('span', { className: 'flex-grow min-w-0 break-words text-slate-700' }, s.answerSummary || React.createElement('em', { className: 'text-slate-400' }, '(no text)')),
+                s.aiGraded && React.createElement('span', {
+                  className: 'flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-1 py-0.5 rounded bg-indigo-100 text-indigo-800',
+                  title: 'AI-graded',
+                }, '✨'),
+                s.aiFeedback && React.createElement('span', {
+                  className: 'flex-shrink-0 italic text-[10px] text-indigo-800 truncate max-w-[12rem]',
+                  title: s.aiFeedback,
+                }, '"' + s.aiFeedback.slice(0, 50) + (s.aiFeedback.length > 50 ? '…' : '') + '"')
+              );
+            }))
           );
         })
       );
