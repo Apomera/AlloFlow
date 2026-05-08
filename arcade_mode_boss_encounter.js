@@ -266,6 +266,71 @@
     });
   }
 
+  // ── Shared arcade CSS (Phase J — visual polish) ──
+  // Injects card/verb interaction styles + score-pop keyframes once per
+  // page load. All three arcade modes use the same className helpers
+  // (ah-arcade-card, ah-arcade-verb, ah-score-pop, ah-resonant-pulse).
+  // Wrapped in prefers-reduced-motion: no-preference so the animations
+  // are skipped for vestibular-sensitive users.
+  function attachSharedArcadeCSS() {
+    if (typeof document === 'undefined') return;
+    if (document.getElementById('ah-arcade-css')) return;
+    var st = document.createElement('style');
+    st.id = 'ah-arcade-css';
+    st.textContent = [
+      // Cards: subtle lift on hover, tighter shadow on focus, scale +
+      // accent shadow when picked. Transition kept short (140ms) to feel
+      // responsive without being twitchy.
+      '.ah-arcade-card { transition: transform 140ms ease, box-shadow 140ms ease, border-color 140ms ease; }',
+      '@media (prefers-reduced-motion: no-preference) {',
+      '  .ah-arcade-card:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(96,165,250,0.18); }',
+      '  .ah-arcade-card:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,165,250,0.55); }',
+      '  .ah-arcade-card.is-picked { transform: translateY(-1px) scale(1.02); box-shadow: 0 6px 18px rgba(96,165,250,0.32); }',
+      '}',
+      '.ah-arcade-card.is-picked { z-index: 1; }',
+      // Verb pills: subtle gradient when active, slight ease.
+      '.ah-arcade-verb { transition: transform 120ms ease, box-shadow 120ms ease, background 160ms ease; }',
+      '@media (prefers-reduced-motion: no-preference) {',
+      '  .ah-arcade-verb:hover:not(:disabled) { transform: translateY(-1px); }',
+      '  .ah-arcade-verb.is-active { box-shadow: 0 4px 10px rgba(96,165,250,0.32); }',
+      '}',
+      // Score chip pop animation: tiny scale-up on entrance, ~280ms.
+      '@keyframes ah-score-pop {',
+      '  0%   { transform: scale(0.85); opacity: 0; }',
+      '  60%  { transform: scale(1.08); opacity: 1; }',
+      '  100% { transform: scale(1); opacity: 1; }',
+      '}',
+      '@media (prefers-reduced-motion: no-preference) {',
+      '  .ah-score-pop { animation: ah-score-pop 280ms ease-out both; display: inline-block; }',
+      '}',
+      // Resonant pulse: gentle 2s loop for the 🌟 callout in feedback.
+      '@keyframes ah-resonant-pulse {',
+      '  0%, 100% { transform: scale(1); }',
+      '  50%      { transform: scale(1.12); }',
+      '}',
+      '@media (prefers-reduced-motion: no-preference) {',
+      '  .ah-resonant-pulse { animation: ah-resonant-pulse 2.4s ease-in-out infinite; display: inline-block; }',
+      '}',
+      // Realm canvas frame: inset shadow + subtle vignette via radial
+      // gradient overlay so the canvas reads as a window into a world.
+      '.ah-realm-canvas { position: relative; }',
+      '.ah-realm-canvas::after {',
+      '  content: ""; position: absolute; inset: 0; pointer-events: none;',
+      '  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.32) 100%);',
+      '  border-radius: inherit;',
+      '}',
+      // Glossary tier badge — small rounded chip.
+      '.ah-tier-badge {',
+      '  position: absolute; top: 2px; left: 2px;',
+      '  font-size: 8px; font-weight: 700;',
+      '  padding: 1px 5px; border-radius: 999px;',
+      '  background: rgba(0,0,0,0.55); color: #fff;',
+      '  letter-spacing: 0.04em; pointer-events: none;',
+      '}'
+    ].join('\n');
+    if (document.head) document.head.appendChild(st);
+  }
+
   // ── Expose shared helpers on the AlloHavenArcade registry ──
   // Idempotent: only sets each helper once. Realm Builder consumes these via
   // window.AlloHavenArcade.gradeCardJustification etc., so load order between
@@ -273,6 +338,7 @@
   // opens the arcade.
   function attachSharedHelpers() {
     if (!window.AlloHavenArcade) return;
+    attachSharedArcadeCSS();
     if (!window.AlloHavenArcade.cardHelpers) {
       window.AlloHavenArcade.cardHelpers = {
         decorationToCard: decorationToCard,

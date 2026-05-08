@@ -998,15 +998,18 @@
       opts = opts || {};
       var picked = !!opts.picked;
       var onClick = opts.onClick || function () {};
+      var tierShort = card.tier ? String(card.tier).replace(/^Tier\s*/i, 'T') : '';
       return h('button', {
         key: 'card-' + card.id + (opts.suffix || ''),
         onClick: onClick,
+        className: 'ah-arcade-card' + (picked ? ' is-picked' : ''),
         'aria-label': (picked ? 'Selected: ' : 'Pick: ') + card.name + (card.tier ? ' (' + card.tier + ')' : ''),
         'aria-pressed': picked ? 'true' : 'false',
         style: {
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px',
           padding: '6px',
           width: '92px',
+          position: 'relative',
           background: picked ? (palette.accent || '#60a5fa') : (palette.surface || '#1e293b'),
           color: picked ? (palette.onAccent || '#0f172a') : (palette.text || '#e2e8f0'),
           border: '1.5px solid ' + (picked ? (palette.accent || '#60a5fa') : (palette.border || '#334155')),
@@ -1021,6 +1024,10 @@
           style: { width: '64px', height: '64px', objectFit: 'cover', borderRadius: '4px', border: '1px solid ' + (palette.border || '#334155') }
         }) : h('div', { 'aria-hidden': 'true', style: { width: '64px', height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', background: palette.bg || '#0f172a', borderRadius: '4px', border: '1px solid ' + (palette.border || '#334155') } },
           card.source === 'glossary' ? '📖' : '🎴'),
+        tierShort ? h('span', {
+          className: 'ah-tier-badge',
+          'aria-label': card.tier
+        }, tierShort) : null,
         h('div', { style: { fontSize: '10px', fontWeight: 700, textAlign: 'center', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80px' } },
           card.name)
       );
@@ -1120,10 +1127,25 @@
             color: palette.text || '#e2e8f0'
           }
         },
-          h('div', { style: { fontSize: '11px', fontWeight: 700, color: lastFeedback.resonant ? (palette.accent || '#60a5fa') : (palette.textMute || '#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' } },
-            (lastFeedback.resonant ? '🌟 Resonant relation · ' : '') +
-            'Score ' + lastFeedback.score + '/20 · ' +
-            lastFeedback.fromCardName + ' — ' + lastFeedback.verbLabel + ' → ' + lastFeedback.toCardName),
+          h('div', { style: { fontSize: '11px', fontWeight: 700, color: lastFeedback.resonant ? (palette.accent || '#60a5fa') : (palette.textMute || '#94a3b8'), textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' } },
+            lastFeedback.resonant ? h('span', { className: 'ah-resonant-pulse', 'aria-label': 'Resonant relation', style: { fontSize: '14px' } }, '🌟') : null,
+            h('span', null,
+              (lastFeedback.resonant ? 'Resonant relation · ' : '') +
+              lastFeedback.fromCardName + ' — ' + lastFeedback.verbLabel + ' → ' + lastFeedback.toCardName),
+            h('span', {
+              key: 'sp-' + lastFeedback.score + '-' + (lastFeedback.fromCardName || ''),
+              className: 'ah-score-pop',
+              style: {
+                marginLeft: 'auto',
+                fontVariantNumeric: 'tabular-nums',
+                background: lastFeedback.score >= 18 ? (palette.accent || '#60a5fa') : (lastFeedback.score >= 11 ? (palette.accent + '22' || 'rgba(96,165,250,0.18)') : 'transparent'),
+                color: lastFeedback.score >= 18 ? (palette.onAccent || '#0f172a') : (lastFeedback.score >= 11 ? (palette.accent || '#60a5fa') : (palette.textMute || '#94a3b8')),
+                padding: '2px 9px', borderRadius: '999px',
+                fontWeight: lastFeedback.score >= 18 ? 800 : 700,
+                fontSize: '11px', letterSpacing: 0
+              }
+            }, lastFeedback.score + '/20')
+          ),
           lastFeedback.ackText ? h('p', { style: { margin: '0 0 6px 0', fontSize: '13px', lineHeight: '1.5' } }, lastFeedback.ackText) : null,
           lastFeedback.followUp ? h('p', { style: { margin: 0, fontSize: '12px', fontStyle: 'italic', color: palette.textDim || '#cbd5e1' } }, '💭 ' + lastFeedback.followUp) : null
         ) : null,
@@ -1149,10 +1171,12 @@
               var active = pickedVerb && pickedVerb.id === v.id;
               return h('button', {
                 key: 'av-' + v.id,
+                className: 'ah-arcade-verb' + (active ? ' is-active' : ''),
                 role: 'radio',
                 'aria-checked': active ? 'true' : 'false',
                 onClick: function () { setPickedVerb(v); },
                 style: {
+                  display: 'inline-flex', alignItems: 'center', gap: '6px',
                   padding: '6px 12px', fontSize: '12px', fontFamily: 'inherit',
                   background: active ? (palette.accent || '#60a5fa') : 'transparent',
                   color: active ? (palette.onAccent || '#0f172a') : (palette.text || '#e2e8f0'),
@@ -1160,7 +1184,10 @@
                   borderRadius: '999px',
                   cursor: 'pointer'
                 }
-              }, v.emoji + ' ' + v.label);
+              },
+                h('span', { style: { fontSize: active ? '15px' : '13px', lineHeight: 1, transition: 'font-size 140ms ease' } }, v.emoji),
+                h('span', { style: { fontWeight: active ? 700 : 500 } }, v.label)
+              );
             })
           ),
           pickedVerb ? h('div', { style: { fontSize: '11px', color: palette.textDim || '#cbd5e1', fontStyle: 'italic', marginTop: '4px' } },
