@@ -446,6 +446,19 @@
       generatedAt: null              // ISO timestamp of the cached summary
     },
 
+    // ── Tenure narrative cache (Phase Q) ──
+    // AI-generated 2-3 paragraph narrative of the student's full
+    // AlloHaven journey, generated on demand from computeTenureStats.
+    // Sits at the top of the Tenure Recap modal as a clinical artifact
+    // for IEP / parent-meeting review — gentle, observational,
+    // never diagnostic. Same in-session-only cache pattern as insightsState.
+    tenureNarrative: {
+      loading: false,
+      result: null,                  // { narrative, throughLines:[], strength }
+      error: null,
+      generatedAt: null
+    },
+
     // ── Ambient soundscape (Phase 2g) ──
     // Procedural Web Audio noise looped during Pomodoro focus phases.
     // 'off' | 'rain' | 'fireplace' | 'wind'. No external audio assets —
@@ -9727,6 +9740,104 @@
         });
     }
 
+    // ── Tenure narrative analysis (Phase Q) ──
+    // Sends a structured summary of computeTenureStats() to Gemini and
+    // asks for a 2-3 paragraph warm, observational narrative of the
+    // student's AlloHaven journey — meant to be read alongside the raw
+    // stats in the Tenure Recap modal as a clinical / parent-meeting
+    // artifact. Mirrors runInsightsAnalysis: cache in state.tenureNarrative,
+    // local-stats-only fallback when callGemini is missing, error fallback
+    // shows partial value rather than nothing. NEVER diagnoses; tone is
+    // generous and specific to the data, not prescriptive.
+    function runTenureNarrativeAnalysis() {
+      var stats = computeTenureStats(state);
+      if (!stats) return;
+      // Build a compact, structured summary the model can read without
+      // hallucinating. Keep numeric fields as numbers; named lists as
+      // short string arrays.
+      var topMoods = (stats.topMoods || []).slice(0, 3).map(function(m) {
+        return (m.option && m.option.label) || m.id;
+      });
+      var topSubjects = (stats.topSubjects || []).slice(0, 3).map(function(s) {
+        return (s.tag && s.tag.label) || s.id;
+      });
+      var skillsAtL2Plus = (stats.skills || []).filter(function(s) { return s.level >= 2; })
+        .map(function(s) { return (s.def && s.def.label || s.def && s.def.id) + ' L' + s.level; });
+      var summaryForAI = {
+        daysSince: stats.daysSince,
+        decorationsBuilt: stats.decorationCount,
+        decksAttached: stats.withMemoryContent,
+        voiceNotes: stats.withVoiceNote,
+        favorites: stats.favoriteCount,
+        customCount: stats.customCount,
+        journalEntries: stats.journalCount,
+        wordsWritten: stats.totalWords,
+        storiesBuilt: stats.storyCount,
+        storiesWalked: stats.storiesWalked,
+        goalsDone: stats.goalsDone,
+        goalsTotal: stats.goalsTotal,
+        achievementsUnlocked: stats.unlockedAchievements,
+        achievementsTotal: stats.totalAchievements,
+        topMoods: topMoods,
+        topSubjects: topSubjects,
+        skillsLeveled: skillsAtL2Plus,
+        companionName: stats.companion && stats.companion.name,
+        companionSpecies: stats.companion && stats.companion.species
+      };
+      if (typeof callGemini !== 'function') {
+        // No AI — clear loading and surface a graceful 'no narrative' state.
+        setStateField('tenureNarrative', {
+          loading: false,
+          result: { narrative: null, throughLines: [], strength: null, stats: summaryForAI },
+          error: null,
+          generatedAt: new Date().toISOString()
+        });
+        return;
+      }
+      setStateField('tenureNarrative', { loading: true, result: null, error: null, generatedAt: null });
+      var narrativePrompt =
+        'You are reading a structured summary of a student\'s journey through AlloHaven, an SEL-focused study tool. ' +
+        'Write a 2-3 short paragraph NARRATIVE summary of their journey — warm, specific, observational, gentle. ' +
+        'Tone: a thoughtful school psychologist writing to the student themselves AND their parents. ' +
+        'Use second person ("you started..."); celebrate effort + patterns; never diagnose; never compare to other students; never use shame, streaks, or guilt language. ' +
+        'Be specific to the data — quote concrete numbers and named patterns (top moods, top subjects, skills leveled, companion name). ' +
+        'If a field is empty or zero, simply skip it; don\'t comment on absences.\n\n' +
+        'Return STRICT JSON with these fields:\n' +
+        '  "narrative": 2-3 paragraphs separated by \\n\\n. Plain text. No markdown. 220-360 words total.\n' +
+        '  "throughLines": array of 3-5 short noun phrases (max 5 words each) naming the strongest patterns you see.\n' +
+        '  "strength": one short sentence of warm, non-prescriptive recognition specific to what stands out most.\n' +
+        'Do NOT include any other fields. Do NOT add markdown fencing.\n\n' +
+        'Stats:\n' + JSON.stringify(summaryForAI, null, 2);
+      Promise.resolve()
+        .then(function() { return callGemini(narrativePrompt); })
+        .then(function(out) {
+          var raw = (typeof out === 'string' ? out : (out && out.text) || '').trim();
+          raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+          var parsed = null;
+          try { parsed = JSON.parse(raw); } catch (e) { /* fall through */ }
+          if (!parsed) throw new Error('Could not parse narrative response');
+          setStateField('tenureNarrative', {
+            loading: false,
+            result: {
+              narrative: typeof parsed.narrative === 'string' ? parsed.narrative : null,
+              throughLines: Array.isArray(parsed.throughLines) ? parsed.throughLines.slice(0, 5) : [],
+              strength: typeof parsed.strength === 'string' ? parsed.strength : null,
+              stats: summaryForAI
+            },
+            error: null,
+            generatedAt: new Date().toISOString()
+          });
+        })
+        .catch(function(err) {
+          setStateField('tenureNarrative', {
+            loading: false,
+            result: { narrative: null, throughLines: [], strength: null, stats: summaryForAI },
+            error: 'AI narrative unavailable. Stats below.',
+            generatedAt: new Date().toISOString()
+          });
+        });
+    }
+
     // ── Quest claim ──
     // Triggered when the user clicks the trifecta-claim button. Verifies
     // all 3 quests are actually complete before granting the bonus, and
@@ -18376,6 +18487,12 @@
         setTimeout(function() { setStateField('activeModal', null); }, 0);
         return null;
       }
+      // Phase Q — auto-fire the AI narrative analysis on first open if
+      // the cache is empty. setTimeout 0 to avoid setState-during-render.
+      var narState = state.tenureNarrative || {};
+      if (!narState.loading && !narState.result && !narState.error) {
+        setTimeout(function() { runTenureNarrativeAnalysis(); }, 0);
+      }
       var startDate = new Date(stats.earliestMs);
       var startDateStr = startDate.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
 
@@ -18486,6 +18603,85 @@
           ),
           h('p', { style: { fontSize: '12px', color: palette.textDim, margin: '0 0 18px 0', fontStyle: 'italic' } },
             'Since ' + startDateStr + ' · ' + stats.daysSince + ' days'),
+
+          // Phase Q — AI narrative card. Sits at the top of the recap
+          // because it's the load-bearing artifact for IEP / parent-meeting
+          // review: a 2-3 paragraph generous, observational summary in
+          // place of just raw numbers. Loading / error / refresh states
+          // mirror the Insights modal pattern.
+          (function() {
+            var nar = state.tenureNarrative || {};
+            var res = nar.result || null;
+            return h('div', {
+              role: 'region',
+              'aria-label': 'AI journey narrative',
+              style: {
+                padding: '16px 18px',
+                marginBottom: '18px',
+                background: palette.surface,
+                border: '1.5px solid ' + (palette.accent || '#60a5fa'),
+                borderRadius: '12px',
+                position: 'relative'
+              }
+            },
+              h('div', {
+                style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px' }
+              },
+                h('div', {
+                  style: { fontSize: '11px', fontWeight: 700, color: palette.accent || '#60a5fa', textTransform: 'uppercase', letterSpacing: '0.06em' }
+                }, '✨ Your story so far'),
+                h('button', {
+                  onClick: function() { runTenureNarrativeAnalysis(); },
+                  'aria-label': 'Regenerate the narrative',
+                  disabled: nar.loading,
+                  title: nar.loading ? 'Writing…' : 'Run a fresh analysis',
+                  style: Object.assign({}, secondaryBtnStyle(palette), { padding: '4px 10px', fontSize: '11px', opacity: nar.loading ? 0.6 : 1 })
+                }, nar.loading ? '…' : '↻ Refresh')
+              ),
+              // Loading state with aria-busy
+              nar.loading ? h('p', {
+                'aria-busy': 'true', 'aria-live': 'polite', role: 'status',
+                style: { color: palette.textDim, fontSize: '13px', fontStyle: 'italic', margin: 0, padding: '8px 0' }
+              }, 'Reading your journey…') : null,
+              // Error fallback (still surfaces stats below; partial > nothing)
+              nar.error && !nar.loading ? h('p', {
+                role: 'alert', 'aria-live': 'polite',
+                style: { fontSize: '12px', color: palette.warn || palette.textDim, fontStyle: 'italic', padding: '6px 10px', background: palette.bg, border: '1px solid ' + palette.border, borderRadius: '6px', margin: '0 0 8px 0' }
+              }, nar.error) : null,
+              // Narrative text
+              !nar.loading && res && res.narrative ? h('div', {
+                style: { fontSize: '14px', color: palette.text, lineHeight: '1.65', whiteSpace: 'pre-wrap', marginBottom: res.throughLines && res.throughLines.length > 0 ? '12px' : 0 }
+              }, res.narrative) : null,
+              // Through-lines: short noun-phrase chips
+              !nar.loading && res && Array.isArray(res.throughLines) && res.throughLines.length > 0 ? h('div', null,
+                h('div', { style: { fontSize: '10px', fontWeight: 700, color: palette.textMute || palette.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px' } },
+                  'Through-lines'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: res.strength ? '12px' : 0 } },
+                  res.throughLines.map(function(t, i) {
+                    return h('span', {
+                      key: 'tl-' + i,
+                      style: {
+                        padding: '3px 10px',
+                        background: palette.bg,
+                        border: '1px solid ' + palette.border,
+                        borderRadius: '999px',
+                        fontSize: '12px',
+                        color: palette.textDim
+                      }
+                    }, t);
+                  })
+                )
+              ) : null,
+              // Strength callout
+              !nar.loading && res && res.strength ? h('p', {
+                style: { margin: 0, fontSize: '13px', fontStyle: 'italic', color: palette.accent || '#60a5fa', borderLeft: '3px solid ' + (palette.accent || '#60a5fa'), paddingLeft: '10px', lineHeight: '1.55' }
+              }, '🌟 ' + res.strength) : null,
+              // No-AI fallback message — only when we have a result but no narrative
+              !nar.loading && res && !res.narrative && !nar.error ? h('p', {
+                style: { color: palette.textDim, fontSize: '12px', fontStyle: 'italic', margin: 0 }
+              }, 'AI narrative not available in this build. Stats below.') : null
+            );
+          })(),
 
           // Companion + recap line
           (c && sp) ? h('div', {
