@@ -3017,6 +3017,30 @@
       // Sparkles — tiny twinkles that fade in/out at random spots without falling.
       '@keyframes ah-sparkle-twinkle { 0%, 100% { opacity: 0; transform: scale(0.6); } 50% { opacity: 0.85; transform: scale(1.1); } }',
       '.ah-root .ah-sparkle { position: absolute; width: 6px; height: 6px; background: radial-gradient(circle at center, #fff, transparent 70%); border-radius: 50%; opacity: 0; animation: ah-sparkle-twinkle ease-in-out infinite; }',
+      // ── Phase T — Living-room ambient particles (time-of-day driven) ──
+      '.ah-root .ah-ambient-layer { position: absolute; inset: 0; pointer-events: none; overflow: hidden; border-radius: inherit; z-index: 2; }',
+      // Dust motes (default day): tiny, drift upward gently with a slight horizontal sway.
+      '@keyframes ah-dust-drift { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 12% { opacity: 0.55; } 50% { transform: translate3d(6px, -28px, 0); } 88% { opacity: 0.55; } 100% { transform: translate3d(-4px, -56px, 0); opacity: 0; } }',
+      '.ah-root .ah-dust-mote { position: absolute; background: radial-gradient(circle at center, rgba(255,236,200,0.7), transparent 70%); border-radius: 50%; opacity: 0; animation: ah-dust-drift ease-in-out infinite; will-change: transform, opacity; }',
+      // Dawn motes — same drift, warmer pink hue.
+      '.ah-root .ah-dawn-mote { position: absolute; background: radial-gradient(circle at center, rgba(255,200,200,0.75), transparent 70%); border-radius: 50%; opacity: 0; animation: ah-dust-drift ease-in-out infinite; will-change: transform, opacity; }',
+      // Fireflies (dusk) — slow gentle bob with a soft amber glow that pulses.
+      '@keyframes ah-firefly-drift { 0% { transform: translate3d(0, 0, 0); opacity: 0; } 18% { opacity: 0.85; } 35% { transform: translate3d(8px, -10px, 0); } 55% { transform: translate3d(-6px, -22px, 0); } 75% { transform: translate3d(4px, -34px, 0); opacity: 0.9; } 100% { transform: translate3d(-2px, -52px, 0); opacity: 0; } }',
+      '.ah-root .ah-firefly { position: absolute; background: radial-gradient(circle at center, rgba(255,210,120,0.95), rgba(255,180,90,0.55) 40%, transparent 70%); border-radius: 50%; box-shadow: 0 0 8px rgba(255,200,120,0.6); opacity: 0; animation: ah-firefly-drift ease-in-out infinite; will-change: transform, opacity; }',
+      // Starlight (night) — twinkles in place, no drift, soft cool-white.
+      '@keyframes ah-star-twinkle { 0%, 100% { opacity: 0.15; transform: scale(0.7); } 50% { opacity: 0.85; transform: scale(1.05); } }',
+      '.ah-root .ah-starlight { position: absolute; background: radial-gradient(circle at center, rgba(220,235,255,0.9), transparent 70%); border-radius: 50%; opacity: 0; animation: ah-star-twinkle ease-in-out infinite; will-change: opacity, transform; }',
+      // ── Phase T3 — Idle sparkle cue (single decoration shimmer) ──
+      // Gentle warm halo that pulses once while the student has been idle.
+      // The animation auto-stops because React removes the class after 1.8s.
+      '@keyframes ah-idle-sparkle-pulse { 0% { box-shadow: 0 0 0 0 rgba(255,220,140,0); transform: scale(1); } 30% { box-shadow: 0 0 18px 6px rgba(255,220,140,0.55); transform: scale(1.03); } 70% { box-shadow: 0 0 12px 4px rgba(255,220,140,0.35); transform: scale(1.02); } 100% { box-shadow: 0 0 0 0 rgba(255,220,140,0); transform: scale(1); } }',
+      '.ah-root .ah-idle-sparkle { animation: ah-idle-sparkle-pulse 1.8s ease-in-out 1; border-radius: 8px; }',
+      // ── Phase T2 — Companion stroll (gentle horizontal drift) ──
+      // ±8px horizontal sway over 24s. Pairs with existing bob/breathe so
+      // the companion feels alive rather than pinned. Translates the outer
+      // wrapper, leaving the inner pose / tail / wings animations intact.
+      '@keyframes ah-companion-stroll-kf { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 50% { transform: translateX(2px); } 75% { transform: translateX(7px); } }',
+      '.ah-root .ah-companion-stroll { animation: ah-companion-stroll-kf 24s ease-in-out infinite; }',
       // Breathing pacer (Phase 2p.28) — gentle box-breathing circle.
       // The .ah-breathe-orb element gets a state class (-in, -hold-in,
       // -out, -hold-out) toggled from React; the keyframes drive the
@@ -3038,6 +3062,12 @@
       '  .ah-root .ah-deco-bob img,',
       '  .ah-root .ah-deco-pulse img,',
       '  .ah-root .ah-deco-shimmer img,',
+      '  .ah-root .ah-dust-mote,',
+      '  .ah-root .ah-dawn-mote,',
+      '  .ah-root .ah-firefly,',
+      '  .ah-root .ah-starlight,',
+      '  .ah-root .ah-idle-sparkle,',
+      '  .ah-root .ah-companion-stroll,',
       '  .ah-root .ah-companion-confetti-piece { animation: none !important; }',
       '  .ah-root .ah-decoration:hover,',
       '  .ah-root .ah-decoration:focus-visible,',
@@ -11711,6 +11741,63 @@
     var pettingTimerRef = useRef(null);
     var pettingJustFiredRef = useRef(false);
 
+    // ── Phase T3 — Idle sparkle cue ──
+    // After ~90s with no interaction, periodically nudge the eye toward a
+    // single decoration (rotating choice, favorites + due-decks preferred).
+    // Once per cycle, 1.8s shimmer, NOT a stream. Suppressed for reduced-
+    // motion via CSS gating, and entirely skipped while a modal is open.
+    var idleSparkleTuple = useState(null); // decorationId | null
+    var idleSparkleId = idleSparkleTuple[0];
+    var setIdleSparkleId = idleSparkleTuple[1];
+    var lastInteractionRef = useRef(Date.now());
+    useEffect(function () {
+      function bump() { lastInteractionRef.current = Date.now(); }
+      // Any of these counts as "the student is here right now."
+      window.addEventListener('mousemove', bump, { passive: true });
+      window.addEventListener('keydown', bump, { passive: true });
+      window.addEventListener('click', bump, { passive: true });
+      window.addEventListener('touchstart', bump, { passive: true });
+      window.addEventListener('scroll', bump, { passive: true });
+      return function () {
+        window.removeEventListener('mousemove', bump);
+        window.removeEventListener('keydown', bump);
+        window.removeEventListener('click', bump);
+        window.removeEventListener('touchstart', bump);
+        window.removeEventListener('scroll', bump);
+      };
+    }, []);
+    useEffect(function () {
+      var clearTimer = null;
+      var tick = setInterval(function () {
+        // Don't sparkle while a modal is open (focus stays elsewhere).
+        if (state.activeModal) return;
+        var idleMs = Date.now() - lastInteractionRef.current;
+        // Window: 90s … 30min. Below 90s, the student is engaged; past
+        // 30min, they've stepped away and we shouldn't keep animating.
+        if (idleMs < 90000 || idleMs > 30 * 60 * 1000) return;
+        // Pick a decoration — favorites first, then due decks, then any.
+        var pool = (state.decorations || []).slice();
+        if (pool.length === 0) return;
+        var weighted = [];
+        pool.forEach(function (d) {
+          var weight = 1;
+          if (d.isFavorite) weight += 4;
+          if (d.linkedContent && typeof isMemoryDue === 'function' && isMemoryDue(d)) weight += 3;
+          for (var i = 0; i < weight; i++) weighted.push(d);
+        });
+        if (weighted.length === 0) return;
+        var pick = weighted[Math.floor(Math.random() * weighted.length)];
+        setIdleSparkleId(pick.id);
+        if (clearTimer) clearTimeout(clearTimer);
+        clearTimer = setTimeout(function () { setIdleSparkleId(null); }, 1800);
+      }, 8000); // check every 8s — gentle cadence, not a strobe
+      return function () {
+        clearInterval(tick);
+        if (clearTimer) clearTimeout(clearTimer);
+      };
+      // eslint-disable-next-line
+    }, [state.activeModal, state.decorations.length]);
+
     // Random-cadence blink (4-7s between blinks, 120ms blink duration)
     useEffect(function() {
       if (!state.companion) return;
@@ -12831,7 +12918,8 @@
               gap: '12px'
             }
           }, wallCells),
-          renderWeatherLayer('wall')
+          renderWeatherLayer('wall'),
+          renderAmbientLayer('wall')
         ),
         // Floor surface (with warm-light overlay + mood tint + companion).
         // Mood-driven tint (Phase 2p.2) — subtle radial overlay reflecting
@@ -12875,6 +12963,7 @@
             }
           }, floorCells),
           renderWeatherLayer('floor'),
+          renderAmbientLayer('floor'),
           renderCompanionOverlay()
         ),
         // Skills panel — only renders when companion exists + has activity
@@ -13118,7 +13207,11 @@
               case 'windows':     return ' ah-deco-shimmer';
               default:            return '';
             }
-          })(),
+          })()
+            // Phase T3 — idle sparkle cue: applied to one decoration at a
+            // time when the student has been idle for a while. CSS halo +
+            // gentle pulse, 1.8s before clearing.
+            + (idleSparkleId === decoration.id ? ' ah-idle-sparkle' : ''),
           title: hoverTitle,
           // Drag-to-rearrange (Phase 2p.10) — only enabled in Build mode.
           // Sets a drag image hint via dataTransfer; on drop in another
@@ -13551,6 +13644,68 @@
     // count is capped low (~24) so reflows stay cheap on lo-fi devices.
     // Each particle gets a stable seeded position/delay/duration via
     // its index so React re-renders don't shuffle them.
+    // ── Living-room ambient layer (Phase T) ──
+    // Time-of-day-driven gentle particles that make the room feel
+    // inhabited without being distracting. Suppressed when:
+    //   - high-contrast mode is on (visual noise)
+    //   - active weather already supplies particles (don't double up)
+    //   - prefers-reduced-motion (CSS gates the animation itself)
+    // Particle type maps to time-of-day:
+    //   dawn  → soft pink dust motes drifting upward
+    //   day   → gentle dust motes catching light
+    //   dusk  → fireflies pulsing slowly
+    //   night → starlight specks twinkling
+    function renderAmbientLayer(surface) {
+      if (inherited.highContrast) return null;
+      var weather = (state.atmosphere && state.atmosphere.weather) || 'clear';
+      if (weather !== 'clear') return null; // weather owns the layer when active
+      var tod = getTimeOfDayTint();
+      var todLabel = tod ? tod.label : 'day';
+      // Wall surface gets fewer particles than floor (smaller area).
+      var WALL = surface === 'wall';
+      var COUNT = (function () {
+        if (todLabel === 'dawn')  return WALL ? 5 : 7;
+        if (todLabel === 'dusk')  return WALL ? 4 : 6;
+        if (todLabel === 'night') return WALL ? 8 : 12;
+        return WALL ? 6 : 8; // day
+      })();
+      var className = (function () {
+        if (todLabel === 'dusk')  return 'ah-firefly';
+        if (todLabel === 'night') return 'ah-starlight';
+        if (todLabel === 'dawn')  return 'ah-dawn-mote';
+        return 'ah-dust-mote';
+      })();
+      var particles = [];
+      for (var i = 0; i < COUNT; i++) {
+        // Stable pseudo-random — same key = same trajectory, no reshuffle
+        // on re-render (which would jolt the eye).
+        var leftPct = ((i * 53) % 96) + ((i % 4) * 0.6);
+        if (leftPct > 96) leftPct = 96;
+        var topPct = ((i * 37) % 90) + 5; // 5–95
+        var dur = 4 + ((i * 13) % 7); // 4–10s
+        var delay = ((i * 29) % 100) / 100 * 4; // 0–4s
+        var size = 3 + ((i * 11) % 4); // 3–6px
+        particles.push(h('span', {
+          key: 'amb-' + i,
+          'aria-hidden': 'true',
+          className: className,
+          style: {
+            left: leftPct.toFixed(1) + '%',
+            top: topPct.toFixed(1) + '%',
+            width: size + 'px',
+            height: size + 'px',
+            animationDuration: dur + 's',
+            animationDelay: delay.toFixed(2) + 's'
+          }
+        }));
+      }
+      return h('div', {
+        className: 'ah-ambient-layer',
+        'aria-hidden': 'true',
+        'data-tod': todLabel
+      }, particles);
+    }
+
     function renderWeatherLayer(surface) {
       var weather = (state.atmosphere && state.atmosphere.weather) || 'clear';
       if (weather === 'clear') return null;
@@ -13730,6 +13885,12 @@
 
       return h('div', {
         'data-species': companion.species,
+        // Phase T2 — gentle horizontal stroll: companion drifts ±8px over
+        // ~24s, suggesting it's alive and looking around. Pure CSS, no JS
+        // tick. Suppressed by reduced-motion. Class applied to outer
+        // wrapper so existing inner animations (bob, breathe, tail) are
+        // preserved.
+        className: 'ah-companion-stroll',
         style: {
           position: 'absolute',
           bottom: '8px',
@@ -13739,7 +13900,8 @@
           alignItems: 'flex-end',
           gap: '6px',
           zIndex: 5,
-          pointerEvents: 'none' // children re-enable
+          pointerEvents: 'none', // children re-enable
+          willChange: 'transform'
         }
       },
         // Confetti pieces (level-up)
