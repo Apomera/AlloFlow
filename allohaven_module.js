@@ -294,7 +294,13 @@
       // streaks, no pressure to complete daily — just an additional
       // gentle nudge that fits the no-guilt design language.
       questIds: [],                  // 3 quest ids chosen for today
-      questsClaimed: false           // user clicked the trifecta-claim button
+      questsClaimed: false,          // user clicked the trifecta-claim button
+      // ── Daily reps queue bonus (Phase P) ──
+      // Once-per-day +2 token reward when a student finishes a review
+      // queue of ≥3 decks. Stored as today's date string ('YYYY-MM-DD');
+      // bonus only fires if this !== today. No streaks, no shame —
+      // gentle marker for completing a daily ritual.
+      queueBonusEarnedDate: null
     },
 
     // ── Pomodoro ──
@@ -9610,7 +9616,8 @@
           // Pick 3 quests for the new day, deterministic by date so the
           // student sees the same trio if they reload mid-day.
           questIds: pickQuestsForDate(todayStr, 3),
-          questsClaimed: false
+          questsClaimed: false,
+          queueBonusEarnedDate: null
         });
       } else if (!Array.isArray(state.dailyState.questIds) || state.dailyState.questIds.length === 0) {
         // Backfill — first session after the quest system shipped won't
@@ -10436,11 +10443,38 @@
       }]);
       var nextIdx = q.currentIdx + 1;
       if (nextIdx >= q.decks.length) {
-        // Queue complete — show summary
-        setStateMulti({
-          activeModal: 'review-queue-summary',
-          generateContext: { reviewQueue: Object.assign({}, q, { results: newResults }) }
-        });
+        // Queue complete — show summary.
+        // Phase P: award a one-per-day +2 token bonus for completing a
+        // queue of ≥3 decks. Gentle marker, no streaks. Per-deck quiz
+        // tokens already accrue inside recordQuizSession independently.
+        var todayStr = new Date().toISOString().slice(0, 10);
+        var bonusAlreadyEarned = (state.dailyState && state.dailyState.queueBonusEarnedDate) === todayStr;
+        var bonusEligible = newResults.length >= 3 && !bonusAlreadyEarned;
+        var bonusAmount = bonusEligible ? 2 : 0;
+        var summaryCtx = { reviewQueue: Object.assign({}, q, { results: newResults }) };
+        if (bonusAmount > 0) summaryCtx.queueBonus = bonusAmount;
+        if (bonusAmount > 0) {
+          var avgPct = Math.round(newResults.reduce(function(s, r) { return s + (r.scorePct || 0); }, 0) / newResults.length);
+          var bonusEntry = {
+            source: 'review-queue-bonus',
+            tokens: bonusAmount,
+            date: new Date().toISOString(),
+            metadata: { decksReviewed: newResults.length, avgPct: avgPct }
+          };
+          setStateMulti({
+            tokens: state.tokens + bonusAmount,
+            earnings: (state.earnings || []).concat([bonusEntry]),
+            dailyState: Object.assign({}, state.dailyState, { queueBonusEarnedDate: todayStr }),
+            activeModal: 'review-queue-summary',
+            generateContext: summaryCtx
+          });
+          addToast('🪙 +' + bonusAmount + ' daily-reps bonus');
+        } else {
+          setStateMulti({
+            activeModal: 'review-queue-summary',
+            generateContext: summaryCtx
+          });
+        }
       } else {
         // Advance to next deck
         setStateMulti({
@@ -12807,6 +12841,35 @@
                 }
               }, dueCount + ' due') : null
             );
+          })(),
+          // ── Daily reps launcher (Phase P) ──
+          // Visible only when there are due decks. One-tap path from the
+          // home screen into the review queue: no need to open Memory
+          // Overview first, find the Due section, then click "Review all".
+          // Eliminates 2 clicks of executive-function load — important for
+          // students with ADHD / autism / motor-planning challenges who
+          // benefit from "press play and follow the prompts" rituals.
+          // Entrance via ah-score-pop so the launcher lands with motion
+          // when a student opens AlloHaven and decks are due.
+          (function() {
+            var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
+            if (dueCount === 0) return null;
+            // Rough-average estimate: ~0.7 min per cloze deck. Floor at 1
+            // so the chip never says "0 min".
+            var estMin = Math.max(1, Math.ceil(dueCount * 0.7));
+            return h('button', {
+              key: 'daily-reps-' + dueCount, // re-key as count changes so animation re-fires
+              className: 'ah-score-pop',
+              onClick: function() { startReviewQueue(); },
+              'aria-label': 'Start a daily review session — ' + dueCount + ' deck' + (dueCount === 1 ? '' : 's') + ' due, about ' + estMin + ' minute' + (estMin === 1 ? '' : 's'),
+              title: 'Press play and follow the prompts.',
+              style: Object.assign({}, secondaryBtnStyle(palette), {
+                background: (palette.accent || '#60a5fa') + '22',
+                borderColor: palette.accent,
+                color: palette.accent,
+                fontWeight: 700
+              })
+            }, '⚡ Daily reps · ' + dueCount + ' · ~' + estMin + ' min');
           })(),
           (function() {
             var storyCount = (state.stories || []).length;
@@ -19930,24 +19993,71 @@
         }
       },
         h('div', {
+          className: 'ah-tour-step',
           style: {
-            background: palette.bg, border: '2px solid ' + palette.accent,
+            backgroundColor: palette.bg,
+            // Celebratory accent halo from top — matches the rhythm of
+            // Tour, Welcome, Tenure recap, Pomodoro, Grounding, Breathing.
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
+            border: '2px solid ' + palette.accent,
             borderRadius: '14px', padding: '28px',
             maxWidth: '500px', width: '100%', maxHeight: '88vh',
-            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            overflowY: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
             textAlign: 'center'
           }
         },
-          h('div', { 'aria-hidden': 'true', style: { fontSize: '56px', marginBottom: '8px' } }, emoji),
+          h('div', { 'aria-hidden': 'true', className: 'ah-tour-emoji', style: { fontSize: '56px', marginBottom: '8px', display: 'inline-block', lineHeight: 1 } }, emoji),
           h('h3', { style: { margin: '0 0 14px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
             'Review queue complete'),
-          h('div', {
-            style: { fontSize: '40px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums', lineHeight: '1.0' }
-          }, avgPct + '%'),
-          h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px', marginBottom: '20px' } },
+          // Avg-pct hero — color-coded chip with score-pop entrance.
+          // Bucket parity with HP bar / goal bar / per-row chips:
+          // green ≥80, accent ≥50, muted <50.
+          (function() {
+            var heroBg = avgPct >= 80
+              ? 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)'
+              : avgPct >= 50
+              ? 'linear-gradient(180deg, ' + (palette.accent || '#60a5fa') + ' 0%, ' + (palette.accent || '#60a5fa') + 'cc 100%)'
+              : (palette.surface || '#1e293b');
+            var heroFg = avgPct >= 50 ? (palette.onAccent || '#0f172a') : (palette.textMute || '#94a3b8');
+            return h('div', {
+              key: 'avg-' + avgPct,
+              className: 'ah-score-pop',
+              style: {
+                display: 'inline-block',
+                fontSize: '40px', fontWeight: 800,
+                fontVariantNumeric: 'tabular-nums', lineHeight: 1,
+                padding: '8px 22px',
+                borderRadius: '999px',
+                background: heroBg, color: heroFg,
+                boxShadow: avgPct >= 50
+                  ? 'inset 0 -1px 2px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 14px rgba(0,0,0,0.22)'
+                  : 'inset 0 1px 2px rgba(0,0,0,0.32)',
+                letterSpacing: '0.02em'
+              }
+            }, avgPct + '%');
+          })(),
+          h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '8px', marginBottom: '20px' } },
             'Average across ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's') + ' · ' + passedDecks + ' passed'),
+          // Bonus token line — populated when advanceReviewQueue awarded
+          // a queue-completion bonus this session (Phase P3).
+          ctx && ctx.queueBonus ? h('div', {
+            role: 'status',
+            style: {
+              padding: '8px 12px', marginBottom: '16px',
+              background: (palette.accent || '#60a5fa') + '22',
+              border: '1px solid ' + (palette.accent || '#60a5fa'),
+              borderRadius: '8px',
+              fontSize: '12px', fontWeight: 700,
+              color: palette.accent || '#60a5fa',
+              display: 'inline-block'
+            }
+          }, '🪙 +' + ctx.queueBonus + ' daily-reps bonus') : null,
           // Per-deck breakdown
-          h('div', { style: { textAlign: 'left', marginBottom: '20px', padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' } },
+          h('ul', {
+            role: 'list',
+            'aria-label': 'Per-deck results',
+            style: { listStyle: 'none', padding: 0, margin: '0 0 20px 0', textAlign: 'left' }
+          },
             q.results.map(function(r, i) {
               var dec = state.decorations.filter(function(d) { return d.id === r.decorationId; })[0];
               var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed)';
@@ -19955,22 +20065,40 @@
               var color = pct >= 80 ? (palette.success || palette.accent)
                         : pct >= 50 ? palette.accent
                         : (palette.warn || palette.textMute);
-              return h('div', {
+              return h('li', {
                 key: 'qr-' + i,
+                role: 'listitem',
+                className: 'ah-deck-row',
                 style: {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '6px 0',
-                  borderBottom: i < q.results.length - 1 ? '1px solid ' + palette.border : 'none'
+                  padding: '8px 12px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '8px',
+                  marginBottom: i < q.results.length - 1 ? '6px' : 0
                 }
               },
-                h('div', null,
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                   dec && dec.imageBase64 ? h('img', {
                     src: dec.imageBase64, alt: '', 'aria-hidden': 'true',
-                    style: { width: '24px', height: '24px', verticalAlign: 'middle', marginRight: '8px', borderRadius: '4px' }
-                  }) : null,
+                    style: { width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', border: '1px solid ' + palette.border }
+                  }) : h('span', { 'aria-hidden': 'true', style: { fontSize: '18px', width: '28px', textAlign: 'center' } }, '📖'),
                   h('span', { style: { fontSize: '13px', color: palette.text } }, dLabel)
                 ),
-                h('span', { style: { fontSize: '13px', fontWeight: 700, color: color, fontVariantNumeric: 'tabular-nums' } },
+                h('span', {
+                  style: {
+                    fontSize: '12px', fontWeight: 700,
+                    fontVariantNumeric: 'tabular-nums',
+                    background: pct >= 18 || pct >= 80
+                      ? color
+                      : (pct >= 50 ? color + '22' : 'transparent'),
+                    color: pct >= 80 ? (palette.onAccent || '#fff')
+                         : pct >= 50 ? color
+                         : (palette.textMute || '#94a3b8'),
+                    padding: pct >= 50 ? '2px 9px' : '0',
+                    borderRadius: '999px'
+                  }
+                },
                   pct + '%')
               );
             })
