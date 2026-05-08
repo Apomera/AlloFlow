@@ -181,6 +181,24 @@
       '@media (prefers-reduced-motion: no-preference) {',
       '  .ah-deck-row:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(96,165,250,0.14); }',
       '  .ah-deck-row:focus-within { box-shadow: 0 0 0 2px rgba(96,165,250,0.4); }',
+      '}',
+      // Cloze blank focus + correct/incorrect tinting (Phase O).
+      // These apply to inputs that opt in via className ah-cloze-blank;
+      // the wrapper sets data-state to 'idle' / 'correct' / 'incorrect'
+      // for color-coded feedback after a quiz attempt.
+      '.ah-cloze-blank { transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease; }',
+      '.ah-cloze-blank:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,165,250,0.55); border-color: rgba(96,165,250,0.85) !important; }',
+      // Generic primary input lift (used by ah-prominent-input class):
+      '.ah-prominent-input { transition: border-color 160ms ease, box-shadow 160ms ease; }',
+      '.ah-prominent-input:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(96,165,250,0.4); }',
+      // Breathing pacer scale-pulse for paced inhale/exhale rendering:
+      '@keyframes ah-breath-inhale {',
+      '  0%   { transform: scale(0.7); opacity: 0.7; }',
+      '  100% { transform: scale(1.15); opacity: 1; }',
+      '}',
+      '@keyframes ah-breath-exhale {',
+      '  0%   { transform: scale(1.15); opacity: 1; }',
+      '  100% { transform: scale(0.7); opacity: 0.7; }',
       '}'
     ].join('\n');
     if (document.head) document.head.appendChild(st);
@@ -3615,6 +3633,7 @@
                 return h('input', {
                   key: 'jq-' + i,
                   type: 'text',
+                  className: 'ah-cloze-blank',
                   value: quiz.guesses[seg.blankIdx] || '',
                   onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
                   'aria-label': 'Blank ' + (seg.blankIdx + 1),
@@ -3622,9 +3641,9 @@
                   style: {
                     background: palette.surface,
                     border: '1px solid ' + palette.border,
-                    borderRadius: '4px',
+                    borderRadius: '6px',
                     color: palette.text,
-                    padding: '2px 8px',
+                    padding: '3px 9px',
                     fontSize: 'inherit',
                     fontFamily: 'inherit',
                     margin: '0 2px',
@@ -6334,6 +6353,7 @@
             return h('input', {
               key: 'cs-' + i,
               type: 'text',
+              className: 'ah-cloze-blank',
               value: quiz.guesses[seg.blankIdx] || '',
               onChange: function(e) { updateGuess(seg.blankIdx, e.target.value); },
               'aria-label': 'Blank ' + (seg.blankIdx + 1) + ' of ' + totalBlanks,
@@ -7883,6 +7903,7 @@
             var dec = findDecoration(step.decorationId);
             return h('div', {
               key: 'step-' + idx,
+              className: 'ah-deck-row',
               style: {
                 display: 'flex', gap: '10px', alignItems: 'flex-start',
                 padding: '10px', background: palette.surface,
@@ -8163,6 +8184,7 @@
               return h('input', {
                 key: 'wn-' + i,
                 type: 'text',
+                className: 'ah-cloze-blank',
                 value: stepClozeState.guesses[seg.blankIdx] || '',
                 onChange: function(e) { updateStepGuess(seg.blankIdx, e.target.value); },
                 'aria-label': 'Step ' + (idx + 1) + ' blank ' + (seg.blankIdx + 1),
@@ -12786,6 +12808,35 @@
               }, dueCount + ' due') : null
             );
           })(),
+          // ── Daily reps launcher (Phase P) ──
+          // Visible only when there are due decks. One-tap path from the
+          // home screen into the review queue: no need to open Memory
+          // Overview first, find the Due section, then click "Review all".
+          // Eliminates 2 clicks of executive-function load — important for
+          // students with ADHD / autism / motor-planning challenges who
+          // benefit from "press play and follow the prompts" rituals.
+          // Entrance via ah-score-pop so the launcher lands with motion
+          // when a student opens AlloHaven and decks are due.
+          (function() {
+            var dueCount = state.decorations.filter(function(d) { return !!d.linkedContent && isMemoryDue(d); }).length;
+            if (dueCount === 0) return null;
+            // Rough-average estimate: ~0.7 min per cloze deck. Floor at 1
+            // so the chip never says "0 min".
+            var estMin = Math.max(1, Math.ceil(dueCount * 0.7));
+            return h('button', {
+              key: 'daily-reps-' + dueCount, // re-key as count changes so animation re-fires
+              className: 'ah-score-pop',
+              onClick: function() { startReviewQueue(); },
+              'aria-label': 'Start a daily review session — ' + dueCount + ' deck' + (dueCount === 1 ? '' : 's') + ' due, about ' + estMin + ' minute' + (estMin === 1 ? '' : 's'),
+              title: 'Press play and follow the prompts.',
+              style: Object.assign({}, secondaryBtnStyle(palette), {
+                background: (palette.accent || '#60a5fa') + '22',
+                borderColor: palette.accent,
+                color: palette.accent,
+                fontWeight: 700
+              })
+            }, '⚡ Daily reps · ' + dueCount + ' · ~' + estMin + ' min');
+          })(),
           (function() {
             var storyCount = (state.stories || []).length;
             var validStoryCount = (state.stories || []).filter(function(s) {
@@ -14473,8 +14524,10 @@
         }
       },
         h('div', {
+          className: 'ah-tour-step',
           style: {
-            background: palette.bg,
+            backgroundColor: palette.bg,
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
             border: '2px solid ' + palette.accent,
             borderRadius: '20px',
             padding: '32px 28px',
@@ -15755,6 +15808,7 @@
             }, 'Teach a new phrase'),
             h('textarea', {
               id: 'ah-phrase-input',
+              className: 'ah-prominent-input',
               value: phraseDraft,
               onChange: function(e) { setPhraseDraft(e.target.value.slice(0, COMPANION_PHRASE_LIMIT)); },
               placeholder: 'Anything you want — an inside joke, a reminder, a little wisdom...',
@@ -15842,8 +15896,11 @@
         }
       },
         h('div', {
+          className: 'ah-tour-step',
           style: {
-            background: palette.bg, border: '2px solid ' + palette.accent,
+            backgroundColor: palette.bg,
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
+            border: '2px solid ' + palette.accent,
             borderRadius: '20px', padding: '28px',
             maxWidth: '420px', width: '100%',
             boxShadow: '0 30px 70px rgba(0,0,0,0.55)'
@@ -15889,9 +15946,11 @@
           ),
 
           // Step body OR completion
-          !done ? h('div', null,
+          // Step content keyed by idx so each step transition triggers
+          // the ah-tour-step fade-slide-in entrance.
+          !done ? h('div', { key: 'gnd-step-' + idx, className: 'ah-tour-step' },
             h('div', { style: { textAlign: 'center', marginBottom: '6px' } },
-              h('div', { 'aria-hidden': 'true', style: { fontSize: '52px', lineHeight: 1 } }, stepDef.emoji),
+              h('div', { 'aria-hidden': 'true', className: 'ah-tour-emoji', style: { fontSize: '56px', lineHeight: 1, display: 'inline-block' } }, stepDef.emoji),
               h('div', {
                 style: {
                   fontSize: '22px', fontWeight: 800, color: palette.text,
@@ -19900,24 +19959,71 @@
         }
       },
         h('div', {
+          className: 'ah-tour-step',
           style: {
-            background: palette.bg, border: '2px solid ' + palette.accent,
+            backgroundColor: palette.bg,
+            // Celebratory accent halo from top — matches the rhythm of
+            // Tour, Welcome, Tenure recap, Pomodoro, Grounding, Breathing.
+            backgroundImage: 'radial-gradient(ellipse at top, ' + (palette.accent || '#60a5fa') + '24, transparent 65%)',
+            border: '2px solid ' + palette.accent,
             borderRadius: '14px', padding: '28px',
             maxWidth: '500px', width: '100%', maxHeight: '88vh',
-            overflowY: 'auto', boxShadow: '0 20px 50px rgba(0,0,0,0.45)',
+            overflowY: 'auto', boxShadow: '0 24px 60px rgba(0,0,0,0.5)',
             textAlign: 'center'
           }
         },
-          h('div', { 'aria-hidden': 'true', style: { fontSize: '56px', marginBottom: '8px' } }, emoji),
+          h('div', { 'aria-hidden': 'true', className: 'ah-tour-emoji', style: { fontSize: '56px', marginBottom: '8px', display: 'inline-block', lineHeight: 1 } }, emoji),
           h('h3', { style: { margin: '0 0 14px 0', color: palette.text, fontSize: '20px', fontWeight: 700 } },
             'Review queue complete'),
-          h('div', {
-            style: { fontSize: '40px', fontWeight: 800, color: palette.accent, fontVariantNumeric: 'tabular-nums', lineHeight: '1.0' }
-          }, avgPct + '%'),
-          h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '6px', marginBottom: '20px' } },
+          // Avg-pct hero — color-coded chip with score-pop entrance.
+          // Bucket parity with HP bar / goal bar / per-row chips:
+          // green ≥80, accent ≥50, muted <50.
+          (function() {
+            var heroBg = avgPct >= 80
+              ? 'linear-gradient(180deg, #22c55e 0%, #16a34a 100%)'
+              : avgPct >= 50
+              ? 'linear-gradient(180deg, ' + (palette.accent || '#60a5fa') + ' 0%, ' + (palette.accent || '#60a5fa') + 'cc 100%)'
+              : (palette.surface || '#1e293b');
+            var heroFg = avgPct >= 50 ? (palette.onAccent || '#0f172a') : (palette.textMute || '#94a3b8');
+            return h('div', {
+              key: 'avg-' + avgPct,
+              className: 'ah-score-pop',
+              style: {
+                display: 'inline-block',
+                fontSize: '40px', fontWeight: 800,
+                fontVariantNumeric: 'tabular-nums', lineHeight: 1,
+                padding: '8px 22px',
+                borderRadius: '999px',
+                background: heroBg, color: heroFg,
+                boxShadow: avgPct >= 50
+                  ? 'inset 0 -1px 2px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 14px rgba(0,0,0,0.22)'
+                  : 'inset 0 1px 2px rgba(0,0,0,0.32)',
+                letterSpacing: '0.02em'
+              }
+            }, avgPct + '%');
+          })(),
+          h('div', { style: { fontSize: '13px', color: palette.textDim, marginTop: '8px', marginBottom: '20px' } },
             'Average across ' + totalDecks + ' deck' + (totalDecks === 1 ? '' : 's') + ' · ' + passedDecks + ' passed'),
+          // Bonus token line — populated when advanceReviewQueue awarded
+          // a queue-completion bonus this session (Phase P3).
+          ctx && ctx.queueBonus ? h('div', {
+            role: 'status',
+            style: {
+              padding: '8px 12px', marginBottom: '16px',
+              background: (palette.accent || '#60a5fa') + '22',
+              border: '1px solid ' + (palette.accent || '#60a5fa'),
+              borderRadius: '8px',
+              fontSize: '12px', fontWeight: 700,
+              color: palette.accent || '#60a5fa',
+              display: 'inline-block'
+            }
+          }, '🪙 +' + ctx.queueBonus + ' daily-reps bonus') : null,
           // Per-deck breakdown
-          h('div', { style: { textAlign: 'left', marginBottom: '20px', padding: '12px 14px', background: palette.surface, border: '1px solid ' + palette.border, borderRadius: '8px' } },
+          h('ul', {
+            role: 'list',
+            'aria-label': 'Per-deck results',
+            style: { listStyle: 'none', padding: 0, margin: '0 0 20px 0', textAlign: 'left' }
+          },
             q.results.map(function(r, i) {
               var dec = state.decorations.filter(function(d) { return d.id === r.decorationId; })[0];
               var dLabel = dec ? (dec.templateLabel || dec.template || 'item') : '(removed)';
@@ -19925,22 +20031,40 @@
               var color = pct >= 80 ? (palette.success || palette.accent)
                         : pct >= 50 ? palette.accent
                         : (palette.warn || palette.textMute);
-              return h('div', {
+              return h('li', {
                 key: 'qr-' + i,
+                role: 'listitem',
+                className: 'ah-deck-row',
                 style: {
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  padding: '6px 0',
-                  borderBottom: i < q.results.length - 1 ? '1px solid ' + palette.border : 'none'
+                  padding: '8px 12px',
+                  background: palette.surface,
+                  border: '1px solid ' + palette.border,
+                  borderRadius: '8px',
+                  marginBottom: i < q.results.length - 1 ? '6px' : 0
                 }
               },
-                h('div', null,
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                   dec && dec.imageBase64 ? h('img', {
                     src: dec.imageBase64, alt: '', 'aria-hidden': 'true',
-                    style: { width: '24px', height: '24px', verticalAlign: 'middle', marginRight: '8px', borderRadius: '4px' }
-                  }) : null,
+                    style: { width: '28px', height: '28px', borderRadius: '6px', objectFit: 'cover', border: '1px solid ' + palette.border }
+                  }) : h('span', { 'aria-hidden': 'true', style: { fontSize: '18px', width: '28px', textAlign: 'center' } }, '📖'),
                   h('span', { style: { fontSize: '13px', color: palette.text } }, dLabel)
                 ),
-                h('span', { style: { fontSize: '13px', fontWeight: 700, color: color, fontVariantNumeric: 'tabular-nums' } },
+                h('span', {
+                  style: {
+                    fontSize: '12px', fontWeight: 700,
+                    fontVariantNumeric: 'tabular-nums',
+                    background: pct >= 18 || pct >= 80
+                      ? color
+                      : (pct >= 50 ? color + '22' : 'transparent'),
+                    color: pct >= 80 ? (palette.onAccent || '#fff')
+                         : pct >= 50 ? color
+                         : (palette.textMute || '#94a3b8'),
+                    padding: pct >= 50 ? '2px 9px' : '0',
+                    borderRadius: '999px'
+                  }
+                },
                   pct + '%')
               );
             })
