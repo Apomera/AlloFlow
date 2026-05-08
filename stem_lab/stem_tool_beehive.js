@@ -7647,7 +7647,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             c.lineTo(W * 2, horizonY); c.closePath(); c.fill();
 
-            c.restore();
+            // NOTE: Roll rotation extends THROUGH all world objects below so
+            // clouds, flowers, trees, drones, birds, and queens tilt with the
+            // horizon when the camera rolls. Without this, world objects stayed
+            // upright in screen-space while the horizon tilted around them —
+            // the "floating in certain perspectives" bug.
 
             // Render clouds
             ds.clouds.forEach(function(cl) {
@@ -7803,6 +7807,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText(Math.round(dist) + 'm', p.x, p.y + 10 * p.s);
               c.restore();
             });
+
+            // End of rolled world frame — hit flash + HUD must NOT be rotated.
+            c.restore();
 
             // ── Bird hit flash ──
             if (ds.hitFlash > 0) {
