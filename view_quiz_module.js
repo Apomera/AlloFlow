@@ -1093,6 +1093,31 @@
   var onSubmitLiveAnswer = (activeSessionCode && typeof props.onSubmitLiveAnswer === 'function')
     ? props.onSubmitLiveAnswer
     : null;
+  // Plan T v3+: per-MCQ student-answer state for the standalone (non-presentation)
+  // view. Map of questionIdx → selected optionIdx. Click an option to select +
+  // auto-submit to live session if active. Doesn't disturb presentation-mode
+  // path (which has its own pState handler).
+  var mcqAnswersState = React.useState({});
+  var studentMcqAnswers = mcqAnswersState[0];
+  var setStudentMcqAnswers = mcqAnswersState[1];
+  function selectMcqOption(qIdx, optIdx, optText, q) {
+    setStudentMcqAnswers(function (prev) {
+      var next = Object.assign({}, prev);
+      next[qIdx] = optIdx;
+      return next;
+    });
+    if (typeof onSubmitLiveAnswer === 'function') {
+      try {
+        onSubmitLiveAnswer({
+          questionIdx: qIdx,
+          itemType: 'mcq',
+          conceptLabel: (q && q.conceptLabel) || '',
+          answer: { optionIdx: optIdx, optionText: optText },
+          timestamp: Date.now(),
+        });
+      } catch (e) { /* swallow — local selection still works */ }
+    }
+  }
   var isPresentationMode = props.isPresentationMode;
   var isReviewGame = props.isReviewGame;
   var isEditingQuiz = props.isEditingQuiz;
@@ -1826,7 +1851,12 @@
     className: "grid grid-cols-1 sm:grid-cols-2 gap-3 ml-9"
   }, q.options.map((opt, optIdx) => /*#__PURE__*/React.createElement("div", {
     key: optIdx,
-    className: `p-2 rounded-lg border text-sm relative group/option ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : 'bg-slate-50 border-slate-100'}`
+    role: !isEditingQuiz ? 'button' : undefined,
+    tabIndex: !isEditingQuiz ? 0 : undefined,
+    "aria-pressed": !isEditingQuiz ? (studentMcqAnswers[i] === optIdx) : undefined,
+    onClick: !isEditingQuiz ? () => selectMcqOption(i, optIdx, opt, q) : undefined,
+    onKeyDown: !isEditingQuiz ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectMcqOption(i, optIdx, opt, q); } } : undefined,
+    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && opt === q.correctAnswer ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : (studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100')}`
   },
     // Plan S Slice 5: Visual MCQ — option image thumbnail when present
     Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("img", {
