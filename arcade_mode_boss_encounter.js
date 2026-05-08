@@ -2124,6 +2124,7 @@
             var isUnit = card.source === 'glossary';
             return h('button', {
               key: 'hc-' + card.id,
+              className: 'ah-arcade-card' + (picked ? ' is-picked' : ''),
               onClick: function () { setPickedCard(picked ? null : card); },
               'aria-pressed': picked ? 'true' : 'false',
               'aria-label': card.name + (isUnit ? ' (unit card)' : '') + (card.tier ? ', ' + card.tier : ''),
@@ -2175,10 +2176,12 @@
             var picked = pickedVerb && pickedVerb.id === v.id;
             return h('button', {
               key: 'sv-' + v.id,
+              className: 'ah-arcade-verb' + (picked ? ' is-active' : ''),
               onClick: function () { setPickedVerb(v); },
               title: v.hint,
               'aria-pressed': picked ? 'true' : 'false',
               style: {
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
                 background: picked ? palette.accent : 'transparent',
                 color: picked ? palette.onAccent : palette.text,
                 border: '1.5px solid ' + (picked ? palette.accent : palette.border),
@@ -2189,7 +2192,10 @@
                 cursor: 'pointer',
                 fontFamily: 'inherit'
               }
-            }, v.emoji + ' ' + v.label);
+            },
+              h('span', { style: { fontSize: picked ? '15px' : '13px', lineHeight: 1, transition: 'font-size 140ms ease' } }, v.emoji),
+              h('span', null, v.label)
+            );
           })
         )
       ) : null,

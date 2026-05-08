@@ -1700,7 +1700,13 @@
           },
             realm.zones.slice().reverse().slice(0, 8).map(function (z) {
               return h('li', { key: 'zr-' + z.id, role: 'listitem', style: { listStyle: 'none', fontSize: '11px', color: palette.textDim || '#cbd5e1', display: 'flex', gap: '6px', alignItems: 'center' } },
-                z.resonant ? h('span', null, '🌟') : h('span', null, '·'),
+                z.resonant ? h('span', { style: { fontSize: '12px' } }, '🌟') : h('span', { style: { color: palette.textMute || '#94a3b8' } }, '·'),
+                // Inline thumbnail: card image clipped to a small circle so
+                // the feed reads as a stream of placements, not just text.
+                z.cardImageBase64 ? h('img', {
+                  src: z.cardImageBase64, alt: '', 'aria-hidden': 'true',
+                  style: { width: '20px', height: '20px', borderRadius: '50%', objectFit: 'cover', border: '1px solid ' + (palette.border || '#334155'), flexShrink: 0 }
+                }) : h('span', { 'aria-hidden': 'true', style: { width: '20px', height: '20px', borderRadius: '50%', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155'), display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', flexShrink: 0 } }, z.cardSource === 'glossary' ? '📖' : '🎴'),
                 h('strong', { style: { color: palette.text || '#e2e8f0' } }, z.cardName),
                 h('span', null, ' (' + z.verbLabel + ')'),
                 z.partnerCardName ? h('span', null, ' ↔ ' + z.partnerCardName) : null,
