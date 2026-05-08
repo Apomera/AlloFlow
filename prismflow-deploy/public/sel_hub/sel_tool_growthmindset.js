@@ -354,6 +354,37 @@ window.SelHub = window.SelHub || {
         )
       );
 
+      // ── Topic-accent hero band per tab ──
+      var heroBand = (function() {
+        var TAB_META = {
+          brain:    { accent: '#059669', soft: 'rgba(5,150,105,0.10)',   icon: '\uD83E\uDDE0', title: 'Brain Science \u2014 neurons grow with effort',           hint: 'Neuroplasticity: dendrites branch, synapses strengthen, myelin thickens with practice. Eric Kandel won the 2000 Nobel for proving learning physically changes neurons. \u201CSmart\u201D is built, not born.' },
+          reframe:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83D\uDD04', title: 'Reframe It \u2014 fixed thought \u2192 growth thought',     hint: 'Carol Dweck (Mindset, 2006): \u201CI can\u2019t do this\u201D \u2192 \u201CI can\u2019t do this YET.\u201D Single word, decades of research behind it. The reframe doesn\u2019t make hard easy \u2014 it makes hard worth attempting.' },
+          stories:  { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)',  icon: '\uD83C\uDF1F', title: 'Yet Stories \u2014 the world\u2019s late bloomers',         hint: 'Edison\u2019s 10,000 light-bulb attempts, J.K. Rowling\u2019s 12 rejections, Michael Jordan cut from varsity, Einstein didn\u2019t speak till 4. Survivor narratives \u2014 but the pattern (struggle \u2192 persistence \u2192 mastery) is real research too.' },
+          map:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDDFA', title: 'My Growth Map \u2014 your own then-now-next',              hint: 'Pick something you can do now that you couldn\u2019t a year ago. That\u2019s your living evidence of growth-mindset working. Bandura: vicarious self-efficacy is real, but personal mastery experience is the strongest source.' },
+          coach:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83E\uDD16', title: 'AI Coach \u2014 reframe partner on demand',                hint: 'Type a stuck thought; the coach helps you find the growth-language version. Repeated exposure builds the habit. NOT a substitute for therapy or hard conversations \u2014 a rehearsal space for the easier reframes.' },
+          letter:   { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\u2709',         title: 'Future Me \u2014 letter to who you\u2019re becoming',     hint: 'Write to yourself 1 / 5 / 10 years from now. Specifying who you want to become makes the path more visible. Implementation intentions (Gollwitzer 1999): naming the future doubles follow-through.' },
+          educator: { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\uD83C\uDFEB', title: 'Educator Lens \u2014 growth-mindset for teachers',         hint: 'Praise PROCESS not ability (Mueller + Dweck 1998). \u201CYou worked hard\u201D > \u201CYou\u2019re smart.\u201D Avoids the fixed-mindset trap that praise-for-ability creates. Critical for IEP language too \u2014 \u201Capproaching\u201D not \u201Cnot yet meeting.\u201D' }
+        };
+        var meta = TAB_META[activeTab] || TAB_META.brain;
+        return h('div', {
+          style: {
+            margin: '8px 12px 12px',
+            padding: '12px 14px',
+            borderRadius: 12,
+            background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+            border: '1px solid ' + meta.accent + '55',
+            borderLeft: '4px solid ' + meta.accent,
+            display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+          }
+        },
+          h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+          h('div', { style: { flex: 1, minWidth: 220 } },
+            h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+            h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+          )
+        );
+      })();
+
       // ══════════════════════════════════════════════════════════
       // ── Section: Brain Science ──
       // ══════════════════════════════════════════════════════════
@@ -1075,6 +1106,7 @@ window.SelHub = window.SelHub || {
 
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
         tabBar,
+        heroBand,
         h('div', { style: { flex: 1, overflow: 'auto' } }, content),
         progressBar
       );
