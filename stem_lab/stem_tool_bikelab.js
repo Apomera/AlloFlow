@@ -709,8 +709,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var draw = function() {
           var cvs = canvasRef.current;
           if (!cvs) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(cvs, cvs._logicalW || cvs.width, cvs._logicalH || cvs.height);
+          }
           var ctx2d = cvs.getContext('2d');
-          var W = cvs.width, H = cvs.height;
+          if (cvs._dpr) ctx2d.setTransform(cvs._dpr, 0, 0, cvs._dpr, 0, 0);
+          var W = cvs._logicalW || cvs.width, H = cvs._logicalH || cvs.height;
           ctx2d.fillStyle = '#0f172a';
           ctx2d.fillRect(0, 0, W, H);
           // Sky gradient
@@ -2029,8 +2033,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         useEffect(function() {
           var cvs = cvsRef.current;
           if (!cvs) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(cvs, cvs._logicalW || cvs.width, cvs._logicalH || cvs.height);
+          }
           var ctx2d = cvs.getContext('2d');
-          var W = cvs.width, H = cvs.height;
+          if (cvs._dpr) ctx2d.setTransform(cvs._dpr, 0, 0, cvs._dpr, 0, 0);
+          var W = cvs._logicalW || cvs.width, H = cvs._logicalH || cvs.height;
           ctx2d.clearRect(0, 0, W, H);
           ctx2d.fillStyle = surf === 'dry' ? '#334155' : surf === 'wet' ? '#1e3a8a' : surf === 'gravel' ? '#78350f' : '#bae6fd';
           ctx2d.fillRect(0, H - 40, W, 40);
@@ -2543,8 +2551,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var draw = function() {
           var cvs = canvasRef.current;
           if (!cvs) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(cvs, cvs._logicalW || cvs.width, cvs._logicalH || cvs.height);
+          }
           var ctx2d = cvs.getContext('2d');
-          var W = cvs.width, H = cvs.height;
+          if (cvs._dpr) ctx2d.setTransform(cvs._dpr, 0, 0, cvs._dpr, 0, 0);
+          var W = cvs._logicalW || cvs.width, H = cvs._logicalH || cvs.height;
           var sky = ctx2d.createLinearGradient(0, 0, 0, H * 0.75);
           sky.addColorStop(0, '#7dd3fc'); sky.addColorStop(1, '#e0f2fe');
           ctx2d.fillStyle = sky;

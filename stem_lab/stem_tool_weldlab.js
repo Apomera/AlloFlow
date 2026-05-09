@@ -867,8 +867,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         useEffect(function() {
           var canvas = canvasRef.current;
           if (!canvas) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+          }
           var ctxC = canvas.getContext('2d');
-          var W = canvas.width, H = canvas.height;
+          if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+          var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
           var startTime = performance.now();
 
           function draw(now) {
@@ -1289,8 +1293,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         useEffect(function() {
           var canvas = canvasRef.current;
           if (!canvas) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+          }
           var ctxC = canvas.getContext('2d');
-          var W = canvas.width, H = canvas.height;
+          if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+          var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
           ctxC.clearRect(0, 0, W, H);
 
           // Plate background (dark)

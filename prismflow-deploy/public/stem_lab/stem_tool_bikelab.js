@@ -130,8 +130,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
     },
     {
       id: 'rollinghills', name: 'Rolling Hills', icon: '⛰️',
-      desc: 'Gentle sine-wave hills (±8 m). Learn how gravity stores and releases energy.',
-      profile: function(x) { return { y: 8 * Math.sin(x / 40), kind: 'pavement' }; }
+      desc: 'Gentle rolling hills (8 m peak-to-trough). Learn how gravity stores and releases energy.',
+      // Spawn at a flat peak (x=0 → y=0, slope=0). The original `8*sin(x/40)`
+      // put the bike at a +20% upslope from rest, where pedal-force cap of
+      // 250 N barely beat gravity (~154 N for an 80 kg bike), pinning
+      // equilibrium at ~1.5 mph — visually indistinguishable from "broken."
+      // `4*cos(x/20)-4` gives the same y=0 at start, true zero slope, AND
+      // descends into a -8 m valley before climbing back, so PE→KE→PE
+      // pedagogy actually plays out as the description promises.
+      profile: function(x) { return { y: 4 * Math.cos(x / 20) - 4, kind: 'pavement' }; }
     },
     {
       id: 'steephill', name: 'Steep Climb', icon: '🏔️',
@@ -560,6 +567,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         // see why a 10 mph headwind erases more power than a 10% grade.
         var windState = useState(0);
         var wind = windState[0], setWind = windState[1];
+        // Rider mass: lets students see how a heavier vs lighter rider changes
+        // climb speed (gravity load = m·g·sinθ) and acceleration (a = F/m).
+        // Default 70 kg matches the implicit rider weight baked into each
+        // bike's `mass` field, so the slider at 70 reproduces existing physics.
+        // System mass is computed inline as (bike.mass - 70) + riderMass.
+        var riderMassState = useState(70);
+        var riderMass = riderMassState[0], setRiderMass = riderMassState[1];
         // Coast-down: when true, pedal force is forced to zero so students can
         // watch pure drag + rolling + gravity decelerate the bike \u2014 the
         // classic physics-lab demo where you let a cart roll and time its
@@ -602,7 +616,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
 
         // Physics tick. Called every animation frame while running.
         var step = useCallback(function(dt) {
-          var m = bike.mass;
+          // System mass = bike frame (= bike.mass minus the implicit 70 kg
+          // default rider) plus the user-chosen rider mass. Slider at 70
+          // reproduces the original calibration.
+          var m = (bike.mass - 70) + riderMass;
           var v = velRef.current;
           var x = posRef.current;
           // Terrain gives slope via finite-diff over 0.5 m.
@@ -638,7 +655,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           var hist = energyHistoryRef.current;
           hist.push({ t: timeRef.current, ke: ke, pe: pe, total: ke + pe });
           if (hist.length > 600) hist.shift();
-        }, [bike, terrain, power, gear, wind, coasting]);
+        }, [bike, terrain, power, gear, wind, coasting, riderMass]);
 
         // Check milestone teaching callouts. Fires each concept at most once
         // per reset. Keeps toasts as one-shot "gotcha!" moments rather than
@@ -692,8 +709,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var draw = function() {
           var cvs = canvasRef.current;
           if (!cvs) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(cvs, cvs._logicalW || cvs.width, cvs._logicalH || cvs.height);
+          }
           var ctx2d = cvs.getContext('2d');
-          var W = cvs.width, H = cvs.height;
+          if (cvs._dpr) ctx2d.setTransform(cvs._dpr, 0, 0, cvs._dpr, 0, 0);
+          var W = cvs._logicalW || cvs.width, H = cvs._logicalH || cvs.height;
           ctx2d.fillStyle = '#0f172a';
           ctx2d.fillRect(0, 0, W, H);
           // Sky gradient
@@ -1040,7 +1061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
           // Force vectors — scale so the longest ≈ 100 px
           if (showVectors) {
             var v = velRef.current;
-            var m = bike.mass;
+            var m = (bike.mass - 70) + riderMass;
             var y0v = terrain.profile(camX).y;
             var y1v = terrain.profile(camX + 0.5).y;
             var slope = (y1v - y0v) / 0.5;
@@ -1314,8 +1335,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var mph = v * 2.237;
         var kph = v * 3.6;
         var elev = terrain.profile(posRef.current).y;
-        var ke = 0.5 * bike.mass * v * v;
-        var pe = bike.mass * G * elev;
+        var systemMass = (bike.mass - 70) + riderMass;
+        var ke = 0.5 * systemMass * v * v;
+        var pe = systemMass * G * elev;
 
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           BackBar({ icon: '🧪', title: 'Physics Sandbox' }),
@@ -1371,7 +1393,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 h('input', { type: 'range', min: -11, max: 11, step: 0.5, value: wind,
                   onChange: function(e) { setWind(parseFloat(e.target.value)); },
                   className: 'w-full mt-1 accent-rose-500' }),
-                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.')
+                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'Drag scales with (v + wind)² \u2014 a 10 mph headwind at 15 mph feels like 25 mph worth of drag.'),
+                h('label', { className: 'text-xs font-bold text-slate-600 uppercase tracking-wider flex justify-between mt-3' },
+                  h('span', null, 'Rider Mass'),
+                  h('span', { className: 'text-amber-600' }, riderMass + ' kg · ' + Math.round(riderMass * 2.20462) + ' lb')),
+                h('input', { type: 'range', min: 30, max: 120, step: 1, value: riderMass,
+                  onChange: function(e) { setRiderMass(parseInt(e.target.value, 10)); },
+                  className: 'w-full mt-1 accent-amber-500',
+                  'aria-label': 'Rider mass in kilograms' }),
+                h('div', { className: 'text-[10px] text-slate-600 mt-1' }, 'System mass = ' + ((bike.mass - 70) + riderMass) + ' kg (frame ' + (bike.mass - 70) + ' + rider ' + riderMass + '). Heavier riders climb slower (F=m·g·sinθ) and accelerate slower (a=F/m).')
               )
             ),
             // Canvas column
@@ -1409,8 +1439,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
                 [['Speed', mph.toFixed(1) + ' mph', kph.toFixed(1) + ' km/h'],
                  ['Distance', (posRef.current).toFixed(0) + ' m', ((posRef.current) * 3.281).toFixed(0) + ' ft'],
                  ['Elevation', elev.toFixed(1) + ' m', (elev * 3.281).toFixed(1) + ' ft'],
-                 ['Kinetic E', (ke / 1000).toFixed(2) + ' kJ', (0.5 * bike.mass * v * v).toFixed(0) + ' J'],
-                 ['Potential E', (pe / 1000).toFixed(2) + ' kJ', (bike.mass * G * elev).toFixed(0) + ' J']
+                 ['Kinetic E', (ke / 1000).toFixed(2) + ' kJ', (0.5 * systemMass * v * v).toFixed(0) + ' J'],
+                 ['Potential E', (pe / 1000).toFixed(2) + ' kJ', (systemMass * G * elev).toFixed(0) + ' J']
                 ].map(function(stat, i) {
                   return h('div', { key: i, className: 'bg-white rounded-lg p-3 shadow border border-slate-400' },
                     h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600' }, stat[0]),
@@ -2003,8 +2033,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         useEffect(function() {
           var cvs = cvsRef.current;
           if (!cvs) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(cvs, cvs._logicalW || cvs.width, cvs._logicalH || cvs.height);
+          }
           var ctx2d = cvs.getContext('2d');
-          var W = cvs.width, H = cvs.height;
+          if (cvs._dpr) ctx2d.setTransform(cvs._dpr, 0, 0, cvs._dpr, 0, 0);
+          var W = cvs._logicalW || cvs.width, H = cvs._logicalH || cvs.height;
           ctx2d.clearRect(0, 0, W, H);
           ctx2d.fillStyle = surf === 'dry' ? '#334155' : surf === 'wet' ? '#1e3a8a' : surf === 'gravel' ? '#78350f' : '#bae6fd';
           ctx2d.fillRect(0, H - 40, W, 40);
@@ -2517,8 +2551,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         var draw = function() {
           var cvs = canvasRef.current;
           if (!cvs) return;
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(cvs, cvs._logicalW || cvs.width, cvs._logicalH || cvs.height);
+          }
           var ctx2d = cvs.getContext('2d');
-          var W = cvs.width, H = cvs.height;
+          if (cvs._dpr) ctx2d.setTransform(cvs._dpr, 0, 0, cvs._dpr, 0, 0);
+          var W = cvs._logicalW || cvs.width, H = cvs._logicalH || cvs.height;
           var sky = ctx2d.createLinearGradient(0, 0, 0, H * 0.75);
           sky.addColorStop(0, '#7dd3fc'); sky.addColorStop(1, '#e0f2fe');
           ctx2d.fillStyle = sky;
