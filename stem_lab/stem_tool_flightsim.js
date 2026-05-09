@@ -320,11 +320,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var fieldElev = state.fieldElev || 0;
       if (alt < fieldElev) alt = fieldElev;
 
-      // Ground contact (at field elevation, not sea level)
+      // Ground contact (at field elevation, not sea level).
+      // Rolling friction modeled as a constant decelerating force (the
+      // physically-correct model for tire contact), not as exponential
+      // speed decay. The previous `speed *= 0.995` per frame at 30fps
+      // imposed ~14% speed loss per second, which capped the plane's
+      // ground roll at ~20 kts equilibrium — well below the 55 kt Cessna
+      // rotation speed. Result: takeoff was literally impossible.
+      // Coefficient of rolling friction for paved runway ≈ 0.025; this
+      // gives ~0.8 ft/s² decel (~50 lbs resistance against 400 lbs thrust),
+      // which lets the plane accelerate normally toward Vr.
       if (alt <= fieldElev) {
         alt = fieldElev;
         vsi = Math.max(0, vsi);
-        speed *= 0.995; // ground friction
+        var rollingMu = 0.025;
+        speed = Math.max(0, speed - rollingMu * this.G * dt);
       }
 
       // Turn rate (bank angle → heading change).
