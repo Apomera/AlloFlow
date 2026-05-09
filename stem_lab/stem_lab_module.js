@@ -49,6 +49,38 @@
           var tool = this._registry[id];
           if (!tool || !tool.render) return null;
           try { return tool.render(ctx); } catch(e) { console.error('[StemLab] Error rendering ' + id, e); return null; }
+        },
+        // Shared HiDPI canvas setup. Resizes the internal pixel buffer
+        // to match the device pixel ratio while keeping CSS dims at the
+        // logical size, so retina/HiDPI displays render canvas content
+        // crisply instead of CSS-scaling a 1x bitmap. Idempotent: only
+        // re-allocates when dpr or logical dims change.
+        //
+        // Usage in a tool's render useEffect:
+        //   var canvas = canvasRef.current; if (!canvas) return;
+        //   window.StemLab.setupHiDPI(canvas, 720, 360);
+        //   var gfx = canvas.getContext('2d');
+        //   gfx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+        //   var W = canvas._logicalW || canvas.width;
+        //   var H = canvas._logicalH || canvas.height;
+        //   // ... rest of draw code, all in CSS px ...
+        //
+        // Mouse coord math should use canvas._logicalW / canvas._logicalH
+        // (NOT canvas.width/height which after setup return the dpr-scaled
+        // buffer size, off by a factor of dpr).
+        //
+        // dpr is clamped to [1, 2] to avoid runaway memory on 3x phones.
+        setupHiDPI: function(canvas, logicalW, logicalH) {
+          if (!canvas) return;
+          var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+          if (canvas._dpr === dpr && canvas._logicalW === logicalW && canvas._logicalH === logicalH) return;
+          canvas.width = Math.round(logicalW * dpr);
+          canvas.height = Math.round(logicalH * dpr);
+          canvas.style.width = logicalW + 'px';
+          canvas.style.height = logicalH + 'px';
+          canvas._dpr = dpr;
+          canvas._logicalW = logicalW;
+          canvas._logicalH = logicalH;
         }
       };
     }

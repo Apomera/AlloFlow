@@ -929,9 +929,14 @@ var d = labToolData.dissection || {};
 
             if (canvas._dissAnim) return;
 
+            // PL7 HiDPI: crisp rendering on retina displays.
+            if (window.StemLab && window.StemLab.setupHiDPI) {
+              window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+            }
             var ctx = canvas.getContext('2d');
+            if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
 
-            var W = canvas.width, H = canvas.height;
+            var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
 
             var dissTick = 0;
 

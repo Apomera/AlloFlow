@@ -585,8 +585,13 @@ window.StemLab = window.StemLab || {
 
   function drawHalfpipe(canvas, state) {
     if (!canvas) return;
+    // PL7 HiDPI: ensure crisp rendering on retina displays. Idempotent.
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx = canvas.getContext('2d');
-    var W = canvas.width, H = canvas.height;
+    if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
     // ── Sky: dusk gradient with brightness modulation when high.
     // Same dusk palette as Gap Jump for visual consistency. ──
     var airBoostHp = Math.min(1, ((state.airHeightFt || 0) / 12));
@@ -855,8 +860,13 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   function drawGapJump(canvas, state) {
     if (!canvas) return;
+    // PL7 HiDPI: ensure crisp rendering on retina displays. Idempotent.
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ctx = canvas.getContext('2d');
-    var W = canvas.width, H = canvas.height;
+    if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+    var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
     // ── Sky: dusk gradient (deep indigo → magenta → warm orange near
     // horizon). Brightness modulated by the skater's air height so the
     // sky subtly brightens at peak altitude — adds atmosphere without
@@ -1201,7 +1211,14 @@ window.StemLab = window.StemLab || {
   // ──────────────────────────────────────────────────────────────────
   function animateHalfpipe(canvas, sim, opts) {
     if (!canvas) return;
-    var W = canvas.width, H = canvas.height;
+    // PL7 HiDPI: ensure setup before reading dims (drawHalfpipe also
+    // calls setupHiDPI, but the animator computes layout coords like
+    // midX, floorY before any draw call). Use logical dims so layout
+    // matches what drawHalfpipe will render in CSS px.
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
+    var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
     var midX = W / 2;
     var floorY = H * 0.86;
     var lipY = H * 0.30;
@@ -1391,8 +1408,12 @@ window.StemLab = window.StemLab || {
 
   function animateGapJump(canvas, sim, opts) {
     if (!canvas) return;
+    // PL7 HiDPI: same as animateHalfpipe.
+    if (window.StemLab && window.StemLab.setupHiDPI) {
+      window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
+    }
     var ghost = opts && opts.ghost;
-    var W = canvas.width, H = canvas.height;
+    var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
     // Energy budget: total = ½ m v_launch². For projectile motion,
     // mechanical energy is conserved if we ignore the wind-induced
     // horizontal acceleration term (≪ 5% energy contribution at
