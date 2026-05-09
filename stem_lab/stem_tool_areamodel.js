@@ -266,17 +266,24 @@ window.StemLab = window.StemLab || {
       };
 
       // ═══ AI TUTOR ═══
+      // Request-ID guard: prevents stale tutor responses from overwriting
+      // newer context if the student switches tab / dimensions / question
+      // while a fetch is mid-flight.
       var askAITutor = function() {
         if (!aiQuestion.trim()) return;
+        window.__areamodelAiReqId = (window.__areamodelAiReqId || 0) + 1;
+        var thisReqId = window.__areamodelAiReqId;
         upd({ aiLoading: true, aiResponse: '' });
         var prompt = 'You are a friendly math tutor helping a student learn multiplication using area models. ' +
           'They are on the "' + viewMode + '" tab working with ' + rows + ' rows and ' + cols + ' columns. ' +
           'Their question: "' + aiQuestion + '"\n\n' +
           'Explain clearly with examples. Keep it under 150 words.';
         ctx.callGemini(prompt, false, false, 0.7).then(function(resp) {
+          if (thisReqId !== window.__areamodelAiReqId) return;
           upd({ aiResponse: resp, aiLoading: false, aiAsked: (_a.aiAsked || 0) + 1 });
           checkBadges(Object.assign(getBadgeUpdates(), { aiAsked: (_a.aiAsked || 0) + 1 }));
         }).catch(function() {
+          if (thisReqId !== window.__areamodelAiReqId) return;
           upd({ aiResponse: 'Sorry, I could not connect to the AI tutor right now.', aiLoading: false });
         });
       };

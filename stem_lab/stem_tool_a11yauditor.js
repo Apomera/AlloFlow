@@ -880,6 +880,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               disabled: !complaintEntity.trim() || complaintLoading,
               onClick: function() {
                 if (!callGemini) return;
+                // Request-ID guard: a multi-paragraph complaint letter for
+                // the wrong entity is high-impact confusion. Prevents stale
+                // letters from overwriting a newer entity's letter mid-fetch.
+                window.__a11yComplaintReqId = (window.__a11yComplaintReqId || 0) + 1;
+                var thisReqId = window.__a11yComplaintReqId;
                 upd('complaintLoading', true);
                 var issuesList = auditResult && auditResult.issues ? auditResult.issues.map(function(i) { return 'WCAG ' + i.criterion + ': ' + i.issue + ' (Severity: ' + i.severity + ')'; }).join('\n') : 'No automated audit data available.';
                 var prompt = 'Generate a formal ADA accessibility complaint letter.\n\n' +
@@ -892,10 +897,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
                   'GRADE LEVEL: Write at a ' + (gradeLevel || '8th grade') + ' reading level.\n' +
                   'FORMAT: Return the complete letter ready to send, with proper formatting, date, addresses, and signature line. Include filing instructions at the end.';
                 callGemini(prompt, true).then(function(result) {
+                  if (thisReqId !== window.__a11yComplaintReqId) return;
                   updMulti({ complaintResult: result, complaintLoading: false, complaintsGenerated: complaintsGenerated + 1 });
                   if (awardStemXP) awardStemXP(20);
                   if (announceToSR) announceToSR('Complaint letter generated.');
                 }).catch(function() {
+                  if (thisReqId !== window.__a11yComplaintReqId) return;
                   updMulti({ complaintResult: 'Error generating complaint letter. Please try again.', complaintLoading: false });
                 });
               },

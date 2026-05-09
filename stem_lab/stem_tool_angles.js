@@ -534,8 +534,13 @@ window.StemLab = window.StemLab || {
       };
 
       // ── AI Tutor ──
+      // aiLoading prevents simultaneous fetches; the request-ID guard
+      // prevents a stale response from overwriting newer context (e.g.,
+      // student changes angle while a fetch is mid-flight).
       var askAITutor = function() {
         if (!callGemini || aiLoading) return;
+        window.__anglesAiReqId = (window.__anglesAiReqId || 0) + 1;
+        var thisReqId = window.__anglesAiReqId;
         upd({ aiLoading: true });
         var desc = 'The student is exploring ' + angleValue + '\u00B0 (' + angleClass + ' angle). '
           + 'Score: ' + exploreScore.correct + '/' + exploreScore.total + '. '
@@ -546,6 +551,7 @@ window.StemLab = window.StemLab || {
           ' Give 2-3 SHORT, encouraging tips about angles. Include one fun real-world angle fact. '
           + 'Use emoji. Keep it fun for ages 8-14. Return JSON: { "tips": ["tip1","tip2","tip3"], "funFact": "..." }';
         callGemini(prompt, true, false, 0.8).then(function(resp) {
+          if (thisReqId !== window.__anglesAiReqId) return;
           try {
             var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g,'').replace(/```/g,'').trim()) : resp;
             var text = '';
@@ -553,7 +559,10 @@ window.StemLab = window.StemLab || {
             if (parsed.funFact) text += '\n\n\uD83D\uDCD0 ' + parsed.funFact;
             upd({ aiAdvice: text, aiLoading: false });
           } catch(e) { upd({ aiAdvice: typeof resp === 'string' ? resp : 'Try exploring different angles!', aiLoading: false }); }
-        }).catch(function() { upd({ aiAdvice: '\u26A0\uFE0F Could not reach AI tutor. Try again later!', aiLoading: false }); });
+        }).catch(function() {
+          if (thisReqId !== window.__anglesAiReqId) return;
+          upd({ aiAdvice: '\u26A0\uFE0F Could not reach AI tutor. Try again later!', aiLoading: false });
+        });
       };
 
       // ── Pin current angle ──

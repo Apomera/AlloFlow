@@ -635,6 +635,10 @@
     // ══════════════════════════════════════════════════════════════
     var askAIArchitect = function () {
       if (!callGemini || aiLoading) return;
+      // Request-ID guard: prevents stale advice from overwriting newer
+      // context if student edits the build while a fetch is mid-flight.
+      window.__archAiReqId = (window.__archAiReqId || 0) + 1;
+      var thisReqId = window.__archAiReqId;
       upd({ aiLoading: true, showAI: true });
 
       var desc = totalBlocks === 0
@@ -650,6 +654,7 @@
         'Return JSON: { "tips": ["tip1", "tip2", "tip3"], "funFact": "..." }';
 
       callGemini(prompt, true, false, 0.8).then(function (resp) {
+        if (thisReqId !== window.__archAiReqId) return;
         try {
           var parsed = typeof resp === 'string' ? JSON.parse(resp.replace(/```json\s*/g, '').replace(/```/g, '').trim()) : resp;
           var advice = '';
@@ -660,6 +665,7 @@
           upd({ aiAdvice: typeof resp === 'string' ? resp : 'Ask me again!', aiLoading: false });
         }
       }).catch(function () {
+        if (thisReqId !== window.__archAiReqId) return;
         upd({ aiAdvice: '\u26A0\uFE0F Could not reach AI advisor. Try again later!', aiLoading: false });
       });
     };
@@ -1805,6 +1811,7 @@
             el('div', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 4 } }, 'Paste a code below to import:'),
             el('div', { style: { display: 'flex', gap: 3 } },
               el('input', { type: 'text', placeholder: 'Paste share code...', value: d.importCode || '',
+                'aria-label': 'Paste share code to import a design',
                 onChange: function (e) { upd('importCode', e.target.value); },
                 style: { flex: 1, padding: '5px 8px', background: '#0f172a', border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0', fontSize: 9 }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'
               }),

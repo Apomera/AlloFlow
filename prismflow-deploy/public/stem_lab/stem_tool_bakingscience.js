@@ -2051,6 +2051,11 @@
           var curSub = SUBTOOLS.find(function (s) { return s.id === subtool; });
           function explain() {
             if (typeof callGemini !== 'function') { upd('aiError', 'AI tutor not available.'); return; }
+            // Request-ID guard: prevents stale activity explanations from
+            // overwriting newer context if student switches subtool /
+            // reading level mid-fetch.
+            window.__bakingAiReqId = (window.__bakingAiReqId || 0) + 1;
+            var thisReqId = window.__bakingAiReqId;
             upd('aiLoading', true); upd('aiError', ''); upd('aiExplain', '');
             var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
             var prompt = 'Explain the science of this baking activity ' + lv.hint + '. '
@@ -2058,10 +2063,12 @@
               + 'In 3 short sentences: (1) What chemistry or physics is at play here? (2) What will the student observe? (3) One real-world kitchen tip this connects to. '
               + 'No markdown, no bullets, no headings. Plain prose.';
             callGemini(prompt, false, false, 0.5).then(function (resp) {
+              if (thisReqId !== window.__bakingAiReqId) return;
               upd('aiExplain', String(resp || '').trim());
               upd('aiLoading', false);
               if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
             }).catch(function () {
+              if (thisReqId !== window.__bakingAiReqId) return;
               upd('aiLoading', false);
               upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
             });

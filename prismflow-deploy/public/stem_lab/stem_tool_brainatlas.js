@@ -3546,6 +3546,8 @@ var d = labToolData.brainAtlas || {};
 
                 type: "text", placeholder: "\uD83D\uDD0D Search regions, functions, conditions...",
 
+                'aria-label': 'Search brain regions, functions, and conditions',
+
                 value: d.search || '',
 
                 onChange: function (e) { upd('search', e.target.value); },
