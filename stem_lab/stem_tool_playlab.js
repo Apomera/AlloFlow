@@ -2887,10 +2887,15 @@ window.StemLab = window.StemLab || {
         var marginL = 30, marginR = 30, marginT = 18, marginB = 32;
         // Canvas may be CSS-resized vs its native 720x360 — scale by the
         // actual displayed size, not the buffer size.
-        var nx = (evt.clientX - rect.left) * (canvas.width / rect.width);
-        var ny = (evt.clientY - rect.top) * (canvas.height / rect.height);
-        var fieldPxW = canvas.width - marginL - marginR;
-        var fieldPxH = canvas.height - marginT - marginB;
+        // PL5 hidpi: use logical (CSS-pixel) dims for coord math, not
+        // canvas.width / .height which after _plSetupHiDPI report the
+        // DPR-scaled internal pixel buffer.
+        var lW = canvas._plLogicalW || canvas.width;
+        var lH = canvas._plLogicalH || canvas.height;
+        var nx = (evt.clientX - rect.left) * (lW / rect.width);
+        var ny = (evt.clientY - rect.top) * (lH / rect.height);
+        var fieldPxW = lW - marginL - marginR;
+        var fieldPxH = lH - marginT - marginB;
         var yardX = (nx - marginL) / fieldPxW * FIELD_LENGTH;
         var yardY = (ny - marginT) / fieldPxH * FIELD_WIDTH;
         return { yardX: yardX, yardY: yardY };
@@ -2937,10 +2942,36 @@ window.StemLab = window.StemLab || {
 
       // ── Field canvas ──
       var canvasRef = React.useRef(null);
+      // PL5: HiDPI canvas setup. Without this, the canvas renders at
+      // its attribute width (720) and gets scaled up by CSS to fill the
+      // container — text on a retina display becomes blurry. We resize
+      // the internal pixel buffer to match the device pixel ratio while
+      // keeping the CSS size at the logical W/H, then setTransform every
+      // frame so all draw calls operate in CSS px (no math changes).
+      // Idempotent: only re-allocates when DPR or logical dims change.
+      function _plSetupHiDPI(canvas, logicalW, logicalH) {
+        var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        if (canvas._plDpr === dpr && canvas._plLogicalW === logicalW && canvas._plLogicalH === logicalH) return;
+        canvas.width = Math.round(logicalW * dpr);
+        canvas.height = Math.round(logicalH * dpr);
+        canvas.style.width = logicalW + 'px';
+        canvas.style.height = logicalH + 'px';
+        canvas._plDpr = dpr;
+        canvas._plLogicalW = logicalW;
+        canvas._plLogicalH = logicalH;
+      }
       React.useEffect(function() {
         var canvas = canvasRef.current; if (!canvas) return;
+        _plSetupHiDPI(canvas, 720, 360);
         var gfx = canvas.getContext('2d');
-        var W = canvas.width, H = canvas.height;
+        // Apply the DPR scale every frame so all subsequent draw calls
+        // are in logical (CSS) pixels regardless of the internal buffer.
+        gfx.setTransform(canvas._plDpr, 0, 0, canvas._plDpr, 0, 0);
+        // Crisper text on hidpi screens
+        gfx.imageSmoothingEnabled = true;
+        if ('imageSmoothingQuality' in gfx) gfx.imageSmoothingQuality = 'high';
+        var W = canvas._plLogicalW;
+        var H = canvas._plLogicalH;
         gfx.clearRect(0, 0, W, H);
         // Field is rendered HORIZONTALLY: x (yards) maps to canvas x (px),
         // y (yards across the field) maps to canvas y. End zone left, defense right.
@@ -4151,7 +4182,11 @@ window.StemLab = window.StemLab || {
           // LEFT: field canvas + analysis panel
           h('div', null,
             h('canvas', {
-              ref: canvasRef, width: 720, height: 360,
+              ref: canvasRef,
+              // width/height are set by _plSetupHiDPI on first effect run.
+              // Keep small placeholder values so the element has dimensions
+              // before the effect fires (prevents 1-frame layout jump).
+              width: 720, height: 360,
               role: 'img', tabIndex: 0, 'data-pl-focusable': 'true',
               'aria-label': 'Football field, ' + play.label + ' against ' + coverage.label
                 + (openReceiverId ? '. Most open receiver: ' + openReceiverId : '')
