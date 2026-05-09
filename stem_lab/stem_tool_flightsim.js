@@ -1058,6 +1058,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.fillRect(bx - bSize / 2, by - bSize / 2, bSize, bSize);
             }
 
+            // City stadium: large oval bowl at the edge of the city
+            // for the largest cells. Bright green field inside a darker
+            // oval ring (the bleachers). Distinctive and instantly
+            // readable as "stadium" from the air.
+            if (isCity && p.t > 0.5 && seed > 0.965) {
+              // Stadium offset from city center
+              var stAng = (terrainHash(seed * 800, cellLat * 23) - 0.5) * Math.PI;
+              var stRad = clusterR * 1.3;
+              var stx = p.x + Math.cos(stAng) * stRad;
+              var sty = p.y + Math.sin(stAng) * stRad * 0.5;
+              var stRx = Math.max(7, 14 * p.t);
+              var stRy = stRx * 0.65;
+              // Bleachers ring
+              gfx.fillStyle = 'rgba(70,75,85,' + (0.85 * fade) + ')';
+              gfx.beginPath();
+              gfx.ellipse(stx, sty, stRx, stRy, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Field — bright green
+              gfx.fillStyle = 'rgba(64,148,72,' + (0.95 * fade) + ')';
+              gfx.beginPath();
+              gfx.ellipse(stx, sty, stRx * 0.65, stRy * 0.55, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Center line (white) only at very close range
+              if (p.t > 0.7) {
+                gfx.strokeStyle = 'rgba(245,245,245,' + (0.85 * fade) + ')';
+                gfx.lineWidth = 0.7;
+                gfx.beginPath();
+                gfx.moveTo(stx, sty - stRy * 0.5);
+                gfx.lineTo(stx, sty + stRy * 0.5);
+                gfx.stroke();
+              }
+            }
+
             // City smokestacks: 1-2 industrial stacks at the city's
             // edge with a faint vertical steam plume. Only for cities
             // (top 6% seed) and only when the city is close enough to
@@ -1171,6 +1204,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 ? 'rgba(220,210,180,' + (0.7 * fade) + ')'   // headlights (lighter)
                 : 'rgba(180,40,40,' + (0.7 * fade) + ')';     // taillights (red)
               gfx.fillRect(carX - carSize / 2, carY - carSize / 2, carSize, carSize);
+            }
+          }
+        }
+
+        // ── Highway / interstate: a wider, divided road with two lanes
+        // each direction. Per-region deterministic (40% chance), drawn as
+        // a thick gray strip with a yellow center divider, white lane
+        // dashes, and 4-6 cars in each direction. Major motion landmark.
+        if (aglAlt < 2500) {
+          var hwSeed = terrainHash(Math.floor(state.lat * 6) + 31, Math.floor(state.lon * 6) + 47);
+          if (hwSeed > 0.6) {
+            var hwBearing = (hwSeed + 0.15) * Math.PI * 2;
+            var hwLat0 = state.lat + Math.cos(hwBearing) * 0.04;
+            var hwLon0 = state.lon + Math.sin(hwBearing) * 0.04;
+            var hwLat1 = state.lat + Math.cos(hwBearing) * 0.16;
+            var hwLon1 = state.lon + Math.sin(hwBearing) * 0.16;
+            var phw0 = projectLatLon(hwLat0, hwLon0);
+            var phw1 = projectLatLon(hwLat1, hwLon1);
+            if (phw0 && phw1) {
+              // Compute perpendicular for lane offsets
+              var hwDx = phw1.x - phw0.x, hwDy = phw1.y - phw0.y;
+              var hwLen = Math.sqrt(hwDx * hwDx + hwDy * hwDy) || 1;
+              var hwNx = -hwDy / hwLen, hwNy = hwDx / hwLen;
+              var laneHalfW = Math.max(2, 4.5 * Math.max(phw0.t, phw1.t));
+              // Asphalt body (thick stroke offset between two parallel polylines)
+              gfx.strokeStyle = 'rgba(60,58,55,' + (0.85 * fade) + ')';
+              gfx.lineWidth = laneHalfW * 2.2;
+              gfx.lineCap = 'round';
+              gfx.beginPath();
+              gfx.moveTo(phw0.x, phw0.y);
+              gfx.lineTo(phw1.x, phw1.y);
+              gfx.stroke();
+              // Center yellow median
+              gfx.strokeStyle = 'rgba(225,180,40,' + (0.7 * fade) + ')';
+              gfx.lineWidth = Math.max(0.6, 1 * Math.max(phw0.t, phw1.t));
+              gfx.beginPath();
+              gfx.moveTo(phw0.x, phw0.y);
+              gfx.lineTo(phw1.x, phw1.y);
+              gfx.stroke();
+              // Dashed lane stripes — outer edges
+              gfx.strokeStyle = 'rgba(245,245,240,' + (0.55 * fade) + ')';
+              gfx.lineWidth = Math.max(0.3, 0.7 * Math.max(phw0.t, phw1.t));
+              gfx.setLineDash([5, 5]);
+              for (var le = -1; le <= 1; le += 2) {
+                gfx.beginPath();
+                gfx.moveTo(phw0.x + hwNx * laneHalfW * 0.5 * le, phw0.y + hwNy * laneHalfW * 0.5 * le);
+                gfx.lineTo(phw1.x + hwNx * laneHalfW * 0.5 * le, phw1.y + hwNy * laneHalfW * 0.5 * le);
+                gfx.stroke();
+              }
+              gfx.setLineDash([]);
+              // Cars: 6 per direction, slightly offset perpendicular for lanes
+              var carCount = 6;
+              for (var hca = 0; hca < carCount * 2; hca++) {
+                var dirIsRight = hca < carCount;
+                var phaseOff = (hca % carCount) / carCount;
+                var hcPhase = ((time * 0.10 + phaseOff + (dirIsRight ? 0 : 0.5)) % 1);
+                if (!dirIsRight) hcPhase = 1 - hcPhase;
+                var hcCenterX = phw0.x + hwDx * hcPhase;
+                var hcCenterY = phw0.y + hwDy * hcPhase;
+                // Lane offset
+                var laneOff = (dirIsRight ? -1 : 1) * laneHalfW * 0.4;
+                var hcx = hcCenterX + hwNx * laneOff;
+                var hcy = hcCenterY + hwNy * laneOff;
+                var hcT = phw0.t + (phw1.t - phw0.t) * hcPhase;
+                var hcSize = Math.max(0.9, 1.6 * hcT);
+                gfx.fillStyle = dirIsRight
+                  ? 'rgba(225,215,185,' + (0.75 * fade) + ')'
+                  : 'rgba(190,55,50,' + (0.75 * fade) + ')';
+                gfx.fillRect(hcx - hcSize / 2, hcy - hcSize / 2, hcSize, hcSize);
+              }
             }
           }
         }
@@ -1771,6 +1874,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fill();
         }
         gfx.restore();
+      };
+
+      // ── Distant thunderstorm cells on the horizon ──
+      // 1-2 deterministic cumulonimbus towers with anvil tops and a
+      // semi-transparent rain shaft beneath. Drift slowly across the
+      // horizon over ~5 minutes. Adds weather drama at distance even
+      // when the active weather setting is "clear" — pilots don't fly
+      // into storm cells, they navigate AROUND them, and seeing one
+      // 20nm away is part of real flying.
+      var drawDistantStorms = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return; // night = blackness, no value
+        if (state.altitude > 25000) return;          // above storm tops
+        // Number of cells visible depends on a slow rotating seed so the
+        // sky composition changes through the flight.
+        var stormSeed = Math.floor(state.lat * 3 + state.lon * 5 + time / 240);
+        var seedHash = (stormSeed * 9301 + 49297) % 233280 / 233280;
+        if (seedHash < 0.45) return; // ~55% of moments have NO storm visible
+        for (var sc = 0; sc < 2; sc++) {
+          // Each cell drifts slowly across horizon
+          var period = 320 + sc * 90;
+          var phase = ((time / period) + sc * 0.61 + seedHash) % 1;
+          var sx = phase * (W + 200) - 100;
+          var sy = horizonY + (sc === 0 ? -8 : -14); // slight stack
+          // Skip second cell some sessions for variety
+          if (sc === 1 && seedHash < 0.7) continue;
+          // Tower body: vertical column of overlapping ellipses
+          var towerH = 80 + sc * 16;
+          var towerW = 36 + sc * 8;
+          var bodyA = 0.55;
+          for (var lay = 0; lay < 5; lay++) {
+            var layT = lay / 4;
+            var layY = sy - towerH * layT;
+            var layW = towerW * (0.6 + layT * 0.5);
+            var layH = 14 + layT * 6;
+            // Deeper gray near base, lighter near anvil
+            var gray = Math.round(110 + layT * 80);
+            gfx.fillStyle = 'rgba(' + gray + ',' + gray + ',' + (gray + 6) + ',' + (bodyA - layT * 0.1) + ')';
+            gfx.beginPath();
+            gfx.ellipse(sx, layY, layW, layH, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+          // Anvil top: wide flat ellipse spreading outward
+          gfx.fillStyle = 'rgba(220,220,225,0.55)';
+          gfx.beginPath();
+          gfx.ellipse(sx, sy - towerH, towerW * 1.6, 9, 0, 0, Math.PI * 2);
+          gfx.fill();
+          gfx.fillStyle = 'rgba(200,205,215,0.45)';
+          gfx.beginPath();
+          gfx.ellipse(sx + 6, sy - towerH + 3, towerW * 1.3, 7, 0, 0, Math.PI * 2);
+          gfx.fill();
+          // Rain shaft: vertical streaks beneath the cell, fading toward
+          // ground. Composite-multiply darkens the terrain it falls on.
+          gfx.save();
+          gfx.globalAlpha = 0.35;
+          gfx.strokeStyle = 'rgba(80,90,110,1)';
+          gfx.lineWidth = 0.6;
+          var shaftN = 16;
+          for (var rs = 0; rs < shaftN; rs++) {
+            var shaftX = sx - towerW * 0.6 + (rs / (shaftN - 1)) * towerW * 1.2;
+            var shaftY0 = sy + 4;
+            var shaftY1 = sy + 24 + (rs % 4) * 2;
+            // Diagonal streaks (windblown rain)
+            gfx.beginPath();
+            gfx.moveTo(shaftX, shaftY0);
+            gfx.lineTo(shaftX - 4, shaftY1);
+            gfx.stroke();
+          }
+          gfx.restore();
+          // Lightning flicker: very rare, deterministic per second
+          var flickSeed = Math.floor(time * 3 + sc * 7);
+          var flickHash = ((flickSeed * 9301 + 49297) % 233280) / 233280;
+          if (flickHash > 0.97) {
+            // Bright flash inside the tower
+            gfx.fillStyle = 'rgba(255,255,230,0.6)';
+            gfx.beginPath();
+            gfx.ellipse(sx, sy - towerH * 0.4, towerW * 0.6, 12, 0, 0, Math.PI * 2);
+            gfx.fill();
+            // Sharp white bolt
+            gfx.strokeStyle = 'rgba(255,255,255,0.9)';
+            gfx.lineWidth = 1.2;
+            gfx.beginPath();
+            gfx.moveTo(sx, sy - towerH * 0.7);
+            gfx.lineTo(sx - 3, sy - towerH * 0.4);
+            gfx.lineTo(sx + 2, sy - towerH * 0.2);
+            gfx.lineTo(sx - 4, sy);
+            gfx.stroke();
+          }
+        }
       };
 
       // ── Draw terrain perspective ──
@@ -6771,6 +6962,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Crepuscular sun rays through cloud gaps when sun is mid-sky.
           drawCrepuscularRays(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Distant thunderstorm cells with anvil + rain shafts.
+          drawDistantStorms(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Distant hills poking above the horizon — a deterministic silhouette
           // seeded by lat/lon so each airport gets a consistent skyline instead
