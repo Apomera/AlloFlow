@@ -3570,106 +3570,107 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/canvas_tips_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/label_positions_module.js');
-    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/ui_language_selector_module.js');
-    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/audio_banks_module.js');
-    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_export_preview_module.js');
-    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/module_scope_extras_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/canvas_tips_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/audio_banks_module.js');
+    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_export_preview_module.js');
+    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_misc_modals_module.js');
+    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/module_scope_extras_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3680,7 +3681,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@11839c6/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@6f01e13/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -22508,267 +22509,20 @@ Return ONLY valid JSON in this format:
           </div>
         );
       })(), document.body)}
-      {showUDLGuide && (
-        <div className={`fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
-          <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
-            <div className="flex items-center gap-2 font-bold">
-               <HelpCircle size={18} /> {t('chat_guide.header')}
-            </div>
-            <div className="flex items-center gap-1">
-                <button
-                    type="button"
-                    data-help-key="chat_voice_mode"
-                    onClick={(e) => {
-                        if (isHelpMode) return;
-                        e.preventDefault();
-                        const newState = !isConversationMode;
-                        setIsConversationMode(newState);
-                        if (newState) {
-                            setIsDictationMode(true);
-                            setIsBotVisible(true);
-                        }
-                    }}
-                    className={`hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${isConversationMode ? 'bg-green-700 text-white border-green-400' : 'border-transparent'}`}
-                    title={isConversationMode ? t('chat_guide.voice_disable') : t('chat_guide.voice_enable')}
-                >
-                    <Headphones size={12}/> {isConversationMode ? t('chat_guide.voice_on') : t('chat_guide.voice_mode')}
-                </button>
-                {isConversationMode && (
-                    <button
-                        data-help-key="chat_auto_send"
-                        onClick={handleToggleAutoSendVoice}
-                        className={`hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${autoSendVoice ? 'bg-teal-700 text-white border-teal-400' : 'border-transparent opacity-80'}`}
-                        title={t('chat_guide.auto_send_tooltip')}
-                        aria-label={t('chat_guide.auto_send_tooltip')}
-                    >
-                        {autoSendVoice ? <Zap size={12} className="fill-current"/> : <Zap size={12}/>}
-                        {autoSendVoice ? t('chat_guide.auto_send_on') : t('chat_guide.auto_send_off')}
-                    </button>
-                )}
-                <button
-                    data-help-key="chat_save"
-                    onClick={() => saveFullChat()}
-                    className="hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border-transparent"
-                    title={t('common.save_conversation_to_history')}
-                    aria-label={t('common.save_conversation_to_history')}
-                >
-                    <Save size={12}/> {t('chat_guide.save_chat')}
-                </button>
-                <button
-                    aria-label={t('common.show')}
-                    data-help-key="chat_show_me"
-                    onClick={handleToggleIsShowMeMode}
-                    className={`hover:bg-white/20 p-1.5 rounded transition-colors mr-1 flex items-center gap-1 text-[11px] font-bold border ${isShowMeMode ? 'bg-yellow-400 text-indigo-900 border-yellow-500' : 'border-transparent'}`}
-                    title={isShowMeMode ? t('chat_guide.show_me_disable_tooltip') : t('chat_guide.show_me_enable_tooltip')}
-                >
-                    <Eye size={12}/> {isShowMeMode ? t('chat_guide.show_me_on') : t('chat_guide.show_me')}
-                </button>
-                <button
-                    aria-label={t('common.minimize')}
-                    data-help-key="chat_expand"
-                    onClick={handleToggleIsUDLGuideExpanded}
-                    className="hover:bg-white/20 p-1 rounded transition-colors"
-                    title={isUDLGuideExpanded ? t('common.minimize') : t('common.maximize')}
-                >
-                    {isUDLGuideExpanded ? <Minimize size={18}/> : <Maximize size={18}/>}
-                </button>
-                <button data-help-key="chat_close" onClick={handleSetShowUDLGuideToFalse} className="hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
-          </div>
-        </div>
-        <div className={`flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
-          {udlMessages.map((msg, idx) => (
-            <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              {!msg.type && (
-                <div className={`max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === 'user' ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}`}>
-                   {renderFormattedText(msg.text)}
-                </div>
-              )}
-              {msg.type === 'blueprint' && activeBlueprint && (
-                  <div className="w-full max-w-[95%]">
-                      <InteractiveBlueprintCard
-                          config={activeBlueprint}
-                          onUpdate={handleBlueprintUIUpdate}
-                          onConfirm={handleExecuteBlueprint}
-                          onCancel={() => {
-                              setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.cancel_msg') }]);
-                              setActiveBlueprint(null);
-                          }}
-                      />
-                  </div>
-              )}
-              {!msg.type && msg.role === 'model' && msg.isActionable && idx > 0 && (
-                <button
-                    aria-label={t('common.refresh')}
-                  data-help-key="chat_save_advice_btn" onClick={() => saveUDLAdvice(msg.text, udlMessages[idx-1]?.role === 'user' ? udlMessages[idx-1].text : 'Teacher Inquiry')}
-                  disabled={isSavingAdvice}
-                  className={`mt-1 text-[11px] flex items-center gap-1 font-medium px-2 py-1 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${chatStyles.secondaryButton}`}
-                >
-                  {isSavingAdvice ? <RefreshCw size={10} className="animate-spin" /> : <Save size={10} />}
-                  {isSavingAdvice ? t('chat_guide.save_actionable_loading') : t('chat_guide.save_actionable_btn')}
-                </button>
-              )}
-            </div>
-          ))}
-          {isChatProcessing && (
-            <div className="flex items-start">
-               <div className={`p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}`}>
-                  <RefreshCw size={14} className="animate-spin" /> {t('bot.mood_thinking')}
-               </div>
-            </div>
-          )}
-        </div>
-        <div className={`p-3 border-t ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} ${chatStyles.inputArea}`}>
-          <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
-              <div className="flex justify-between items-center mb-2">
-                  <label className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
-                      <Search size={10} /> {t('standards.finder_header')}
-                  </label>
-              </div>
-              <div className="flex gap-2 mb-2">
-                  <input aria-label={t('common.standards_region_framework_placeholder')}
-                      type="text"
-                      value={aiStandardRegion}
-                      onChange={(e) => setAiStandardRegion(e.target.value)}
-                      data-help-key="standards_region_input" placeholder={t('standards.region_framework_placeholder')}
-                      className={`w-1/3 text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300 ${chatStyles.input}`}
-                  />
-                  <input aria-label={t('common.text_field')}
-                      type="text"
-                      value={aiStandardQuery}
-                      onChange={(e) => setAiStandardQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleFindStandards()}
-                      placeholder={isIndependentMode ? t('wizard.independent_learning_goal') : t('wizard.skill_search_placeholder')}
-                      className={`flex-grow text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
-                  />
-                  <button
-                      onClick={handleFindStandards}
-                      disabled={isFindingStandards || !aiStandardQuery.trim()}
-                      className={`p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm ${chatStyles.button}`}
-                      title={t('standards.search_button_title')}
-                      aria-label={t('standards.search_button_title')}
-                  >
-                      {isFindingStandards ? <RefreshCw size={14} className="animate-spin"/> : <Search size={14}/>}
-                  </button>
-              </div>
-              {suggestedStandards.length > 0 && (
-                  <div className={`max-h-32 overflow-y-auto custom-scrollbar border rounded divide-y ${theme === 'dark' ? 'bg-slate-900 border-slate-700 divide-slate-700' : theme === 'contrast' ? 'bg-black border-white divide-white' : 'bg-white border-slate-200 divide-slate-100'}`}>
-                      {suggestedStandards.map((std, idx) => (
-                          <button
-                              key={idx}
-                              onClick={() => {
-                                  setStandardsInput(`${std.code}: ${std.description}`);
-                                  addToast(t('toasts.applied_standard', {code: std.code}), "success");
-                              }}
-                              className={`w-full text-left p-2 transition-colors group flex flex-col gap-1 ${theme === 'dark' ? 'hover:bg-indigo-900/50' : theme === 'contrast' ? 'hover:bg-yellow-900' : 'hover:bg-green-50'}`}
-                          >
-                              <div className="flex justify-between items-start gap-1">
-                                  <span className={`text-[11px] font-bold px-1 rounded border ${theme === 'dark' ? 'bg-indigo-900 text-indigo-200 border-indigo-700' : theme === 'contrast' ? 'bg-black text-yellow-400 border-yellow-400' : 'bg-indigo-50 text-indigo-700 border-indigo-100'}`}>{std.code}</span>
-                                  <span className={`text-[11px] uppercase ml-auto ${chatStyles.subText}`}>{std.framework}</span>
-                              </div>
-                              <p className={`text-[11px] leading-snug line-clamp-2 ${chatStyles.text}`}>
-                                  {std.description}
-                              </p>
-                          </button>
-                      ))}
-                  </div>
-              )}
-          </div>
-          <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
-              <div className="flex justify-between items-center mb-1.5">
-                  <label className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
-                      <ShieldCheck size={10} /> {t('standards.consult_header')}
-                  </label>
-              </div>
-              <div className="flex gap-2">
-                  <select
-                      data-help-key="chat_framework_select"
-                      value={udlStandardFramework}
-                      onChange={(e) => setUdlStandardFramework(e.target.value)}
-                      className={`flex-1 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
-                      aria-label={t('standards.consult_header')}
-                  >
-                      <option value="Common Core ELA">{t('standards.frameworks.ccss_ela')}</option>
-                      <option value="Common Core Math">{t('standards.frameworks.ccss_math')}</option>
-                      <option value="Next Generation Science Standards (NGSS)">{t('standards.frameworks.ngss')}</option>
-                      <option value="C3 Framework (Social Studies)">{t('standards.frameworks.c3')}</option>
-                      <option value="ISTE Standards">{t('standards.frameworks.iste')}</option>
-                      <option value="CASEL Competencies">{t('standards.frameworks.casel')}</option>
-                      <option value="Texas Essential Knowledge and Skills (TEKS)">{t('standards.frameworks.teks')}</option>
-                  </select>
-                  <select aria-label={t('common.selection')}
-                      data-help-key="chat_grade_select"
-                      value={udlStandardGrade}
-                      onChange={(e) => setUdlStandardGrade(e.target.value)}
-                      className={`w-28 text-xs rounded p-1.5 focus:ring-1 outline-none ${chatStyles.input}`}
-                  >
-                      <option value="Kindergarten">{t('standards.grades.k')}</option>
-                      <option value="1st Grade">{t('standards.grades.1')}</option>
-                      <option value="2nd Grade">{t('standards.grades.2')}</option>
-                      <option value="3rd Grade">{t('standards.grades.3')}</option>
-                      <option value="4th Grade">{t('standards.grades.4')}</option>
-                      <option value="5th Grade">{t('standards.grades.5')}</option>
-                      <option value="6th Grade">{t('standards.grades.6')}</option>
-                      <option value="7th Grade">{t('standards.grades.7')}</option>
-                      <option value="8th Grade">{t('standards.grades.8')}</option>
-                      <option value="9th Grade">{t('standards.grades.9')}</option>
-                      <option value="10th Grade">{t('standards.grades.10')}</option>
-                      <option value="11th Grade">{t('standards.grades.11')}</option>
-                      <option value="12th Grade">{t('standards.grades.12')}</option>
-                  </select>
-                  <button
-                      aria-label={t('common.continue')}
-                      data-help-key="chat_consult_btn"
-                      onClick={() => handleSendUDLMessage(t('standards.prompts.identify_key_standards', { framework: udlStandardFramework, grade: udlStandardGrade }))}
-                      className={`p-1.5 rounded transition-colors border ${theme === 'dark' ? 'bg-indigo-900 border-indigo-700 text-indigo-300 hover:bg-indigo-800' : theme === 'contrast' ? 'bg-black border-yellow-400 text-yellow-400 hover:bg-yellow-900' : 'bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border-indigo-200'}`}
-                      title={t('standards.consult_btn_title')}
-                  >
-                      <ArrowRight size={14} />
-                  </button>
-              </div>
-          </div>
-          <div className={`flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${
-             !isAutoFillMode && !hasUsedAutoFill
-                ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm animate-pulse'
-                : `border border-transparent px-1 ${chatStyles.subText}`
-          }`}>
-             <input aria-label={t('common.toggle_is_auto_fill_mode')}
-                type="checkbox"
-                checked={isAutoFillMode}
-                onChange={handleAutoFillToggle}
-                className={`rounded h-3.5 w-3.5 cursor-pointer ${theme === 'contrast' ? 'bg-black border-yellow-400 checked:bg-yellow-400' : 'border-slate-300 text-indigo-600 focus:ring-indigo-500'}`}
-                id="udl-autofill-check"
-                data-help-key="chat_autofill"
-             />
-             <label htmlFor="udl-autofill-check" className={`flex items-center gap-1 cursor-pointer text-xs ${!isAutoFillMode && !hasUsedAutoFill ? 'font-bold text-orange-900' : 'font-medium'}`}>
-                <Sparkles size={12} className={theme === 'contrast' ? "text-yellow-400" : "text-yellow-500 fill-current"} />
-                {t('chat_guide.autofill_label')}
-                {!isAutoFillMode && !hasUsedAutoFill && <span className="text-[11px] text-orange-600 font-normal ml-1 hidden sm:inline">{t('common.recommended')}</span>}
-             </label>
-          </div>
-          <div className="flex gap-2">
-             <input aria-label={t('common.enter_udl_input')}
-                ref={udlInputRef}
-                type="text"
-                value={udlInput}
-                onChange={(e) => setUdlInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSendUDLMessage()}
-                placeholder={isShowMeMode ? t('chat_guide.input_placeholder_showme') : t('chat_guide.input_placeholder_default')}
-                className={`flex-grow text-sm p-2 border rounded-lg focus:ring-2 outline-none ${chatStyles.input}`}
-                data-help-key="chat_input"
-             />
-             <button
-                 aria-label={t('common.show')}
-                onClick={() => handleSendUDLMessage()}
-                disabled={!udlInput.trim() || isChatProcessing}
-                className={`p-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors ${chatStyles.button}`}
-                data-help-key="chat_send"
-             >
-                {isShowMeMode ? <Eye size={18}/> : <Send size={18} />}
-             </button>
-          </div>
-        </div>
-      </div>
-      )}
+        {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}
+        {(showUDLGuide) && window.AlloModules && window.AlloModules.UDLGuideModal && React.createElement(window.AlloModules.UDLGuideModal, {
+          Headphones, InteractiveBlueprintCard, activeBlueprint, addToast, aiStandardQuery,
+          aiStandardRegion, autoSendVoice, chatStyles, handleAutoFillToggle, handleBlueprintUIUpdate,
+          handleExecuteBlueprint, handleFindStandards, handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice,
+          handleToggleIsShowMeMode, handleToggleIsUDLGuideExpanded, hasUsedAutoFill, isAutoFillMode, isChatProcessing,
+          isConversationMode, isFindingStandards, isHelpMode, isIndependentMode, isSavingAdvice,
+          isShowMeMode, isSpotlightMode, isUDLGuideExpanded, renderFormattedText, saveFullChat,
+          saveUDLAdvice, setActiveBlueprint, setAiStandardQuery, setAiStandardRegion, setIsBotVisible,
+          setIsConversationMode, setIsDictationMode, setStandardsInput, setUdlInput, setUdlMessages,
+          setUdlStandardFramework, setUdlStandardGrade, showUDLGuide, suggestedStandards, t,
+          theme, udlInput, udlInputRef, udlMessages, udlScrollRef,
+          udlStandardFramework, udlStandardGrade
+        })}
       <h1 className="sr-only">AlloFlow</h1>
       <main aria-label={t('common.main_content')}
         id="main-content"
@@ -30990,272 +30744,11 @@ Return ONLY valid JSON in this format:
         </div>
       )}
       {/* --- AI Backend: Config Modal (non-Canvas) --- */}
-      {showAIBackendModal && !_isCanvasEnv && (
-        <div role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Escape') e.currentTarget.click(); }} className="fixed inset-0 z-[300] bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAIBackendModal(false)}>
-          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-lg w-full relative border-4 border-violet-100 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setShowAIBackendModal(false)} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 transition-colors z-10" aria-label={t('common.close') || "Close"}><X size={20}/></button>
-            <div className="flex items-center gap-2 mb-6 text-violet-900">
-                <div className="bg-violet-100 p-2 rounded-full"><Unplug size={20} className="text-violet-600"/></div>
-                <h3 className="font-black text-lg">AI Backend Settings</h3>
-            </div>
-            <div className="space-y-4">
-                {/* ─── Section 1: Provider & Connection ─── */}
-                <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Provider</label>
-                    <select
-                        aria-label="AI Backend Provider"
-                        id="ai-backend-provider"
-                        defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').backend || 'gemini'; } catch { return 'gemini'; } })()}
-                        onChange={(e) => {
-                            const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                            const defaults = { gemini: '', localai: 'http://localhost:8080', ollama: 'http://localhost:11434', openai: 'https://api.openai.com', claude: 'https://api.anthropic.com', 'onnx-npu': 'http://localhost:11435', custom: 'http://localhost:8080' };
-                            const updated = { ...current, backend: e.target.value, baseUrl: defaults[e.target.value] || '' };
-                            localStorage.setItem('alloflow_ai_config', JSON.stringify(updated));
-                            const urlEl = document.getElementById('ai-backend-url');
-                            if (urlEl) urlEl.value = updated.baseUrl || '';
-                        }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-bold text-slate-700 bg-white cursor-pointer"
-                    >
-                        <option value="gemini">✨ Gemini (Google) — Default</option>
-                        <option value="localai">🖥️ LocalAI (Self-Hosted GPU)</option>
-                        <option value="ollama">🦙 Ollama (Local)</option>
-                        <option value="openai">🤖 OpenAI</option>
-                        <option value="claude">🧠 Claude (Anthropic)</option>
-                        <option value="onnx-npu">🧠 On-Device NPU (Snapdragon)</option>
-                        <option value="custom">⚙️ Custom Endpoint</option>
-                    </select>
-                </div>
-                <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Server URL</label>
-                    <input
-                        id="ai-backend-url" aria-label="Custom AI backend URL"
-                        type="text"
-                        placeholder="http://localhost:8080"
-                        defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').baseUrl || ''; } catch { return ''; } })()}
-                        onChange={(e) => {
-                            const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                            localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, baseUrl: e.target.value }));
-                        }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
-                    />
-                </div>
-                <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">API Key <span className="normal-case font-normal text-slate-600">(cloud providers only)</span></label>
-                    <input
-                        id="ai-backend-apikey" aria-label="Custom AI backend API key"
-                        type="password"
-                        placeholder="Your API key..."
-                        defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').apiKey || ''; } catch { return ''; } })()}
-                        onChange={(e) => {
-                            const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                            localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, apiKey: e.target.value }));
-                        }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
-                    />
-                </div>
-                <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">Wolfram Alpha App ID <span className="normal-case font-normal text-slate-600">(optional — enhances math)</span></label>
-                    <input
-                        id="ai-backend-wolfram" aria-label="Custom backend Wolfram App ID"
-                        type="text"
-                        placeholder="XXXXX-XXXXXXXXXX (from developer.wolframalpha.com)"
-                        defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').wolframAppId || ''; } catch { return ''; } })()}
-                        onChange={(e) => {
-                            const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                            localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, wolframAppId: e.target.value }));
-                        }}
-                        className="w-full p-2.5 border-2 border-slate-200 rounded-xl focus:border-violet-500 focus:ring-4 focus:ring-violet-500/20 outline-none text-sm font-medium text-slate-700"
-                    />
-                    <p className="text-[11px] text-slate-600 mt-1">Free: 2,000 queries/month • Adds exact math solving & step-by-step verification</p>
-                </div>
-                <div className="flex gap-2 pt-1">
-                    <button
-                        id="ai-backend-test"
-                        onClick={async () => {
-                            const btn = document.getElementById('ai-backend-test');
-                            const status = document.getElementById('ai-backend-status');
-                            btn.disabled = true;
-                            btn.textContent = '⏳ Testing...';
-                            if (status) { status.textContent = ''; status.className = ''; }
-                            try {
-                                const result = await ai.testConnection();
-                                if (result.success) {
-                                    if (status) { status.textContent = '✅ Connected! ' + result.modelCount + ' model(s) available'; status.className = 'text-xs font-bold mt-2 text-green-800 bg-green-50 p-2.5 rounded-xl border border-green-100'; }
-                                    const modelSelect = document.getElementById('ai-backend-model-default');
-                                    const fallbackSelect = document.getElementById('ai-backend-model-fallback');
-                                    if (modelSelect && result.models?.length > 0) {
-                                        modelSelect.innerHTML = '<option value="">Auto (server default)</option>' + result.models.map(m => `<option value="${m.id}">${m.id}</option>`).join('');
-                                        const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                                        if (cfg.models?.default) modelSelect.value = cfg.models.default;
-                                    }
-                                    if (fallbackSelect && result.models?.length > 0) {
-                                        fallbackSelect.innerHTML = '<option value="">Same as default</option>' + result.models.map(m => `<option value="${m.id}">${m.id}</option>`).join('');
-                                        const cfg = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                                        if (cfg.models?.fallback) fallbackSelect.value = cfg.models.fallback;
-                                    }
-                                } else {
-                                    if (status) { status.textContent = '❌ Failed: ' + result.error; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
-                                }
-                            } catch (err) {
-                                if (status) { status.textContent = '❌ Error: ' + err.message; status.className = 'text-xs font-bold mt-2 text-red-800 bg-red-50 p-2.5 rounded-xl border border-red-100'; }
-                            }
-                            btn.disabled = false;
-                            btn.textContent = '🔌 Test Connection';
-                        }}
-                        className="flex-1 bg-violet-600 text-white px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-violet-700 transition-all shadow-lg shadow-violet-200 active:scale-95"
-                    >
-                        🔌 Test Connection
-                    </button>
-                    <button
-                        onClick={() => {
-                            localStorage.removeItem('alloflow_ai_config');
-                            const p = document.getElementById('ai-backend-provider');
-                            const u = document.getElementById('ai-backend-url');
-                            const k = document.getElementById('ai-backend-apikey');
-                            const s = document.getElementById('ai-backend-status');
-                            if (p) p.value = 'gemini';
-                            if (u) u.value = '';
-                            if (k) k.value = '';
-                            const w = document.getElementById('ai-backend-wolfram');
-                            if (w) w.value = '';
-                            const md = document.getElementById('ai-backend-model-default');
-                            const mf = document.getElementById('ai-backend-model-fallback');
-                            const tt = document.getElementById('ai-backend-tts-provider');
-                            const ig = document.getElementById('ai-backend-image-provider');
-                            if (md) md.value = '';
-                            if (mf) mf.value = '';
-                            if (tt) tt.value = 'auto';
-                            if (ig) ig.value = 'auto';
-                            if (s) { s.textContent = '🔄 Reset to defaults — reload page to apply'; s.className = 'text-xs font-bold mt-2 text-amber-800 bg-amber-50 p-2.5 rounded-xl border border-amber-100'; }
-                        }}
-                        className="bg-slate-200 text-slate-600 px-4 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-300 transition-all active:scale-95"
-                    >
-                        ↩ Reset
-                    </button>
-                </div>
-                <div id="ai-backend-status"></div>
-
-                {/* ─── Section 2: Model Selection ─── */}
-                <div className="pt-3 border-t-2 border-violet-50">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-blue-100 p-1.5 rounded-lg"><Cpu size={14} className="text-blue-600"/></div>
-                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Model Selection</h4>
-                    </div>
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Default Model <span className="normal-case font-normal text-slate-600">(text generation)</span></label>
-                            <select
-                                aria-label="Default AI model"
-                                id="ai-backend-model-default"
-                                defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').models?.default || ''; } catch { return ''; } })()}
-                                onChange={(e) => {
-                                    const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                                    const models = { ...(current.models || {}), default: e.target.value || undefined };
-                                    if (!e.target.value) delete models.default;
-                                    localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, models }));
-                                }}
-                                className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-                            >
-                                <option value="">Auto (server default)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">Fallback Model <span className="normal-case font-normal text-slate-600">(rate-limit cascade)</span></label>
-                            <select
-                                aria-label="Fallback AI model"
-                                id="ai-backend-model-fallback"
-                                defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').models?.fallback || ''; } catch { return ''; } })()}
-                                onChange={(e) => {
-                                    const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                                    const models = { ...(current.models || {}), fallback: e.target.value || undefined };
-                                    if (!e.target.value) delete models.fallback;
-                                    localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, models }));
-                                }}
-                                className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-                            >
-                                <option value="">Same as default</option>
-                            </select>
-                        </div>
-                        <p className="text-[11px] text-slate-600 italic">💡 Click "Test Connection" above to auto-populate available models from your backend.</p>
-                    </div>
-                </div>
-
-                {/* ─── Section 3: TTS Provider ─── */}
-                <div className="pt-3 border-t-2 border-violet-50">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-emerald-100 p-1.5 rounded-lg"><Headphones size={14} className="text-emerald-600"/></div>
-                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Text-to-Speech</h4>
-                    </div>
-                    <select
-                        aria-label="Text-to-speech provider"
-                        id="ai-backend-tts-provider"
-                        defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').ttsProvider || 'auto'; } catch { return 'auto'; } })()}
-                        onChange={(e) => {
-                            const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                            localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, ttsProvider: e.target.value }));
-                        }}
-                        className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-                    >
-                        <option value="auto">🔄 Auto (match backend)</option>
-                        <option value="gemini">✨ Gemini Cloud TTS</option>
-                        <option value="local">🖥️ Local TTS (Kokoro → Edge TTS cascade)</option>
-                        <option value="browser">🌐 Browser Built-in (speechSynthesis)</option>
-                        <option value="off">🔇 Off (disable narration)</option>
-                    </select>
-                    <div className="mt-2 bg-emerald-50 p-2 rounded-lg border border-emerald-100">
-                        <p className="text-[11px] text-emerald-700 font-medium leading-relaxed">
-                            <strong>Auto:</strong> Gemini voices for cloud backends, Edge TTS voices for local backends.
-                            Narrator voice selection is in the header bar (🎧 button).
-                        </p>
-                        <p className="text-[11px] text-emerald-600 mt-1">
-                            <strong>Local cascade:</strong> Kokoro (:8880, 8 langs) → Edge TTS (:5500, 40+ langs) → Browser fallback
-                        </p>
-                    </div>
-                </div>
-
-                {/* ─── Section 4: Image Generation ─── */}
-                <div className="pt-3 border-t-2 border-violet-50">
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="bg-amber-100 p-1.5 rounded-lg"><ImageIcon size={14} className="text-amber-600"/></div>
-                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Image Generation</h4>
-                    </div>
-                    <select
-                        aria-label="Image generation provider"
-                        id="ai-backend-image-provider"
-                        defaultValue={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').imageProvider || 'auto'; } catch { return 'auto'; } })()}
-                        onChange={(e) => {
-                            const current = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                            localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...current, imageProvider: e.target.value }));
-                        }}
-                        className="w-full p-2 border-2 border-slate-200 rounded-xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/20 outline-none text-xs font-bold text-slate-700 bg-white cursor-pointer"
-                    >
-                        <option value="auto">🔄 Auto (match backend)</option>
-                        <option value="imagen">🎨 Imagen 4.0 (Google Cloud)</option>
-                        <option value="flux">🖼️ FLUX (Local — port 7860)</option>
-                        <option value="off">🚫 Off (disable image generation)</option>
-                    </select>
-                    <div className="mt-2 bg-amber-50 p-2 rounded-lg border border-amber-100">
-                        <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
-                            <strong>Imagen:</strong> Google Cloud (requires Blaze plan). High quality, fast.
-                        </p>
-                        <p className="text-[11px] text-amber-600 mt-1">
-                            <strong>FLUX:</strong> Self-hosted at localhost:7860. Supports generation + editing via FLUX Kontext. No cloud dependency.
-                        </p>
-                    </div>
-                </div>
-
-                {/* ─── Active Config Summary ─── */}
-                <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                        <strong className="text-slate-600">Active:</strong>{' '}
-                        {(() => { try { const c = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}'); return c.backend ? (c.backend.charAt(0).toUpperCase() + c.backend.slice(1)) + (c.baseUrl ? ' → ' + c.baseUrl : '') : 'Gemini (default)'; } catch { return 'Gemini (default)'; } })()}
-                    </p>
-                    <p className="text-[11px] text-slate-600 font-medium mt-1">⚡ Reload page after changing backend to apply.</p>
-                </div>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* ── AI Backend Modal — extracted to view_misc_modals_module.js (CDN) ── */}
+        {(showAIBackendModal && !_isCanvasEnv) && window.AlloModules && window.AlloModules.AIBackendModal && React.createElement(window.AlloModules.AIBackendModal, {
+          Cpu, Headphones, _isCanvasEnv, ai, setShowAIBackendModal,
+          showAIBackendModal, t
+        })}
       {showStudyTimerModal && (
         <div
             ref={studyTimerRef}

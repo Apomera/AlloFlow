@@ -730,9 +730,14 @@ window.StemLab = window.StemLab || {
           window._epiParticles = null;
         }
         var cw = 700, ch = 200;
-        canvas.width = cw;
-        canvas.height = ch;
+        // PL7 batch 3: HiDPI — scale internal buffer by dpr, keep CSS at logical.
+        var _epiDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        canvas.width = Math.round(cw * _epiDpr);
+        canvas.height = Math.round(ch * _epiDpr);
+        canvas.style.width = cw + 'px';
+        canvas.style.height = ch + 'px';
         var cx = canvas.getContext('2d');
+        cx.setTransform(_epiDpr, 0, 0, _epiDpr, 0, 0);
         var numP = Math.min(400, Math.max(80, Math.round(popSize / 5000)));
         var particles = [];
         var infRadius = 12;

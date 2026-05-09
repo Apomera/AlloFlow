@@ -606,9 +606,16 @@
         var renderScale = function() {
           var drawScale = function(canvas) {
             if (!canvas) return;
-            var w = canvas.width = canvas.parentNode.offsetWidth || 400;
-            var ht = canvas.height = 220;
+            // PL7 batch 3: HiDPI — scale internal buffer by dpr, keep CSS at logical.
+            var _acDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+            var w = canvas.parentNode.offsetWidth || 400;
+            var ht = 220;
+            canvas.width = Math.round(w * _acDpr);
+            canvas.height = Math.round(ht * _acDpr);
+            canvas.style.width = w + 'px';
+            canvas.style.height = ht + 'px';
             var c = canvas.getContext('2d');
+            c.setTransform(_acDpr, 0, 0, _acDpr, 0, 0);
             c.clearRect(0, 0, w, ht);
 
             // Parse sides

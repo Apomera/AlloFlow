@@ -586,9 +586,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           setTimeout(function () {
             if (!canvasRef.current || !mapData) return;
             var canvas = canvasRef.current;
+            // PL7 batch 3: HiDPI — multiply the dynamic offsetWidth by dpr
+            // for the internal pixel buffer; keep CSS dims at logical so
+            // layout doesn't shift. Then setTransform so existing draw
+            // code operates in CSS px without math changes.
+            var _scDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+            var w = canvas.offsetWidth || 600;
+            var h = Math.min(560, w * 0.85);
+            canvas.width = Math.round(w * _scDpr);
+            canvas.height = Math.round(h * _scDpr);
+            canvas.style.width = w + 'px';
+            canvas.style.height = h + 'px';
             var ctx = canvas.getContext('2d');
-            var w = canvas.width = canvas.offsetWidth;
-            var h = canvas.height = Math.min(560, canvas.offsetWidth * 0.85);
+            ctx.setTransform(_scDpr, 0, 0, _scDpr, 0, 0);
             var animPhase = (Date.now() / 1000) % (Math.PI * 2);
 
             // Season-tinted background
