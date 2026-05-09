@@ -910,10 +910,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           return { x: x, y: y, t: t, nmFwd: nmFwd };
         }
 
+        // ── Field patchwork: alternating warm/cool green tones across a
+        // 0.012° grid (~0.7 nm). Adds gentle agricultural texture to the
+        // otherwise-uniform terrain wash so rural land reads as patchwork
+        // farmland rather than blank green.
+        if (aglAlt < 4500) {
+          var FSTEP = 0.012;
+          var flatC = Math.round(state.lat / FSTEP) * FSTEP;
+          var flonC = Math.round(state.lon / FSTEP) * FSTEP;
+          for (var fi = -5; fi <= 5; fi++) {
+            for (var fj = -5; fj <= 5; fj++) {
+              var fLat = flatC + fi * FSTEP;
+              var fLon = flonC + fj * FSTEP;
+              var fSeed = terrainHash(fLat * 91, fLon * 53);
+              if (fSeed < 0.35) continue; // sparse — only some cells are visibly tinted
+              // Project the field's four corners to draw an actual quad
+              var pTL = projectLatLon(fLat, fLon);
+              var pTR = projectLatLon(fLat, fLon + FSTEP);
+              var pBL = projectLatLon(fLat + FSTEP, fLon);
+              var pBR = projectLatLon(fLat + FSTEP, fLon + FSTEP);
+              if (!pTL || !pTR || !pBL || !pBR) continue;
+              var fG = fSeed > 0.7 ? 'rgba(112,138,72,'  // ripe wheat / hay
+                     : fSeed > 0.55 ? 'rgba(70,108,50,'   // pasture
+                     : fSeed > 0.45 ? 'rgba(132,118,78,'  // tilled / fallow
+                                    : 'rgba(86,128,68,';  // grass
+              gfx.fillStyle = fG + (0.30 * fade * (0.5 + (pTL.t + pBL.t) * 0.25)) + ')';
+              gfx.beginPath();
+              gfx.moveTo(pTL.x, pTL.y);
+              gfx.lineTo(pTR.x, pTR.y);
+              gfx.lineTo(pBR.x, pBR.y);
+              gfx.lineTo(pBL.x, pBL.y);
+              gfx.closePath();
+              gfx.fill();
+            }
+          }
+        }
+
+        // ── Lakes & ponds: small deterministic water bodies in the
+        // landscape, drawn before towns so towns can sit on lakeshores.
+        // Sparse — only ~10% of a coarser grid hosts a water body.
+        if (aglAlt < 5000) {
+          var LSTEP = 0.04;
+          var llatC = Math.round(state.lat / LSTEP) * LSTEP;
+          var llonC = Math.round(state.lon / LSTEP) * LSTEP;
+          for (var li = -2; li <= 2; li++) {
+            for (var lj = -2; lj <= 2; lj++) {
+              var lLat = llatC + li * LSTEP;
+              var lLon = llonC + lj * LSTEP;
+              var lSeed = terrainHash(lLat * 173, lLon * 89);
+              if (lSeed < 0.90) continue; // 10% of cells host a water body
+              var pl = projectLatLon(lLat, lLon);
+              if (!pl) continue;
+              var lakeRx = Math.max(8, 22 * pl.t * (0.6 + lSeed * 0.6));
+              var lakeRy = lakeRx * (0.4 + (lSeed * 7 % 1) * 0.4);
+              gfx.fillStyle = 'rgba(70,118,158,' + (0.55 * fade * (0.5 + pl.t * 0.5)) + ')';
+              gfx.beginPath();
+              gfx.ellipse(pl.x, pl.y, lakeRx, lakeRy, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Lighter rim — shore band
+              gfx.strokeStyle = 'rgba(180,210,220,' + (0.35 * fade) + ')';
+              gfx.lineWidth = 0.8;
+              gfx.beginPath();
+              gfx.ellipse(pl.x, pl.y, lakeRx, lakeRy, 0, 0, Math.PI * 2);
+              gfx.stroke();
+            }
+          }
+        }
+
         // ── Towns: deterministic grid every ~0.025° lat/lon (~1.5 nm).
-        // Each cell either has a town or doesn't (seeded). Towns are
-        // 8-15 building dots clustered around a center, visible from far,
-        // detail grows close-up.
+        // Each cell either has a town or doesn't (seeded). Top-tier seed
+        // values produce small CITIES with a skyline silhouette behind
+        // the building dots — for high-population cells. Lower seeds give
+        // ordinary towns; lowest are skipped.
         var STEP = 0.025;
         var latC = Math.round(state.lat / STEP) * STEP;
         var lonC = Math.round(state.lon / STEP) * STEP;
@@ -931,30 +999,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var jLon = (terrainHash(cellLat * 3, cellLon) - 0.5) * STEP * 0.6;
             var p = projectLatLon(cellLat + jLat, cellLon + jLon);
             if (!p) continue;
-            // Cluster of dots
-            var nBldgs = Math.floor(6 + seed * 12);
-            var clusterR = Math.max(3, 9 * p.t * (0.8 + seed * 0.4));
+            var isCity = seed > 0.94; // top 6% get a skyline
+            var nBldgs = Math.floor(6 + seed * 12) + (isCity ? 8 : 0);
+            var clusterR = Math.max(3, 9 * p.t * (0.8 + seed * 0.4)) * (isCity ? 1.6 : 1);
+
+            // City skyline: a row of taller silhouette rectangles BEHIND
+            // the building dots, varying heights, suggests downtown core.
+            if (isCity && p.t > 0.35) {
+              var skyN = 7 + Math.floor(seed * 6);
+              var skyW = clusterR * 1.8;
+              gfx.fillStyle = 'rgba(75,85,105,' + (0.55 * fade * (0.5 + p.t * 0.5)) + ')';
+              for (var sk = 0; sk < skyN; sk++) {
+                var skSeed = terrainHash(seed * 1000 + sk, cellLat * 17);
+                var skX = p.x - skyW / 2 + (sk / skyN) * skyW;
+                var skBldgW = (skyW / skyN) * 0.85;
+                var skBldgH = (4 + skSeed * 14) * p.t;
+                gfx.fillRect(skX, p.y - skBldgH, skBldgW, skBldgH);
+                // Window glints (only at close range)
+                if (p.t > 0.6 && skBldgH > 6) {
+                  gfx.fillStyle = 'rgba(255,230,140,' + (0.4 * fade) + ')';
+                  for (var wn = 0; wn < 3; wn++) {
+                    if (terrainHash(skSeed * 50 + wn, sk * 13) < 0.45) continue;
+                    gfx.fillRect(skX + skBldgW * 0.2 + wn * skBldgW * 0.25, p.y - skBldgH + 2 + wn * 3, 1, 1);
+                  }
+                  gfx.fillStyle = 'rgba(75,85,105,' + (0.55 * fade * (0.5 + p.t * 0.5)) + ')';
+                }
+              }
+            }
+
+            // Cluster of building dots
             for (var bi = 0; bi < nBldgs; bi++) {
               var bAng = terrainHash(seed * 100 + bi, cellLat) * Math.PI * 2;
               var bRad = terrainHash(seed * 200 + bi, cellLon) * clusterR;
               var bx = p.x + Math.cos(bAng) * bRad;
               var by = p.y + Math.sin(bAng) * bRad * 0.5;
-              var bSize = Math.max(0.6, 1 + p.t * 1.6);
+              var bSize = Math.max(0.6, 1 + p.t * 1.6) * (isCity && bi < 4 ? 1.6 : 1);
               gfx.fillStyle = (bi % 3 === 0 ? roofTint : townTint) + (0.5 * fade * (0.4 + p.t * 0.6)) + ')';
               gfx.fillRect(bx - bSize / 2, by - bSize / 2, bSize, bSize);
             }
-            // Town label only when very close (< 1.5 nm) and large enough
-            if (p.nmFwd < 1.5 && p.t > 0.55) {
+            // Label: cities get an all-caps name from farther; towns only when close
+            var labelDistance = isCity ? 2.5 : 1.5;
+            if (p.nmFwd < labelDistance && p.t > 0.4) {
               gfx.fillStyle = 'rgba(220,220,230,' + (0.4 * fade) + ')';
-              gfx.font = '8px system-ui';
+              gfx.font = (isCity ? 'bold 9px ' : '8px ') + 'system-ui';
               gfx.textAlign = 'center';
-              // Quick pseudo-name from seed
               var nameLen = 4 + Math.floor(seed * 4);
               var townName = '';
               for (var ni = 0; ni < nameLen; ni++) {
                 townName += String.fromCharCode(65 + Math.floor(terrainHash(seed * 50 + ni, cellLat * 3) * 26));
               }
-              townName = townName.charAt(0) + townName.slice(1).toLowerCase();
+              townName = isCity ? townName : (townName.charAt(0) + townName.slice(1).toLowerCase());
               gfx.fillText(townName, p.x, p.y + clusterR + 8);
             }
           }
@@ -4925,12 +5019,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       };
 
       // ── Landing Score System ──
-      var landingRef = useRef({ wasAirborne: false, lastVSI: 0, scored: false });
+      // wasAirborne: only flips true once the plane has cleared 50 ft AGL
+      //   (MSL > 20 was buggy — at PWM with field elev 76 ft, that condition
+      //   was true even while parked, so a single bounce off the runway
+      //   would arm the landing scorer).
+      // lastVSI: now updated WHILE airborne (the previous gate `!wasAirborne`
+      //   was inverted, so lastVSI froze at "parked on runway" = ~0, making
+      //   every touchdown register as 0 fpm = spurious Butter Landing).
+      // peakAGL: tracks the highest AGL reached this flight so a real,
+      //   intentional landing has to come from at least 100 ft AGL —
+      //   prevents micro-bounces during takeoff roll from triggering a
+      //   "landing" event.
+      var landingRef = useRef({ wasAirborne: false, lastVSI: 0, scored: false, peakAGL: 0 });
       var drawLandingScore = function(gfx, W, H, state, time) {
         var ls = landingRef.current;
-        if (!state.onGround && state.altitude > 20) { ls.wasAirborne = true; ls.scored = false; }
-        if (!ls.wasAirborne) { ls.lastVSI = state.vsi * 60; return; }
-        if (state.onGround && ls.wasAirborne && !ls.scored) {
+        var fieldElev = state.fieldElev || 0;
+        var aglAlt = state.altitude - fieldElev;
+
+        // Arm the landing scorer once we're genuinely airborne (>50 ft AGL).
+        if (!state.onGround && aglAlt > 50) {
+          ls.wasAirborne = true;
+          ls.scored = false;
+          if (aglAlt > ls.peakAGL) ls.peakAGL = aglAlt;
+        }
+
+        // Track live VSI while airborne so touchdown captures actual descent rate.
+        if (!state.onGround) {
+          ls.lastVSI = state.vsi * 60;
+        }
+
+        // Nothing to score until armed.
+        if (!ls.wasAirborne) return;
+
+        // Score on touchdown — but only if the flight reached at least
+        // 100 ft AGL (rules out runway bounces on takeoff roll).
+        if (state.onGround && !ls.scored && ls.peakAGL >= 100) {
           var fpm = Math.abs(ls.lastVSI);
           ls.touchdownFPM = fpm;
           ls.touchdownSpeed = state.speed * 0.5924838;
@@ -4963,8 +5086,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           } catch(e) {}
           skyAnnounce('Landing: ' + ls.grade + '. ' + Math.round(fpm) + ' feet per minute. ' + Math.round(ls.touchdownSpeed) + ' knots.');
+          // Reset peakAGL so the next flight cycle (taxi → takeoff → land)
+          // gates on 100 ft AGL again rather than carrying the old high.
+          ls.peakAGL = 0;
         }
-        if (!ls.wasAirborne) ls.lastVSI = state.vsi * 60;
 
         // ── Touchdown dust / tire smoke puff ──
         // For 1.5 s after wheels meet ground, render two expanding tan smoke
