@@ -962,6 +962,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   gfx.stroke();
                 }
               }
+              // Animal herd in pasture cells (fSeed 0.55-0.7 → green pasture).
+              // Cluster of 5-9 small dark dots representing cattle or sheep
+              // grouped near the cell center. Seed-locked positions so the
+              // herd doesn't shimmer, but visible only at close range.
+              if (fSeed > 0.55 && fSeed <= 0.7 && aglAlt < 1800 && pTL.t > 0.55
+                  && terrainHash(fLat * 311, fLon * 211) > 0.7) {
+                var herdN = 5 + Math.floor(fSeed * 5);
+                var herdCx = (pTL.x + pTR.x + pBL.x + pBR.x) / 4;
+                var herdCy = (pTL.y + pTR.y + pBL.y + pBR.y) / 4;
+                var herdR = Math.abs(pTR.x - pTL.x) * 0.35;
+                // Color choice: dark brown (cattle) or off-white (sheep)
+                var isSheep = terrainHash(fLat * 17, fLon * 23) > 0.6;
+                gfx.fillStyle = isSheep
+                  ? 'rgba(225,220,210,' + (0.85 * fade) + ')'
+                  : 'rgba(70,52,42,' + (0.85 * fade) + ')';
+                for (var an = 0; an < herdN; an++) {
+                  var anAng = terrainHash(an, fSeed * 130) * Math.PI * 2;
+                  var anRad = terrainHash(an + 5, fSeed * 150) * herdR;
+                  var anX = herdCx + Math.cos(anAng) * anRad;
+                  var anY = herdCy + Math.sin(anAng) * anRad * 0.5;
+                  var anSize = Math.max(0.7, 1.1 * pTL.t);
+                  gfx.fillRect(anX - anSize / 2, anY - anSize / 2, anSize, anSize * 0.7);
+                }
+              }
             }
           }
         }
@@ -993,6 +1017,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.beginPath();
               gfx.ellipse(pl.x, pl.y, lakeRx, lakeRy, 0, 0, Math.PI * 2);
               gfx.stroke();
+              // Sailboats on big lakes (close range only) — 2-3 small white
+              // triangles at deterministic positions inside the ellipse, each
+              // drifting slowly with time so the lake actually has motion.
+              if (lakeRx > 14 && pl.t > 0.45) {
+                var nSails = 2 + Math.floor(lSeed * 2);
+                for (var sb = 0; sb < nSails; sb++) {
+                  var sbAng = terrainHash(sb, lSeed * 60) * Math.PI * 2;
+                  var sbRad = (terrainHash(sb + 7, lSeed * 80) * 0.55 + 0.15) * lakeRx;
+                  // Slow drift — phase by sb so each boat moves independently
+                  var sbDrift = (time * 0.04 + sb * 0.7) * 0.3;
+                  var sbx = pl.x + Math.cos(sbAng + sbDrift) * sbRad;
+                  var sby = pl.y + Math.sin(sbAng + sbDrift) * sbRad * 0.5;
+                  var sailH = Math.max(1.4, 2.6 * pl.t);
+                  // Sail (white triangle)
+                  gfx.fillStyle = 'rgba(245,245,250,' + (0.85 * fade) + ')';
+                  gfx.beginPath();
+                  gfx.moveTo(sbx, sby - sailH);
+                  gfx.lineTo(sbx - sailH * 0.4, sby);
+                  gfx.lineTo(sbx + sailH * 0.4, sby);
+                  gfx.closePath();
+                  gfx.fill();
+                  // Hull
+                  gfx.fillStyle = 'rgba(60,55,55,' + (0.7 * fade) + ')';
+                  gfx.fillRect(sbx - sailH * 0.5, sby, sailH, 0.7);
+                }
+              }
             }
           }
         }
@@ -1685,6 +1735,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.fillStyle = 'rgba(60,65,75,' + (0.7 * fade) + ')';
                 gfx.fillRect(bx - sailH * 0.5, by, sailH, 0.8);
               }
+              // Lighthouse at the harbor: tall red-and-white striped tower
+              // with a rotating beam. Iconic Maine landmark — pairs perfectly
+              // with the harbor + sailboats and reads instantly.
+              if (phb.t > 0.5 && hbSeed > 0.92) {
+                var lhX = phb.x - dockW * 0.35;
+                var lhY = phb.y;
+                var lhH = Math.max(7, 16 * phb.t);
+                var lhW = Math.max(1.3, 2.4 * phb.t);
+                // Tower (alternating white and red bands)
+                var bandH = lhH / 4;
+                for (var lhb = 0; lhb < 4; lhb++) {
+                  gfx.fillStyle = (lhb % 2 === 0)
+                    ? 'rgba(245,245,240,' + (0.9 * fade) + ')'
+                    : 'rgba(190,55,50,' + (0.9 * fade) + ')';
+                  gfx.fillRect(lhX - lhW / 2, lhY - lhH + lhb * bandH, lhW, bandH);
+                }
+                // Lantern room (dark band at top)
+                gfx.fillStyle = 'rgba(40,45,55,' + (0.9 * fade) + ')';
+                gfx.fillRect(lhX - lhW * 0.7, lhY - lhH - 1.5, lhW * 1.4, 2);
+                // Rotating beam (cone of light)
+                var beamAng = time * 0.7 + hbSeed * 9;
+                var beamLen = lhH * 1.6;
+                gfx.fillStyle = 'rgba(255,250,200,' + (0.35 * fade) + ')';
+                gfx.beginPath();
+                gfx.moveTo(lhX, lhY - lhH);
+                gfx.lineTo(lhX + Math.cos(beamAng) * beamLen, lhY - lhH + Math.sin(beamAng) * beamLen * 0.4);
+                gfx.lineTo(lhX + Math.cos(beamAng + 0.32) * beamLen, lhY - lhH + Math.sin(beamAng + 0.32) * beamLen * 0.4);
+                gfx.closePath();
+                gfx.fill();
+                // Light bulb itself (bright dot)
+                gfx.fillStyle = 'rgba(255,250,180,' + (0.95 * fade) + ')';
+                gfx.beginPath();
+                gfx.arc(lhX, lhY - lhH, Math.max(0.5, 0.8 * phb.t), 0, Math.PI * 2);
+                gfx.fill();
+              }
             }
           }
         }
@@ -1960,6 +2045,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.lineTo(sx + 2, sy - towerH * 0.2);
             gfx.lineTo(sx - 4, sy);
             gfx.stroke();
+          }
+          // Rainbow arc: rare gem when the sun and rain are on opposite
+          // sides of the cell. Only the first storm cell (sc=0) generates
+          // one, and only when seedHash is in a sweet range. Drawn as
+          // 5 concentric ROYGBIV arcs.
+          if (sc === 0 && seedHash > 0.82) {
+            var rbCx = sx - 60;
+            var rbCy = sy + 32;
+            var rbR = 70;
+            var rbColors = ['#dc2626', '#f97316', '#facc15', '#65a30d', '#0ea5e9', '#7c3aed'];
+            gfx.save();
+            gfx.lineCap = 'round';
+            for (var rbi = 0; rbi < rbColors.length; rbi++) {
+              gfx.strokeStyle = rbColors[rbi];
+              gfx.globalAlpha = 0.32;
+              gfx.lineWidth = 2.2;
+              gfx.beginPath();
+              gfx.arc(rbCx, rbCy, rbR + rbi * 2.5, Math.PI * 1.05, Math.PI * 1.95);
+              gfx.stroke();
+            }
+            gfx.restore();
           }
         }
       };
