@@ -942,6 +942,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.lineTo(pBL.x, pBL.y);
               gfx.closePath();
               gfx.fill();
+              // Plowed-field row stripes — only on tilled cells, only at
+              // very low altitude where the texture would actually be
+              // visible. 4 parallel stripes traversing the cell, slight
+              // alpha so they read as soil furrows not painted lines.
+              if (fSeed > 0.45 && fSeed <= 0.55 && aglAlt < 2000 && pTL.t > 0.5) {
+                gfx.strokeStyle = 'rgba(95,82,55,' + (0.35 * fade * pTL.t) + ')';
+                gfx.lineWidth = 0.7;
+                for (var st = 1; st <= 4; st++) {
+                  var stT = st / 5;
+                  // Stripe runs from interpolated TL→BL to TR→BR
+                  var sx0 = pTL.x + (pBL.x - pTL.x) * stT;
+                  var sy0 = pTL.y + (pBL.y - pTL.y) * stT;
+                  var sx1 = pTR.x + (pBR.x - pTR.x) * stT;
+                  var sy1 = pTR.y + (pBR.y - pTR.y) * stT;
+                  gfx.beginPath();
+                  gfx.moveTo(sx0, sy0);
+                  gfx.lineTo(sx1, sy1);
+                  gfx.stroke();
+                }
+              }
             }
           }
         }
@@ -1082,7 +1102,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // ── A road or two: pseudo-random straight lines at deterministic
         // bearings, visible only when low. Drawn as fading dashed strokes
-        // for visibility. Strong motion cue when moving.
+        // for visibility. Strong motion cue when moving. Each road also
+        // gets a couple of small moving "car" dots that scroll along it.
         if (aglAlt < 2500) {
           for (var ri = 0; ri < 2; ri++) {
             var rSeed = terrainHash(Math.floor(state.lat * 8) + ri * 13, Math.floor(state.lon * 8) + ri * 7);
@@ -1102,6 +1123,115 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.moveTo(p0.x, p0.y);
             gfx.lineTo(p1.x, p1.y);
             gfx.stroke();
+            // Cars: 2 dots traveling along the road in opposite directions.
+            // Phase derived from time so they actually move; modulo 1 wraps.
+            for (var ca = 0; ca < 2; ca++) {
+              var carPhase = ((time * (0.07 + ca * 0.04) + ri * 0.5 + ca * 0.5) % 1);
+              if (ca === 1) carPhase = 1 - carPhase; // opposite direction
+              var carX = p0.x + (p1.x - p0.x) * carPhase;
+              var carY = p0.y + (p1.y - p0.y) * carPhase;
+              var carT = p0.t + (p1.t - p0.t) * carPhase;
+              var carSize = Math.max(0.8, 1.4 * carT);
+              gfx.fillStyle = ca === 0
+                ? 'rgba(220,210,180,' + (0.7 * fade) + ')'   // headlights (lighter)
+                : 'rgba(180,40,40,' + (0.7 * fade) + ')';     // taillights (red)
+              gfx.fillRect(carX - carSize / 2, carY - carSize / 2, carSize, carSize);
+            }
+          }
+        }
+
+        // ── Rivers: meandering blue lines threading through the landscape.
+        // Each ~6nm region either has a river or doesn't (seeded), with
+        // segments computed as a sine-modulated path along a fixed bearing.
+        // Visible up to ~4500 ft AGL — strong motion cue at cruise.
+        if (aglAlt < 4500) {
+          var rivSeed = terrainHash(Math.floor(state.lat * 5), Math.floor(state.lon * 5));
+          if (rivSeed > 0.55) {
+            // River bearing — perpendicular-ish to the slope of terrain
+            var rivBearing = rivSeed * Math.PI * 2;
+            var rivCosB = Math.cos(rivBearing);
+            var rivSinB = Math.sin(rivBearing);
+            // Build a 9-point polyline that meanders ±0.012° perpendicular
+            // to the bearing as it travels along it.
+            var rivPts = [];
+            for (var rp = 0; rp < 9; rp++) {
+              var rT = -0.04 + rp * 0.025; // -0.04 to 0.16 along bearing
+              var meander = Math.sin(rp * 0.9 + rivSeed * 10) * 0.015;
+              var rivLat = state.lat + rivCosB * rT + (-rivSinB) * meander;
+              var rivLon = state.lon + rivSinB * rT + rivCosB * meander;
+              var pp = projectLatLon(rivLat, rivLon);
+              if (pp) rivPts.push(pp);
+            }
+            if (rivPts.length >= 3) {
+              // Draw the river as a thick blue stroke
+              gfx.strokeStyle = 'rgba(80,128,168,' + (0.65 * fade) + ')';
+              gfx.lineWidth = Math.max(2, 4 * (rivPts[rivPts.length - 1].t || 0.5));
+              gfx.lineCap = 'round';
+              gfx.lineJoin = 'round';
+              gfx.beginPath();
+              gfx.moveTo(rivPts[0].x, rivPts[0].y);
+              for (var rpi = 1; rpi < rivPts.length; rpi++) {
+                gfx.lineTo(rivPts[rpi].x, rivPts[rpi].y);
+              }
+              gfx.stroke();
+              // Lighter highlight stroke for shimmer
+              gfx.strokeStyle = 'rgba(170,210,230,' + (0.35 * fade) + ')';
+              gfx.lineWidth = Math.max(0.6, 1.4 * (rivPts[rivPts.length - 1].t || 0.5));
+              gfx.beginPath();
+              gfx.moveTo(rivPts[0].x, rivPts[0].y);
+              for (var rpj = 1; rpj < rivPts.length; rpj++) {
+                gfx.lineTo(rivPts[rpj].x, rivPts[rpj].y);
+              }
+              gfx.stroke();
+            }
+          }
+        }
+
+        // ── Wind turbines: clusters of 3-5 white poles with rotating
+        // three-blade rotors. Maine-relevant — Aroostook, coastal ridges,
+        // Mars Hill etc. all have them. Deterministic per ~3nm cell, ~8%
+        // density. Blades spin in real time so the eye catches them.
+        if (aglAlt < 3500) {
+          var WSTEP = 0.05;
+          var wlatC = Math.round(state.lat / WSTEP) * WSTEP;
+          var wlonC = Math.round(state.lon / WSTEP) * WSTEP;
+          for (var wi = -2; wi <= 2; wi++) {
+            for (var wj = -2; wj <= 2; wj++) {
+              var wLat = wlatC + wi * WSTEP;
+              var wLon = wlonC + wj * WSTEP;
+              var wSeed = terrainHash(wLat * 197, wLon * 113);
+              if (wSeed < 0.92) continue; // ~8% of cells host a wind farm
+              var nTurbines = 3 + Math.floor(wSeed * 5); // 3-7 turbines
+              for (var tu = 0; tu < nTurbines; tu++) {
+                var tuLat = wLat + (terrainHash(wSeed * 100 + tu, 7) - 0.5) * WSTEP * 0.7;
+                var tuLon = wLon + (terrainHash(wSeed * 200 + tu, 11) - 0.5) * WSTEP * 0.7;
+                var tp = projectLatLon(tuLat, tuLon);
+                if (!tp) continue;
+                // Pole height scales with perspective
+                var poleH = Math.max(6, 18 * tp.t);
+                var poleW = Math.max(0.6, 1.2 * tp.t);
+                // White pole
+                gfx.fillStyle = 'rgba(230,230,235,' + (0.7 * fade * (0.4 + tp.t * 0.6)) + ')';
+                gfx.fillRect(tp.x - poleW / 2, tp.y - poleH, poleW, poleH);
+                // Rotor: 3 blades rotating with time, phase offset per turbine
+                var bladeR = poleH * 0.55;
+                var bladePhase = time * 0.6 + tu * 0.8 + wSeed * 5;
+                gfx.strokeStyle = 'rgba(230,230,235,' + (0.7 * fade * (0.4 + tp.t * 0.6)) + ')';
+                gfx.lineWidth = Math.max(0.5, 0.8 * tp.t);
+                for (var bl = 0; bl < 3; bl++) {
+                  var bAngle = bladePhase + bl * (Math.PI * 2 / 3);
+                  gfx.beginPath();
+                  gfx.moveTo(tp.x, tp.y - poleH);
+                  gfx.lineTo(tp.x + Math.cos(bAngle) * bladeR, tp.y - poleH + Math.sin(bAngle) * bladeR);
+                  gfx.stroke();
+                }
+                // Hub dot
+                gfx.fillStyle = 'rgba(180,180,185,' + (0.8 * fade) + ')';
+                gfx.beginPath();
+                gfx.arc(tp.x, tp.y - poleH, Math.max(0.5, 0.9 * tp.t), 0, Math.PI * 2);
+                gfx.fill();
+              }
+            }
           }
         }
       };
