@@ -20282,7 +20282,7 @@ Return ONLY valid JSON in this format:
       )}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
       {(showGroupModal && activeSessionCode && sessionData) && window.AlloModules && window.AlloModules.GroupSessionModal && React.createElement(window.AlloModules.GroupSessionModal, {
-          activeSessionCode, activeSessionGroups, addToast, appId, db,
+          activeSessionCode, addToast, appId, db,
           doc, dragOverResourceId, draggedResourceId, handleAssignStudent, handleCreateGroup,
           handleDeleteGroup, handleSetGroupResource, handleSetShowGroupModalToFalse, isPushingResource, newGroupName,
           sessionData, setDragOverResourceId, setDraggedResourceId, setNewGroupName, showGroupModal,
@@ -26667,10 +26667,10 @@ Return ONLY valid JSON in this format:
       )}
       {/* ── FluencyModePanel extracted to view_misc_panels_module.js (CDN) ── */}
       {(isFluencyMode && generatedContent) && window.AlloModules && window.AlloModules.FluencyModePanel && React.createElement(window.AlloModules.FluencyModePanel, {
-          ConfettiExplosion, FLUENCY_BENCHMARKS, calculateRunningRecordMetrics, exportFluencyCSV, fluencyBenchmarkGrade,
+          ConfettiExplosion, FLUENCY_BENCHMARKS, calculateRunningRecordMetrics, exportFluencyCSV: ((typeof exportFluencyCSV === 'function') ? exportFluencyCSV : (() => addToast('Fluency CSV export not yet wired through CDN modules', 'warning'))), fluencyBenchmarkGrade,
           fluencyBenchmarkSeason, fluencyCustomNorms, fluencyFeedback, fluencyModalRef, fluencyResult,
           fluencyStatus, fluencyTimeLimit, fluencyTimeRemaining, fluencyTimerVisibility, fluencyTranscript,
-          generateFluencyScoreSheet, generatedContent, getBenchmarkComparison, isFluencyMode, setFluencyBenchmarkGrade,
+          generateFluencyScoreSheet: ((typeof generateFluencyScoreSheet === 'function') ? generateFluencyScoreSheet : (() => addToast('Fluency score sheet not yet wired through CDN modules', 'warning'))), generatedContent, getBenchmarkComparison, isFluencyMode, setFluencyBenchmarkGrade,
           setFluencyBenchmarkSeason, setFluencyCustomNorms, setFluencyFeedback, setFluencyResult, setFluencyStatus,
           setFluencyTimeLimit, setFluencyTimeRemaining, setFluencyTimerVisibility, setFluencyTranscript, setIsFluencyMode,
           showFluencyConfetti, t, toggleFluencyRecording
