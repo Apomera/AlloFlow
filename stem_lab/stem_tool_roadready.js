@@ -1634,6 +1634,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var traffic = [];
     var count = scenario.traffic === 'light' ? 3 : scenario.traffic === 'medium' ? 7 : 12;
     var centerX = Math.floor(MAP_SIZE / 2);
+    // Road-curve offset: scenarios with curved roads (rural/snow/fog/dawn/highway)
+    // shift the actual road center away from grid centerX. Must match the curves
+    // used by the road plane + lane-line dashes (lines 9112–9113 / 9140–9141)
+    // exactly, otherwise NPC cars spawn off-road or in the wrong lane.
+    var _isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(scenario.id) !== -1;
+    var _isHwyCurve = scenario.id === 'highway';
+    function roadCenterAt(mapY) {
+      if (_isRuralCurve) return centerX + Math.sin(mapY * 0.12) * 5;
+      if (_isHwyCurve)   return centerX + Math.sin(mapY * 0.06) * 3;
+      return centerX;
+    }
     var vehicleTypes = [
       { type: 'car', weight: 50, colors: ['#ef4444', '#3b82f6', '#22c55e', '#a855f7', '#f59e0b', '#ffffff', '#94a3b8', '#0ea5e9', '#d946ef', '#14b8a6'] },
       { type: 'truck', weight: 12, colors: ['#1e293b', '#78350f', '#991b1b', '#1e3a5f'] },
@@ -1668,10 +1679,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       // direction=1 (heading +π/2, moving +Y) → laneOffset = -1.5 (right of center for +Y driver)
       // direction=-1 (heading -π/2, moving -Y) → laneOffset = +1.5 (right of center for -Y driver)
       var laneOffset = direction === 1 ? -1.5 : 1.5;
+      // Spawn position must respect the road's actual sine-curve center at this Y,
+      // not the grid-center axis. Without this, on rural / highway / snow / fog /
+      // dawn scenes (where the road bends), cars spawned at hardcoded centerX
+      // appeared to float in the middle of the lawn or sit on the wrong half of
+      // the road — that's the "cars in the middle of the road" bug.
+      var spawnY = Math.random() * MAP_SIZE;
       traffic.push({
-        x: centerX + laneOffset,
+        x: roadCenterAt(spawnY) + laneOffset,
         laneOffset: laneOffset,
-        y: Math.random() * MAP_SIZE,
+        y: spawnY,
         heading: direction === 1 ? Math.PI / 2 : -Math.PI / 2,
         speed: (scenario.speedLimit - 5 + Math.random() * 10) * MPH_TO_MS * personality.speedBias,
         color: color,
@@ -9125,11 +9142,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           }
 
           // ── Center line dashes (follow road curve) ──
+          // Painted yellow centerline. Width bumped 0.15 → 0.22 for visibility:
+          // at Three.js rendering scale + camera distance the previous lines were
+          // barely a pixel wide and read as missing markings on lower-DPI screens.
           var dashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
           var isRuralCurve = ['rural', 'snow', 'fog', 'dawn'].indexOf(currentScenario.id) !== -1;
           var isHwyCurve = currentScenario.id === 'highway';
-          for (var di = -MAP_SIZE; di < MAP_SIZE; di += 3) {
-            var dashGeo = new T.PlaneGeometry(0.15, 1.5);
+          // US convention: rural roads usually have a SOLID yellow centerline
+          // (no-passing zone) while urban roads use dashed yellow (passing OK).
+          // Render rural/highway as solid; everything else as dashed.
+          var solidCenterline = isRuralCurve;
+          for (var di = -MAP_SIZE; di < MAP_SIZE; di += (solidCenterline ? 2 : 3)) {
+            var _dashLen = solidCenterline ? 2.1 : 1.5; // overlapping segments → solid look on rural
+            var dashGeo = new T.PlaneGeometry(0.22, _dashLen);
             var dash = new T.Mesh(dashGeo, dashMat);
             dash.rotation.x = -Math.PI / 2;
             // Calculate road center at this Y position (accounting for curves)
@@ -9149,14 +9174,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             }
             scene.add(dash);
           }
+          // Rural roads get a SECOND parallel yellow line (double-yellow no-passing
+          // convention) to read clearly as a country highway centerline.
+          if (solidCenterline) {
+            for (var di2 = -MAP_SIZE; di2 < MAP_SIZE; di2 += 2) {
+              var _dashGeo2 = new T.PlaneGeometry(0.22, 2.1);
+              var dash2 = new T.Mesh(_dashGeo2, dashMat);
+              dash2.rotation.x = -Math.PI / 2;
+              var mapY2 = di2 + MAP_SIZE / 2;
+              var d2cx = centerX + Math.sin(mapY2 * 0.12) * 5;
+              dash2.position.set(d2cx - MAP_SIZE / 2 + 0.18, 0.02, di2); // 0.18 lateral offset = double-yellow gap
+              var nextY2 = mapY2 + 1;
+              var nextCX2 = centerX + Math.sin(nextY2 * 0.12) * 5;
+              dash2.rotation.z = Math.atan2(nextCX2 - d2cx, 1);
+              scene.add(dash2);
+            }
+          }
 
           // ── Edge lines (white solid, follow curves) ──
+          // Width bumped 0.10–0.12 → 0.18 so white shoulder lines are visible
+          // at default camera distance. Previous values rendered as ~1px and
+          // were easy to miss, contributing to the "no demarcations" feel.
           var edgeMat = new T.MeshBasicMaterial({ color: 0xffffff });
           if (isRuralCurve || isHwyCurve) {
             // Segmented edge lines that follow the curve
             [-3.3, 3.3].forEach(function(offset) {
               for (var ei = -MAP_SIZE; ei < MAP_SIZE; ei += 2) {
-                var edgeGeo = new T.PlaneGeometry(0.1, 2.1);
+                var edgeGeo = new T.PlaneGeometry(0.18, 2.1);
                 var edge = new T.Mesh(edgeGeo, edgeMat);
                 edge.rotation.x = -Math.PI / 2;
                 var emapY = ei + MAP_SIZE / 2;
@@ -9168,7 +9212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           } else {
             // Straight roads: single long edge line
             [-3.3, 3.3].forEach(function(offset) {
-              var edgeGeo = new T.PlaneGeometry(0.12, MAP_SIZE * 2);
+              var edgeGeo = new T.PlaneGeometry(0.18, MAP_SIZE * 2);
               var edge = new T.Mesh(edgeGeo, edgeMat);
               edge.rotation.x = -Math.PI / 2;
               edge.position.set(centerX - MAP_SIZE / 2 + offset, 0.02, 0);
