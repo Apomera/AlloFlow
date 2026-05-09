@@ -9220,6 +9220,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             });
           }
 
+          // ── Same-direction lane dividers (white dashed) ──
+          // Highway is a 4-lane divided road (2 lanes per direction). Without
+          // a white dashed line splitting each direction's two lanes, the road
+          // visually reads as 2-lane and students can't tell where one
+          // same-direction lane ends and the next begins. Draw dashed white
+          // stripes at ±1.65 (midway between the yellow centerline at 0 and
+          // the white shoulder at ±3.3). Stripes follow the same sine curve
+          // the asphalt + centerline + edges already use, so they don't drift
+          // out of alignment on bends. Skip this block on non-highway scenarios
+          // — those are 2-lane (one each direction) where US convention says
+          // NO white line should sit between opposing lanes; the yellow
+          // centerline is the divider.
+          if (_isHwyCurve) {
+            var laneDivMat = new T.MeshBasicMaterial({ color: 0xffffff });
+            [-1.65, 1.65].forEach(function(laneOff) {
+              for (var ldZ = -MAP_SIZE; ldZ < MAP_SIZE; ldZ += 4) {
+                var ldGeo = new T.PlaneGeometry(0.18, 1.8);
+                var ld = new T.Mesh(ldGeo, laneDivMat);
+                ld.rotation.x = -Math.PI / 2;
+                var ldMY = ldZ + MAP_SIZE / 2;
+                var ldCX = centerX + Math.sin(ldMY * 0.06) * 3;
+                ld.position.set(ldCX - MAP_SIZE / 2 + laneOff, 0.02, ldZ + 0.9);
+                // Tangent rotation so each dash sits parallel to the road,
+                // not skewed across it.
+                var ldNextY = ldMY + 1;
+                var ldNextCX = centerX + Math.sin(ldNextY * 0.06) * 3;
+                ld.rotation.z = Math.atan2(ldNextCX - ldCX, 1);
+                scene.add(ld);
+              }
+            });
+          }
+
           // ── Sidewalks (concrete strips between road and grass) ──
           // Curved scenarios get segmented sidewalks so they ride alongside the
           // road instead of floating straight while the asphalt curves away.
