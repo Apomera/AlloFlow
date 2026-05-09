@@ -1057,6 +1057,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.fillStyle = (bi % 3 === 0 ? roofTint : townTint) + (0.5 * fade * (0.4 + p.t * 0.6)) + ')';
               gfx.fillRect(bx - bSize / 2, by - bSize / 2, bSize, bSize);
             }
+
+            // City smokestacks: 1-2 industrial stacks at the city's
+            // edge with a faint vertical steam plume. Only for cities
+            // (top 6% seed) and only when the city is close enough to
+            // visibly resolve them. Plume drifts with time for life.
+            if (isCity && p.t > 0.45) {
+              var nStacks = 1 + Math.floor(seed * 2);
+              for (var ss = 0; ss < nStacks; ss++) {
+                var ssAng = (terrainHash(seed * 700 + ss, cellLat * 19) - 0.5) * Math.PI;
+                var ssRad = clusterR * (0.7 + ss * 0.2);
+                var ssx = p.x + Math.cos(ssAng) * ssRad;
+                var ssy = p.y + Math.sin(ssAng) * ssRad * 0.5;
+                var stackH = Math.max(5, 12 * p.t);
+                var stackW = Math.max(0.8, 1.6 * p.t);
+                // Stack
+                gfx.fillStyle = 'rgba(60,55,50,' + (0.75 * fade) + ')';
+                gfx.fillRect(ssx - stackW / 2, ssy - stackH, stackW, stackH);
+                // Red band near top
+                gfx.fillStyle = 'rgba(140,60,55,' + (0.7 * fade) + ')';
+                gfx.fillRect(ssx - stackW / 2, ssy - stackH + 1, stackW, Math.max(0.5, stackH * 0.12));
+                // Steam plume — 4 puffs rising and drifting laterally
+                for (var sp2 = 0; sp2 < 4; sp2++) {
+                  var spAge = (time * 0.6 + sp2 * 0.6 + ss * 0.3) % 4;
+                  var spY = ssy - stackH - spAge * 6 * p.t;
+                  var spX = ssx + Math.sin(spAge * 1.2 + ss) * 4 * p.t + spAge * 1.5;
+                  var spRad = (1.4 + spAge * 1.2) * p.t;
+                  var spA = (0.55 - spAge * 0.13) * fade;
+                  if (spA <= 0) continue;
+                  gfx.fillStyle = 'rgba(220,225,230,' + spA + ')';
+                  gfx.beginPath();
+                  gfx.arc(spX, spY, spRad, 0, Math.PI * 2);
+                  gfx.fill();
+                }
+              }
+            }
             // Label: cities get an all-caps name from farther; towns only when close
             var labelDistance = isCity ? 2.5 : 1.5;
             if (p.nmFwd < labelDistance && p.t > 0.4) {
@@ -1328,6 +1363,105 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
         }
 
+        // ── Power transmission lines: long straight lines with periodic
+        // lattice towers, traveling at a deterministic bearing across the
+        // landscape. Visible to ~2500 ft AGL. Strong infrastructure cue
+        // and a clear motion reference along its length.
+        if (aglAlt < 2500) {
+          var plSeed = terrainHash(Math.floor(state.lat * 4) + 7, Math.floor(state.lon * 4) + 11);
+          if (plSeed > 0.5) {
+            var plBearing = (plSeed + 0.3) * Math.PI * 2;
+            var plPts = [];
+            // 6 segments along bearing, ~0.025° each step → 1.5nm spacing
+            for (var pp = 0; pp < 7; pp++) {
+              var pT = -0.05 + pp * 0.025;
+              var plLat = state.lat + Math.cos(plBearing) * pT;
+              var plLon = state.lon + Math.sin(plBearing) * pT;
+              var pp2 = projectLatLon(plLat, plLon);
+              if (pp2) plPts.push(pp2);
+            }
+            if (plPts.length >= 2) {
+              // Cable lines — thin and translucent so they don't dominate
+              gfx.strokeStyle = 'rgba(40,45,55,' + (0.45 * fade) + ')';
+              gfx.lineWidth = 0.5;
+              gfx.beginPath();
+              gfx.moveTo(plPts[0].x, plPts[0].y - 1);
+              for (var pli = 1; pli < plPts.length; pli++) gfx.lineTo(plPts[pli].x, plPts[pli].y - 1);
+              gfx.stroke();
+              gfx.beginPath();
+              gfx.moveTo(plPts[0].x, plPts[0].y + 1);
+              for (var plj = 1; plj < plPts.length; plj++) gfx.lineTo(plPts[plj].x, plPts[plj].y + 1);
+              gfx.stroke();
+              // Lattice towers at each pivot point
+              gfx.strokeStyle = 'rgba(50,55,65,' + (0.7 * fade) + ')';
+              gfx.lineWidth = Math.max(0.6, 1.2 * (plPts[0].t || 0.5));
+              for (var ptw = 0; ptw < plPts.length; ptw++) {
+                var towH = Math.max(4, 8 * plPts[ptw].t);
+                var towW = towH * 0.5;
+                // Tower silhouette: an X / lattice bracket
+                gfx.beginPath();
+                gfx.moveTo(plPts[ptw].x - towW / 2, plPts[ptw].y);
+                gfx.lineTo(plPts[ptw].x + towW / 2, plPts[ptw].y - towH);
+                gfx.moveTo(plPts[ptw].x + towW / 2, plPts[ptw].y);
+                gfx.lineTo(plPts[ptw].x - towW / 2, plPts[ptw].y - towH);
+                gfx.moveTo(plPts[ptw].x, plPts[ptw].y);
+                gfx.lineTo(plPts[ptw].x, plPts[ptw].y - towH);
+                gfx.stroke();
+              }
+            }
+          }
+        }
+
+        // ── Coastal harbors: when one of the cells in the lake grid is
+        // ALSO adjacent to ocean (terrainHash on water side > threshold),
+        // render a small dock + 4-6 boat dots arranged around it. Maine-
+        // specific feel — most flights from PWM hit the coast quickly.
+        if (aglAlt < 3000) {
+          var hbStep = 0.04;
+          var hblatC = Math.round(state.lat / hbStep) * hbStep;
+          var hblonC = Math.round(state.lon / hbStep) * hbStep;
+          for (var hbi = -2; hbi <= 2; hbi++) {
+            for (var hbj = -2; hbj <= 2; hbj++) {
+              var hbLat = hblatC + hbi * hbStep;
+              var hbLon = hblonC + hbj * hbStep;
+              // Adjacent ocean check: noisy isWater, NOT the regional guard,
+              // so it can fire over coastal areas where the cell is land but
+              // a neighbor is water.
+              var hbAdjW = terrainHash(hbLat * 2, (hbLon - 0.04) * 2) > 0.45
+                        || terrainHash(hbLat * 2, (hbLon + 0.04) * 2) > 0.45
+                        || terrainHash((hbLat - 0.04) * 2, hbLon * 2) > 0.45;
+              if (!hbAdjW) continue;
+              var hbSeed = terrainHash(hbLat * 251, hbLon * 191);
+              if (hbSeed < 0.85) continue; // 15% of qualifying cells host a harbor
+              var phb = projectLatLon(hbLat, hbLon);
+              if (!phb) continue;
+              // Dock structure — a thin gray bar
+              var dockW = Math.max(8, 18 * phb.t);
+              gfx.fillStyle = 'rgba(85,75,60,' + (0.7 * fade) + ')';
+              gfx.fillRect(phb.x - dockW / 2, phb.y - 1, dockW, 2);
+              // Boats — 4-6 small white triangles around the dock (sails)
+              var nBoats = 4 + Math.floor(hbSeed * 3);
+              for (var bo = 0; bo < nBoats; bo++) {
+                var boAng = terrainHash(bo, hbSeed * 80) * Math.PI * 2;
+                var boRad = (4 + terrainHash(bo + 7, hbSeed * 90) * dockW * 0.6) * phb.t;
+                var bx = phb.x + Math.cos(boAng) * boRad;
+                var by = phb.y + Math.sin(boAng) * boRad * 0.4;
+                var sailH = Math.max(1.5, 3 * phb.t);
+                gfx.fillStyle = 'rgba(245,245,245,' + (0.85 * fade) + ')';
+                gfx.beginPath();
+                gfx.moveTo(bx, by - sailH);
+                gfx.lineTo(bx - sailH * 0.4, by);
+                gfx.lineTo(bx + sailH * 0.4, by);
+                gfx.closePath();
+                gfx.fill();
+                // Hull
+                gfx.fillStyle = 'rgba(60,65,75,' + (0.7 * fade) + ')';
+                gfx.fillRect(bx - sailH * 0.5, by, sailH, 0.8);
+              }
+            }
+          }
+        }
+
         // ── Solar farms: deterministic blue rectangular grids in rural
         // cells. Modern landmark — a real "wow" moment when one slides
         // past the cockpit. Sparse: ~3% of a coarser grid.
@@ -1366,6 +1500,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.fillRect(psf.x + farmW * 0.15, psf.y - farmH * 0.4, farmW * 0.15, farmH * 0.15);
               }
             }
+          }
+        }
+      };
+
+      // ── Other aircraft passing overhead ──
+      // Three deterministic "ghost" aircraft drift across the sky at
+      // different altitudes and headings. Each gets a tiny silhouette
+      // (cross or arrow shape depending on perspective). At higher
+      // altitudes they trail a contrail (white streak). Visible at all
+      // altitudes — strong "you're sharing airspace" cue.
+      var drawOtherAircraft = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return; // navigation lights handled separately
+        for (var ac = 0; ac < 3; ac++) {
+          // Each aircraft cycles across the sky over ~120s with a different speed.
+          var period = 90 + ac * 35;
+          var phase = ((time / period) + ac * 0.37) % 1;
+          var ax = phase * (W + 200) - 100;
+          // Vertical band: mid-sky for first, lower for second, very high for third
+          var bandY = ac === 0 ? horizonY * 0.55
+                    : ac === 1 ? horizonY * 0.78
+                                : horizonY * 0.30;
+          var ay = bandY + Math.sin(time * 0.3 + ac) * 4; // gentle bobbing
+          // Bias the heading: alternating left-to-right and right-to-left so the
+          // sky has crossing traffic.
+          var goingRight = (ac % 2 === 0);
+          // Aircraft type: high-altitude jet (contrail), mid-altitude commercial,
+          // low Cessna-style (no contrail).
+          var isHigh = ac === 2;
+          var bodyAlpha = 0.55 + 0.35 * (1 - Math.abs(phase - 0.5) * 2); // brighter mid-pass
+          gfx.fillStyle = 'rgba(45,55,70,' + bodyAlpha + ')';
+          // Silhouette — a small horizontal capsule with a vertical tail tab
+          var bodyW = isHigh ? 8 : (ac === 0 ? 6 : 5);
+          var bodyH = 1.6;
+          gfx.fillRect(ax - bodyW / 2, ay - bodyH / 2, bodyW, bodyH);
+          // Wings — perpendicular line a touch wider than body
+          gfx.fillRect(ax - bodyW * 0.65, ay - 0.4, bodyW * 1.3, 0.8);
+          // Tail
+          gfx.fillRect(ax + (goingRight ? -bodyW / 2 - 1 : bodyW / 2), ay - 1.8, 1.2, 1.8);
+          // Contrail for high-altitude jet — a fading white streak BEHIND the plane
+          if (isHigh) {
+            // Trail extends opposite to direction of travel
+            var trailLen = 80;
+            var trailDir = goingRight ? -1 : 1;
+            var trailGrad = gfx.createLinearGradient(ax, ay, ax + trailDir * trailLen, ay);
+            trailGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+            trailGrad.addColorStop(1, 'rgba(255,255,255,0)');
+            gfx.fillStyle = trailGrad;
+            gfx.fillRect(Math.min(ax, ax + trailDir * trailLen), ay - 1.6, trailLen, 3.2);
           }
         }
       };
@@ -6357,6 +6539,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // the student sees motion and "ground features" rather than a
           // featureless wash. Fades out by 6000 ft AGL.
           drawLowAltDetails(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Other aircraft passing — a few ghost planes drift across the
+          // sky at different altitudes and bearings. Strong "shared airspace"
+          // cue, visible at any altitude.
+          drawOtherAircraft(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Distant hills poking above the horizon — a deterministic silhouette
           // seeded by lat/lon so each airport gets a consistent skyline instead
