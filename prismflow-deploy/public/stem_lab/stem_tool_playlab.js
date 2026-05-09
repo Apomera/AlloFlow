@@ -2133,6 +2133,10 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { playlab: nextPlaylab });
         });
         plAnnounce('Scenario loaded: ' + s.label + '. ' + s.teach);
+        setScenarioIntro({
+          id: s.id, label: s.label, icon: s.icon, sport: s.sport,
+          teach: s.teach, questions: s.questions || []
+        });
       }
 
       function loadPlay(pid) {
@@ -2940,6 +2944,15 @@ window.StemLab = window.StemLab || {
         dragRef.current = { playerId: null };
       }
 
+      // ── Scenario intro card (port of SkateLab SK3 / ThrowLab pattern) ──
+      // When a one-click teaching demo loads, surface the scenario's
+      // teach paragraph + discussion questions in a modal before
+      // running the simulation. Replaces the previous hover-only
+      // tooltip on the chip.
+      var _plScenarioIntroState = React.useState(null);
+      var scenarioIntro = _plScenarioIntroState[0];
+      var setScenarioIntro = _plScenarioIntroState[1];
+
       // ── Field canvas ──
       var canvasRef = React.useRef(null);
       // PL5: HiDPI canvas setup. Without this, the canvas renders at
@@ -3473,6 +3486,73 @@ window.StemLab = window.StemLab || {
       }
 
       return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
+        // Scenario intro card — pops when a one-click teaching demo loads.
+        // Surfaces the scenario's `teach` paragraph + discussion questions
+        // before the play runs (previously hover-only on the chip).
+        // Port of SkateLab SK3 / ThrowLab pattern: "Run it now" fires
+        // synchronously (no setTimeout — caused stale closures in SK3).
+        scenarioIntro && h('div', {
+          role: 'dialog', 'aria-modal': 'true',
+          'aria-labelledby': 'pl-scenario-intro-title',
+          onClick: function(e) { if (e.target === e.currentTarget) setScenarioIntro(null); },
+          style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+                   zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                   padding: 16 }
+        },
+          h('div', {
+            style: { background: '#0f172a', border: '2px solid #334155', borderRadius: 14,
+                     maxWidth: 560, width: '100%', maxHeight: '85vh', overflow: 'auto',
+                     padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }
+          },
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 36 } }, scenarioIntro.icon || '🎬'),
+              h('h2', { id: 'pl-scenario-intro-title',
+                style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: '#f1f5f9' } },
+                scenarioIntro.label),
+              h('button', {
+                onClick: function() { setScenarioIntro(null); },
+                'aria-label': 'Close scenario intro',
+                style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1',
+                         width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
+                         fontSize: 16, lineHeight: 1, fontWeight: 700 }
+              }, '×')
+            ),
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24',
+                                  textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
+                '📜 The story'),
+              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.5 } },
+                scenarioIntro.teach)
+            ),
+            scenarioIntro.questions && scenarioIntro.questions.length > 0 && h('div', {
+              style: { marginBottom: 16 }
+            },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa',
+                                  textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
+                '🤔 Try these before you run it'),
+              h('ul', { style: { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 13, lineHeight: 1.5 } },
+                scenarioIntro.questions.map(function(q, i) {
+                  return h('li', { key: 'pl-sq-' + i, style: { marginBottom: 6 } }, q);
+                })
+              )
+            ),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 } },
+              h('button', {
+                onClick: function() { setScenarioIntro(null); startRun(); },
+                style: { flex: '1 1 200px', padding: '10px 14px', borderRadius: 8,
+                         border: 'none', background: 'linear-gradient(135deg, #16a34a, #06b6d4)',
+                         color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                         boxShadow: '0 4px 12px rgba(6,182,212,0.3)' }
+              }, '▶ Run it now'),
+              h('button', {
+                onClick: function() { setScenarioIntro(null); },
+                style: { flex: '1 1 160px', padding: '10px 14px', borderRadius: 8,
+                         border: '1px solid #475569', background: '#1e293b',
+                         color: '#cbd5e1', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+              }, '🔧 Explore the field first')
+            )
+          )
+        ),
         // Play Catalog celebration overlay (fixed, top of screen, 3.5s).
         // Fires when a play is run successfully for the first time across all
         // sessions — football completion or soccer xG ≥ 0.20.

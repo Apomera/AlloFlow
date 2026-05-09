@@ -2138,6 +2138,10 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, prev, { throwlab: nextThrowlab });
         });
         tlAnnounce('Scenario loaded: ' + s.label + '. ' + s.teach);
+        setScenarioIntro({
+          id: s.id, label: s.label, icon: s.icon, mode: s.mode,
+          teach: s.teach, questions: s.questions || []
+        });
       }
 
       function applyVolleyPreset(vid) {
@@ -3012,6 +3016,17 @@ window.StemLab = window.StemLab || {
           }
         }, 350);
       }
+
+      // ── Scenario intro card (port of SkateLab SK3 pattern) ──────
+      // When a famous-throw chip is clicked, applyScenario sets this so
+      // a modal pops with the scenario's teach paragraph + discussion
+      // questions, plus buttons to run it now or explore the controls
+      // first. All scenarios already have rich `teach` text and most
+      // have `questions` arrays — this surfaces what was previously
+      // only visible as a hover tooltip.
+      var scenarioIntroState = React.useState(null);
+      var scenarioIntro = scenarioIntroState[0];
+      var setScenarioIntro = scenarioIntroState[1];
 
       // ── Side-view canvas (Z = horizontal axis = mound→plate, Y = vertical) ──
       var canvasRef = React.useRef(null);
@@ -4149,6 +4164,79 @@ window.StemLab = window.StemLab || {
       }
 
       return h('div', { style: { padding: 16, color: '#f1f5f9', maxWidth: 1100, margin: '0 auto' } },
+        // Scenario intro card — pops when a one-click teaching demo loads.
+        // Surfaces the scenario's `teach` paragraph + discussion questions
+        // before the simulation runs (previously hover-only on the chip).
+        // Port of SkateLab SK3 pattern: "Run it now" fires synchronously
+        // (no setTimeout — caused stale-closure / canvas-race in SK3).
+        scenarioIntro && h('div', {
+          role: 'dialog', 'aria-modal': 'true',
+          'aria-labelledby': 'tl-scenario-intro-title',
+          onClick: function(e) { if (e.target === e.currentTarget) setScenarioIntro(null); },
+          style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+                   zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                   padding: 16 }
+        },
+          h('div', {
+            style: { background: '#0f172a', border: '2px solid #334155', borderRadius: 14,
+                     maxWidth: 560, width: '100%', maxHeight: '85vh', overflow: 'auto',
+                     padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }
+          },
+            // Header
+            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 36 } }, scenarioIntro.icon || '🎬'),
+              h('h2', { id: 'tl-scenario-intro-title',
+                style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: '#f1f5f9' } },
+                scenarioIntro.label),
+              h('button', {
+                onClick: function() { setScenarioIntro(null); },
+                'aria-label': 'Close scenario intro',
+                style: { background: 'transparent', border: '1px solid #475569', color: '#cbd5e1',
+                         width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
+                         fontSize: 16, lineHeight: 1, fontWeight: 700 }
+              }, '×')
+            ),
+            // The story
+            h('div', { style: { marginBottom: 14 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24',
+                                  textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
+                '📜 The story'),
+              h('p', { style: { margin: 0, color: '#e2e8f0', fontSize: 14, lineHeight: 1.5 } },
+                scenarioIntro.teach)
+            ),
+            // Discussion questions (only if present)
+            scenarioIntro.questions && scenarioIntro.questions.length > 0 && h('div', {
+              style: { marginBottom: 16 }
+            },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: '#a78bfa',
+                                  textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
+                '🤔 Try these before you run it'),
+              h('ul', { style: { margin: 0, paddingLeft: 20, color: '#cbd5e1', fontSize: 13, lineHeight: 1.5 } },
+                scenarioIntro.questions.map(function(q, i) {
+                  return h('li', { key: 'tl-sq-' + i, style: { marginBottom: 6 } }, q);
+                })
+              )
+            ),
+            // Buttons
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 } },
+              h('button', {
+                onClick: function() { setScenarioIntro(null); throwPitch(); },
+                'data-tl-focusable': 'true',
+                style: { flex: '1 1 200px', padding: '10px 14px', borderRadius: 8,
+                         border: 'none', background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+                         color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
+                         boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }
+              }, '🎯 Run it now'),
+              h('button', {
+                onClick: function() { setScenarioIntro(null); },
+                'data-tl-focusable': 'true',
+                style: { flex: '1 1 160px', padding: '10px 14px', borderRadius: 8,
+                         border: '1px solid #475569', background: '#1e293b',
+                         color: '#cbd5e1', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+              }, '🔧 Explore controls first')
+            )
+          )
+        ),
         // Pitch Locker celebration overlay (fixed-position, top of screen).
         // Fires the first time you throw a strike with a NEW pitch type.
         // Self-clears after 3.5s. Renders on top of everything.
