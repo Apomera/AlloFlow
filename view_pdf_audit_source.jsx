@@ -18,7 +18,7 @@ function PdfAuditView(props) {
     addToast, agentActivityLog, agentLogFullView, applyWordRestorationInPlace,
     auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary, boringPalettePrompt,
     callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-    callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, t,
+    callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, t, updatePdfPreview,
     createTaggedPdf, diffLibReady, downloadAccessiblePdf, downloadBatchResults,
     ensurePdfBase64, expertCommandInput, exportPreviewRef, extractedImagesList,
     extractionData, fidelityResult, fixAndVerifyPdf, fixContrastViolations,

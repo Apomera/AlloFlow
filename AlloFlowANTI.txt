@@ -29138,7 +29138,7 @@ Return ONLY valid JSON in this format:
           _ensureDiffLib, _ensurePdfLib, _saveAndCloseAudit, addToast, agentActivityLog,
           agentLogFullView, applyWordRestorationInPlace, auditOutputAccessibility, autoFixAxeViolations, autoRestoreSummary,
           boringPalettePrompt, callGemini, callGeminiImageEdit, callGeminiVision, callImagen,
-          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, createTaggedPdf, t,
+          callTTS, chunkResumePrompt, chunkSaveFlash, commitOrRevertPdfFix, createTaggedPdf, t, updatePdfPreview,
           diffLibReady, downloadAccessiblePdf, downloadBatchResults, ensurePdfBase64, expertCommandInput,
           exportPreviewRef, extractedImagesList, extractionData, fidelityResult, fixAndVerifyPdf,
           fixContrastViolations, fixIssuesList, generateAuditReportHtml, getChunkState, getPdfPreviewHtml,
