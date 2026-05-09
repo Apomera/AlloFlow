@@ -7170,6 +7170,54 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   }, [generatedContent?.id]);
   const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
   const [history, setHistory] = useState([]);
+  // ── Fluency export helpers (Round 7 follow-up, recovered from word_sounds_module
+  //    + student_analytics_module closures where they lived but were never exposed).
+  //    Used by view_misc_panels_module.js's FluencyModePanel via shorthand props. ──
+  const exportFluencyCSV = () => {
+    const fluencyRecords = history.filter(h => h.type === 'fluency-record' && h.data?.metrics);
+    if (fluencyRecords.length === 0) {
+      addToast('No fluency assessments to export', 'warning');
+      return;
+    }
+    const headers = ['Date', 'Passage', 'WCPM', 'Accuracy %', 'Total Words', 'Duration (s)', 'Substitutions', 'Omissions', 'Insertions', 'Self-Corrections', 'Error Rate', 'Reading Level'];
+    const rows = fluencyRecords.map(r => {
+      const m = r.data.metrics;
+      const rrm = r.data.wordData ? (calculateRunningRecordMetrics(r.data.wordData, r.data.fullAnalysis?.insertions || []) || { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' }) : { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, readingLevel: 'unknown' };
+      const passageTitle = (r.data.sourceText || '').substring(0, 40).replace(/[\n\r,]/g, ' ').trim() || 'Untitled';
+      return [new Date(r.timestamp).toLocaleDateString(), '"' + passageTitle + '"', m.wcpm || 0, m.accuracy || 0, m.totalWords || 0, Math.round(m.durationSeconds || 0), rrm.substitutions || 0, rrm.omissions || 0, rrm.insertions || 0, rrm.selfCorrections || 0, '1:' + (rrm.errorRate || 0), rrm.readingLevel || 'unknown'].join(',');
+    });
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'Fluency_Assessments_' + new Date().toISOString().split('T')[0] + '.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  };
+  const generateFluencyScoreSheet = (result, sourceText) => {
+    if (!result || !result.wordData) return;
+    const rrm = calculateRunningRecordMetrics(result.wordData, result.insertions || []) || { substitutions: 0, omissions: 0, insertions: 0, selfCorrections: 0, errorRate: 0, scRate: 0, accuracy: 0, totalErrors: 0, readingLevel: 'unknown' };
+    const readingLevelLabel = rrm.accuracy >= 95 ? 'Independent' : rrm.accuracy >= 90 ? 'Instructional' : 'Frustrational';
+    const wordMarkup = result.wordData.map(w => {
+      const sym = w.status === 'correct' ? '✓' : w.status === 'missed' ? '—' : w.status === 'self_corrected' ? 'SC' : '✗';
+      const color = w.status === 'correct' ? '#16a34a' : w.status === 'missed' ? '#dc2626' : w.status === 'self_corrected' ? '#2563eb' : '#ea580c';
+      const said = w.said ? `<br/><span style="font-size:9px;color:#94a3b8;">${w.said}</span>` : '';
+      return `<span style="display:inline-block;text-align:center;margin:4px 3px;padding:4px 6px;border-radius:6px;border:1px solid ${color}20;background:${color}08;"><span style="font-size:16px;color:#1e293b;">${w.word}</span><br/><span style="font-size:11px;font-weight:800;color:${color};">${sym}</span>${said}</span>`;
+    }).join('');
+    const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>${t('print.oral_fluency_title')}</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Inter',sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>
+<div class="sheet"><div class="hdr"><div><h1>📊 ${t('print.oral_fluency_title')}</h1><p>${t('print.assessment_record')}</p></div><div style="text-align:right;font-size:11px;"><div>Generated: ${new Date().toLocaleDateString()}</div></div></div>
+<div class="fields"><div class="field"><label>${t('print.student')}</label><div class="val">${studentNickname || '________________'}</div></div><div class="field"><label>${t('print.date')}</label><div class="val">${new Date().toLocaleDateString()}</div></div><div class="field"><label>${t('print.grade_benchmark')}</label><div class="val">${fluencyBenchmarkGrade} / ${fluencyBenchmarkSeason}</div></div></div>
+<div class="words">${wordMarkup}</div>
+<div class="legend"><span>✓ = ${t('print.correct_legend')}</span><span>✗ = ${t('print.substitution_legend')}</span><span>— = ${t('print.omission_legend')}</span><span>SC = ${t('print.self_corrected_legend')}</span></div>
+<div class="metrics"><div class="mcol"><h3>${t('common.ai_calculated_metrics')}</h3><div class="mrow"><span class="lbl">${t('print.wcpm')}</span><span class="vl">${result.wcpm || 0}</span></div><div class="mrow"><span class="lbl">${t('print.accuracy')}</span><span class="vl">${result.accuracy || 0}%</span></div><div class="mrow"><span class="lbl">${t('print.substitutions')}</span><span class="vl">${rrm.substitutions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.omissions')}</span><span class="vl">${rrm.omissions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.insertions')}</span><span class="vl">${rrm.insertions || 0}</span></div><div class="mrow"><span class="lbl">${t('print.self_corrections')}</span><span class="vl">${rrm.selfCorrections || 0}</span></div><div class="mrow"><span class="lbl">${t('print.error_rate')}</span><span class="vl">1:${rrm.errorRate || 0}</span></div><div class="mrow"><span class="lbl">${t('print.reading_level')}</span><span class="vl">${readingLevelLabel}</span></div></div>
+<div class="mcol"><h3>${t('common.error_analysis')}</h3><div class="mrow"><span class="lbl">${t('print.total_errors')}</span><span class="vl">${rrm.totalErrors || 0}</span></div><div class="mrow"><span class="lbl">${t('print.sc_rate')}</span><span class="vl">${rrm.scRate || 0}%</span></div><div class="mrow"><span class="lbl">${t('print.total_words')}</span><span class="vl">${result.wordData?.length || 0}</span></div></div></div>
+<div class="no-print" style="text-align:center;margin-top:16px;"><button onclick="window.print()" style="background:#4f46e5;color:white;border:none;padding:10px 24px;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">🖨️ Print Score Sheet</button></div></body></html>`;
+    const win = window.open('', '_blank');
+    if (win) { win.document.write(html); win.document.close(); }
+  };
   const [isHistoryPulsing, setIsHistoryPulsing] = useState(false);
   const [isSaveActionPulsing, setIsSaveActionPulsing] = useState(false);
   const latestLessonPlan = React.useMemo(() => {
@@ -26665,12 +26713,19 @@ Return ONLY valid JSON in this format:
             />
         </ErrorBoundary>
       )}
+      {/* ── Fluency export helpers — recovered from word_sounds_module + student_analytics_module
+              closures (Round 7 follow-up). Both lived inside CDN module closures and were
+              referenced by the inline FluencyModePanel without being exposed → buttons threw
+              ReferenceError in production. Lifted to host scope so FluencyModePanel can pick
+              them up via shorthand props. Future cleanup: dedupe with the copies still inside
+              word_sounds_module.js and student_analytics_module.js. ── */}
+      {(() => { /* no-op IIFE marker */ })()}
       {/* ── FluencyModePanel extracted to view_misc_panels_module.js (CDN) ── */}
       {(isFluencyMode && generatedContent) && window.AlloModules && window.AlloModules.FluencyModePanel && React.createElement(window.AlloModules.FluencyModePanel, {
-          ConfettiExplosion, FLUENCY_BENCHMARKS, calculateRunningRecordMetrics, exportFluencyCSV: ((typeof exportFluencyCSV === 'function') ? exportFluencyCSV : (() => addToast('Fluency CSV export not yet wired through CDN modules', 'warning'))), fluencyBenchmarkGrade,
+          ConfettiExplosion, FLUENCY_BENCHMARKS, calculateRunningRecordMetrics, exportFluencyCSV, fluencyBenchmarkGrade,
           fluencyBenchmarkSeason, fluencyCustomNorms, fluencyFeedback, fluencyModalRef, fluencyResult,
           fluencyStatus, fluencyTimeLimit, fluencyTimeRemaining, fluencyTimerVisibility, fluencyTranscript,
-          generateFluencyScoreSheet: ((typeof generateFluencyScoreSheet === 'function') ? generateFluencyScoreSheet : (() => addToast('Fluency score sheet not yet wired through CDN modules', 'warning'))), generatedContent, getBenchmarkComparison, isFluencyMode, setFluencyBenchmarkGrade,
+          generateFluencyScoreSheet, generatedContent, getBenchmarkComparison, isFluencyMode, setFluencyBenchmarkGrade,
           setFluencyBenchmarkSeason, setFluencyCustomNorms, setFluencyFeedback, setFluencyResult, setFluencyStatus,
           setFluencyTimeLimit, setFluencyTimeRemaining, setFluencyTimerVisibility, setFluencyTranscript, setIsFluencyMode,
           showFluencyConfetti, t, toggleFluencyRecording
