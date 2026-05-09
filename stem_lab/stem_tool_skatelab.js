@@ -759,19 +759,86 @@ window.StemLab = window.StemLab || {
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
-    // Sky
+    // ── Sky: dusk gradient (deep indigo → magenta → warm orange near
+    // horizon). Brightness modulated by the skater's air height so the
+    // sky subtly brightens at peak altitude — adds atmosphere without
+    // breaking the physics readability. ───────────────────────────
+    var airBoost = Math.min(1, ((state.airHeightFt || 0) / 25));  // 0..1
     var grad = ctx.createLinearGradient(0, 0, 0, H);
-    grad.addColorStop(0, '#1e3a8a'); grad.addColorStop(0.7, '#1e293b'); grad.addColorStop(1, '#0f172a');
+    grad.addColorStop(0, airBoost > 0.4 ? '#3b1d6f' : '#2a1659');     // deep indigo top
+    grad.addColorStop(0.45, '#5b1d8a');                                // magenta middle
+    grad.addColorStop(0.72, airBoost > 0.4 ? '#c2410c' : '#9a3412');   // warm orange near horizon
+    grad.addColorStop(0.78, '#1e293b');                                // ground transition
+    grad.addColorStop(1, '#0f172a');                                   // dark base
     ctx.fillStyle = grad; ctx.fillRect(0, 0, W, H);
-    // Ground
+    // ── Stars: deterministic placement seeded by canvas dims so they
+    // don't twinkle every frame. Only render in the upper sky band. ──
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    var seed = (W * 13 + H * 17) % 1000;
+    for (var si = 0; si < 18; si++) {
+      var sxr = ((seed + si * 73) % 1000) / 1000 * W;
+      var syr = ((seed + si * 41) % 1000) / 1000 * (H * 0.4);
+      var srad = 0.6 + ((seed + si * 19) % 100) / 100 * 1.2;
+      ctx.beginPath();
+      ctx.arc(sxr, syr, srad, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // ── Distant silhouettes: procedural mountain/city skyline at the
+    // horizon line. Adds depth + sense of place. Drawn before ground. ──
+    var horizonY = H * 0.66;
+    ctx.fillStyle = 'rgba(15,23,42,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY + 20);
+    var mtnSeed = (W * 7) % 1000;
+    for (var mx = 0; mx <= W; mx += 18) {
+      var jag = ((mtnSeed + mx * 29) % 100) / 100;
+      ctx.lineTo(mx, horizonY - jag * 28);
+    }
+    ctx.lineTo(W, horizonY + 20);
+    ctx.closePath();
+    ctx.fill();
+    // City silhouette layer in front of mountains (~70% as tall)
+    ctx.fillStyle = 'rgba(15,23,42,0.75)';
+    ctx.beginPath();
+    ctx.moveTo(0, horizonY + 20);
+    for (var cx = 0; cx <= W; cx += 12) {
+      var citySeed = ((mtnSeed + cx * 53) % 100) / 100;
+      ctx.lineTo(cx, horizonY - citySeed * 14 + 6);
+      ctx.lineTo(cx + 6, horizonY - citySeed * 14 + 6);
+    }
+    ctx.lineTo(W, horizonY + 20);
+    ctx.closePath();
+    ctx.fill();
+    // ── Ground with horizontal stripe texture for spatial depth ──
     var groundY = H * 0.78;
-    ctx.fillStyle = '#374151';
+    var groundGrad = ctx.createLinearGradient(0, groundY, 0, H);
+    groundGrad.addColorStop(0, '#3a4554');
+    groundGrad.addColorStop(1, '#1e2533');
+    ctx.fillStyle = groundGrad;
     ctx.fillRect(0, groundY, W, H - groundY);
-    // Ramp — left platform with sloped takeoff
+    ctx.strokeStyle = 'rgba(15,23,42,0.35)';
+    ctx.lineWidth = 1;
+    for (var gy = groundY + 8; gy < H; gy += 12) {
+      ctx.beginPath();
+      ctx.moveTo(0, gy);
+      ctx.lineTo(W, gy);
+      ctx.stroke();
+    }
+    // ── Ramp: depth gradient + cast shadow + rim light ──
     var rampX = W * 0.18;
     var rampTopY = H * 0.55;
     var rampBaseY = groundY;
-    ctx.fillStyle = '#475569';
+    // Cast shadow on the ground beneath the ramp lip
+    var shadowGrad = ctx.createRadialGradient(rampX - 8, rampBaseY + 4, 4, rampX - 8, rampBaseY + 4, 50);
+    shadowGrad.addColorStop(0, 'rgba(0,0,0,0.45)');
+    shadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = shadowGrad;
+    ctx.fillRect(rampX - 60, rampBaseY, 80, 30);
+    // Ramp body with vertical gradient (lighter top edge, darker base)
+    var rampGrad = ctx.createLinearGradient(0, rampTopY, 0, rampBaseY);
+    rampGrad.addColorStop(0, '#64748b');
+    rampGrad.addColorStop(1, '#334155');
+    ctx.fillStyle = rampGrad;
     ctx.beginPath();
     ctx.moveTo(0, rampBaseY);
     ctx.lineTo(rampX - 30, rampBaseY);
@@ -779,16 +846,50 @@ window.StemLab = window.StemLab || {
     ctx.lineTo(0, rampTopY);
     ctx.closePath();
     ctx.fill();
+    // Rim highlight on the top edge of the ramp
+    ctx.strokeStyle = 'rgba(251,191,36,0.65)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, rampTopY);
+    ctx.lineTo(rampX, rampTopY);
+    ctx.stroke();
+    // Concrete texture stripes on the ramp face
+    ctx.strokeStyle = 'rgba(15,23,42,0.22)';
+    ctx.lineWidth = 1;
+    for (var rs = rampTopY + 6; rs < rampBaseY; rs += 8) {
+      var rsX = (rampX - 30) + ((rs - rampTopY) / (rampBaseY - rampTopY)) * 30;
+      ctx.beginPath();
+      ctx.moveTo(0, rs);
+      ctx.lineTo(rsX, rs);
+      ctx.stroke();
+    }
     // Gap label
     var gapStartX = rampX;
     var pxPerFt = (W * 0.6) / 25;  // 25 ft visible
     var gapWidthPx = (state.gapFt || 12) * pxPerFt;
     var gapEndX = gapStartX + gapWidthPx;
-    // Landing platform
-    ctx.fillStyle = '#475569';
+    // ── Landing platform: depth gradient + cast shadow + rim light ──
+    var landShadowGrad = ctx.createRadialGradient(gapEndX + 12, rampTopY + 18, 4, gapEndX + 12, rampTopY + 18, 50);
+    landShadowGrad.addColorStop(0, 'rgba(0,0,0,0.4)');
+    landShadowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = landShadowGrad;
+    ctx.fillRect(gapEndX, rampTopY + 14, 80, 36);
+    var landGrad = ctx.createLinearGradient(0, rampTopY + 14, 0, H);
+    landGrad.addColorStop(0, '#64748b');
+    landGrad.addColorStop(1, '#334155');
+    ctx.fillStyle = landGrad;
     ctx.fillRect(gapEndX, rampTopY + 14, W - gapEndX, H - rampTopY - 14);
-    // Gap ground (visible cliff)
-    ctx.fillStyle = '#1e293b';
+    ctx.strokeStyle = 'rgba(251,191,36,0.55)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(gapEndX, rampTopY + 14);
+    ctx.lineTo(W, rampTopY + 14);
+    ctx.stroke();
+    // Gap ground (visible cliff face beneath the gap)
+    var cliffGrad = ctx.createLinearGradient(0, rampTopY, 0, groundY);
+    cliffGrad.addColorStop(0, '#1e293b');
+    cliffGrad.addColorStop(1, '#0f172a');
+    ctx.fillStyle = cliffGrad;
     ctx.fillRect(gapStartX, rampTopY, gapWidthPx, groundY - rampTopY);
     // Gap distance label
     ctx.strokeStyle = '#fbbf24';
@@ -883,35 +984,83 @@ window.StemLab = window.StemLab || {
       ctx.fillText('best ' + gh.rangeFt.toFixed(1) + 'ft', apexX + 12, apexY - 8);
       ctx.restore();
     }
-    // Skater current position
+    // ── Motion trail: fading circles along the rider's recent path ──
+    // Drawn before the skater so the rider sits on top. state.trail is
+    // a small array of {x, y, age} populated by animateGapJump.
+    if (Array.isArray(state.trail) && state.trail.length > 0) {
+      var trailColor = (skStyleG && skStyleG.color) || 'amber';
+      var trailRGB = trailColor === 'rose' ? '252,165,165'
+                   : trailColor === 'sky' ? '125,211,252'
+                   : trailColor === 'emerald' ? '110,231,183'
+                   : '251,191,36';
+      for (var ti = 0; ti < state.trail.length; ti++) {
+        var tp = state.trail[ti];
+        var tAlpha = (1 - tp.age) * 0.45;
+        var tRad = 2 + (1 - tp.age) * 4;
+        ctx.fillStyle = 'rgba(' + trailRGB + ',' + tAlpha.toFixed(2) + ')';
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, tRad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    // ── Particles: dust on takeoff, sparks on landing. Layered before
+    // the skater so the rider sits on top of any clouds. ──
+    if (Array.isArray(state.particles)) {
+      for (var pi = 0; pi < state.particles.length; pi++) {
+        var pp = state.particles[pi];
+        var pAlpha = Math.max(0, 1 - pp.age);
+        ctx.fillStyle = pp.color.replace('ALPHA', pAlpha.toFixed(2));
+        ctx.beginPath();
+        ctx.arc(pp.x, pp.y, pp.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    // ── Skater current position ──
     var sx = state.skX != null ? state.skX : rampX;
     var sy = state.skY != null ? state.skY : rampTopY;
     var rot = state.skRot || 0;
     var skStyleG = state.skater || { color: 'amber', helmet: false, pads: false };
     var skColorsG = getSkaterColor(skStyleG.color);
+    // ── Limb animation: during airtime, bend arms based on rotation
+    // phase. flightPhase ∈ [0, 1] (0 = takeoff, 0.5 = peak, 1 = landing).
+    // Arms rise at peak, tuck before landing. Subtle but adds life. ──
+    var fp = (typeof state.flightPhase === 'number') ? Math.max(0, Math.min(1, state.flightPhase)) : 0;
+    var armRise = (state.inFlight && fp < 0.5) ? Math.sin(fp * Math.PI) * 6 : 0;
+    var legTuck = (state.inFlight && fp > 0.6) ? (fp - 0.6) * 12 : 0;
     ctx.save();
     ctx.translate(sx, sy);
     ctx.rotate(rot * Math.PI / 180);
+    // Board with grip-tape detail (subtle dotted texture)
     ctx.fillStyle = '#fbbf24';
     ctx.fillRect(-14, 4, 28, 4);
+    ctx.fillStyle = 'rgba(15,23,42,0.4)';
+    for (var bi = -12; bi < 13; bi += 4) {
+      ctx.fillRect(bi, 5, 1, 2);
+    }
+    // Wheels
     ctx.fillStyle = '#1e293b';
     ctx.beginPath(); ctx.arc(-9, 9, 2, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(9, 9, 2, 0, Math.PI * 2); ctx.fill();
     // Pads (knees + elbows) — drawn before strokes
     if (skStyleG.pads) {
       ctx.fillStyle = '#15803d';
-      ctx.fillRect(-2.5, 1, 5, 3.5);
-      ctx.fillRect(-10, -4, 3.5, 3.5);
-      ctx.fillRect(6.5, -4, 3.5, 3.5);
+      ctx.fillRect(-2.5, 1 - legTuck, 5, 3.5);
+      ctx.fillRect(-10, -4 - armRise, 3.5, 3.5);
+      ctx.fillRect(6.5, -4 - armRise, 3.5, 3.5);
     }
+    // Body strokes — torso + arms with limb animation
     ctx.strokeStyle = skColorsG.body;
     ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(0, 4);
+    // Torso: shorter when legs tuck
+    ctx.moveTo(0, 4 - legTuck * 0.4);
     ctx.lineTo(0, -10);
-    ctx.moveTo(-8, -2);
-    ctx.lineTo(8, -2);
+    // Arms: rise during ascent, tuck near landing
+    ctx.moveTo(-8, -2 - armRise);
+    ctx.lineTo(8, -2 - armRise);
     ctx.stroke();
+    // Head
     ctx.fillStyle = skColorsG.body;
     ctx.beginPath(); ctx.arc(0, -16, 5, 0, Math.PI * 2); ctx.fill();
     if (skStyleG.helmet) {
@@ -919,6 +1068,7 @@ window.StemLab = window.StemLab || {
       ctx.beginPath();
       ctx.ellipse(0, -17, 6.5, 5.5, 0, 0, Math.PI * 2);
       ctx.fill();
+      // Helmet stripe
       ctx.strokeStyle = 'rgba(15,23,42,0.55)';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -985,8 +1135,8 @@ window.StemLab = window.StemLab || {
     function step() {
       var state = { gapFt: 0, ghost: ghost, showEnergyBar: showEnergy, skater: skaterStyle };
       if (phase === 'descend') {
-        // Drop in: arc from left lip to floor center
-        var p = Math.min(1, t / 0.45);
+        // Drop in: arc from left lip to floor center. Compressed 0.45→0.2 for snappier playback.
+        var p = Math.min(1, t / 0.2);
         var arc = Math.sin(p * Math.PI / 2);
         state.skX = leftLipX + arc * lipHalfW;
         state.skY = lipY + arc * (floorY - lipY - 16);
@@ -1003,13 +1153,14 @@ window.StemLab = window.StemLab || {
           state.label = '⚡ Pump! ' + (sim.pumps - pumpsLeft + 1) + '/' + sim.pumps;
           state.speedMph = sim.vTakeoff * MPS2MPH * (0.7 + 0.3 * (sim.pumps - pumpsLeft) / Math.max(1, sim.pumps));
           state.airHeightFt = 0;
-          if (t > 0.4) { pumpsLeft--; sfxPump(); t = 0; }
+          // Compressed 0.4→0.2 per pump for snappier playback (6 pumps = 1.2s instead of 2.4s).
+          if (t > 0.2) { pumpsLeft--; sfxPump(); t = 0; }
         } else {
           phase = 'ascend'; t = 0;
         }
       } else if (phase === 'ascend') {
-        // Up the right wall to launch
-        var p = Math.min(1, t / 0.5);
+        // Up the right wall to launch. Compressed 0.5→0.25 for snappier playback.
+        var p = Math.min(1, t / 0.25);
         var arc = Math.sin(p * Math.PI / 2);
         state.skX = midX + arc * lipHalfW;
         state.skY = floorY - 16 - arc * (floorY - lipY - 16);
@@ -1107,21 +1258,65 @@ window.StemLab = window.StemLab || {
     var phase = 'roll'; // roll → launch → flight → land
     var doneCb = opts && opts.onDone;
     var raf = 0;
+    // Visual state: trail of recent positions during flight + particle
+    // pool for takeoff/landing dust. Kept in closure so they persist
+    // across rAF frames.
+    var trail = [];
+    var particles = [];
+    var spawnedTakeoffDust = false;
+    var spawnedLandingDust = false;
+    function emitParticles(px, py, count, kind) {
+      for (var pi = 0; pi < count; pi++) {
+        var ang = Math.random() * Math.PI * 2;
+        var spd = 0.6 + Math.random() * 1.6;
+        // Takeoff: dust kicks horizontally + slight up. Landing: radial spray.
+        var vx = kind === 'takeoff' ? -Math.abs(Math.cos(ang)) * spd - 0.5 : Math.cos(ang) * spd;
+        var vy = kind === 'takeoff' ? -0.4 - Math.random() * 0.8 : Math.sin(ang) * spd - 0.6;
+        particles.push({
+          x: px, y: py, vx: vx, vy: vy,
+          r: 1.5 + Math.random() * 2.5,
+          age: 0,
+          maxAge: 0.6 + Math.random() * 0.4,
+          color: kind === 'landing'
+            ? 'rgba(251,191,36,ALPHA)'  // golden landing spark
+            : 'rgba(180,180,180,ALPHA)' // gray takeoff dust
+        });
+      }
+    }
     function step() {
       var state = { gapFt: sim.gapFt, speedMph: sim.v_mph, angleDeg: sim.thetaDeg, label: '', wind: sim.wind, ghost: ghost, showEnergyBar: showEnergyG, skater: skaterStyleG };
       if (phase === 'roll') {
-        // Roll up the ramp (roll phase isn't slowed — only flight is)
-        var p = Math.min(1, t / 0.6);
+        // Roll up the ramp (roll phase isn't slowed — only flight is).
+        // Compressed 0.6→0.3 for snappier takeoff. Flight phase still
+        // plays at full physical hangtime so the math reads cleanly.
+        var p = Math.min(1, t / 0.3);
         state.skX = -10 + p * (rampX + 10);
         state.skY = (H * 0.78) - p * ((H * 0.78) - rampTopY);
         state.skRot = -p * sim.thetaDeg * 0.4;
         state.label = 'Rolling up...';
-        if (p >= 1) { phase = 'flight'; t = 0; sfxPop(); }
+        if (p >= 1) {
+          phase = 'flight'; t = 0; sfxPop();
+          // Spawn takeoff dust the moment we leave the ramp
+          if (!spawnedTakeoffDust) {
+            emitParticles(rampX, rampTopY + 6, 14, 'takeoff');
+            spawnedTakeoffDust = true;
+          }
+        }
       } else if (phase === 'flight') {
         if (t > sim.hangTime) {
           phase = 'land'; t = 0;
           if (sim.landed) { sfxLandClean(); skAnnounce('Cleared the ' + sim.gapFt + ' foot gap!'); }
           else { sfxBail(); skAnnounce(sim.clearance < 0 ? 'Came up short. Need more speed or a steeper angle.' : 'Overshot the landing!'); }
+          // Spawn landing dust at the impact point
+          if (!spawnedLandingDust) {
+            var landX = rampX + sim.rangeM * pxPerM;
+            var landY = rampTopY + (sim.landed ? 14 : 50);
+            emitParticles(landX, landY, 18, 'landing');
+            spawnedLandingDust = true;
+          }
+          // Fix: schedule next frame so the 'land' branch runs and doneCb fires.
+          // Without this, the rAF loop dies here and "Sending it..." sticks forever.
+          raf = requestAnimationFrame(step);
           return;
         }
         var x = sim.vM * Math.cos(sim.theta) * t + 0.5 * aWind * t * t;
@@ -1130,6 +1325,9 @@ window.StemLab = window.StemLab || {
         state.skY = rampTopY - y * pxPerM;
         state.skRot = -sim.thetaDeg + (t / sim.hangTime) * sim.thetaDeg * 1.7;
         state.label = '🛹 ' + (state.skY > rampTopY - sim.peakHM * pxPerM * 0.95 ? 'rising' : 'falling');
+        state.airHeightFt = y * M2FT;
+        state.inFlight = true;
+        state.flightPhase = t / sim.hangTime;
         // Energy budget during flight: y = current height above launch
         // (in meters). PE = m·g·y, KE = E_total − PE. Conservation
         // (modulo the small wind term) makes this clean to render.
@@ -1137,6 +1335,11 @@ window.StemLab = window.StemLab || {
         state.energyKE = Math.max(0, energyTotalG - peG);
         state.energyPE = peG;
         state.energyTotal = energyTotalG;
+        // Trail: capture every 2 frames during flight, fade older points
+        if (Math.floor(t / dt) % 2 === 0) {
+          trail.push({ x: state.skX, y: state.skY, age: 0 });
+          if (trail.length > 14) trail.shift();
+        }
       } else if (phase === 'land') {
         // hold
         state.skX = rampX + sim.rangeM * pxPerM;
@@ -1145,6 +1348,23 @@ window.StemLab = window.StemLab || {
         state.label = sim.landed ? '✅ Cleared!' : '❌ ' + (sim.clearance < 0 ? 'Short' : 'Overshot');
         if (t > 1.0) { if (doneCb) doneCb(); return; }
       }
+      // Age trail + particles each frame
+      for (var trI = 0; trI < trail.length; trI++) {
+        trail[trI].age = Math.min(1, trail[trI].age + 0.06);
+      }
+      // Update particles: position + age + remove dead
+      var alive = [];
+      for (var pI = 0; pI < particles.length; pI++) {
+        var pr = particles[pI];
+        pr.x += pr.vx;
+        pr.y += pr.vy;
+        pr.vy += 0.12;  // gravity on dust
+        pr.age += (1 / 60) / pr.maxAge;
+        if (pr.age < 1) alive.push(pr);
+      }
+      particles = alive;
+      state.trail = trail;
+      state.particles = particles;
       drawGapJump(canvas, state);
       t += (phase === 'flight') ? dt : (1 / 60);  // only flight is slowed
       raf = requestAnimationFrame(step);
