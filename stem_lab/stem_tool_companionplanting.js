@@ -1665,6 +1665,15 @@ var d = (labToolData.companionPlanting) || {};
 
               ];
 
+              // Ground gradient stops per season — declared here (not at first paint pass below)
+              // because the cached-gradient block reads it before the original declaration site.
+              var groundColors = [
+                ['#7CB342', '#558B2F', '#33691E'],  // spring
+                ['#8BC34A', '#689F38', '#33691E'],  // summer
+                ['#A1887F', '#795548', '#4E342E'],  // autumn
+                ['#B0BEC5', '#78909C', '#546E7A']   // winter
+              ];
+
               var ssky = seasonSkies[_season];
 
               // Cache sky gradient — only rebuild when season changes (not every frame)
@@ -1764,18 +1773,7 @@ var d = (labToolData.companionPlanting) || {};
 
 
               // ── Ground (season-tinted) ──
-
-              var groundColors = [
-
-                ['#7CB342', '#558B2F', '#33691E'],  // spring
-
-                ['#8BC34A', '#689F38', '#33691E'],  // summer
-
-                ['#A1887F', '#795548', '#4E342E'],  // autumn
-
-                ['#B0BEC5', '#78909C', '#546E7A']   // winter
-
-              ];
+              // groundColors declared earlier alongside seasonSkies (cached-gradient block reads it).
 
               ctx.fillStyle = _cachedGroundGrad || '#5a7040';
 
@@ -3869,7 +3867,7 @@ var d = (labToolData.companionPlanting) || {};
                   var rect = e.currentTarget.getBoundingClientRect();
                   var mx = (e.clientX - rect.left) * (e.currentTarget.width / rect.width);
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
-                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 90; var iTH2 = 50;
+                  var isoOX2 = e.currentTarget.width / 2; var isoOY2 = 180; var iTW2 = 240; var iTH2 = 130; // must match draw-code constants
                   var relX2 = mx - isoOX2; var relY2 = my - isoOY2;
                   var hCol = Math.floor((relX2 / (iTW2 / 2) + relY2 / (iTH2 / 2)) / 2);
                   var hRow = Math.floor((relY2 / (iTH2 / 2) - relX2 / (iTW2 / 2)) / 2);
@@ -3883,7 +3881,7 @@ var d = (labToolData.companionPlanting) || {};
                   var my = (e.clientY - rect.top) * (e.currentTarget.height / rect.height);
                   // Iso grid params (must match draw code)
                   var isoOX = e.currentTarget.width / 2; var isoOY = 180;
-                  var iTW = 90; var iTH = 50;
+                  var iTW = 240; var iTH = 130; // must match draw-code constants in canvas ref below
                   // Reverse isometric transform
                   var relX = mx - isoOX; var relY = my - isoOY;
                   var iCol = Math.floor((relX / (iTW / 2) + relY / (iTH / 2)) / 2);
@@ -3907,7 +3905,15 @@ var d = (labToolData.companionPlanting) || {};
                   var startT = performance.now();
                   // Isometric tile parameters
                   var isoOX = W / 2; var isoOY = 180; // origin (center-top of grid)
-                  var iTW = 90; var iTH = 50; // tile width/height in iso space
+                  // Tile width/height in iso space. Bumped from 90/50 → 240/130
+                  // (~2.7×) so the 4×4 garden actually fills a meaningful share
+                  // of the canvas instead of looking like a pinpoint in the
+                  // background. Plant draws use iTW/iTH-relative offsets so they
+                  // scale proportionally; absolute plant heights (35-50 px) read
+                  // fine at this tile scale. If you change these here, also
+                  // update the matching constants in onClick + onMouseMove
+                  // handlers above so click hit-testing stays aligned.
+                  var iTW = 240; var iTH = 130;
                   // Convert grid (row,col) to screen (x,y) center of diamond
                   function isoToScreen(row, col) {
                     return { x: isoOX + (col - row) * iTW / 2, y: isoOY + (col + row) * iTH / 2 };

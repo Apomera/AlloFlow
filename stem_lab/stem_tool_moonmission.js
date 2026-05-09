@@ -2119,7 +2119,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     renderer.setSize(W, H2);
                     renderer.setClearColor(0x000000);
 
-                    // ── Lunar sky (black + stars + Earth in sky) ──
+                    // ── Lunar sky (black + stars only — Earth is a separate
+                    // sprite below to avoid the equirectangular wrap distortion
+                    // that turned the marble into a teardrop). Stars are tiny
+                    // dots so the projection stretching is invisible at that scale.
                     var skyGeo = new THREE.SphereGeometry(200, 32, 16);
                     var skyCv = document.createElement('canvas'); skyCv.width = 512; skyCv.height = 256;
                     var sCtx = skyCv.getContext('2d');
@@ -2131,10 +2134,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       sCtx.arc(Math.random() * 512, Math.random() * 256, Math.random() * 1.2, 0, Math.PI * 2);
                       sCtx.fill();
                     }
-                    // Earth in the sky — large detailed marble using drawDetailedEarth
-                    drawDetailedEarth(sCtx, 380, 55, 42, 500);
                     var skyTex = new THREE.CanvasTexture(skyCv);
                     scene.add(new THREE.Mesh(skyGeo, new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide })));
+
+                    // ── Earth as a billboard sprite ──
+                    // Draw the marble onto a 256×256 canvas (centered, square),
+                    // then attach as a Three.js Sprite so it always faces the
+                    // camera and never gets distorted by sphere-projection math.
+                    // Position high in the sky and off to one side, matching the
+                    // actual Apollo EVA view (Earth was a fixed point in the
+                    // lunar sky throughout the surface ops).
+                    var earthCv = document.createElement('canvas'); earthCv.width = 256; earthCv.height = 256;
+                    var eCtx = earthCv.getContext('2d');
+                    eCtx.clearRect(0, 0, 256, 256);
+                    drawDetailedEarth(eCtx, 128, 128, 100, 500);
+                    var earthTex = new THREE.CanvasTexture(earthCv);
+                    var earthSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: earthTex, transparent: true, depthWrite: false }));
+                    earthSprite.position.set(-60, 70, -120);
+                    earthSprite.scale.set(20, 20, 1);
+                    scene.add(earthSprite);
 
                     // ── Lunar terrain (grey regolith with craters) ──
                     var terrainGeo = new THREE.PlaneGeometry(200, 200, 100, 100);

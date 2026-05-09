@@ -7594,11 +7594,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var cosP = Math.cos(ds.pitch), sinP = Math.sin(ds.pitch);
 
             // Project 3D to 2D (perspective)
+            // Pitch math: world rotates by -pitch relative to a camera that
+            // rotated by +pitch. The previous version used +pitch in both
+            // sin terms, which made ground objects (y=0) project ABOVE the
+            // horizon line when the bee was nose-up — flowers and trees
+            // appeared to float in the sky. Two sign flips below restore
+            // the standard pinhole-camera projection.
             function project(wx, wy, wz) {
               var rx = (wx - ds.x) * cosY + (wz - ds.z) * sinY;
               var rz = -(wx - ds.x) * sinY + (wz - ds.z) * cosY;
-              var ry2 = (wy - ds.y) * cosP - rz * sinP;
-              var rz2 = (wy - ds.y) * sinP + rz * cosP;
+              var ry2 = (wy - ds.y) * cosP + rz * sinP;
+              var rz2 = -(wy - ds.y) * sinP + rz * cosP;
               if (rz2 >= -1) return null; // behind camera
               var fov = 300;
               var sx = halfW + (rx / -rz2) * fov;

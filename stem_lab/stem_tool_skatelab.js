@@ -1791,6 +1791,15 @@ window.StemLab = window.StemLab || {
       var canvasRef = React.useRef(null);
       var cancelAnimRef = React.useRef(null);
 
+      // ── Scenario intro card ──────────────────────────────────────
+      // SK3: when a famous-trick chip is clicked, show a brief context
+      // card with the historical setup + teach text + discussion
+      // questions, plus buttons to run-it-now or explore-manually.
+      // null = no card open.
+      var scenarioIntroState = React.useState(null);
+      var scenarioIntro = scenarioIntroState[0];
+      var setScenarioIntro = scenarioIntroState[1];
+
       // ── Mute mirror ─────────────────────────────────────────────
       // The module-level toggleMute() updates localStorage, but the
       // UI button needs a React state cell to re-render its label /
@@ -2064,6 +2073,20 @@ window.StemLab = window.StemLab || {
         upd(bumps);
         skAnnounce('Loaded ' + sc.label + '. ' + (sc.mode === 'halfpipe' ? 'Halfpipe' : 'Gap jump') + ' mode, ' +
           (p.vehicle === 'bmx' ? 'BMX' : 'skateboard') + '.');
+        // SK3: surface the scenario context card with teach + questions.
+        // Only for built-in scenarios (custom user-saved ones don't have
+        // teach/questions content). Skip if scenario has no teach text.
+        if (sc.teach) {
+          setScenarioIntro({
+            id: sc.id,
+            label: sc.label,
+            icon: sc.icon || '🛹',
+            mode: sc.mode,
+            teach: sc.teach,
+            questions: Array.isArray(sc.questions) ? sc.questions : [],
+            isCustom: !!sc.isCustom
+          });
+        }
       }
 
       // ── Save current settings as a custom scenario ──────────────
@@ -2808,7 +2831,105 @@ window.StemLab = window.StemLab || {
         }, emoji + ' ' + label);
       };
 
+      // SK3: Scenario intro modal — surfaces teach text + discussion
+      // questions when a famous-trick chip is clicked. Buttons to run
+      // immediately or explore the controls manually first.
+      var scenarioIntroModal = scenarioIntro ? h('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': scenarioIntro.label + ' — context',
+        onClick: function(e) { if (e.target === e.currentTarget) setScenarioIntro(null); },
+        onKeyDown: function(e) { if (e.key === 'Escape') setScenarioIntro(null); },
+        style: {
+          position: 'fixed', inset: 0, zIndex: 9999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(15,23,42,0.78)', padding: 16
+        }
+      },
+        h('div', {
+          style: {
+            background: 'linear-gradient(180deg, #1e293b 0%, #0f172a 100%)',
+            color: '#fef3c7', borderRadius: 16, padding: 24, maxWidth: 580, width: '100%',
+            border: '2px solid #fbbf24', boxShadow: '0 20px 60px rgba(0,0,0,0.55)',
+            maxHeight: '90vh', overflowY: 'auto'
+          }
+        },
+          // Header row: icon + label + close
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 } },
+            h('div', { style: { fontSize: 38, flexShrink: 0 }, 'aria-hidden': 'true' }, scenarioIntro.icon),
+            h('div', { style: { flexGrow: 1, minWidth: 0 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1, color: '#fbbf24', marginBottom: 2 } }, scenarioIntro.mode === 'halfpipe' ? 'Halfpipe scenario' : 'Gap-jump scenario'),
+              h('div', { style: { fontSize: 22, fontWeight: 800, color: '#fef3c7', lineHeight: 1.2 } }, scenarioIntro.label)
+            ),
+            h('button', {
+              onClick: function() { setScenarioIntro(null); },
+              'aria-label': 'Close scenario intro',
+              style: {
+                background: 'transparent', border: 'none', color: '#94a3b8',
+                fontSize: 26, lineHeight: 1, cursor: 'pointer', padding: 4
+              }
+            }, '×')
+          ),
+          // Teach text — the historical / pedagogical context
+          h('div', {
+            style: {
+              background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)',
+              borderRadius: 10, padding: 14, marginBottom: 14, fontSize: 14,
+              lineHeight: 1.55, color: '#fde68a'
+            }
+          },
+            h('div', { style: { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, color: '#f59e0b', marginBottom: 6 } }, '📜 The story'),
+            scenarioIntro.teach
+          ),
+          // Discussion questions — surface the existing pedagogical content
+          (scenarioIntro.questions && scenarioIntro.questions.length > 0) && h('div', {
+            style: {
+              background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)',
+              borderRadius: 10, padding: 14, marginBottom: 16, fontSize: 13, color: '#c7d2fe'
+            }
+          },
+            h('div', { style: { fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.2, color: '#818cf8', marginBottom: 8 } }, '🤔 Try these before you run it'),
+            h('ol', { style: { margin: 0, paddingLeft: 20, lineHeight: 1.55 } },
+              scenarioIntro.questions.map(function(q, qi) {
+                return h('li', { key: qi, style: { marginBottom: qi < scenarioIntro.questions.length - 1 ? 6 : 0 } }, q);
+              })
+            )
+          ),
+          // Action buttons
+          h('div', { style: { display: 'flex', gap: 10, justifyContent: 'flex-end', flexWrap: 'wrap' } },
+            h('button', {
+              onClick: function() { setScenarioIntro(null); },
+              'aria-label': 'Close and explore controls manually',
+              style: {
+                padding: '8px 14px', fontSize: 13, fontWeight: 700,
+                background: 'transparent', color: '#fef3c7',
+                border: '1px solid rgba(254,243,199,0.4)', borderRadius: 8,
+                cursor: 'pointer'
+              }
+            }, '🔧 Explore first'),
+            h('button', {
+              onClick: function() {
+                var mode = scenarioIntro.mode;
+                setScenarioIntro(null);
+                // Defer to next tick so the close-state lands before run fires
+                setTimeout(function() {
+                  if (mode === 'halfpipe') runHalfpipe();
+                  else runGapJump();
+                }, 30);
+              },
+              'aria-label': 'Run this scenario now',
+              style: {
+                padding: '8px 16px', fontSize: 13, fontWeight: 800,
+                background: 'linear-gradient(135deg,#d97706,#b45309)',
+                color: '#fff', border: '1px solid #fbbf24', borderRadius: 8,
+                cursor: 'pointer', boxShadow: '0 4px 12px rgba(251,191,36,0.35)'
+              }
+            }, '🛹 Run it now')
+          )
+        )
+      ) : null;
       return h('div', { style: { color: '#f1f5f9', fontFamily: 'system-ui, sans-serif', maxWidth: 920, margin: '0 auto', padding: 16 } },
+        scenarioIntroModal,
         // Header
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12, flexWrap: 'wrap' } },
           ArrowLeft && setStemLabTool ? h('button', {
