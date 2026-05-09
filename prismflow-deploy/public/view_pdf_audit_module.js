@@ -49,6 +49,7 @@ function PdfAuditView(props) {
     chunkResumePrompt,
     chunkSaveFlash,
     commitOrRevertPdfFix,
+    t,
     createTaggedPdf,
     diffLibReady,
     downloadAccessiblePdf,
