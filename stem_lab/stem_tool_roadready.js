@@ -9141,6 +9141,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             scene.add(road);
           }
 
+          // ── Cross-street asphalt (residential / suburban / downtown / etc.) ──
+          // The map carves drivable cross streets at fixed Y values for
+          // residential/suburban/night/school_zone/construction (Y = 20, 40, 56, 72)
+          // and downtown (Y = 14, 24, 36, 48, 60, 72, 84). Previously only the
+          // main N-S road got an asphalt plane, so the cross streets remained
+          // visually GREEN even though students could drive on them — matching
+          // the "a lot of the road appears green" report. Drawing perpendicular
+          // asphalt strips here makes them readable as actual roads.
+          var _xroadIDs = ['residential', 'suburban', 'night', 'school_zone', 'construction'];
+          var _xroadDowntown = currentScenario.id === 'downtown';
+          if (_xroadIDs.indexOf(currentScenario.id) !== -1 || _xroadDowntown) {
+            var _xroadYs = _xroadDowntown ? [14, 24, 36, 48, 60, 72, 84] : [20, 40, 56, 72];
+            _xroadYs.forEach(function(crossY) {
+              // Cross-street asphalt plane: 7 wide along Z (matching main road
+              // width), MAP_SIZE * 2 long along X (full ground span). Lifted
+              // 0.001 above the main road plane so it z-fights cleanly at the
+              // intersection rather than fighting unpredictably.
+              var xrSeg = new T.Mesh(new T.PlaneGeometry(MAP_SIZE * 2, 7), roadMat);
+              xrSeg.rotation.x = -Math.PI / 2;
+              xrSeg.position.set(0, 0.011, crossY - MAP_SIZE / 2);
+              xrSeg.receiveShadow = true;
+              scene.add(xrSeg);
+              // Cross-street centerline (yellow dashes — these are 2-lane roads
+              // each direction, so dashed yellow per US convention).
+              var _xrDashMat = new T.MeshBasicMaterial({ color: 0xfacc15 });
+              for (var xrdx = -MAP_SIZE; xrdx < MAP_SIZE; xrdx += 3) {
+                // Skip a small gap centered on the main-road intersection so
+                // perpendicular dashes don't overlap the main centerline.
+                if (Math.abs(xrdx) < 4) continue;
+                var xrDash = new T.Mesh(new T.PlaneGeometry(1.5, 0.22), _xrDashMat);
+                xrDash.rotation.x = -Math.PI / 2;
+                xrDash.position.set(xrdx, 0.022, crossY - MAP_SIZE / 2);
+                scene.add(xrDash);
+              }
+              // Cross-street white shoulder edge lines — visual road boundary.
+              [-3.3, 3.3].forEach(function(xrEdgeOff) {
+                var xrEdge = new T.Mesh(new T.PlaneGeometry(MAP_SIZE * 2, 0.18), edgeMat || new T.MeshBasicMaterial({ color: 0xffffff }));
+                xrEdge.rotation.x = -Math.PI / 2;
+                xrEdge.position.set(0, 0.022, crossY - MAP_SIZE / 2 + xrEdgeOff);
+                scene.add(xrEdge);
+              });
+            });
+          }
+
           // ── Center line dashes (follow road curve) ──
           // Painted yellow centerline. Width bumped 0.15 → 0.22 for visibility:
           // at Three.js rendering scale + camera distance the previous lines were
