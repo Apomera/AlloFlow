@@ -587,14 +587,53 @@ window.StemLab = window.StemLab || {
     if (!canvas) return;
     var ctx = canvas.getContext('2d');
     var W = canvas.width, H = canvas.height;
-    ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
-    // Gradient sky
-    var skyGrad = ctx.createLinearGradient(0, 0, 0, H * 0.65);
-    skyGrad.addColorStop(0, '#1e293b');
+    // ── Sky: dusk gradient with brightness modulation when high.
+    // Same dusk palette as Gap Jump for visual consistency. ──
+    var airBoostHp = Math.min(1, ((state.airHeightFt || 0) / 12));
+    var skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+    skyGrad.addColorStop(0, airBoostHp > 0.4 ? '#3b1d6f' : '#2a1659');
+    skyGrad.addColorStop(0.45, '#5b1d8a');
+    skyGrad.addColorStop(0.66, airBoostHp > 0.4 ? '#c2410c' : '#9a3412');
+    skyGrad.addColorStop(0.74, '#1e293b');
     skyGrad.addColorStop(1, '#0f172a');
     ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, W, H * 0.65);
-    // Halfpipe geometry: two arcs forming a U
+    ctx.fillRect(0, 0, W, H);
+    // ── Stars: deterministic placement seeded by canvas dims. ──
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    var hpSeed = (W * 13 + H * 17) % 1000;
+    for (var hpsi = 0; hpsi < 18; hpsi++) {
+      var hpsxr = ((hpSeed + hpsi * 73) % 1000) / 1000 * W;
+      var hpsyr = ((hpSeed + hpsi * 41) % 1000) / 1000 * (H * 0.4);
+      var hpsrad = 0.6 + ((hpSeed + hpsi * 19) % 100) / 100 * 1.2;
+      ctx.beginPath();
+      ctx.arc(hpsxr, hpsyr, hpsrad, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    // ── Distant silhouettes — mountains + city skyline at horizon ──
+    var hpHorizonY = H * 0.62;
+    ctx.fillStyle = 'rgba(15,23,42,0.55)';
+    ctx.beginPath();
+    ctx.moveTo(0, hpHorizonY + 20);
+    var hpMtnSeed = (W * 7) % 1000;
+    for (var hpmx = 0; hpmx <= W; hpmx += 18) {
+      var hpJag = ((hpMtnSeed + hpmx * 29) % 100) / 100;
+      ctx.lineTo(hpmx, hpHorizonY - hpJag * 28);
+    }
+    ctx.lineTo(W, hpHorizonY + 20);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = 'rgba(15,23,42,0.75)';
+    ctx.beginPath();
+    ctx.moveTo(0, hpHorizonY + 20);
+    for (var hpcx = 0; hpcx <= W; hpcx += 12) {
+      var hpCity = ((hpMtnSeed + hpcx * 53) % 100) / 100;
+      ctx.lineTo(hpcx, hpHorizonY - hpCity * 14 + 6);
+      ctx.lineTo(hpcx + 6, hpHorizonY - hpCity * 14 + 6);
+    }
+    ctx.lineTo(W, hpHorizonY + 20);
+    ctx.closePath();
+    ctx.fill();
+    // ── Halfpipe geometry: two arcs forming a U ──
     var midX = W / 2;
     var floorY = H * 0.86;
     var lipY = H * 0.30;
@@ -602,8 +641,13 @@ window.StemLab = window.StemLab || {
     var leftLipX = midX - lipHalfW;
     var rightLipX = midX + lipHalfW;
     var radius = floorY - lipY;
-    // Pipe fill
-    ctx.fillStyle = '#475569';
+    // Pipe fill — radial gradient simulating tube curvature (lighter
+    // center, darker at the rim) so the pipe reads as 3D. ──
+    var pipeGrad = ctx.createRadialGradient(midX, floorY - radius * 0.3, radius * 0.2, midX, floorY - radius * 0.3, radius * 1.2);
+    pipeGrad.addColorStop(0, '#64748b');
+    pipeGrad.addColorStop(0.7, '#475569');
+    pipeGrad.addColorStop(1, '#1e293b');
+    ctx.fillStyle = pipeGrad;
     ctx.beginPath();
     ctx.moveTo(0, floorY + 40);
     ctx.lineTo(0, floorY);
@@ -617,16 +661,37 @@ window.StemLab = window.StemLab || {
     ctx.lineTo(W, floorY + 40);
     ctx.closePath();
     ctx.fill();
-    // Concrete texture stripes
-    ctx.strokeStyle = 'rgba(15,23,42,0.18)';
+    // Concrete texture stripes (left wall)
+    ctx.strokeStyle = 'rgba(15,23,42,0.22)';
     ctx.lineWidth = 1;
-    for (var s = 0; s < 8; s++) {
+    for (var sLeft = 0; sLeft < 10; sLeft++) {
       ctx.beginPath();
-      ctx.moveTo(leftLipX - radius * 0.55 + s * 6, lipY);
+      ctx.moveTo(leftLipX - radius * 0.55 + sLeft * 6, lipY);
       ctx.lineTo(leftLipX, floorY);
       ctx.stroke();
     }
-    // Lip rails
+    // Concrete texture stripes (right wall, mirrored)
+    for (var sRight = 0; sRight < 10; sRight++) {
+      ctx.beginPath();
+      ctx.moveTo(rightLipX + radius * 0.55 - sRight * 6, lipY);
+      ctx.lineTo(rightLipX, floorY);
+      ctx.stroke();
+    }
+    // Floor texture stripes (horizontal across the bottom)
+    for (var hpfy = floorY + 6; hpfy < floorY + 38; hpfy += 6) {
+      ctx.beginPath();
+      ctx.moveTo(leftLipX, hpfy);
+      ctx.lineTo(rightLipX, hpfy);
+      ctx.stroke();
+    }
+    // Rim highlight along both top edges
+    ctx.strokeStyle = 'rgba(251,191,36,0.65)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(leftLipX - radius * 0.55, lipY);
+    ctx.lineTo(rightLipX + radius * 0.55, lipY);
+    ctx.stroke();
+    // Lip rails (thicker accent on outer edges)
     ctx.strokeStyle = '#fbbf24';
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -669,57 +734,90 @@ window.StemLab = window.StemLab || {
       ctx.fillText('best ' + (gh.hAir * M2FT).toFixed(1) + 'ft', ghX + 26, peakY + 4);
       ctx.restore();
     }
-    // Skater — drawn at state.x, state.y with rotation state.angle
+    var skStyle = state.skater || { color: 'amber', helmet: false, pads: false };
+    var skColors = getSkaterColor(skStyle.color);
+    // ── Motion trail (drawn before skater so rider sits on top) ──
+    if (Array.isArray(state.trail) && state.trail.length > 0) {
+      var hpTrailColor = (skStyle && skStyle.color) || 'amber';
+      var hpTrailRGB = hpTrailColor === 'rose' ? '252,165,165'
+                     : hpTrailColor === 'sky' ? '125,211,252'
+                     : hpTrailColor === 'emerald' ? '110,231,183'
+                     : '251,191,36';
+      for (var hti = 0; hti < state.trail.length; hti++) {
+        var htp = state.trail[hti];
+        var htAlpha = (1 - htp.age) * 0.45;
+        var htRad = 2 + (1 - htp.age) * 4;
+        ctx.fillStyle = 'rgba(' + hpTrailRGB + ',' + htAlpha.toFixed(2) + ')';
+        ctx.beginPath();
+        ctx.arc(htp.x, htp.y, htRad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    // ── Particles (dust on pump impact + lip takeoff + landing) ──
+    if (Array.isArray(state.particles)) {
+      for (var hpi = 0; hpi < state.particles.length; hpi++) {
+        var hpp = state.particles[hpi];
+        var hppAlpha = Math.max(0, 1 - hpp.age);
+        ctx.fillStyle = hpp.color.replace('ALPHA', hppAlpha.toFixed(2));
+        ctx.beginPath();
+        ctx.arc(hpp.x, hpp.y, hpp.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    // ── Skater — drawn at state.skX, state.skY with rotation state.skRot ──
     var sx = state.skX != null ? state.skX : leftLipX;
     var sy = state.skY != null ? state.skY : lipY;
     var rot = state.skRot || 0;
-    var skStyle = state.skater || { color: 'amber', helmet: false, pads: false };
-    var skColors = getSkaterColor(skStyle.color);
-    // Body
+    // Limb animation during airtime. flightPhase 0..1 (0 = takeoff,
+    // 0.5 = peak, 1 = landing). Arms rise at peak; legs tuck before
+    // landing. Subtle but adds expression to the spin.
+    var hpFp = (typeof state.flightPhase === 'number') ? Math.max(0, Math.min(1, state.flightPhase)) : 0;
+    var hpArmRise = (state.inFlight && hpFp < 0.5) ? Math.sin(hpFp * Math.PI) * 6 : 0;
+    var hpLegTuck = (state.inFlight && hpFp > 0.6) ? (hpFp - 0.6) * 12 : 0;
     ctx.save();
     ctx.translate(sx, sy);
     ctx.rotate(rot * Math.PI / 180);
-    // Board
+    // Board with grip-tape texture
     ctx.fillStyle = '#fbbf24';
     ctx.fillRect(-18, 6, 36, 5);
+    ctx.fillStyle = 'rgba(15,23,42,0.4)';
+    for (var hpbi = -16; hpbi < 17; hpbi += 5) {
+      ctx.fillRect(hpbi, 7, 1, 3);
+    }
+    // Wheels
     ctx.fillStyle = '#1e293b';
     ctx.beginPath(); ctx.arc(-12, 12, 2.5, 0, Math.PI * 2); ctx.fill();
     ctx.beginPath(); ctx.arc(12, 12, 2.5, 0, Math.PI * 2); ctx.fill();
-    // Pads — render before body strokes so the body lines layer on
-    // top, giving the pads a clean "wrapped around the joint" feel.
+    // Pads — render before body strokes so body lines layer on top
     if (skStyle.pads) {
       ctx.fillStyle = '#15803d';
-      // Knee pads (legs are short on this stick figure, so the
-      // "knee" lives at the body's lower segment)
-      ctx.fillRect(-3, 2, 6, 4);
-      // Elbow pads (arms outstretched at y=-4)
-      ctx.fillRect(-12, -6, 4, 4);
-      ctx.fillRect(8, -6, 4, 4);
+      ctx.fillRect(-3, 2 - hpLegTuck * 0.4, 6, 4);
+      ctx.fillRect(-12, -6 - hpArmRise, 4, 4);
+      ctx.fillRect(8, -6 - hpArmRise, 4, 4);
     }
-    // Body (stick figure)
+    // Body (stick figure) with limb animation
     ctx.strokeStyle = skColors.body;
     ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
     ctx.beginPath();
-    ctx.moveTo(0, 6);
+    // Torso shorter when legs tuck
+    ctx.moveTo(0, 6 - hpLegTuck * 0.4);
     ctx.lineTo(0, -14);
-    // Arms
-    ctx.moveTo(-10, -4);
-    ctx.lineTo(10, -4);
+    // Arms rise during ascent, tuck near landing
+    ctx.moveTo(-10, -4 - hpArmRise);
+    ctx.lineTo(10, -4 - hpArmRise);
     ctx.stroke();
     // Head
     ctx.fillStyle = skColors.body;
     ctx.beginPath();
     ctx.arc(0, -20, 6, 0, Math.PI * 2);
     ctx.fill();
-    // Helmet — slightly larger oval over the head, in the accent
-    // color. Sits on top of the head fill, with a small chin strap
-    // line for visual recognition.
+    // Helmet
     if (skStyle.helmet) {
       ctx.fillStyle = skColors.accent;
       ctx.beginPath();
       ctx.ellipse(0, -21, 7.5, 6.5, 0, 0, Math.PI * 2);
       ctx.fill();
-      // Visor stripe
       ctx.strokeStyle = 'rgba(15,23,42,0.55)';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -1132,6 +1230,29 @@ window.StemLab = window.StemLab || {
     var doneCb = opts && opts.onDone;
     var ghost = opts && opts.ghost;
     var raf = 0;
+    // Visual state: trail + particles, persistent across rAF frames.
+    var trailHp = [];
+    var particlesHp = [];
+    var spawnedTakeoffHp = false;
+    var spawnedLandingHp = false;
+    var lastPumpFired = -1;
+    function emitParticlesHp(px, py, count, kind) {
+      for (var pi = 0; pi < count; pi++) {
+        var ang = Math.random() * Math.PI * 2;
+        var spd = 0.6 + Math.random() * 1.6;
+        var vx = kind === 'pump' ? (Math.random() - 0.5) * 1.4 : Math.cos(ang) * spd;
+        var vy = kind === 'pump' ? -0.8 - Math.random() * 0.6
+                : kind === 'takeoff' ? -0.4 - Math.random() * 0.8
+                : Math.sin(ang) * spd - 0.6;
+        particlesHp.push({
+          x: px, y: py, vx: vx, vy: vy,
+          r: 1.5 + Math.random() * 2.5,
+          age: 0,
+          maxAge: 0.5 + Math.random() * 0.4,
+          color: kind === 'landing' ? 'rgba(251,191,36,ALPHA)' : 'rgba(180,180,180,ALPHA)'
+        });
+      }
+    }
     function step() {
       var state = { gapFt: 0, ghost: ghost, showEnergyBar: showEnergy, skater: skaterStyle };
       if (phase === 'descend') {
@@ -1154,7 +1275,14 @@ window.StemLab = window.StemLab || {
           state.speedMph = sim.vTakeoff * MPS2MPH * (0.7 + 0.3 * (sim.pumps - pumpsLeft) / Math.max(1, sim.pumps));
           state.airHeightFt = 0;
           // Compressed 0.4→0.2 per pump for snappier playback (6 pumps = 1.2s instead of 2.4s).
-          if (t > 0.2) { pumpsLeft--; sfxPump(); t = 0; }
+          if (t > 0.2) {
+            pumpsLeft--; sfxPump(); t = 0;
+            // Emit a small dust puff at the pump moment for visual feedback
+            if (lastPumpFired !== pumpsLeft) {
+              emitParticlesHp(midX, floorY - 4, 6, 'pump');
+              lastPumpFired = pumpsLeft;
+            }
+          }
         } else {
           phase = 'ascend'; t = 0;
         }
@@ -1168,7 +1296,13 @@ window.StemLab = window.StemLab || {
         state.label = 'Pop!';
         state.speedMph = sim.vTakeoff * MPS2MPH * (1 - arc * 0.2);
         state.airHeightFt = 0;
-        if (p >= 1) { phase = 'air'; t = 0; sfxPop(); }
+        if (p >= 1) {
+          phase = 'air'; t = 0; sfxPop();
+          if (!spawnedTakeoffHp) {
+            emitParticlesHp(rightLipX + 6, lipY + 2, 12, 'takeoff');
+            spawnedTakeoffHp = true;
+          }
+        }
       } else if (phase === 'air') {
         // Project upward and back. Parabolic.
         var airT = t;
@@ -1176,6 +1310,14 @@ window.StemLab = window.StemLab || {
           phase = 'land'; t = 0;
           if (sim.landed) { sfxLandClean(); skAnnounce('Landed! ' + sim.trick.label); }
           else { sfxBail(); skAnnounce('Bail. Not enough air for the ' + sim.trick.label); }
+          if (!spawnedLandingHp) {
+            emitParticlesHp(rightLipX + 6, lipY + (sim.landed ? 8 : 26), 16, 'landing');
+            spawnedLandingHp = true;
+          }
+          // Fix: schedule next frame so the 'land' branch runs and doneCb fires.
+          // Without this, the rAF loop dies and the spinner sticks (same bug
+          // as the Gap Jump animation had before SK1).
+          raf = requestAnimationFrame(step);
           return;
         }
         // BUG FIX (v6 audit): drive height directly from sim.hAir with
@@ -1191,6 +1333,8 @@ window.StemLab = window.StemLab || {
         if (h < 0) h = 0;
         state.skX = rightLipX + 6;
         state.skY = lipY - h * pxPerM;
+        state.inFlight = true;
+        state.flightPhase = p;
         // Rotation: linear with air time, capped at trick.rotation
         var totalRot = Math.min(sim.trick.rotation, sim.rotationCompleted * (airT / sim.airTime));
         state.skRot = sim.trick.axis === 'body' ? -totalRot : -totalRot;
@@ -1198,13 +1342,15 @@ window.StemLab = window.StemLab || {
         state.speedMph = sim.vTakeoff * MPS2MPH;
         state.airHeightFt = h * M2FT;
         // Energy budget during air phase: PE = m·g·h, KE = E_total − PE.
-        // Mechanical energy is conserved between lip and lip (we
-        // ignore the surface efficiency loss because that already
-        // happened *before* takeoff — what's in the air is conserved).
         var pe = totalMass * energyG * h;
         state.energyKE = Math.max(0, energyTotal - pe);
         state.energyPE = pe;
         state.energyTotal = energyTotal;
+        // Trail capture during airtime
+        if (Math.floor(t / dt) % 2 === 0) {
+          trailHp.push({ x: state.skX, y: state.skY, age: 0 });
+          if (trailHp.length > 14) trailHp.shift();
+        }
       } else if (phase === 'land') {
         // hold final pose briefly, then end
         state.skX = rightLipX + 6;
@@ -1218,6 +1364,22 @@ window.StemLab = window.StemLab || {
           return;
         }
       }
+      // Age trail + particles each frame
+      for (var trI = 0; trI < trailHp.length; trI++) {
+        trailHp[trI].age = Math.min(1, trailHp[trI].age + 0.06);
+      }
+      var aliveHp = [];
+      for (var pI = 0; pI < particlesHp.length; pI++) {
+        var pr = particlesHp[pI];
+        pr.x += pr.vx;
+        pr.y += pr.vy;
+        pr.vy += 0.12;
+        pr.age += (1 / 60) / pr.maxAge;
+        if (pr.age < 1) aliveHp.push(pr);
+      }
+      particlesHp = aliveHp;
+      state.trail = trailHp;
+      state.particles = particlesHp;
       drawHalfpipe(canvas, state);
       t += (phase === 'air') ? dt : (1 / 60);  // only the air phase is slowed
       raf = requestAnimationFrame(step);
