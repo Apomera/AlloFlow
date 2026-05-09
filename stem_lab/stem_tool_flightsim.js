@@ -6205,7 +6205,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var tintStr = dayNight.isNight ? '220,225,240' : '255,255,255';
             [
               { yOff: -60, size: 1.0, speed: 0.012, count: 6 },   // high cirrus
-              { yOff: -20, size: 1.25, speed: 0.020, count: 5 }   // low cumulus
+              { yOff: -45, size: 1.25, speed: 0.020, count: 5 }   // low cumulus (was -20 → bled below horizon, washed ground white)
             ].forEach(function(band, bi) {
               var cloudAlpha = baseAlpha + Math.sin(timeRef.current * 0.1 + bi) * 0.05;
               var cloudY = horizonY + band.yOff - state.altitude * 0.003;
@@ -6214,9 +6214,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var cSize = (40 + ci * 18 + Math.sin(ci * 2.1 + bi) * 20) * band.size;
                 var alphaHere = cloudAlpha * (1 - ci * 0.07);
                 gfx.fillStyle = 'rgba(' + tintStr + ',' + alphaHere + ')';
-                gfx.beginPath(); gfx.ellipse(cx2, cloudY + ci * 6, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
-                gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, cloudY + ci * 6 - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
-                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.35, cloudY + ci * 6 + 2, cSize * 0.55, 9, 0, 0, Math.PI * 2); gfx.fill();
+                // Reduced ci offset (was *6 → spread clouds 0..24px down,
+                // pushing low-band clouds across the horizon onto the ground
+                // and creating a cumulative white wash). Now *3 keeps the
+                // cumulus tightly stacked and a Math.min cap pins the
+                // bottom of the largest ellipse to ≥4px above horizon so
+                // the ground never gets cloud overspray.
+                var rowYBase = cloudY + ci * 3;
+                var capY = horizonY - (12 + ci * 2) - 4; // never paint below this
+                var rowY = Math.min(rowYBase, capY);
+                gfx.beginPath(); gfx.ellipse(cx2, rowY, cSize, 12 + ci * 2, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.ellipse(cx2 + cSize * 0.4, rowY - 4, cSize * 0.6, 10, 0, 0, Math.PI * 2); gfx.fill();
+                gfx.beginPath(); gfx.ellipse(cx2 - cSize * 0.35, rowY + 2, cSize * 0.55, 9, 0, 0, Math.PI * 2); gfx.fill();
               }
             });
           }
