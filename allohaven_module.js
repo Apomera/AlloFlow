@@ -214,6 +214,11 @@
   // STEM Lab's shared persistence key — used to read inherited theme from
   // Typing Practice (or any other tool that stamps state.theme there).
   var STEMLAB_STORAGE_KEY = 'alloflow_stemlab_v2';
+  // Token cost to generate / draw / upload a single decoration. Module-scoped
+  // so GenerateModalInner (and other sibling functions defined at module
+  // level) can reference it; AlloHaven also re-declares it locally for
+  // historical reasons but the value is the same.
+  var DECORATION_COST = 3;
 
   function loadState() {
     try {
