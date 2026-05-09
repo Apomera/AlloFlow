@@ -1791,7 +1791,11 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                       </>}
                                       {totalFixes === 0 && !chunk.usedOriginal && <>
                                         <span className="text-slate-400" aria-hidden="true">·</span>
-                                        <span className="text-slate-500 italic" title="This section had no WCAG violations the pipeline could fix automatically, so no changes were applied.">no fixes needed</span>
+                                        {chunk.score >= 80
+                                          ? <span className="text-emerald-700 italic" title="This section already meets WCAG accessibility standards — no fixes were needed.">✓ no fixes needed</span>
+                                          : chunk.score >= 60
+                                            ? <span className="text-amber-700 italic" title={`Score ${chunk.score}/100 — the section has WCAG issues, but none of them are ones this pipeline can fix automatically. Manual review recommended (e.g. complex tables, color-meaning, decorative-vs-informative images).`}>⚠ no auto-fix available · manual review</span>
+                                            : <span className="text-red-700 italic" title={`Score ${chunk.score}/100 — significant WCAG issues remain. The pipeline couldn't auto-fix them; this section needs manual remediation before publishing.`}>⚠ manual remediation required</span>}
                                       </>}
                                       {chunk.wasRetried && <span className="text-amber-700 font-bold" title="AI had to retry this section once after the first attempt failed integrity or token-preservation checks.">↻ retried</span>}
                                       {chunk.aiVerified && !chunk.usedOriginal && <span className="text-emerald-700" title="AI content-preservation check passed — the section's text content was preserved through the rewrite.">✓ content verified</span>}
