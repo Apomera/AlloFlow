@@ -1363,6 +1363,130 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
         }
 
+        // ── Train tracks with a moving train ──
+        // Deterministic per ~3nm region. Drawn as TWO parallel rails
+        // very close together with periodic short tie-marks. A 3-car
+        // train slides along the track at a phase-driven position so
+        // it visibly moves. Strong landmark + motion cue.
+        if (aglAlt < 2500) {
+          var trSeed = terrainHash(Math.floor(state.lat * 6) + 23, Math.floor(state.lon * 6) + 41);
+          if (trSeed > 0.62) {
+            var trBearing = (trSeed + 0.6) * Math.PI * 2;
+            var trCos = Math.cos(trBearing);
+            var trSin = Math.sin(trBearing);
+            var trPts = [];
+            for (var trp = 0; trp < 9; trp++) {
+              var trT = -0.05 + trp * 0.022;
+              var ptr = projectLatLon(state.lat + trCos * trT, state.lon + trSin * trT);
+              if (ptr) trPts.push({ p: ptr, fwdT: trT });
+            }
+            if (trPts.length >= 3) {
+              // Compute a perpendicular-on-screen offset so the two rails
+              // don't visually merge into one line. Use the segment direction
+              // for each pair of adjacent points.
+              for (var trr = 0; trr < trPts.length - 1; trr++) {
+                var pa = trPts[trr].p, pb = trPts[trr + 1].p;
+                var dx = pb.x - pa.x, dy = pb.y - pa.y;
+                var len = Math.sqrt(dx * dx + dy * dy) || 1;
+                var nx = -dy / len, ny = dx / len; // perpendicular unit
+                var railHalfGap = Math.max(0.6, 1.3 * pa.t);
+                gfx.strokeStyle = 'rgba(45,40,35,' + (0.7 * fade) + ')';
+                gfx.lineWidth = Math.max(0.5, 0.9 * pa.t);
+                // Two rails
+                gfx.beginPath();
+                gfx.moveTo(pa.x + nx * railHalfGap, pa.y + ny * railHalfGap);
+                gfx.lineTo(pb.x + nx * railHalfGap, pb.y + ny * railHalfGap);
+                gfx.stroke();
+                gfx.beginPath();
+                gfx.moveTo(pa.x - nx * railHalfGap, pa.y - ny * railHalfGap);
+                gfx.lineTo(pb.x - nx * railHalfGap, pb.y - ny * railHalfGap);
+                gfx.stroke();
+                // Ties — short cross-strokes every quarter of segment
+                gfx.lineWidth = Math.max(0.4, 0.7 * pa.t);
+                for (var tt = 0; tt < 4; tt++) {
+                  var ttF = (tt + 0.5) / 4;
+                  var ttx = pa.x + dx * ttF, tty = pa.y + dy * ttF;
+                  gfx.beginPath();
+                  gfx.moveTo(ttx + nx * railHalfGap * 1.4, tty + ny * railHalfGap * 1.4);
+                  gfx.lineTo(ttx - nx * railHalfGap * 1.4, tty - ny * railHalfGap * 1.4);
+                  gfx.stroke();
+                }
+              }
+              // Train: phase along the track, drawn as 4 small connected boxes.
+              // Speed slow enough to feel realistic (a freight cycles ~3 min).
+              var trainPhase = ((time * 0.025 + trSeed * 1.7) % 1);
+              // Find the segment that contains trainPhase by walking trPts spacing
+              var totalSeg = trPts.length - 1;
+              var trainPos = trainPhase * totalSeg;
+              var trainSeg = Math.floor(trainPos);
+              var trainFrac = trainPos - trainSeg;
+              if (trainSeg < trPts.length - 1) {
+                var pa2 = trPts[trainSeg].p, pb2 = trPts[trainSeg + 1].p;
+                var dx2 = pb2.x - pa2.x, dy2 = pb2.y - pa2.y;
+                var len2 = Math.sqrt(dx2 * dx2 + dy2 * dy2) || 1;
+                var trDirX = dx2 / len2, trDirY = dy2 / len2;
+                var trainCenterX = pa2.x + dx2 * trainFrac;
+                var trainCenterY = pa2.y + dy2 * trainFrac;
+                var carT = pa2.t + (pb2.t - pa2.t) * trainFrac;
+                var carLen = Math.max(4, 8 * carT);
+                var carW = Math.max(1.5, 2.4 * carT);
+                // 4 cars trailing behind the engine
+                for (var trc = 0; trc < 4; trc++) {
+                  var trcOff = -trc * (carLen + 1.2);
+                  var carCx = trainCenterX + trDirX * trcOff;
+                  var carCy = trainCenterY + trDirY * trcOff;
+                  // Locomotive (trc=0) is dark, cars are colored
+                  var carColor = trc === 0 ? '#1f2937' : (trc % 2 === 0 ? '#92400e' : '#374151');
+                  gfx.save();
+                  gfx.translate(carCx, carCy);
+                  gfx.rotate(Math.atan2(trDirY, trDirX));
+                  gfx.fillStyle = carColor;
+                  gfx.globalAlpha = 0.85 * fade;
+                  gfx.fillRect(-carLen / 2, -carW / 2, carLen, carW);
+                  gfx.restore();
+                }
+              }
+            }
+          }
+        }
+
+        // ── Bridges across rivers ──
+        // When a river-region cell ALSO has a road bearing close to
+        // perpendicular to the river bearing, draw a small horizontal
+        // bridge structure across the river midpoint. Very satisfying
+        // when the eye spots a road becoming a bridge.
+        if (aglAlt < 2500) {
+          var bgSeed = terrainHash(Math.floor(state.lat * 5), Math.floor(state.lon * 5));
+          if (bgSeed > 0.55) { // matches river-render threshold
+            // River midpoint (around the visible center of the river polyline)
+            var bgRivBearing = bgSeed * Math.PI * 2;
+            var bgMidLat = state.lat + Math.cos(bgRivBearing) * 0.06;
+            var bgMidLon = state.lon + Math.sin(bgRivBearing) * 0.06;
+            var pbg = projectLatLon(bgMidLat, bgMidLon);
+            if (pbg) {
+              // Bridge spans perpendicular to river bearing
+              var bgLen = Math.max(8, 22 * pbg.t);
+              var perpAng = bgRivBearing + Math.PI / 2;
+              var bgDx = Math.cos(perpAng) * bgLen / 2;
+              var bgDy = Math.sin(perpAng) * bgLen / 2 * 0.4; // foreshorten in y
+              // Bridge deck
+              gfx.strokeStyle = 'rgba(80,75,70,' + (0.8 * fade) + ')';
+              gfx.lineWidth = Math.max(2, 3.5 * pbg.t);
+              gfx.beginPath();
+              gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
+              gfx.lineTo(pbg.x + bgDx, pbg.y + bgDy);
+              gfx.stroke();
+              // Suspension cables / arch — two thin diagonal lines
+              gfx.strokeStyle = 'rgba(140,135,130,' + (0.6 * fade) + ')';
+              gfx.lineWidth = Math.max(0.5, 0.7 * pbg.t);
+              gfx.beginPath();
+              gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
+              gfx.quadraticCurveTo(pbg.x, pbg.y - 6 * pbg.t, pbg.x + bgDx, pbg.y + bgDy);
+              gfx.stroke();
+            }
+          }
+        }
+
         // ── Power transmission lines: long straight lines with periodic
         // lattice towers, traveling at a deterministic bearing across the
         // landscape. Visible to ~2500 ft AGL. Strong infrastructure cue
@@ -1550,6 +1674,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             gfx.fillRect(Math.min(ax, ax + trailDir * trailLen), ay - 1.6, trailLen, 3.2);
           }
         }
+      };
+
+      // ── Hot air balloons drifting at low-mid altitude ──
+      // Two balloons cycle very slowly across the sky (~6-8 minute crossing).
+      // Each has a striped envelope (alternating colored bands) and a tiny
+      // basket below. Beautiful, distinctive, instantly readable as "real".
+      // Suppressed at night and at high altitude (balloons live <10k ft).
+      var drawHotAirBalloons = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return;
+        if (state.altitude > 10000) return;
+        var palettes = [
+          ['#dc2626', '#fef3c7', '#dc2626', '#1e40af'],   // red/cream/red/blue
+          ['#f97316', '#16a34a', '#f97316', '#fbbf24'],   // orange/green/orange/yellow
+          ['#7c3aed', '#fef3c7', '#7c3aed', '#06b6d4']    // violet/cream/violet/cyan
+        ];
+        for (var ba = 0; ba < 2; ba++) {
+          var balPeriod = 380 + ba * 90;
+          var balPhase = ((time / balPeriod) + ba * 0.43) % 1;
+          var bx = balPhase * (W + 200) - 100;
+          var by = horizonY * (0.45 + ba * 0.18) + Math.sin(time * 0.15 + ba) * 6;
+          var palette = palettes[(ba + Math.floor(time / 600)) % palettes.length];
+          var envR = ba === 0 ? 14 : 11; // envelope radius
+          var bskW = envR * 0.45;
+          var bskH = envR * 0.35;
+          // Envelope — 4 vertical bands of color stacked into the round shape
+          gfx.save();
+          gfx.translate(bx, by);
+          for (var bd = 0; bd < 4; bd++) {
+            gfx.fillStyle = palette[bd];
+            gfx.beginPath();
+            // Each band is a quarter of the circle horizontally
+            var bdAng0 = -Math.PI / 2 + bd * (Math.PI / 4) - Math.PI / 4;
+            var bdAng1 = -Math.PI / 2 + (bd + 1) * (Math.PI / 4) - Math.PI / 4;
+            gfx.moveTo(0, envR * 0.55);
+            gfx.arc(0, 0, envR, bdAng0, bdAng1, false);
+            gfx.closePath();
+            gfx.fill();
+          }
+          // Outline for definition
+          gfx.strokeStyle = 'rgba(20,25,35,0.55)';
+          gfx.lineWidth = 0.6;
+          gfx.beginPath();
+          gfx.arc(0, 0, envR, -Math.PI, 0, false);
+          gfx.lineTo(0, envR * 0.6);
+          gfx.closePath();
+          gfx.stroke();
+          // Suspension lines
+          gfx.beginPath();
+          gfx.moveTo(-envR * 0.65, envR * 0.5); gfx.lineTo(-bskW * 0.6, envR + 4);
+          gfx.moveTo( envR * 0.65, envR * 0.5); gfx.lineTo( bskW * 0.6, envR + 4);
+          gfx.moveTo(0, envR);                  gfx.lineTo(0, envR + 4);
+          gfx.stroke();
+          // Basket
+          gfx.fillStyle = '#92400e';
+          gfx.fillRect(-bskW / 2, envR + 4, bskW, bskH);
+          // Wicker grain — a couple of horizontal slats
+          gfx.strokeStyle = 'rgba(60,30,10,0.5)'; gfx.lineWidth = 0.4;
+          gfx.beginPath();
+          gfx.moveTo(-bskW / 2, envR + 4 + bskH * 0.5); gfx.lineTo(bskW / 2, envR + 4 + bskH * 0.5);
+          gfx.stroke();
+          gfx.restore();
+        }
+      };
+
+      // ── Crepuscular sun rays through clouds ("god rays") ──
+      // Soft fan-shaped light beams emanating from the sun's screen position
+      // when the player is below the cloud layer (alt < 12k ft) and during
+      // golden hour or midday with sky brightness. Beautiful sunlight cue.
+      var drawCrepuscularRays = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (!dayNight2 || dayNight2.isNight) return;
+        if (state.altitude > 12000) return;
+        // Approximate sun position: morning west, evening east, midday top.
+        // Clamp result to within visible canvas.
+        var solarHour = dayNight2.solarHour != null ? dayNight2.solarHour : 12;
+        var sunT = Math.max(0, Math.min(1, (solarHour - 6) / 12));
+        var sunX = W * (0.12 + sunT * 0.76);
+        var sunY = Math.max(20, horizonY * (0.15 + Math.abs(sunT - 0.5) * 0.6));
+        // Fade rays out at noon (when sun is high overhead, less of an effect)
+        // and at extreme dawn/dusk (when sky already dramatic).
+        var rayStrength = 0.28 * (1 - Math.abs(sunT - 0.5) * 1.6);
+        if (rayStrength <= 0.04) return;
+        gfx.save();
+        gfx.globalCompositeOperation = 'lighter';
+        gfx.fillStyle = 'rgba(255,240,200,' + rayStrength.toFixed(3) + ')';
+        // 5 fan rays radiating from sun position
+        for (var rr = 0; rr < 5; rr++) {
+          var rrAng = (rr - 2) * 0.10 + Math.sin(time * 0.05 + rr) * 0.02;
+          var rrLen = H * 1.1;
+          // Triangle from sun to two points on the lower edge
+          gfx.beginPath();
+          gfx.moveTo(sunX, sunY);
+          gfx.lineTo(sunX + Math.sin(rrAng - 0.04) * rrLen, sunY + Math.cos(rrAng - 0.04) * rrLen);
+          gfx.lineTo(sunX + Math.sin(rrAng + 0.04) * rrLen, sunY + Math.cos(rrAng + 0.04) * rrLen);
+          gfx.closePath();
+          gfx.fill();
+        }
+        gfx.restore();
       };
 
       // ── Draw terrain perspective ──
@@ -6544,6 +6765,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // sky at different altitudes and bearings. Strong "shared airspace"
           // cue, visible at any altitude.
           drawOtherAircraft(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Hot air balloons drifting at low-mid altitude.
+          drawHotAirBalloons(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Crepuscular sun rays through cloud gaps when sun is mid-sky.
+          drawCrepuscularRays(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Distant hills poking above the horizon — a deterministic silhouette
           // seeded by lat/lon so each airport gets a consistent skyline instead
