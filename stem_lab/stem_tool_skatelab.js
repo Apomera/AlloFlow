@@ -1777,7 +1777,7 @@ window.StemLab = window.StemLab || {
             running: false
           }});
         });
-        return h('div', { style: { padding: 24, color: '#94a3b8', textAlign: 'center' } }, 'Initializing SkateLab...');
+        return h('div', { style: { padding: 24, color: '#cbd5e1', textAlign: 'center' } }, 'Initializing SkateLab...');
       }
       var d = labToolData.skatelab;
       function upd(k, v) {
@@ -2517,7 +2517,7 @@ window.StemLab = window.StemLab || {
         if ((lands || 0) >= 5) return { id: 'mastered', label: 'Mastered', icon: '👑', color: '#a855f7', bg: 'rgba(168,85,247,0.18)' };
         if ((lands || 0) >= 3) return { id: 'solid',    label: 'Solid',    icon: '💪', color: '#22c55e', bg: 'rgba(34,197,94,0.18)' };
         if ((lands || 0) >= 1) return { id: 'landed',   label: 'Landed',   icon: '🎯', color: '#fbbf24', bg: 'rgba(251,191,36,0.18)' };
-        if ((attempts || 0) >= 1) return { id: 'tried', label: 'Tried',    icon: '🔓', color: '#94a3b8', bg: 'rgba(148,163,184,0.18)' };
+        if ((attempts || 0) >= 1) return { id: 'tried', label: 'Tried',    icon: '🔓', color: '#cbd5e1', bg: 'rgba(148,163,184,0.18)' };
         return { id: 'locked', label: 'Locked', icon: '🔒', color: '#64748b', bg: 'rgba(71,85,105,0.18)' };
       }
 
@@ -2589,6 +2589,14 @@ window.StemLab = window.StemLab || {
 
       function runHalfpipe() {
         if (d.running) return;
+        // SK4: canvas-null guard. If the canvas ref is null (e.g.,
+        // mode just switched and the new canvas hasn't mounted yet),
+        // skip the run rather than setting running:true with no
+        // animation to clear it. Without this, the spinner sticks.
+        if (!canvasRef.current) {
+          if (addToast) addToast('Canvas not ready — try again in a moment.', 'info');
+          return;
+        }
         var sim = simHalfpipe({
           pumps: d.pumps, trickId: d.trickId,
           // Resolve custom tricks here so simHalfpipe doesn't need
@@ -2604,11 +2612,19 @@ window.StemLab = window.StemLab || {
         upd({ running: true, lastResult: null, lastSim: sim, attempts: (d.attempts || 0) + 1, trickAttempts: nextTrickAttempts });
         sfxTakeoff();
         if (cancelAnimRef.current) cancelAnimRef.current();
+        // SK4: safety timer — if onDone never fires within 12s (max
+        // legitimate trick is ~6s), force-clear running. Defensive
+        // against any rAF transition path I missed. Cleared in onDone.
+        var halfpipeSafety = setTimeout(function() {
+          upd({ running: false });
+          if (addToast) addToast('Animation stalled — reset.', 'info');
+        }, 12000);
         cancelAnimRef.current = animateHalfpipe(canvasRef.current, sim, {
           ghost: (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost.halfpipe : null,
           showEnergyBar: d.showEnergyBar !== false,
           skater: d.skater,
           onDone: function() {
+            clearTimeout(halfpipeSafety);
             var bumps = {};
             bumps.running = false;
             bumps.lastResult = {
@@ -2701,6 +2717,11 @@ window.StemLab = window.StemLab || {
 
       function runGapJump() {
         if (d.running) return;
+        // SK4: canvas-null guard (see runHalfpipe for rationale).
+        if (!canvasRef.current) {
+          if (addToast) addToast('Canvas not ready — try again in a moment.', 'info');
+          return;
+        }
         var sim = simGapJump({
           speedMph: d.speedMph, angleDeg: d.angleDeg, gapFt: d.gapFt,
           vehicle: d.vehicle, gravity: d.gravity, windId: d.windId
@@ -2708,11 +2729,17 @@ window.StemLab = window.StemLab || {
         upd({ running: true, lastResult: null, lastSim: sim, attempts: (d.attempts || 0) + 1 });
         sfxTakeoff();
         if (cancelAnimRef.current) cancelAnimRef.current();
+        // SK4: safety timer (see runHalfpipe for rationale).
+        var gapSafety = setTimeout(function() {
+          upd({ running: false });
+          if (addToast) addToast('Animation stalled — reset.', 'info');
+        }, 12000);
         cancelAnimRef.current = animateGapJump(canvasRef.current, sim, {
           ghost: (d.showGhost !== false) && d.bestSimGhost ? d.bestSimGhost.gap : null,
           showEnergyBar: d.showEnergyBar !== false,
           skater: d.skater,
           onDone: function() {
+            clearTimeout(gapSafety);
             var bumps = { running: false };
             bumps.lastResult = {
               mode: 'gap',
@@ -2865,7 +2892,7 @@ window.StemLab = window.StemLab || {
               onClick: function() { setScenarioIntro(null); },
               'aria-label': 'Close scenario intro',
               style: {
-                background: 'transparent', border: 'none', color: '#94a3b8',
+                background: 'transparent', border: 'none', color: '#cbd5e1',
                 fontSize: 26, lineHeight: 1, cursor: 'pointer', padding: 4
               }
             }, '×')
@@ -2911,11 +2938,13 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 var mode = scenarioIntro.mode;
                 setScenarioIntro(null);
-                // Defer to next tick so the close-state lands before run fires
-                setTimeout(function() {
-                  if (mode === 'halfpipe') runHalfpipe();
-                  else runGapJump();
-                }, 30);
+                // SK4: trigger run synchronously. Earlier setTimeout(30)
+                // could leave running:true stuck if the closure's
+                // runHalfpipe was stale or canvas wasn't ready. Inline
+                // call uses the live closure + the canvas-null guard
+                // below catches the rare not-ready case.
+                if (mode === 'halfpipe') runHalfpipe();
+                else runGapJump();
               },
               'aria-label': 'Run this scenario now',
               style: {
@@ -2941,7 +2970,7 @@ window.StemLab = window.StemLab || {
           h('div', { style: { fontSize: 30 } }, '🛹'),
           h('div', { style: { flex: 1 } },
             h('h2', { style: { margin: 0, color: '#fbbf24', fontSize: 22, fontWeight: 900, letterSpacing: '0.02em' } }, 'SkateLab'),
-            h('p', { style: { margin: 0, color: '#94a3b8', fontSize: 12 } }, 'Skate / BMX physics — same math that lands a 720.')
+            h('p', { style: { margin: 0, color: '#cbd5e1', fontSize: 12 } }, 'Skate / BMX physics — same math that lands a 720.')
           )
         ),
         // ── Daily Challenge banner ──────────────────────────────
@@ -3028,7 +3057,7 @@ window.StemLab = window.StemLab || {
                   padding: '5px 10px', fontSize: 11, fontWeight: 700,
                   background: active ? 'linear-gradient(135deg,#d97706,#b45309)' : 'rgba(254,243,199,0.08)',
                   color: active ? '#fff' : '#fef3c7',
-                  border: '1px solid ' + (active ? '#fbbf24' : isToday ? '#fbbf24' : 'rgba(254,243,199,0.25)'),
+                  border: '1px solid ' + (active ? '#fbbf24' : isToday ? '#fbbf24' : 'rgba(254,243,199,0.55)'),
                   borderRadius: 999, cursor: 'pointer',
                   boxShadow: active ? '0 0 12px rgba(251,191,36,0.4)' : isToday ? '0 0 6px rgba(251,191,36,0.35)' : 'none'
                 }
@@ -3105,7 +3134,7 @@ window.StemLab = window.StemLab || {
                 padding: '4px 11px', fontSize: 11, fontWeight: 700,
                 background: sel ? 'linear-gradient(135deg,#0891b2,#0e7490)' : 'rgba(254,243,199,0.08)',
                 color: sel ? '#fff' : '#fef3c7',
-                border: '1px solid ' + (sel ? '#155e75' : 'rgba(254,243,199,0.25)'),
+                border: '1px solid ' + (sel ? '#155e75' : 'rgba(254,243,199,0.55)'),
                 borderRadius: 999, cursor: 'pointer'
               }
             }, sf.icon + ' ' + sf.label);
@@ -3131,7 +3160,7 @@ window.StemLab = window.StemLab || {
                 padding: '6px 14px', fontSize: 12, fontWeight: 700,
                 background: sel ? 'linear-gradient(135deg,#0ea5e9,#0369a1)' : 'rgba(254,243,199,0.08)',
                 color: sel ? '#fff' : '#fef3c7',
-                border: '1px solid ' + (sel ? '#0369a1' : 'rgba(254,243,199,0.25)'),
+                border: '1px solid ' + (sel ? '#0369a1' : 'rgba(254,243,199,0.55)'),
                 borderRadius: 999, cursor: 'pointer'
               }
             }, v.icon + ' ' + v.label);
@@ -3332,7 +3361,7 @@ window.StemLab = window.StemLab || {
                   'aria-label': 'Skip tour',
                   'data-sk-focusable': 'true',
                   style: {
-                    background: 'transparent', color: '#94a3b8',
+                    background: 'transparent', color: '#cbd5e1',
                     border: '1px solid rgba(148,163,184,0.40)',
                     borderRadius: 6, padding: '4px 8px',
                     fontSize: 10, fontWeight: 700, cursor: 'pointer'
@@ -3361,7 +3390,7 @@ window.StemLab = window.StemLab || {
                   'data-sk-focusable': 'true',
                   style: {
                     padding: '8px 14px', fontSize: 12, fontWeight: 700,
-                    background: 'transparent', color: '#94a3b8',
+                    background: 'transparent', color: '#cbd5e1',
                     border: '1px solid rgba(148,163,184,0.40)',
                     borderRadius: 8, cursor: 'pointer', minHeight: 36
                   }
@@ -3431,7 +3460,7 @@ window.StemLab = window.StemLab || {
                 'data-sk-focusable': 'true',
                 style: {
                   padding: '8px 14px', fontSize: 12, fontWeight: 700,
-                  background: 'transparent', color: '#94a3b8',
+                  background: 'transparent', color: '#cbd5e1',
                   border: '1px solid rgba(148,163,184,0.40)',
                   borderRadius: 8, cursor: 'pointer', minHeight: 32
                 }
@@ -3478,7 +3507,7 @@ window.StemLab = window.StemLab || {
               onClick: function(e) { e.stopPropagation(); }
             },
               h('h3', { id: 'sk-sess-summary-title', style: { margin: '0 0 4px', color: '#86efac', fontSize: 18, fontWeight: 900, letterSpacing: '0.04em' } }, '🎯 Session complete'),
-              h('p', { style: { margin: '0 0 16px', fontSize: 12, color: '#94a3b8' } },
+              h('p', { style: { margin: '0 0 16px', fontSize: 12, color: '#cbd5e1' } },
                 atts.length + ' attempts' + (sum.manuallyEnded ? ' · ended early' : '')
               ),
               // Stat grid
@@ -3491,7 +3520,7 @@ window.StemLab = window.StemLab || {
                 ].map(function(s, i) {
                   return h('div', { key: i, style: { background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', borderRadius: 8, padding: '10px 12px' } },
                     h('div', { style: { fontSize: 18, fontWeight: 900, color: s.color } }, String(s.val)),
-                    h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, s.label)
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, s.label)
                   );
                 })
               ),
@@ -3509,7 +3538,7 @@ window.StemLab = window.StemLab || {
                 improvement > 0 ? 'That ' + improvement.toFixed(1) + '%' + ' improvement is the loop working — you got closer to the answer with each attempt.' : 'Tomorrow, predict before changing variables and watch the gap close.'
               ),
               // Attempt strip — small cards, one per attempt
-              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Attempts'),
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, 'Attempts'),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 14 } },
                 atts.map(function(a, i) {
                   return h('div', {
@@ -3568,7 +3597,7 @@ window.StemLab = window.StemLab || {
               id: 'sk-save-title',
               style: { margin: '0 0 6px', color: '#fef3c7', fontSize: 15, fontWeight: 800, letterSpacing: '0.04em' }
             }, '💾 Save current setup as a scenario'),
-            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: '#94a3b8', lineHeight: 1.5 } },
+            h('p', { style: { margin: '0 0 12px', fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 } },
               'Capture the current ' + d.mode + ' configuration so it shows in the scenario row alongside the famous tricks. Pick a short, memorable name.'),
             h('input', {
               type: 'text',
@@ -3596,7 +3625,7 @@ window.StemLab = window.StemLab || {
                 'data-sk-focusable': 'true',
                 style: {
                   padding: '8px 14px', fontSize: 12, fontWeight: 700,
-                  background: 'transparent', color: '#94a3b8',
+                  background: 'transparent', color: '#cbd5e1',
                   border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', minHeight: 32
                 }
               }, 'Cancel'),
@@ -3639,7 +3668,7 @@ window.StemLab = window.StemLab || {
               h('button', {
                 onClick: function() { upd('resetConfirmOpen', false); },
                 'data-sk-focusable': 'true',
-                style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: 'transparent', color: '#94a3b8', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', minHeight: 32 }
+                style: { padding: '8px 14px', fontSize: 12, fontWeight: 700, background: 'transparent', color: '#cbd5e1', border: '1px solid #475569', borderRadius: 8, cursor: 'pointer', minHeight: 32 }
               }, 'Cancel'),
               h('button', {
                 onClick: performResetStats,
@@ -3688,8 +3717,8 @@ window.StemLab = window.StemLab || {
             title: 'Re-open the 5-step tour',
             style: {
               padding: '4px 10px', fontSize: 10, fontWeight: 700,
-              background: 'rgba(254,243,199,0.06)', color: '#94a3b8',
-              border: '1px solid rgba(254,243,199,0.20)',
+              background: 'rgba(254,243,199,0.14)', color: '#cbd5e1',
+              border: '1px solid rgba(254,243,199,0.55)',
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
           }, '💡 Tour'),
@@ -3704,9 +3733,9 @@ window.StemLab = window.StemLab || {
             title: 'Mute / unmute (M key)',
             style: {
               padding: '4px 10px', fontSize: 10, fontWeight: 700,
-              background: muted ? 'rgba(251,191,36,0.20)' : 'rgba(254,243,199,0.06)',
+              background: muted ? 'rgba(251,191,36,0.20)' : 'rgba(254,243,199,0.14)',
               color: muted ? '#fbbf24' : '#94a3b8',
-              border: '1px solid ' + (muted ? 'rgba(251,191,36,0.55)' : 'rgba(254,243,199,0.20)'),
+              border: '1px solid ' + (muted ? 'rgba(251,191,36,0.55)' : 'rgba(254,243,199,0.55)'),
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
           }, muted ? '🔇 Muted' : '🔊 Sound'),
@@ -3718,9 +3747,9 @@ window.StemLab = window.StemLab || {
             title: 'Toggle the live equation that updates as you change settings',
             style: {
               padding: '4px 10px', fontSize: 10, fontWeight: 700,
-              background: d.showFormula ? 'rgba(56,189,248,0.18)' : 'rgba(254,243,199,0.06)',
+              background: d.showFormula ? 'rgba(56,189,248,0.18)' : 'rgba(254,243,199,0.14)',
               color: d.showFormula ? '#7dd3fc' : '#94a3b8',
-              border: '1px solid ' + (d.showFormula ? 'rgba(56,189,248,0.50)' : 'rgba(254,243,199,0.20)'),
+              border: '1px solid ' + (d.showFormula ? 'rgba(56,189,248,0.50)' : 'rgba(254,243,199,0.55)'),
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
           }, '📐 Formula: ' + (d.showFormula ? 'on' : 'off')),
@@ -3742,9 +3771,9 @@ window.StemLab = window.StemLab || {
               title: hasGhost ? 'Toggle the faded best-run trajectory in the canvas' : 'Land an attempt to set your first ghost',
               style: {
                 padding: '4px 10px', fontSize: 10, fontWeight: 700,
-                background: on && hasGhost ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.06)',
+                background: on && hasGhost ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.14)',
                 color: on && hasGhost ? '#c4b5fd' : '#94a3b8',
-                border: '1px solid ' + (on && hasGhost ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.20)'),
+                border: '1px solid ' + (on && hasGhost ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.55)'),
                 borderRadius: 999, cursor: 'pointer', minHeight: 26,
                 opacity: hasGhost ? 1 : 0.65
               }
@@ -3764,9 +3793,9 @@ window.StemLab = window.StemLab || {
             title: 'Toggle the live KE / PE energy bar that updates during the animation',
             style: {
               padding: '4px 10px', fontSize: 10, fontWeight: 700,
-              background: d.showEnergyBar ? 'rgba(248,113,113,0.18)' : 'rgba(254,243,199,0.06)',
+              background: d.showEnergyBar ? 'rgba(248,113,113,0.18)' : 'rgba(254,243,199,0.14)',
               color: d.showEnergyBar ? '#fda4af' : '#94a3b8',
-              border: '1px solid ' + (d.showEnergyBar ? 'rgba(248,113,113,0.50)' : 'rgba(254,243,199,0.20)'),
+              border: '1px solid ' + (d.showEnergyBar ? 'rgba(248,113,113,0.50)' : 'rgba(254,243,199,0.55)'),
               borderRadius: 999, cursor: 'pointer', minHeight: 26
             }
           }, '⚡ Energy: ' + (d.showEnergyBar ? 'on' : 'off')),
@@ -3880,7 +3909,7 @@ window.StemLab = window.StemLab || {
               expr,
               h('span', { style: { color: '#86efac', marginLeft: 4 } }, '= '),
               h('b', { style: { color: '#fbbf24' } }, value),
-              unit ? h('span', { style: { color: '#94a3b8', marginLeft: 2 } }, ' ' + unit) : null
+              unit ? h('span', { style: { color: '#cbd5e1', marginLeft: 2 } }, ' ' + unit) : null
             );
           };
           return h('div', {
@@ -3939,7 +3968,7 @@ window.StemLab = window.StemLab || {
               'data-sk-focusable': 'true',
               style: { width: '100%' }
             }),
-            h('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#94a3b8', fontStyle: 'italic' } },
+            h('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#cbd5e1', fontStyle: 'italic' } },
               'Each pump adds kinetic energy. KE → PE at the lip. More pumps = more air.')
           ),
           h('div', { style: { background: '#1e293b', border: '1px solid #475569', borderRadius: 10, padding: 12 } },
@@ -3958,7 +3987,7 @@ window.StemLab = window.StemLab || {
                     padding: '4px 8px', fontSize: 11, fontWeight: 700,
                     background: sel ? '#d97706' : 'rgba(254,243,199,0.10)',
                     color: sel ? '#fff' : '#fef3c7',
-                    border: '1px solid ' + (sel ? '#92400e' : 'rgba(254,243,199,0.25)'),
+                    border: '1px solid ' + (sel ? '#92400e' : 'rgba(254,243,199,0.55)'),
                     borderRadius: 6, cursor: d.running ? 'not-allowed' : 'pointer'
                   }
                 }, tk.emoji + ' ' + tk.label);
@@ -4020,7 +4049,7 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
-            h('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#94a3b8' } },
+            h('p', { style: { margin: '6px 0 0', fontSize: 10, color: '#cbd5e1' } },
               (function() {
                 var t = findAnyTrick(d.trickId);
                 return 'Selected: ' + t.rotation + '° rotation · needs ≥ ' + t.minAir.toFixed(2) + 's air' + (t.isCustom ? ' (custom)' : '');
@@ -4308,7 +4337,7 @@ window.StemLab = window.StemLab || {
                     'data-sk-focusable': 'true',
                     style: {
                       padding: '8px 14px', fontSize: 12, fontWeight: 700,
-                      background: 'transparent', color: '#94a3b8',
+                      background: 'transparent', color: '#cbd5e1',
                       border: '1px solid rgba(148,163,184,0.40)',
                       borderRadius: 8, cursor: 'pointer', minHeight: 36
                     }
@@ -4370,7 +4399,7 @@ window.StemLab = window.StemLab || {
                 color: sel ? '#fff' : '#fef3c7',
                 border: '1px solid ' + (sel
                   ? (wp.mph > 0 ? '#15803d' : wp.mph < 0 ? '#7f1d1d' : '#334155')
-                  : 'rgba(254,243,199,0.25)'),
+                  : 'rgba(254,243,199,0.55)'),
                 borderRadius: 999, cursor: 'pointer'
               }
             }, wp.icon + ' ' + wp.label);
@@ -4406,9 +4435,9 @@ window.StemLab = window.StemLab || {
                 title: 'Predict, then verify. Builds the physics intuition.',
                 style: {
                   padding: '4px 10px', fontSize: 10, fontWeight: 700,
-                  background: d.predictMode ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.06)',
+                  background: d.predictMode ? 'rgba(168,85,247,0.20)' : 'rgba(254,243,199,0.14)',
                   color: d.predictMode ? '#d8b4fe' : '#94a3b8',
-                  border: '1px solid ' + (d.predictMode ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.20)'),
+                  border: '1px solid ' + (d.predictMode ? 'rgba(168,85,247,0.55)' : 'rgba(254,243,199,0.55)'),
                   borderRadius: 999, cursor: 'pointer', minHeight: 26
                 }
               }, '🔮 Predict: ' + (d.predictMode ? 'on' : 'off'))
@@ -4635,7 +4664,7 @@ window.StemLab = window.StemLab || {
                 'data-sk-focusable': 'true',
                 style: {
                   padding: '4px 8px', fontSize: 10, fontWeight: 700,
-                  background: 'transparent', color: '#94a3b8',
+                  background: 'transparent', color: '#cbd5e1',
                   border: '1px solid rgba(148,163,184,0.35)',
                   borderRadius: 6, cursor: 'pointer', minHeight: 26
                 }
@@ -4689,7 +4718,7 @@ window.StemLab = window.StemLab || {
                   title: p.label + ' — ' + p.prepend.split('.')[0],
                   style: {
                     padding: '6px 11px', borderRadius: 999, cursor: 'pointer',
-                    background: sel ? 'rgba(167,139,250,0.25)' : 'rgba(254,243,199,0.06)',
+                    background: sel ? 'rgba(167,139,250,0.25)' : 'rgba(254,243,199,0.14)',
                     color: sel ? '#fff' : '#c4b5fd',
                     border: '1px solid ' + (sel ? '#a78bfa' : 'rgba(167,139,250,0.30)'),
                     fontSize: 11, fontWeight: 700,
@@ -4864,9 +4893,9 @@ window.StemLab = window.StemLab || {
                   'data-sk-focusable': 'true',
                   style: {
                     padding: '10px 12px', fontSize: 12, fontWeight: 800,
-                    background: sk.helmet ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.06)',
+                    background: sk.helmet ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.14)',
                     color: sk.helmet ? '#fff' : '#94a3b8',
-                    border: '1px solid ' + (sk.helmet ? '#15803d' : 'rgba(254,243,199,0.20)'),
+                    border: '1px solid ' + (sk.helmet ? '#15803d' : 'rgba(254,243,199,0.55)'),
                     borderRadius: 10, cursor: 'pointer', minHeight: 40
                   }
                 }, sk.helmet ? '⛑️ Helmet ON' : '⛑️ Helmet OFF'),
@@ -4880,9 +4909,9 @@ window.StemLab = window.StemLab || {
                   'data-sk-focusable': 'true',
                   style: {
                     padding: '10px 12px', fontSize: 12, fontWeight: 800,
-                    background: sk.pads ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.06)',
+                    background: sk.pads ? 'linear-gradient(135deg,#22c55e,#15803d)' : 'rgba(254,243,199,0.14)',
                     color: sk.pads ? '#fff' : '#94a3b8',
-                    border: '1px solid ' + (sk.pads ? '#15803d' : 'rgba(254,243,199,0.20)'),
+                    border: '1px solid ' + (sk.pads ? '#15803d' : 'rgba(254,243,199,0.55)'),
                     borderRadius: 10, cursor: 'pointer', minHeight: 40
                   }
                 }, sk.pads ? '🦵 Pads ON' : '🦵 Pads OFF')
@@ -4910,9 +4939,9 @@ window.StemLab = window.StemLab || {
             { label: 'Best Spin', val: (d.biggestSpin || 0) + '°', color: '#fbbf24' },
             { label: 'Longest Gap', val: (d.longestGap || 0) + ' ft', color: '#a5b4fc' }
           ].map(function(s, i) {
-            return h('div', { key: i, style: { background: 'rgba(254,243,199,0.06)', border: '1px solid rgba(254,243,199,0.18)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' } },
+            return h('div', { key: i, style: { background: 'rgba(254,243,199,0.14)', border: '1px solid rgba(254,243,199,0.18)', borderRadius: 8, padding: '8px 10px', textAlign: 'center' } },
               h('div', { style: { fontSize: 18, fontWeight: 900, color: s.color } }, String(s.val)),
-              h('div', { style: { fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, s.label)
+              h('div', { style: { fontSize: 10, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 } }, s.label)
             );
           })
         ),
