@@ -22529,7 +22529,7 @@ Return ONLY valid JSON in this format:
                  {/* ── QuizPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                  {expandedTools.includes('quiz') && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
           expandedTools, InfoTooltip, dokLevel, generatedContent, handleGenerate,
-          hasSourceOrAnalysis, imageStyle, isProcessing, mcqVisualMode, quizCustomInstructions,
+          hasSourceOrAnalysis, history, imageStyle, isProcessing, mcqVisualMode, quizCustomInstructions,
           quizMcqCount, quizMode, quizReflectionCount, setDokLevel, setImageStyle,
           setMcqVisualMode, setQuizCustomInstructions, setQuizMcqCount, setQuizMode, setQuizReflectionCount,
           t

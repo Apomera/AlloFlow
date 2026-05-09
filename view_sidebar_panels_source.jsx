@@ -1661,7 +1661,7 @@ function GlossaryPanel(props) {
 function QuizPanel(props) {
   const {
     InfoTooltip, dokLevel, expandedTools, generatedContent,
-    handleGenerate, hasSourceOrAnalysis, imageStyle, isProcessing,
+    handleGenerate, hasSourceOrAnalysis, history, imageStyle, isProcessing,
     mcqVisualMode, quizCustomInstructions, quizMcqCount, quizMode,
     quizReflectionCount, setDokLevel, setImageStyle, setMcqVisualMode,
     setQuizCustomInstructions, setQuizMcqCount, setQuizMode, setQuizReflectionCount,

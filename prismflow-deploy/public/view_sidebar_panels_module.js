@@ -1563,6 +1563,7 @@ function QuizPanel(props) {
     generatedContent,
     handleGenerate,
     hasSourceOrAnalysis,
+    history,
     imageStyle,
     isProcessing,
     mcqVisualMode,
