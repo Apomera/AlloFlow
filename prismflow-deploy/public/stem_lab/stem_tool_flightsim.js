@@ -867,6 +867,151 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         return terrainHash(lat * 2, lon * 2) > 0.45; // noise-based coastlines
       };
 
+      // ── Low-altitude scrolling detail layer ──
+      // Adds visible features (towns, scattered trees, roads, fields) that
+      // scroll past as the student flies. At very low altitude drawTerrain's
+      // depth-scaled sampling (alt/2000) collapses all 16 rows to nearly the
+      // same lat/lon so the ground reads as one uniform wash with no parallax
+      // — students "can't tell they're moving." This adds a deterministic
+      // grid of features keyed on lat/lon that visibly scroll relative to
+      // the player and fade out by ~6000 ft AGL (where the standard terrain
+      // sampling takes over and supplies the variation naturally).
+      var drawLowAltDetails = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        var fieldElev = state.fieldElev || 0;
+        var aglAlt = Math.max(0, state.altitude - fieldElev);
+        if (aglAlt > 6000) return;
+        // Skip over open ocean — water already has waves/sunglint for cues
+        if (isWater(state.lat, state.lon)) return;
+        if (dayNight2 && dayNight2.isNight) return; // night handled by city lights elsewhere
+
+        var fade = Math.max(0, 1 - aglAlt / 6000); // 1 on ground, 0 at 6000 ft
+        var hdgRad = state.heading * Math.PI / 180;
+        var cosHdg = Math.cos(hdgRad);
+        var sinHdg = Math.sin(hdgRad);
+
+        // Project a lat/lon point to screen y (approximate perspective).
+        // Closer points (small forwardNm) are nearer the bottom of screen;
+        // farther points climb toward the horizon. Returns null if behind us.
+        function projectLatLon(lat, lon) {
+          // Forward distance in nautical miles along plane's heading
+          var dLat = lat - state.lat;
+          var dLon = (lon - state.lon) * Math.cos(state.lat * Math.PI / 180);
+          var nmFwd = (dLat * cosHdg + dLon * sinHdg) * 60;     // along-track nm
+          var nmSide = (dLat * (-sinHdg) + dLon * cosHdg) * 60; // cross-track nm
+          if (nmFwd < 0.05) return null;            // behind plane
+          if (nmFwd > 8) return null;               // beyond horizon for low-alt detail
+          // Perspective: log-ish forward → screen depth (0 at horizon, 1 at viewer)
+          var t = 1 - Math.min(1, Math.log(nmFwd + 1) / Math.log(9));
+          var y = horizonY + (H - horizonY) * (0.05 + 0.95 * (t * t));
+          // Horizontal: side offset shrinks with depth
+          var sideScale = 80 * (t * t * 0.6 + 0.4); // px per nm side at this depth
+          var x = W / 2 + nmSide * sideScale;
+          if (x < -50 || x > W + 50) return null;
+          return { x: x, y: y, t: t, nmFwd: nmFwd };
+        }
+
+        // ── Towns: deterministic grid every ~0.025° lat/lon (~1.5 nm).
+        // Each cell either has a town or doesn't (seeded). Towns are
+        // 8-15 building dots clustered around a center, visible from far,
+        // detail grows close-up.
+        var STEP = 0.025;
+        var latC = Math.round(state.lat / STEP) * STEP;
+        var lonC = Math.round(state.lon / STEP) * STEP;
+        var townTint = 'rgba(120,110,100,';
+        var roofTint = 'rgba(160,90,70,';
+        for (var di = -3; di <= 3; di++) {
+          for (var dj = -3; dj <= 3; dj++) {
+            var cellLat = latC + di * STEP;
+            var cellLon = lonC + dj * STEP;
+            var seed = terrainHash(cellLat * 67, cellLon * 41);
+            // 22% of cells host a town
+            if (seed < 0.78) continue;
+            // Jitter the center within the cell so towns don't form a perfect grid
+            var jLat = (terrainHash(cellLat, cellLon * 7) - 0.5) * STEP * 0.6;
+            var jLon = (terrainHash(cellLat * 3, cellLon) - 0.5) * STEP * 0.6;
+            var p = projectLatLon(cellLat + jLat, cellLon + jLon);
+            if (!p) continue;
+            // Cluster of dots
+            var nBldgs = Math.floor(6 + seed * 12);
+            var clusterR = Math.max(3, 9 * p.t * (0.8 + seed * 0.4));
+            for (var bi = 0; bi < nBldgs; bi++) {
+              var bAng = terrainHash(seed * 100 + bi, cellLat) * Math.PI * 2;
+              var bRad = terrainHash(seed * 200 + bi, cellLon) * clusterR;
+              var bx = p.x + Math.cos(bAng) * bRad;
+              var by = p.y + Math.sin(bAng) * bRad * 0.5;
+              var bSize = Math.max(0.6, 1 + p.t * 1.6);
+              gfx.fillStyle = (bi % 3 === 0 ? roofTint : townTint) + (0.5 * fade * (0.4 + p.t * 0.6)) + ')';
+              gfx.fillRect(bx - bSize / 2, by - bSize / 2, bSize, bSize);
+            }
+            // Town label only when very close (< 1.5 nm) and large enough
+            if (p.nmFwd < 1.5 && p.t > 0.55) {
+              gfx.fillStyle = 'rgba(220,220,230,' + (0.4 * fade) + ')';
+              gfx.font = '8px system-ui';
+              gfx.textAlign = 'center';
+              // Quick pseudo-name from seed
+              var nameLen = 4 + Math.floor(seed * 4);
+              var townName = '';
+              for (var ni = 0; ni < nameLen; ni++) {
+                townName += String.fromCharCode(65 + Math.floor(terrainHash(seed * 50 + ni, cellLat * 3) * 26));
+              }
+              townName = townName.charAt(0) + townName.slice(1).toLowerCase();
+              gfx.fillText(townName, p.x, p.y + clusterR + 8);
+            }
+          }
+        }
+
+        // ── Sparse trees scattered across the rural landscape. Cheap
+        // dot-cluster between towns, deterministic per-cell so they don't
+        // shimmer. Skip cells that already have a town (visual clutter).
+        if (aglAlt < 3500) {
+          var TREE_STEP = 0.008;
+          var tlatC = Math.round(state.lat / TREE_STEP) * TREE_STEP;
+          var tlonC = Math.round(state.lon / TREE_STEP) * TREE_STEP;
+          var treeColor = 'rgba(35,80,40,';
+          for (var ti = -6; ti <= 6; ti++) {
+            for (var tj = -6; tj <= 6; tj++) {
+              var tLat = tlatC + ti * TREE_STEP;
+              var tLon = tlonC + tj * TREE_STEP;
+              var tSeed = terrainHash(tLat * 211, tLon * 137);
+              if (tSeed < 0.55) continue;          // 45% of cells get a tree
+              var pt = projectLatLon(tLat, tLon);
+              if (!pt) continue;
+              var tSize = Math.max(0.8, 1.2 + pt.t * 1.8);
+              var tAlpha = 0.55 * fade * (0.3 + pt.t * 0.7);
+              gfx.fillStyle = treeColor + tAlpha + ')';
+              gfx.beginPath();
+              gfx.arc(pt.x, pt.y, tSize, 0, Math.PI * 2);
+              gfx.fill();
+            }
+          }
+        }
+
+        // ── A road or two: pseudo-random straight lines at deterministic
+        // bearings, visible only when low. Drawn as fading dashed strokes
+        // for visibility. Strong motion cue when moving.
+        if (aglAlt < 2500) {
+          for (var ri = 0; ri < 2; ri++) {
+            var rSeed = terrainHash(Math.floor(state.lat * 8) + ri * 13, Math.floor(state.lon * 8) + ri * 7);
+            if (rSeed < 0.4) continue;
+            // Road runs at a random bearing; pick start/end nm offsets.
+            var rBearing = rSeed * Math.PI * 2;
+            var rLat0 = state.lat + Math.cos(rBearing) * 0.05;
+            var rLon0 = state.lon + Math.sin(rBearing) * 0.05;
+            var rLat1 = state.lat + Math.cos(rBearing) * 0.12;
+            var rLon1 = state.lon + Math.sin(rBearing) * 0.12;
+            var p0 = projectLatLon(rLat0, rLon0);
+            var p1 = projectLatLon(rLat1, rLon1);
+            if (!p0 || !p1) continue;
+            gfx.strokeStyle = 'rgba(80,75,70,' + (0.45 * fade) + ')';
+            gfx.lineWidth = Math.max(0.8, 2.2 * Math.max(p0.t, p1.t));
+            gfx.beginPath();
+            gfx.moveTo(p0.x, p0.y);
+            gfx.lineTo(p1.x, p1.y);
+            gfx.stroke();
+          }
+        }
+      };
+
       // ── Draw terrain perspective ──
       var drawTerrain = function(gfx, W, H, horizonY, state, time, dayNight2) {
         var rows = 16;
@@ -5818,6 +5963,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Procedural terrain (replaces flat gradient)
           drawTerrain(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Low-altitude detail layer: scrolling towns, trees, and roads so
+          // the student sees motion and "ground features" rather than a
+          // featureless wash. Fades out by 6000 ft AGL.
+          drawLowAltDetails(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Distant hills poking above the horizon — a deterministic silhouette
           // seeded by lat/lon so each airport gets a consistent skyline instead
