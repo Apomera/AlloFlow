@@ -1234,6 +1234,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           }
         }
+
+        // ── Forest blocks: dense canopy patches at deterministic positions.
+        // Different from the scattered single trees earlier — these are
+        // identifiable WOODED AREAS, drawn as a tight cluster of dots that
+        // reads as a forest stand against the field patchwork.
+        if (aglAlt < 3000) {
+          var FOREST_STEP = 0.022;
+          var folatC = Math.round(state.lat / FOREST_STEP) * FOREST_STEP;
+          var folonC = Math.round(state.lon / FOREST_STEP) * FOREST_STEP;
+          for (var foi = -3; foi <= 3; foi++) {
+            for (var foj = -3; foj <= 3; foj++) {
+              var foLat = folatC + foi * FOREST_STEP;
+              var foLon = folonC + foj * FOREST_STEP;
+              var foSeed = terrainHash(foLat * 79, foLon * 167);
+              if (foSeed < 0.78) continue; // ~22% of cells are forest blocks
+              var pf = projectLatLon(foLat, foLon);
+              if (!pf) continue;
+              // Forest base wash (darker green) — slightly larger ellipse
+              // behind the canopy dots so the patch reads even at distance.
+              var foRx = Math.max(8, 28 * pf.t * (0.7 + foSeed * 0.5));
+              var foRy = foRx * 0.55;
+              gfx.fillStyle = 'rgba(28,68,38,' + (0.45 * fade * (0.5 + pf.t * 0.5)) + ')';
+              gfx.beginPath();
+              gfx.ellipse(pf.x, pf.y, foRx, foRy, 0, 0, Math.PI * 2);
+              gfx.fill();
+              // Canopy dots — boreal/deciduous mix tones
+              var canopyN = Math.floor(18 + foSeed * 26);
+              for (var cd = 0; cd < canopyN; cd++) {
+                var cdAng = terrainHash(foSeed * 100 + cd, foLat * 5) * Math.PI * 2;
+                var cdRad = terrainHash(foSeed * 200 + cd, foLon * 5) * foRx * 0.85;
+                var cdx = pf.x + Math.cos(cdAng) * cdRad;
+                var cdy = pf.y + Math.sin(cdAng) * cdRad * 0.55;
+                var cdSize = Math.max(1, 1.6 + pf.t * 1.4);
+                var cdHue = terrainHash(cd, foSeed * 13);
+                gfx.fillStyle = cdHue > 0.6
+                  ? 'rgba(45,95,55,' + (0.7 * fade) + ')'  // brighter deciduous
+                  : 'rgba(25,72,40,' + (0.7 * fade) + ')';  // darker conifer
+                gfx.beginPath();
+                gfx.arc(cdx, cdy, cdSize, 0, Math.PI * 2);
+                gfx.fill();
+              }
+            }
+          }
+        }
+
+        // ── Cloud shadows: drifting dark blobs across the ground that
+        // suggest sun-blocking cumulus overhead. They drift slowly with
+        // time so the eye catches motion even when the plane is hovering.
+        // 6 deterministically-seeded shadows wrap across the ground area.
+        if (aglAlt < 5000) {
+          gfx.fillStyle = 'rgba(20,30,40,' + (0.18 * fade) + ')';
+          for (var sh = 0; sh < 6; sh++) {
+            // Position cycles through the visible ground band, slowly drifting
+            var shPhase = ((time * 0.05 + sh * 0.17) % 1);
+            var shScreenX = ((shPhase * (W + 200)) - 100);
+            var shScreenY = horizonY + (H - horizonY) * (0.25 + (sh % 3) * 0.22);
+            var shRx = 60 + (sh % 4) * 20;
+            var shRy = shRx * 0.35;
+            gfx.beginPath();
+            gfx.ellipse(shScreenX, shScreenY, shRx, shRy, 0, 0, Math.PI * 2);
+            gfx.fill();
+          }
+        }
+
+        // ── Lake & river surface sparkles: small bright dots overlaid on
+        // water bodies that twinkle with time, suggesting sun reflection
+        // off ripples. Re-uses the same lake grid as the lake renderer.
+        if (aglAlt < 4000 && dayNight2 && !dayNight2.isNight) {
+          var spStep = 0.04;
+          var splatC = Math.round(state.lat / spStep) * spStep;
+          var splonC = Math.round(state.lon / spStep) * spStep;
+          for (var spi = -2; spi <= 2; spi++) {
+            for (var spj = -2; spj <= 2; spj++) {
+              var spLat = splatC + spi * spStep;
+              var spLon = splonC + spj * spStep;
+              var spSeed = terrainHash(spLat * 173, spLon * 89);
+              if (spSeed < 0.90) continue; // matches lake density
+              var psp = projectLatLon(spLat, spLon);
+              if (!psp) continue;
+              // 4-6 sparkles per lake, twinkling with sin(time)
+              var spN = 4 + Math.floor(spSeed * 3);
+              for (var sp = 0; sp < spN; sp++) {
+                var spAng = terrainHash(sp, spSeed * 50) * Math.PI * 2;
+                var spRad = terrainHash(sp + 5, spSeed * 70) * 18 * psp.t;
+                var spx = psp.x + Math.cos(spAng) * spRad;
+                var spy = psp.y + Math.sin(spAng) * spRad * 0.4;
+                var twinkle = 0.3 + 0.7 * (Math.sin(time * 4 + sp * 1.7 + spSeed * 9) * 0.5 + 0.5);
+                gfx.fillStyle = 'rgba(255,250,210,' + (twinkle * 0.7 * fade * psp.t) + ')';
+                gfx.fillRect(spx, spy, 1.2, 0.8);
+              }
+            }
+          }
+        }
+
+        // ── Solar farms: deterministic blue rectangular grids in rural
+        // cells. Modern landmark — a real "wow" moment when one slides
+        // past the cockpit. Sparse: ~3% of a coarser grid.
+        if (aglAlt < 2500) {
+          var sfStep = 0.06;
+          var sflatC = Math.round(state.lat / sfStep) * sfStep;
+          var sflonC = Math.round(state.lon / sfStep) * sfStep;
+          for (var sfi = -2; sfi <= 2; sfi++) {
+            for (var sfj = -2; sfj <= 2; sfj++) {
+              var sfLat = sflatC + sfi * sfStep;
+              var sfLon = sflonC + sfj * sfStep;
+              var sfSeed = terrainHash(sfLat * 211, sfLon * 251);
+              if (sfSeed < 0.97) continue; // 3% of cells host a solar farm
+              var psf = projectLatLon(sfLat, sfLon);
+              if (!psf) continue;
+              var farmW = Math.max(10, 24 * psf.t);
+              var farmH = farmW * 0.55;
+              // Dark slate base
+              gfx.fillStyle = 'rgba(28,38,55,' + (0.7 * fade) + ')';
+              gfx.fillRect(psf.x - farmW / 2, psf.y - farmH / 2, farmW, farmH);
+              // Grid of panel rows — bluish glints
+              gfx.fillStyle = 'rgba(60,100,160,' + (0.65 * fade * psf.t) + ')';
+              var rows = 4, cols = 8;
+              var pW = farmW / cols * 0.85;
+              var pH = farmH / rows * 0.7;
+              for (var prr = 0; prr < rows; prr++) {
+                for (var pcc = 0; pcc < cols; pcc++) {
+                  var px = psf.x - farmW / 2 + (pcc + 0.5) * (farmW / cols);
+                  var py = psf.y - farmH / 2 + (prr + 0.5) * (farmH / rows);
+                  gfx.fillRect(px - pW / 2, py - pH / 2, pW, pH);
+                }
+              }
+              // Highlight — sun glint on one corner of the array
+              if (psf.t > 0.55) {
+                gfx.fillStyle = 'rgba(180,210,240,' + (0.5 * fade * psf.t) + ')';
+                gfx.fillRect(psf.x + farmW * 0.15, psf.y - farmH * 0.4, farmW * 0.15, farmH * 0.15);
+              }
+            }
+          }
+        }
       };
 
       // ── Draw terrain perspective ──
