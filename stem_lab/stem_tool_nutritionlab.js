@@ -198,6 +198,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var upd = function(key, val) { ctx.update('nutritionLab', key, val); };
       var addToast = ctx.addToast || function(msg) { console.log('[NutritionLab]', msg); };
 
+      // ── Persisted-state helper ──
+      // Sub-components defined inside this render function get a fresh
+      // function reference on every parent re-render → React unmounts and
+      // remounts them. Their useState + useEffect→upd persistence pattern
+      // would fire upd on every mount, triggering ctx.update → parent
+      // re-render → remount → mount-fire → infinite loop. This helper
+      // folds the pair into one call and skips the mount-fire via a
+      // first-render ref guard. Same fix used in WeldLab.
+      function usePersistedState(key, defaultValue) {
+        var s = useState(d[key] != null ? d[key] : defaultValue);
+        var firstRef = useRef(true);
+        useEffect(function () {
+          if (firstRef.current) { firstRef.current = false; return; }
+          upd(key, s[0]);
+        }, [s[0]]);
+        return s;
+      }
+
       var _hydratedRef = useRef(false);
       if (!_hydratedRef.current) {
         _hydratedRef.current = true;
@@ -662,12 +680,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
       // Food-comparison side-by-side. Two pickers; bar chart per nutrient.
       function FoodComparePanel() {
-        var pickA = useState(d.fc_a || 'salmon');
-        var pickB = useState(d.fc_b || 'chicken');
+        var pickA = usePersistedState('fc_a', 'salmon');
+        var pickB = usePersistedState('fc_b', 'chicken');
         var fA_id = pickA[0], setA = pickA[1];
         var fB_id = pickB[0], setB = pickB[1];
-        useEffect(function() { upd('fc_a', fA_id); }, [fA_id]);
-        useEffect(function() { upd('fc_b', fB_id); }, [fB_id]);
         var fA = FOOD_BY_ID[fA_id], fB = FOOD_BY_ID[fB_id];
         if (!fA || !fB) return null;
         var ROWS = [
@@ -749,12 +765,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // context (not a goal), per the design constraint to avoid calorie-
       // counting fixation in adolescents.
       function MacronutrientLab() {
-        var plate_state = useState(d.ml_plate || []);
+        var plate_state = usePersistedState('ml_plate', []);
         var plate = plate_state[0], setPlate = plate_state[1];
         var category_state = useState('all');
         var category = category_state[0], setCategory = category_state[1];
-
-        useEffect(function() { upd('ml_plate', plate); }, [plate]);
 
         function addFood(id) {
           var next = plate.concat([id]);
@@ -946,12 +960,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // detail block. All entries cite NIH ODS Fact Sheets directly. Maine-
       // specific notes flagged inline (vitamin D, omega-3, iron in teens).
       function MicronutrientAtlas() {
-        var tab_state = useState(d.ma_tab || 'vitamins');
+        var tab_state = usePersistedState('ma_tab', 'vitamins');
         var tab = tab_state[0], setTab = tab_state[1];
         var picked_state = useState(null);
         var picked = picked_state[0], setPicked = picked_state[1];
 
-        useEffect(function() { upd('ma_tab', tab); }, [tab]);
         useEffect(function() { setPicked(null); }, [tab]);
 
         var tabs = [
@@ -1422,12 +1435,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
 
       function FoodLabelReader() {
-        var labelIdx_state = useState(d.lr_idx != null ? d.lr_idx : 0);
+        var labelIdx_state = usePersistedState('lr_idx', 0);
         var labelIdx = labelIdx_state[0], setLabelIdx = labelIdx_state[1];
         var answers_state = useState({});
         var answers = answers_state[0], setAnswers = answers_state[1];
-
-        useEffect(function() { upd('lr_idx', labelIdx); }, [labelIdx]);
 
         var lab = LABELS[labelIdx];
 
@@ -1686,9 +1697,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // targets ("here\'s your daily budget"). Wide ranges noted for every
       // number; biological variation explicitly normalized.
       function EnergyMetabolismLab() {
-        var tab_state = useState(d.em_tab || 'atp');
+        var tab_state = usePersistedState('em_tab', 'atp');
         var tab = tab_state[0], setTab = tab_state[1];
-        useEffect(function() { upd('em_tab', tab); }, [tab]);
 
         var tabs = [
           { id: 'atp',          label: '1. ATP & Mitochondria' },
@@ -2060,9 +2070,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       ];
 
       function DigestionWalkthrough() {
-        var stageIdx_state = useState(d.dg_stage != null ? d.dg_stage : 0);
+        var stageIdx_state = usePersistedState('dg_stage', 0);
         var stageIdx = stageIdx_state[0], setStageIdx = stageIdx_state[1];
-        useEffect(function() { upd('dg_stage', stageIdx); }, [stageIdx]);
 
         var stage = DIGESTION_STAGES[stageIdx];
 
@@ -2347,11 +2356,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       ];
 
       function NutritionMythsLab() {
-        var idx_state = useState(d.my_idx != null ? d.my_idx : 0);
+        var idx_state = usePersistedState('my_idx', 0);
         var idx = idx_state[0], setIdx = idx_state[1];
         var picks_state = useState({});
         var picks = picks_state[0], setPicks = picks_state[1];
-        useEffect(function() { upd('my_idx', idx); }, [idx]);
 
         var myth = MYTHS[idx];
         var picked = picks[idx];
@@ -3047,9 +3055,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // CDC, USDA Economic Research Service, Maine DOE School Nutrition,
       // Good Shepherd Food Bank, Maine.gov, Wabanaki tribal sources.
       function MaineFoodReality() {
-        var tab_state = useState(d.mr_tab || 'seasons');
+        var tab_state = usePersistedState('mr_tab', 'seasons');
         var tab = tab_state[0], setTab = tab_state[1];
-        useEffect(function() { upd('mr_tab', tab); }, [tab]);
 
         var tabs = [
           { id: 'seasons',  label: 'Seasons + vitamin D' },
@@ -3274,9 +3281,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       // distinction between RDN (regulated, credentialed) and "nutritionist"
       // (unregulated in many states, anyone can use the term).
       function CareerPathwaysNutrition() {
-        var view_state = useState(d.cp_view || 'overview');
+        var view_state = usePersistedState('cp_view', 'overview');
         var view = view_state[0], setLocalView = view_state[1];
-        useEffect(function() { upd('cp_view', view); }, [view]);
 
         var tabs = [
           { id: 'overview', label: '1. Why Nutrition' },
