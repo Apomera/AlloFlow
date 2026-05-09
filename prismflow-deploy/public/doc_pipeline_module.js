@@ -14631,6 +14631,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     proceedWithPdfTransform: _wrapAsync(proceedWithPdfTransform),
     parseAuditJson: _wrap(parseAuditJson),
     remediateSurgicallyThenAI: _wrapAsync(remediateSurgicallyThenAI),
+    downloadBatchResults: _wrapAsync(downloadBatchResults),
   };
 };
 
