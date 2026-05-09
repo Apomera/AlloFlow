@@ -3015,10 +3015,32 @@ window.StemLab = window.StemLab || {
 
       // ── Side-view canvas (Z = horizontal axis = mound→plate, Y = vertical) ──
       var canvasRef = React.useRef(null);
+      // PL6: HiDPI canvas setup (same pattern as PlayLab _plSetupHiDPI).
+      // Without this, the canvas renders at 720x360 internal pixels and
+      // gets CSS-scaled up to fill container — text + curves blur on
+      // retina displays. Resize the internal buffer to dpr * logical
+      // dims, set CSS dims back to logical, and apply setTransform so
+      // existing draw code operates in CSS px (no math changes needed).
+      function _tlSetupHiDPI(canvas, logicalW, logicalH) {
+        var dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+        if (canvas._tlDpr === dpr && canvas._tlLogicalW === logicalW && canvas._tlLogicalH === logicalH) return;
+        canvas.width = Math.round(logicalW * dpr);
+        canvas.height = Math.round(logicalH * dpr);
+        canvas.style.width = logicalW + 'px';
+        canvas.style.height = logicalH + 'px';
+        canvas._tlDpr = dpr;
+        canvas._tlLogicalW = logicalW;
+        canvas._tlLogicalH = logicalH;
+      }
       React.useEffect(function() {
         var canvas = canvasRef.current; if (!canvas) return;
+        _tlSetupHiDPI(canvas, 720, 360);
         var gfx = canvas.getContext('2d');
-        var W = canvas.width, H = canvas.height;
+        gfx.setTransform(canvas._tlDpr, 0, 0, canvas._tlDpr, 0, 0);
+        gfx.imageSmoothingEnabled = true;
+        if ('imageSmoothingQuality' in gfx) gfx.imageSmoothingQuality = 'high';
+        var W = canvas._tlLogicalW;
+        var H = canvas._tlLogicalH;
         gfx.clearRect(0, 0, W, H);
 
         var modeMeta = MODES[d.mode] || MODES.pitching;

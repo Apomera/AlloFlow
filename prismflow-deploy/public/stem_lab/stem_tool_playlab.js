@@ -3328,6 +3328,11 @@ window.StemLab = window.StemLab || {
         // parabolic arc — peak at midpoint, equal to ~3 yards above ground
         // visually (rendered as a vertical Y offset on the canvas, since
         // the field view is top-down 2D).
+        // PL6: Without a visible curve or trail, short throws (Slant ~7yd)
+        // looked "cut off" — the ball flashed past too fast to register
+        // the parabola. Now we draw the FULL arc as a faint dotted line
+        // for the entire throw phase + a fading motion trail behind the
+        // ball, so the parabolic flight is visually unmistakable.
         if (runT > ROUTE_DURATION && runT <= ROUTE_DURATION + THROW_DURATION) {
           var throwT = (runT - ROUTE_DURATION) / THROW_DURATION;
           var qb = formation.find(function(p) { return p.id === 'QB'; });
@@ -3337,13 +3342,45 @@ window.StemLab = window.StemLab || {
             // Receiver is at end-of-route during throw phase
             var rx = target.route ? target.route[target.route.length - 1].x : target.x;
             var ry = target.route ? target.route[target.route.length - 1].y : target.y;
-            var ballX = qb.x + (rx - qb.x) * throwT;
-            var ballY = qb.y + (ry - qb.y) * throwT;
-            // Arc lift: small parabolic visual offset so the ball appears
-            // to rise then fall. Convert to canvas px directly.
-            var liftPx = Math.sin(throwT * Math.PI) * 14;
-            var bpx = fx(ballX);
-            var bpy = fy(ballY) - liftPx;
+            // Helper: parabolic position at parametric t in [0, 1]
+            function _ballAt(t) {
+              var bx = qb.x + (rx - qb.x) * t;
+              var by = qb.y + (ry - qb.y) * t;
+              var lift = Math.sin(t * Math.PI) * 14;
+              return { px: fx(bx), py: fy(by) - lift };
+            }
+            // PL6: Full-arc preview line — dashed parabola from QB to
+            // target. Drawn under the trail/ball so the leading edge
+            // always sits on top of the guide.
+            gfx.save();
+            gfx.strokeStyle = 'rgba(251,191,36,0.4)';
+            gfx.lineWidth = 1.5;
+            gfx.setLineDash([4, 4]);
+            gfx.beginPath();
+            for (var pt = 0; pt <= 1.001; pt += 0.05) {
+              var pp = _ballAt(Math.min(1, pt));
+              if (pt === 0) gfx.moveTo(pp.px, pp.py); else gfx.lineTo(pp.px, pp.py);
+            }
+            gfx.stroke();
+            gfx.setLineDash([]);
+            gfx.restore();
+            // PL6: Motion trail — 8 fading circles trailing the current
+            // ball position. Each is 0.04t back from the leading edge.
+            for (var ti = 1; ti <= 8; ti++) {
+              var trailT = throwT - ti * 0.04;
+              if (trailT <= 0) break;
+              var tpos = _ballAt(trailT);
+              var alpha = (1 - ti / 9) * 0.55;
+              var trad = 4 - ti * 0.35;
+              gfx.fillStyle = 'rgba(254,226,182,' + alpha.toFixed(2) + ')';
+              gfx.beginPath();
+              gfx.arc(tpos.px, tpos.py, Math.max(1.2, trad), 0, Math.PI * 2);
+              gfx.fill();
+            }
+            // Leading edge — the football itself
+            var current = _ballAt(throwT);
+            var bpx = current.px;
+            var bpy = current.py;
             // Draw the football — small brown ellipse
             gfx.fillStyle = '#7c2d12';
             gfx.beginPath();
