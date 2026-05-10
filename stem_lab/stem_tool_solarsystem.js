@@ -5363,14 +5363,55 @@ const d = labToolData.solarSystem;
             ),
 
             // â"€â"€ Planet Info Card (Enhanced with Close-Up & Drone) â"€â"€
+            // Cosmic chrome pass: the card surface picks up the selected
+            // planet's color as a faint radial glow at top-right + a thicker
+            // accent border along the left, so selecting Mars vs Neptune
+            // produces visibly different panel mood. Mirrors the orrery's
+            // body info card treatment.
 
-            !d.orreryMode && sel && React.createElement("div", { className: "mt-3 bg-slate-50 rounded-xl border border-slate-400 p-4 animate-in slide-in-from-bottom duration-300" },
+            // Light-toned gradient kept for both modes so the existing fixed
+            // slate-800 / slate-600 header text inside stays readable. The
+            // planet-color glow + accent border do the cosmic-mood lift.
+            !d.orreryMode && sel && React.createElement("div", {
+              className: "mt-3 rounded-2xl p-4 animate-in slide-in-from-bottom duration-300",
+              style: {
+                position: "relative",
+                overflow: "hidden",
+                background: "linear-gradient(135deg,#ffffff 0%,#f6f9ff 65%,#eef2fb 100%)",
+                borderLeft: "4px solid " + sel.color,
+                borderTop: "1px solid " + sel.color + "33",
+                borderRight: "1px solid " + sel.color + "22",
+                borderBottom: "1px solid " + sel.color + "22",
+                boxShadow: "0 6px 22px rgba(15,23,42,0.10), 0 0 22px " + sel.color + "1a, inset 0 1px 0 rgba(255,255,255,0.7)"
+              }
+            },
+
+              // Planet-colored radial glow at top-right (decorative)
+              React.createElement("div", {
+                "aria-hidden": "true",
+                style: {
+                  position: "absolute",
+                  top: "-60px", right: "-60px",
+                  width: "220px", height: "220px",
+                  borderRadius: "50%",
+                  background: "radial-gradient(circle," + sel.color + "33 0%," + sel.color + "11 55%,transparent 100%)",
+                  filter: "blur(8px)",
+                  pointerEvents: "none"
+                }
+              }),
 
               // Planet header
 
-              React.createElement("div", { className: "flex items-center gap-3 mb-3" },
+              React.createElement("div", { className: "flex items-center gap-3 mb-3", style: { position: "relative", zIndex: 1 } },
 
-                React.createElement("div", { className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl", style: { backgroundColor: sel.color + '20', border: '2px solid ' + sel.color } }, sel.emoji),
+                React.createElement("div", {
+                  className: "w-12 h-12 rounded-xl flex items-center justify-center text-2xl",
+                  style: {
+                    background: "radial-gradient(circle," + sel.color + "44 0%," + sel.color + "11 60%,transparent 100%)",
+                    border: "2px solid " + sel.color,
+                    boxShadow: "0 0 14px " + sel.color + "55, inset 0 0 12px " + sel.color + "33"
+                  }
+                }, sel.emoji),
 
                 React.createElement("div", { className: "flex-1" },
 
