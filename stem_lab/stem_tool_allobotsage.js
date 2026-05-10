@@ -1208,6 +1208,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   var SPELL_LEVEL_CAP = 5;
   var DAMAGE_PER_LEVEL = 3;
 
+  // ═══════════════════════════════════════════════════════════════
+  // Difficulty profiles — UDL "multiple means of engagement"
+  // ═══════════════════════════════════════════════════════════════
+  // Each profile shapes: how long the student has to crit, how many rooms
+  // they face, their starting HP, and the essence multiplier on rewards.
+  // Easy = build confidence (longer crit window, fewer rooms, more HP,
+  // smaller reward). Standard = balanced. Hard = sharpen retrieval speed
+  // under pressure (tight window, more rooms, less HP, bigger reward).
+  // Students pick at loadout — explicit choice is the UDL move.
+  var DIFFICULTY_PROFILES = {
+    easy:     { id: 'easy',     name: 'Easy',     icon: '🌱', desc: 'Build confidence — longer crit window, fewer rooms.', critWindowSec: 8,  rooms: 2, playerHp: 80, essenceMult: 0.85, color: '#10b981' },
+    standard: { id: 'standard', name: 'Standard', icon: '⚖️', desc: 'Balanced challenge — 6-second crit window, 3 rooms.',     critWindowSec: 6,  rooms: 3, playerHp: 60, essenceMult: 1.0,  color: '#3b82f6' },
+    hard:     { id: 'hard',     name: 'Hard',     icon: '🔥', desc: 'Sharpen retrieval speed — short window, 4 rooms.',         critWindowSec: 4,  rooms: 4, playerHp: 50, essenceMult: 1.3,  color: '#dc2626' }
+  };
+  function difficultyById(id) { return DIFFICULTY_PROFILES[id] || DIFFICULTY_PROFILES.standard; }
+
   function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
@@ -1215,9 +1231,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   function upgradeCost(currentLevel) { return 10 + currentLevel * 5; }
   function getSpellDamage(spell, level) { return spell.baseDamage + (level || 0) * DAMAGE_PER_LEVEL; }
 
-  // Build a 3-room plan for a given sector.
-  // Room 0: combat (easy). Room 1: 40% shrine / 60% combat (scaled). Room 2: boss (from sector pool).
-  function buildRoomsPlan(sectorId) {
+  // Build a room plan for a given sector. Room count varies by difficulty:
+  //   2 rooms (easy) = 1 combat + 1 boss
+  //   3 rooms (standard) = 1 combat + 1 shrine-or-combat + 1 boss
+  //   4 rooms (hard) = 1 combat + 1 shrine-or-combat + 1 combat (harder) + 1 boss
+  // Last room is ALWAYS the boss (pulled from sector.bossPool).
+  function buildRoomsPlan(sectorId, roomCount) {
+    roomCount = roomCount || ROOMS_PER_EXPEDITION;
     var sector = sectorById(sectorId);
     // Sector-themed normal pool: enemy must list this sector in sectors[].
     // Fallback to all non-boss enemies if (somehow) the pool is empty.
@@ -1258,8 +1278,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       };
     }
 
-    var middle = Math.random() < 0.4 ? shrineRoom() : combatRoom(1.15);
-    return [ combatRoom(1.0), middle, bossRoom() ];
+    // Build the room sequence based on count
+    var plan = [];
+    if (roomCount <= 2) {
+      // Easy: 1 combat + boss
+      plan = [combatRoom(1.0), bossRoom()];
+    } else if (roomCount >= 4) {
+      // Hard: 1 combat + 1 shrine-or-combat + 1 tougher combat + boss
+      var middle1 = Math.random() < 0.4 ? shrineRoom() : combatRoom(1.15);
+      plan = [combatRoom(1.0), middle1, combatRoom(1.25), bossRoom()];
+    } else {
+      // Standard: original 3-room layout
+      var middle = Math.random() < 0.4 ? shrineRoom() : combatRoom(1.15);
+      plan = [combatRoom(1.0), middle, bossRoom()];
+    }
+    return plan;
   }
 
   // Compute which spells are currently unlocked.
@@ -2010,6 +2043,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             '/3 '
           ),
 
+          // \u2500\u2500 Difficulty selector (UDL "multiple means of engagement") \u2500\u2500
+          // Students pick their challenge level. Easy = build confidence;
+          // Standard = balanced; Hard = sharpen retrieval speed under pressure.
+          // The reward multiplier rises with difficulty to honor the harder path.
+          h('section', { 'aria-label': 'Choose your challenge level', className: 'mb-4 p-3 rounded-xl border-2 border-slate-200 bg-white' },
+            h('div', { className: 'text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-2' }, '\u2699\ufe0f Challenge level'),
+            h('p', { className: 'text-[10px] text-slate-500 mb-2 italic' }, 'Pick what fits today. You can change this any expedition. Harder difficulty = bigger essence reward.'),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+              ['easy', 'standard', 'hard'].map(function(diffId) {
+                var dp = DIFFICULTY_PROFILES[diffId];
+                var picked = (d.difficulty || 'standard') === diffId;
+                return h('button', {
+                  key: 'diff-' + diffId,
+                  onClick: function() { sfxClick(); updKey('difficulty', diffId); },
+                  className: 'text-left p-2.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'shadow-md' : 'hover:border-slate-400'),
+                  style: picked ? { borderColor: dp.color, background: dp.color + '12' } : { borderColor: '#e2e8f0', background: '#fff' },
+                  'aria-pressed': picked,
+                  'aria-label': dp.name + ' difficulty. ' + dp.desc + ' Reward multiplier ' + dp.essenceMult + 'x.'
+                },
+                  h('div', { className: 'flex items-center gap-2 mb-1' },
+                    h('span', { className: 'text-xl' }, dp.icon),
+                    h('span', { className: 'font-bold text-sm', style: { color: dp.color } }, dp.name),
+                    picked && h('span', { className: 'ml-auto text-violet-700 font-bold text-xs' }, '\u2713')
+                  ),
+                  h('div', { className: 'text-[10px] leading-snug text-slate-600 mb-1' }, dp.desc),
+                  h('div', { className: 'text-[9px] text-slate-500 font-mono' },
+                    'crit \u2264' + dp.critWindowSec + 's \u00b7 ' + dp.rooms + ' rooms \u00b7 ' + dp.playerHp + ' HP \u00b7 ' + dp.essenceMult + 'x essence'
+                  )
+                );
+              })
+            )
+          ),
+
           // \u2500\u2500 Loadout presets \u2500\u2500
           // 3 named slots. With 39 spells in the grimoire, swapping for different
           // sectors gets tedious; presets let students save common configurations.
@@ -2335,21 +2401,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               sfxClick();
               var pickedSectorId = d.selectedSector || 'crystal_nebula';
               var sector = sectorById(pickedSectorId);
-              var roomsPlan = buildRoomsPlan(sector.id);
+              // Apply the picked difficulty profile to room count, HP, crit window,
+              // and essence reward. The sector's own multiplier stacks on top.
+              var diffProfile = difficultyById(d.difficulty || 'standard');
+              var roomsPlan = buildRoomsPlan(sector.id, diffProfile.rooms);
               var firstRoom = roomsPlan[0];
+              var combinedEssenceMult = sector.essenceMult * diffProfile.essenceMult;
               var exp = {
                 sectorId: sector.id,
                 sectorName: sector.name,
-                essenceMult: sector.essenceMult,
+                essenceMult: combinedEssenceMult,
+                difficulty: diffProfile.id,
+                critWindowSec: diffProfile.critWindowSec,
                 roomsPlan: roomsPlan,
                 roomIndex: 0,
                 roomsCleared: 0,
                 essenceEarned: 0,
                 enemy: Object.assign({}, firstRoom),
-                playerHp: 60, playerMaxHp: 60,
+                playerHp: diffProfile.playerHp, playerMaxHp: diffProfile.playerHp,
                 turn: 'player',
                 log: [
-                  { text: 'Expedition begins \u2014 sector: ' + sector.name + '.', kind: 'info' },
+                  { text: 'Expedition begins \u2014 sector: ' + sector.name + ' \u00b7 difficulty: ' + diffProfile.name + ' (' + diffProfile.critWindowSec + 's crit window).', kind: 'info' },
                   firstRoom.type === 'shrine'
                     ? { text: 'A ' + firstRoom.name + ' greets you. ' + firstRoom.flavor, kind: 'info' }
                     : { text: 'A ' + firstRoom.name + ' materializes. ' + firstRoom.flavor, kind: 'info' }
@@ -2362,7 +2434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 goalsSpellsUsed: {}
               };
               updSage({ phase: 'expedition', expedition: exp });
-              announceSR('Expedition begins in the ' + sector.name + '. ' + firstRoom.name + ' appears in room 1 of ' + ROOMS_PER_EXPEDITION + '.');
+              announceSR('Expedition begins in the ' + sector.name + ' on ' + diffProfile.name + ' difficulty. ' + firstRoom.name + ' appears in room 1 of ' + diffProfile.rooms + '.');
             },
             className: 'w-full py-3 rounded-xl font-bold text-white bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-violet-400 focus:outline-none'
           }, equippedLoadout.length === 0 ? 'Equip at least 1 spell' : '\u2728 Launch Expedition (3 rooms)')
@@ -2604,7 +2676,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           var leveledBase = getSpellDamage(s, lvl);
           var elapsed = (Date.now() - pendingCast.startedAt) / 1000;
           var correct = selectedIndex === challenge.correctIndex;
-          var fast = elapsed < 6;
+          // Crit window varies by difficulty (set at expedition start).
+          // Default to 6s (standard) when older runs replay state without it.
+          var critWindow = (exp.critWindowSec != null) ? exp.critWindowSec : 6;
+          var fast = elapsed < critWindow;
           var dmg = 0;
           var result;
           if (correct && fast) {
@@ -3344,6 +3419,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               h('div', { className: 'text-xl font-bold text-emerald-600' }, roomsCleared + '/' + totalRoomsD)
             )
           ),
+          // ── Reflection prompt (elaborative encoding) ──
+          // Optional free-text. Pedagogical research: writing in your own words
+          // what you learned strengthens memory consolidation more than passive
+          // re-reading. Capped at 200 chars to keep it bite-sized; stored in
+          // d.reflections[] for the Reflection Journal in the dashboard.
+          h('section', {
+            className: 'rounded-xl border-2 border-sky-200 bg-sky-50 p-3 mb-4 text-left',
+            'aria-label': 'Reflection prompt'
+          },
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-sky-700 mb-1' }, '📝 Optional — Reflection'),
+            h('p', { className: 'text-[11px] text-sky-900 mb-2' },
+              'What is ONE thing you learned or noticed this run? (Writing it strengthens memory more than just thinking it.)'
+            ),
+            h('textarea', {
+              key: 'reflection-input',
+              defaultValue: '',
+              id: 'abs-reflection-textarea',
+              maxLength: 200,
+              rows: 2,
+              placeholder: 'e.g., "The bee/flower question keeps tripping me up — mutualism = both benefit"',
+              className: 'w-full p-2 rounded-md border border-sky-300 bg-white text-[12px] text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-400'
+            }),
+            h('div', { className: 'flex justify-end mt-2' },
+              h('button', {
+                onClick: function() {
+                  var ta = document.getElementById('abs-reflection-textarea');
+                  if (!ta) return;
+                  var text = (ta.value || '').trim();
+                  if (text.length === 0) {
+                    addToast('Type a quick reflection first (even one sentence helps)', 'info');
+                    return;
+                  }
+                  sfxClick();
+                  var nextReflections = (d.reflections || []).concat([{
+                    text: text,
+                    sectorName: expedition.sectorName || null,
+                    difficulty: expedition.difficulty || 'standard',
+                    result: result,
+                    at: Date.now()
+                  }]);
+                  // Cap at 30 most recent
+                  if (nextReflections.length > 30) nextReflections = nextReflections.slice(-30);
+                  updKey('reflections', nextReflections);
+                  ta.value = '';
+                  addToast('📝 Reflection saved — view it any time in Your Progress', 'success');
+                  announceSR('Reflection saved.');
+                },
+                className: 'px-4 py-1.5 rounded-lg text-[11px] font-bold text-white bg-sky-600 hover:bg-sky-700 focus:ring-2 focus:ring-sky-400 focus:outline-none'
+              }, 'Save reflection')
+            )
+          ),
           h('div', { className: 'flex flex-wrap gap-2 justify-center' },
             h('button', {
               onClick: function() { sfxClick(); updSage({ phase: 'hub', expedition: null }); },
@@ -4058,6 +4184,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 );
               })
             )
+          ),
+          // ── Reflection Journal ──
+          // Surfaces the student's own written reflections from past debriefs.
+          // Reading your own past observations is its own form of retrieval +
+          // re-encoding (elaborative practice). Empty state explains the loop.
+          h('section', { className: 'rounded-xl border border-sky-200 bg-sky-50 p-3 mb-4' },
+            h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-sky-700 mb-2' }, '📝 Reflection Journal'),
+            (function() {
+              var reflections = d.reflections || [];
+              if (reflections.length === 0) {
+                return h('p', { className: 'text-[11px] text-sky-700 italic' },
+                  'No reflections saved yet. After each expedition, write one thing you noticed or learned. Future you will thank present you.'
+                );
+              }
+              // Show newest first, cap to 10 in dashboard
+              var recent = reflections.slice().reverse().slice(0, 10);
+              return h('div', { className: 'space-y-1.5' },
+                recent.map(function(r, idx) {
+                  var when = '';
+                  try {
+                    var dt = new Date(r.at);
+                    var now = Date.now();
+                    var diffDays = (now - r.at) / 86400000;
+                    if (diffDays < 1) when = 'Today';
+                    else if (diffDays < 2) when = 'Yesterday';
+                    else when = Math.floor(diffDays) + ' days ago';
+                  } catch(e) { when = ''; }
+                  return h('div', { key: 'refl-' + idx, className: 'p-2 rounded-lg bg-white border border-sky-200 text-[11px]' },
+                    h('p', { className: 'text-slate-800 leading-snug mb-1' }, '"' + r.text + '"'),
+                    h('div', { className: 'text-[9px] text-sky-600 flex items-center gap-2' },
+                      h('span', null, when),
+                      r.sectorName && h('span', null, '· ' + r.sectorName),
+                      r.difficulty && h('span', null, '· ' + r.difficulty),
+                      r.result === 'victory' && h('span', null, '· ✅ victory'),
+                      r.result === 'defeat' && h('span', null, '· 💥 fell')
+                    )
+                  );
+                })
+              );
+            })()
           )
         );
       }
