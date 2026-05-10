@@ -3619,6 +3619,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7bd218a/voice_config_module.js');
     loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7bd218a/canvas_tips_module.js');
     loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7bd218a/view_kokoro_offer_modal_module.js');
+    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_confirm_dialog_module.js');
+    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/view_hints_modal_module.js');
     loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7bd218a/label_positions_module.js');
     loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7bd218a/ui_language_selector_module.js');
     loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@7bd218a/audio_banks_module.js');
@@ -20296,33 +20298,7 @@ Return ONLY valid JSON in this format:
             </div>
         </div>
       )}
-      {confirmDialog && (
-        <div className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={(e) => e.target === e.currentTarget && setConfirmDialog(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in zoom-in-95 duration-200 border-2 border-slate-200">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                <AlertCircle size={20} className="text-amber-600" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-800">{t('common.confirm') || 'Confirm'}</h3>
-            </div>
-            <p className="text-sm text-slate-600 leading-relaxed mb-6">{confirmDialog.message}</p>
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={() => setConfirmDialog(null)}
-                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
-              >
-                {t('common.cancel') || 'Cancel'}
-              </button>
-              <button
-                onClick={() => { confirmDialog.onConfirm(); setConfirmDialog(null); }}
-                className="px-5 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/25"
-              >
-                {t('common.confirm_action') || 'Confirm'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
       {(showGroupModal && activeSessionCode && sessionData) && window.AlloModules && window.AlloModules.GroupSessionModal && React.createElement(window.AlloModules.GroupSessionModal, {
           activeSessionCode, addToast, appId, db,
@@ -21629,69 +21605,7 @@ Return ONLY valid JSON in this format:
             </div>
         </div>
       )}
-      {showHintsModal && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[110] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowHintsModalToFalse} role="presentation">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full flex flex-col max-h-[80vh] overflow-hidden relative" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="hints-modal-title">
-                <div className="bg-yellow-50 p-4 border-b border-yellow-100 flex justify-between items-center shrink-0">
-                    <h3 id="hints-modal-title" className="font-bold text-lg text-yellow-800 flex items-center gap-2">
-                        <Lightbulb size={20} className="fill-yellow-500 text-yellow-600"/> {t('hints.title')}
-                    </h3>
-                    <button onClick={handleSetShowHintsModalToFalse} className="p-2 rounded-full hover:bg-yellow-100 text-yellow-700 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500" aria-label={t('common.close')}><X size={20}/></button>
-                </div>
-                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar space-y-4">
-                    {hintHistory.length === 0 ? (
-                        <div className="text-center py-10 text-slate-600 italic">
-                            {t('hints.empty_state')}
-                        </div>
-                    ) : (
-                        hintHistory.map((hint) => (
-                            <div key={hint.id} className={`p-4 rounded-xl border-l-4 shadow-sm ${hint.isExtension ? 'bg-purple-50 border-purple-400' : 'bg-white border-yellow-400'}`}>
-                                <div className="flex justify-between items-start mb-2">
-                                    <span className={`text-[11px] font-bold uppercase tracking-wider ${hint.isExtension ? 'text-purple-600' : 'text-yellow-600'}`}>
-                                        {hint.tool}
-                                    </span>
-                                    <span className="text-[11px] text-slate-600">{new Date(hint.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                                </div>
-                                <div className="text-sm text-slate-700 font-medium leading-relaxed whitespace-pre-line mb-3">
-                                    {renderFormattedText(hint.text, false)}
-                                </div>
-                                <div className="flex justify-end gap-2">
-                                    {hint.isExtension ? (
-                                        <button
-                                            aria-label={t('common.save')}
-                                            onClick={() => handleSaveExtensionToHistory(hint)}
-                                            className="text-xs bg-purple-600 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-purple-700 transition-colors flex items-center gap-1 shadow-sm"
-                                        >
-                                            <Save size={12}/> {t('hints.save_to_history')}
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() => handleApplyHint(hint)}
-                                            className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1.5 rounded-lg font-bold hover:bg-yellow-200 transition-colors flex items-center gap-1"
-                                            title={t('hints.apply_brainstorm_tooltip')}
-                                        >
-                                            <Lightbulb size={12}/> {t('hints.apply_brainstorm')}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        ))
-                    )}
-                </div>
-                <div className="p-4 border-t border-slate-100 bg-slate-50 shrink-0">
-                    <button aria-label={t('common.on_ideas')}
-                        onClick={handleGenerateLessonIdeas}
-                        disabled={isGeneratingExtension || history.length === 0}
-                        className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md flex items-center justify-center gap-2"
-                        data-help-key="hints_generate_extension"
-                    >
-                        {isGeneratingExtension ? <RefreshCw size={16} className="animate-spin"/> : <Sparkles size={16} className="text-yellow-400 fill-current"/>}
-                        {isGeneratingExtension ? t('hints.synthesizing') : t('hints.generate_extensions')}
-                    </button>
-                </div>
-            </div>
-        </div>
-      )}
+      {showHintsModal && <HintsModal handleApplyHint={handleApplyHint} handleGenerateLessonIdeas={handleGenerateLessonIdeas} handleSaveExtensionToHistory={handleSaveExtensionToHistory} handleSetShowHintsModalToFalse={handleSetShowHintsModalToFalse} hintHistory={hintHistory} history={history} isGeneratingExtension={isGeneratingExtension} renderFormattedText={renderFormattedText} t={t} />}
       {showXPModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowXPModalToFalse} role="presentation">
             <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full relative border-4 border-yellow-400 transition-all animate-in zoom-in-95" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="xp-modal-title">
@@ -26737,6 +26651,18 @@ class AlloFlowErrorBoundary extends React.Component {
 function KokoroOfferModal(props) {
     var Real = window.AlloModules && window.AlloModules.KokoroOfferModal && window.AlloModules.KokoroOfferModal.KokoroOfferModal;
     if (Real && Real !== KokoroOfferModal) return React.createElement(Real, props);
+    return null;
+}
+// ── ConfirmDialog extracted to view_confirm_dialog_module.js (CDN) ──
+function ConfirmDialog(props) {
+    var Real = window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+    if (Real && Real !== ConfirmDialog) return React.createElement(Real, props);
+    return null;
+}
+// ── HintsModal extracted to view_hints_modal_module.js (CDN) ──
+function HintsModal(props) {
+    var Real = window.AlloModules && window.AlloModules.HintsModal && window.AlloModules.HintsModal.HintsModal;
+    if (Real && Real !== HintsModal) return React.createElement(Real, props);
     return null;
 }
 // ── CanvasTips extracted to canvas_tips_module.js (CDN) ──
