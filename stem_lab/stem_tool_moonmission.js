@@ -350,8 +350,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
   window.StemLab.registerTool('moonMission', {
     icon: '\uD83D\uDE80',
-    label: 'moonMission',
-    desc: '',
+    label: 'Moon Mission',
+    desc: 'Live a 10-phase Apollo mission from Kennedy to splashdown. Pick decisions at real Apollo moments (oxygen leak, landing fuel margin, abort thresholds), land the Lunar Module, collect rock samples, and decode the science of orbital mechanics + EVA. Includes Apollo historical facts and AI-customizable mission objectives from any source text.',
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -2098,9 +2098,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
         // ═══ PHASE 6: MOONWALK EVA (3D) ═══
         phase === 6 && h('div', { className: 'space-y-3', style: { animation: 'mmFadeSlideIn 0.4s ease-out' } },
-          h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
+          // Onboarding overlay (before EVA starts) — matches the Phase 5
+          // pattern so the 3D phases feel consistent. Lists the WASD +
+          // Space + F + mouse controls, names the goal (collect 4+ rock
+          // samples), and seeds two Apollo-era surface-ops facts.
+          !d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-xl p-5 border border-slate-700 text-white text-center' },
+            h('div', { className: 'text-4xl mb-3' }, '👨‍🚀'),
+            h('h4', { className: 'text-lg font-black mb-2' }, 'Moonwalk EVA'),
+            h('p', { className: 'text-xs text-slate-200 mb-4' }, 'You are standing on the lunar surface in a pressurized suit at one-sixth Earth gravity. Walk the regolith, collect rock samples, and earn science points for each unique geological find.'),
+            h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 max-w-2xl mx-auto' },
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🚶'),
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'WASD'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Walk forward/back, strafe')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🦘'),
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'Space'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Jump (low-gravity hop)')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🪨'),
+                h('p', { className: 'text-[11px] font-bold text-amber-300' }, 'F'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Collect rock at your feet')
+              ),
+              h('div', { className: 'bg-white/5 rounded-lg p-3 border border-white/10' },
+                h('div', { className: 'text-2xl mb-1' }, '🔭'),
+                h('p', { className: 'text-[11px] font-bold text-sky-300' }, 'Mouse'),
+                h('p', { className: 'text-[11px] text-slate-300' }, 'Look around (click canvas first)')
+              )
+            ),
+            h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-xl mx-auto' },
+              h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, '🎯 Mission objective + Apollo facts:'),
+              h('ul', { className: 'text-[11px] text-amber-200 space-y-1 text-left pl-4' },
+                h('li', null, 'Collect at least 4 unique rock samples to satisfy the geology quest hook.'),
+                h('li', null, 'Apollo 11 brought back 47.5 lb of lunar samples; Apollo 17 brought 243 lb.'),
+                h('li', null, 'In one-sixth gravity, a hop covers about six times the horizontal distance for the same effort.'),
+                h('li', null, 'Earth hangs in a fixed spot in the lunar sky because the Moon is tidally locked.')
+              )
+            ),
+            h('button', {
+              'aria-label': 'Begin EVA on the lunar surface',
+              onClick: function() { upd('evaStarted', true); },
+              className: 'px-8 py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg transition-all hover:scale-[1.02] animate-pulse'
+            }, '👨‍🚀 Step Onto the Moon · Begin EVA')
+          ),
+          d.evaStarted && h('div', { className: 'bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl overflow-hidden border border-slate-700' },
             h('div', { className: 'relative', style: { height: '70vh', minHeight: '400px', maxHeight: '700px' } },
-              h('canvas', { 
+              h('canvas', {
                 'data-eva-canvas': 'true',
                 role: 'application',
                 'aria-label': 'Interactive 3D lunar surface EVA. Use WASD to walk, Space to jump in one-sixth gravity, F to collect rock samples, mouse to look around. Collect geological samples and explore the Moon surface near the Lunar Module.',
