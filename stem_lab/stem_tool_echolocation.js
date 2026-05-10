@@ -1460,10 +1460,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var threeReady = window.THREE;
 
         return h('div', { className: 'space-y-3' },
-          // Header
+          // Header \u2014 clear goal + survival framing.
+          // Bug fix: light-mode subtitle was 'text-slate-200' on both
+          // branches, effectively invisible on a light background.
           h('div', { className: 'text-center' },
             h('h3', { className: 'text-lg font-bold ' + (isDark ? 'text-emerald-300' : 'text-emerald-700') }, '\uD83D\uDD26 3D Cave Echolocation'),
-            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-200') }, 'Navigate a dark cave using sonar pulses. Press E to emit a pulse. Find all 5 moths!')
+            h('p', { className: 'text-xs ' + (isDark ? 'text-slate-200' : 'text-slate-700') }, 'Survive in the dark using sonar. Catch as many insects as you can before energy runs out. Press E to pulse. WASD to fly.')
+          ),
+          // \u2500\u2500 Pre-flight brief (collapsible) \u2500\u2500
+          // Goal, controls, and the science it teaches in one place.
+          // Default closed once the student has played, so it doesn't
+          // get in the way after the first session.
+          h('details', {
+            open: !cave3dEngineRef.current || (cave3dEngineRef.current.survivalTime || 0) < 1,
+            className: 'rounded-xl ' + (isDark ? 'bg-emerald-900/20 border border-emerald-700/40' : 'bg-emerald-50 border border-emerald-300')
+          },
+            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none ' + (isDark ? 'text-emerald-300' : 'text-emerald-800') }, '\uD83D\uDCDC How this works (click to toggle)'),
+            h('div', { className: 'px-3 pb-3 space-y-3 text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+              h('div', null,
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83C\uDFAF Goal'),
+                h('p', { className: 'leading-relaxed' },
+                  'Catch glowing insects to refill energy. Stay airborne as long as you can. There is no "win" screen; the score is your survival time and the insects you caught. Try to beat your high score.')
+              ),
+              h('div', null,
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83D\uDD79 Controls'),
+                h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                  [
+                    { k: 'WASD', d: 'Fly + steer' },
+                    { k: 'E',    d: 'Emit sonar pulse' },
+                    { k: 'P',    d: 'Perch + recharge' },
+                    { k: 'R',    d: 'Restart after game over' }
+                  ].map(function(c, i) {
+                    return h('div', { key: i, className: 'flex items-center gap-2 rounded p-1.5 ' + (isDark ? 'bg-slate-800/60' : 'bg-white') },
+                      h('span', {
+                        style: {
+                          fontFamily: 'monospace', fontWeight: 700, fontSize: 10,
+                          padding: '2px 6px', borderRadius: 4,
+                          background: isDark ? '#0f172a' : '#f1f5f9',
+                          border: '1px solid ' + (isDark ? '#475569' : '#cbd5e1'),
+                          color: isDark ? '#fbbf24' : '#92400e'
+                        }
+                      }, c.k),
+                      h('span', null, c.d)
+                    );
+                  })
+                )
+              ),
+              h('div', null,
+                h('div', { className: 'font-black mb-1 ' + (isDark ? 'text-emerald-200' : 'text-emerald-800') }, '\uD83E\uDDE0 What you\'re learning'),
+                h('ul', { className: 'list-disc list-inside leading-relaxed space-y-0.5' },
+                  h('li', null, 'Sonar reveals geometry that vision cannot. The cave only "exists" at the moments you pulse.'),
+                  h('li', null, 'Echo-return time tells distance: the HUD shows d = v\u00D7t / 2 each pulse.'),
+                  h('li', null, 'Pulsing costs energy. Real bats balance pulse rate against the prey density they\'re chasing.'),
+                  h('li', null, 'Difficulty scales with survival time. Insects appear less often the longer you live.')
+                )
+              )
+            )
           ),
           // Three.js not loaded
           !threeReady && h('div', { className: 'text-center p-8 text-slate-600' },
@@ -1671,8 +1723,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               className: 'px-3 py-1 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-500'
             }, '\uD83E\uDD87 Emit Pulse')
           ),
-          // Canvas
-          sonarCanvasEl,
+          // Canvas (wrapped) + goal banner overlay
+          // The student looks at the canvas while playing, not at the
+          // HUD strip below it. Surface the goal + progress at the top
+          // of the canvas so it stays in view: "Catch 10 moths \u00B7 3/10"
+          // for prey-eaters, "Catch 10 fruits" for frugivores, and
+          // "Map cave \u00B7 X%" for cave scenes (the secondary win).
+          (function() {
+            var caughtKey = isFrugivore ? 'fruitCollected' : 'mothsCaught';
+            var caught = d[caughtKey] || 0;
+            var preyIcon = isFrugivore ? '\uD83C\uDF4C' : '\uD83E\uDD97';
+            var preyLabel = isFrugivore ? 'Fruit collected' : 'Moths caught';
+            var clarity = Math.round(sonarStateRef.current.clarity || 0);
+            var inCave = sceneIdx === 0 && !isFrugivore;
+            var goalDone = caught >= 10;
+            return h('div', { style: { position: 'relative' } },
+              sonarCanvasEl,
+              h('div', {
+                'aria-hidden': 'true',
+                style: {
+                  position: 'absolute',
+                  top: 8, left: '50%', transform: 'translateX(-50%)',
+                  display: 'flex', gap: 6, flexWrap: 'wrap', justifyContent: 'center',
+                  pointerEvents: 'none', zIndex: 5,
+                  maxWidth: 'calc(100% - 24px)'
+                }
+              },
+                // Primary goal: prey
+                h('div', {
+                  style: {
+                    padding: '5px 12px', borderRadius: 999,
+                    background: goalDone ? 'rgba(16,185,129,0.85)' : 'rgba(15,23,42,0.85)',
+                    backdropFilter: 'blur(6px)',
+                    WebkitBackdropFilter: 'blur(6px)',
+                    border: '1px solid ' + (goalDone ? 'rgba(110,231,183,0.6)' : 'rgba(99,102,241,0.5)'),
+                    color: goalDone ? '#ecfdf5' : '#c7d2fe',
+                    fontSize: 12, fontWeight: 800,
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
+                    display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap'
+                  }
+                },
+                  h('span', null, (goalDone ? '\u2713 ' : '') + preyIcon + ' ' + preyLabel),
+                  // Mini progress bar
+                  h('span', {
+                    style: { width: 80, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.4)', overflow: 'hidden' }
+                  },
+                    h('span', {
+                      style: {
+                        display: 'block',
+                        width: Math.min(100, caught * 10) + '%',
+                        height: '100%',
+                        background: goalDone ? '#34d399' : 'linear-gradient(90deg,#a78bfa,#7dd3fc)',
+                        boxShadow: goalDone ? '0 0 6px #34d399' : '0 0 4px rgba(125,211,252,0.6)'
+                      }
+                    })
+                  ),
+                  h('span', { style: { fontFamily: 'monospace' } }, caught + '/10')
+                ),
+                // Secondary goal: map cave (only in cave scene)
+                inCave && h('div', {
+                  style: {
+                    padding: '5px 12px', borderRadius: 999,
+                    background: d.caveMapped ? 'rgba(16,185,129,0.85)' : 'rgba(15,23,42,0.85)',
+                    backdropFilter: 'blur(6px)',
+                    WebkitBackdropFilter: 'blur(6px)',
+                    border: '1px solid ' + (d.caveMapped ? 'rgba(110,231,183,0.6)' : 'rgba(245,158,11,0.5)'),
+                    color: d.caveMapped ? '#ecfdf5' : '#fde68a',
+                    fontSize: 12, fontWeight: 800,
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
+                    display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap'
+                  }
+                },
+                  h('span', null, (d.caveMapped ? '\u2713 ' : '') + '\uD83D\uDDFA Map cave'),
+                  h('span', {
+                    style: { width: 60, height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.4)', overflow: 'hidden' }
+                  },
+                    h('span', {
+                      style: {
+                        display: 'block',
+                        width: Math.min(100, clarity) + '%',
+                        height: '100%',
+                        background: clarity >= 80 ? '#34d399' : 'linear-gradient(90deg,#fbbf24,#f59e0b)',
+                        boxShadow: clarity >= 80 ? '0 0 6px #34d399' : '0 0 4px rgba(245,158,11,0.6)'
+                      }
+                    })
+                  ),
+                  h('span', { style: { fontFamily: 'monospace' } }, clarity + '%')
+                )
+              )
+            );
+          })(),
           // HUD readouts
           h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
             renderHudStat('Pulses', sonarStateRef.current.pulseCount, '\uD83D\uDD0A'),
@@ -3044,6 +3184,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         var freqDiff = shiftedFreq - dopplerFreq;
 
         return h('div', { className: 'space-y-4' },
+          // Doppler primer \u2014 most students arrive at this tab without
+          // a frame for what compression vs stretching of waves means.
+          // Stating it up front (with the visual mnemonic) before they
+          // see the simulator makes the slider experiment legible.
+          h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-indigo-900/30 border border-indigo-700/40' : 'bg-indigo-50 border border-indigo-300') },
+            h('div', { className: 'flex items-center gap-2 mb-2' },
+              h('span', { 'aria-hidden': 'true', style: { fontSize: 20 } }, '\uD83D\uDCDC'),
+              h('span', { className: 'text-sm font-black ' + (isDark ? 'text-indigo-200' : 'text-indigo-900') }, 'How the Doppler effect works')
+            ),
+            h('p', { className: 'text-[11px] leading-relaxed mb-3 ' + (isDark ? 'text-slate-200' : 'text-slate-700') },
+              'When a sound source and a listener move relative to each other, the listener hears a different frequency than what was emitted. Same physics that makes a passing ambulance siren drop in pitch as it goes by, and the same trick a bat uses to read whether prey is approaching or fleeing.'
+            ),
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+              [
+                { icon: '\u27A1\uFE0F\uD83E\uDD97', label: 'Approaching',  color: '#60a5fa', explain: 'Waves get COMPRESSED in front of the moth. Listener hears HIGHER frequency. Blue shift.' },
+                { icon: '\uD83E\uDD97\u27A1\uFE0F', label: 'Receding',     color: '#f87171', explain: 'Waves get STRETCHED behind the moth. Listener hears LOWER frequency. Red shift.' },
+                { icon: '\uD83E\uDD97\u23F8',  label: 'Stationary',   color: '#94a3b8', explain: 'No relative motion. Frequency unchanged. The reference case.' }
+              ].map(function(c, i) {
+                return h('div', { key: i,
+                  className: 'rounded-lg p-2 border-2',
+                  style: {
+                    borderColor: c.color + '88',
+                    background: isDark
+                      ? 'linear-gradient(135deg,' + c.color + '22 0%,rgba(15,23,42,0.5) 100%)'
+                      : 'linear-gradient(135deg,' + c.color + '1a 0%,rgba(255,255,255,0.6) 100%)'
+                  }
+                },
+                  h('div', { className: 'flex items-center gap-1 mb-1' },
+                    h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, c.icon),
+                    h('span', { className: 'text-[11px] font-black', style: { color: c.color } }, c.label)
+                  ),
+                  h('p', { className: 'text-[10px] leading-tight ' + (isDark ? 'text-slate-300' : 'text-slate-700') }, c.explain)
+                );
+              })
+            ),
+            h('div', { className: 'mt-3 text-[11px] rounded p-2 italic ' + (isDark ? 'bg-slate-900/40 text-slate-300 border border-slate-700/40' : 'bg-white/70 text-slate-700 border border-indigo-200') },
+              h('strong', null, 'Try it: '), 'slide the moth speed below. Watch how the wave spacing on the canvas changes, and how the "Received" frequency readout moves up (toward) or down (away) from the "Emitted" frequency.'
+            )
+          ),
           // Doppler Simulator
           h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
             h('div', { className: 'flex items-center gap-2 mb-3' },
