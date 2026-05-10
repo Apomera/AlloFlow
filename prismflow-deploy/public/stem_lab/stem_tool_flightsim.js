@@ -1636,6 +1636,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.moveTo(pbg.x - bgDx, pbg.y - bgDy);
               gfx.quadraticCurveTo(pbg.x, pbg.y - 6 * pbg.t, pbg.x + bgDx, pbg.y + bgDy);
               gfx.stroke();
+
+              // Dam upstream of the bridge — only when the river-region
+              // seed is in the top tier. A concrete wall perpendicular
+              // to the river bearing, with a small reservoir (lighter blue
+              // ellipse) immediately behind it. Hydroelectric infrastructure.
+              if (bgSeed > 0.85) {
+                var damLat = state.lat + Math.cos(bgRivBearing) * 0.10;
+                var damLon = state.lon + Math.sin(bgRivBearing) * 0.10;
+                var pdam = projectLatLon(damLat, damLon);
+                if (pdam) {
+                  var damLen = Math.max(10, 26 * pdam.t);
+                  var damDx = Math.cos(perpAng) * damLen / 2;
+                  var damDy = Math.sin(perpAng) * damLen / 2 * 0.4;
+                  // Reservoir behind dam (slightly upstream)
+                  var resLat = state.lat + Math.cos(bgRivBearing) * 0.115;
+                  var resLon = state.lon + Math.sin(bgRivBearing) * 0.115;
+                  var pres = projectLatLon(resLat, resLon);
+                  if (pres) {
+                    gfx.fillStyle = 'rgba(95,140,170,' + (0.7 * fade) + ')';
+                    gfx.beginPath();
+                    gfx.ellipse(pres.x, pres.y, damLen * 0.7, damLen * 0.32, perpAng, 0, Math.PI * 2);
+                    gfx.fill();
+                  }
+                  // Dam wall (concrete)
+                  gfx.strokeStyle = 'rgba(180,178,172,' + (0.9 * fade) + ')';
+                  gfx.lineWidth = Math.max(2.5, 4 * pdam.t);
+                  gfx.beginPath();
+                  gfx.moveTo(pdam.x - damDx, pdam.y - damDy);
+                  gfx.lineTo(pdam.x + damDx, pdam.y + damDy);
+                  gfx.stroke();
+                  // Spillway: a darker stripe in the middle
+                  gfx.strokeStyle = 'rgba(60,75,95,' + (0.8 * fade) + ')';
+                  gfx.lineWidth = Math.max(1, 1.6 * pdam.t);
+                  gfx.beginPath();
+                  gfx.moveTo(pdam.x - damDx * 0.15, pdam.y - damDy * 0.15);
+                  gfx.lineTo(pdam.x + damDx * 0.15, pdam.y + damDy * 0.15);
+                  gfx.stroke();
+                }
+              }
             }
           }
         }
@@ -1770,6 +1809,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 gfx.arc(lhX, lhY - lhH, Math.max(0.5, 0.8 * phb.t), 0, Math.PI * 2);
                 gfx.fill();
               }
+            }
+          }
+        }
+
+        // ── Quarries: terraced gray pits at deterministic rural cells.
+        // Sparse (~3% of cells on a coarser grid). Drawn as 4 concentric
+        // ellipses descending into the pit, each one smaller and darker
+        // than the last, with a small dirt road accessing the floor.
+        if (aglAlt < 2500) {
+          var qStep = 0.07;
+          var qlatC = Math.round(state.lat / qStep) * qStep;
+          var qlonC = Math.round(state.lon / qStep) * qStep;
+          for (var qi = -2; qi <= 2; qi++) {
+            for (var qj = -2; qj <= 2; qj++) {
+              var qLat = qlatC + qi * qStep;
+              var qLon = qlonC + qj * qStep;
+              var qSeed = terrainHash(qLat * 367, qLon * 419);
+              if (qSeed < 0.97) continue; // ~3% of cells
+              var pq = projectLatLon(qLat, qLon);
+              if (!pq) continue;
+              var pitR = Math.max(8, 18 * pq.t);
+              // 4 terraces: rim → floor, each darker and smaller
+              var terraceColors = [
+                'rgba(190,180,165,',  // rim — light dust
+                'rgba(155,145,130,',  // upper bench
+                'rgba(115,108,98,',   // mid bench
+                'rgba(78,72,65,'      // floor
+              ];
+              for (var tr = 0; tr < 4; tr++) {
+                var trR = pitR * (1 - tr * 0.18);
+                gfx.fillStyle = terraceColors[tr] + (0.85 * fade) + ')';
+                gfx.beginPath();
+                gfx.ellipse(pq.x, pq.y, trR, trR * 0.55, 0, 0, Math.PI * 2);
+                gfx.fill();
+              }
+              // Access road switchback — one curved line from rim to floor
+              gfx.strokeStyle = 'rgba(140,128,112,' + (0.7 * fade) + ')';
+              gfx.lineWidth = Math.max(0.5, 0.9 * pq.t);
+              gfx.beginPath();
+              gfx.moveTo(pq.x - pitR * 0.85, pq.y);
+              gfx.quadraticCurveTo(pq.x - pitR * 0.4, pq.y + pitR * 0.25, pq.x, pq.y);
+              gfx.stroke();
             }
           }
         }
@@ -1959,6 +2040,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.fill();
         }
         gfx.restore();
+      };
+
+      // ── Migrating goose V-formations at low altitude ──
+      // A single 7-bird V drifts slowly across the sky over ~3 minutes.
+      // Each bird is two short angled strokes (a tiny check-mark shape)
+      // that flap with a sin(time) rhythm. Distinct from the existing
+      // bird-flock rendering at higher altitudes — these are noticeably
+      // organized in a V pattern, very Maine-fall.
+      var drawGooseFormation = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return;
+        if (state.altitude > 6000) return; // geese fly low
+        var period = 180;
+        // Hash on slowly-rotating seed so the V appears in different
+        // sessions at different paths
+        var slot = Math.floor(time / period);
+        var slotHash = ((slot * 9301 + 49297) % 233280) / 233280;
+        if (slotHash < 0.55) return; // some periods have no flock
+        var goingRight = slotHash > 0.78;
+        var phase = ((time % period) / period);
+        var leadX = goingRight
+          ? phase * (W + 200) - 100
+          : (1 - phase) * (W + 200) - 100;
+        // Vertical band: lower half of sky (geese low)
+        var bandHash = ((slot * 7 + 11) % 23) / 23;
+        var leadY = horizonY * 0.40 + bandHash * horizonY * 0.30;
+        // 7 birds in a V — leader at apex, 3 trailing on each wing
+        var sep = 9; // px between birds along the wings
+        var birdColor = 'rgba(45,38,32,0.85)';
+        gfx.strokeStyle = birdColor;
+        gfx.lineWidth = 0.9;
+        for (var bi = 0; bi < 7; bi++) {
+          // Bird offset relative to leader
+          var arm = bi === 0 ? 0 : (bi - 1) % 2 === 0 ? -1 : 1; // alternating sides
+          var rank = bi === 0 ? 0 : Math.ceil(bi / 2);          // 1,1,2,2,3,3
+          var bdx = (goingRight ? -1 : 1) * rank * sep;
+          var bdy = rank * sep * 0.55;
+          var bx = leadX + bdx + arm * rank * sep * 0.5;
+          var by = leadY + bdy;
+          // Wing flap: angle between body and wings opens/closes
+          var flap = 0.55 + 0.35 * Math.sin(time * 6 + bi * 0.4);
+          var wingLen = 2.6;
+          // Two strokes forming a "wide checkmark" or "wing pair"
+          gfx.beginPath();
+          gfx.moveTo(bx - wingLen, by + wingLen * (1 - flap));
+          gfx.lineTo(bx, by);
+          gfx.lineTo(bx + wingLen, by + wingLen * (1 - flap));
+          gfx.stroke();
+        }
       };
 
       // ── Distant thunderstorm cells on the horizon ──
@@ -2169,20 +2298,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   var shX = ((terrainHash(shipSeed + sh, 9) * W) + time * (2 + sh) * 3) % W;
                   var shY = y + Math.sin(time * 1.5 + sh) * 0.5;
                   var shSize = Math.max(1.5, 3 + depth * 4);
+                  // The first ship occasionally upgrades to a CARGO SHIP
+                  // with a row of stacked containers — instantly readable
+                  // as a freighter rather than a small fishing boat.
+                  var isCargo = sh === 0 && terrainHash(shipSeed, 19) > 0.55 && shSize > 2.8;
+                  if (isCargo) shSize *= 1.6;
                   // Hull
-                  gfx.fillStyle = sh % 2 === 0 ? 'rgba(40,40,55,0.8)' : 'rgba(180,40,40,0.75)';
+                  gfx.fillStyle = sh % 2 === 0 ? 'rgba(40,40,55,0.85)' : 'rgba(180,40,40,0.8)';
                   gfx.fillRect(shX - shSize, shY, shSize * 2, shSize * 0.4);
-                  // Superstructure
-                  gfx.fillStyle = 'rgba(240,240,240,0.7)';
-                  gfx.fillRect(shX - shSize * 0.3, shY - shSize * 0.35, shSize * 0.6, shSize * 0.4);
+                  if (isCargo) {
+                    // Container stack — alternating colored boxes
+                    var contColors = ['#dc2626', '#f59e0b', '#0284c7', '#16a34a', '#a855f7'];
+                    var contRowN = 8;
+                    var contW = shSize * 1.7 / contRowN;
+                    var contH = shSize * 0.22;
+                    for (var cn = 0; cn < contRowN; cn++) {
+                      var cnSeed = (shipSeed + cn * 7 + sh * 3) >>> 0;
+                      gfx.fillStyle = contColors[cnSeed % contColors.length];
+                      gfx.globalAlpha = 0.85;
+                      gfx.fillRect(shX - shSize * 0.85 + cn * contW, shY - contH, contW * 0.92, contH);
+                    }
+                    gfx.globalAlpha = 1;
+                    // Bridge tower at stern (rear)
+                    gfx.fillStyle = 'rgba(245,245,245,0.85)';
+                    gfx.fillRect(shX + shSize * 0.6, shY - shSize * 0.55, shSize * 0.3, shSize * 0.55);
+                    // Smokestack with thin vertical stripe
+                    gfx.fillStyle = 'rgba(60,55,55,0.85)';
+                    gfx.fillRect(shX + shSize * 0.78, shY - shSize * 0.85, shSize * 0.12, shSize * 0.3);
+                  } else {
+                    // Smaller boat — superstructure cabin
+                    gfx.fillStyle = 'rgba(240,240,240,0.7)';
+                    gfx.fillRect(shX - shSize * 0.3, shY - shSize * 0.35, shSize * 0.6, shSize * 0.4);
+                  }
                   // Wake (V-shape trail)
-                  gfx.strokeStyle = 'rgba(255,255,255,' + (0.25 + depth * 0.25) + ')';
-                  gfx.lineWidth = 0.8;
+                  gfx.strokeStyle = 'rgba(255,255,255,' + (0.3 + depth * 0.3) + ')';
+                  gfx.lineWidth = isCargo ? 1.2 : 0.8;
                   gfx.beginPath();
                   gfx.moveTo(shX - shSize * 1.2, shY + shSize * 0.5);
-                  gfx.lineTo(shX - shSize * 4, shY + shSize * 1.2);
+                  gfx.lineTo(shX - shSize * 4.5, shY + shSize * 1.4);
                   gfx.moveTo(shX - shSize * 1.2, shY + shSize * 0.5);
-                  gfx.lineTo(shX - shSize * 4, shY - shSize * 0.3);
+                  gfx.lineTo(shX - shSize * 4.5, shY - shSize * 0.4);
                   gfx.stroke();
                 }
               }
@@ -7071,6 +7226,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Distant thunderstorm cells with anvil + rain shafts.
           drawDistantStorms(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Migrating goose V-formation drifting low across the sky.
+          drawGooseFormation(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Distant hills poking above the horizon — a deterministic silhouette
           // seeded by lat/lon so each airport gets a consistent skyline instead
