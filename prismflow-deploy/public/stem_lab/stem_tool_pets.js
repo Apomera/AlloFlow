@@ -4229,7 +4229,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // from numbers. Each scene is a stylized SVG built from simple
     // shapes — no external assets, no rendering loop, idle motion
     // via CSS keyframes that honor prefers-reduced-motion.
-    function renderPetScene(species, careSim, dayIdx, totalDays, hasChosen) {
+    function renderPetScene(species, careSim, dayIdx, totalDays, hasChosen, onInteract) {
       // Mood from average welfare. The 4 pet-welfare meters drive
       // posture; the OWNER meters (energy/money) don't change the
       // animal's behavior — they only affect what the student can
@@ -4609,7 +4609,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               }
             }, c.icon + ' ' + c.label);
           })
-        )
+        ),
+
+        // ── Interactive care zones ──
+        // Five clickable zones overlaying the scene let the student
+        // ACTIVELY care for the animal (pet, feed, play, water, clean)
+        // instead of only choosing scenarios. Each is once-per-day.
+        // Positioned over the relevant scene element so the connection
+        // between "click the bowl" and "the bowl gets refilled" is direct.
+        onInteract && (function() {
+          var todayInts = ((careSim.dailyInteractions || {})[dayIdx]) || {};
+          // Each zone: { kind, leftPct, topPct, icon, label }
+          // Positions tuned to where the items appear in the per-species SVGs.
+          var zones = [
+            { kind: 'pet',   leftPct: 52, topPct: 65, icon: '🤚', label: 'Pet · +bond' },
+            { kind: 'feed',  leftPct: 31, topPct: 85, icon: '🍖', label: 'Feed · +phys' },
+            { kind: 'water', leftPct: 40, topPct: 88, icon: '💧', label: 'Water · +phys' },
+            { kind: 'play',  leftPct: 75, topPct: 85, icon: '🧩', label: 'Play · +mental' },
+            { kind: 'clean', leftPct: 12, topPct: 90, icon: '🧹', label: 'Clean · +env' }
+          ];
+          // Want bubble — when an individual meter is critically low,
+          // float a thought icon above the animal pointing at what to do.
+          var lowestKey = null, lowestVal = Infinity;
+          [['phys', careSim.phys, 'feed'], ['ment', careSim.ment, 'play'], ['soc', careSim.soc, 'pet'], ['env', careSim.env, 'clean']].forEach(function(t) {
+            if (t[1] < 40 && t[1] < lowestVal) { lowestVal = t[1]; lowestKey = t; }
+          });
+          var wantIcon = lowestKey
+            ? (lowestKey[2] === 'feed' ? '🍖' : lowestKey[2] === 'play' ? '🧩' : lowestKey[2] === 'pet' ? '💗' : '🧹')
+            : null;
+
+          return h('div', { style: { position: 'absolute', inset: 0, pointerEvents: 'none' } },
+            // Want bubble (positioned above animal)
+            wantIcon && h('div', {
+              'aria-hidden': 'true',
+              style: {
+                position: 'absolute',
+                left: '52%', top: '18%',
+                transform: 'translate(-50%, 0)',
+                background: 'rgba(255,255,255,0.94)',
+                border: '2px solid #fca5a5',
+                borderRadius: 16,
+                padding: '4px 10px',
+                fontSize: 18,
+                fontWeight: 700,
+                color: '#7f1d1d',
+                boxShadow: '0 4px 14px rgba(220,38,38,0.30)',
+                animation: 'petslab-breathe 2.1s ease-in-out infinite',
+                pointerEvents: 'none'
+              }
+            },
+              wantIcon, ' ',
+              h('span', { style: { fontSize: 11 } }, 'wants this')
+            ),
+            // Interactive zones
+            zones.map(function(z) {
+              var done = !!todayInts[z.kind];
+              return h('button', {
+                key: z.kind,
+                'data-pets-focusable': true,
+                onClick: function(ev) { ev.stopPropagation(); onInteract(z.kind); },
+                'aria-label': (done ? 'Already done today: ' : 'Care interaction: ') + z.label,
+                title: done ? 'Already done today' : z.label,
+                style: {
+                  position: 'absolute',
+                  left: z.leftPct + '%', top: z.topPct + '%',
+                  transform: 'translate(-50%, -50%)',
+                  width: 44, height: 44,
+                  borderRadius: '50%',
+                  border: '2px solid ' + (done ? 'rgba(132,204,22,0.7)' : 'rgba(255,255,255,0.65)'),
+                  background: done
+                    ? 'rgba(132,204,22,0.30)'
+                    : 'rgba(15,23,42,0.55)',
+                  color: '#ffffff',
+                  fontSize: 18,
+                  cursor: done ? 'default' : 'pointer',
+                  pointerEvents: 'auto',
+                  backdropFilter: 'blur(4px)',
+                  WebkitBackdropFilter: 'blur(4px)',
+                  boxShadow: done
+                    ? '0 0 8px rgba(132,204,22,0.55)'
+                    : '0 0 0 1px rgba(0,0,0,0.25), 0 4px 10px rgba(0,0,0,0.3)',
+                  transition: 'transform .15s ease, box-shadow .15s ease',
+                  opacity: done ? 0.85 : 1
+                }
+              }, done ? '✓' : z.icon);
+            })
+          );
+        })()
       );
     }
 
@@ -4657,6 +4743,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           if (earned) awardBadge('pets_caregiver', 'Caring Pet-Owner (week complete)');
           upd('careSim', Object.assign({}, careSim, { done: true, badgeEarned: earned }));
         }
+      }
+
+      // Routine-care interactions. Each can be done ONCE per day. The
+      // scenario choice still drives the headline outcome of the day,
+      // but these little daily interactions let the student feel like
+      // they're actually caring for the animal between scenarios:
+      // pet the dog, refill the bowl, swap out the toy, top off the
+      // water. Costs a sliver of player energy / money so that
+      // spamming doesn't trivially max the meters.
+      var INTERACT_EFFECTS = {
+        pet:   { soc: 4, en: -2, money: 0,  toast: '💗 Calm pet & talk: bond strengthens.',          eff: '+4 social · -2 energy' },
+        feed:  { phys: 5, en: -1, money: -3, toast: '🍖 Bowl topped off with fresh food.',            eff: '+5 physical · -$3 · -1 energy' },
+        play:  { ment: 5, en: -4, money: 0,  toast: '🧩 Play session: tail wag / purr / binky.',       eff: '+5 mental · -4 energy' },
+        water: { phys: 2, en: -1, money: 0,  toast: '💧 Fresh water — small daily basic.',            eff: '+2 physical · -1 energy' },
+        clean: { env: 5, en: -3, money: 0,  toast: '🏠 Habitat scrub: bedding clean, smells right.', eff: '+5 environment · -3 energy' }
+      };
+      function petInteract(kind) {
+        if (!careSim || careSim.done) return;
+        var d0 = careSim.day;
+        var ints = Object.assign({}, (careSim.dailyInteractions || {}));
+        var todayInts = Object.assign({}, (ints[d0] || {}));
+        if (todayInts[kind]) {
+          if (addToast) addToast('Already did that today. Try Next Day.');
+          return;
+        }
+        var fx = INTERACT_EFFECTS[kind];
+        if (!fx) return;
+        todayInts[kind] = true;
+        ints[d0] = todayInts;
+        var clamp01 = function(v) { return Math.max(0, Math.min(100, v)); };
+        upd('careSim', Object.assign({}, careSim, {
+          phys: clamp01(careSim.phys + (fx.phys || 0)),
+          ment: clamp01(careSim.ment + (fx.ment || 0)),
+          soc:  clamp01(careSim.soc  + (fx.soc  || 0)),
+          env:  clamp01(careSim.env  + (fx.env  || 0)),
+          en:   clamp01(careSim.en   + (fx.en   || 0)),
+          money: careSim.money + (fx.money || 0),
+          lowMoney: careSim.lowMoney || (careSim.money + (fx.money || 0)) < 0,
+          dailyInteractions: ints,
+          lastInteract: { kind: kind, t: Date.now() }
+        }));
+        if (addToast) addToast(fx.toast);
+        if (typeof petsAnnounce === 'function') petsAnnounce(fx.toast + ' ' + fx.eff);
       }
       function reset() { upd('careSim', null); }
       // Species picker
@@ -4790,11 +4919,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           );
         })
       );
+      // ── Today's Care tracker — 5 interactions, done/available state ──
+      var todayInts = ((careSim.dailyInteractions || {})[careSim.day]) || {};
+      var careTrack = h('div', {
+        style: {
+          padding: '10px 12px', borderRadius: 10, background: T.cardAlt,
+          border: '1px solid ' + T.border,
+          marginBottom: 12,
+          display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap'
+        }
+      },
+        h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, textTransform: 'uppercase', letterSpacing: '0.04em', minWidth: 88 } }, '🗓 Today\'s care'),
+        [
+          { kind: 'pet',   icon: '🤚', label: 'Pet',    short: '+bond' },
+          { kind: 'feed',  icon: '🍖', label: 'Feed',   short: '+phys -$3' },
+          { kind: 'water', icon: '💧', label: 'Water',  short: '+phys' },
+          { kind: 'play',  icon: '🧩', label: 'Play',   short: '+ment' },
+          { kind: 'clean', icon: '🧹', label: 'Clean',  short: '+env' }
+        ].map(function(c) {
+          var done = !!todayInts[c.kind];
+          return h('button', {
+            key: c.kind,
+            'data-pets-focusable': true,
+            onClick: function() { petInteract(c.kind); },
+            'aria-label': (done ? 'Already done today: ' : 'Do this care: ') + c.label + ' (' + c.short + ')',
+            title: done ? 'Already done today' : c.label + ' · ' + c.short,
+            style: {
+              fontSize: 11, fontWeight: 700,
+              padding: '6px 10px', borderRadius: 8,
+              border: '1px solid ' + (done ? 'rgba(132,204,22,0.55)' : T.border),
+              background: done ? 'rgba(132,204,22,0.18)' : T.card,
+              color: done ? '#a3e635' : T.text,
+              cursor: done ? 'default' : 'pointer',
+              opacity: done ? 0.85 : 1,
+              boxShadow: done ? 'inset 0 0 0 1px rgba(132,204,22,0.35)' : 'none'
+            }
+          },
+            (done ? '✓ ' : c.icon + ' ') + c.label,
+            h('span', { style: { fontSize: 10, opacity: 0.7, marginLeft: 6 } }, c.short)
+          );
+        })
+      );
+
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('📅 Pet-Care Week — ' + careSim.species.charAt(0).toUpperCase() + careSim.species.slice(1)),
         // Immersive habitat scene — animal posture, ambient items, and
         // status chips reflect the current welfare meters in real time.
-        renderPetScene(careSim.species, careSim, careSim.day, allDays.length, hasChosen),
+        // The 6th arg wires up the interactive care zones (pet/feed/water/
+        // play/clean buttons that overlay the scene).
+        renderPetScene(careSim.species, careSim, careSim.day, allDays.length, hasChosen, petInteract),
+        // Tap-friendly version of the same interactions, listed below the
+        // scene for keyboard / touch users who'd rather see the menu.
+        careTrack,
         meters,
         h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
           h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' } }, dayObj.label),
