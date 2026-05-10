@@ -1792,6 +1792,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 ]
           ),
 
+          // \u2500\u2500 Pedagogy row: Study Hall + Review Tough Questions \u2500\u2500
+          // These are the no-stakes learning surfaces. Study Hall = untimed
+          // drill; Review = flashcard queue of questions you got wrong.
+          unlockedSpells.length > 0 && (function() {
+            // Compute how many tough questions are queued (across the whole grimoire)
+            var statsHub = d.questionStats || {};
+            var toughCount = 0;
+            SPELLBOOK.forEach(function(sp) {
+              var bank = getMergedBank(sp, aiChallengeCache);
+              bank.forEach(function(qq) {
+                var st = statsHub[qq.prompt];
+                if (st && st.lastResult === 'backfire') toughCount++;
+              });
+            });
+            return h('div', { className: 'flex flex-col md:flex-row gap-2 mb-5' },
+              h('button', {
+                onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: null, practiceQuestion: null, practiceSession: null }); },
+                className: 'flex-1 px-5 py-2.5 rounded-xl font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border-2 border-emerald-200 focus:ring-2 focus:ring-emerald-400 focus:outline-none flex items-center justify-center gap-2',
+                'aria-label': 'Open Study Hall \u2014 untimed practice mode'
+              },
+                h('span', { className: 'text-xl' }, '\uD83D\uDCDA'),
+                h('div', { className: 'text-left' },
+                  h('div', { className: 'text-sm' }, 'Study Hall'),
+                  h('div', { className: 'text-[10px] text-emerald-600 font-normal' }, 'Untimed drill \u00B7 no damage \u00B7 full explanations')
+                )
+              ),
+              h('button', {
+                onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false }); },
+                className: 'flex-1 px-5 py-2.5 rounded-xl font-bold text-red-800 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none flex items-center justify-center gap-2',
+                'aria-label': 'Review tough questions \u2014 ' + toughCount + ' queued'
+              },
+                h('span', { className: 'text-xl' }, '\uD83C\uDFAF'),
+                h('div', { className: 'text-left' },
+                  h('div', { className: 'text-sm flex items-center gap-2' },
+                    'Review Tough',
+                    toughCount > 0 && h('span', { className: 'text-[10px] font-bold text-white bg-red-600 px-1.5 py-0.5 rounded-full' }, toughCount)
+                  ),
+                  h('div', { className: 'text-[10px] text-red-600 font-normal' },
+                    toughCount === 0
+                      ? 'No mistakes yet \u2014 keep playing'
+                      : 'Re-study what you got wrong'
+                  )
+                )
+              )
+            );
+          })(),
+
           // Trophy shelf
           unlockedSpells.length > 0 && h('section', { 'aria-label': 'Trophy shelf', className: 'mb-5' },
             h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, '\uD83C\uDFC6 Trophy Shelf'),
@@ -2368,16 +2415,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           var nextCounts = Object.assign({}, d.castCounts || {});
           nextCounts[s.id] = (nextCounts[s.id] || 0) + 1;
           updKey('castCounts', nextCounts);
-          // ── Spaced repetition ledger ──
+          // ── Spaced repetition + confidence ledger ──
           // Record this question's result so future picks can weight it.
-          // Keyed by prompt text (stable for static + AI questions alike).
+          // Also captures any confidence level the student set, which over
+          // time lets us detect calibration patterns (overconfidence drives
+          // the worst backfires; under-confidence often masks real knowing).
           var nextStats = Object.assign({}, d.questionStats || {});
           var prevStat = nextStats[challenge.prompt] || { attempts: 0, correctCount: 0 };
           nextStats[challenge.prompt] = {
             lastResult: result,
             lastSeen: Date.now(),
             attempts: (prevStat.attempts || 0) + 1,
-            correctCount: (prevStat.correctCount || 0) + (correct ? 1 : 0)
+            correctCount: (prevStat.correctCount || 0) + (correct ? 1 : 0),
+            lastConfidence: pendingCast.confidence || null
           };
           updKey('questionStats', nextStats);
 
@@ -2692,6 +2742,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             var s = findSpell(pendingCast.spellId);
             var c = pendingCast.challenge;
             var resolved = pendingCast.resolved;
+            var confidence = pendingCast.confidence || null;
+            // Confidence-calibration metacognitive notes shown after resolve.
+            // Teaches students to compare feeling-of-knowing vs outcome.
+            function calibrationNote(conf, result) {
+              if (!conf) return null;
+              var wasCorrect = result === 'hit' || result === 'crit';
+              if (conf === 'high' && wasCorrect)  return { tone: 'good',    text: '🎯 Calibrated: you said you knew it — and you did.' };
+              if (conf === 'high' && !wasCorrect) return { tone: 'caution', text: '⚠ Overconfident: felt sure but missed. Worth a second look in Study Hall.' };
+              if (conf === 'low'  && wasCorrect)  return { tone: 'good',    text: '🎁 Lucky guess — but maybe you knew more than you thought!' };
+              if (conf === 'low'  && !wasCorrect) return { tone: 'neutral', text: '🎯 Self-aware: you flagged the doubt, and the doubt was right. Add to Review.' };
+              if (conf === 'med'  && wasCorrect)  return { tone: 'good',    text: '✓ Pretty sure paid off.' };
+              if (conf === 'med'  && !wasCorrect) return { tone: 'neutral', text: 'Worth reviewing this one.' };
+              return null;
+            }
+            var calNote = resolved ? calibrationNote(confidence, pendingCast.result) : null;
             return h('div', {
               className: 'rounded-2xl p-4 mb-3 border-2 abs-fade',
               style: {
@@ -2708,6 +2773,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 h('div', { className: 'ml-auto text-[10px] text-slate-300' }, 'Faster + correct = critical!')
               ),
               h('p', { className: 'text-sm font-semibold text-slate-800 mb-3', role: 'group', 'aria-label': 'Challenge prompt' }, c.prompt),
+              // ── Confidence calibration (optional, metacognitive) ──
+              // Three quick buttons. Picking one is optional — answer is always
+              // clickable. If a level is set, the post-resolve note compares
+              // their feeling-of-knowing to the actual result. Builds calibration.
+              !resolved && h('div', { className: 'mb-3' },
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1' }, '🧠 Confidence check (optional)'),
+                h('div', { className: 'grid grid-cols-3 gap-1.5' },
+                  [
+                    { level: 'low',  icon: '🤷', label: 'Guessing',    color: '#94a3b8' },
+                    { level: 'med',  icon: '🤔', label: 'Pretty sure', color: '#3b82f6' },
+                    { level: 'high', icon: '🔥', label: 'Know it',     color: '#16a34a' }
+                  ].map(function(opt) {
+                    var picked = confidence === opt.level;
+                    return h('button', {
+                      key: 'conf-' + opt.level,
+                      onClick: function() {
+                        sfxClick();
+                        mutateExp({ pendingCast: Object.assign({}, pendingCast, { confidence: opt.level }) });
+                      },
+                      className: 'text-[11px] py-1.5 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'font-bold' : 'font-normal hover:bg-slate-50'),
+                      style: picked ? { borderColor: opt.color, background: opt.color + '14', color: opt.color } : { borderColor: '#e2e8f0', color: '#64748b' },
+                      'aria-label': opt.label + (picked ? ' (selected)' : ''),
+                      'aria-pressed': picked
+                    },
+                      h('span', { className: 'mr-1' }, opt.icon),
+                      opt.label
+                    );
+                  })
+                )
+              ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                 c.options.map(function(opt, i) {
                   var isSelected = resolved && pendingCast.selectedIndex === i;
@@ -2730,7 +2825,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               resolved && h('div', { className: 'mt-3 p-2 rounded-lg bg-slate-50 text-[11px] text-slate-700' },
                 h('strong', null, pendingCast.result === 'crit' ? 'Critical hit!' : pendingCast.result === 'hit' ? 'Hit.' : 'Backfire.'),
                 ' ', c.explain
-              )
+              ),
+              // Calibration metacognitive feedback — only if student set a confidence
+              calNote && h('div', {
+                className: 'mt-2 p-2 rounded-lg text-[11px] font-medium',
+                style: {
+                  background: calNote.tone === 'good' ? '#ecfdf5' : calNote.tone === 'caution' ? '#fef3c7' : '#f1f5f9',
+                  color: calNote.tone === 'good' ? '#065f46' : calNote.tone === 'caution' ? '#92400e' : '#334155',
+                  border: '1px solid ' + (calNote.tone === 'good' ? '#a7f3d0' : calNote.tone === 'caution' ? '#fcd34d' : '#cbd5e1')
+                }
+              }, calNote.text)
             );
           })(),
 
@@ -2934,6 +3038,361 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   );
                 })
               )
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: PRACTICE (Study Hall — untimed drill)
+      // ─────────────────────────────────────────────────
+      // Pedagogical core: low-stakes retrieval practice with full explanations
+      // visible after each answer. No timer, no HP, no enemies. SRS still
+      // weights the picks so weak questions resurface; correct answers still
+      // count toward castCounts so mastery tiers advance. This is the
+      // "deliberate practice" mode for students who need more retrievals
+      // before performance.
+      if (phase === 'practice') {
+        var practiceSpellId = d.practiceSpellId;
+        var practiceSpell = practiceSpellId ? findSpell(practiceSpellId) : null;
+        var practiceQ = d.practiceQuestion || null;
+        var practiceAnswered = !!(practiceQ && practiceQ.answered);
+        var practiceStats = { correct: 0, attempted: 0 };
+        if (d.practiceSession) { practiceStats = d.practiceSession; }
+
+        function startPractice(spellId) {
+          var sp = findSpell(spellId);
+          if (!sp) return;
+          var bank = getMergedBank(sp, aiChallengeCache);
+          var q = pickWeighted(bank, d.questionStats || {});
+          updSage({ practiceSpellId: spellId, practiceQuestion: { q: q, answered: false, selectedIndex: null }, practiceSession: { correct: 0, attempted: 0 } });
+          announceSR('Study Hall: ' + sp.name + '. ' + q.prompt);
+        }
+        function answerPractice(selectedIndex) {
+          if (!practiceSpell || !practiceQ || practiceAnswered) return;
+          var correct = selectedIndex === practiceQ.q.correctIndex;
+          // Update SRS stats — practice mode classifies as 'hit' (correct, untimed)
+          // or 'backfire' (incorrect). Never 'crit' (no time pressure).
+          var nextStats = Object.assign({}, d.questionStats || {});
+          var prev = nextStats[practiceQ.q.prompt] || { attempts: 0, correctCount: 0 };
+          nextStats[practiceQ.q.prompt] = {
+            lastResult: correct ? 'hit' : 'backfire',
+            lastSeen: Date.now(),
+            attempts: (prev.attempts || 0) + 1,
+            correctCount: (prev.correctCount || 0) + (correct ? 1 : 0)
+          };
+          // Bump per-spell cast count + session stats
+          var nextCounts = Object.assign({}, d.castCounts || {});
+          nextCounts[practiceSpell.id] = (nextCounts[practiceSpell.id] || 0) + 1;
+          var nextSession = {
+            correct: practiceStats.correct + (correct ? 1 : 0),
+            attempted: practiceStats.attempted + 1
+          };
+          updSage({
+            practiceQuestion: Object.assign({}, practiceQ, { answered: true, selectedIndex: selectedIndex, wasCorrect: correct }),
+            questionStats: nextStats,
+            castCounts: nextCounts,
+            practiceSession: nextSession,
+            totalCasts: (d.totalCasts || 0) + 1
+          });
+          if (correct) sfxCastHit(); else sfxBackfire();
+          announceSR((correct ? 'Correct. ' : 'Not quite. ') + practiceQ.q.explain);
+        }
+        function nextPractice() {
+          if (!practiceSpell) return;
+          var bank = getMergedBank(practiceSpell, aiChallengeCache);
+          var q = pickWeighted(bank, d.questionStats || {});
+          updKey('practiceQuestion', { q: q, answered: false, selectedIndex: null });
+          announceSR('Next question. ' + q.prompt);
+        }
+        function exitPractice() {
+          sfxClick();
+          updSage({ phase: 'hub', practiceSpellId: null, practiceQuestion: null, practiceSession: null });
+        }
+
+        // Spell-picker subview (no spell chosen yet)
+        if (!practiceSpell) {
+          var unlockedForPractice = SPELLBOOK.filter(function(s) { return currentlyUnlocked.indexOf(s.id) !== -1; });
+          return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 abs-fade' },
+            h('div', { className: 'flex items-center gap-3 mb-4' },
+              backBtn(exitPractice, 'Back to Spellforge'),
+              h('div', { className: 'flex-1' }),
+              h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, 'Study Hall')
+            ),
+            h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
+              h('div', { className: 'flex items-center gap-3' },
+                h('div', { className: 'text-4xl abs-float' }, '📚'),
+                h('div', { className: 'flex-1' },
+                  h('h1', { className: 'text-xl font-bold' }, 'Study Hall'),
+                  h('p', { className: 'text-sm text-emerald-100 mt-1' }, 'Untimed practice. No HP. No damage. Just retrieval + explanations. Failed questions resurface sooner.')
+                )
+              )
+            ),
+            unlockedForPractice.length === 0
+              ? h('div', { className: 'rounded-xl p-6 text-center bg-slate-50 border border-slate-300 text-sm text-slate-600' },
+                  'No spells unlocked yet. Play other STEM Lab tools to unlock spells, then come back here to practice.'
+                )
+              : h('div', null,
+                  h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, '🧪 Choose a spell to practice'),
+                  h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                    unlockedForPractice.map(function(s) {
+                      // Compute SRS health for this spell — % of its questions answered correctly in last attempt.
+                      var bank = getMergedBank(s, aiChallengeCache);
+                      var stats = d.questionStats || {};
+                      var seen = 0, mistakes = 0;
+                      bank.forEach(function(qq) {
+                        var st = stats[qq.prompt];
+                        if (st) { seen++; if (st.lastResult === 'backfire') mistakes++; }
+                      });
+                      var unseen = bank.length - seen;
+                      return h('button', {
+                        key: s.id,
+                        onClick: function() { sfxClick(); startPractice(s.id); },
+                        className: 'text-left p-3 rounded-xl border-2 border-slate-200 bg-white hover:border-emerald-400 hover:bg-emerald-50/50 focus:ring-2 focus:ring-emerald-400 focus:outline-none transition',
+                        style: { borderLeft: '4px solid ' + s.color },
+                        'aria-label': 'Practice ' + s.name + (mistakes > 0 ? ', ' + mistakes + ' tough questions waiting' : '')
+                      },
+                        h('div', { className: 'flex items-center gap-2 mb-1' },
+                          h('span', { className: 'text-2xl' }, s.icon),
+                          h('span', { className: 'font-bold text-sm', style: { color: s.color } }, s.name),
+                          mistakes > 0 && h('span', { className: 'ml-auto text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded' }, '⚠ ' + mistakes + ' tough')
+                        ),
+                        h('div', { className: 'text-[11px] text-slate-600' }, s.sourceLabel + ' · ' + bank.length + ' questions'),
+                        h('div', { className: 'text-[10px] text-slate-400 mt-0.5' },
+                          seen + ' practiced · ' + unseen + ' new'
+                        )
+                      );
+                    })
+                  )
+                )
+          );
+        }
+
+        // Active question subview
+        var pq = practiceQ.q;
+        var bankSize = getMergedBank(practiceSpell, aiChallengeCache).length;
+        var selectedIdx = practiceQ.selectedIndex;
+        var wasCorrect = practiceQ.wasCorrect;
+        return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade' },
+          h('div', { className: 'flex items-center gap-3 mb-3' },
+            h('button', {
+              onClick: function() { sfxClick(); updSage({ practiceSpellId: null, practiceQuestion: null }); },
+              className: 'text-xs font-semibold text-slate-500 hover:text-slate-800 underline'
+            }, '← Change spell'),
+            h('div', { className: 'flex-1 text-center' },
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-emerald-700' }, '📚 Study Hall — Untimed'),
+              h('div', { className: 'text-[11px] text-slate-500' },
+                practiceStats.correct + '/' + practiceStats.attempted + ' correct this session · ' + bankSize + ' total questions'
+              )
+            ),
+            h('button', {
+              onClick: exitPractice,
+              className: 'text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline'
+            }, 'End session')
+          ),
+          // Spell header
+          h('div', { className: 'rounded-xl p-3 mb-3 flex items-center gap-3', style: { background: practiceSpell.color + '14', border: '1px solid ' + practiceSpell.color + '40' } },
+            h('span', { className: 'text-3xl' }, practiceSpell.icon),
+            h('div', { className: 'flex-1' },
+              h('div', { className: 'font-bold', style: { color: practiceSpell.color } }, practiceSpell.name),
+              h('div', { className: 'text-[10px] text-slate-500' }, practiceSpell.sourceLabel + ' · ' + practiceSpell.element)
+            )
+          ),
+          // Question
+          h('div', { className: 'rounded-2xl p-5 mb-3 border-2 border-slate-200 bg-white' },
+            h('p', { className: 'text-sm font-semibold text-slate-800 mb-3 leading-relaxed' }, pq.prompt),
+            h('div', { className: 'grid grid-cols-1 gap-2' },
+              pq.options.map(function(opt, oi) {
+                var isSelected = selectedIdx === oi;
+                var isCorrect = oi === pq.correctIndex;
+                var revealed = practiceAnswered;
+                // Color states: unanswered = neutral, answered+correct = green, answered+wrong-selected = red, answered+correct-not-picked = green outline
+                var cls = 'text-left p-3 rounded-lg border-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 transition ';
+                if (!revealed) {
+                  cls += 'border-slate-200 bg-slate-50 hover:border-emerald-400 hover:bg-emerald-50 cursor-pointer';
+                } else if (isCorrect) {
+                  cls += 'border-emerald-500 bg-emerald-50 text-emerald-900 font-semibold';
+                } else if (isSelected) {
+                  cls += 'border-red-400 bg-red-50 text-red-900';
+                } else {
+                  cls += 'border-slate-200 bg-slate-50 opacity-60';
+                }
+                return h('button', {
+                  key: 'opt-' + oi,
+                  onClick: revealed ? null : function() { answerPractice(oi); },
+                  disabled: revealed,
+                  className: cls,
+                  'aria-label': 'Option ' + (oi + 1) + ': ' + opt + (revealed ? (isCorrect ? ' (correct)' : isSelected ? ' (your answer, incorrect)' : '') : '')
+                },
+                  h('span', { className: 'inline-block w-6 font-bold' }, String.fromCharCode(65 + oi) + '.'),
+                  opt,
+                  revealed && isCorrect && h('span', { className: 'ml-2' }, '✓'),
+                  revealed && isSelected && !isCorrect && h('span', { className: 'ml-2' }, '✗')
+                );
+              })
+            ),
+            // Explanation — ALWAYS visible after answer (key pedagogical move)
+            practiceAnswered && h('div', {
+              className: 'mt-4 p-3 rounded-lg',
+              style: { background: wasCorrect ? '#ecfdf5' : '#fef2f2', border: '1px solid ' + (wasCorrect ? '#a7f3d0' : '#fecaca') }
+            },
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider mb-1', style: { color: wasCorrect ? '#065f46' : '#991b1b' } },
+                wasCorrect ? '✓ Correct — why this is right' : '✗ Not quite — why the correct answer is right'
+              ),
+              h('div', { className: 'text-[12px] leading-relaxed', style: { color: wasCorrect ? '#065f46' : '#7f1d1d' } }, pq.explain)
+            )
+          ),
+          // Footer actions
+          practiceAnswered && h('div', { className: 'flex gap-2 justify-end' },
+            h('button', {
+              onClick: function() { sfxClick(); nextPractice(); },
+              className: 'px-5 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+            }, 'Next question →')
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: REVIEW_MISTAKES (flashcard queue)
+      // ─────────────────────────────────────────────────
+      // Surfaces every question whose lastResult is 'backfire' across the
+      // entire grimoire. Students can deliberately re-study what they got
+      // wrong. Marking "Got it now" updates the question's lastResult to
+      // 'hit' so it drops back into the normal SRS rotation rather than
+      // being permanently boosted.
+      if (phase === 'review_mistakes') {
+        var allStats = d.questionStats || {};
+        // Build a list of {spell, question, stat} for every backfired question.
+        var toughList = [];
+        SPELLBOOK.forEach(function(sp) {
+          var bank = getMergedBank(sp, aiChallengeCache);
+          bank.forEach(function(qq) {
+            var st = allStats[qq.prompt];
+            if (st && st.lastResult === 'backfire') {
+              toughList.push({ spell: sp, q: qq, stat: st });
+            }
+          });
+        });
+        // Sort: most-recently-failed first (so freshest mistakes are top-of-queue)
+        toughList.sort(function(a, b) { return (b.stat.lastSeen || 0) - (a.stat.lastSeen || 0); });
+
+        var reviewIdx = d.reviewIdx || 0;
+        var reviewRevealed = !!d.reviewRevealed;
+        var current = toughList[reviewIdx];
+
+        function gotIt() {
+          if (!current) return;
+          sfxCastHit();
+          var nextStats = Object.assign({}, d.questionStats || {});
+          var prev = nextStats[current.q.prompt] || { attempts: 0, correctCount: 0 };
+          nextStats[current.q.prompt] = {
+            lastResult: 'hit', // Demote from 'backfire' so SRS weight drops
+            lastSeen: Date.now(),
+            attempts: (prev.attempts || 0) + 1,
+            correctCount: (prev.correctCount || 0) + 1
+          };
+          updSage({ questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false });
+          announceSR('Marked as understood. Next question.');
+        }
+        function stillTough() {
+          if (!current) return;
+          sfxBackfire();
+          // Keep result as backfire (lastSeen updated, attempts bumped)
+          var nextStats = Object.assign({}, d.questionStats || {});
+          var prev = nextStats[current.q.prompt] || { attempts: 0 };
+          nextStats[current.q.prompt] = Object.assign({}, prev, {
+            lastResult: 'backfire',
+            lastSeen: Date.now(),
+            attempts: (prev.attempts || 0) + 1
+          });
+          updSage({ questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false });
+          announceSR('Still tough — keeping in review queue. Next question.');
+        }
+        function exitReview() {
+          sfxClick();
+          updSage({ phase: 'hub', reviewIdx: 0, reviewRevealed: false });
+        }
+
+        if (toughList.length === 0) {
+          return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade' },
+            h('div', { className: 'flex items-center gap-3 mb-4' },
+              backBtn(exitReview, 'Back to Spellforge'),
+              h('div', { className: 'flex-1' }),
+              h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, 'Review')
+            ),
+            h('div', { className: 'rounded-2xl p-8 text-center', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
+              h('div', { className: 'text-6xl mb-3' }, '✨'),
+              h('h2', { className: 'text-2xl font-bold mb-2' }, 'Clean slate!'),
+              h('p', { className: 'text-sm text-emerald-100' }, 'No questions in the review queue. Either you haven\'t played enough yet, or you\'re crushing it. Try Study Hall for low-stakes practice, or launch an expedition.')
+            )
+          );
+        }
+
+        if (reviewIdx >= toughList.length) {
+          return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade text-center' },
+            h('div', { className: 'rounded-2xl p-8', style: { background: 'linear-gradient(135deg, #14532d 0%, #16a34a 100%)', color: 'white' } },
+              h('div', { className: 'text-6xl mb-3' }, '🎓'),
+              h('h2', { className: 'text-2xl font-bold mb-2' }, 'Review complete!'),
+              h('p', { className: 'text-sm text-emerald-100 mb-4' }, 'You reviewed ' + toughList.length + ' tough question' + (toughList.length > 1 ? 's' : '') + '. Strong work — that\'s how learning sticks.'),
+              h('button', { onClick: exitReview, className: 'px-6 py-2.5 rounded-xl font-bold text-emerald-800 bg-white hover:bg-emerald-50' }, 'Back to Spellforge')
+            )
+          );
+        }
+
+        var rq = current.q;
+        return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 abs-fade' },
+          h('div', { className: 'flex items-center gap-3 mb-3' },
+            backBtn(exitReview, 'Back to Spellforge'),
+            h('div', { className: 'flex-1 text-center' },
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-widest text-red-700' }, '🎯 Review Tough Questions'),
+              h('div', { className: 'text-[11px] text-slate-500' }, 'Card ' + (reviewIdx + 1) + ' of ' + toughList.length)
+            ),
+            h('div', { style: { width: '60px' } })
+          ),
+          // Spell context
+          h('div', { className: 'rounded-xl p-2 mb-3 flex items-center gap-2 text-[11px]', style: { background: current.spell.color + '14', border: '1px solid ' + current.spell.color + '40' } },
+            h('span', null, current.spell.icon),
+            h('span', { className: 'font-semibold', style: { color: current.spell.color } }, current.spell.name),
+            h('span', { className: 'text-slate-400' }, '·'),
+            h('span', { className: 'text-slate-600' }, current.spell.sourceLabel),
+            h('span', { className: 'ml-auto text-slate-400' }, current.stat.attempts + ' attempt' + (current.stat.attempts > 1 ? 's' : ''))
+          ),
+          // Question (flashcard style: prompt visible, answer revealed on click)
+          h('div', { className: 'rounded-2xl p-5 mb-3 border-2 border-red-200 bg-red-50' },
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-red-700 mb-2' }, '❓ Question'),
+            h('p', { className: 'text-sm font-semibold text-slate-800 leading-relaxed mb-4' }, rq.prompt),
+            h('div', { className: 'grid grid-cols-1 gap-1.5' },
+              rq.options.map(function(opt, oi) {
+                var isCorrect = oi === rq.correctIndex;
+                return h('div', {
+                  key: 'rev-opt-' + oi,
+                  className: 'text-[12px] p-2 rounded ' + (reviewRevealed && isCorrect ? 'bg-emerald-100 text-emerald-900 font-bold border border-emerald-300' : 'bg-white text-slate-700 border border-slate-200'),
+                  'aria-label': 'Option ' + (oi + 1) + (reviewRevealed && isCorrect ? ' (correct answer)' : '')
+                },
+                  h('span', { className: 'inline-block w-6 font-bold' }, String.fromCharCode(65 + oi) + '.'),
+                  opt,
+                  reviewRevealed && isCorrect && h('span', { className: 'ml-2' }, '✓')
+                );
+              })
+            ),
+            !reviewRevealed && h('button', {
+              onClick: function() { sfxClick(); updKey('reviewRevealed', true); },
+              className: 'mt-4 w-full py-2.5 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 focus:ring-2 focus:ring-red-400 focus:outline-none'
+            }, '👁 Reveal answer + explanation'),
+            reviewRevealed && h('div', { className: 'mt-4 p-3 rounded-lg bg-white border border-emerald-200' },
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-1' }, '✓ Why this is correct'),
+              h('div', { className: 'text-[12px] leading-relaxed text-slate-800' }, rq.explain)
+            )
+          ),
+          // Action buttons (only after reveal)
+          reviewRevealed && h('div', { className: 'flex gap-2' },
+            h('button', {
+              onClick: stillTough,
+              className: 'flex-1 py-2.5 rounded-xl font-bold text-red-700 bg-red-50 hover:bg-red-100 border-2 border-red-200 focus:ring-2 focus:ring-red-400 focus:outline-none'
+            }, 'Still tough — keep in queue'),
+            h('button', {
+              onClick: gotIt,
+              className: 'flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+            }, 'Got it now ✓')
+          )
         );
       }
 
