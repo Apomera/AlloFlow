@@ -7466,36 +7466,88 @@ const d = labToolData.solarSystem;
                     React.createElement("span", { className: "text-[11px] text-white/70 font-bold" }, "\u2B07 Deep")
                   )
                 ),
-                // Layer detail cards
-                React.createElement("div", { className: "space-y-2" },
+                // Layer detail cards. Cosmic-chrome pass: each card now has
+                // a gradient surface tinted by the layer color, a thick left
+                // accent strip (acts as "altitude bar"), color-coded chips
+                // for altitude / temp / pressure, and a stronger active state
+                // (lifted + outer ring + inner highlight). Click anywhere to
+                // jump the probe to that layer.
+                React.createElement("div", { className: "space-y-2.5" },
                   DESCENT_LAYERS[sel.name].map(function(layer, li) {
                     var isActive = d._descentProbeY != null && Math.floor(d._descentProbeY * DESCENT_LAYERS[sel.name].length) === li;
                     return React.createElement("div", {
                       key: li,
-                      className: "flex items-center gap-3 rounded-lg p-3 border transition-all cursor-pointer hover:shadow-md",
+                      className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all cursor-pointer",
                       style: {
-                        background: isActive ? layer.color + '30' : layer.color + '10',
-                        borderColor: isActive ? layer.color : layer.color + '30',
-                        boxShadow: isActive ? '0 0 12px ' + layer.color + '40' : 'none'
+                        background: isActive
+                          ? "linear-gradient(135deg," + layer.color + "44 0%," + layer.color + "1a 60%,rgba(15,23,42,0.6) 100%)"
+                          : "linear-gradient(135deg," + layer.color + "1f 0%," + layer.color + "0a 60%,rgba(15,23,42,0.4) 100%)",
+                        borderColor: isActive ? layer.color : layer.color + '40',
+                        boxShadow: isActive
+                          ? "0 0 0 2px " + layer.color + "55, 0 6px 18px " + layer.color + "33, inset 0 1px 0 rgba(255,255,255,0.08)"
+                          : "0 1px 3px rgba(15,23,42,0.25), inset 0 1px 0 rgba(255,255,255,0.04)",
+                        transform: isActive ? "translateY(-1px)" : "translateY(0)"
                       },
-                      onClick: function() { upd('_descentProbeY', li / DESCENT_LAYERS[sel.name].length); tryAward('atmosphere_descent'); }
+                      onClick: function() { upd('_descentProbeY', li / DESCENT_LAYERS[sel.name].length); tryAward('atmosphere_descent'); },
+                      role: "button", "aria-pressed": isActive ? "true" : "false",
+                      "aria-label": layer.name + " at " + (layer.alt >= 0 ? '+' : '') + layer.alt + " km. " + layer.desc + " Temperature " + layer.temp + ". Pressure " + layer.pressure + "."
                     },
+                      // Left accent strip — wider on active, glows on hover
                       React.createElement("div", {
-                        className: "w-3 h-3 rounded-full flex-shrink-0",
-                        style: { background: layer.color, boxShadow: isActive ? '0 0 8px ' + layer.color : 'none' }
+                        "aria-hidden": "true",
+                        style: {
+                          width: isActive ? 6 : 4, flexShrink: 0,
+                          background: "linear-gradient(180deg," + layer.color + " 0%," + layer.color + "aa 100%)",
+                          boxShadow: isActive ? "0 0 10px " + layer.color : "none",
+                          transition: "width .18s ease"
+                        }
                       }),
-                      React.createElement("div", { className: "flex-1 min-w-0" },
-                        React.createElement("div", { className: "flex items-center gap-2" },
-                          React.createElement("span", { className: "text-xs font-bold", style: { color: isActive ? '#fff' : '#cbd5e1' } }, layer.name),
-                          React.createElement("span", { className: "text-[11px] font-mono px-1.5 py-0.5 rounded bg-white/10", style: { color: '#94a3b8' } },
-                            (layer.alt >= 0 ? '+' : '') + layer.alt + ' km'
-                          )
+                      // Body
+                      React.createElement("div", { className: "flex items-center gap-3 flex-1 p-3 min-w-0" },
+                        // Layer dot — bigger when active, with halo
+                        React.createElement("div", {
+                          "aria-hidden": "true",
+                          style: {
+                            width: isActive ? 14 : 10, height: isActive ? 14 : 10,
+                            borderRadius: "50%", flexShrink: 0,
+                            background: "radial-gradient(circle," + layer.color + " 0%," + layer.color + "cc 70%,transparent 100%)",
+                            boxShadow: isActive ? "0 0 12px " + layer.color + ", 0 0 4px " + layer.color : "0 0 4px " + layer.color + "55",
+                            transition: "all .18s ease"
+                          }
+                        }),
+                        React.createElement("div", { className: "flex-1 min-w-0" },
+                          React.createElement("div", { className: "flex items-center gap-2 flex-wrap" },
+                            React.createElement("span", { className: "text-xs font-bold", style: { color: isActive ? '#ffffff' : '#e2e8f0', textShadow: isActive ? "0 1px 2px rgba(0,0,0,0.4)" : "none" } }, layer.name),
+                            React.createElement("span", {
+                              className: "text-[10px] font-mono px-1.5 py-0.5 rounded",
+                              style: {
+                                color: layer.color, background: layer.color + '22', border: '1px solid ' + layer.color + '55'
+                              }
+                            }, (layer.alt >= 0 ? '+' : '') + layer.alt + ' km')
+                          ),
+                          React.createElement("p", { className: "text-[11px] mt-1 leading-relaxed", style: { color: isActive ? '#f1f5f9' : '#94a3b8' } }, layer.desc)
                         ),
-                        React.createElement("p", { className: "text-[11px] mt-0.5", style: { color: isActive ? '#e2e8f0' : '#94a3b8' } }, layer.desc)
-                      ),
-                      React.createElement("div", { className: "text-right flex-shrink-0" },
-                        React.createElement("div", { className: "text-[11px] font-bold", style: { color: '#f59e0b' } }, layer.temp),
-                        React.createElement("div", { className: "text-[11px]", style: { color: '#60a5fa' } }, layer.pressure)
+                        // Right side: temp + pressure chips with subtle glow
+                        React.createElement("div", { className: "flex flex-col gap-1 flex-shrink-0 items-end" },
+                          React.createElement("div", {
+                            className: "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                            style: {
+                              color: '#fbbf24',
+                              background: 'rgba(251,191,36,0.12)',
+                              border: '1px solid rgba(251,191,36,0.35)',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
+                            }
+                          }, '🌡 ' + layer.temp),
+                          React.createElement("div", {
+                            className: "text-[10px] font-bold px-2 py-0.5 rounded-md",
+                            style: {
+                              color: '#60a5fa',
+                              background: 'rgba(96,165,250,0.12)',
+                              border: '1px solid rgba(96,165,250,0.35)',
+                              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05)'
+                            }
+                          }, '🜨 ' + layer.pressure)
+                        )
                       )
                     );
                   })
@@ -9383,7 +9435,7 @@ const d = labToolData.solarSystem;
 
                         hud.className = 'rover-hud';
 
-                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3);max-width:290px;transition:opacity 0.3s';
+                        hud.style.cssText = 'position:absolute;top:8px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.86) 0%,rgba(7,11,24,0.92) 100%);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:12px;padding:10px 14px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.35);max-width:290px;transition:opacity 0.3s;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 22px rgba(56,189,248,0.10),0 6px 18px rgba(7,11,24,0.55)';
 
                         var modeLabel = isOcean ? '\uD83D\uDEA4 DEEP-SEA SUBMERSIBLE' : isGas ? '\uD83D\uDEF8 ATMOSPHERIC PROBE' : '\uD83D\uDE97 SURFACE ROVER';
 
@@ -9614,7 +9666,7 @@ const d = labToolData.solarSystem;
 
                         var hazardEl = document.createElement('div');
 
-                        hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(220,38,38,0.85);backdrop-filter:blur(4px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,100,100,0.4);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px';
+                        hazardEl.style.cssText = 'position:absolute;top:8px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,rgba(239,68,68,0.92) 0%,rgba(185,28,28,0.92) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:8px;padding:5px 16px;color:#fff;font-family:monospace;font-size:10px;font-weight:bold;pointer-events:none;z-index:11;border:1px solid rgba(255,140,140,0.55);text-align:center;opacity:0;transition:opacity 0.5s;letter-spacing:0.5px;box-shadow:inset 0 1px 0 rgba(255,200,200,0.40),0 0 18px rgba(239,68,68,0.40),0 4px 14px rgba(7,11,24,0.50);text-shadow:0 1px 2px rgba(0,0,0,0.5)';
 
                         var hazardMsgs = {
 
@@ -9918,7 +9970,7 @@ const d = labToolData.solarSystem;
 
                         var missionCard = document.createElement('div');
 
-                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.9);backdrop-filter:blur(12px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.3);max-width:380px;width:90%;opacity:0;transition:opacity 0.3s;display:none';
+                        missionCard.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:linear-gradient(180deg,rgba(15,23,42,0.94) 0%,rgba(7,11,24,0.96) 100%);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-radius:16px;padding:24px;color:#fff;font-family:sans-serif;font-size:12px;pointer-events:auto;z-index:15;border:1px solid rgba(56,189,248,0.40);max-width:380px;width:90%;opacity:0;transition:opacity 0.3s;display:none;box-shadow:inset 0 1px 0 rgba(56,189,248,0.30),0 0 32px rgba(56,189,248,0.18),0 12px 32px rgba(7,11,24,0.70)';
 
                         var missionIcon = isOcean ? '\uD83D\uDEA4' : isGas ? '\uD83D\uDEF8' : '\uD83D\uDE97';
 
@@ -9991,7 +10043,7 @@ const d = labToolData.solarSystem;
 
                         var ticker = document.createElement('div');
 
-                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.2);text-align:center;transition:opacity 0.5s';
+                        ticker.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;background:linear-gradient(180deg,rgba(15,23,42,0.80) 0%,rgba(7,11,24,0.90) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:8px;padding:6px 12px;color:#fbbf24;font-family:sans-serif;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(251,191,36,0.35);text-align:center;transition:opacity 0.5s;box-shadow:inset 0 1px 0 rgba(251,191,36,0.20),0 0 16px rgba(251,191,36,0.08),0 4px 12px rgba(7,11,24,0.50)';
 
                         // Categorized facts with icons
 
@@ -10057,7 +10109,7 @@ const d = labToolData.solarSystem;
 
                         var compass = document.createElement('div');
 
-                        compass.style.cssText = 'position:absolute;top:8px;right:8px;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.3)';
+                        compass.style.cssText = 'position:absolute;top:8px;right:8px;background:radial-gradient(circle,rgba(15,23,42,0.85) 0%,rgba(7,11,24,0.92) 100%);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;color:#38bdf8;font-size:18px;font-weight:bold;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.40);box-shadow:inset 0 1px 0 rgba(56,189,248,0.35),0 0 16px rgba(56,189,248,0.15),0 4px 12px rgba(7,11,24,0.50)';
 
                         compass.innerHTML = '\uD83E\uDDED';
 
@@ -10341,7 +10393,7 @@ const d = labToolData.solarSystem;
 
                         var navCard = document.createElement('div');
 
-                        navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:rgba(0,0,0,0.88);backdrop-filter:blur(10px);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.4);max-width:280px;opacity:0;transition:opacity 0.4s;display:none';
+                        navCard.style.cssText = 'position:absolute;bottom:56px;left:8px;background:linear-gradient(180deg,rgba(15,23,42,0.92) 0%,rgba(7,11,24,0.95) 100%);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;padding:14px 18px;color:#fff;font-family:sans-serif;font-size:11px;pointer-events:none;z-index:12;border:1px solid rgba(167,139,250,0.50);max-width:280px;opacity:0;transition:opacity 0.4s;display:none;box-shadow:inset 0 1px 0 rgba(167,139,250,0.35),0 0 22px rgba(167,139,250,0.12),0 6px 18px rgba(7,11,24,0.60)';
 
                         canvasEl.parentElement.appendChild(navCard);
 
