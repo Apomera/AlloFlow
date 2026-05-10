@@ -2880,6 +2880,7 @@
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14
   }), " ", t('quiz.reset_board'))), generatedContent?.data.questions.map((q, i) => {
+    if (!q || !Array.isArray(q.options)) return null;
     const pState = presentationState[i] || {};
     const isAnswered = !!pState.selectedOption;
     const isCorrectlyAnswered = pState.isCorrect;
@@ -3188,6 +3189,8 @@
       modeStrategy: _modeStrat,
       onSubmitLiveAnswer: onSubmitLiveAnswer,
     }),
+    // Only render the Reflections section when there's actual reflection content
+    ((Array.isArray(generatedContent?.data.reflections) && generatedContent.data.reflections.length > 0) || generatedContent?.data.reflection) &&
     /*#__PURE__*/React.createElement("div", {
     className: "bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 mt-8"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -3197,7 +3200,7 @@
   }), " ", t('quiz.reflections')), Array.isArray(generatedContent?.data.reflections) ? /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, generatedContent?.data.reflections.map((ref, i) => {
-    const text = typeof ref === 'string' ? ref : ref.text;
+    const text = typeof ref === 'string' ? ref : (ref.text || ref.prompt || ref.question || (typeof ref === 'object' ? JSON.stringify(ref) : ''));
     const textEn = typeof ref === 'object' && ref.text_en ? ref.text_en : null;
     // Plan T v3+ Chunk 1A: reflection capture (replaces inert dashed-line space).
     // In presentation mode, keep the inert space (the prompt is meant to be
@@ -3261,9 +3264,45 @@
     ));
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
     className: "text-indigo-800 mb-4 italic text-sm"
-  }, generatedContent?.data.reflection), /*#__PURE__*/React.createElement("div", {
-    className: "h-24 border-b border-indigo-200 border-dashed"
-  })))));
+  }, generatedContent?.data.reflection),
+    // Student input area for singular reflection (mirrors array branch)
+    !isEditingQuiz && (isPresentationMode
+      ? /*#__PURE__*/React.createElement("div", { className: "h-24 border-b border-indigo-200 border-dashed" })
+      : (function () {
+          var refEntry = reflectionAnswers[0] || {};
+          var refSubmitted = !!refEntry.submitted;
+          var refDraft = refEntry.draft || '';
+          return refSubmitted
+            ? /*#__PURE__*/React.createElement("div", { className: "mt-2 p-3 rounded-lg bg-white border border-indigo-200" },
+                /*#__PURE__*/React.createElement("div", { className: "text-[10px] uppercase font-bold tracking-wider text-indigo-700 mb-1" }, '\u2713 Reflection submitted'),
+                /*#__PURE__*/React.createElement("p", { className: "text-sm text-slate-800 whitespace-pre-wrap" }, refEntry.submittedText || refDraft),
+                /*#__PURE__*/React.createElement("button", {
+                  type: 'button',
+                  onClick: function () { reopenReflection(0); },
+                  className: 'mt-2 text-xs font-semibold text-indigo-700 hover:text-indigo-900',
+                }, 'Edit response')
+              )
+            : /*#__PURE__*/React.createElement("div", { className: "mt-2" },
+                /*#__PURE__*/React.createElement("textarea", {
+                  "aria-label": 'Your reflection',
+                  value: refDraft,
+                  onChange: function (e) { setReflectionDraft(0, e.target.value); },
+                  placeholder: 'Type your reflection here\u2026',
+                  className: "w-full text-sm text-slate-800 bg-white border border-indigo-200 hover:border-indigo-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 rounded px-2 py-1 outline-none resize-y transition-all",
+                  rows: 4,
+                }),
+                /*#__PURE__*/React.createElement("div", { className: "flex items-center gap-2 mt-2" },
+                  /*#__PURE__*/React.createElement("button", {
+                    type: 'button',
+                    onClick: function () { submitReflection(0); },
+                    disabled: !refDraft.trim(),
+                    className: 'text-xs font-bold px-3 py-1.5 rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed',
+                  }, 'Submit reflection'),
+                  !refDraft.trim() && /*#__PURE__*/React.createElement("span", { className: 'text-[11px] italic text-slate-600' }, 'Type a response to enable submit')
+                )
+              );
+        })()
+    ))))));
 }
 
   window.AlloModules = window.AlloModules || {};

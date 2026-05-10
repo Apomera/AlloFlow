@@ -2303,7 +2303,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             h('canvas', { 
               ref: canvasRef,
               role: 'img',
-              'aria-label': 'Ecosystem simulation. ' + biome + ' biome. Prey: ' + (preyCount || '?') + ', Predators: ' + (predCount || '?') + '. ' + (simPaused ? 'Paused.' : 'Running.'),
+              'aria-label': 'Ecosystem simulation. ' + biome + ' biome. Initial prey: ' + prey0 + ', initial predators: ' + pred0 + '. ' + (simPaused ? 'Paused.' : 'Running.'),
               tabIndex: 0,
               'data-eco-canvas': 'true',
               'data-biome': biome,

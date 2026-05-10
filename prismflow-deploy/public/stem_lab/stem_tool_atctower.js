@@ -1639,6 +1639,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
         ];
         var explain = function() {
           if (typeof callGemini !== 'function') { upd(aiErrorKey, 'AI tutor not available.'); return; }
+          // Request-ID guard: prevents stale explanations from overwriting
+          // newer context if student switches reading level / lesson while
+          // a fetch is mid-flight.
+          window.__atcAiReqId = (window.__atcAiReqId || 0) + 1;
+          var thisReqId = window.__atcAiReqId;
           upd(aiLoadingKey, true); upd(aiErrorKey, ''); upd(aiKey, '');
           var lv = LEVELS.find(function (L) { return L.id === aiLevel; }) || LEVELS[1];
           var prompt = 'Explain this air traffic control concept ' + lv.hint + '. '
@@ -1646,8 +1651,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             + 'In 3 short sentences: (1) What the concept means for an ATC controller. (2) A concrete everyday-life analogy. (3) One common mistake students make with this. '
             + 'No markdown, no bullets, no headings. Plain prose.';
           callGemini(prompt, false, false, 0.5).then(function (resp) {
+            if (thisReqId !== window.__atcAiReqId) return;
             upd(aiKey, String(resp || '').trim()); upd(aiLoadingKey, false);
           }).catch(function () {
+            if (thisReqId !== window.__atcAiReqId) return;
             upd(aiLoadingKey, false); upd(aiErrorKey, 'Could not reach AI tutor. Try again in a moment.');
           });
         };

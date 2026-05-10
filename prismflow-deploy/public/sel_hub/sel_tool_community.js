@@ -843,6 +843,40 @@ window.SelHub = window.SelHub || {
           )
         );
 
+        // ── Topic-accent hero band per tab ──
+        var heroBand = (function() {
+          var TAB_META = {
+            explore:   { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.14)', icon: '\uD83C\uDF0D', title: 'Explore \u2014 the world\u2019s cultures',                  hint: 'Curiosity beats checklist. Geertz 1973: culture = the webs of meaning we make. Cross-cultural fluency starts with humility \u2014 \u201CI don\u2019t know\u201D is a stronger move than \u201CI know.\u201D' },
+            identity:  { accent: '#9333ea', soft: 'rgba(147,51,234,0.14)', icon: '\uD83E\uDDE9', title: 'Identity \u2014 the layers of who you are',                hint: 'Identity is intersectional (Crenshaw 1989) \u2014 race, gender, class, ability, faith, language all overlap. Mapping yours is private work; sharing is optional. Self-knowledge enables empathy more than performance.' },
+            scenarios: { accent: '#f59e0b', soft: 'rgba(245,158,11,0.14)', icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 community moments to think through',     hint: 'New kid, holiday traditions, dialect differences, religious accommodations. Walking through these BEFORE the moment lowers the chance of saying something you\u2019ll regret \u2014 and raises the chance of being a useful presence.' },
+            privilege: { accent: '#dc2626', soft: 'rgba(220,38,38,0.14)',  icon: '\uD83D\uDCA1', title: 'Privilege \u2014 the unearned advantages',                  hint: 'McIntosh 1989 \u201CInvisible Knapsack.\u201D Privilege isn\u2019t guilt \u2014 it\u2019s the head start you didn\u2019t notice. Naming it is necessary; using it (to lift others, to listen first) is what matters in practice.' },
+            microagg:  { accent: '#ec4899', soft: 'rgba(236,72,153,0.14)', icon: '\uD83D\uDD0D', title: 'Micro \u2014 the small daily harms',                       hint: 'Sue 2007: microaggressions are brief, often unintentional verbal/behavioral indignities that communicate hostile messages. Cumulative effect (Allport 1954) is real even if each instance feels minor. Naming gently > escalating.' },
+            heritage:  { accent: '#d97706', soft: 'rgba(217,119,6,0.14)',  icon: '\uD83C\uDFDB', title: 'Heritage \u2014 the stories you come from',                hint: 'Family history, food, language, music, rituals \u2014 the inheritance you didn\u2019t choose but get to carry forward. Telling YOUR story makes it easier for others to tell theirs. Heritage isn\u2019t fixed; it\u2019s ongoing.' },
+            commtips:  { accent: '#16a34a', soft: 'rgba(22,163,74,0.14)',  icon: '\uD83C\uDF10', title: 'Tips \u2014 cross-cultural communication',                hint: 'Hall 1976 high-context vs. low-context cultures: the same words mean different things in different communities. Hofstede\u2019s dimensions (power distance, individualism, etc.) give frames \u2014 not stereotypes \u2014 for understanding the gap.' },
+            quiz:      { accent: '#0891b2', soft: 'rgba(8,145,178,0.14)',  icon: '\uD83C\uDFC6', title: 'Quiz \u2014 self-knowledge check',                       hint: 'When are you a bridge? When do you withdraw? Both are normal responses to difference. Pattern recognition turns reactive moments into deliberate ones \u2014 the quiz is a mirror, not a verdict.' },
+            battle:    { accent: '#a855f7', soft: 'rgba(168,85,247,0.14)', icon: '\u2694',         title: 'Battle \u2014 head-to-head retrieval',                  hint: 'Speed builds automaticity for the recall layer (key terms, dates, frameworks). Frees working memory for the harder layer \u2014 actually applying these ideas in the wild, where the stakes are real and the moment moves fast.' },
+            badges:    { accent: '#fbbf24', soft: 'rgba(251,191,36,0.14)', icon: '\uD83C\uDFC5', title: 'Badges \u2014 milestones in cross-cultural skill',         hint: 'Acknowledges competence without coercion (Deci + Ryan 1985). The badges are the side effect; the work is the conversations + scenarios + reflections you do over weeks. Show the streak; the streak shows the practice.' }
+          };
+          var meta = TAB_META[activeTab] || TAB_META.explore;
+          return h('div', {
+            style: {
+              margin: '8px 12px 12px',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0) 100%), #0f172a',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })();
+
         // ── Badge Popup ──
         var badgePopup = null;
         if (showBadgePopup) {
@@ -1948,6 +1982,7 @@ window.SelHub = window.SelHub || {
 
         return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%' } },
           tabBar,
+          heroBand,
           badgePopup,
           h('div', { style: { flex: 1, overflow: 'auto' } }, content)
         );

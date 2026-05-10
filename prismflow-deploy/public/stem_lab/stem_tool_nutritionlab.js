@@ -767,7 +767,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       function MacronutrientLab() {
         var plate_state = usePersistedState('ml_plate', []);
         var plate = plate_state[0], setPlate = plate_state[1];
-        var category_state = useState('all');
+        var category_state = usePersistedState('ml_category', 'all');
         var category = category_state[0], setCategory = category_state[1];
 
         function addFood(id) {
@@ -962,10 +962,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       function MicronutrientAtlas() {
         var tab_state = usePersistedState('ma_tab', 'vitamins');
         var tab = tab_state[0], setTab = tab_state[1];
-        var picked_state = useState(null);
+        var picked_state = usePersistedState('ma_picked', null);
         var picked = picked_state[0], setPicked = picked_state[1];
 
-        useEffect(function() { setPicked(null); }, [tab]);
+        // Clear picked card when user actively switches tabs, but NOT on every (re)mount.
+        // MicronutrientAtlas is defined inside the parent so every parent re-render
+        // remounts this subtree; without this guard, picking a card flashes its detail
+        // and immediately wipes it because the mount-time effect fires.
+        var firstTabRunRef = useRef(true);
+        useEffect(function() {
+          if (firstTabRunRef.current) { firstTabRunRef.current = false; return; }
+          setPicked(null);
+        }, [tab]);
 
         var tabs = [
           { id: 'vitamins', label: 'Vitamins (13)', data: VITAMINS },
@@ -1437,7 +1445,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       function FoodLabelReader() {
         var labelIdx_state = usePersistedState('lr_idx', 0);
         var labelIdx = labelIdx_state[0], setLabelIdx = labelIdx_state[1];
-        var answers_state = useState({});
+        // ⚠ Was useState({}) — picks vanished on parent re-render → "buttons
+        // not working" report. Swapped to usePersistedState so the answers
+        // map survives any ctx.update() that reaches the parent.
+        var answers_state = usePersistedState('lr_answers', {});
         var answers = answers_state[0], setAnswers = answers_state[1];
 
         var lab = LABELS[labelIdx];
@@ -2358,7 +2369,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       function NutritionMythsLab() {
         var idx_state = usePersistedState('my_idx', 0);
         var idx = idx_state[0], setIdx = idx_state[1];
-        var picks_state = useState({});
+        var picks_state = usePersistedState('my_picks', {});
         var picks = picks_state[0], setPicks = picks_state[1];
 
         var myth = MYTHS[idx];
@@ -2553,7 +2564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       ];
 
       function FoodMoodLab() {
-        var picked_state = useState(null);
+        var picked_state = usePersistedState('fm_picked', null);
         var picked = picked_state[0], setPicked = picked_state[1];
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
@@ -2675,9 +2686,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       //     reporting flow), NOT a vocabulary list of pro-ana terms
       //   ✓ Built from a school-psych voice (Aaron's lens)
       function EDAwareness() {
-        var consented_state = useState(false);
+        var consented_state = usePersistedState('ed_consented', false);
         var consented = consented_state[0], setConsented = consented_state[1];
-        var section_state = useState('overview');
+        var section_state = usePersistedState('ed_section', 'overview');
         var section = section_state[0], setSection = section_state[1];
 
         // Resource bar — always visible at top of any content screen

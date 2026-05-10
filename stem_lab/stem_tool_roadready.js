@@ -7326,6 +7326,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (t.y > MAP_SIZE + 2) t.y = -2;
             }
           });
+
+          // ── AABB COLLISION RESOLUTION (Phase 2 "suspenders") ──
+          // The lane-projection above ("belt") forces cars toward the correct
+          // lateral position; the follow-distance + AEB logic earlier prevents
+          // most rear-ends. But lateral overlaps during lane changes, low
+          // closing-speed nudges, and respawn-induced overlaps slip through —
+          // cars end up clipping through each other. This pass runs AFTER all
+          // per-car position updates: for every overlapping pair, push them
+          // apart along the smaller-penetration axis and clamp the trailing
+          // car's speed so it cannot keep closing on the leader. Cross-street
+          // cars are skipped against main-road cars (different coordinate
+          // axes; main road's Y vs cross-street's X don't compare cleanly).
+          var CAR_HALF_LEN = 2.0; // ~4m car
+          var CAR_HALF_WID = 0.9; // ~1.8m car
+          function _carBox(c) {
+            // Heading near ±π/2 ⇒ long axis along Y (main-road traffic).
+            // Heading near 0 or π ⇒ long axis along X (cross-street traffic).
+            var hdAbs = Math.abs(c.heading);
+            var alongY = hdAbs > Math.PI / 4 && hdAbs < 3 * Math.PI / 4;
+            return {
+              halfX: alongY ? CAR_HALF_WID : CAR_HALF_LEN,
+              halfY: alongY ? CAR_HALF_LEN : CAR_HALF_WID
+            };
+          }
+          for (var ci = 0; ci < traffic.length; ci++) {
+            var ca = traffic[ci];
+            if (ca._turning) continue; // mid-turn cars use a separate motion model
+            var bxA = _carBox(ca);
+            for (var cj = ci + 1; cj < traffic.length; cj++) {
+              var cb = traffic[cj];
+              if (cb._turning) continue;
+              // Skip pairs where one is on the main road and the other is on a
+              // cross street — their world positions live in different frames
+              // and the AABB check would be meaningless. The intersection-
+              // entry yield logic handles those interactions.
+              if (ca.crossStreet !== cb.crossStreet) continue;
+              var bxB = _carBox(cb);
+              var dx = cb.x - ca.x;
+              var dy = cb.y - ca.y;
+              var minDX = bxA.halfX + bxB.halfX;
+              var minDY = bxA.halfY + bxB.halfY;
+              var aDX = Math.abs(dx);
+              var aDY = Math.abs(dy);
+              if (aDX >= minDX || aDY >= minDY) continue;
+              var penX = minDX - aDX;
+              var penY = minDY - aDY;
+              if (penY <= penX) {
+                // Longitudinal overlap — push apart along Y (or whichever
+                // axis is "long" for these cars). Half each so neither car
+                // teleports a full penetration.
+                var signY = dy >= 0 ? 1 : -1;
+                ca.y -= signY * penY * 0.5;
+                cb.y += signY * penY * 0.5;
+                // Identify trailing car by direction of travel and clamp its
+                // speed to the leader's so it physically cannot keep closing.
+                var aDirY = Math.sin(ca.heading) > 0 ? 1 : -1;
+                var aIsAhead = (ca.y - cb.y) * aDirY > 0;
+                if (aIsAhead) cb.speed = Math.min(cb.speed, ca.speed * 0.95);
+                else ca.speed = Math.min(ca.speed, cb.speed * 0.95);
+              } else {
+                // Lateral overlap — push apart along X (lane-change collision).
+                // The lane-snap pass on next frame will pull both back toward
+                // their target laneOffsets; this just resolves the immediate
+                // physical overlap so they don't render through each other.
+                var signX = dx >= 0 ? 1 : -1;
+                ca.x -= signX * penX * 0.5;
+                cb.x += signX * penX * 0.5;
+              }
+            }
+          }
         };
 
         var updateWildlife = function(dt) {
@@ -12800,7 +12870,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     var bW = 1 + (chunk.biome === 'commercial' ? 0.3 : 0);
                     var bMat = buildMats[(cx + cy) % 3];
                     var bMesh = new T.Mesh(new T.BoxGeometry(bW, bH, bW), bMat);
-                    var terrainYb = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) * 0.5 : 0;
+                    // Same anchoring fix as trees below — drop the *0.5 damper
+                    // so buildings sit on the road surface, not half-floating
+                    // / half-sinking on hills. Eliminates the visible overlap +
+                    // intersection seen on rural-biome chunks.
+                    var terrainYb = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) : 0;
                     bMesh.position.set(wx, terrainYb + bH / 2, wz);
                     bMesh.castShadow = true;
                     chunkGroup.add(bMesh);
@@ -12942,12 +13016,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     }
                   } else if (cellVal === 5) {
                     // Tree — species picked deterministically from cell position so
-                    // the same chunk always renders the same forest. Lift by terrain
-                    // height (rolling but softer than the road) so trees follow hills.
+                    // the same chunk always renders the same forest. Anchor to the
+                    // SAME terrain height the road uses (no softening factor). The
+                    // previous *0.5 was a misguided "softer than road" damper that
+                    // mathematically guaranteed trees would float above (downhill)
+                    // or sink below (uphill) by half the road's elevation variation
+                    // — exactly the floating-canopy bug visible in the screenshot.
                     var hashTree = (cx * 73856093) ^ (cy * 19349663);
                     var speciesRoll = (hashTree & 0xff) / 255;
                     var tH = 2 + ((cx * 47 + cy * 83) % 3);
-                    var terrainY = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) * 0.5 : 0;
+                    var terrainY = iw.spline ? iw.spline.heightAt(ci * CHUNK_SIZE + cy) : 0;
                     // Bias species by biome.
                     var pickPine, pickBirch;
                     if (chunk.biome === 'rural') { pickPine = speciesRoll < 0.55; pickBirch = !pickPine && speciesRoll < 0.80; }
@@ -17822,11 +17900,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.beginPath(); gfx.moveTo(fgX, ty); gfx.lineTo(fgX + fgW, ty); gfx.stroke();
           });
           // E / F labels
-          gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 8px "Segoe UI"'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 11px "Segoe UI"'; gfx.textAlign = 'center';
           gfx.fillText('F', fgX + fgW / 2, fgY - 3);
           gfx.fillText('E', fgX + fgW / 2, fgY + fgH + 10);
           // Label under the gauge
-          gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui'; gfx.textAlign = 'center';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui'; gfx.textAlign = 'center';
           gfx.fillText(fuelLabel, fgX + fgW / 2, H - 4);
           // ── Low fuel warning (blinks when under 1/8 tank) ──
           if (fuelFrac < 0.125) {
@@ -17871,12 +17949,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = showSafety > 70 ? '#4ade80' : showSafety > 40 ? '#f59e0b' : '#ef4444';
           gfx.font = 'bold 18px monospace'; gfx.textAlign = 'right';
           gfx.fillText(showSafety, W - 20, H - 50);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
           gfx.fillText('SAFETY', W - 20, H - 35);
           gfx.fillStyle = showEco > 70 ? '#4ade80' : showEco > 40 ? '#f59e0b' : '#ef4444';
           gfx.font = 'bold 18px monospace';
           gfx.fillText(showEco, W - 100, H - 50);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '12px system-ui';
           gfx.fillText('ECO', W - 100, H - 35);
 
           // Odometer / trip meter / landmark counter
@@ -17884,7 +17962,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var elapsed = Math.floor((Date.now() - stats.startTime) / 1000);
           var elMin = Math.floor(elapsed / 60);
           var elSec = elapsed % 60;
-          gfx.fillStyle = '#94a3b8'; gfx.font = '9px monospace'; gfx.textAlign = 'left';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '12px monospace'; gfx.textAlign = 'left';
           var tripLine = 'TRIP: ' + distMi + ' mi  |  ' + elMin + ':' + String(elSec).padStart(2, '0');
           if (stats.landmarkVisits) {
             var totalVisitsHud = Object.values(stats.landmarkVisits).reduce(function(a, b) { return a + b; }, 0);
@@ -17898,7 +17976,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           gfx.fillStyle = gear === 'R' ? '#ef4444' : gear === 'P' ? '#94a3b8' : '#4ade80';
           gfx.font = 'bold 16px monospace'; gfx.textAlign = 'center';
           gfx.fillText(gear, 130, H - 42);
-          gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui';
+          gfx.fillStyle = '#94a3b8'; gfx.font = '11px system-ui';
           gfx.fillText('F=D G=R P=Park', 130, H - 28);
 
           // Top-left info
@@ -18040,7 +18118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (si === 0) gfx.moveTo(sx, sy); else gfx.lineTo(sx, sy);
             }
             gfx.stroke();
-            gfx.fillStyle = '#4ade80'; gfx.font = '8px system-ui'; gfx.textAlign = 'left'; gfx.fillText('MPG', sparkX, sparkY + sparkH + 9);
+            gfx.fillStyle = '#4ade80'; gfx.font = '11px system-ui'; gfx.textAlign = 'left'; gfx.fillText('MPG', sparkX, sparkY + sparkH + 9);
             gfx.textAlign = 'right'; gfx.fillText(mHist[mHist.length - 1].toFixed(0), sparkX + sparkW, sparkY + sparkH + 9);
           }
           // ── Physics literacy card: live drag, rolling, grade forces (right side of HUD) ──
@@ -18062,13 +18140,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             gfx.fillStyle = color;
             var pct = Math.min(1, Math.abs(val) / refForce);
             gfx.fillRect(bx, by + 1, bw * pct, 6);
-            gfx.fillStyle = '#94a3b8'; gfx.font = '8px system-ui'; gfx.textAlign = 'left';
+            gfx.fillStyle = '#94a3b8'; gfx.font = '10px system-ui'; gfx.textAlign = 'left';
             gfx.fillText(label, phX, by + 7);
             gfx.fillStyle = '#e2e8f0'; gfx.textAlign = 'right';
             gfx.fillText((val / 1000).toFixed(2) + ' kN', phX + phW, by + 7);
           };
           gfx.fillStyle = 'rgba(0,0,0,0.55)'; gfx.fillRect(phX - 4, phY - 4, phW + 8, 50);
-          gfx.fillStyle = '#a78bfa'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'left';
+          gfx.fillStyle = '#a78bfa'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'left';
           gfx.fillText('PHYSICS · WHAT\'S RESISTING YOU', phX, phY + 1);
           bar('Drag',  dragF,            '#22d3ee', 1);
           bar('Roll',  rollF,            '#10b981', 2);
@@ -18360,15 +18438,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           });
           // Label + distance readout
           gfx.fillStyle = tailgateWarning ? '#fca5a5' : '#94a3b8';
-          gfx.font = 'bold 9px system-ui'; gfx.textAlign = 'center';
+          gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'center';
           gfx.fillText('REARVIEW', W / 2, mirrorY - 6);
           if (closestRearDist < 15) {
             gfx.fillStyle = closestRearDist < 6 ? '#fca5a5' : '#94a3b8';
-            gfx.font = '9px monospace'; gfx.textAlign = 'right';
+            gfx.font = '12px monospace'; gfx.textAlign = 'right';
             gfx.fillText(Math.round(closestRearDist * 10) + ' ft', mirrorX + mirrorW - 4, mirrorY + mirrorH - 4);
           }
           if (tailgateWarning) {
-            gfx.fillStyle = '#fca5a5'; gfx.font = 'bold 10px system-ui'; gfx.textAlign = 'center';
+            gfx.fillStyle = '#fca5a5'; gfx.font = 'bold 12px system-ui'; gfx.textAlign = 'center';
             gfx.fillText('⚠ TAILGATING', W / 2, mirrorY + mirrorH + 14);
           }
 
@@ -18418,7 +18496,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               }
             });
             // Label
-            gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+            gfx.fillStyle = '#94a3b8'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center';
             gfx.fillText(isLeft ? '◄ LEFT' : 'RIGHT ►', smX + smW / 2, smY - 4);
             // ── Blind spot warning (yellow icon at outer corner, matches modern car BSW systems) ──
             var blindSpot = isLeft ? blindSpotRef.current.left : blindSpotRef.current.right;
@@ -18448,7 +18526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               var ldBarX = isLeft ? smX - 2 : smX + smW - 4;
               gfx.fillRect(ldBarX, smY - 2, 6, smH + 4);
               // Label
-              gfx.fillStyle = '#fca5a5'; gfx.font = 'bold 8px system-ui'; gfx.textAlign = 'center';
+              gfx.fillStyle = '#fca5a5'; gfx.font = 'bold 11px system-ui'; gfx.textAlign = 'center';
               gfx.fillText('LANE!', smX + smW / 2, smY + smH + 12);
             }
           };

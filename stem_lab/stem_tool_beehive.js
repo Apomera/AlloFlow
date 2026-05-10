@@ -5603,7 +5603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // canvas was oversized (hiveW 30% / hiveH 56%). Scaled to realistic diorama proportions.
               var hiveW = W * 0.12, hiveH = H * 0.30;
               var hiveX = W * 0.11, hiveY = H * 0.48; // sit hive lower so ground line is consistent
-              var bkScale = Math.max(2.2, H / 220); // beekeeper size multiplier (was implicit 1.0)
+              var bkScale = Math.max(5.5, H / 90); // beekeeper size multiplier — bumped so beekeeper reads as ~1.3× hive height per real-world proportions noted above
               c.clearRect(0, 0, W, H);
 
               // ── Sky (seasonal gradient + atmosphere) ──
@@ -6314,7 +6314,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   phase = 'walk';
                 }
 
-                var bkGround = hiveY + hiveH + 4;
+                // Anchor feet to the visible grass plane (ground line drawn at H * 0.76, fence at H * 0.775).
+                // Previously anchored to (hiveY + hiveH + 4) which floated him slightly above the visible ground.
+                var bkGround = H * 0.82;
                 var bkBodyH = 14 * bkScale;
                 var bkBodyW = 8 * bkScale;
                 var bkY = bkGround - bkBodyH - (8 * bkScale);

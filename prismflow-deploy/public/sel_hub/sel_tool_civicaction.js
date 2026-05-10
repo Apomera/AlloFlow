@@ -865,6 +865,43 @@ window.SelHub = window.SelHub || {
           })
         ),
 
+        // ── Topic-accent hero band per tab ──
+        (function() {
+          var TAB_META = {
+            feelings:   { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '\uD83D\uDCAD', title: 'Name It \u2014 the feelings underneath the news',          hint: 'Civic pain is REAL pain. Lieberman 2007 fMRI: naming a feeling lights up the prefrontal cortex and quiets the amygdala. \u201CI\u2019m anxious about the future\u201D works on the brain the same way \u201CI\u2019m anxious about the test\u201D does.' },
+            understand: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83D\uDD0D', title: 'Understand It \u2014 why this hits YOU',                    hint: 'Different issues land different on different people \u2014 history, identity, lived experience all shape the response. Self-knowledge here is what separates effective civic action from performance.' },
+            cope:       { accent: '#10b981', soft: 'rgba(16,185,129,0.10)',  icon: '\uD83C\uDF3F', title: 'Cope \u2014 hold the heavy without breaking',              hint: 'Activists burn out at higher rates than the general population (Plyler 2007). Sustainable change requires sustainable people. The coping is not separate from the action \u2014 it IS the long game.' },
+            explore:    { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDF0D', title: 'Explore Issues \u2014 learn before you advocate',           hint: 'Ballotpedia, ProPublica, Reuters, AP, BBC \u2014 source diversity matters. The Pew media-bias chart is a useful starting tool, but no source is neutral. Triangulate. Cite primary documents when possible.' },
+            act:        { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\u270A',         title: 'Act \u2014 turn feelings into specific moves',          hint: 'Vote, call/email reps, attend a town hall, organize on a campus issue, work the polls, sign a petition with a citation. Specific > general. \u201CI care about climate\u201D \u2192 \u201CI emailed Sen. Collins about LD-1850.\u201D' },
+            planner:    { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83D\uDCDD', title: 'Plan \u2014 your civic action plan',                       hint: 'Implementation intentions (Gollwitzer 1999): \u201CIf my representative\u2019s vote is X, I will respond with Y by Z date.\u201D Pre-commitment doubles follow-through over good intentions alone.' },
+            simulation: { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)',  icon: '\uD83C\uDFDB', title: 'Simulate \u2014 walk a decision in real terms',          hint: 'City budget allocation, town-hall mediation, school-board vote. Decisions look different from inside; tradeoffs land different when you have to MAKE them, not just react to them. Reduces \u201Cthey just don\u2019t care\u201D framing.' },
+            survey:     { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83D\uDCCA', title: 'Survey \u2014 build your own data',                       hint: 'Listening + measuring beats assuming. Question wording matters enormously (Schuman + Presser 1981). Pilot with 5 people before sending wide. The survey is half the civic skill; reading the responses is the other half.' },
+            rights:     { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)',  icon: '\uD83D\uDCDC', title: 'Rights & Dissent \u2014 the legal scaffolding',           hint: '1st Amendment (speech, press, assembly, petition); UDHR 1948; ACLU + EFF + Amnesty primary sources. Peaceful dissent has a track record \u2014 Gandhi, MLK, Mandela. Knowing your rights changes the room when authority oversteps.' },
+            service:    { accent: '#ec4899', soft: 'rgba(236,72,153,0.10)',  icon: '\uD83E\uDD1D', title: 'Service \u2014 plan a service-learning project',         hint: 'Best service-learning (Eyler + Giles 1999) integrates ACADEMIC content + community impact + structured reflection. Not volunteerism with extra steps \u2014 a designed loop where the service teaches and the learning serves.' },
+            quiz:       { accent: '#fbbf24', soft: 'rgba(251,191,36,0.10)',  icon: '\uD83C\uDFC6', title: 'Quiz \u2014 civic knowledge check',                       hint: 'Civic knowledge (3 branches, levels of govt, Bill of Rights, voting mechanics) predicts civic engagement more than political opinion. NCSS C3 Framework + Civic Mission of Schools 2003.' },
+            scenarios:  { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\uD83C\uDFAD', title: 'Scenarios \u2014 community-change practice',              hint: 'Lower-stakes practice for higher-stakes real moments. Try the school-board ask, the call to a rep, the response to a friend\u2019s misinformation. Behavioral rehearsal (Bandura 1977) lowers freezing.' },
+            hope:       { accent: '#0d9488', soft: 'rgba(13,148,136,0.10)',  icon: '\uD83C\uDF05', title: 'Hope \u2014 the long-arc commitment',                     hint: 'Snyder\u2019s hope theory (1991): goals + pathways + agency. Cynicism feels safer; hope IS more accurate over long timelines. Organizers who lasted decades (Ella Baker, Bayard Rustin, Dolores Huerta) all kept this fire lit.' }
+          };
+          var meta = TAB_META[tab] || TAB_META.feelings;
+          return h('div', {
+            style: {
+              margin: '12px 0 0',
+              padding: '12px 14px',
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(255,255,255,0) 100%)',
+              border: '1px solid ' + meta.accent + '55',
+              borderLeft: '4px solid ' + meta.accent,
+              display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+            }
+          },
+            h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
+            h('div', { style: { flex: 1, minWidth: 220 } },
+              h('h3', { style: { color: meta.accent, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            )
+          );
+        })(),
+
         // ═══ NAME IT — Feelings ═══
         tab === 'feelings' && h('div', { className: 'space-y-4' },
           h('p', { className: 'text-sm text-slate-600 text-center' }, 'What are you feeling right now? There are no wrong answers.'),

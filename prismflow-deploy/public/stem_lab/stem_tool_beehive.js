@@ -5603,7 +5603,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               // canvas was oversized (hiveW 30% / hiveH 56%). Scaled to realistic diorama proportions.
               var hiveW = W * 0.12, hiveH = H * 0.30;
               var hiveX = W * 0.11, hiveY = H * 0.48; // sit hive lower so ground line is consistent
-              var bkScale = Math.max(2.2, H / 220); // beekeeper size multiplier (was implicit 1.0)
+              var bkScale = Math.max(5.5, H / 90); // beekeeper size multiplier — bumped so beekeeper reads as ~1.3× hive height per real-world proportions noted above
               c.clearRect(0, 0, W, H);
 
               // ── Sky (seasonal gradient + atmosphere) ──
@@ -6314,7 +6314,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   phase = 'walk';
                 }
 
-                var bkGround = hiveY + hiveH + 4;
+                // Anchor feet to the visible grass plane (ground line drawn at H * 0.76, fence at H * 0.775).
+                // Previously anchored to (hiveY + hiveH + 4) which floated him slightly above the visible ground.
+                var bkGround = H * 0.82;
                 var bkBodyH = 14 * bkScale;
                 var bkBodyW = 8 * bkScale;
                 var bkY = bkGround - bkBodyH - (8 * bkScale);
@@ -7594,11 +7596,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             var cosP = Math.cos(ds.pitch), sinP = Math.sin(ds.pitch);
 
             // Project 3D to 2D (perspective)
+            // Pitch math: world rotates by -pitch relative to a camera that
+            // rotated by +pitch. The previous version used +pitch in both
+            // sin terms, which made ground objects (y=0) project ABOVE the
+            // horizon line when the bee was nose-up — flowers and trees
+            // appeared to float in the sky. Two sign flips below restore
+            // the standard pinhole-camera projection.
             function project(wx, wy, wz) {
               var rx = (wx - ds.x) * cosY + (wz - ds.z) * sinY;
               var rz = -(wx - ds.x) * sinY + (wz - ds.z) * cosY;
-              var ry2 = (wy - ds.y) * cosP - rz * sinP;
-              var rz2 = (wy - ds.y) * sinP + rz * cosP;
+              var ry2 = (wy - ds.y) * cosP + rz * sinP;
+              var rz2 = -(wy - ds.y) * sinP + rz * cosP;
               if (rz2 >= -1) return null; // behind camera
               var fov = 300;
               var sx = halfW + (rx / -rz2) * fov;
@@ -7647,7 +7655,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             }
             c.lineTo(W * 2, horizonY); c.closePath(); c.fill();
 
-            c.restore();
+            // NOTE: Roll rotation extends THROUGH all world objects below so
+            // clouds, flowers, trees, drones, birds, and queens tilt with the
+            // horizon when the camera rolls. Without this, world objects stayed
+            // upright in screen-space while the horizon tilted around them —
+            // the "floating in certain perspectives" bug.
 
             // Render clouds
             ds.clouds.forEach(function(cl) {
@@ -7803,6 +7815,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillText(Math.round(dist) + 'm', p.x, p.y + 10 * p.s);
               c.restore();
             });
+
+            // End of rolled world frame — hit flash + HUD must NOT be rotated.
+            c.restore();
 
             // ── Bird hit flash ──
             if (ds.hitFlash > 0) {

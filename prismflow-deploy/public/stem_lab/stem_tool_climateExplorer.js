@@ -344,10 +344,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         if (next[itemId].checkins >= 7) earnBadge('consistent');
       }
 
-      // Award habitMaster badge when 5+ sliders have been set
+      // Award habitMaster badge when 5+ sliders have been set.
+      // Reads granularFreq directly from toolData here because the local
+      // `var granularFreq = d.granularFreq || {}` is declared further down
+      // (line ~517) — the var IS hoisted but the assignment isn't, so at
+      // this point the local would be `undefined` and Object.keys() would
+      // throw "Cannot convert undefined or null to object" on first render.
       (function() {
+        var _gf = (d && d.granularFreq) || {};
         var activeCount = 0;
-        Object.keys(granularFreq).forEach(function(k) { if (granularFreq[k] > 0) activeCount++; });
+        Object.keys(_gf).forEach(function(k) { if (_gf[k] > 0) activeCount++; });
         if (activeCount >= 5 && !badges.habitMaster) setTimeout(function() { earnBadge('habitMaster'); }, 0);
       })();
 

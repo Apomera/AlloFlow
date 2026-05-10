@@ -965,7 +965,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         var picked_state = usePersistedState('ma_picked', null);
         var picked = picked_state[0], setPicked = picked_state[1];
 
-        useEffect(function() { setPicked(null); }, [tab]);
+        // Clear picked card when user actively switches tabs, but NOT on every (re)mount.
+        // MicronutrientAtlas is defined inside the parent so every parent re-render
+        // remounts this subtree; without this guard, picking a card flashes its detail
+        // and immediately wipes it because the mount-time effect fires.
+        var firstTabRunRef = useRef(true);
+        useEffect(function() {
+          if (firstTabRunRef.current) { firstTabRunRef.current = false; return; }
+          setPicked(null);
+        }, [tab]);
 
         var tabs = [
           { id: 'vitamins', label: 'Vitamins (13)', data: VITAMINS },

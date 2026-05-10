@@ -1649,9 +1649,14 @@ var d = (labToolData.companionPlanting) || {};
 
 
 
-              // ── Season-aware Sky (smooth time-based sun arc) ──
-
-              var dayPhase = (Math.sin(elapsed * 0.18) + 1) / 2; // ~35s full cycle, smooth regardless of frame rate
+              // ── Day/night cycle (sawtooth: sun rises east, sets west, then night) ──
+              // Total cycle ≈ 40s: ~28s day + ~12s night. Sun travels one direction only.
+              var cycleProgress = ((elapsed * 0.025) % 1);  // 0..1 looping
+              var DAY_FRACTION = 0.7;
+              var isNight = cycleProgress >= DAY_FRACTION;
+              var dayPhase = isNight ? 0 : (cycleProgress / DAY_FRACTION);     // 0..1 across daytime, used for sun position
+              var nightPhase = isNight ? ((cycleProgress - DAY_FRACTION) / (1 - DAY_FRACTION)) : 0;  // 0..1 across nighttime
+              var dayBrightness = isNight ? 0 : Math.sin(dayPhase * Math.PI);  // 0 at dawn/dusk, 1 at noon
 
               var seasonSkies = [
 
@@ -1687,38 +1692,61 @@ var d = (labToolData.companionPlanting) || {};
                 _cachedGroundGrad = ctx.createLinearGradient(0, cH * 0.4, 0, cH);
                 _cachedGroundGrad.addColorStop(0, gc2[0]); _cachedGroundGrad.addColorStop(0.3, gc2[1]); _cachedGroundGrad.addColorStop(1, gc2[2]);
               }
-              // Apply subtle dayPhase brightness shift via globalAlpha overlay (cheaper than new gradient)
+              // Apply day/night overlay on top of cached season sky gradient
               ctx.fillStyle = _cachedSkyGrad;
               ctx.fillRect(0, 0, cW, cH * 0.45);
-              // Subtle brightness variation from day phase (avoids recreating gradient)
-              ctx.fillStyle = 'rgba(255,255,200,' + (dayPhase * 0.06) + ')';
-              ctx.fillRect(0, 0, cW, cH * 0.45);
+              if (!isNight) {
+                // Warm noon tint, peaks at noon, fades at dawn/dusk
+                ctx.fillStyle = 'rgba(255,255,200,' + (dayBrightness * 0.06) + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+              } else {
+                // Dark blue overlay deepens toward midnight, lifts toward dawn
+                var nightDark = Math.sin(nightPhase * Math.PI) * 0.55 + 0.25;
+                ctx.fillStyle = 'rgba(15,20,55,' + nightDark + ')';
+                ctx.fillRect(0, 0, cW, cH * 0.45);
+                // Stars (twinkle)
+                for (var st = 0; st < 14; st++) {
+                  var sxs = (st * 73.3) % cW;
+                  var sys = ((st * 41.7) % (cH * 0.35)) + 6;
+                  var twinkle = 0.35 + 0.55 * Math.sin(tick * 0.05 + st * 1.7);
+                  ctx.fillStyle = 'rgba(255,255,255,' + (twinkle * nightDark * 1.3) + ')';
+                  ctx.beginPath(); ctx.arc(sxs, sys, 0.9, 0, Math.PI * 2); ctx.fill();
+                }
+              }
 
 
 
-              // Sun (smaller in winter, bigger in summer)
-
-              var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
-
-              var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
-
-              var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
-
-              var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
-
-              sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
-
-              sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
-
-              sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
-
-              ctx.fillStyle = sunGlow;
-
-              ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
-
-              ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
-
-              ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              // Sun (day) or Moon (night) — same arc east → west, only one visible at a time
+              if (!isNight) {
+                // Sun: smaller in winter, bigger in summer; tinted gray-blue in winter
+                var sunSize = _season === 1 ? 18 : _season === 3 ? 10 : 14;
+                var sunX = cW * 0.15 + cW * 0.7 * dayPhase;
+                var sunY = cH * 0.05 + Math.sin(dayPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var sunGlow = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunSize * 3);
+                sunGlow.addColorStop(0, _season === 3 ? 'rgba(200,210,230,0.7)' : 'rgba(255,235,59,0.9)');
+                sunGlow.addColorStop(0.5, _season === 3 ? 'rgba(180,195,220,0.2)' : 'rgba(255,193,7,0.3)');
+                sunGlow.addColorStop(1, 'rgba(255,193,7,0)');
+                ctx.fillStyle = sunGlow;
+                ctx.fillRect(sunX - sunSize * 4, sunY - sunSize * 4, sunSize * 8, sunSize * 8);
+                ctx.fillStyle = _season === 3 ? '#B0BEC5' : '#FDD835';
+                ctx.beginPath(); ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2); ctx.fill();
+              } else {
+                // Moon: traverses east → west during night, with crescent shadow
+                var moonSize = 12;
+                var moonX = cW * 0.15 + cW * 0.7 * nightPhase;
+                var moonY = cH * 0.05 + Math.sin(nightPhase * Math.PI) * cH * -0.12 + cH * 0.15;
+                var moonGlow = ctx.createRadialGradient(moonX, moonY, 0, moonX, moonY, moonSize * 3);
+                moonGlow.addColorStop(0, 'rgba(220,220,240,0.85)');
+                moonGlow.addColorStop(0.5, 'rgba(200,200,220,0.2)');
+                moonGlow.addColorStop(1, 'rgba(200,200,220,0)');
+                ctx.fillStyle = moonGlow;
+                ctx.fillRect(moonX - moonSize * 4, moonY - moonSize * 4, moonSize * 8, moonSize * 8);
+                ctx.fillStyle = '#E8E8F0';
+                ctx.beginPath(); ctx.arc(moonX, moonY, moonSize, 0, Math.PI * 2); ctx.fill();
+                // Subtle crescent shadow
+                ctx.fillStyle = 'rgba(60,70,100,0.4)';
+                ctx.beginPath(); ctx.arc(moonX + moonSize * 0.4, moonY - moonSize * 0.1, moonSize * 0.85, 0, Math.PI * 2); ctx.fill();
+              }
 
 
 
