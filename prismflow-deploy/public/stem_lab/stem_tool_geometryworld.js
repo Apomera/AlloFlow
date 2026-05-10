@@ -2410,15 +2410,20 @@
 
         // Input handlers
         var canvas = engine.renderer.domElement;
-        canvas.addEventListener('click', function() { if (!engine.isLocked) canvas.requestPointerLock(); });
-        document.addEventListener('pointerlockchange', function() {
+        // Memory-leak fix: track every listener so destroyEngine can detach them.
+        // Without this, document-scoped handlers (mousemove, keydown, etc.) keep
+        // firing forever after the user navigates away from Geometry World.
+        var _docH = engine._docHandlers = {};
+        var _cvH = engine._canvasHandlers = {};
+        canvas.addEventListener('click', _cvH.click = function() { if (!engine.isLocked) canvas.requestPointerLock(); });
+        document.addEventListener('pointerlockchange', _docH.pointerlockchange = function() {
           engine.isLocked = !!document.pointerLockElement;
           if (engine.isLocked) { startAmbientWind(); var ts = engine._tutorialState || {}; if (ts.step === 0 && !ts.dismissed) upd('tutorialStep', 1); }
         });
 
         // Smooth mouse look with configurable sensitivity
         var MOUSE_SENSITIVITY = 0.0018;
-        document.addEventListener('mousemove', function(ev) {
+        document.addEventListener('mousemove', _docH.mousemove = function(ev) {
           if (!engine.isLocked) return;
           engine.euler.setFromQuaternion(engine.camera.quaternion);
           engine.euler.y -= ev.movementX * MOUSE_SENSITIVITY;
@@ -2427,7 +2432,7 @@
           engine.camera.quaternion.setFromEuler(engine.euler);
         });
 
-        document.addEventListener('keydown', function(ev) {
+        document.addEventListener('keydown', _docH.keydown = function(ev) {
           // Let Esc pass through even in inputs (students expect it to close overlays/blur inputs).
           // But every other shortcut should be ignored when typing in a form field — otherwise
           // typing "house" into the AI prompt triggers H-teleport, S-movement, E-talk, etc.
@@ -2780,7 +2785,7 @@
               break;
           }
         });
-        document.addEventListener('keyup', function(ev) {
+        document.addEventListener('keyup', _docH.keyup = function(ev) {
           switch (ev.code) {
             case 'KeyW': engine.moveState.forward = false; break;
             case 'KeyS': engine.moveState.backward = false; break;
@@ -2791,7 +2796,7 @@
           }
         });
 
-        canvas.addEventListener('mousedown', function(ev) {
+        canvas.addEventListener('mousedown', _cvH.mousedown = function(ev) {
           if (!engine.isLocked) return;
           var THREE = window.THREE;
           engine.raycaster.setFromCamera(new THREE.Vector2(0, 0), engine.camera);
@@ -2864,10 +2869,10 @@
           }
         });
 
-        canvas.addEventListener('contextmenu', function(ev) { ev.preventDefault(); });
+        canvas.addEventListener('contextmenu', _cvH.contextmenu = function(ev) { ev.preventDefault(); });
 
         // Scroll-wheel to cycle through block types
-        canvas.addEventListener('wheel', function(ev) {
+        canvas.addEventListener('wheel', _cvH.wheel = function(ev) {
           if (!engine.isLocked) return;
           ev.preventDefault();
           var wdir = ev.deltaY > 0 ? 1 : -1;
@@ -2885,7 +2890,7 @@
         engine._touchMoveStart = null;
         engine._touchMoveVec = { x: 0, z: 0 };
 
-        canvas.addEventListener('touchstart', function(ev) {
+        canvas.addEventListener('touchstart', _cvH.touchstart = function(ev) {
           ev.preventDefault();
           engine._touchActive = true;
           engine.isLocked = true; // Treat touch as "locked" for rendering purposes
@@ -2902,7 +2907,7 @@
           }
         }, { passive: false });
 
-        canvas.addEventListener('touchmove', function(ev) {
+        canvas.addEventListener('touchmove', _cvH.touchmove = function(ev) {
           ev.preventDefault();
           for (var ti = 0; ti < ev.changedTouches.length; ti++) {
             var touch = ev.changedTouches[ti];
@@ -2936,7 +2941,7 @@
           }
         }, { passive: false });
 
-        canvas.addEventListener('touchend', function(ev) {
+        canvas.addEventListener('touchend', _cvH.touchend = function(ev) {
           for (var ti = 0; ti < ev.changedTouches.length; ti++) {
             var touch = ev.changedTouches[ti];
             if (touch.identifier === engine._touchMoveId) {
@@ -3988,6 +3993,24 @@
       function destroyEngine() {
         var engine = window[engineKey];
         if (engine) {
+          // Remove every listener registered during initEngine. Without this
+          // step, document-scoped handlers (mousemove / keydown / keyup /
+          // pointerlockchange) keep firing after navigation and the closure
+          // pins the entire engine in memory. Match each handler by its
+          // exact reference stored in the _docHandlers / _canvasHandlers map.
+          if (engine._docHandlers) {
+            Object.keys(engine._docHandlers).forEach(function(ev) {
+              document.removeEventListener(ev, engine._docHandlers[ev]);
+            });
+            engine._docHandlers = null;
+          }
+          if (engine._canvasHandlers && engine.renderer && engine.renderer.domElement) {
+            var _cv = engine.renderer.domElement;
+            Object.keys(engine._canvasHandlers).forEach(function(ev) {
+              _cv.removeEventListener(ev, engine._canvasHandlers[ev]);
+            });
+            engine._canvasHandlers = null;
+          }
           engine.clearWorld();
           // Dispose particles
           if (engine._particles) engine._particles.forEach(function(p) { engine.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
@@ -6418,6 +6441,10 @@
               ref: function(node) {
                 if (node && !window[engineKey] && threeReady) {
                   setTimeout(function() { initEngine(node); }, 100);
+                } else if (!node && window[engineKey]) {
+                  // Memory-leak fix: tear the engine down on unmount. Without this
+                  // branch the destroyEngine function defined below is never called.
+                  destroyEngine();
                 }
               },
               role: 'img',

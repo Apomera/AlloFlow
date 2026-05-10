@@ -213,9 +213,16 @@ var d = labToolData.plateTectonics || {};
 
             if (!canvasEl) {
 
-              if (canvasRef._last && canvasRef._last._ptAnim) {
+              if (canvasRef._last) {
 
-                cancelAnimationFrame(canvasRef._last._ptAnim);
+                if (canvasRef._last._ptAnim) cancelAnimationFrame(canvasRef._last._ptAnim);
+
+                // Memory-leak fix: remove every listener attached during init.
+                var _h = canvasRef._last._ptHandlers;
+
+                if (_h) Object.keys(_h).forEach(function(ev) { canvasRef._last.removeEventListener(ev, _h[ev]); });
+
+                canvasRef._last._ptHandlers = null;
 
                 canvasRef._last._ptInit = false;
 
@@ -232,6 +239,8 @@ var d = labToolData.plateTectonics || {};
             canvasEl._ptInit = true;
 
             canvasRef._last = canvasEl;
+
+            var _ptHandlers = canvasEl._ptHandlers = {};
 
 
 
@@ -297,7 +306,7 @@ var d = labToolData.plateTectonics || {};
 
 
 
-            canvasEl.addEventListener('mousedown', function(e) {
+            canvasEl.addEventListener('mousedown', _ptHandlers.mousedown = function(e) {
 
               var rect = canvasEl.getBoundingClientRect();
 
@@ -323,7 +332,7 @@ var d = labToolData.plateTectonics || {};
 
             });
 
-            canvasEl.addEventListener('mousemove', function(e) {
+            canvasEl.addEventListener('mousemove', _ptHandlers.mousemove = function(e) {
 
               if (dragIdx < 0) return;
 
@@ -386,15 +395,15 @@ var d = labToolData.plateTectonics || {};
 
             };
 
-            canvasEl.addEventListener('mouseup', mouseUp);
+            _ptHandlers.mouseup = mouseUp; canvasEl.addEventListener('mouseup', mouseUp);
 
-            canvasEl.addEventListener('mouseleave', mouseUp);
+            _ptHandlers.mouseleave = mouseUp; canvasEl.addEventListener('mouseleave', mouseUp);
 
 
 
             // Touch support
 
-            canvasEl.addEventListener('touchstart', function(e) {
+            canvasEl.addEventListener('touchstart', _ptHandlers.touchstart = function(e) {
 
               e.preventDefault();
 
@@ -420,7 +429,7 @@ var d = labToolData.plateTectonics || {};
 
             }, { passive: false });
 
-            canvasEl.addEventListener('touchmove', function(e) {
+            canvasEl.addEventListener('touchmove', _ptHandlers.touchmove = function(e) {
 
               if (dragIdx < 0) return; e.preventDefault();
 
@@ -434,7 +443,7 @@ var d = labToolData.plateTectonics || {};
 
             }, { passive: false });
 
-            canvasEl.addEventListener('touchend', mouseUp);
+            _ptHandlers.touchend = mouseUp; canvasEl.addEventListener('touchend', mouseUp);
 
 
 
@@ -1036,7 +1045,7 @@ var d = labToolData.plateTectonics || {};
 
 
             // Listen for eruption trigger from button
-            canvasEl.addEventListener('triggerEruption', function() {
+            canvasEl.addEventListener('triggerEruption', _ptHandlers.triggerEruption = function() {
               if (!eruptState.active) {
                 triggerEruption(cW * 0.5);
               }

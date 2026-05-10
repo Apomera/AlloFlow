@@ -5504,6 +5504,17 @@ const d = labToolData.solarSystem;
 
                       if (!cvEl || cvEl._surfInit === sel.name) return;
 
+                      // Memory-leak fix: switching planets re-runs this init block on
+                      // the same canvas element. Detach any leftover handlers from a
+                      // previous planet before re-attaching, otherwise each switch
+                      // multiplies listener count (and stale closures fire forever).
+                      if (cvEl._surfHandlers) {
+                        Object.keys(cvEl._surfHandlers).forEach(function (ev) {
+                          cvEl.removeEventListener(ev, cvEl._surfHandlers[ev]);
+                        });
+                      }
+                      var _surfH = cvEl._surfHandlers = {};
+
                       cvEl._surfInit = sel.name;
 
                       var ctx = cvEl.getContext('2d');
@@ -5529,7 +5540,7 @@ const d = labToolData.solarSystem;
 
                       // Click handler for canvas interactions
                       cvEl.style.cursor = 'default';
-                      cvEl.addEventListener('click', function(e) {
+                      cvEl.addEventListener('click', _surfH.click = function(e) {
                         var rect = cvEl.getBoundingClientRect();
                         var mx = (e.clientX - rect.left) * (cvEl.width / 2 / rect.width);
                         var my = (e.clientY - rect.top) * (cvEl.height / 2 / rect.height);
@@ -5558,7 +5569,7 @@ const d = labToolData.solarSystem;
                       });
 
                       // Mousemove for hover cursor + drag-to-rotate
-                      cvEl.addEventListener('mousedown', function(e) {
+                      cvEl.addEventListener('mousedown', _surfH.mousedown = function(e) {
                         var rect = cvEl.getBoundingClientRect();
                         var mx = (e.clientX - rect.left) * (cvEl.width / 2 / rect.width);
                         var my = (e.clientY - rect.top) * (cvEl.height / 2 / rect.height);
@@ -5569,9 +5580,9 @@ const d = labToolData.solarSystem;
                           cvEl.style.cursor = 'grabbing';
                         }
                       });
-                      cvEl.addEventListener('mouseup', function() { _isDragging = false; });
-                      cvEl.addEventListener('mouseleave', function() { _isDragging = false; });
-                      cvEl.addEventListener('mousemove', function(e) {
+                      cvEl.addEventListener('mouseup', _surfH.mouseup = function() { _isDragging = false; });
+                      cvEl.addEventListener('mouseleave', _surfH.mouseleave = function() { _isDragging = false; });
+                      cvEl.addEventListener('mousemove', _surfH.mousemove = function(e) {
                         if (_isDragging) {
                           _dragRotation += (e.clientX - _dragStartX) * 0.008;
                           _dragStartX = e.clientX;
@@ -9176,9 +9187,15 @@ const d = labToolData.solarSystem;
 
                         canvasEl.tabIndex = 0;
 
-                        canvasEl.addEventListener('keydown', function (e) { onKey(e, true); });
+                        // Memory-leak fix: stash every listener by name so _droneCleanup
+                        // can detach them on unmount. Without this, fullscreenchange
+                        // and canvas keydown/mouseup handlers leak forever after the
+                        // user navigates away from the drone scene.
+                        var _droneH = canvasEl._droneHandlers = {};
 
-                        canvasEl.addEventListener('keyup', function (e) { onKey(e, false); });
+                        canvasEl.addEventListener('keydown', _droneH.keydown = function (e) { onKey(e, true); });
+
+                        canvasEl.addEventListener('keyup', _droneH.keyup = function (e) { onKey(e, false); });
 
 
 
@@ -9186,9 +9203,9 @@ const d = labToolData.solarSystem;
 
                         var isLooking = false;
 
-                        canvasEl.addEventListener('mousedown', function (e) { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
+                        canvasEl.addEventListener('mousedown', _droneH.mousedown = function (e) { isLooking = true; canvasEl.requestPointerLock && canvasEl.requestPointerLock(); });
 
-                        canvasEl.addEventListener('mouseup', function () { isLooking = false; });
+                        canvasEl.addEventListener('mouseup', _droneH.mouseup = function () { isLooking = false; });
 
                         function onMouseMove(e) {
 
@@ -9334,6 +9351,8 @@ const d = labToolData.solarSystem;
                           camera.updateProjectionMatrix();
                           renderer.setSize(w, h2);
                         }
+                        // Track on a separate doc map so cleanup can target the right node.
+                        var _droneDocH = canvasEl._droneDocHandlers = { fullscreenchange: resizeDroneCanvas, webkitfullscreenchange: resizeDroneCanvas, mozfullscreenchange: resizeDroneCanvas };
                         document.addEventListener('fullscreenchange', resizeDroneCanvas);
                         document.addEventListener('webkitfullscreenchange', resizeDroneCanvas);
                         document.addEventListener('mozfullscreenchange', resizeDroneCanvas);
@@ -12093,6 +12112,24 @@ const d = labToolData.solarSystem;
                           clearInterval(hazardTimer);
 
                           document.removeEventListener('mousemove', onMouseMove);
+
+                          // Memory-leak fix: detach every drone listener tracked on
+                          // canvasEl._droneHandlers / canvasEl._droneDocHandlers and
+                          // disconnect the drone-canvas ResizeObserver, none of which
+                          // were torn down before this commit.
+                          if (canvasEl._droneHandlers) {
+                            Object.keys(canvasEl._droneHandlers).forEach(function (ev) {
+                              canvasEl.removeEventListener(ev, canvasEl._droneHandlers[ev]);
+                            });
+                            canvasEl._droneHandlers = null;
+                          }
+                          if (canvasEl._droneDocHandlers) {
+                            Object.keys(canvasEl._droneDocHandlers).forEach(function (ev) {
+                              document.removeEventListener(ev, canvasEl._droneDocHandlers[ev]);
+                            });
+                            canvasEl._droneDocHandlers = null;
+                          }
+                          if (droneRO) { try { droneRO.disconnect(); } catch (e) {} }
 
                           if (document.pointerLockElement === canvasEl) document.exitPointerLock();
 
