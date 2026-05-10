@@ -1571,6 +1571,7 @@ function QuizPanel(props) {
     quizMcqCount,
     quizMode,
     quizReflectionCount,
+    quizItemTypeMix,
     setDokLevel,
     setImageStyle,
     setMcqVisualMode,
@@ -1578,8 +1579,47 @@ function QuizPanel(props) {
     setQuizMcqCount,
     setQuizMode,
     setQuizReflectionCount,
+    setQuizItemTypeMix,
     t
   } = props;
+  var _itemMixOpen = useState(false);
+  var itemMixOpen = _itemMixOpen[0];
+  var setItemMixOpen = _itemMixOpen[1];
+  // Resolve the mode strategy to know which item types are allowed
+  var _modeStrategy = window.AlloModules && window.AlloModules.QuizModeStrategies
+    ? window.AlloModules.QuizModeStrategies.getStrategy(quizMode)
+    : null;
+  var allowedTypes = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.allowedItemTypes
+    ? _modeStrategy.generation.allowedItemTypes
+    : ['mcq'];
+  var defaultMix = _modeStrategy && _modeStrategy.generation && _modeStrategy.generation.defaultItemTypeMix
+    ? _modeStrategy.generation.defaultItemTypeMix
+    : { mcq: quizMcqCount };
+  // The extra item types the teacher can control (everything except mcq + reflection, which have their own controls)
+  var EXTRA_TYPES = [
+    { key: 'fill-blank', label: 'Fill-in-Blank', emoji: '✏️', desc: 'Sentence with a blank to complete' },
+    { key: 'short-answer', label: 'Short Answer', emoji: '💬', desc: 'Free-text 1-2 sentence response' },
+    { key: 'self-explanation', label: 'Self-Explanation', emoji: '🧠', desc: 'Explain concept in own words' },
+    { key: 'sequence-sense', label: 'Sequence Sense', emoji: '🔢', desc: 'Order steps or events correctly' },
+    { key: 'relation-mismatch', label: 'Odd One Out', emoji: '🔗', desc: 'Identify the mismatched item' },
+  ];
+  var visibleTypes = EXTRA_TYPES.filter(function (et) { return allowedTypes.indexOf(et.key) !== -1; });
+  // Current effective mix: use teacher override or fall back to mode defaults
+  var effectiveMix = quizItemTypeMix || defaultMix;
+  var handleMixChange = function (key, value) {
+    var newMix = Object.assign({}, effectiveMix);
+    if (value <= 0) { delete newMix[key]; } else { newMix[key] = value; }
+    // Always preserve MCQ from the main slider
+    newMix.mcq = quizMcqCount;
+    setQuizItemTypeMix && setQuizItemTypeMix(newMix);
+  };
+  var handleResetMix = function () {
+    setQuizItemTypeMix && setQuizItemTypeMix(null);
+  };
+  // Compute total extra items
+  var extraTotal = visibleTypes.reduce(function (sum, et) {
+    return sum + ((effectiveMix[et.key]) || 0);
+  }, 0);
   if (!expandedTools || !expandedTools.includes("quiz")) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-teal-50/50 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("quiz.mcq_count")), /* @__PURE__ */ React.createElement(
     "input",
@@ -1630,7 +1670,52 @@ function QuizPanel(props) {
       placeholder: t("quiz.custom_placeholder"),
       className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 outline-none resize-none h-16"
     }
-  )), (generatedContent?.data?.analysis || history.some((h) => h && h.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 mt-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, "Mode:"), /* @__PURE__ */ React.createElement(
+  )), (generatedContent?.data?.analysis || history.some((h) => h && h.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 mt-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))),
+  /* ── Item Mix Accordion ── */
+  visibleTypes.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "border-t border-slate-200" },
+    /* @__PURE__ */ React.createElement("button", {
+      type: "button",
+      onClick: function () { setItemMixOpen(!itemMixOpen); },
+      "aria-expanded": itemMixOpen,
+      "data-help-key": "quiz_item_mix_toggle",
+      className: "w-full px-3 py-2 flex items-center justify-between text-xs font-bold text-slate-600 hover:text-indigo-700 hover:bg-indigo-50/50 transition-colors"
+    },
+      /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5" },
+        /* @__PURE__ */ React.createElement(Settings2, { size: 12 }),
+        "Item Mix",
+        extraTotal > 0 && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[10px] font-medium bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full" }, "+" + extraTotal + " extra")
+      ),
+      /* @__PURE__ */ React.createElement(ChevronDown, { size: 14, className: "transition-transform duration-200" + (itemMixOpen ? " rotate-180" : "") })
+    ),
+    itemMixOpen && /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-3 pt-1 space-y-2 animate-in slide-in-from-top-1 duration-150 bg-slate-50/50" },
+      /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 leading-snug" }, "Control how many of each question type are generated. MCQ and Reflections are set above."),
+      visibleTypes.map(function (et) {
+        var count = effectiveMix[et.key] || 0;
+        return /* @__PURE__ */ React.createElement("div", { key: et.key, className: "flex items-center gap-2" },
+          /* @__PURE__ */ React.createElement("span", { className: "text-sm flex-shrink-0 w-5 text-center", "aria-hidden": "true" }, et.emoji),
+          /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" },
+            /* @__PURE__ */ React.createElement("span", { className: "text-xs font-semibold text-slate-700" }, et.label),
+            /* @__PURE__ */ React.createElement("span", { className: "text-[10px] text-slate-400 ml-1" }, et.desc)
+          ),
+          /* @__PURE__ */ React.createElement("input", {
+            type: "number",
+            min: "0",
+            max: "5",
+            value: count,
+            onChange: function (e) { handleMixChange(et.key, parseInt(e.target.value) || 0); },
+            "aria-label": et.label + " count",
+            className: "w-12 text-center text-sm border border-slate-300 rounded-md p-1 focus:ring-indigo-200 focus:border-indigo-300 bg-white"
+          })
+        );
+      }),
+      quizItemTypeMix && /* @__PURE__ */ React.createElement("button", {
+        type: "button",
+        onClick: handleResetMix,
+        className: "text-[11px] text-indigo-600 hover:text-indigo-800 font-medium mt-1 transition-colors"
+      }, "\u21A9 Reset to mode defaults")
+    )
+  ),
+  /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-mode-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, "Mode:"), /* @__PURE__ */ React.createElement(
     "select",
     {
       id: "quiz-mode-select",
@@ -1681,7 +1766,7 @@ function QuizPanel(props) {
     "button",
     {
       "aria-label": t("common.generate"),
-      onClick: () => handleGenerate("quiz", null, false, null, { quizMode, mcqVisualMode, imageStyle }),
+      onClick: () => { var _cfg = { quizMode, mcqVisualMode, imageStyle }; if (quizItemTypeMix) { var _mix = Object.assign({}, quizItemTypeMix); _mix.mcq = quizMcqCount; _cfg.itemTypes = _mix; } handleGenerate("quiz", null, false, null, _cfg); },
       "data-help-key": "quiz_generate_button",
       disabled: !hasSourceOrAnalysis || isProcessing,
       "aria-busy": isProcessing,
