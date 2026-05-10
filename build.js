@@ -449,6 +449,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'KokoroOfferModal',
+        filename: 'view_kokoro_offer_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'LabelPositions',
         filename: 'label_positions_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -640,6 +645,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_typingpractice.js',
     'stem_lab/stem_tool_weldlab.js',
     'stem_lab/stem_tool_birdlab.js',
+    'stem_lab/stem_tool_swimlab.js',
     'sel_hub/sel_safety_layer.js',  // MUST load before any sel_tool_*.js
     'sel_hub/sel_tool_zones.js', 'sel_hub/sel_tool_emotions.js',
     'sel_hub/sel_tool_coping.js', 'sel_hub/sel_tool_mindfulness.js',
@@ -920,6 +926,21 @@ if (mode === 'prod') {
         process.exit(1);
     }
     console.log('');
+
+    // ── Module registry contract check ────────────────────────────────
+    // Verifies every `window.AlloModules.X` consumer in AlloFlowANTI.txt
+    // has at least one CDN module that registers X. Catches the bug class
+    // surfaced 2026-05-10 (Teacher Dashboard 10 components silently
+    // unregistered, GeminiBridgeView deleted-but-consumed, etc.).
+    console.log('── Verifying window.AlloModules.X consumer/producer contract ──');
+    try {
+        execSync('node dev-tools/verify_module_registry.cjs --quiet', { cwd: ROOT, stdio: 'inherit' });
+        console.log('  ✓ All consumers resolved.\n');
+    } catch (e) {
+        console.error('❌ Module registry verification failed. Aborting build.');
+        console.error('   Run `npm run verify:registry` for the full report.');
+        process.exit(1);
+    }
 }
 
 let content = fs.readFileSync(SOURCE, 'utf-8');
