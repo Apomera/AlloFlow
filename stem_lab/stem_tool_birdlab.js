@@ -2118,6 +2118,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     ]
   };
 
+  // White-throated Sparrow — third species deep-dive. Maine-relevant
+  // (breeds widely; backyard winter visitor in coastal towns); the
+  // signature "Old-Sam-Peabody" song is already in BirdCallTrainer,
+  // so cross-references will eventually land naturally. Picked over
+  // Song Sparrow because the head pattern is more striking and the
+  // yellow lores are a clean teaching mark.
+  var WHITE_THROATED_SPARROW_FIELD_MARKS = {
+    species: 'wtsparrow',
+    name: 'White-throated Sparrow',
+    bigSvgViewBox: '0 0 320 240',
+    bigSvg: function(h) {
+      return h('g', { transform: 'translate(40, 40) scale(13)' },
+        // Body (gray-brown breast base layer)
+        h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 7, fill: '#a59683', stroke: '#3a2e22', strokeWidth: 0.4 }),
+        // Brown-streaked back (dorsal half)
+        h('path', { d: 'M 4 11 Q 4 7 12 7 Q 20 7 20 11 Q 20 13 12 13 Q 4 13 4 11 Z', fill: '#7a5c3a' }),
+        // Dark streaks on back
+        h('path', { d: 'M 7 8 L 7 12 M 10 8 L 10 12 M 13 8 L 13 12 M 16 8 L 16 12', stroke: '#3a2814', strokeWidth: 0.45 }),
+        // Black lateral crown stripes (left + right of midline)
+        h('path', { d: 'M 5 10 Q 6 7.2 9 7 Q 9 8.5 7 10 Z', fill: '#1a1a1a' }),
+        h('path', { d: 'M 11 7.2 Q 14 7.5 14 9.5 Q 12 10 11 8.5 Z', fill: '#1a1a1a' }),
+        // White median crown stripe (between the two black ones)
+        h('path', { d: 'M 9 7 Q 10 6.6 11 7 L 11 9 L 9 9 Z', fill: '#ffffff' }),
+        // White supercilium (eyebrow stripe over eye)
+        h('path', { d: 'M 4 11 Q 6 10.5 10 10.6', stroke: '#ffffff', strokeWidth: 0.7, fill: 'none' }),
+        // Yellow lore patch (between bill and eye) — diagnostic
+        h('rect', { x: 4.5, y: 10.4, width: 1.6, height: 0.7, fill: '#facc15' }),
+        // Black eyeline through eye
+        h('path', { d: 'M 4 11.3 L 10 11.3', stroke: '#1a1a1a', strokeWidth: 0.45 }),
+        // White throat sharply bordered
+        h('ellipse', { cx: 9, cy: 13.4, rx: 2.4, ry: 1, fill: '#ffffff' }),
+        // Black malar stripe (border under the throat patch)
+        h('path', { d: 'M 6 14.4 L 11 14.4', stroke: '#1a1a1a', strokeWidth: 0.45 }),
+        // Wing (rusty brown with subtle wing bars)
+        h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 5, fill: '#8a6a48' }),
+        h('path', { d: 'M 13 12 L 19 12 M 13 14 L 19 14', stroke: '#e8d4b0', strokeWidth: 0.45 }),
+        // Tail (long, gray-brown)
+        h('path', { d: 'M 20 14 L 26 12 L 26 17 L 20 16 Z', fill: '#5a4632' }),
+        // Eye (dark)
+        h('circle', { cx: 7, cy: 11, r: 0.8, fill: '#000' }),
+        h('circle', { cx: 7.2, cy: 10.8, r: 0.25, fill: '#fff' }),
+        // Conical seed-cracker bill (between chickadee stout + warbler slim)
+        h('path', { d: 'M 4 11.5 L 1 12 L 4 12.5 Z', fill: '#5a4632' })
+      );
+    },
+    hotspots: [
+      { id: 'whiteStripe', x: 130, y: 70,  r: 22, label: 'White crown stripe',
+        what: 'A clean white stripe running down the middle of the top of the head, between two black stripes. Some birds have this stripe replaced by tan; both color morphs are normal.',
+        why: 'The head striping is the species signature. White-striped vs tan-striped morphs even pair off (white tends to mate with tan), an unusual genetic-behavioral link.' },
+      { id: 'blackStripes', x: 95, y: 80,  r: 20, label: 'Black lateral crown stripes',
+        what: 'Two thick black stripes running along the sides of the white (or tan) crown stripe.',
+        why: 'These are the bookends of the head pattern. A sparrow with bold lateral crown stripes plus a yellow lore = White-throated for the eastern US.' },
+      { id: 'eyebrow',    x: 95,  y: 110, r: 18, label: 'White (or tan) supercilium',
+        what: 'A pale stripe that runs from the bill back over the eye, ending behind the head.',
+        why: 'Many sparrows have eyebrow stripes, but the White-throated\'s is wide and clean. Check this when the throat is hard to see.' },
+      { id: 'lores',      x: 60,  y: 110, r: 14, label: 'Yellow lores',
+        what: 'A small yellow patch between the bill and the eye. Tiny but unmistakable up close.',
+        why: 'Diagnostic. White-crowned Sparrow looks similar but has NO yellow lores. If you can see yellow at the base of the bill, it is White-throated.' },
+      { id: 'throat',     x: 110, y: 145, r: 20, label: 'White throat',
+        what: 'A bright white patch sharply bordered below by a black malar (mustache) stripe.',
+        why: 'The species\'s namesake mark. The "sharp" border versus a "blurry" one separates White-throated from juvenile White-crowned.' },
+      { id: 'back',       x: 165, y: 100, r: 26, label: 'Streaked brown back',
+        what: 'A warm brown back with dark streaks running along the feathers.',
+        why: 'Sparrows are mostly brown-streaked above; the streak pattern is consistent across most species. Use it to confirm "this is a sparrow," then look at the head for the species.' },
+      { id: 'breast',     x: 155, y: 215, r: 22, label: 'Plain gray-brown breast',
+        what: 'A clean, unstreaked gray-brown chest and belly. Sometimes a faint dark central spot but no heavy streaking.',
+        why: 'Distinguishes from Song Sparrow, which has heavy dark breast streaking and a central breast spot. Plain breast = not Song Sparrow.' },
+      { id: 'bill',       x: 50,  y: 130, r: 16, label: 'Conical seed-cracker bill',
+        what: 'A short, thick, conical bill: a seed-cracker shape, but smaller than a finch\'s.',
+        why: 'Bill shape tells diet. White-throated Sparrows eat seeds (winter) and insects (summer); the bill handles both. Slightly slimmer than a Song Sparrow\'s, slightly stubbier than a thrush\'s.' }
+    ]
+  };
+
   window.StemLab.registerTool('birdLab', {
     name: 'BirdLab — I-Spy Ornithology',
     icon: '🐦',
@@ -3271,8 +3344,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
         // and authoring a *_FIELD_MARKS const matching the shape of
         // CHICKADEE_FIELD_MARKS.
         var SPECIES_OPTIONS = [
-          { id: 'chickadee', label: 'Chickadee',  icon: '🐦', tagline: 'Black-capped Chickadee · Poecile atricapillus · Maine\'s state bird',         data: CHICKADEE_FIELD_MARKS },
-          { id: 'yrwarbler', label: 'Yellow-rumped Warbler', icon: '🟡', tagline: 'Setophaga coronata coronata (Myrtle subspecies) · Maine\'s most common warbler', data: YELLOW_RUMPED_WARBLER_FIELD_MARKS }
+          { id: 'chickadee', label: 'Chickadee',             icon: '🐦', tagline: 'Black-capped Chickadee · Poecile atricapillus · Maine\'s state bird',                       data: CHICKADEE_FIELD_MARKS },
+          { id: 'yrwarbler', label: 'Yellow-rumped Warbler', icon: '🟡', tagline: 'Setophaga coronata coronata (Myrtle subspecies) · Maine\'s most common warbler',           data: YELLOW_RUMPED_WARBLER_FIELD_MARKS },
+          { id: 'wtsparrow', label: 'White-throated Sparrow', icon: '🟫', tagline: 'Zonotrichia albicollis · Maine breeder, "Old-Sam-Peabody" singer',                         data: WHITE_THROATED_SPARROW_FIELD_MARKS }
         ];
 
         var speciesId_state = useState('chickadee');
