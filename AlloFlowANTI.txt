@@ -8834,6 +8834,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [quizMcqCount, setQuizMcqCount] = useState(10);
   const [quizReflectionCount, setQuizReflectionCount] = useState(3);
   const [quizCustomInstructions, setQuizCustomInstructions] = useState('');
+  const [quizItemTypeMix, setQuizItemTypeMix] = useState(null);
   const [passAnalysisToQuiz, setPassAnalysisToQuiz] = useState(false);
   const filteredGlossaryData = useMemo(() => {
     if (generatedContent?.type !== 'glossary' || !generatedContent?.data) return [];
@@ -22530,9 +22531,9 @@ Return ONLY valid JSON in this format:
                  {expandedTools.includes('quiz') && window.AlloModules && window.AlloModules.QuizPanel && React.createElement(window.AlloModules.QuizPanel, {
           expandedTools, InfoTooltip, dokLevel, generatedContent, handleGenerate,
           hasSourceOrAnalysis, history, imageStyle, isProcessing, mcqVisualMode, quizCustomInstructions,
-          quizMcqCount, quizMode, quizReflectionCount, setDokLevel, setImageStyle,
+          quizMcqCount, quizMode, quizReflectionCount, quizItemTypeMix, setDokLevel, setImageStyle,
           setMcqVisualMode, setQuizCustomInstructions, setQuizMcqCount, setQuizMode, setQuizReflectionCount,
-          t
+          setQuizItemTypeMix, t
                  })}
              </div>
              <div style={{display: isGuidedToolVisible('lesson-plan') ? undefined : 'none'}} id="tour-tool-lesson-plan" data-help-key="tool_lesson_plan" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
