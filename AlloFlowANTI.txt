@@ -24635,7 +24635,7 @@ Return ONLY valid JSON in this format:
       {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
         <div
             ref={socraticChatRef}
-            className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[32rem] h-[36rem]' : 'w-80 h-[28rem]'}`}
+            className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'}`}
             style={{
                 right: socraticPosition.x !== null ? 'auto' : '6rem',
                 bottom: socraticPosition.y !== null ? 'auto' : '6rem',
@@ -24743,7 +24743,7 @@ Return ONLY valid JSON in this format:
                     disabled={isSocraticThinking}
                 />
                 <button aria-label={t('common.socratic_submit')}
-                    onClick={handleSocraticSubmit}
+                    onClick={() => handleSocraticSubmit()}
                     disabled={!socraticInput.trim() || isSocraticThinking}
                     className="bg-teal-700 text-white p-2 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center"
                 >
