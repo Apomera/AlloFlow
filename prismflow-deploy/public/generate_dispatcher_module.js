@@ -265,6 +265,121 @@ function computeContentAccuracy(harvest) {
   };
 }
 
+// ─── Content accessibility (deterministic) ──────────────────────────────
+// UDL-aligned check: do the curriculum artifacts have alt text for images,
+// avoid color-only references, and break long text into manageable passages?
+function computeContentAccessibility(artifacts, harvest, gradeLevel) {
+  let totalImages = 0;
+  let imagesWithAlt = 0;
+  let colorOnlyCount = 0;
+  const colorOnlyExamples = [];
+  const implicitImageExamples = [];
+  let longestUnbrokenPassage = 0;
+
+  // Color-only patterns: phrases that rely solely on color to convey meaning
+  const colorOnlyRe = /\b(the\s+(?:red|blue|green|yellow|orange|purple|pink)\s+(?:one|section|area|box|circle|highlight|region|part))\b|\b(highlighted?\s+in\s+(?:red|blue|green|yellow|orange|purple|pink))\b|\b(shown\s+in\s+(?:red|blue|green|yellow|orange))\b|\b(see\s+the\s+(?:red|blue|green|yellow)\b)/gi;
+  // Image reference patterns
+  const imgRefRe = /\b(see\s+(?:the\s+)?(?:image|figure|diagram|chart|picture|photo|illustration))\b|\b(as\s+shown\s+(?:in\s+)?(?:the\s+)?(?:image|figure|diagram))\b|\b((?:image|figure|diagram)\s+(?:\d+|above|below))\b/gi;
+
+  artifacts.forEach(function (item) {
+    if (!item) return;
+    const d = item.data;
+    if (!d) return;
+    const textBlob = typeof d === 'string' ? d
+      : typeof d === 'object' && d.text ? d.text
+      : typeof d === 'object' && d.simplifiedText ? d.simplifiedText
+      : typeof d === 'object' && d.originalText ? d.originalText
+      : '';
+
+    // Count words in longest unbroken passage (no heading/hr/blank-line break)
+    if (textBlob) {
+      const paragraphs = textBlob.split(/\n\s*\n|\n#+\s|\n---/);
+      paragraphs.forEach(function (p) {
+        const wc = (p.match(/\S+/g) || []).length;
+        if (wc > longestUnbrokenPassage) longestUnbrokenPassage = wc;
+      });
+    }
+
+    // Detect color-only language
+    if (textBlob) {
+      let m;
+      colorOnlyRe.lastIndex = 0;
+      while ((m = colorOnlyRe.exec(textBlob)) !== null) {
+        colorOnlyCount++;
+        if (colorOnlyExamples.length < 8) colorOnlyExamples.push(m[0]);
+      }
+    }
+
+    // Detect implicit image references (may lack alt text)
+    if (textBlob) {
+      let m;
+      imgRefRe.lastIndex = 0;
+      while ((m = imgRefRe.exec(textBlob)) !== null) {
+        if (implicitImageExamples.length < 8) implicitImageExamples.push(m[0]);
+      }
+    }
+
+    // Count images and alt coverage
+    if (item.type === 'image' || item.type === 'concept-sort') {
+      totalImages++;
+      // If the data has alt text or caption, count as covered
+      if (d && (d.altText || d.caption || d.alt || d.description || d.title)) {
+        imagesWithAlt++;
+      }
+    }
+    // Also count inline images in HTML-like content
+    if (textBlob) {
+      const imgTags = textBlob.match(/<img\b[^>]*>/gi) || [];
+      imgTags.forEach(function (tag) {
+        totalImages++;
+        if (/alt\s*=\s*"[^"]+"/i.test(tag) || /alt\s*=\s*'[^']+'/i.test(tag)) {
+          imagesWithAlt++;
+        }
+      });
+    }
+  });
+
+  const altCoveragePct = totalImages > 0 ? Math.round((imagesWithAlt / totalImages) * 100) : null;
+
+  // Status logic
+  let status = 'Aligned';
+  const recommendations = [];
+
+  if (colorOnlyCount > 0) {
+    status = 'Partially Aligned';
+    recommendations.push(colorOnlyCount + ' color-only reference' + (colorOnlyCount === 1 ? '' : 's') + ' detected. Students with color vision deficiencies will miss this information. Add text labels, patterns, or shapes alongside color cues.');
+  }
+
+  if (totalImages > 0 && altCoveragePct < 80) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('Only ' + altCoveragePct + '% of images have alt text. Screen-reader users and students on slow connections will miss visual content. Add descriptive alt text to all informational images.');
+  }
+
+  // Grade-adjusted passage-length thresholds
+  const gradeNum = parseInt(String(gradeLevel).replace(/[^0-9]/g, ''), 10) || 5;
+  const maxPassage = gradeNum <= 2 ? 100 : gradeNum <= 5 ? 200 : gradeNum <= 8 ? 350 : 500;
+  if (longestUnbrokenPassage > maxPassage) {
+    if (status === 'Aligned') status = 'Partially Aligned';
+    recommendations.push('Longest unbroken passage is ' + longestUnbrokenPassage + ' words (threshold for grade band: ' + maxPassage + '). Break long passages with headings, bullet points, or visual breaks to reduce cognitive load.');
+  }
+
+  if (implicitImageExamples.length > 0 && totalImages === 0) {
+    recommendations.push(implicitImageExamples.length + ' reference' + (implicitImageExamples.length === 1 ? '' : 's') + ' to images/figures found but no image artifacts detected. Ensure referenced visuals are present and have alt text.');
+  }
+
+  return {
+    status,
+    totalImages,
+    altCoveragePct,
+    colorOnlyCount,
+    longestUnbrokenPassage,
+    colorOnlyExamples: colorOnlyExamples.slice(0, 6),
+    implicitImageExamples: implicitImageExamples.slice(0, 6),
+    recommendations,
+    notes: 'Deterministic scan for WCAG-aligned accessibility signals: alt-text coverage, color-only language, passage length. The LLM review adds contextual judgment.',
+  };
+}
+
 // ─── Plan R+ dim: Differentiation coverage ──────────────────────────────
 // UDL-aligned check: does the curriculum offer multiple access paths for
 // learners who differ in reading level, language, processing style, or
@@ -2734,7 +2849,16 @@ ${_itemsBlock}`;
                  const distinctTypes = Array.from(auditHarvest.distinctTypes || []);
                  const prompt = `You are a CAST-trained UDL specialist evaluating a curriculum against the three Universal Design for Learning principles (CAST UDL Guidelines v3.0). Each principle has its own pillar. Rate each pillar individually, not the curriculum as a whole.\n\nCurriculum profile (deterministic):\n- Distinct artifact types: ${distinctTypes.join(', ') || '(none)'}\n- Modalities: text=${!!modPresent.text}, image=${!!modPresent.image}, audio=${!!modPresent.audio}, interactive=${!!modPresent.interactive}\n- Scaffolds: ${scaffoldCounts.sentenceFrames || 0} sentence-frame sets, ${scaffoldCounts.simplifiedTexts || 0} simplified texts, ${scaffoldCounts.leveledGlossary || 0} leveled glossaries\n- Reading levels: ${(auditHarvest.readingLevels || []).map(r => r.range).join('; ') || '(none)'}\n- Grade band: ${dimGradeBand}\n\nSource excerpt (first 2500 chars):\n"""\n${(comprehensiveContext || '').slice(0, 2500)}\n"""\n\nFor EACH UDL pillar, evaluate using these prompts:\n\n1. REPRESENTATION (how is content presented?). Multiple ways to access the same content? Visual + auditory + text + interactive? Customizable display? Vocabulary support? Activate background knowledge? Highlight patterns?\n\n2. ENGAGEMENT (why do learners invest effort?). Choices/autonomy? Authenticity, relevance, cultural responsiveness? Optimal challenge with scaffolds? Sustained-effort supports (goal-setting, feedback, self-reflection)?\n\n3. ACTION & EXPRESSION (how do learners demonstrate what they know?). Multiple ways to respond (writing, speaking, drawing, building, performing)? Tools and assistive-tech support? Goal-setting and progress-monitoring scaffolds?\n\nReturn ONLY a single valid JSON object:\n{\n  "representation": { "status": "Aligned"|"Partially Aligned"|"Not Aligned", "evidence": "...", "gaps": "...", "recommendation": "ONE sentence" },\n  "engagement":     { "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "actionExpression":{ "status": "...", "evidence": "...", "gaps": "...", "recommendation": "..." },\n  "overallNarrative": "ONE paragraph (2-3 sentences) summarizing UDL alignment and naming the most pressing pillar to strengthen",\n  "overallStatus": "Aligned"|"Partially Aligned"|"Not Aligned"\n}\n\nNo prose outside the JSON. No markdown fences. No trailing commas.`;
                  const result = await callGemini(prompt, true);
-                 const udl = JSON.parse(cleanJson(result));
+                 let udl;
+                 try {
+                     udl = JSON.parse(cleanJson(result));
+                 } catch (firstParseErr) {
+                     warnLog('[Alignment] UDL JSON parse failed (attempt 1), retrying:', firstParseErr);
+                     await new Promise(r => setTimeout(r, 750));
+                     const retryPrompt = prompt + '\n\nCRITICAL: Your previous response failed JSON.parse with: ' + String(firstParseErr.message || '').slice(0, 120) + '. Return ONLY a single valid JSON object. No prose, no markdown fences, no trailing commas.';
+                     const retryResult = await callGemini(retryPrompt, true);
+                     udl = JSON.parse(cleanJson(retryResult));
+                 }
                  const pillarShape = function (p) {
                      const safe = p && typeof p === 'object' ? p : {};
                      return {
