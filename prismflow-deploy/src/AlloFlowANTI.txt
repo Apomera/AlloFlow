@@ -3570,117 +3570,119 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/behavior_lens_module.js');
-    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/report_writer_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/behavior_lens_module.js');
+    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/report_writer_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/canvas_tips_module.js');
-    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_kokoro_offer_modal_module.js');
-    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_confirm_dialog_module.js');
-    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_hints_modal_module.js');
-    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_xp_modal_module.js');
-    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_storybook_export_modal_module.js');
-    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_info_modal_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/label_positions_module.js');
-    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/ui_language_selector_module.js');
-    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/audio_banks_module.js');
-    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_export_preview_module.js');
-    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_misc_modals_module.js');
-    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_gemini_bridge_module.js');
-    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_misc_panels_module.js');
-    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_sidebar_panels_module.js');
-    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/module_scope_extras_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/canvas_tips_module.js');
+    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_kokoro_offer_modal_module.js');
+    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_confirm_dialog_module.js');
+    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_hints_modal_module.js');
+    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_xp_modal_module.js');
+    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_storybook_export_modal_module.js');
+    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_info_modal_module.js');
+    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_session_modal_module.js');
+    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_socratic_chat_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/audio_banks_module.js');
+    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_export_preview_module.js');
+    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_misc_modals_module.js');
+    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_gemini_bridge_module.js');
+    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_misc_panels_module.js');
+    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/module_scope_extras_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3691,7 +3693,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@71d6ce2/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@735cd09/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -20202,106 +20204,7 @@ Return ONLY valid JSON in this format:
             </div>
         ))}
       </div>
-      {showSessionModal && activeSessionCode && (
-        <div className="fixed inset-0 bg-black/80 z-[150] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={handleSetShowSessionModalToFalse}>
-            <div className="bg-white rounded-2xl shadow-2xl p-8 text-center max-w-md w-full relative animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label={t('session.live_title')}>
-                <button onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 p-2 rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24}/></button>
-                <div className="flex justify-center mb-4">
-                    <div className="bg-green-100 p-4 rounded-full shadow-inner">
-                        <Wifi size={48} className="text-green-600 animate-pulse" />
-                    </div>
-                </div>
-                <h2 className="text-2xl font-black text-slate-800 mb-2">{t('session.live_title')}</h2>
-                <p className="text-slate-600 mb-6 font-medium">{t('session.live_instruction')}</p>
-                <div
-                    className="bg-indigo-50 border-4 border-indigo-100 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-indigo-100 transition-colors group relative"
-                    onClick={() => copyToClipboard(activeSessionCode)}
-                    title={t('common.click_to_copy')}
-                >
-                    <div className="text-7xl font-black text-indigo-600 tracking-widest font-mono">
-                        {activeSessionCode}
-                    </div>
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] font-bold text-indigo-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity flex items-center gap-1">
-                        <Copy size={10}/> {t('session.click_to_copy')}
-                    </div>
-                </div>
-                <div className="mb-6 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <p className="text-[11px] text-slate-600 font-bold uppercase tracking-wider mb-1">{t('session.host_id_share')}</p>
-                    <button
-                        aria-label={t('common.copy')}
-                        onClick={() => copyToClipboard(appId)}
-                        className="w-full flex items-center justify-center gap-2 text-xs font-mono font-bold text-slate-600 hover:text-indigo-600 bg-white border border-slate-400 hover:border-indigo-200 rounded-lg p-2 transition-all"
-                    >
-                        {appId} <Copy size={12}/>
-                    </button>
-                </div>
-                {sessionData && (
-                    <div className="mb-6 text-center animate-in slide-in-from-bottom-2">
-                        <button
-                            aria-label={t('common.groups')}
-                            onClick={handleSetShowGroupModalToTrue}
-                            className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-6 py-4 rounded-xl font-bold text-sm transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-3"
-                        >
-                            <Users size={20} />
-                            <div className="text-left">
-                                <span className="block">{t('groups.manage_button')}</span>
-                                <span className="block text-[11px] font-normal opacity-80">{t('groups.manage_button_desc')}</span>
-                            </div>
-                            <ChevronRight size={18} className="opacity-60"/>
-                        </button>
-                    </div>
-                )}
-                {sessionData && (
-                    <div className="mb-8 flex justify-center">
-                        <button
-                            onClick={toggleSessionMode}
-                            className={`flex items-center gap-3 px-4 py-2 rounded-full border-2 transition-all w-full justify-center ${sessionData.mode === 'sync' ? 'bg-indigo-50 border-indigo-500 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:border-indigo-300'}`}
-                        >
-                            <div className={`w-10 h-5 rounded-full relative transition-colors ${sessionData.mode === 'sync' ? 'bg-indigo-500' : 'bg-slate-300'}`}>
-                                <div className={`absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${sessionData.mode === 'sync' ? 'left-6' : 'left-1'}`}></div>
-                            </div>
-                            <div className="text-left">
-                                <span className="block text-xs font-bold uppercase tracking-wider">{sessionData.mode === 'sync' ? t('session.teacher_paced') : t('session.student_paced')}</span>
-                                <span className="block text-[11px] opacity-70 font-normal">
-                                    {sessionData.mode === 'sync' ? t('session.teacher_paced_desc') : t('session.student_paced_desc')}
-                                </span>
-                            </div>
-                        </button>
-                    </div>
-                )}
-                <div className="flex gap-3 justify-center">
-                    <button
-                        onClick={handleSetShowSessionModalToFalse}
-                        className="px-8 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-full transition-colors"
-                    >
-                        {t('session.action_close')}
-                    </button>
-                    <button
-                        onClick={async () => {
-                            setConfirmDialog({ message: t('session.end_confirm') || 'Are you sure you want to end this session?', onConfirm: async () => {
-                                if (activeSessionCode) {
-                                    try {
-                                        const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
-                                        await deleteDoc(sessionRef);
-                                        addToast(t('session.session_ended_toast') || "Session ended.", "success");
-                                    } catch (e) {
-                                        warnLog("Error ending session:", e);
-                                        addToast(t('session.error_end_session') || "Failed to end session.", "error");
-                                    }
-                                }
-                                setActiveSessionCode(null);
-                                setSessionData(null);
-                                setShowSessionModal(false);
-                            }});
-                        }}
-                        className="px-8 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 font-bold rounded-full transition-colors flex items-center gap-2"
-                    >
-                        <XCircle size={18}/> {t('session.action_end')}
-                    </button>
-                </div>
-            </div>
-        </div>
-      )}
+      {showSessionModal && activeSessionCode && <SessionModal activeSessionAppId={activeSessionAppId} activeSessionCode={activeSessionCode} addToast={addToast} appId={appId} copyToClipboard={copyToClipboard} db={db} deleteDoc={deleteDoc} doc={doc} handleSetShowGroupModalToTrue={handleSetShowGroupModalToTrue} handleSetShowSessionModalToFalse={handleSetShowSessionModalToFalse} sessionData={sessionData} setActiveSessionCode={setActiveSessionCode} setConfirmDialog={setConfirmDialog} setSessionData={setSessionData} setShowSessionModal={setShowSessionModal} t={t} toggleSessionMode={toggleSessionMode} warnLog={warnLog} />}
       {confirmDialog && <ConfirmDialog confirmDialog={confirmDialog} setConfirmDialog={setConfirmDialog} t={t} />}
       {/* ── GroupSessionModal extracted to view_misc_panels_module.js (CDN) ── */}
       {(showGroupModal && activeSessionCode && sessionData) && window.AlloModules && window.AlloModules.GroupSessionModal && React.createElement(window.AlloModules.GroupSessionModal, {
@@ -24296,126 +24199,7 @@ Return ONLY valid JSON in this format:
               hasSourceOrAnalysis={hasSourceOrAnalysis}
           />
       )}
-      {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
-        <div
-            ref={socraticChatRef}
-            className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'}`}
-            style={{
-                right: socraticPosition.x !== null ? 'auto' : '6rem',
-                bottom: socraticPosition.y !== null ? 'auto' : '6rem',
-                left: socraticPosition.x !== null ? `${socraticPosition.x}px` : 'auto',
-                top: socraticPosition.y !== null ? `${socraticPosition.y}px` : 'auto',
-                cursor: isSocraticDragging ? 'grabbing' : 'auto',
-                willChange: isSocraticDragging ? 'left, top' : 'auto',
-            }}
-        >
-            <div
-                className="bg-teal-600 p-3 text-white flex justify-between items-center shrink-0 cursor-grab active:cursor-grabbing select-none"
-                onMouseDown={(e) => {
-                    if (e.target.closest('button')) return;
-                    e.preventDefault();
-                    setIsSocraticDragging(true);
-                    const rect = e.currentTarget.parentElement.getBoundingClientRect();
-                    socraticDragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-                    socraticLivePos.current = { x: rect.left, y: rect.top };
-                }}
-                title={t('socratic.drag_hint')}
-            >
-                <h3 className="font-bold text-sm flex items-center gap-2">
-                    <MessageCircleQuestion size={18} className="text-teal-100"/> {t('socratic.title')}
-                </h3>
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={handleToggleSocraticAutoRead}
-                        data-help-key="socratic_auto_read"
-                        className={`p-1.5 rounded transition-colors ${socraticAutoRead ? 'bg-teal-400 text-white' : 'hover:bg-teal-700 text-teal-100'}`}
-                        title={t('socratic.auto_read')}
-                        aria-label={t('socratic.auto_read')}
-                    >
-                        <Volume2 size={14}/>
-                    </button>
-                    <button
-                        onClick={handleToggleSocraticAutoSend}
-                        data-help-key="socratic_auto_send"
-                        className={`p-1.5 rounded transition-colors ${socraticAutoSend ? 'bg-teal-400 text-white' : 'hover:bg-teal-700 text-teal-100'}`}
-                        title={t('socratic.auto_send')}
-                        aria-label={t('socratic.auto_send')}
-                    >
-                        <Mic size={14}/>
-                    </button>
-                    <button
-                        onClick={handleToggleIsSocraticExpanded}
-                        data-help-key="socratic_expand"
-                        className="p-1.5 rounded hover:bg-teal-700 text-teal-100 hover:text-white transition-colors"
-                        title={isSocraticExpanded ? t('socratic.collapse_tooltip') : t('socratic.expand_tooltip')}
-                        aria-label={isSocraticExpanded ? t('socratic.collapse_tooltip') : t('socratic.expand_tooltip')}
-                    >
-                        {isSocraticExpanded ? <Minimize2 size={14}/> : <Maximize2 size={14}/>}
-                    </button>
-                    <button data-help-key="socratic_close" data-help-ignore onClick={handleSetShowSocraticChatToFalse} className="hover:bg-teal-700 p-1.5 rounded text-teal-100 hover:text-white transition-colors" aria-label={t('common.close')}>
-                        <X size={14}/>
-                    </button>
-                </div>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4 bg-slate-50 space-y-3 custom-scrollbar" ref={socraticScrollRef}>
-                {socraticMessages.map((msg, i) => (
-                    <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                        <div className={`max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === 'user' ? 'bg-teal-700 text-white rounded-br-none' : 'bg-white text-slate-700 border border-slate-400 rounded-bl-none'}`}>
-                            {msg.role === 'user' ? msg.text : renderFormattedText(msg.text)}
-                        </div>
-                    </div>
-                ))}
-                {isSocraticThinking && (
-                    <div className="flex items-start">
-                        <div className="bg-white p-2 rounded-xl border border-slate-400 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-1 shadow-sm">
-                            <RefreshCw size={10} className="animate-spin"/> {t('socratic.thinking')}
-                        </div>
-                    </div>
-                )}
-            </div>
-            <div className="p-3 bg-white border-t border-slate-100 flex gap-2 shrink-0">
-                <button
-                    onClick={() => {
-                        if (isSocraticDictating) {
-                            setIsSocraticDictating(false);
-                            if (recognitionRef.current) recognitionRef.current.stop();
-                        } else {
-                            setIsSocraticDictating(true);
-                            if (recognitionRef.current) {
-                                try {
-                                    recognitionRef.current.start();
-                                } catch(e) { warnLog('Caught error:', e?.message || e); }
-                            }
-                        }
-                    }}
-                    disabled={isSocraticThinking}
-                    className={`p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center ${isSocraticDictating ? 'bg-red-700 text-white animate-pulse' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-                    title={t('socratic.mic_tooltip')}
-                    aria-label={t('socratic.mic_tooltip')}
-                >
-                    <Mic size={16}/>
-                </button>
-                <input aria-label={t('common.enter_socratic_input')}
-                    data-help-key="socratic_input"
-                    type="text"
-                    value={socraticInput}
-                    onChange={(e) => setSocraticInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSocraticSubmit()}
-                    placeholder={isSocraticDictating ? t('socratic.listening') : t('socratic.placeholder')}
-                    className="flex-grow text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-teal-200 focus:border-teal-400 outline-none transition-all"
-                    autoFocus
-                    disabled={isSocraticThinking}
-                />
-                <button aria-label={t('common.socratic_submit')}
-                    onClick={() => handleSocraticSubmit()}
-                    disabled={!socraticInput.trim() || isSocraticThinking}
-                    className="bg-teal-700 text-white p-2 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center"
-                >
-                    {isSocraticThinking ? <RefreshCw size={16} className="animate-spin"/> : <Send size={16}/>}
-                </button>
-            </div>
-        </div>
-      )}
+      {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && <SocraticChat handleSetShowSocraticChatToFalse={handleSetShowSocraticChatToFalse} handleSocraticSubmit={handleSocraticSubmit} handleToggleIsSocraticExpanded={handleToggleIsSocraticExpanded} handleToggleSocraticAutoRead={handleToggleSocraticAutoRead} handleToggleSocraticAutoSend={handleToggleSocraticAutoSend} isSocraticDictating={isSocraticDictating} isSocraticDragging={isSocraticDragging} isSocraticExpanded={isSocraticExpanded} isSocraticThinking={isSocraticThinking} recognitionRef={recognitionRef} renderFormattedText={renderFormattedText} setIsSocraticDictating={setIsSocraticDictating} setIsSocraticDragging={setIsSocraticDragging} setSocraticInput={setSocraticInput} socraticAutoRead={socraticAutoRead} socraticAutoSend={socraticAutoSend} socraticChatRef={socraticChatRef} socraticDragOffset={socraticDragOffset} socraticInput={socraticInput} socraticLivePos={socraticLivePos} socraticMessages={socraticMessages} socraticPosition={socraticPosition} socraticScrollRef={socraticScrollRef} t={t} warnLog={warnLog} />}
       {isSocraticDragging && (
         <div
             className="fixed inset-0 z-[109] cursor-grabbing"
@@ -26398,6 +26182,18 @@ function StorybookExportModal(props) {
 function InfoModal(props) {
     var Real = window.AlloModules && window.AlloModules.InfoModal && window.AlloModules.InfoModal.InfoModal;
     if (Real && Real !== InfoModal) return React.createElement(Real, props);
+    return null;
+}
+// ── SessionModal extracted to view_session_modal_module.js (CDN) ──
+function SessionModal(props) {
+    var Real = window.AlloModules && window.AlloModules.SessionModal && window.AlloModules.SessionModal.SessionModal;
+    if (Real && Real !== SessionModal) return React.createElement(Real, props);
+    return null;
+}
+// ── SocraticChat extracted to view_socratic_chat_module.js (CDN) ──
+function SocraticChat(props) {
+    var Real = window.AlloModules && window.AlloModules.SocraticChat && window.AlloModules.SocraticChat.SocraticChat;
+    if (Real && Real !== SocraticChat) return React.createElement(Real, props);
     return null;
 }
 // ── CanvasTips extracted to canvas_tips_module.js (CDN) ──
