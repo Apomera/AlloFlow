@@ -2046,6 +2046,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     ]
   };
 
+  // Yellow-rumped Warbler — second species deep-dive. The Myrtle
+  // subspecies is the eastern/Maine form. Picked because the four
+  // yellow patches (rump, crown, two shoulders) make it the most
+  // identifiable warbler at adolescent-beginner level — it sits
+  // right at the doorway of "I can ID warblers now."
+  var YELLOW_RUMPED_WARBLER_FIELD_MARKS = {
+    species: 'yrwarbler',
+    name: 'Yellow-rumped Warbler (Myrtle)',
+    bigSvgViewBox: '0 0 320 240',
+    bigSvg: function(h) {
+      return h('g', { transform: 'translate(40, 40) scale(13)' },
+        // Body (white belly base layer)
+        h('ellipse', { cx: 12, cy: 14, rx: 9, ry: 6.5, fill: '#f5f5f5', stroke: '#3a3a3a', strokeWidth: 0.4 }),
+        // Slate-blue back (dorsal half)
+        h('path', { d: 'M 4 11 Q 4 7 12 7 Q 20 7 20 11 Q 20 13 12 13 Q 4 13 4 11 Z', fill: '#5a677a' }),
+        // Black streaks on back
+        h('path', { d: 'M 7 9 L 7 12 M 10 9 L 10 12 M 13 9 L 13 12 M 16 9 L 16 12', stroke: '#1a1a1a', strokeWidth: 0.4 }),
+        // Yellow crown patch (top of head)
+        h('ellipse', { cx: 9, cy: 9, rx: 1.7, ry: 1, fill: '#facc15' }),
+        // Black mask through eye
+        h('path', { d: 'M 4 11 L 10 11 L 10 11.8 L 4 11.5 Z', fill: '#1a1a1a' }),
+        // White throat (Myrtle subspecies — diagnostic vs Audubon yellow throat)
+        h('ellipse', { cx: 9, cy: 13.2, rx: 2.5, ry: 1, fill: '#ffffff' }),
+        // Yellow shoulder patch (left, viewer-facing)
+        h('ellipse', { cx: 8, cy: 16, rx: 1.6, ry: 1.2, fill: '#facc15' }),
+        // Black streaks on breast/sides
+        h('path', { d: 'M 6 15 L 6 18 M 8.5 17 L 8.5 19 M 11 17 L 11 19 M 14 16 L 14 18', stroke: '#1a1a1a', strokeWidth: 0.4 }),
+        // Wing (gray)
+        h('ellipse', { cx: 16, cy: 14, rx: 4, ry: 4.5, fill: '#6a7080' }),
+        // Two white wing bars
+        h('path', { d: 'M 13 12 L 19 12 M 13 14 L 19 14', stroke: '#ffffff', strokeWidth: 0.5 }),
+        // Yellow rump (at base of tail — the namesake mark)
+        h('ellipse', { cx: 20, cy: 13, rx: 1.8, ry: 1.3, fill: '#facc15' }),
+        // Tail (dark gray, longer + more pointed than chickadee)
+        h('path', { d: 'M 21 13 L 26 11 L 26 16 L 21 15 Z', fill: '#3a4050' }),
+        // White outer tail spots
+        h('rect', { x: 24, y: 12, width: 2, height: 1.3, fill: '#ffffff' }),
+        // Eye
+        h('circle', { cx: 7, cy: 11, r: 0.8, fill: '#000' }),
+        h('circle', { cx: 7.2, cy: 10.8, r: 0.25, fill: '#fff' }),
+        // Slim pointed warbler bill (vs chickadee's stout)
+        h('path', { d: 'M 4 11.6 L 0.5 12 L 4 12.5 Z', fill: '#222' })
+      );
+    },
+    hotspots: [
+      { id: 'rump',     x: 270, y: 135, r: 26, label: 'Yellow rump',
+        what: 'A bright yellow patch right at the base of the tail, visible from above AND from below as the bird flies away. The nickname "butter butt" comes from this mark.',
+        why: 'Diagnostic in Maine. No other warbler here has a clean yellow rump patch this size. Even at distance or in poor light, the rump flashes yellow when the bird flushes.' },
+      { id: 'crown',    x: 125, y: 78,  r: 22, label: 'Yellow crown patch',
+        what: 'A small yellow patch on the top of the head, often partly hidden by surrounding gray-blue feathers. Brighter on males in spring.',
+        why: 'One of four yellow patches that make this species easy. A confirm-ID mark when the rump is hard to see.' },
+      { id: 'shoulder', x: 105, y: 195, r: 24, label: 'Yellow shoulder',
+        what: 'Yellow patch on each side of the breast, between the wing and the white throat.',
+        why: 'The third yellow patch. A bird showing all four yellow marks is unmistakable, even for a beginner.' },
+      { id: 'throat',   x: 110, y: 145, r: 22, label: 'White throat (Myrtle)',
+        what: 'The Myrtle subspecies (the one breeding in Maine and across the eastern US) has a clean WHITE throat. The Audubon subspecies (West) has a yellow throat.',
+        why: 'Subspecies-level field mark. A yellow-rumped warbler with a YELLOW throat in Maine is unusual; most likely an Audubon vagrant. eBird tracks these.' },
+      { id: 'streaks',  x: 160, y: 215, r: 24, label: 'Streaked sides',
+        what: 'Black streaks on the white breast and along the sides of the belly.',
+        why: 'Distinguishes from solid-bellied warblers (Yellow Warbler, Common Yellowthroat). Streak-sided warblers are a smaller, easier-to-narrow subset.' },
+      { id: 'wingbars', x: 215, y: 145, r: 32, label: 'Two white wing bars',
+        what: 'Two crisp white bars across the folded wing, formed by white tips on the secondary coverts.',
+        why: 'Many warblers have wing bars. Pairing this with the rump and the streaks rules out half of the wood-warbler family in one glance.' },
+      { id: 'mask',     x: 88,  y: 110, r: 20, label: 'Black mask',
+        what: 'A dark band running through the eye from the bill backward. Stronger in spring males than in females or fall birds.',
+        why: 'A clean masked face plus yellow rump plus white throat = adult male Myrtle in breeding plumage. Fall birds are duller and harder to ID.' },
+      { id: 'bill',     x: 50,  y: 130, r: 16, label: 'Slim, pointed bill',
+        what: 'A slim, sharp-pointed bill, much thinner than a chickadee\'s stout seed bill.',
+        why: 'Bill shape tells diet. Slim warbler bill = insect tweezer. Yellow-rumped Warblers can also digest waxy berries (like bayberry), which is why they linger in coastal Maine longer than most other warblers.' }
+    ]
+  };
+
   window.StemLab.registerTool('birdLab', {
     name: 'BirdLab — I-Spy Ornithology',
     icon: '🐦',
@@ -3193,37 +3265,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       // MODULE 2: FIELD MARKS TRAINER (chickadee deep dive)
       // ─────────────────────────────────────────────────────
       function FieldMarksTrainer() {
+        // Species selector. Each species ships its own SVG + hotspot
+        // catalog; the trainer is otherwise generic. Two species
+        // ship today; more can be added by appending to this array
+        // and authoring a *_FIELD_MARKS const matching the shape of
+        // CHICKADEE_FIELD_MARKS.
+        var SPECIES_OPTIONS = [
+          { id: 'chickadee', label: 'Chickadee',  icon: '🐦', tagline: 'Black-capped Chickadee · Poecile atricapillus · Maine\'s state bird',         data: CHICKADEE_FIELD_MARKS },
+          { id: 'yrwarbler', label: 'Yellow-rumped Warbler', icon: '🟡', tagline: 'Setophaga coronata coronata (Myrtle subspecies) · Maine\'s most common warbler', data: YELLOW_RUMPED_WARBLER_FIELD_MARKS }
+        ];
+
+        var speciesId_state = useState('chickadee');
+        var speciesId = speciesId_state[0], setSpeciesId = speciesId_state[1];
+
         var picked_state = useState(null);
         var picked = picked_state[0], setPicked = picked_state[1];
+        // Visited keyed by speciesId.hotspotId — chickadee 'cap' and a
+        // future species's 'cap' don't collapse into one entry.
         var visited_state = useState({});
         var visited = visited_state[0], setVisited = visited_state[1];
 
-        var fm = CHICKADEE_FIELD_MARKS;
+        var current = SPECIES_OPTIONS.find(function(s) { return s.id === speciesId; }) || SPECIES_OPTIONS[0];
+        var fm = current.data;
 
         function pickHotspot(hs) {
           setPicked(hs);
-          var nv = Object.assign({}, visited); nv[hs.id] = true;
+          var nv = Object.assign({}, visited); nv[speciesId + '.' + hs.id] = true;
           setVisited(nv);
           announce('Selected: ' + hs.label);
         }
 
-        var visitedCount = Object.keys(visited).length;
+        function hsVisited(hs) {
+          return !!visited[speciesId + '.' + hs.id];
+        }
+
+        function pickSpecies(sid) {
+          if (sid === speciesId) return;
+          setSpeciesId(sid);
+          setPicked(null);
+          var s = SPECIES_OPTIONS.find(function(x) { return x.id === sid; });
+          announce('Switched to ' + (s ? s.label : sid) + '.');
+        }
+
+        var visitedCount = fm.hotspots.filter(hsVisited).length;
 
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '🪶', title: 'Field Marks Trainer' }),
           h('div', { className: 'p-4 max-w-5xl mx-auto space-y-4' },
+            // Species selector chips
+            h('div', { role: 'tablist', 'aria-label': 'Species', className: 'flex flex-wrap gap-2' },
+              SPECIES_OPTIONS.map(function(s) {
+                var sel = (speciesId === s.id);
+                return h('button', {
+                  key: 'sp-' + s.id,
+                  onClick: function() { pickSpecies(s.id); },
+                  role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+                  className: 'px-3 py-2 rounded-lg text-sm font-bold transition-colors focus:outline-none focus:ring-2 ring-sky-500 ' +
+                    (sel ? 'bg-sky-700 text-white shadow' : 'bg-white text-slate-800 hover:bg-sky-50 border border-slate-300')
+                }, s.icon + ' ' + s.label);
+              })
+            ),
             h('div', { className: 'bg-sky-50 border-2 border-sky-300 rounded-xl p-4' },
-              h('h2', { className: 'text-base font-black text-sky-900 mb-1' }, 'Click parts of the chickadee to learn what each field mark is and why it matters'),
+              h('h2', { className: 'text-base font-black text-sky-900 mb-1' }, 'Click parts of the bird to learn what each field mark is and why it matters'),
               h('p', { className: 'text-sm text-slate-800' },
-                'Real birders identify by looking at specific anatomy: cap, cheek, bib, wing edges, eye ring, bill shape, flank color, tail length. Each part is a clue. Click each circle on the bird below to see the part name, what it looks like, and what it tells you about identification.')
+                'Real birders identify by looking at specific anatomy: cap, cheek, bib, wing edges, rump, bill shape, mask, flank color, tail length. Each part is a clue. Click each circle on the bird below to see the part name, what it looks like, and what it tells you about identification.')
             ),
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('div', { className: 'text-sm text-slate-700' },
                 h('strong', null, 'Hotspots explored: '),
                 visitedCount + ' / ' + fm.hotspots.length
               ),
-              h('div', { className: 'text-xs text-slate-700 italic' },
-                'Black-capped Chickadee · Poecile atricapillus · Maine\'s state bird')
+              h('div', { className: 'text-xs text-slate-700 italic' }, current.tagline)
             ),
             // Big bird with clickable hotspots
             h('div', { className: 'bg-white rounded-2xl border-2 border-slate-300 shadow-lg overflow-hidden relative', style: { aspectRatio: '320 / 240', minHeight: '300px' } },
@@ -3231,12 +3343,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 viewBox: fm.bigSvgViewBox,
                 className: 'w-full h-full',
                 role: 'img',
-                'aria-label': 'Black-capped Chickadee with ' + fm.hotspots.length + ' clickable field-mark hotspots'
+                'aria-label': fm.name + ' with ' + fm.hotspots.length + ' clickable field-mark hotspots'
               },
                 fm.bigSvg(h),
                 // Hotspot circles (visual indicators)
                 fm.hotspots.map(function(hs) {
-                  var isVisited = !!visited[hs.id];
+                  var isVisited = hsVisited(hs);
                   var isPicked = picked && picked.id === hs.id;
                   return h('circle', {
                     key: 'circle-' + hs.id,
@@ -3258,7 +3370,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                 return h('button', {
                   key: 'btn-' + hs.id,
                   onClick: function() { pickHotspot(hs); },
-                  'aria-label': hs.label + (visited[hs.id] ? ' (explored)' : ''),
+                  'aria-label': hs.label + (hsVisited(hs) ? ' (explored)' : ''),
                   'aria-pressed': picked && picked.id === hs.id ? 'true' : 'false',
                   className: 'birdlab-bird-btn',
                   style: { left: leftPct + '%', top: topPct + '%', width: sizePct + '%', aspectRatio: '1', transform: 'translate(-50%, -50%)' }
@@ -3294,7 +3406,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
                       viewBox: zoomVB,
                       width: '100%', height: '100%',
                       preserveAspectRatio: 'xMidYMid slice',
-                      role: 'img', 'aria-label': 'Zoomed view of ' + picked.label + ' on the chickadee'
+                      role: 'img', 'aria-label': 'Zoomed view of ' + picked.label + ' on the ' + fm.name
                     },
                       fm.bigSvg(h),
                       // Highlight ring on the hotspot inside the zoom
@@ -3367,7 +3479,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('h3', { className: 'text-sm font-bold uppercase tracking-wider text-slate-700 mb-2' }, 'All field marks (keyboard list)'),
               h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 fm.hotspots.map(function(hs) {
-                  var isVisited = !!visited[hs.id];
+                  var isVisited = hsVisited(hs);
                   var isPicked = picked && picked.id === hs.id;
                   return h('button', {
                     key: 'kbd-' + hs.id,
