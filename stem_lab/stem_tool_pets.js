@@ -8,7 +8,10 @@
   if (document.head) document.head.appendChild(st);
 })();
 
-// ── PetsLab-specific keyframes (decoder-mastery celebration) ──
+// ── PetsLab-specific keyframes ──
+// Decoder celebration + immersive scene idles (breathing, blink, tail wag).
+// All gated behind prefers-reduced-motion so they freeze for users who
+// asked the OS not to animate.
 (function() {
   if (typeof document === 'undefined') return;
   if (document.getElementById('petslab-celeb-css')) return;
@@ -20,6 +23,36 @@
     '  10%  { transform: translate(-50%, 0%);    opacity: 1; }',
     '  85%  { transform: translate(-50%, 0%);    opacity: 1; }',
     '  100% { transform: translate(-50%, -10%);  opacity: 0; }',
+    '}',
+    // Breathing: subtle scaleY pulse on the animal body. Centered via
+    // transform-origin so the belly rises and the back stays put.
+    '@keyframes petslab-breathe {',
+    '  0%, 100% { transform: scaleY(1); }',
+    '  50%      { transform: scaleY(1.025); }',
+    '}',
+    // Tail wag: small rotation around the tail base. Used on the dog tail
+    // group when mood >= content. Gentle so it does not become a distraction.
+    '@keyframes petslab-wag {',
+    '  0%, 100% { transform: rotate(-6deg); }',
+    '  50%      { transform: rotate(8deg); }',
+    '}',
+    // Slow blink: scaleY-collapse the eye briefly. Triggered on the cat
+    // eye group as a "slow-blink" affection signal when mood is happy.
+    '@keyframes petslab-blink {',
+    '  0%, 92%, 100% { transform: scaleY(1); }',
+    '  95%, 99%      { transform: scaleY(0.05); }',
+    '}',
+    // Hop: rabbit happy state — tiny vertical bounce.
+    '@keyframes petslab-hop {',
+    '  0%, 100% { transform: translateY(0); }',
+    '  50%      { transform: translateY(-3px); }',
+    '}',
+    '.petslab-breathe { animation: petslab-breathe 3.4s ease-in-out infinite; transform-origin: 50% 100%; }',
+    '.petslab-wag     { animation: petslab-wag 0.6s ease-in-out infinite; transform-origin: 0% 50%; transform-box: fill-box; }',
+    '.petslab-blink   { animation: petslab-blink 4.2s ease-in-out infinite; transform-origin: 50% 50%; transform-box: fill-box; }',
+    '.petslab-hop     { animation: petslab-hop 1.4s ease-in-out infinite; }',
+    '@media (prefers-reduced-motion: reduce) {',
+    '  .petslab-breathe, .petslab-wag, .petslab-blink, .petslab-hop { animation: none !important; }',
     '}'
   ].join('');
   if (document.head) document.head.appendChild(st);
@@ -4187,6 +4220,399 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // ─────────────────────────────────────────
     // PET-CARE WEEK SIMULATOR
     // ─────────────────────────────────────────
+    // ───────────────────────────────────────────────────────
+    // Immersive scene for the Pet-Care Week sim. Renders the
+    // selected species in a small "habitat" scene whose mood,
+    // posture, and ambient items reflect the current welfare meters
+    // and the day-of-week. The student can SEE what care has done
+    // (or failed to do) for the animal, instead of inferring it
+    // from numbers. Each scene is a stylized SVG built from simple
+    // shapes — no external assets, no rendering loop, idle motion
+    // via CSS keyframes that honor prefers-reduced-motion.
+    function renderPetScene(species, careSim, dayIdx, totalDays, hasChosen) {
+      // Mood from average welfare. The 4 pet-welfare meters drive
+      // posture; the OWNER meters (energy/money) don't change the
+      // animal's behavior — they only affect what the student can
+      // do next. So we ignore them here.
+      var avg = (careSim.phys + careSim.ment + careSim.soc + careSim.env) / 4;
+      var mood = avg >= 75 ? 'happy' : avg >= 55 ? 'content' : avg >= 35 ? 'stressed' : 'distressed';
+
+      // Time-of-day across the week. Day 0 = early dawn; final day
+      // = dusk. Gives a felt sense of progress through the week.
+      var tprog = totalDays > 1 ? dayIdx / (totalDays - 1) : 0;
+      // Sun goes from low-left at dawn → high midday → low-right at dusk.
+      var sunX = 60 + tprog * 700;
+      var sunY = 80 - Math.sin(tprog * Math.PI) * 50;
+      var skyTop = tprog < 0.5
+        ? 'rgb(' + Math.round(180 - tprog * 80) + ',' + Math.round(160 - tprog * 60) + ',' + Math.round(220 - tprog * 60) + ')'
+        : 'rgb(' + Math.round(140 + (tprog - 0.5) * 60) + ',' + Math.round(100 + (tprog - 0.5) * 80) + ',' + Math.round(160 + (tprog - 0.5) * 30) + ')';
+      var skyBot = tprog < 0.5
+        ? 'rgb(' + Math.round(220 - tprog * 60) + ',' + Math.round(200 - tprog * 40) + ',' + Math.round(230 - tprog * 30) + ')'
+        : 'rgb(' + Math.round(180 + (tprog - 0.5) * 40) + ',' + Math.round(140 + (tprog - 0.5) * 50) + ',' + Math.round(180 + (tprog - 0.5) * 20) + ')';
+
+      var W = 800, H = 280;
+
+      // Ambient items — show or hide based on individual welfare.
+      // Empty bowl signals food neglect; full bowl signals the
+      // student fed regularly. Toy presence reflects mental
+      // enrichment. Bedding cleanliness reflects environment.
+      var bowlFull   = careSim.phys >= 50;            // food regularly provided
+      var hasToy     = careSim.ment >= 50;            // enrichment offered
+      var beddingClean = careSim.env >= 50;           // habitat maintained
+      var ownerNear  = careSim.soc >= 50 && mood !== 'distressed'; // companionship
+
+      function moodCaption() {
+        if (mood === 'happy') {
+          if (species === 'dog')    return '🐕 Tail high, ears alert. Looking right at you.';
+          if (species === 'cat')    return '🐈 Slow blink, tail-up greet. Trusts you.';
+          if (species === 'rabbit') return '🐰 Binkying. Relaxed enough to play.';
+        }
+        if (mood === 'content') {
+          if (species === 'dog')    return '🐕 Calm, breathing easy. Settled.';
+          if (species === 'cat')    return '🐈 Loafed, eyes half-closed. Fine.';
+          if (species === 'rabbit') return '🐰 Loaf posture. Comfortable enough.';
+        }
+        if (mood === 'stressed') {
+          if (species === 'dog')    return '🐕 Yawning, lip-licking. Calming signals; something is off.';
+          if (species === 'cat')    return '🐈 Tail flicking, ears flat. Wants space.';
+          if (species === 'rabbit') return '🐰 Hunched, eyes wide. Watch for stasis.';
+        }
+        // distressed
+        if (species === 'dog')    return '🐕 Tucked tail, body low. Real welfare gap.';
+        if (species === 'cat')    return '🐈 Hidden, body small. Crisis level.';
+        if (species === 'rabbit') return '🐰 Pressed in a corner. Vet now.';
+        return '';
+      }
+
+      // ── Sky-sun-ground backdrop ──
+      var backdrop = h('g', null,
+        h('defs', null,
+          h('linearGradient', { id: 'pets-sky-' + dayIdx, x1: 0, y1: 0, x2: 0, y2: 1 },
+            h('stop', { offset: '0%',  stopColor: skyTop }),
+            h('stop', { offset: '100%', stopColor: skyBot })
+          ),
+          h('radialGradient', { id: 'pets-sun-' + dayIdx, cx: '50%', cy: '50%', r: '50%' },
+            h('stop', { offset: '0%',  stopColor: '#fef3c7', stopOpacity: 1 }),
+            h('stop', { offset: '60%', stopColor: '#fbbf24', stopOpacity: 0.7 }),
+            h('stop', { offset: '100%', stopColor: '#fbbf24', stopOpacity: 0 })
+          )
+        ),
+        h('rect', { x: 0, y: 0, width: W, height: H * 0.62, fill: 'url(#pets-sky-' + dayIdx + ')' }),
+        // Sun
+        h('circle', { cx: sunX, cy: sunY, r: 30, fill: 'url(#pets-sun-' + dayIdx + ')' }),
+        h('circle', { cx: sunX, cy: sunY, r: 16, fill: '#fef3c7' })
+      );
+
+      // ── Per-species scene ──
+      var scene;
+      if (species === 'dog') {
+        // Yard scene: grass + dog + bowls + toy
+        var dogColor = '#c08a4a';
+        var dogShade = '#8a6030';
+        var earY = mood === 'happy' || mood === 'content' ? 122 : 142; // ears down when stressed
+        var bodyDip = mood === 'distressed' ? 30 : mood === 'stressed' ? 14 : 0;
+        var eyeOpen = mood === 'distressed' ? false : true;
+        var tailPath = mood === 'happy' ? 'M 462 158 L 502 130 L 510 138 L 472 168 Z'
+                     : mood === 'content' ? 'M 462 158 L 510 168 L 510 178 L 466 172 Z'
+                     : mood === 'stressed' ? 'M 462 168 L 502 188 L 502 196 L 466 178 Z'
+                     : 'M 462 174 L 488 200 L 484 208 L 462 188 Z'; // tucked
+        var wagClass = (mood === 'happy' || mood === 'content') ? 'petslab-wag' : '';
+
+        scene = h('g', null,
+          // Grass ground
+          h('rect', { x: 0, y: H * 0.62, width: W, height: H * 0.38, fill: '#7aa860' }),
+          h('rect', { x: 0, y: H * 0.62, width: W, height: 6, fill: '#4a7a3a', opacity: 0.4 }),
+          // Distant fence
+          h('path', { d: 'M 80 168 L 80 178 M 130 168 L 130 178 M 180 168 L 180 178 M 720 168 L 720 178', stroke: '#5a4a30', strokeWidth: 2 }),
+          h('rect', { x: 70, y: 174, width: 660, height: 3, fill: '#5a4a30', opacity: 0.6 }),
+          // Toy ball (only if enrichment is being met)
+          hasToy && h('g', null,
+            h('circle', { cx: 600, cy: 230, r: 14, fill: '#ef4444' }),
+            h('path', { d: 'M 588 230 Q 600 224 612 230 M 588 230 Q 600 236 612 230', stroke: '#fff', strokeWidth: 1.5, fill: 'none' })
+          ),
+          // Owner silhouette in background (if social bond intact)
+          ownerNear && h('g', { opacity: 0.85 },
+            h('rect', { x: 130, y: 130 + bodyDip * 0.3, width: 24, height: 50, fill: '#3b4252', rx: 6 }),
+            h('circle', { cx: 142, cy: 122 + bodyDip * 0.3, r: 10, fill: '#5e81ac' })
+          ),
+          // Bowls (food + water)
+          h('g', null,
+            h('ellipse', { cx: 250, cy: 240, rx: 28, ry: 7, fill: '#5a4030' }),
+            h('rect', { x: 222, y: 226, width: 56, height: 14, fill: '#7a5a3a', rx: 2 }),
+            bowlFull && h('ellipse', { cx: 250, cy: 226, rx: 22, ry: 4, fill: '#c0a060' }),
+            // Water bowl
+            h('ellipse', { cx: 320, cy: 244, rx: 22, ry: 6, fill: '#3b4252' }),
+            h('rect', { x: 300, y: 232, width: 40, height: 12, fill: '#5a6a7a', rx: 2 }),
+            h('ellipse', { cx: 320, cy: 234, rx: 16, ry: 3, fill: '#7dd3fc', opacity: 0.85 })
+          ),
+          // ── Dog body ──
+          h('g', { className: mood !== 'distressed' ? 'petslab-breathe' : '', style: { transformOrigin: '50% 100%' } },
+            // Body
+            h('ellipse', { cx: 430, cy: 200 + bodyDip, rx: 60, ry: 30 + bodyDip * 0.2, fill: dogColor }),
+            // Belly highlight
+            h('ellipse', { cx: 430, cy: 210 + bodyDip, rx: 50, ry: 14, fill: '#d8a868' }),
+            // Tail (animated wag if mood >= content)
+            h('g', { className: wagClass, style: { transformOrigin: '462px 168px' } },
+              h('path', { d: tailPath, fill: dogColor })
+            ),
+            // Legs (4)
+            h('rect', { x: 388, y: 215 + bodyDip, width: 10, height: 28, fill: dogShade, rx: 3 }),
+            h('rect', { x: 410, y: 215 + bodyDip, width: 10, height: 28, fill: dogShade, rx: 3 }),
+            h('rect', { x: 442, y: 215 + bodyDip, width: 10, height: 28, fill: dogShade, rx: 3 }),
+            h('rect', { x: 462, y: 215 + bodyDip, width: 10, height: 28, fill: dogShade, rx: 3 }),
+            // Head
+            h('ellipse', { cx: 380, cy: 162 + bodyDip * 0.6, rx: 32, ry: 28, fill: dogColor }),
+            // Ears
+            h('path', { d: 'M 358 ' + earY + ' Q 352 ' + (earY - 14) + ' 364 ' + (earY - 18) + ' L 372 ' + (earY - 6) + ' Z', fill: dogShade }),
+            h('path', { d: 'M 396 ' + earY + ' Q 408 ' + (earY - 14) + ' 408 ' + (earY - 6) + ' L 396 ' + (earY - 4) + ' Z', fill: dogShade }),
+            // Snout
+            h('ellipse', { cx: 360, cy: 178 + bodyDip * 0.6, rx: 14, ry: 9, fill: '#e0c098' }),
+            h('circle', { cx: 350, cy: 176 + bodyDip * 0.6, r: 3, fill: '#1a1a1a' }),
+            // Eyes
+            eyeOpen
+              ? h('g', null,
+                  h('circle', { cx: 372, cy: 158 + bodyDip * 0.6, r: 3, fill: '#1a1a1a' }),
+                  h('circle', { cx: 388, cy: 158 + bodyDip * 0.6, r: 3, fill: '#1a1a1a' })
+                )
+              : h('g', null,
+                  h('path', { d: 'M 369 ' + (158 + bodyDip * 0.6) + ' Q 372 ' + (160 + bodyDip * 0.6) + ' 375 ' + (158 + bodyDip * 0.6), stroke: '#1a1a1a', strokeWidth: 1.5, fill: 'none' }),
+                  h('path', { d: 'M 385 ' + (158 + bodyDip * 0.6) + ' Q 388 ' + (160 + bodyDip * 0.6) + ' 391 ' + (158 + bodyDip * 0.6), stroke: '#1a1a1a', strokeWidth: 1.5, fill: 'none' })
+                ),
+            // Mouth (smile if happy, line if stressed)
+            mood === 'happy'
+              ? h('path', { d: 'M 354 184 Q 360 190 366 184', stroke: '#1a1a1a', strokeWidth: 1.5, fill: 'none' })
+              : h('path', { d: 'M 354 184 L 366 184', stroke: '#1a1a1a', strokeWidth: 1.5, fill: 'none' })
+          )
+        );
+      } else if (species === 'cat') {
+        var catColor = '#3a3025';
+        var catBelly = '#a89070';
+        var bodyDip2 = mood === 'distressed' ? 14 : 0;
+        var eyeOpen2 = mood === 'distressed' ? false : true;
+        var tail2 = mood === 'happy' ? 'M 462 178 L 462 130 L 472 130 L 472 178 Z'
+                  : mood === 'content' ? 'M 462 178 L 510 200 L 510 210 L 462 188 Z'
+                  : mood === 'stressed' ? 'M 462 178 L 504 192 Q 506 196 504 200 L 458 188 Z'
+                  : 'M 446 182 L 458 196 L 454 200 L 442 186 Z'; // tucked tight
+
+        scene = h('g', null,
+          // Indoor floor (hardwood)
+          h('rect', { x: 0, y: H * 0.62, width: W, height: H * 0.38, fill: '#9a7858' }),
+          h('path', { d: 'M 0 ' + (H * 0.62 + 30) + ' L ' + W + ' ' + (H * 0.62 + 30) + ' M 0 ' + (H * 0.62 + 60) + ' L ' + W + ' ' + (H * 0.62 + 60), stroke: '#7a5838', strokeWidth: 1, opacity: 0.5 }),
+          // Window frame on left
+          h('rect', { x: 60, y: 50, width: 110, height: 110, fill: 'none', stroke: '#5a4030', strokeWidth: 4 }),
+          h('rect', { x: 60, y: 50, width: 110, height: 110, fill: skyBot, opacity: 0.7 }),
+          h('line', { x1: 115, y1: 50, x2: 115, y2: 160, stroke: '#5a4030', strokeWidth: 2 }),
+          // Cardboard scratcher / scratching post (only if env good)
+          beddingClean && h('g', null,
+            h('rect', { x: 600, y: 145, width: 28, height: 90, fill: '#a06030', rx: 2 }),
+            h('rect', { x: 596, y: 138, width: 36, height: 10, fill: '#7a4020', rx: 2 }),
+            h('path', { d: 'M 600 175 L 628 175 M 600 195 L 628 195', stroke: '#5a3010', strokeWidth: 0.5 })
+          ),
+          // Toy mouse if enrichment
+          hasToy && h('g', null,
+            h('ellipse', { cx: 660, cy: 240, rx: 12, ry: 6, fill: '#9ca3af' }),
+            h('circle', { cx: 670, cy: 238, r: 4, fill: '#9ca3af' }),
+            h('path', { d: 'M 648 240 Q 638 244 632 250', stroke: '#9ca3af', strokeWidth: 2, fill: 'none' })
+          ),
+          // Litter box (always shown — it's always needed)
+          h('g', null,
+            h('rect', { x: 200, y: 234, width: 70, height: 20, fill: beddingClean ? '#c0a888' : '#8a7060', rx: 2 }),
+            h('rect', { x: 200, y: 230, width: 70, height: 6, fill: beddingClean ? '#a08868' : '#6a5040' })
+          ),
+          // Food bowl
+          h('g', null,
+            h('ellipse', { cx: 320, cy: 244, rx: 22, ry: 6, fill: '#3b4252' }),
+            h('rect', { x: 300, y: 232, width: 40, height: 12, fill: '#5a6a7a', rx: 2 }),
+            bowlFull && h('ellipse', { cx: 320, cy: 234, rx: 16, ry: 3, fill: '#c0a060' })
+          ),
+          // ── Cat body — loaf when content, alert when happy, hidden when distressed ──
+          mood === 'distressed'
+            ? h('g', null,
+                // Cat hidden under bed/box — only ears show behind scratching post
+                h('ellipse', { cx: 130, cy: 234, rx: 14, ry: 6, fill: catColor, opacity: 0.6 }),
+                h('path', { d: 'M 122 230 L 124 222 L 128 228 Z M 138 230 L 136 222 L 132 228 Z', fill: catColor })
+              )
+            : h('g', { className: 'petslab-breathe', style: { transformOrigin: '50% 100%' } },
+                // Body (loaf)
+                h('ellipse', { cx: 430, cy: 215 + bodyDip2, rx: 56, ry: 26, fill: catColor }),
+                h('ellipse', { cx: 430, cy: 222 + bodyDip2, rx: 44, ry: 12, fill: catBelly }),
+                // Tail
+                h('path', { d: tail2, fill: catColor }),
+                // Head
+                h('circle', { cx: 388, cy: 178 + bodyDip2 * 0.5, r: 26, fill: catColor }),
+                // Ears (triangle)
+                h('path', { d: 'M 370 162 L 374 144 L 382 158 Z', fill: catColor }),
+                h('path', { d: 'M 406 162 L 402 144 L 394 158 Z', fill: catColor }),
+                h('path', { d: 'M 372 158 L 376 150 L 380 156 Z', fill: '#e8c5a0' }),
+                // Eyes (almond) — slow-blink if happy
+                eyeOpen2
+                  ? h('g', { className: mood === 'happy' ? 'petslab-blink' : '' },
+                      h('ellipse', { cx: 380, cy: 175 + bodyDip2 * 0.5, rx: 4, ry: mood === 'happy' ? 2.5 : 4, fill: '#84cc16' }),
+                      h('ellipse', { cx: 396, cy: 175 + bodyDip2 * 0.5, rx: 4, ry: mood === 'happy' ? 2.5 : 4, fill: '#84cc16' }),
+                      h('rect', { x: 379.5, y: 173 + bodyDip2 * 0.5, width: 1, height: 4, fill: '#1a1a1a' }),
+                      h('rect', { x: 395.5, y: 173 + bodyDip2 * 0.5, width: 1, height: 4, fill: '#1a1a1a' })
+                    )
+                  : h('g', null,
+                      h('path', { d: 'M 376 175 L 384 175', stroke: '#1a1a1a', strokeWidth: 1.5 }),
+                      h('path', { d: 'M 392 175 L 400 175', stroke: '#1a1a1a', strokeWidth: 1.5 })
+                    ),
+                // Nose + whiskers
+                h('path', { d: 'M 386 184 L 392 184 L 389 188 Z', fill: '#e8c5a0' }),
+                h('path', { d: 'M 370 186 L 380 186 M 370 188 L 380 188 M 398 186 L 408 186 M 398 188 L 408 188', stroke: '#fff', strokeWidth: 0.5, opacity: 0.7 }),
+                // Front paws tucked under (loaf)
+                h('rect', { x: 408, y: 235 + bodyDip2, width: 12, height: 6, fill: catColor, rx: 3 }),
+                h('rect', { x: 432, y: 235 + bodyDip2, width: 12, height: 6, fill: catColor, rx: 3 })
+              )
+        );
+      } else {
+        // Rabbit scene
+        var rabbColor = '#a08878';
+        var rabbBelly = '#d8c0a8';
+        var bodyDip3 = mood === 'distressed' ? 16 : mood === 'stressed' ? 8 : 0;
+        var earUp = mood === 'happy' || mood === 'content';
+        var eyeOpen3 = mood === 'distressed' ? false : true;
+        var bodyClass = mood === 'happy' ? 'petslab-hop' : (mood !== 'distressed' ? 'petslab-breathe' : '');
+
+        scene = h('g', null,
+          // Hay-strewn floor
+          h('rect', { x: 0, y: H * 0.62, width: W, height: H * 0.38, fill: '#c8a868' }),
+          // Hay strands
+          h('path', { d: 'M 30 230 L 50 222 M 70 244 L 88 234 M 700 224 L 720 220 M 760 240 L 780 232', stroke: '#a08438', strokeWidth: 1.5 }),
+          // Cage edges (very subtle vertical bars at far left/right)
+          h('rect', { x: 0, y: 80, width: 4, height: 200, fill: '#8a8a8a', opacity: 0.6 }),
+          h('rect', { x: 796, y: 80, width: 4, height: 200, fill: '#8a8a8a', opacity: 0.6 }),
+          // Hay pile (always — rabbits need 24/7 hay)
+          h('g', null,
+            h('ellipse', { cx: 240, cy: 240, rx: 50, ry: 14, fill: '#d8b85a' }),
+            h('path', { d: 'M 200 232 L 210 220 L 218 232 M 234 226 L 242 214 L 248 226 M 268 230 L 276 218 L 282 230', stroke: '#a08438', strokeWidth: 1.2, fill: 'none' })
+          ),
+          // Water bottle
+          h('g', null,
+            h('rect', { x: 668, y: 158, width: 22, height: 50, fill: '#d4d4d8', rx: 3 }),
+            h('rect', { x: 672, y: 162, width: 14, height: 36, fill: '#7dd3fc', opacity: 0.85 }),
+            h('rect', { x: 676, y: 208, width: 6, height: 12, fill: '#71717a' })
+          ),
+          // Hidey box / tunnel (only if env good)
+          beddingClean && h('g', null,
+            h('rect', { x: 60, y: 200, width: 90, height: 50, fill: '#8a6a48', rx: 4 }),
+            h('rect', { x: 60, y: 200, width: 90, height: 8, fill: '#6a4a28', rx: 4 }),
+            h('ellipse', { cx: 105, cy: 240, rx: 16, ry: 10, fill: '#1a1a1a', opacity: 0.7 })
+          ),
+          // Toy / chew block if enrichment
+          hasToy && h('rect', { x: 600, y: 232, width: 24, height: 16, fill: '#d4a060', rx: 2, transform: 'rotate(-8 612 240)' }),
+          // ── Rabbit body — loaf when content, hopping when happy, hunched when stressed ──
+          h('g', { className: bodyClass, style: { transformOrigin: '50% 100%' } },
+            // Body (compact loaf shape)
+            h('ellipse', { cx: 430, cy: 220 + bodyDip3, rx: 50, ry: 22, fill: rabbColor }),
+            // Belly
+            h('ellipse', { cx: 430, cy: 230 + bodyDip3, rx: 38, ry: 8, fill: rabbBelly }),
+            // Hindquarter / haunch
+            h('ellipse', { cx: 462, cy: 218 + bodyDip3, rx: 22, ry: 18, fill: rabbColor }),
+            // Cottontail
+            h('circle', { cx: 480, cy: 214 + bodyDip3, r: 8, fill: '#fff' }),
+            // Head (front, slightly down)
+            h('circle', { cx: 388, cy: 200 + bodyDip3 * 0.5, r: 22, fill: rabbColor }),
+            // Ears
+            earUp
+              ? h('g', null,
+                  h('ellipse', { cx: 378, cy: 168 + bodyDip3 * 0.5, rx: 5, ry: 22, fill: rabbColor }),
+                  h('ellipse', { cx: 378, cy: 168 + bodyDip3 * 0.5, rx: 2.5, ry: 17, fill: '#e8c8a8' }),
+                  h('ellipse', { cx: 396, cy: 168 + bodyDip3 * 0.5, rx: 5, ry: 22, fill: rabbColor }),
+                  h('ellipse', { cx: 396, cy: 168 + bodyDip3 * 0.5, rx: 2.5, ry: 17, fill: '#e8c8a8' })
+                )
+              : h('g', null,
+                  // Ears flat back when stressed
+                  h('ellipse', { cx: 396, cy: 192 + bodyDip3 * 0.5, rx: 18, ry: 5, fill: rabbColor })
+                ),
+            // Eyes (round)
+            eyeOpen3
+              ? h('g', null,
+                  h('circle', { cx: 380, cy: 200 + bodyDip3 * 0.5, r: 3, fill: '#1a1a1a' }),
+                  h('circle', { cx: 396, cy: 200 + bodyDip3 * 0.5, r: 3, fill: '#1a1a1a' }),
+                  h('circle', { cx: 381, cy: 199 + bodyDip3 * 0.5, r: 0.8, fill: '#fff' })
+                )
+              : h('g', null,
+                  h('path', { d: 'M 377 200 L 383 200', stroke: '#1a1a1a', strokeWidth: 1.5 }),
+                  h('path', { d: 'M 393 200 L 399 200', stroke: '#1a1a1a', strokeWidth: 1.5 })
+                ),
+            // Nose / mouth (Y shape)
+            h('path', { d: 'M 388 212 L 388 215 M 388 215 L 385 218 M 388 215 L 391 218', stroke: '#1a1a1a', strokeWidth: 1, fill: 'none' })
+          )
+        );
+      }
+
+      // ── Status chips — visible call-outs of what's working / what's not ──
+      var chips = [
+        { label: bowlFull ? 'Fed' : 'Hungry',          ok: bowlFull,    icon: '🍖' },
+        { label: hasToy ? 'Enriched' : 'Bored',        ok: hasToy,      icon: '🧩' },
+        { label: ownerNear ? 'Bonded' : 'Lonely',      ok: ownerNear,   icon: '💗' },
+        { label: beddingClean ? 'Clean home' : 'Dirty', ok: beddingClean, icon: '🏠' }
+      ];
+
+      return h('div', {
+        style: {
+          position: 'relative',
+          borderRadius: 14,
+          overflow: 'hidden',
+          background: '#0f172a',
+          border: '1px solid ' + T.border,
+          boxShadow: '0 4px 18px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.05)',
+          marginBottom: 12
+        }
+      },
+        h('svg', {
+          viewBox: '0 0 ' + W + ' ' + H,
+          role: 'img',
+          'aria-label': species + ' care scene. Day ' + (dayIdx + 1) + ' of ' + totalDays + '. Mood: ' + mood + '. ' + moodCaption(),
+          style: { display: 'block', width: '100%', height: 'auto', maxHeight: 280 }
+        },
+          backdrop,
+          scene
+        ),
+        // Mood caption ribbon
+        h('div', {
+          style: {
+            position: 'absolute',
+            left: 12, top: 12,
+            padding: '6px 10px',
+            background: 'rgba(15,23,42,0.78)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            borderRadius: 8,
+            fontSize: 12,
+            fontWeight: 700,
+            color: mood === 'happy' ? '#86efac' : mood === 'content' ? '#fde68a' : mood === 'stressed' ? '#fdba74' : '#fca5a5',
+            border: '1px solid ' + (mood === 'happy' ? 'rgba(134,239,172,0.5)' : mood === 'content' ? 'rgba(253,230,138,0.5)' : mood === 'stressed' ? 'rgba(253,186,116,0.5)' : 'rgba(252,165,165,0.5)'),
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+          }
+        }, moodCaption()),
+        // Status chip strip (bottom)
+        h('div', {
+          style: {
+            position: 'absolute',
+            left: 12, right: 12, bottom: 12,
+            display: 'flex', gap: 6, flexWrap: 'wrap'
+          }
+        },
+          chips.map(function(c, i) {
+            return h('div', {
+              key: i,
+              'aria-label': c.label + (c.ok ? ' (good)' : ' (needs attention)'),
+              style: {
+                fontSize: 11, fontWeight: 700,
+                padding: '4px 8px', borderRadius: 6,
+                background: c.ok ? 'rgba(132,204,22,0.20)' : 'rgba(220,38,38,0.20)',
+                color: c.ok ? '#a3e635' : '#fca5a5',
+                border: '1px solid ' + (c.ok ? 'rgba(132,204,22,0.5)' : 'rgba(220,38,38,0.5)'),
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)'
+              }
+            }, c.icon + ' ' + c.label);
+          })
+        )
+      );
+    }
+
     function renderCareSim() {
       var careSim = d.careSim || null;
       function startSim(species) {
@@ -4366,6 +4792,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       );
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
         backBar('📅 Pet-Care Week — ' + careSim.species.charAt(0).toUpperCase() + careSim.species.slice(1)),
+        // Immersive habitat scene — animal posture, ambient items, and
+        // status chips reflect the current welfare meters in real time.
+        renderPetScene(careSim.species, careSim, careSim.day, allDays.length, hasChosen),
         meters,
         h('div', { style: { padding: 16, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
           h('div', { style: { fontSize: 12, fontWeight: 700, color: T.accentHi, marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.04em' } }, dayObj.label),
