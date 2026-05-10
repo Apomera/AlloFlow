@@ -1813,6 +1813,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
         }
 
+        // ── Greenhouses: long bright reflective rectangles in agricultural
+        // cells. Glass-roof commercial nurseries. Read instantly from the
+        // air as bright white-blue parallel strips. Sparse (~5%).
+        if (aglAlt < 2200) {
+          var ghStep = 0.045;
+          var ghlatC = Math.round(state.lat / ghStep) * ghStep;
+          var ghlonC = Math.round(state.lon / ghStep) * ghStep;
+          for (var ghi = -2; ghi <= 2; ghi++) {
+            for (var ghj = -2; ghj <= 2; ghj++) {
+              var ghLat = ghlatC + ghi * ghStep;
+              var ghLon = ghlonC + ghj * ghStep;
+              var ghhSeed = terrainHash(ghLat * 281, ghLon * 313);
+              if (ghhSeed < 0.95) continue; // 5% of cells
+              var pgh = projectLatLon(ghLat, ghLon);
+              if (!pgh) continue;
+              var ghW = Math.max(8, 18 * pgh.t);
+              var ghH = Math.max(2, 4 * pgh.t);
+              // 4 long parallel greenhouse roofs
+              for (var ghr = 0; ghr < 4; ghr++) {
+                var ghrY = pgh.y - ghH * 1.5 + ghr * (ghH * 0.95);
+                // Roof — bright pale aqua (sky-reflecting glass)
+                var ghAlpha = 0.85 - ghr * 0.05;
+                gfx.fillStyle = 'rgba(195,225,235,' + (ghAlpha * fade) + ')';
+                gfx.fillRect(pgh.x - ghW / 2, ghrY, ghW, ghH * 0.6);
+                // Sharp specular highlight strip on top edge
+                gfx.fillStyle = 'rgba(255,255,255,' + (0.5 * fade * pgh.t) + ')';
+                gfx.fillRect(pgh.x - ghW / 2, ghrY, ghW, Math.max(0.4, 0.6 * pgh.t));
+              }
+              // Frame outline — darker thin border
+              gfx.strokeStyle = 'rgba(85,95,100,' + (0.6 * fade) + ')';
+              gfx.lineWidth = 0.5;
+              gfx.strokeRect(pgh.x - ghW / 2 - 0.5, pgh.y - ghH * 1.5 - 0.5, ghW + 1, ghH * 4 * 0.95);
+            }
+          }
+        }
+
+        // ── Drive-in movie theaters: a single big white screen with a
+        // fan of parked car dots in front. Quirky, recognizable, very
+        // satisfying when one slides past. Very sparse (~1.5%).
+        if (aglAlt < 2000) {
+          var diStep = 0.08;
+          var dilatC = Math.round(state.lat / diStep) * diStep;
+          var dilonC = Math.round(state.lon / diStep) * diStep;
+          for (var dii = -1; dii <= 1; dii++) {
+            for (var dij = -1; dij <= 1; dij++) {
+              var diLat = dilatC + dii * diStep;
+              var diLon = dilonC + dij * diStep;
+              var diSeed = terrainHash(diLat * 467, diLon * 521);
+              if (diSeed < 0.985) continue;
+              var pdi = projectLatLon(diLat, diLon);
+              if (!pdi) continue;
+              var scrW = Math.max(8, 18 * pdi.t);
+              var scrH = scrW * 0.55;
+              // Screen — bright white face with a thin dark frame
+              gfx.fillStyle = 'rgba(50,52,60,' + (0.85 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW / 2 - 0.6, pdi.y - scrH * 0.95, scrW + 1.2, scrH + 0.6);
+              gfx.fillStyle = 'rgba(245,240,225,' + (0.95 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW / 2, pdi.y - scrH * 0.9, scrW, scrH);
+              // Movie frame: subtle warm glow rectangles inside the screen
+              // suggesting a film image
+              gfx.fillStyle = 'rgba(220,150,80,' + (0.4 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW * 0.35, pdi.y - scrH * 0.7, scrW * 0.7, scrH * 0.5);
+              // Support legs
+              gfx.fillStyle = 'rgba(60,55,50,' + (0.85 * fade) + ')';
+              gfx.fillRect(pdi.x - scrW * 0.4, pdi.y, 0.8, scrH * 0.25);
+              gfx.fillRect(pdi.x + scrW * 0.4, pdi.y, 0.8, scrH * 0.25);
+              // Parking lot fan — 10-15 car dots in arc rows facing the screen
+              var lotRows = 4, lotCols = 8;
+              gfx.fillStyle = 'rgba(180,170,160,' + (0.7 * fade * pdi.t) + ')';
+              for (var lr = 0; lr < lotRows; lr++) {
+                var lotY = pdi.y + scrH * 0.5 + lr * scrH * 0.32;
+                var lotW = scrW * (1 + lr * 0.18);
+                for (var lc = 0; lc < lotCols; lc++) {
+                  var lotX = pdi.x - lotW / 2 + (lc + 0.5) * (lotW / lotCols);
+                  if (terrainHash(diSeed * 50 + lr * 10 + lc, diLat * 7) < 0.35) continue;
+                  gfx.fillRect(lotX - 0.6 * pdi.t, lotY - 0.4 * pdi.t, 1.4 * pdi.t, 0.9 * pdi.t);
+                }
+              }
+            }
+          }
+        }
+
+        // ── Wharves at the coast: long thin piers extending from harbors
+        // OUT into the water. Different from harbor docks (which sit at
+        // the dock). Visible to ~2500 ft AGL, paired with the existing
+        // harbor cells so they make geographic sense.
+        if (aglAlt < 2500) {
+          var whStep = 0.04;
+          var whlatC = Math.round(state.lat / whStep) * whStep;
+          var whlonC = Math.round(state.lon / whStep) * whStep;
+          for (var whi = -2; whi <= 2; whi++) {
+            for (var whj = -2; whj <= 2; whj++) {
+              var whLat = whlatC + whi * whStep;
+              var whLon = whlonC + whj * whStep;
+              // Same adjacency check used by harbor block — only render
+              // a wharf where ocean is a neighbor.
+              var whAdjW = terrainHash(whLat * 2, (whLon - 0.04) * 2) > 0.45
+                        || terrainHash(whLat * 2, (whLon + 0.04) * 2) > 0.45
+                        || terrainHash((whLat - 0.04) * 2, whLon * 2) > 0.45;
+              if (!whAdjW) continue;
+              var whSeed = terrainHash(whLat * 191, whLon * 257);
+              if (whSeed < 0.78) continue; // ~22% of qualifying cells host a wharf
+              var pwh = projectLatLon(whLat, whLon);
+              if (!pwh) continue;
+              // Wharf direction: random bearing, but biased toward water side
+              var whAng = whSeed * Math.PI * 2;
+              var whLen = Math.max(8, 22 * pwh.t);
+              var endX = pwh.x + Math.cos(whAng) * whLen;
+              var endY = pwh.y + Math.sin(whAng) * whLen * 0.5;
+              // Pier deck — thick gray stroke
+              gfx.strokeStyle = 'rgba(95,85,72,' + (0.85 * fade) + ')';
+              gfx.lineWidth = Math.max(1.4, 2.6 * pwh.t);
+              gfx.lineCap = 'round';
+              gfx.beginPath();
+              gfx.moveTo(pwh.x, pwh.y);
+              gfx.lineTo(endX, endY);
+              gfx.stroke();
+              // Pilings — small dots along the pier
+              gfx.fillStyle = 'rgba(50,42,35,' + (0.7 * fade) + ')';
+              for (var pl3 = 1; pl3 <= 4; pl3++) {
+                var plF = pl3 / 5;
+                var plX = pwh.x + (endX - pwh.x) * plF;
+                var plY = pwh.y + (endY - pwh.y) * plF;
+                gfx.fillRect(plX - 0.4, plY + 1.2, 0.8, 1.2);
+              }
+              // Boat at the pier end
+              gfx.fillStyle = 'rgba(50,55,65,' + (0.85 * fade) + ')';
+              gfx.fillRect(endX - 2 * pwh.t, endY, 4 * pwh.t, 1.4 * pwh.t);
+              gfx.fillStyle = 'rgba(245,245,250,' + (0.85 * fade) + ')';
+              gfx.fillRect(endX - 1 * pwh.t, endY - 1.2 * pwh.t, 2 * pwh.t, 1.2 * pwh.t);
+            }
+          }
+        }
+
         // ── Quarries: terraced gray pits at deterministic rural cells.
         // Sparse (~3% of cells on a coarser grid). Drawn as 4 concentric
         // ellipses descending into the pit, each one smaller and darker
@@ -2088,6 +2222,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           gfx.lineTo(bx + wingLen, by + wingLen * (1 - flap));
           gfx.stroke();
         }
+      };
+
+      // ── Helicopter with rotor blur ──
+      // Single helicopter cycles slowly across the lower sky on a long
+      // ~4-minute path. Rotor disk drawn as a thin horizontal blur ellipse
+      // that gets a counter-rotating tail rotor for added authenticity.
+      // Visible below 8000 ft AGL — helicopters fly in this band.
+      var drawHelicopter = function(gfx, W, H, horizonY, state, time, dayNight2) {
+        if (dayNight2 && dayNight2.isNight) return;
+        if (state.altitude > 8000) return;
+        // Slot-based: not every period has a helicopter visible
+        var slot = Math.floor(time / 240);
+        var slotHash = ((slot * 17389 + 23) % 233280) / 233280;
+        if (slotHash < 0.40) return;
+        var goingRight = slotHash > 0.7;
+        var phase = ((time % 240) / 240);
+        var hx = goingRight ? phase * (W + 200) - 100 : (1 - phase) * (W + 200) - 100;
+        var hy = horizonY * (0.55 + (slot % 7) * 0.04) + Math.sin(time * 0.4) * 3;
+        // Body color — alternate between civil orange/white and military olive
+        var bodyColor = (slot % 2 === 0) ? '#1e3a5f' : '#3a4a3a';
+        var rotorAlpha = 0.35;
+        // Main fuselage — short rounded body
+        gfx.fillStyle = bodyColor;
+        gfx.beginPath();
+        gfx.ellipse(hx, hy, 5, 1.8, 0, 0, Math.PI * 2);
+        gfx.fill();
+        // Tail boom — a thin rectangle to one side
+        var boomDir = goingRight ? -1 : 1;
+        gfx.fillRect(hx + boomDir * 4, hy - 0.3, 7 * boomDir, 0.7);
+        // Tail rotor — small vertical disk at tail end
+        var tailX = hx + boomDir * 11;
+        var tailRotorPhase = Math.sin(time * 18);
+        gfx.fillStyle = 'rgba(45,55,70,' + (0.5 + tailRotorPhase * 0.2) + ')';
+        gfx.beginPath();
+        gfx.ellipse(tailX, hy, 0.6, 1.6, 0, 0, Math.PI * 2);
+        gfx.fill();
+        // Skids — small horizontal landing gear lines below body
+        gfx.strokeStyle = bodyColor;
+        gfx.lineWidth = 0.6;
+        gfx.beginPath();
+        gfx.moveTo(hx - 4, hy + 2.2); gfx.lineTo(hx + 4, hy + 2.2);
+        gfx.stroke();
+        // Main rotor disk (top) — wide horizontal blur ellipse with subtle
+        // motion lines. Uses lower alpha to read as a spinning disk.
+        gfx.fillStyle = 'rgba(45,55,70,' + rotorAlpha + ')';
+        gfx.beginPath();
+        gfx.ellipse(hx, hy - 2.5, 9, 0.9, 0, 0, Math.PI * 2);
+        gfx.fill();
+        // Faint blade hint — two crossing lines spinning
+        var bladeAng = time * 8;
+        gfx.strokeStyle = 'rgba(45,55,70,0.3)';
+        gfx.lineWidth = 0.5;
+        gfx.beginPath();
+        gfx.moveTo(hx + Math.cos(bladeAng) * 9, hy - 2.5 + Math.sin(bladeAng) * 0.6);
+        gfx.lineTo(hx - Math.cos(bladeAng) * 9, hy - 2.5 - Math.sin(bladeAng) * 0.6);
+        gfx.stroke();
       };
 
       // ── Distant thunderstorm cells on the horizon ──
@@ -7229,6 +7419,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Migrating goose V-formation drifting low across the sky.
           drawGooseFormation(gfx, W, H, horizonY, state, timeRef.current, dayNight);
+
+          // Helicopter cycling across lower sky with rotor blur.
+          drawHelicopter(gfx, W, H, horizonY, state, timeRef.current, dayNight);
 
           // Distant hills poking above the horizon — a deterministic silhouette
           // seeded by lat/lon so each airport gets a consistent skyline instead
