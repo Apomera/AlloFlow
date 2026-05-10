@@ -3570,121 +3570,124 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/behavior_lens_module.js');
-    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/report_writer_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/behavior_lens_module.js');
+    loadModule('ReportWriter', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/report_writer_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/canvas_tips_module.js');
-    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_kokoro_offer_modal_module.js');
-    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_confirm_dialog_module.js');
-    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_hints_modal_module.js');
-    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_xp_modal_module.js');
-    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_storybook_export_modal_module.js');
-    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_info_modal_module.js');
-    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_session_modal_module.js');
-    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_socratic_chat_module.js');
-    loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_global_level_up_module.js');
-    loadModule('HeaderBar', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_header_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/label_positions_module.js');
-    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/ui_language_selector_module.js');
-    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/audio_banks_module.js');
-    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_export_preview_module.js');
-    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_misc_modals_module.js');
-    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_gemini_bridge_module.js');
-    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_misc_panels_module.js');
-    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_sidebar_panels_module.js');
-    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/module_scope_extras_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/canvas_tips_module.js');
+    loadModule('KokoroOfferModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_kokoro_offer_modal_module.js');
+    loadModule('ConfirmDialog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_confirm_dialog_module.js');
+    loadModule('HintsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_hints_modal_module.js');
+    loadModule('XPModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_xp_modal_module.js');
+    loadModule('StorybookExportModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_storybook_export_modal_module.js');
+    loadModule('InfoModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_info_modal_module.js');
+    loadModule('SessionModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_session_modal_module.js');
+    loadModule('SocraticChat', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_socratic_chat_module.js');
+    loadModule('GlobalLevelUpModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_global_level_up_module.js');
+    loadModule('HeaderBar', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_header_module.js');
+    loadModule('GuidedModeBanner', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_guided_mode_banner_module.js');
+    loadModule('StudentJoinPanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_student_save_adventure_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/audio_banks_module.js');
+    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_export_preview_module.js');
+    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_misc_modals_module.js');
+    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_gemini_bridge_module.js');
+    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_misc_panels_module.js');
+    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/module_scope_extras_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3695,7 +3698,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@9f6e602/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@d93110b0/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -20693,62 +20696,7 @@ Return ONLY valid JSON in this format:
             </button>
           </nav>
           )}
-          {guidedMode && (
-            <div style={{ background: 'linear-gradient(135deg, #312e81, #1e3a5f)', borderRadius: '20px', padding: '16px', marginBottom: '16px', border: '1px solid rgba(99,102,241,0.3)', flexShrink: 0 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '13px', fontWeight: 800, color: 'white', display: 'flex', alignItems: 'center', gap: '6px' }}>{t('guided.indicator_title')}</span>
-                <span style={{ fontSize: '11px', color: 'rgba(165,180,252,0.8)', fontWeight: 600 }}>{t('guided.step_of').replace('{current}', Math.min(guidedStep + 1, GUIDED_STEPS.length)).replace('{total}', GUIDED_STEPS.length)}</span>
-              </div>
-              <p style={{ fontSize: '11px', color: 'rgba(165,180,252,0.9)', margin: '0 0 10px', fontWeight: 600 }}>{GUIDED_STEPS[guidedStep]?.label || 'Complete!'}</p>
-              <div style={{ width: '100%', height: '4px', borderRadius: '2px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden', marginBottom: '12px' }}>
-                <div style={{ height: '100%', borderRadius: '2px', background: 'linear-gradient(90deg, #818cf8, #6366f1)', transition: 'width 0.4s ease-out', width: ((guidedStep / GUIDED_STEPS.length) * 100) + '%' }} />
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {guidedStep < GUIDED_STEPS.length - 1 && guidedStep > 0 && <button onClick={handleGuidedSkip} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.9)', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.skip')}</button>}
-                {guidedStep === 0 && <span style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(165,180,252,0.4)', textAlign: 'center' }}>{t('guided.source_prompt')}</span>}
-                {guidedStep >= GUIDED_STEPS.length - 1 && <button onClick={() => { setGuidedStep(0); handleExitGuidedMode(); }} style={{ flex: 1, padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'linear-gradient(135deg, #818cf8, #6366f1)', border: 'none', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.all_done')}</button>}
-                <button onClick={() => setShowGuidedTip(p => !p)} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: showGuidedTip ? 'white' : 'rgba(165,180,252,0.9)', background: showGuidedTip ? 'rgba(99,102,241,0.4)' : 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{showGuidedTip ? '✕' : 'ℹ️'} {t('guided.about')}</button>
-                <button onClick={handleExitGuidedMode} style={{ padding: '6px 12px', fontSize: '11px', fontWeight: 700, color: 'rgba(248,113,113,0.9)', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(248,113,113,0.3)', borderRadius: '10px', cursor: 'pointer', transition: 'all 0.2s' }}>{t('guided.exit') || 'Exit'}</button>
-              </div>
-              {showGuidedTip && (() => {
-                const stepId = GUIDED_STEPS[guidedStep]?.id;
-                const tourId = stepId ? GUIDED_TOUR_MAP[stepId] : null;
-                const tourEntry = tourId ? tourSteps.find(s => s.id === tourId) : null;
-                return tourEntry ? (
-                  <div style={{ marginTop: '10px', padding: '12px 14px', background: 'rgba(255,255,255,0.06)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', animation: 'fadeIn 0.3s ease-out' }}>
-                    <div style={{ fontSize: '12px', fontWeight: 800, color: 'rgba(165,180,252,0.95)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>{t('guided.about_prefix')} {tourEntry.title}</div>
-                    <div style={{ fontSize: '11px', color: 'rgba(203,213,225,0.85)', lineHeight: '1.6', margin: 0 }}>
-                      {(tourEntry.text || '').split(/\r?\n/).map((line, i) => {
-                        const cleanLine = line.trim();
-                        if (!cleanLine) return <div key={i} className="h-1.5" />;
-                        const formatText = (text) => {
-                          if (!text) return null;
-                          return text.split('**').map((part, bIdx) => {
-                            if (bIdx % 2 === 1) return <strong key={'b-'+bIdx} style={{ fontWeight: 800, color: 'rgba(199,210,254,0.95)' }}>{part}</strong>;
-                            return part.split('*').map((sub, iIdx) => {
-                              if (iIdx % 2 === 1) return <em key={'i-'+bIdx+'-'+iIdx} style={{ fontStyle: 'italic', color: 'rgba(165,180,252,0.8)' }}>{sub}</em>;
-                              return sub;
-                            });
-                          });
-                        };
-                        if (cleanLine.startsWith('###')) {
-                          const headerText = cleanLine.replace(/^###\s*/, '').trim();
-                          return <h5 key={i} style={{ color: 'rgba(129,140,248,0.95)', fontWeight: 800, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '10px', marginBottom: '4px', paddingBottom: '3px', borderBottom: '1px solid rgba(129,140,248,0.2)' }}>{formatText(headerText)}</h5>;
-                        }
-                        const isBullet = cleanLine.startsWith('•') || cleanLine.startsWith('-') || cleanLine.startsWith('* ');
-                        if (isBullet) {
-                          const bulletMarker = cleanLine.startsWith('* ') ? '* ' : cleanLine.charAt(0);
-                          const bulletText = cleanLine.substring(bulletMarker.length).trim();
-                          return <div key={i} style={{ display: 'grid', gridTemplateColumns: '10px 1fr', gap: '4px', marginBottom: '2px', alignItems: 'start' }}><span style={{ marginTop: '6px', width: '4px', height: '4px', borderRadius: '50%', background: 'rgba(129,140,248,0.6)', display: 'inline-block' }} /><span style={{ color: 'rgba(203,213,225,0.9)', fontSize: '11px', lineHeight: '1.6' }}>{formatText(bulletText)}</span></div>;
-                        }
-                        return <p key={i} style={{ color: 'rgba(203,213,225,0.85)', margin: '0 0 4px', lineHeight: '1.6' }}>{formatText(cleanLine)}</p>;
-                      })}
-                    </div>
-                  </div>
-                ) : null;
-              })()}
-            </div>
-          )}
+          {guidedMode && <GuidedModeBanner GUIDED_STEPS={GUIDED_STEPS} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} />}
           {isTeacherMode && (
               <button
                   aria-label={t('common.message')}
@@ -21353,75 +21301,7 @@ Return ONLY valid JSON in this format:
             </div>
           </div>
           )}
-            {!isTeacherMode && !activeSessionCode && (
-                <div className={`bg-white rounded-3xl shadow-xl shadow-indigo-500/10 border border-slate-400 mb-4 shrink-0 animate-in slide-in-from-left-4 duration-500 overflow-hidden transition-all ${isJoinPanelExpanded ? 'p-6' : 'p-2'}`}>
-                    {isJoinPanelExpanded ? (
-                        <div className="text-center relative">
-                            <button
-                                aria-label={t('common.minimize')}
-                                onClick={handleSetIsJoinPanelExpandedToFalse}
-                                className="absolute -top-2 -right-2 p-2 text-slate-600 hover:text-slate-600 transition-colors rounded-full hover:bg-slate-50"
-                                title={t('common.minimize')}
-                            >
-                                <Minimize size={16} />
-                            </button>
-                            <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 border border-indigo-100">
-                                <Wifi size={32} />
-                            </div>
-                            <h2 className="text-xl font-black text-slate-800 mb-2 tracking-tight">{t('session.join_panel_title')}</h2>
-                            <p className="text-slate-600 text-sm mb-6 font-medium">{t('session.join_instructions')}</p>
-                            <div className="flex flex-col gap-3 max-w-xs mx-auto">
-                                <div className="text-left">
-                                     <label className="block text-[11px] font-bold text-slate-600 mb-1 uppercase tracking-wider">{t('session.host_id_optional')}</label>
-                                     <input aria-label={t('common.enter_join_app_id_input')}
-                                        type="text"
-                                        value={joinAppIdInput}
-                                        onChange={(e) => setJoinAppIdInput(e.target.value)}
-                                        placeholder={`Default: ${appId}`}
-                                        className="w-full text-xs border border-slate-400 rounded-xl p-2 focus:outline-none focus:border-indigo-500 text-slate-600 font-mono mb-2"
-                                     />
-                                </div>
-                                <input aria-label={t('common.enter_join_code_input')}
-                                    type="text"
-                                    value={joinCodeInput}
-                                    onChange={(e) => setJoinCodeInput(e.target.value.toUpperCase())}
-                                    onKeyDown={(e) => e.key === 'Enter' && joinClassSession(joinCodeInput)}
-                                    placeholder={t('session.code_placeholder')}
-                                    maxLength={4}
-                                    className="w-full text-center font-mono font-black text-3xl tracking-[0.5em] border-2 border-slate-200 rounded-2xl p-4 focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 text-indigo-800 uppercase transition-all placeholder:text-slate-600"
-                                />
-                                <button
-                                    aria-label={t('common.continue')}
-                                    onClick={() => joinClassSession(joinCodeInput)}
-                                    disabled={joinCodeInput.length < 4}
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg py-3 rounded-2xl shadow-lg shadow-indigo-200 transition-all transform hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
-                                >
-                                    {t('session.join_action')} <ArrowRight size={20}/>
-                                </button>
-                            </div>
-                        </div>
-                    ) : (
-                        <button
-                            aria-label={t('common.connect')}
-                            onClick={handleSetIsJoinPanelExpandedToTrue}
-                            className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-2xl transition-colors group"
-                        >
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center border border-indigo-100 group-hover:scale-110 transition-transform">
-                                    <Wifi size={20} />
-                                </div>
-                                <div className="text-left">
-                                    <h3 className="font-bold text-slate-700 text-sm">{t('session.join')}</h3>
-                                    <p className="text-[11px] text-slate-600">{t('session.sync_desc')}</p>
-                                </div>
-                            </div>
-                            <div className="bg-indigo-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity shadow-sm">
-                                <ArrowRight size={16} />
-                            </div>
-                        </button>
-                    )}
-                </div>
-            )}
+            {!isTeacherMode && !activeSessionCode && <StudentJoinPanel appId={appId} handleSetIsJoinPanelExpandedToFalse={handleSetIsJoinPanelExpandedToFalse} handleSetIsJoinPanelExpandedToTrue={handleSetIsJoinPanelExpandedToTrue} isJoinPanelExpanded={isJoinPanelExpanded} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} t={t} />}
             {!isTeacherMode && activeSessionCode && sessionData?.roster?.[user?.uid] && (
                 <div className="bg-emerald-700 text-white p-4 rounded-3xl shadow-lg mb-4 flex items-center justify-between animate-in slide-in-from-top-4 border-2 border-emerald-400">
                     <div className="flex items-center gap-3">
@@ -21436,116 +21316,7 @@ Return ONLY valid JSON in this format:
                     </div>
                 </div>
             )}
-            {!isTeacherMode && (
-                <>
-                <div className="bg-teal-50 border-2 border-teal-200 rounded-3xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-4 animate-in slide-in-from-left-4 shadow-lg shadow-teal-500/10">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-teal-100 p-2 rounded-full text-teal-600">
-                      <Save size={20} />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-teal-900 text-sm">{t('student.save_banner_title')}</h4>
-                      <p className="text-xs text-teal-800">{t('student.save_banner_desc')}</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                     <button
-                       onClick={() => projectFileInputRef.current?.click()}
-                       className="px-4 py-2 bg-white text-teal-700 border border-teal-200 font-bold text-xs rounded-xl hover:bg-teal-100 transition-colors flex items-center gap-2"
-                     >
-                       <FolderOpen size={14}/> {t('student.load_file')}
-                     </button>
-                     <button aria-label={t('common.download')}
-                       onClick={initiateSaveStudentProject}
-                       className={`px-4 py-2 bg-teal-700 text-white font-bold text-xs rounded-xl hover:bg-teal-700 transition-colors flex items-center gap-2 shadow-sm ${isSaveActionPulsing ? 'pulse-history shadow-teal-500/50' : ''}`}
-                     >
-                       <Download size={14}/> {t('student.save_drive')}
-                     </button>
-                     <button
-                       onClick={handleSetShowSubmitModalToTrue}
-                       className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 shadow-sm"
-                       title={t('common.export_for_grading')}
-                     >
-                       <Send size={14}/> {t('common.submit')}
-                     </button>
-                  </div>
-                </div>
-                <div className="bg-white rounded-3xl shadow-lg shadow-purple-500/10 border border-slate-400 overflow-hidden shrink-0 mb-4">
-                     <div className="p-3 bg-purple-50 border-b border-purple-100 flex justify-between items-center">
-                          <div className="text-sm font-bold text-purple-800 flex items-center gap-2">
-                              <MapIcon size={16} /> {t('adventure.title')}
-                          </div>
-                          {globalPoints >= studentProjectSettings.adventureUnlockXP && (
-                              <span className="text-[11px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200 flex items-center gap-1"><CheckCircle2 size={10}/> {t('adventure.unlocked')}</span>
-                          )}
-                     </div>
-                     <div className="p-4">
-                         {globalPoints < studentProjectSettings.adventureUnlockXP ? (
-                             <div className="space-y-3">
-                                 <div className="flex items-center gap-3 text-slate-600 mb-2">
-                                     <div className="bg-slate-100 p-2 rounded-full"><Lock size={20}/></div>
-                                     <div className="text-xs">
-                                        <strong className="block text-slate-700">{t('adventure.locked_status')}</strong>
-                                        {t('adventure.earn')} <span className="font-bold text-purple-600">{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.to_unlock')}
-                                    </div>
-                                 </div>
-                                 <div className="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden border border-slate-400">
-                                     <div
-                                         className="h-full bg-purple-500 transition-all duration-1000"
-                                         style={{ width: `${Math.min(100, (globalPoints / studentProjectSettings.adventureUnlockXP) * 100)}%` }}
-                                     ></div>
-                                 </div>
-                                 <div className="text-[11px] text-right text-slate-600 font-mono">
-                                     {globalPoints} / {studentProjectSettings.adventureUnlockXP} XP
-                                 </div>
-                             </div>
-                         ) : (
-                             !activeSessionCode ? (
-                                 <div className="flex flex-col gap-2">
-                                     {hasSavedAdventure ? (
-                                         <div className="grid grid-cols-2 gap-3">
-                                             <button aria-label={t('common.resume_saved_adventure')}
-                                                data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
-                                                disabled={isResumingAdventure}
-                                                className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:shadow-purple-300 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                             >
-                                                 {isResumingAdventure ? <RefreshCw size={18} className="animate-spin" /> : <History size={18}/>}
-                                                 {t('adventure.resume')}
-                                             </button>
-                                             <button
-                                                 aria-label={t('common.start_adventure')}
-                                                data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                                disabled={isResumingAdventure}
-                                                className="w-full py-3 bg-white text-purple-700 border-2 border-purple-200 rounded-xl font-bold shadow-sm hover:bg-purple-50 transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                             >
-                                                 <Sparkles size={18}/> {t('adventure.new_game')}
-                                             </button>
-                                         </div>
-                                     ) : (
-                                         <button
-                                             aria-label={t('common.start_adventure')}
-                                            data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                                            className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl font-bold shadow-lg shadow-purple-200 hover:shadow-purple-300 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                         >
-                                             <Sparkles size={18}/> {t('adventure.start')}
-                                         </button>
-                                     )}
-                                 </div>
-                             ) : (
-                                 <div className="bg-indigo-50 border border-indigo-200 p-4 rounded-xl text-center">
-                                     <p className="text-sm text-indigo-800 font-bold mb-1">
-                                         <Wifi size={16} className="inline mr-1 animate-pulse"/> {t('session.live_active')}
-                                     </p>
-                                     <p className="text-xs text-indigo-600">
-                                         {sessionData?.democracy?.isActive ? t('session.vote_prompt') : t('session.watch_prompt')}
-                                     </p>
-                                 </div>
-                             )
-                         )}
-                     </div>
-                </div>
-                </>
-            )}
+            {!isTeacherMode && <StudentSaveAdventurePanel activeSessionCode={activeSessionCode} globalPoints={globalPoints} handleResumeAdventure={handleResumeAdventure} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleStartAdventure={handleStartAdventure} hasSavedAdventure={hasSavedAdventure} initiateSaveStudentProject={initiateSaveStudentProject} isResumingAdventure={isResumingAdventure} isSaveActionPulsing={isSaveActionPulsing} projectFileInputRef={projectFileInputRef} sessionData={sessionData} studentProjectSettings={studentProjectSettings} t={t} />}
             {isTeacherMode && activeSidebarTab === 'history' && !isIndependentMode && (
             <div id="ui-roster-strip" className="bg-white rounded-3xl shadow-indigo-500/10 border border-slate-400 overflow-hidden shrink-0">
                 <div className="p-3 bg-indigo-50 border-b border-indigo-100 flex justify-between items-center">
@@ -25350,6 +25121,24 @@ function GlobalLevelUpModal(props) {
 function HeaderBar(props) {
     var Real = window.AlloModules && window.AlloModules.HeaderBar && window.AlloModules.HeaderBar.HeaderBar;
     if (Real && Real !== HeaderBar) return React.createElement(Real, props);
+    return null;
+}
+// ── GuidedModeBanner extracted to view_guided_mode_banner_module.js (CDN) ──
+function GuidedModeBanner(props) {
+    var Real = window.AlloModules && window.AlloModules.GuidedModeBanner && window.AlloModules.GuidedModeBanner.GuidedModeBanner;
+    if (Real && Real !== GuidedModeBanner) return React.createElement(Real, props);
+    return null;
+}
+// ── StudentJoinPanel extracted to view_student_join_panel_module.js (CDN) ──
+function StudentJoinPanel(props) {
+    var Real = window.AlloModules && window.AlloModules.StudentJoinPanel && window.AlloModules.StudentJoinPanel.StudentJoinPanel;
+    if (Real && Real !== StudentJoinPanel) return React.createElement(Real, props);
+    return null;
+}
+// ── StudentSaveAdventurePanel extracted to view_student_save_adventure_module.js (CDN) ──
+function StudentSaveAdventurePanel(props) {
+    var Real = window.AlloModules && window.AlloModules.StudentSaveAdventurePanel && window.AlloModules.StudentSaveAdventurePanel.StudentSaveAdventurePanel;
+    if (Real && Real !== StudentSaveAdventurePanel) return React.createElement(Real, props);
     return null;
 }
 // ── CanvasTips extracted to canvas_tips_module.js (CDN) ──
