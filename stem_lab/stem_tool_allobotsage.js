@@ -866,6 +866,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'Which punctuation usually ends a sentence?', options: ['comma', 'period', 'apostrophe', 'colon'], correctIndex: 1, explain: 'Periods end declarative statements. Questions end with ? and strong emotion with !.' },
         { prompt: 'The word \u201cIEP\u201d in schools stands for...', options: ['Incredible Education Plan', 'Individualized Education Program', 'International Exam Panel', 'Instructional Education Project'], correctIndex: 1, explain: 'IEP = federal plan for students receiving special education services.' }
       ]
+    },
+    {
+      id: 'tidewell_torrent',
+      name: 'Tidewell Torrent',
+      element: 'water',
+      icon: '\uD83C\uDF0A',
+      color: '#06b6d4',
+      sourceTool: 'aquarium',
+      sourceLabel: 'Aquarium',
+      unlock: function(d) { return ((d.aquarium || {}).speciesObserved || 0) >= 3; },
+      unlockHint: 'Observe 3 species in Aquarium',
+      baseDamage: 26,
+      critMultiplier: 2.1,
+      flavor: 'A briny surge erupts at the foe — every fish you ever fed shows up.',
+      challengeBank: [
+        { prompt: 'Saltwater fish typically...', options: ['drink lots of water', 'rarely drink water', 'absorb salt through skin', 'do not need water'], correctIndex: 0, explain: 'Saltwater fish drink lots and excrete salt to stay osmotically balanced.' },
+        { prompt: 'A coral reef is built mostly by tiny animals called...', options: ['barnacles', 'polyps', 'plankton', 'urchins'], correctIndex: 1, explain: 'Coral polyps secrete calcium carbonate exoskeletons that form the reef.' },
+        { prompt: 'Which of these is a freshwater fish?', options: ['clownfish', 'tuna', 'goldfish', 'shark'], correctIndex: 2, explain: 'Goldfish are freshwater. The other three live in saltwater.' },
+        { prompt: 'Aquarium nitrogen cycle: ammonia is converted by bacteria into...', options: ['oxygen', 'salt', 'nitrite then nitrate', 'water'], correctIndex: 2, explain: 'Beneficial bacteria oxidize ammonia → nitrite → nitrate, which plants use.' },
+        { prompt: 'Which is a sign of a HEALTHY tank?', options: ['cloudy water', 'algae taking over', 'fish swimming actively + clear water', 'no plants'], correctIndex: 2, explain: 'Active fish + clear water + balanced biology = healthy.' },
+        { prompt: 'Why do fish have gills?', options: ['for camouflage', 'to extract oxygen from water', 'to swim faster', 'to breathe air'], correctIndex: 1, explain: 'Gills pull dissolved oxygen out of water using a thin membrane.' }
+      ]
+    },
+    {
+      id: 'ecosphere_embrace',
+      name: 'Ecosphere Embrace',
+      element: 'life',
+      icon: '\uD83C\uDF33',
+      color: '#22c55e',
+      sourceTool: 'ecosystem',
+      sourceLabel: 'Ecosystem',
+      unlock: function(d) { return ((d.ecosystem || {}).balanceTurns || 0) >= 5; },
+      unlockHint: 'Reach 5 balanced turns in Ecosystem',
+      baseDamage: 28,
+      critMultiplier: 2,
+      flavor: 'A miniature biome wraps the foe; predators and prey choose sides.',
+      challengeBank: [
+        { prompt: 'In a food chain, primary consumers eat...', options: ['other consumers', 'plants/producers', 'decomposers', 'sunlight directly'], correctIndex: 1, explain: 'Primary consumers (herbivores) eat the producers (plants).' },
+        { prompt: 'Decomposers like fungi and bacteria...', options: ['kill all plants', 'recycle dead matter into soil nutrients', 'are unnecessary', 'photosynthesize'], correctIndex: 1, explain: 'Decomposers return nutrients to the soil so producers can use them again.' },
+        { prompt: 'A species that has NO natural predators in a new environment is called...', options: ['endangered', 'invasive', 'native', 'extinct'], correctIndex: 1, explain: 'Invasive species often outcompete natives because nothing keeps them in check.' },
+        { prompt: 'Photosynthesis converts CO₂ + water into...', options: ['nitrogen + oxygen', 'glucose + oxygen', 'protein + water', 'salt + sugar'], correctIndex: 1, explain: '6CO₂ + 6H₂O + light → C₆H₁₂O₆ (glucose) + 6O₂.' },
+        { prompt: 'Removing a top predator from an ecosystem usually...', options: ['has no effect', 'reduces all populations', 'causes prey populations to boom then crash', 'turns the area to desert'], correctIndex: 2, explain: 'Trophic cascade — prey overgraze, eventually crashing food supply.' },
+        { prompt: 'Which is an example of MUTUALISM?', options: ['lion and zebra', 'flea on dog', 'bee pollinating flower', 'mold on bread'], correctIndex: 2, explain: 'Both bee and flower benefit — bee gets nectar, flower gets pollinated.' }
+      ]
+    },
+    {
+      id: 'behavior_beacon',
+      name: 'Behavior Beacon',
+      element: 'mind',
+      icon: '\uD83E\uDDE0',
+      color: '#8b5cf6',
+      sourceTool: 'behaviorLab',
+      sourceLabel: 'Behavior Lab',
+      unlock: function(d) { return ((d.behaviorLab || {}).experimentsRun || 0) >= 4; },
+      unlockHint: 'Run 4 experiments in Behavior Lab',
+      baseDamage: 24,
+      critMultiplier: 2.2,
+      flavor: 'Conditioned reflexes flicker; the foe trains itself into your trap.',
+      challengeBank: [
+        { prompt: 'Pavlov\'s dogs salivated at a bell because the bell became associated with...', options: ['fear', 'food', 'pain', 'a person'], correctIndex: 1, explain: 'Classical conditioning: neutral stimulus (bell) paired with food.' },
+        { prompt: 'Positive reinforcement means...', options: ['adding something pleasant after a behavior', 'taking away something pleasant', 'punishing wrong behavior', 'ignoring all behavior'], correctIndex: 0, explain: 'Add a reward to increase the likelihood the behavior happens again.' },
+        { prompt: 'Negative reinforcement is...', options: ['punishment', 'removing an unpleasant thing to increase a behavior', 'no reward', 'random reward'], correctIndex: 1, explain: 'NOT punishment — removing something aversive to encourage behavior (e.g., taking off seatbelt buzzer when you buckle up).' },
+        { prompt: 'A "fixed ratio" reinforcement schedule rewards every...', options: ['random Nth response', 'response', 'fixed Nth response (e.g., every 5th)', 'minute that passes'], correctIndex: 2, explain: 'Fixed ratio = reward after a set number of responses (FR-5 = every 5th).' },
+        { prompt: 'Operant conditioning was most associated with which scientist?', options: ['Freud', 'Pavlov', 'Skinner', 'Piaget'], correctIndex: 2, explain: 'B.F. Skinner formalized operant conditioning with the Skinner box.' },
+        { prompt: 'Extinction in behavior science means...', options: ['the species died out', 'the behavior fades when reinforcement stops', 'the trainer left', 'memory was erased'], correctIndex: 1, explain: 'Stop reinforcing → behavior gradually decreases → eventually disappears.' }
+      ]
+    },
+    {
+      id: 'anatomy_arc',
+      name: 'Anatomy Arc',
+      element: 'body',
+      icon: '\uD83E\uDEC0',
+      color: '#dc2626',
+      sourceTool: 'anatomy',
+      sourceLabel: 'Anatomy',
+      unlock: function(d) { return ((d.anatomy || {}).systemsExplored || 0) >= 3; },
+      unlockHint: 'Explore 3 body systems in Anatomy',
+      baseDamage: 26,
+      critMultiplier: 2.1,
+      flavor: 'A diagram of every organ flickers across the foe — every weak point glows.',
+      challengeBank: [
+        { prompt: 'The heart has how many chambers?', options: ['2', '3', '4', '6'], correctIndex: 2, explain: '2 atria + 2 ventricles = 4 chambers.' },
+        { prompt: 'Red blood cells carry oxygen using which protein?', options: ['insulin', 'hemoglobin', 'collagen', 'keratin'], correctIndex: 1, explain: 'Hemoglobin binds O₂ in lungs and releases it in tissues.' },
+        { prompt: 'Which organ filters blood and produces urine?', options: ['liver', 'pancreas', 'kidneys', 'spleen'], correctIndex: 2, explain: 'Kidneys filter waste; produce urine that exits via the ureters.' },
+        { prompt: 'The largest organ of the human body is the...', options: ['brain', 'liver', 'lungs', 'skin'], correctIndex: 3, explain: 'Skin — surface area ~2 m² in adults.' },
+        { prompt: 'Neurons send signals using...', options: ['mechanical bumps only', 'electrical impulses + chemical neurotransmitters', 'magnetic waves', 'sound'], correctIndex: 1, explain: 'Action potential travels electrically, then chemicals cross the synapse.' },
+        { prompt: 'Which body system fights infections?', options: ['digestive', 'immune', 'endocrine', 'skeletal'], correctIndex: 1, explain: 'Immune system: white blood cells, lymph nodes, spleen, antibodies.' }
+      ]
     }
   ];
 
@@ -905,17 +993,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
     { id: 'modulus_mite', name: 'Modulus Mite', icon: '\uD83D\uDD27', hp: 35, atk: 13, flavor: 'Tiny remainder of a divided foe.', sectors: ['ember_clockwork'] },
     // ── Bosses ──
     // Crystal Nebula bosses
-    { id: 'lichcopy', name: 'The Lichcopy', icon: '\uD83D\uDC80', hp: 120, atk: 18, flavor: 'A mirror-self of AlloBot gone cold.', sectors: ['crystal_nebula'], boss: true },
-    { id: 'void_leviathan', name: 'Void Leviathan', icon: '\uD83D\uDC32', hp: 140, atk: 17, flavor: 'A drifting titan of cosmic silence.', sectors: ['crystal_nebula'], boss: true },
-    { id: 'starless_oracle', name: 'The Starless Oracle', icon: '\uD83D\uDD2E', hp: 130, atk: 19, flavor: 'It saw your spell before you cast it.', sectors: ['crystal_nebula'], boss: true },
+    { id: 'lichcopy', name: 'The Lichcopy', icon: '\uD83D\uDC80', hp: 120, atk: 18, flavor: 'A mirror-self of AlloBot gone cold.', sectors: ['crystal_nebula'], boss: true, specialName: 'Cold Reflection', specialFlavor: 'Mirrors your last spell as cryo-frost.' },
+    { id: 'void_leviathan', name: 'Void Leviathan', icon: '\uD83D\uDC32', hp: 140, atk: 17, flavor: 'A drifting titan of cosmic silence.', sectors: ['crystal_nebula'], boss: true, specialName: 'Cosmic Engulf', specialFlavor: 'Swallows you in a starless tide.' },
+    { id: 'starless_oracle', name: 'The Starless Oracle', icon: '\uD83D\uDD2E', hp: 130, atk: 19, flavor: 'It saw your spell before you cast it.', sectors: ['crystal_nebula'], boss: true, specialName: 'Foretelling Strike', specialFlavor: 'Already saw the wound it gives you.' },
     // Whispering Archive bosses
-    { id: 'paradox_clone', name: 'The Paradox Clone', icon: '\uD83D\uDD78\uFE0F', hp: 130, atk: 19, flavor: 'An impossible contradiction of AlloBot’s runes.', sectors: ['whispering_archive'], boss: true },
-    { id: 'tome_tyrant', name: 'The Tome Tyrant', icon: '\uD83D\uDCD8', hp: 145, atk: 16, flavor: 'A book heavy enough to read its readers.', sectors: ['whispering_archive'], boss: true },
-    { id: 'gnomon_grandmaster', name: 'The Gnomon Grandmaster', icon: '\u23F3', hp: 125, atk: 18, flavor: 'Casts shadows of arguments you cannot answer.', sectors: ['whispering_archive'], boss: true },
+    { id: 'paradox_clone', name: 'The Paradox Clone', icon: '\uD83D\uDD78\uFE0F', hp: 130, atk: 19, flavor: 'An impossible contradiction of AlloBot’s runes.', sectors: ['whispering_archive'], boss: true, specialName: 'Self-Reference Spiral', specialFlavor: 'A loop of "this attack" damaging "this attack".' },
+    { id: 'tome_tyrant', name: 'The Tome Tyrant', icon: '\uD83D\uDCD8', hp: 145, atk: 16, flavor: 'A book heavy enough to read its readers.', sectors: ['whispering_archive'], boss: true, specialName: 'Spine Slam', specialFlavor: 'A 4,000-page hardcover, slammed shut.' },
+    { id: 'gnomon_grandmaster', name: 'The Gnomon Grandmaster', icon: '\u23F3', hp: 125, atk: 18, flavor: 'Casts shadows of arguments you cannot answer.', sectors: ['whispering_archive'], boss: true, specialName: 'Cast Shadow', specialFlavor: 'A sundial spike of dusk falls across you.' },
     // Ember Clockwork bosses
-    { id: 'equilibrium_engine', name: 'Equilibrium Engine', icon: '\u2696\uFE0F', hp: 150, atk: 17, flavor: 'A perfect balance, hostile to imbalance.', sectors: ['ember_clockwork'], boss: true },
-    { id: 'prime_progenitor', name: 'The Prime Progenitor', icon: '\u2734\uFE0F', hp: 135, atk: 19, flavor: 'Indivisible. Annoyed by composites.', sectors: ['ember_clockwork'], boss: true },
-    { id: 'entropy_emperor', name: 'The Entropy Emperor', icon: '\uD83D\uDD25', hp: 160, atk: 18, flavor: 'Disorder, crowned and ascending.', sectors: ['ember_clockwork'], boss: true },
+    { id: 'equilibrium_engine', name: 'Equilibrium Engine', icon: '\u2696\uFE0F', hp: 150, atk: 17, flavor: 'A perfect balance, hostile to imbalance.', sectors: ['ember_clockwork'], boss: true, specialName: 'Counterweight Drop', specialFlavor: 'The scale of the encounter tips, sharply.' },
+    { id: 'prime_progenitor', name: 'The Prime Progenitor', icon: '\u2734\uFE0F', hp: 135, atk: 19, flavor: 'Indivisible. Annoyed by composites.', sectors: ['ember_clockwork'], boss: true, specialName: 'Indivisible Smite', specialFlavor: 'A blow that cannot be reduced.' },
+    { id: 'entropy_emperor', name: 'The Entropy Emperor', icon: '\uD83D\uDD25', hp: 160, atk: 18, flavor: 'Disorder, crowned and ascending.', sectors: ['ember_clockwork'], boss: true, specialName: 'Heat-Death Whisper', specialFlavor: 'All order yields, briefly, to chaos.' },,
+    // ── Deep Tide (marine/biology theme) ──
+    { id: 'reef_revenant', name: 'Reef Revenant', icon: '\uD83D\uDC1A', hp: 50, atk: 11, flavor: 'A bleached coral skeleton that still pulses.', sectors: ['deep_tide'] },
+    { id: 'echo_anemone', name: 'Echo Anemone', icon: '\uD83C\uDF38', hp: 45, atk: 10, flavor: 'It repeats the last sound it heard.', sectors: ['deep_tide'] },
+    { id: 'jelly_phantom', name: 'Jelly Phantom', icon: '\uD83E\uDEBC', hp: 40, atk: 13, flavor: 'Translucent, drifting, lethal.', sectors: ['deep_tide'] },
+    { id: 'sargasso_strangler', name: 'Sargasso Strangler', icon: '\uD83C\uDF3F', hp: 75, atk: 12, flavor: 'Living seaweed with very specific grudges.', sectors: ['deep_tide'] },
+    { id: 'volt_eel', name: 'Voltaic Eel', icon: '\uD83D\uDC0D', hp: 55, atk: 14, flavor: 'A current with teeth.', sectors: ['deep_tide'] },
+    { id: 'shoal_specter', name: 'Shoal Specter', icon: '\uD83D\uDC1F', hp: 40, atk: 11, flavor: 'A school of ghosts moving as one.', sectors: ['deep_tide'] },
+    { id: 'crustacean_courier', name: 'Crustacean Courier', icon: '\uD83E\uDD80', hp: 80, atk: 12, flavor: 'Carries old letters. Pinches.', sectors: ['deep_tide'] },
+    { id: 'barnacle_baleful', name: 'Baleful Barnacle', icon: '\uD83D\uDC0C', hp: 90, atk: 11, flavor: 'Slow, armored, very tired of you.', sectors: ['deep_tide'] }    // Deep Tide bosses
+,
+    { id: 'tidal_thrall', name: 'The Tidal Thrall', icon: '\uD83C\uDF0A', hp: 140, atk: 17, flavor: 'A wave that learned a face.', sectors: ['deep_tide'], boss: true, specialName: 'Riptide Rebuke', specialFlavor: 'A fist of water shaped like a question.' },
+    { id: 'abyssal_chant', name: 'The Abyssal Chant', icon: '\uD83D\uDC19', hp: 135, atk: 19, flavor: 'Sings in three pitches at once. None pleasant.', sectors: ['deep_tide'], boss: true, specialName: 'Pressure Hymn', specialFlavor: 'The deep itself bears down on your bones.' },
+    { id: 'kraken_kalmar', name: 'Kraken Kalmar', icon: '\uD83E\uDD91', hp: 155, atk: 17, flavor: 'Old as a continental shelf. Lonely.', sectors: ['deep_tide'], boss: true, specialName: 'Tentacle Litany', specialFlavor: 'Eight grasping verses, one grim conclusion.' }
   ];
 
   // ═══════════════════════════════════════════════════════════════
@@ -956,6 +1057,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       bossPool: ['equilibrium_engine', 'prime_progenitor', 'entropy_emperor'],
       unlockAt: 3,
       flavor: 'The hardest trials \u2014 but the richest essence. Masters only.'
+    },
+    {
+      id: 'deep_tide',
+      name: 'Deep Tide',
+      subtitle: 'Coral spires and a hush of pressure',
+      bgGradient: 'linear-gradient(135deg, #064e3b 0%, #0e7490 100%)',
+      accent: '#22d3ee',
+      essenceMult: 1.2,
+      bossPool: ['tidal_thrall', 'abyssal_chant', 'kraken_kalmar'],
+      unlockAt: 2,
+      flavor: 'A drowned cathedral of life. Every spell echoes back through the water.'
     }
   ];
 
@@ -1885,6 +1997,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           var newHp = exp.playerHp;
           var newEnemy;
 
+          // Each boss has a named special with its own flavor. Falls back to
+          // generic "SPECIAL ATTACK" text if a boss doesn't define them.
+          var specName = (enemy.specialName || 'SPECIAL ATTACK');
+          var specFlavor = (enemy.specialFlavor || '');
+
           if (isBoss && bossPhase === 'winding') {
             // SPECIAL attack this turn — was the player able to interrupt?
             var multiplier = enemy.interrupted ? 0.5 : 1.6;
@@ -1892,12 +2009,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             var specDmg = Math.max(1, Math.round(rawDmg - Math.floor(Math.random() * 3)));
             newHp = Math.max(0, exp.playerHp - specDmg);
             entry = enemy.interrupted
-              ? { text: '🛡️ ' + enemy.name + ' staggers — special INTERRUPTED. Hits for ' + specDmg + ' dmg only.', kind: 'enemy' }
-              : { text: '💥 ' + enemy.name + ' unleashes a SPECIAL attack — ' + specDmg + ' dmg!', kind: 'boss-special' };
+              ? { text: '🛡️ ' + enemy.name + '’s ' + specName + ' is staggered — only ' + specDmg + ' dmg lands.', kind: 'enemy' }
+              : { text: '💥 ' + enemy.name + ' unleashes ' + specName + ' — ' + specDmg + ' dmg!' + (specFlavor ? ' (' + specFlavor + ')' : ''), kind: 'boss-special' };
             newEnemy = Object.assign({}, enemy, { bossPhase: 'normal', normalCount: 0, interrupted: false });
           } else if (isBoss && normalCount >= 2) {
             // Time to wind up — no damage this turn, telegraph the special.
-            entry = { text: '⚠️ ' + enemy.name + ' begins to gather power. CRIT next cast to interrupt!', kind: 'boss-telegraph' };
+            entry = { text: '⚠️ ' + enemy.name + ' begins to gather ' + specName + (specFlavor ? ' — ' + specFlavor : '') + '. CRIT next cast to interrupt!', kind: 'boss-telegraph' };
             newEnemy = Object.assign({}, enemy, { bossPhase: 'winding', interrupted: false });
           } else {
             // Normal attack — for both bosses (in normal phase) and regular enemies.
@@ -2114,7 +2231,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
 
           // Boss telegraph warning \u2014 visible when boss is winding up a special.
-          // Tells the player exactly what to do: land a CRIT to interrupt.
+          // Shows the boss's NAMED special (e.g., "Cold Reflection") with flavor
+          // so each boss feels distinct, not just bigger HP.
           enemy.type !== 'shrine' && enemy.boss && enemy.bossPhase === 'winding' && !enemy.interrupted && h('div', {
             role: 'alert',
             className: 'rounded-xl p-3 mb-3 abs-pulse',
@@ -2123,7 +2241,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'flex items-center gap-3' },
               h('div', { className: 'text-3xl' }, '\u26a0\ufe0f'),
               h('div', { className: 'flex-1' },
-                h('div', { className: 'font-bold text-sm' }, enemy.name + ' is winding up a SPECIAL ATTACK'),
+                h('div', { className: 'font-bold text-sm' },
+                  enemy.name + ' is winding up: ',
+                  h('span', { className: 'italic' }, enemy.specialName || 'SPECIAL ATTACK')
+                ),
+                enemy.specialFlavor && h('div', { className: 'text-[11px] text-red-200 mt-0.5 italic' }, '\u201c' + enemy.specialFlavor + '\u201d'),
                 h('div', { className: 'text-[11px] text-red-100 mt-0.5' }, 'Land a CRITICAL cast (correct + under 6 seconds) to interrupt and reduce the damage.')
               )
             )
