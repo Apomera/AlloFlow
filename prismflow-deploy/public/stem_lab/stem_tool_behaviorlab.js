@@ -58,8 +58,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('behaviorLab'))
 
   window.StemLab.registerTool('behaviorLab', {
     icon: '\uD83E\uDDEC',
-    label: 'behaviorLab',
-    desc: '',
+    label: 'BehaviorLab',
+    desc: 'Operant conditioning theory through a virtual Skinner box. 9 progressive levels: positive reinforcement, schedule effects (FR / VR / FI / VI), chained sequences, DRO timers, and classical conditioning (Pavlov). Plus a Schedule Sleuth (read cumulative-response curves) and Function Sleuth (FBA vignettes: attention / escape / tangible / sensory). Sister tool to PetsLab, which applies these mechanics to real-world pet training.',
     color: 'slate',
     category: 'science',
     questHooks: [
@@ -4781,6 +4781,36 @@ var d = labToolData || {};
                       sleuthRounds > 0 && React.createElement("span", { className: "text-slate-300" }, "Accuracy ", React.createElement("strong", { className: "text-cyan-400" }, pct + '%'))
                     )
                   ),
+                  // ── Primer: how to read a cumulative-response curve ──
+                  // Auto-opens on round 0; collapses once the student has
+                  // played at least one round. Re-openable via the summary.
+                  React.createElement("details", {
+                    open: sleuthRounds === 0,
+                    style: { background: 'rgba(15,23,42,0.5)', borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)', marginBottom: 10 }
+                  },
+                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-bold px-3 py-2 select-none text-cyan-300 select-none" }, '📜 How to read this curve (click to toggle)'),
+                    React.createElement("div", { className: "px-3 pb-3 space-y-2 text-[11px] text-slate-300" },
+                      React.createElement("p", { className: "leading-relaxed" },
+                        React.createElement("strong", null, "Cumulative-response curve"), ': each reinforced response adds one to the y-axis. Flat segments = no responding. Steep segments = rapid responding. Bumps where the curve briefly flattens = post-reinforcement pauses.'
+                      ),
+                      React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5" },
+                        [
+                          { abbrev: 'FR', name: 'Fixed Ratio',     pattern: 'High rate with predictable pause after each reinforcer.', color: '#f59e0b' },
+                          { abbrev: 'VR', name: 'Variable Ratio',  pattern: 'High and steady. No pauses. Resistant to extinction.',    color: '#ef4444' },
+                          { abbrev: 'FI', name: 'Fixed Interval',  pattern: 'Scallop shape: slow after reinforcer, fast near the end.', color: '#3b82f6' },
+                          { abbrev: 'VI', name: 'Variable Interval', pattern: 'Low and steady. Predictable but slow.',                color: '#10b981' }
+                        ].map(function(s, i) {
+                          return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + s.color + '55', borderRadius: 6, padding: '6px 8px' } },
+                            React.createElement('div', { style: { color: s.color, fontWeight: 800, fontSize: 10 } }, s.abbrev + ' · ' + s.name),
+                            React.createElement('div', { className: 'text-[10px] text-slate-300 leading-tight' }, s.pattern)
+                          );
+                        })
+                      ),
+                      React.createElement('p', { className: 'text-[10px] italic text-slate-400 pt-1 border-t border-slate-700' },
+                        'Tip: focus on shape, not absolute height. The curve below is unlabeled until you guess.'
+                      )
+                    )
+                  ),
                   // SVG curve (the puzzle)
                   React.createElement("div", { style: { background: '#0f172a', borderRadius: 10, padding: 8, border: '1px solid rgba(100,116,139,0.3)' } },
                     React.createElement("svg", {
@@ -4943,13 +4973,37 @@ var d = labToolData || {};
                   if (addToast) addToast(correct ? '✅ Correct — ' + v.correct : '❌ Not quite — it was ' + v.correct, correct ? 'success' : 'info');
                 }
                 if (fnIdx < 0) {
-                  return React.createElement("div", { className: "text-center py-3" },
-                    React.createElement("p", { className: "text-[11px] text-slate-300 italic mb-3 leading-relaxed" }, "12 vignettes. For each, pick the function the behavior is most likely serving — Attention, Escape, Tangible, or Sensory. Coaching after each pick names what makes this function more likely than the other three."),
-                    React.createElement("button", {
-                      onClick: startFn,
-                      "aria-label": "Start Function Sleuth",
-                      className: "px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
-                    }, "🔍 Start the game")
+                  return React.createElement("div", { className: "py-3" },
+                    React.createElement("p", { className: "text-[11px] text-slate-300 italic mb-3 leading-relaxed text-center" }, "12 vignettes. For each, pick the function the behavior is most likely serving. Coaching after each pick names what makes this function more likely than the other three."),
+                    // ── Four-functions primer ──
+                    // FBA categorizes behavior reinforcement into 4
+                    // canonical functions. Students new to ABA / behavior
+                    // analysis often haven't seen these definitions in
+                    // class yet, so the vignettes feel like guessing
+                    // without this scaffolding.
+                    React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-1.5 mb-3" },
+                      [
+                        { id: 'Attention', icon: '👀', color: '#3b82f6', name: 'Attention', def: 'Behavior produces interaction (positive OR corrective) from someone.' },
+                        { id: 'Escape',    icon: '🏃', color: '#ef4444', name: 'Escape',    def: 'Behavior postpones, reduces, or removes a demand the kid wants to avoid.' },
+                        { id: 'Tangible',  icon: '🎮', color: '#f59e0b', name: 'Tangible',  def: 'Behavior produces access to a specific item or activity.' },
+                        { id: 'Sensory',   icon: '✨', color: '#8b5cf6', name: 'Sensory',   def: 'Behavior produces stimulation that is itself the reinforcer. No social or material payoff needed.' }
+                      ].map(function(f, i) {
+                        return React.createElement('div', { key: i, style: { background: 'rgba(30,41,59,0.6)', border: '1px solid ' + f.color + '55', borderRadius: 6, padding: '6px 8px' } },
+                          React.createElement('div', { style: { color: f.color, fontWeight: 800, fontSize: 11 } }, f.icon + ' ' + f.name),
+                          React.createElement('div', { className: 'text-[10px] text-slate-300 leading-tight mt-0.5' }, f.def)
+                        );
+                      })
+                    ),
+                    React.createElement('p', { className: 'text-[10px] italic text-slate-400 mb-3 text-center' },
+                      'A behavior can have more than one function in reality. For these vignettes, pick the most-likely primary function based on the contingency described.'
+                    ),
+                    React.createElement("div", { className: "text-center" },
+                      React.createElement("button", {
+                        onClick: startFn,
+                        "aria-label": "Start Function Sleuth",
+                        className: "px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300"
+                      }, "🔍 Start the game")
+                    )
                   );
                 }
                 var v = FN_VIGNETTES[fnIdx];
