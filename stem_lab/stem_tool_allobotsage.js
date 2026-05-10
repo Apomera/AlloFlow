@@ -1667,15 +1667,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         var todayStr = new Date().toISOString().slice(0, 10);
         var lastClaim = d.dailyClaimedOn || null;
         var dailyAvailable = lastClaim !== todayStr;
+        var streakState = d.streak || { count: 0, lastDate: null, longest: 0, milestones: {} };
+        function isYesterday(dateStr) {
+          if (!dateStr) return false;
+          var y = new Date();
+          y.setUTCDate(y.getUTCDate() - 1);
+          return y.toISOString().slice(0, 10) === dateStr;
+        }
+        // Display value: snap to 0 if the saved streak's lastDate is stale
+        // (older than yesterday). It'll reset on the next claim anyway.
+        var streakDisplay = streakState.count || 0;
+        if (streakState.lastDate !== todayStr && !isYesterday(streakState.lastDate) && streakState.lastDate !== null) {
+          streakDisplay = 0;
+        }
         function claimDaily() {
           var sourcesTouched = {};
           unlockedSpells.forEach(function(s) { sourcesTouched[s.sourceTool] = true; });
           var n = Math.max(1, Object.keys(sourcesTouched).length);
           var bonus = 5 + n * 3;
+          // \u2500\u2500 Streak math \u2500\u2500
+          // Yesterday \u2192 increment. Today (no-op) \u2192 keep. Older/null \u2192 reset to 1.
+          // One-time milestone bonuses fire at 3/7/30 days.
+          var prevStreak = streakState.count || 0;
+          var prevDate = streakState.lastDate;
+          var newCount;
+          if (prevDate === todayStr) { newCount = prevStreak; }
+          else if (isYesterday(prevDate)) { newCount = prevStreak + 1; }
+          else { newCount = 1; }
+          var newLongest = Math.max(streakState.longest || 0, newCount);
+          var milestones = Object.assign({}, streakState.milestones || {});
+          var milestoneBonus = 0;
+          var milestoneLabel = '';
+          if (newCount >= 30 && !milestones.m30) { milestoneBonus = 60; milestoneLabel = '30-day streak!'; milestones.m30 = todayStr; }
+          else if (newCount >= 7 && !milestones.m7) { milestoneBonus = 25; milestoneLabel = '7-day streak!'; milestones.m7 = todayStr; }
+          else if (newCount >= 3 && !milestones.m3) { milestoneBonus = 10; milestoneLabel = '3-day streak!'; milestones.m3 = todayStr; }
+          var totalBonus = bonus + milestoneBonus;
           sfxUnlock();
-          updSage({ dailyClaimedOn: todayStr, essence: essence + bonus, lastVisit: Date.now() });
-          addToast('\u2B50 Daily bonus: +' + bonus + ' essence (' + n + ' domains tended)', 'success');
-          announceSR('Daily bonus claimed: plus ' + bonus + ' essence.');
+          updSage({
+            dailyClaimedOn: todayStr,
+            essence: essence + totalBonus,
+            lastVisit: Date.now(),
+            streak: { count: newCount, lastDate: todayStr, longest: newLongest, milestones: milestones }
+          });
+          if (milestoneBonus > 0) {
+            addToast('\uD83D\uDD25 ' + milestoneLabel + ' +' + milestoneBonus + ' bonus essence on top of daily!', 'success');
+            announceSR('Streak milestone: ' + milestoneLabel + ' Plus ' + milestoneBonus + ' bonus.');
+          } else {
+            addToast('\u2B50 Daily bonus: +' + bonus + ' essence (' + n + ' domains tended) \u00B7 ' + newCount + '-day streak', 'success');
+            announceSR('Daily bonus claimed: plus ' + bonus + ' essence. Streak: ' + newCount + ' days.');
+          }
         }
 
         // ── AlloBot mood by time-since-visit ──
@@ -1745,6 +1785,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\u2728 ' + unlockedSpells.length + '/' + SPELLBOOK.length + ' spells'),
                   h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\uD83D\uDD2E ' + totalCasts + ' casts'),
                   h('div', { className: 'px-2.5 py-1 rounded-lg bg-white/10' }, '\uD83C\uDF0C ' + expeditionsDone + ' expeditions'),
+                  // Streak chip \u2014 color glows when streak is active (>= 1 day) and intensifies at milestones
+                  streakDisplay > 0 && h('div', {
+                    className: 'px-2.5 py-1 rounded-lg font-semibold ' + (streakDisplay >= 7 ? 'bg-orange-400/30 text-orange-100' : 'bg-amber-400/15 text-amber-100'),
+                    title: 'Longest streak: ' + (streakState.longest || streakDisplay) + ' days'
+                  }, '\uD83D\uDD25 ' + streakDisplay + '-day streak'),
                   h('div', { className: 'px-2.5 py-1 rounded-lg bg-amber-400/20 text-amber-200 font-semibold' }, '\u2B50 ' + essence + ' essence')
                 )
               )
@@ -1770,9 +1815,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Call-to-action row
           h('div', { className: 'flex flex-col md:flex-row gap-2 mb-5' },
             unlockedSpells.length === 0
-              ? h('div', { className: 'rounded-xl p-4 bg-amber-50 border border-amber-200 text-sm text-amber-800 w-full' },
-                  h('strong', null, 'No spells yet! '),
-                  'Play any STEM Lab tool \u2014 Space Explorer, Math Lab, or RoadReady \u2014 to start earning spells. AlloBot is watching your progress.'
+              ? h('div', { className: 'rounded-xl p-4 bg-amber-50 border-2 border-amber-200 text-sm text-amber-800 w-full' },
+                  // Friendly first-time orientation. The lockedSpells grid below
+                  // already has direct "Open Source Tool \u2192" buttons per spell,
+                  // so this card primarily explains the loop + points there.
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('span', { className: 'text-2xl' }, '\ud83d\udc4b'),
+                    h('strong', { className: 'text-base text-amber-900' }, 'Welcome, future Sage!')
+                  ),
+                  h('p', { className: 'mb-2 text-amber-900 leading-relaxed' },
+                    'Sage spells unlock when you make progress in OTHER STEM Lab tools \u2014 Space Explorer, Math Lab, RoadReady, and more. Each spell is a retrieval-practice ability: you cast by answering a question from that tool\'s domain.'
+                  ),
+                  h('p', { className: 'mb-2 text-amber-900 leading-relaxed' },
+                    h('strong', null, 'How to start: '), 'scroll down to "Yet to discover" and click any spell\'s ',
+                    h('span', { className: 'inline-block px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 font-mono text-[10px]' }, '\u2192 Open [tool name]'),
+                    ' button. That\'ll take you to the tool that unlocks it.'
+                  ),
+                  h('p', { className: 'text-[12px] text-amber-700 italic' },
+                    'AlloBot is watching your progress everywhere. Even a single mission, problem, or drill in another tool will start unlocking spells here.'
+                  )
                 )
               : [
                   h('button', {
@@ -1948,6 +2009,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             equippedLoadout.length,
             '/3 '
           ),
+
+          // \u2500\u2500 Loadout presets \u2500\u2500
+          // 3 named slots. With 39 spells in the grimoire, swapping for different
+          // sectors gets tedious; presets let students save common configurations.
+          available.length >= 3 && (function() {
+            var presets = d.loadoutPresets || [];
+            function saveAsPreset() {
+              if (equippedLoadout.length === 0) {
+                addToast('Equip at least 1 spell before saving a preset', 'info');
+                return;
+              }
+              if (presets.length >= 3) {
+                addToast('Preset slots are full \u2014 delete one to save a new preset', 'info');
+                return;
+              }
+              var defaultName = 'Preset ' + (presets.length + 1);
+              var name = (typeof prompt === 'function') ? prompt('Name this preset:', defaultName) : defaultName;
+              if (name === null) return; // cancelled
+              name = (name || defaultName).slice(0, 24);
+              sfxClick();
+              updKey('loadoutPresets', presets.concat([{ name: name, spellIds: equippedLoadout.slice() }]));
+              addToast('\ud83d\udcbe Saved preset: ' + name, 'success');
+            }
+            function loadPreset(p) {
+              sfxClick();
+              // Filter to spells that are still unlocked (in case content changed)
+              var valid = p.spellIds.filter(function(id) { return currentlyUnlocked.indexOf(id) !== -1; });
+              updKey('equippedLoadout', valid);
+              addToast('Loaded preset: ' + p.name + (valid.length < p.spellIds.length ? ' (' + (p.spellIds.length - valid.length) + ' locked spell' + (p.spellIds.length - valid.length > 1 ? 's' : '') + ' skipped)' : ''), 'info');
+            }
+            function deletePreset(idx) {
+              sfxClick();
+              var next = presets.slice();
+              next.splice(idx, 1);
+              updKey('loadoutPresets', next);
+            }
+            return h('section', { 'aria-label': 'Loadout presets', className: 'mb-4 p-3 rounded-xl border-2 border-slate-200 bg-slate-50' },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600' }, '\ud83d\udcbe Loadout Presets ' + (presets.length > 0 ? '(' + presets.length + '/3)' : '')),
+                h('button', {
+                  onClick: saveAsPreset,
+                  disabled: presets.length >= 3 || equippedLoadout.length === 0,
+                  className: 'text-[10px] font-bold py-1 px-2 rounded-md bg-slate-700 text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed focus:ring-2 focus:ring-slate-400 focus:outline-none',
+                  title: presets.length >= 3 ? 'Preset slots full' : equippedLoadout.length === 0 ? 'Equip at least 1 spell first' : 'Save current loadout as a preset'
+                }, '+ Save current')
+              ),
+              presets.length === 0
+                ? h('div', { className: 'text-[11px] text-slate-500 italic' }, 'No presets yet. Build a loadout you like and click "Save current" to keep it for next time.')
+                : h('div', { className: 'flex flex-col gap-1.5' },
+                    presets.map(function(p, idx) {
+                      return h('div', {
+                        key: 'preset-' + idx,
+                        className: 'flex items-center gap-2 p-1.5 rounded-lg bg-white border border-slate-200'
+                      },
+                        h('button', {
+                          onClick: function() { loadPreset(p); },
+                          className: 'flex-1 text-left text-[11px] font-semibold text-violet-700 hover:underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded',
+                          'aria-label': 'Load preset ' + p.name
+                        }, '\ud83d\udcc2 ' + p.name),
+                        h('div', { className: 'flex items-center gap-1' },
+                          p.spellIds.slice(0, 3).map(function(id) {
+                            var sp = findSpell(id);
+                            return sp ? h('span', { key: 'pi-' + id, className: 'text-base', title: sp.name, style: { opacity: currentlyUnlocked.indexOf(id) !== -1 ? 1 : 0.35 } }, sp.icon) : null;
+                          })
+                        ),
+                        h('button', {
+                          onClick: function() { if (typeof confirm !== 'function' || confirm('Delete preset "' + p.name + '"?')) deletePreset(idx); },
+                          className: 'text-[12px] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
+                          'aria-label': 'Delete preset ' + p.name
+                        }, '\ud83d\uddd1')
+                      );
+                    })
+                  )
+            );
+          })(),
 
           // AI question bank panel \u2014 pre-load + per-spell AI status.
           // Only renders when callGemini is wired AND at least 1 spell is equipped.
