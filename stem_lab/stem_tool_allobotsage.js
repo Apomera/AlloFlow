@@ -575,6 +575,273 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       ]
     },
     {
+      id: 'orbital_oath',
+      name: 'Orbital Oath',
+      element: 'gravity',
+      icon: '\uD83D\uDEF0\uFE0F',
+      color: '#22d3ee',
+      sourceTool: 'spaceExplorer',
+      sourceLabel: 'Space Explorer',
+      unlock: function(d) { return ((d.spaceExplorer || {}).completedMissions || 0) >= 5; },
+      unlockHint: 'Complete 5 missions in Space Explorer',
+      baseDamage: 32,
+      critMultiplier: 2.1,
+      flavor: 'A pact with momentum itself; the foe is yanked into your gravity well.',
+      challengeBank: [
+        { prompt: 'Geosynchronous satellites stay above the same spot on Earth because their orbital period equals...', options: ['1 hour', 'one Earth day', 'one Earth year', 'one lunar cycle'], correctIndex: 1, explain: '~24 hours, so the satellite circles at the same rate Earth spins.' },
+        { prompt: 'Lower orbits move...', options: ['slower', 'faster', 'the same speed as higher orbits', 'in reverse'], correctIndex: 1, explain: 'Closer in = stronger gravity = faster orbital speed.' },
+        { prompt: 'Which is NOT a real type of orbit?', options: ['polar', 'geostationary', 'ellipsoidal-static', 'sun-synchronous'], correctIndex: 2, explain: 'The other three are real; ellipsoidal-static is invented.' },
+        { prompt: 'When a spacecraft fires its engines opposite its motion, it...', options: ['speeds up', 'slows down', 'changes color', 'pauses orbit'], correctIndex: 1, explain: 'Retrograde burn — used to lower an orbit or de-orbit.' },
+        { prompt: 'The Moon is moving away from Earth at about...', options: ['38 cm per year', '38 km per year', '38 m per second', '38 km per second'], correctIndex: 0, explain: 'Tidal interaction transfers angular momentum, slowly receding the Moon.' },
+        { prompt: 'A "transfer orbit" between two planets is called a...', options: ['Hohmann transfer', 'Hyperbolic glide', 'Lagrange spin', 'Roche jump'], correctIndex: 0, explain: 'Hohmann transfer — the most fuel-efficient two-burn path.' },
+        { prompt: 'The International Space Station orbits at roughly what altitude?', options: ['40 km', '400 km', '4,000 km', '40,000 km'], correctIndex: 1, explain: 'About 400 km — low Earth orbit.' }
+      ]
+    },
+    {
+      id: 'probability_pulse',
+      name: 'Probability Pulse',
+      element: 'logic',
+      icon: '\uD83C\uDFB2',
+      color: '#10b981',
+      sourceTool: 'mathLab',
+      sourceLabel: 'Math Lab',
+      unlock: function(d) { return ((d.mathLab || {}).problemsSolved || 0) >= 8; },
+      unlockHint: 'Solve 8 Math Lab problems',
+      baseDamage: 24,
+      critMultiplier: 2.3,
+      flavor: 'A wave of dice-energy. The result is statistically painful.',
+      challengeBank: [
+        { prompt: 'Rolling a fair 6-sided die, what is the probability of getting a 4?', options: ['1/2', '1/4', '1/6', '1/3'], correctIndex: 2, explain: 'One favorable outcome out of six equally likely outcomes = 1/6.' },
+        { prompt: 'A coin is flipped twice. P(both heads) = ?', options: ['1/2', '1/3', '1/4', '1/8'], correctIndex: 2, explain: '(1/2) × (1/2) = 1/4 — independent events multiply.' },
+        { prompt: 'In a deck of 52 cards, P(drawing any heart) = ?', options: ['1/13', '1/4', '1/2', '1/52'], correctIndex: 1, explain: '13 hearts out of 52 cards = 13/52 = 1/4.' },
+        { prompt: 'If P(rain) = 0.3, then P(no rain) = ?', options: ['0.3', '0.5', '0.7', '1.3'], correctIndex: 2, explain: 'Complement: 1 − 0.3 = 0.7. Probabilities of complementary events sum to 1.' },
+        { prompt: 'Mean of {2, 4, 4, 6, 9} = ?', options: ['4', '4.5', '5', '5.5'], correctIndex: 2, explain: '(2+4+4+6+9)/5 = 25/5 = 5.' },
+        { prompt: 'Median of {3, 7, 1, 9, 4} = ?', options: ['3', '4', '5', '7'], correctIndex: 1, explain: 'Sorted: 1, 3, 4, 7, 9. Middle value = 4.' },
+        { prompt: 'Mode of {2, 3, 3, 5, 7} = ?', options: ['2', '3', '5', '7'], correctIndex: 1, explain: 'Mode = most frequently occurring. 3 appears twice.' }
+      ]
+    },
+    {
+      id: 'statistic_strike',
+      name: 'Statistic Strike',
+      element: 'logic',
+      icon: '\uD83D\uDCCA',
+      color: '#0891b2',
+      sourceTool: 'mathLab',
+      sourceLabel: 'Math Lab',
+      unlock: function(d) { return ((d.mathLab || {}).problemsSolved || 0) >= 15; },
+      unlockHint: 'Solve 15 Math Lab problems',
+      baseDamage: 28,
+      critMultiplier: 2,
+      flavor: 'A bar chart materializes mid-air and slams the foe with the average.',
+      challengeBank: [
+        { prompt: 'Range of {12, 4, 18, 7, 22, 9} = ?', options: ['10', '15', '18', '22'], correctIndex: 2, explain: 'Range = max − min = 22 − 4 = 18.' },
+        { prompt: 'A box plot shows...', options: ['only the mean', 'the five-number summary', 'a frequency table', 'percentages only'], correctIndex: 1, explain: 'Min, Q1, median, Q3, max — quartiles + extremes.' },
+        { prompt: 'In a normal distribution, ~68% of data falls within how many standard deviations of the mean?', options: ['1', '2', '3', '4'], correctIndex: 0, explain: 'Empirical rule: 68% within 1σ, 95% within 2σ, 99.7% within 3σ.' },
+        { prompt: 'Which measure of center is MOST affected by outliers?', options: ['median', 'mean', 'mode', 'range'], correctIndex: 1, explain: 'Mean shifts toward extreme values; median resists.' },
+        { prompt: 'A correlation of −0.9 means the variables are...', options: ['unrelated', 'weakly related', 'strongly negatively related', 'identical'], correctIndex: 2, explain: 'Close to −1 = strong inverse relationship.' },
+        { prompt: 'Which is a sample, not a population?', options: ['every student in the U.S.', 'every Maine 8th grader', '50 randomly chosen Maine 8th graders', 'every 8th grader who has ever lived'], correctIndex: 2, explain: 'A sample is a subset chosen from the population.' }
+      ]
+    },
+    {
+      id: 'defensive_ward',
+      name: 'Defensive Ward',
+      element: 'shield',
+      icon: '\uD83D\uDEE1\uFE0F',
+      color: '#0ea5e9',
+      sourceTool: 'roadReady',
+      sourceLabel: 'RoadReady',
+      unlock: function(d) { return ((d.roadReady || {}).permitTestPassed) === true; },
+      unlockHint: 'Pass the RoadReady permit test',
+      baseDamage: 20,
+      critMultiplier: 2.4,
+      flavor: 'Mirror, signal, blessing. The foe gets a polite warning before harm.',
+      challengeBank: [
+        { prompt: 'The minimum following distance recommended in good conditions is...', options: ['1 second', '2 seconds', '3 seconds', '10 seconds'], correctIndex: 2, explain: 'The 3-second rule — pick a fixed point, count after the car ahead passes it.' },
+        { prompt: 'You should check your blind spot by...', options: ['looking only at mirrors', 'turning your head briefly', 'closing your eyes', 'asking a passenger'], correctIndex: 1, explain: 'Mirrors miss the area beside your rear corners — head-check before lane changes.' },
+        { prompt: 'What does a flashing yellow light mean?', options: ['stop completely', 'proceed with caution', 'speed up', 'turn left only'], correctIndex: 1, explain: 'Caution — slow down and watch for hazards.' },
+        { prompt: 'When merging onto a highway, you should...', options: ['stop at the end of the ramp', 'match the speed of traffic', 'drive 10 mph slower than traffic', 'flash your brights'], correctIndex: 1, explain: 'Match traffic speed — merging slow forces others to brake.' },
+        { prompt: 'Hydroplaning is most likely when...', options: ['roads are dry', 'roads first get wet', 'snow has packed the surface', 'temperatures are below 0°F'], correctIndex: 1, explain: 'Oil + water + first rain = slickest moment. Slow down.' },
+        { prompt: 'Which is the SAFER following distance in heavy rain?', options: ['1 second', '2 seconds', '3 seconds', '4–6 seconds'], correctIndex: 3, explain: 'Doubling/tripling the 3-second rule accounts for stopping distance on wet roads.' }
+      ]
+    },
+    {
+      id: 'decoding_dirge',
+      name: 'Decoding Dirge',
+      element: 'sound',
+      icon: '\uD83C\uDFBC',
+      color: '#f97316',
+      sourceTool: 'wordSounds',
+      sourceLabel: 'Word Sounds',
+      unlock: function(d) { return ((d.wordSounds || {}).completedDrills || 0) >= 5; },
+      unlockHint: 'Complete 5 Word Sounds drills',
+      baseDamage: 24,
+      critMultiplier: 2,
+      flavor: 'Letters split into phonemes. The foe sounds out its own defeat.',
+      challengeBank: [
+        { prompt: 'The "sh" in "ship" is a...', options: ['blend', 'digraph', 'silent letter', 'diphthong'], correctIndex: 1, explain: 'Digraph — two letters making ONE sound (here /sh/).' },
+        { prompt: 'How many phonemes (sounds) are in "fish"?', options: ['2', '3', '4', '5'], correctIndex: 1, explain: '/f/ /i/ /sh/ — three phonemes (sh is one sound).' },
+        { prompt: 'Which is a CVC word?', options: ['cake', 'truck', 'sit', 'dream'], correctIndex: 2, explain: 'CVC = consonant-vowel-consonant. s-i-t fits.' },
+        { prompt: 'The "magic e" in "cake" makes the vowel sound...', options: ['short', 'long', 'silent', 'doubled'], correctIndex: 1, explain: 'Silent e signals the preceding vowel says its name (long sound).' },
+        { prompt: 'A blend like "st" in "stop" means...', options: ['both letters are silent', 'two letters with one combined sound', 'two letters where each sound is heard', 'a syllable break'], correctIndex: 2, explain: 'Blend = each consonant keeps its sound (/s/ + /t/).' },
+        { prompt: 'Which word has a long /e/ sound?', options: ['bed', 'see', 'set', 'best'], correctIndex: 1, explain: '"see" — the ee makes a long /e/. The others are short.' }
+      ]
+    },
+    {
+      id: 'syllable_seal',
+      name: 'Syllable Seal',
+      element: 'sound',
+      icon: '\uD83D\uDD21',
+      color: '#fb923c',
+      sourceTool: 'wordSounds',
+      sourceLabel: 'Word Sounds',
+      unlock: function(d) { return ((d.wordSounds || {}).completedDrills || 0) >= 12; },
+      unlockHint: 'Complete 12 Word Sounds drills',
+      baseDamage: 28,
+      critMultiplier: 2.1,
+      flavor: 'Words break apart at the syllable line and bind the foe in pieces.',
+      challengeBank: [
+        { prompt: 'How many syllables in "elephant"?', options: ['2', '3', '4', '5'], correctIndex: 1, explain: 'el-e-phant = 3 syllables.' },
+        { prompt: 'A "closed syllable" ends in...', options: ['a vowel', 'a consonant', 'silent e', 'two consonants'], correctIndex: 1, explain: 'Closed syllable: vowel followed by a consonant (cat, bug, run). Vowel = short.' },
+        { prompt: 'How many syllables in "happy"?', options: ['1', '2', '3', '4'], correctIndex: 1, explain: 'hap-py = 2 syllables. Each has a vowel sound.' },
+        { prompt: 'Which is an "open syllable"?', options: ['cat', 'go', 'fish', 'jump'], correctIndex: 1, explain: 'Open: ends in a vowel, says its long name (go, hi, me).' },
+        { prompt: 'Every syllable contains...', options: ['exactly two consonants', 'exactly one vowel sound', 'a silent letter', 'a digraph'], correctIndex: 1, explain: 'A syllable always has one vowel sound at its core.' },
+        { prompt: 'Compound word "sunshine" has how many syllables?', options: ['1', '2', '3', '4'], correctIndex: 1, explain: 'sun-shine = 2 syllables.' }
+      ]
+    },
+    {
+      id: 'paragraph_pact',
+      name: 'Paragraph Pact',
+      element: 'word',
+      icon: '\uD83D\uDCDD',
+      color: '#84cc16',
+      sourceTool: 'writeCraft',
+      sourceLabel: 'WriteCraft',
+      unlock: function(d) { return ((d.writeCraft || {}).draftsCompleted || 0) >= 2; },
+      unlockHint: 'Complete 2 WriteCraft drafts',
+      baseDamage: 26,
+      critMultiplier: 2.1,
+      flavor: 'Topic, support, transition, conclusion. The foe is structurally outranked.',
+      challengeBank: [
+        { prompt: 'A paragraph usually starts with a...', options: ['conclusion', 'topic sentence', 'quotation', 'list'], correctIndex: 1, explain: 'Topic sentence states the main idea; everything else supports it.' },
+        { prompt: 'Which transition word shows CONTRAST?', options: ['therefore', 'however', 'similarly', 'finally'], correctIndex: 1, explain: 'However signals a shift; therefore = cause, similarly = comparison, finally = sequence.' },
+        { prompt: 'Evidence in writing usually appears as...', options: ['only personal opinion', 'examples, quotes, or data', 'only emojis', 'questions'], correctIndex: 1, explain: 'Strong writing supports claims with concrete evidence.' },
+        { prompt: 'A "claim" in argument writing is...', options: ['a fact you cannot question', 'your debatable position', 'someone else\'s opinion only', 'a list of dates'], correctIndex: 1, explain: 'Claim = your stance — must be debatable AND supportable.' },
+        { prompt: 'Which sentence is a strong topic sentence?', options: ['I will tell you about dogs.', 'Dogs make excellent companions because of their loyalty and intelligence.', 'Dogs.', 'My dog is named Max.'], correctIndex: 1, explain: 'Specific, debatable, previews reasons.' },
+        { prompt: 'A 5-paragraph essay typically has how many BODY paragraphs?', options: ['1', '2', '3', '5'], correctIndex: 2, explain: 'Intro + 3 body + conclusion = 5 paragraphs.' }
+      ]
+    },
+    {
+      id: 'dialogue_dart',
+      name: 'Dialogue Dart',
+      element: 'word',
+      icon: '\uD83D\uDCAC',
+      color: '#65a30d',
+      sourceTool: 'writeCraft',
+      sourceLabel: 'WriteCraft',
+      unlock: function(d) { return ((d.writeCraft || {}).draftsCompleted || 0) >= 5; },
+      unlockHint: 'Complete 5 WriteCraft drafts',
+      baseDamage: 22,
+      critMultiplier: 2.4,
+      flavor: 'Quoted speech turns sharp. The foe is interrupted mid-sentence.',
+      challengeBank: [
+        { prompt: 'Which is correctly punctuated dialogue?', options: ['"Hello," she said.', '"Hello" she said.', '"Hello" she said,', '"Hello", she said'], correctIndex: 0, explain: 'Comma INSIDE the quotes when a speaker tag follows.' },
+        { prompt: 'In dialogue, every new speaker gets a...', options: ['new chapter', 'new paragraph', 'new font', 'new page'], correctIndex: 1, explain: 'Standard: each speaker change = new paragraph for clarity.' },
+        { prompt: 'Which is a "show, don\'t tell" version of "She was angry"?', options: ['She felt very mad.', 'She was extremely angry.', 'She slammed the door, jaw tight.', 'She was angry, very angry.'], correctIndex: 2, explain: 'Show through action and detail; let the reader infer the emotion.' },
+        { prompt: 'A dialogue tag is the...', options: ['punctuation', 'phrase identifying who spoke', 'description of setting', 'quoted thought'], correctIndex: 1, explain: 'Tag = "she said," "he asked," etc. — pairs the line with a speaker.' },
+        { prompt: 'Which weakens dialogue?', options: ['speaking in the character\'s voice', 'using "said" most of the time', 'long info-dumps mid-conversation', 'short, varied lines'], correctIndex: 2, explain: 'Info-dumps make characters sound like narrators. Keep talk natural.' },
+        { prompt: 'Which is more vivid?', options: ['"Yes," he said happily.', '"Yes!" he grinned, already grabbing his coat.', '"Yes" he agreed positively.', '"Yes," he was happy.'], correctIndex: 1, explain: 'Action beat + body language > explaining the emotion in the tag.' }
+      ]
+    },
+    {
+      id: 'annotation_aegis',
+      name: 'Annotation Aegis',
+      element: 'mind',
+      icon: '\uD83D\uDD0D',
+      color: '#3b82f6',
+      sourceTool: 'immersiveReader',
+      sourceLabel: 'Immersive Reader',
+      unlock: function(d) { return ((d.immersiveReader || {}).sessionsCompleted || 0) >= 3; },
+      unlockHint: 'Complete 3 Immersive Reader sessions',
+      baseDamage: 24,
+      critMultiplier: 2.2,
+      flavor: 'Highlighter-purple glyphs flicker over the foe, exposing every weak point.',
+      challengeBank: [
+        { prompt: 'Annotating a text means...', options: ['memorizing every word', 'making notes, marks, and questions on the text', 'reading silently with no marks', 'only highlighting nouns'], correctIndex: 1, explain: 'Active marking — questions, summaries, vocabulary, connections.' },
+        { prompt: 'Which is the BEST annotation for an unfamiliar word?', options: ['Cross it out', 'Write a synonym in the margin', 'Skip it', 'Underline twice'], correctIndex: 1, explain: 'Margin synonym keeps you in the text and builds vocabulary.' },
+        { prompt: 'Marking the main idea of a paragraph helps you...', options: ['waste time', 'skim later for key points', 'rewrite the text', 'make the page shorter'], correctIndex: 1, explain: 'Annotated main ideas are recall-anchors during review.' },
+        { prompt: 'A "?" in the margin usually means...', options: ['interesting fact', 'I disagree', 'I don\'t understand this', 'this is the title'], correctIndex: 2, explain: 'Question mark flags confusion to revisit later.' },
+        { prompt: 'Which is NOT a useful annotation?', options: ['summary in your own words', 'connection to other texts', 'a smiley face every paragraph', 'argument response in margin'], correctIndex: 2, explain: 'Smiley spam adds no comprehension benefit.' },
+        { prompt: 'When using digital annotation tools, what should you do BEFORE moving to a new text?', options: ['nothing', 'export or save your notes', 'delete all annotations', 'rename the file'], correctIndex: 1, explain: 'Saving preserves the cognitive trail for review.' }
+      ]
+    },
+    {
+      id: 'summary_sigil',
+      name: 'Summary Sigil',
+      element: 'mind',
+      icon: '\uD83D\uDCCB',
+      color: '#1d4ed8',
+      sourceTool: 'immersiveReader',
+      sourceLabel: 'Immersive Reader',
+      unlock: function(d) { return ((d.immersiveReader || {}).sessionsCompleted || 0) >= 6; },
+      unlockHint: 'Complete 6 Immersive Reader sessions',
+      baseDamage: 28,
+      critMultiplier: 2,
+      flavor: 'A perfect single-sentence distillation strikes the foe at its thesis.',
+      challengeBank: [
+        { prompt: 'A good summary is mainly...', options: ['longer than the original', 'in the original\'s own words', 'in your own words, capturing the gist', 'a list of every detail'], correctIndex: 2, explain: 'Paraphrased + condensed; tests true understanding.' },
+        { prompt: 'Which detail belongs in a summary?', options: ['the main argument', 'an obscure example', 'the author\'s middle name', 'the pagination'], correctIndex: 0, explain: 'Summaries focus on main ideas, not trivia.' },
+        { prompt: 'When summarizing, you should...', options: ['copy whole sentences', 'paraphrase using synonyms + restructured sentences', 'skip the conclusion', 'invent extra details'], correctIndex: 1, explain: 'Paraphrasing builds comprehension; copying = plagiarism.' },
+        { prompt: 'Which is a "main idea" sentence?', options: ['It rained yesterday.', 'Climate change threatens coastal cities through rising seas.', 'Some say.', 'Page 12 is interesting.'], correctIndex: 1, explain: 'States the central claim with specifics.' },
+        { prompt: 'A summary should be __ than the original.', options: ['longer', 'shorter', 'the exact same length', 'twice as long'], correctIndex: 1, explain: 'Compression is the point — typically 10-25% of length.' },
+        { prompt: 'When you finish a chapter, summarizing in your own words is an example of...', options: ['skimming', 'retrieval practice', 'outlining', 'transcribing'], correctIndex: 1, explain: 'You pull the ideas back from memory — strongest learning evidence.' }
+      ]
+    },
+    {
+      id: 'accuracy_aura',
+      name: 'Accuracy Aura',
+      element: 'precision',
+      icon: '\uD83C\uDFAF',
+      color: '#ec4899',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) { return ((d.typingPractice || {}).sessionsCompleted || 0) >= 4; },
+      unlockHint: 'Complete 4 Typing sessions',
+      baseDamage: 22,
+      critMultiplier: 2.3,
+      flavor: 'No backspaces. Every character a clean, lethal keystroke.',
+      challengeBank: [
+        { prompt: 'Typing accuracy is calculated as...', options: ['words ÷ minutes', 'correct chars ÷ total chars × 100', 'mistakes only', 'time × WPM'], correctIndex: 1, explain: 'Accuracy = % of characters typed correctly.' },
+        { prompt: 'WPM stands for...', options: ['Words Per Minute', 'Writing Per Minute', 'Word Pattern Math', 'Wonder Per Minute'], correctIndex: 0, explain: 'Standard speed metric in typing tests.' },
+        { prompt: 'Which finger types the letter "F"?', options: ['left index', 'left middle', 'right index', 'right pinky'], correctIndex: 0, explain: 'Left index — F has the home-row bump for orientation.' },
+        { prompt: 'What\'s the average typing speed for adults?', options: ['10 WPM', '40 WPM', '120 WPM', '500 WPM'], correctIndex: 1, explain: '~40 WPM is average; 60+ is fast; 100+ is professional.' },
+        { prompt: 'The home row keys for the LEFT hand are...', options: ['Q W E R', 'A S D F', 'Z X C V', '1 2 3 4'], correctIndex: 1, explain: 'A S D F — fingers rest here in default position.' },
+        { prompt: 'To type accurately, you should focus on...', options: ['speed only', 'correctness first, then speed', 'using only one finger', 'keyboard appearance'], correctIndex: 1, explain: 'Accuracy first builds muscle memory; speed grows naturally.' }
+      ]
+    },
+    {
+      id: 'qwerty_quake',
+      name: 'QWERTY Quake',
+      element: 'precision',
+      icon: '\u2328\uFE0F',
+      color: '#db2777',
+      sourceTool: 'typingPractice',
+      sourceLabel: 'Typing Practice',
+      unlock: function(d) { return ((d.typingPractice || {}).bestWPM || 0) >= 30; },
+      unlockHint: 'Reach 30 WPM in Typing Practice',
+      baseDamage: 30,
+      critMultiplier: 2.1,
+      flavor: 'A keyboard rumbles open beneath the foe — the letters spell their fate.',
+      challengeBank: [
+        { prompt: 'The QWERTY layout was originally designed to...', options: ['speed up typing', 'prevent typewriter jams', 'help kids learn', 'fit small keyboards'], correctIndex: 1, explain: 'Christopher Sholes laid it out so common letter pairs were apart, reducing jams.' },
+        { prompt: 'An alternative keyboard layout designed for efficiency is called...', options: ['Dvorak', 'Cyrillic', 'Klingon', 'Morse'], correctIndex: 0, explain: 'Dvorak places vowels on the home row; some claim faster typing.' },
+        { prompt: 'On QWERTY, which key is to the LEFT of "S"?', options: ['A', 'D', 'W', 'Q'], correctIndex: 0, explain: 'A — left of S on the home row.' },
+        { prompt: 'The space bar is typically pressed by your...', options: ['pinky', 'ring finger', 'thumb', 'index'], correctIndex: 2, explain: 'Either thumb. The longest, strongest digit handles the most-used key.' },
+        { prompt: 'Touch typing means typing without...', options: ['using a mouse', 'looking at the keys', 'making sound', 'a chair'], correctIndex: 1, explain: 'Eyes on the screen, fingers on home row, by feel.' },
+        { prompt: 'A typing GOAL for an 8th grader is roughly...', options: ['10 WPM', '25-35 WPM', '60-80 WPM', '120+ WPM'], correctIndex: 1, explain: '25-35 WPM is a reasonable middle-school target; varies by student.' }
+      ]
+    }
+  ,
+    {
       id: 'ready_words',
       name: 'Ready Words',
       element: 'word',
@@ -603,20 +870,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   ];
 
   // ═══════════════════════════════════════════════════════════════
-  // ENEMIES — expanded pool
+  // ENEMIES — expanded sector-themed roster
+  // Each enemy is tagged with sectors[] so buildRoomsPlan samples from the
+  // correct themed pool. Crystal Nebula = cosmic, Whispering Archive =
+  // literary/glyphic, Ember Clockwork = math/logic/mechanical.
   // ═══════════════════════════════════════════════════════════════
   var ENEMIES = [
-    { id: 'void_imp',     name: 'Void Imp',        icon: '\uD83D\uDC7E', hp: 40,  atk: 8,  flavor: 'A mischievous wisp of nothingness.' },
-    { id: 'data_gremlin', name: 'Data Gremlin',    icon: '\uD83D\uDC79', hp: 55,  atk: 11, flavor: 'Corrupts your grimoire if given the chance.' },
-    { id: 'star_wraith',  name: 'Star Wraith',     icon: '\uD83D\uDC7B', hp: 70,  atk: 14, flavor: 'A remnant of a collapsed star.' },
-    { id: 'rune_moth',    name: 'Rune Moth',       icon: '\uD83E\uDD8B', hp: 35,  atk: 10, flavor: 'Fragile but quick \u2014 flutters through logic.' },
-    { id: 'signal_shade', name: 'Signal Shade',    icon: '\uD83D\uDC7A', hp: 60,  atk: 12, flavor: 'A phantom of distorted transmission.' },
-    { id: 'glyph_golem',  name: 'Glyph Golem',     icon: '\uD83D\uDDFF', hp: 85,  atk: 13, flavor: 'Slow, heavy, inscribed with forgotten runes.' },
-    { id: 'spiral_spook', name: 'Spiral Spook',    icon: '\uD83C\uDF00', hp: 65,  atk: 12, flavor: 'A recursive echo that repeats itself.' },
+    // ── Crystal Nebula (cosmic theme) ──
+    { id: 'void_imp', name: 'Void Imp', icon: '\uD83D\uDC7E', hp: 40, atk: 8, flavor: 'A mischievous wisp of nothingness.', sectors: ['crystal_nebula'] },
+    { id: 'star_wraith', name: 'Star Wraith', icon: '\uD83D\uDC7B', hp: 70, atk: 14, flavor: 'A remnant of a collapsed star.', sectors: ['crystal_nebula'] },
+    { id: 'signal_shade', name: 'Signal Shade', icon: '\uD83D\uDC7A', hp: 60, atk: 12, flavor: 'A phantom of distorted transmission.', sectors: ['crystal_nebula'] },
+    { id: 'comet_specter', name: 'Comet Specter', icon: '\u2604\uFE0F', hp: 50, atk: 13, flavor: 'A streaking ghost of frozen ammonia.', sectors: ['crystal_nebula'] },
+    { id: 'nebula_drake', name: 'Nebula Drake', icon: '\uD83D\uDC09', hp: 95, atk: 12, flavor: 'A slow-bodied drift coiled in stardust.', sectors: ['crystal_nebula'] },
+    { id: 'ion_wisp', name: 'Ion Wisp', icon: '\u26A1', hp: 30, atk: 15, flavor: 'Tiny, electric, painfully eager.', sectors: ['crystal_nebula'] },
+    { id: 'gravity_whisper', name: 'Gravity Whisper', icon: '\uD83C\uDF0C', hp: 60, atk: 11, flavor: 'A pull where there should be empty space.', sectors: ['crystal_nebula'] },
+    { id: 'void_jellyfish', name: 'Void Jellyfish', icon: '\uD83E\uDEBC', hp: 45, atk: 10, flavor: 'Translucent, slow, sting-laced ribbons.', sectors: ['crystal_nebula'] },
+    // ── Whispering Archive (literary/glyphic theme) ──
+    { id: 'rune_moth', name: 'Rune Moth', icon: '\uD83E\uDD8B', hp: 35, atk: 10, flavor: 'Fragile but quick — flutters through logic.', sectors: ['whispering_archive'] },
+    { id: 'glyph_golem', name: 'Glyph Golem', icon: '\uD83D\uDDFF', hp: 85, atk: 13, flavor: 'Slow, heavy, inscribed with forgotten runes.', sectors: ['whispering_archive'] },
+    { id: 'syntax_serpent', name: 'Syntax Serpent', icon: '\uD83D\uDC0D', hp: 55, atk: 13, flavor: 'Coils of clauses that bite back at fragments.', sectors: ['whispering_archive'] },
+    { id: 'marginalia_phantom', name: 'Marginalia Phantom', icon: '\uD83D\uDCDC', hp: 50, atk: 11, flavor: 'A note that scribbled itself into a body.', sectors: ['whispering_archive'] },
+    { id: 'ink_revenant', name: 'Ink Revenant', icon: '\uD83D\uDD8B\uFE0F', hp: 80, atk: 12, flavor: 'A walking puddle of unsaid words.', sectors: ['whispering_archive'] },
+    { id: 'footnote_familiar', name: 'Footnote Familiar', icon: '\uD83D\uDD16', hp: 30, atk: 9, flavor: 'A small annotation with sharp opinions.', sectors: ['whispering_archive'] },
+    { id: 'scribe_specter', name: 'Scribe Specter', icon: '\u270D\uFE0F', hp: 65, atk: 12, flavor: 'A copyist who never finished one final book.', sectors: ['whispering_archive'] },
+    { id: 'dactyl_demon', name: 'Dactyl Demon', icon: '\uD83D\uDC7F', hp: 45, atk: 14, flavor: 'A meter-stomping rhythm that hits on stress.', sectors: ['whispering_archive'] },
+    // ── Ember Clockwork (math/logic/mechanical theme) ──
+    { id: 'data_gremlin', name: 'Data Gremlin', icon: '\uD83D\uDC79', hp: 55, atk: 11, flavor: 'Corrupts your grimoire if given the chance.', sectors: ['ember_clockwork'] },
+    { id: 'spiral_spook', name: 'Spiral Spook', icon: '\uD83C\uDF00', hp: 65, atk: 12, flavor: 'A recursive echo that repeats itself.', sectors: ['ember_clockwork'] },
+    { id: 'cog_wraith', name: 'Cog Wraith', icon: '\u2699\uFE0F', hp: 75, atk: 13, flavor: 'A clockwork ghost spinning out of true.', sectors: ['ember_clockwork'] },
+    { id: 'fraction_shade', name: 'Fraction Shade', icon: '\u00BD', hp: 50, atk: 11, flavor: 'A half of something that wants to be whole.', sectors: ['ember_clockwork'] },
+    { id: 'equation_eel', name: 'Equation Eel', icon: '\u2248', hp: 60, atk: 14, flavor: 'Long, slick, balanced — then suddenly not.', sectors: ['ember_clockwork'] },
+    { id: 'theorem_thug', name: 'Theorem Thug', icon: '\uD83D\uDCD0', hp: 90, atk: 13, flavor: 'A tank of axioms with QED on its knuckles.', sectors: ['ember_clockwork'] },
+    { id: 'axiom_eater', name: 'Axiom Eater', icon: '\uD83D\uDC7B', hp: 70, atk: 12, flavor: 'Devours postulates and burps them out reversed.', sectors: ['ember_clockwork'] },
+    { id: 'modulus_mite', name: 'Modulus Mite', icon: '\uD83D\uDD27', hp: 35, atk: 13, flavor: 'Tiny remainder of a divided foe.', sectors: ['ember_clockwork'] },
     // ── Bosses ──
-    { id: 'lichcopy',      name: 'The Lichcopy',    icon: '\uD83D\uDC80', hp: 120, atk: 18, flavor: 'A mirror-self of AlloBot gone cold.', boss: true },
-    { id: 'void_leviathan',name: 'Void Leviathan',  icon: '\uD83D\uDC32', hp: 140, atk: 17, flavor: 'A drifting titan of cosmic silence.', boss: true },
-    { id: 'paradox_clone', name: 'The Paradox Clone', icon: '\uD83D\uDD78\uFE0F', hp: 130, atk: 19, flavor: 'An impossible contradiction of AlloBot\u2019s runes.', boss: true }
+    // Crystal Nebula bosses
+    { id: 'lichcopy', name: 'The Lichcopy', icon: '\uD83D\uDC80', hp: 120, atk: 18, flavor: 'A mirror-self of AlloBot gone cold.', sectors: ['crystal_nebula'], boss: true },
+    { id: 'void_leviathan', name: 'Void Leviathan', icon: '\uD83D\uDC32', hp: 140, atk: 17, flavor: 'A drifting titan of cosmic silence.', sectors: ['crystal_nebula'], boss: true },
+    { id: 'starless_oracle', name: 'The Starless Oracle', icon: '\uD83D\uDD2E', hp: 130, atk: 19, flavor: 'It saw your spell before you cast it.', sectors: ['crystal_nebula'], boss: true },
+    // Whispering Archive bosses
+    { id: 'paradox_clone', name: 'The Paradox Clone', icon: '\uD83D\uDD78\uFE0F', hp: 130, atk: 19, flavor: 'An impossible contradiction of AlloBot’s runes.', sectors: ['whispering_archive'], boss: true },
+    { id: 'tome_tyrant', name: 'The Tome Tyrant', icon: '\uD83D\uDCD8', hp: 145, atk: 16, flavor: 'A book heavy enough to read its readers.', sectors: ['whispering_archive'], boss: true },
+    { id: 'gnomon_grandmaster', name: 'The Gnomon Grandmaster', icon: '\u23F3', hp: 125, atk: 18, flavor: 'Casts shadows of arguments you cannot answer.', sectors: ['whispering_archive'], boss: true },
+    // Ember Clockwork bosses
+    { id: 'equilibrium_engine', name: 'Equilibrium Engine', icon: '\u2696\uFE0F', hp: 150, atk: 17, flavor: 'A perfect balance, hostile to imbalance.', sectors: ['ember_clockwork'], boss: true },
+    { id: 'prime_progenitor', name: 'The Prime Progenitor', icon: '\u2734\uFE0F', hp: 135, atk: 19, flavor: 'Indivisible. Annoyed by composites.', sectors: ['ember_clockwork'], boss: true },
+    { id: 'entropy_emperor', name: 'The Entropy Emperor', icon: '\uD83D\uDD25', hp: 160, atk: 18, flavor: 'Disorder, crowned and ascending.', sectors: ['ember_clockwork'], boss: true },
   ];
 
   // ═══════════════════════════════════════════════════════════════
@@ -632,7 +931,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       bgGradient: 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)',
       accent: '#a855f7',
       essenceMult: 1.0,
-      bossPool: ['lichcopy'],
+      bossPool: ['lichcopy', 'void_leviathan', 'starless_oracle'],
       unlockAt: 0,
       flavor: 'Where AlloBot first learned to spark a spell. Gentle, but full of lessons.'
     },
@@ -643,7 +942,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       bgGradient: 'linear-gradient(135deg, #7c2d12 0%, #b45309 100%)',
       accent: '#f59e0b',
       essenceMult: 1.15,
-      bossPool: ['paradox_clone', 'lichcopy'],
+      bossPool: ['paradox_clone', 'tome_tyrant', 'gnomon_grandmaster'],
       unlockAt: 1,
       flavor: 'Literary spells ring louder here. Pages turn on their own.'
     },
@@ -654,7 +953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       bgGradient: 'linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%)',
       accent: '#38bdf8',
       essenceMult: 1.3,
-      bossPool: ['void_leviathan', 'paradox_clone'],
+      bossPool: ['equilibrium_engine', 'prime_progenitor', 'entropy_emperor'],
       unlockAt: 3,
       flavor: 'The hardest trials \u2014 but the richest essence. Masters only.'
     }
@@ -681,7 +980,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   // Room 0: combat (easy). Room 1: 40% shrine / 60% combat (scaled). Room 2: boss (from sector pool).
   function buildRoomsPlan(sectorId) {
     var sector = sectorById(sectorId);
-    var nonBoss = ENEMIES.filter(function(e) { return !e.boss; });
+    // Sector-themed normal pool: enemy must list this sector in sectors[].
+    // Fallback to all non-boss enemies if (somehow) the pool is empty.
+    var nonBoss = ENEMIES.filter(function(e) {
+      return !e.boss && e.sectors && e.sectors.indexOf(sectorId) !== -1;
+    });
+    if (nonBoss.length === 0) nonBoss = ENEMIES.filter(function(e) { return !e.boss; });
     var bossCandidates = ENEMIES.filter(function(e) {
       return e.boss && sector.bossPool.indexOf(e.id) !== -1;
     });
