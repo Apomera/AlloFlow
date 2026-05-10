@@ -290,6 +290,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const [localIsFlying, setLocalIsFlying] = useState(false);
   const [isLanding, setIsLanding] = useState(false);
   const [moveDuration, setMoveDuration] = useState(700);
+  const [isCelebrating, setIsCelebrating] = useState(false);
   const speechGenerationRef = useRef(0);
   const prevDragPos = useRef({ x: 0, y: 0 });
   const [dragRotation, setDragRotation] = useState(0);
@@ -764,6 +765,23 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       }
     }
   }, [canPlayIntro, onBotIntroSeen, speak, isTalking, customMessage, t]);
+  useEffect(() => {
+    const onCelebrate = (e) => {
+      const detail = (e && e.detail) || {};
+      const kind = detail.kind || 'backflip';
+      const wantConfetti = detail.confetti !== false;
+      if (wantConfetti) {
+        const burstId = Date.now() + Math.random();
+        setBursts(prev => [...prev, { id: burstId }]);
+      }
+      if (kind === 'backflip') {
+        setIsCelebrating(true);
+        setTimeout(() => setIsCelebrating(false), 1300);
+      }
+    };
+    window.addEventListener('alloflow:bot-celebrate', onCelebrate);
+    return () => window.removeEventListener('alloflow:bot-celebrate', onCelebrate);
+  }, []);
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
        if (isSleeping) {
@@ -1427,6 +1445,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         .animate-zzz { animation: zzz-float 2.5s infinite linear; }
         .animate-allo-float { animation: allo-float 3s ease-in-out infinite; }
         .animate-allo-puff { animation: allo-puff 0.4s ease-out forwards; }
+        .animate-allo-backflip { animation: allo-backflip 1.2s ease-in-out 1; }
         .animate-jetpack-flame { animation: jetpack-flame 0.1s ease-in-out infinite; transform-origin: top; }
         .animate-bot-fly-tilt { animation: bot-fly-tilt 2s ease-in-out infinite; }
         .animate-bot-land { animation: bot-land 0.5s ease-out forwards; }
@@ -1596,7 +1615,7 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
               />
           ))}
           <div
-            className={`relative drop-shadow-2xl ${!isFlightActive ? "animate-bot-breathe" : ""}`}
+            className={`relative drop-shadow-2xl ${!isFlightActive ? "animate-bot-breathe" : ""} ${isCelebrating ? "animate-allo-backflip" : ""}`}
             style={{
                 filter: trailFilter,
                 transition: 'filter 0.3s ease',
@@ -2139,6 +2158,155 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                                 <circle cx="16" cy="46" r="6" fill="rgba(147, 197, 253, 0.15)">
                                     <animate attributeName="opacity" values="0.1;0.25;0.1" dur="3s" repeatCount="indefinite" />
                                 </circle>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'historian' && (
+                            <g className="animate-in fade-in slide-in-from-left-3 duration-500" transform="translate(-22, 38)">
+                                <ellipse cx="14" cy="48" rx="18" ry="3" fill="#7C2D12" opacity="0.25" />
+                                <g transform="rotate(-14 6 32)">
+                                    <rect x="-4" y="14" width="20" height="26" rx="1" fill="#FEF3C7" stroke="#92400E" strokeWidth="1" />
+                                    <line x1="0" y1="20" x2="12" y2="20" stroke="#78350F" strokeWidth="0.6" />
+                                    <line x1="0" y1="24" x2="12" y2="24" stroke="#78350F" strokeWidth="0.6" />
+                                    <line x1="0" y1="28" x2="10" y2="28" stroke="#78350F" strokeWidth="0.6" />
+                                    <line x1="0" y1="32" x2="12" y2="32" stroke="#78350F" strokeWidth="0.6" />
+                                    <line x1="0" y1="36" x2="9" y2="36" stroke="#78350F" strokeWidth="0.6" />
+                                </g>
+                                <g>
+                                    <rect x="4" y="12" width="20" height="26" rx="1" fill="#FFFBEB" stroke="#7C2D12" strokeWidth="1" />
+                                    <circle cx="20" cy="16" r="2" fill="#DC2626" stroke="#7F1D1D" strokeWidth="0.5" />
+                                    <path d="M19 15 L21 15 M20 14 L20 16" stroke="#FECACA" strokeWidth="0.4" />
+                                    <line x1="7" y1="22" x2="17" y2="22" stroke="#7C2D12" strokeWidth="0.6" />
+                                    <line x1="7" y1="26" x2="18" y2="26" stroke="#7C2D12" strokeWidth="0.6" />
+                                    <line x1="7" y1="30" x2="15" y2="30" stroke="#7C2D12" strokeWidth="0.6" />
+                                    <line x1="7" y1="34" x2="17" y2="34" stroke="#7C2D12" strokeWidth="0.6" />
+                                </g>
+                                <g transform="rotate(14 22 32)">
+                                    <rect x="12" y="14" width="20" height="26" rx="1" fill="#FED7AA" stroke="#9A3412" strokeWidth="1" />
+                                    <line x1="16" y1="20" x2="28" y2="20" stroke="#9A3412" strokeWidth="0.6" />
+                                    <line x1="16" y1="24" x2="28" y2="24" stroke="#9A3412" strokeWidth="0.6" />
+                                    <line x1="16" y1="28" x2="26" y2="28" stroke="#9A3412" strokeWidth="0.6" />
+                                </g>
+                                <g>
+                                    <path d="M 22 8 Q 30 -2 34 -10" stroke="#1F2937" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                                    <path d="M 20 10 Q 28 0 34 -10 Q 32 -2 28 6 Q 24 10 20 10 Z" fill="#0F172A" stroke="#1F2937" strokeWidth="0.5" opacity="0.85">
+                                        <animateTransform attributeName="transform" type="rotate" values="0 22 8;3 22 8;0 22 8;-3 22 8;0 22 8" dur="6s" repeatCount="indefinite" />
+                                    </path>
+                                    <circle cx="22" cy="9" r="1.4" fill="#1E40AF" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'teacher-stack' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <rect x="22" y="22" width="56" height="10" rx="1.5" fill="#FCD34D" stroke="#B45309" strokeWidth="1" transform="rotate(-4 50 27)" />
+                                <line x1="28" y1="27" x2="44" y2="27" stroke="#B45309" strokeWidth="0.6" transform="rotate(-4 50 27)" />
+                                <line x1="58" y1="27" x2="72" y2="27" stroke="#B45309" strokeWidth="0.6" transform="rotate(-4 50 27)" />
+                                <rect x="20" y="14" width="56" height="10" rx="1.5" fill="#FDE68A" stroke="#92400E" strokeWidth="1" transform="rotate(3 50 19)" />
+                                <line x1="26" y1="19" x2="50" y2="19" stroke="#92400E" strokeWidth="0.6" transform="rotate(3 50 19)" />
+                                <rect x="24" y="6" width="52" height="10" rx="1.5" fill="#FFFBEB" stroke="#78350F" strokeWidth="1" transform="rotate(-2 50 11)" />
+                                <line x1="30" y1="11" x2="48" y2="11" stroke="#78350F" strokeWidth="0.5" transform="rotate(-2 50 11)" />
+                                <circle cx="68" cy="2" r="5" fill="#DC2626" stroke="#991B1B" strokeWidth="1" />
+                                <path d="M 67 -2 Q 70 -4 72 -1" stroke="#16A34A" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                                <path d="M 66 -3 L 68 -2" stroke="#365314" strokeWidth="1" strokeLinecap="round" />
+                                <ellipse cx="66" cy="0" rx="1.5" ry="0.7" fill="#FECACA" opacity="0.7" />
+                            </g>
+                        )}
+                        {effectiveAccessory === 'scholar-specs' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-500 origin-center">
+                                <circle cx="38" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
+                                <circle cx="62" cy="48" r="9" fill="rgba(219, 234, 254, 0.25)" stroke="#1F2937" strokeWidth="1.5" />
+                                <path d="M 47 48 Q 50 45 53 48" stroke="#1F2937" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+                                <path d="M 29 47 Q 24 45 22 47" stroke="#1F2937" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                                <path d="M 71 47 Q 76 45 78 47" stroke="#1F2937" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+                                <ellipse cx="35" cy="46" rx="2.5" ry="1.4" fill="white" opacity="0.55" />
+                                <ellipse cx="59" cy="46" rx="2.5" ry="1.4" fill="white" opacity="0.55" />
+                                <g transform="translate(-26, 56)">
+                                    <path d="M 0 0 L 28 0 L 28 18 L 0 18 Z" fill="#FFFBEB" stroke="#78350F" strokeWidth="1" />
+                                    <path d="M 14 0 L 14 18" stroke="#78350F" strokeWidth="0.8" />
+                                    <line x1="3" y1="4" x2="11" y2="4" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="3" y1="7" x2="12" y2="7" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="3" y1="10" x2="10" y2="10" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="3" y1="13" x2="11" y2="13" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="17" y1="4" x2="25" y2="4" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="17" y1="7" x2="24" y2="7" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="17" y1="10" x2="25" y2="10" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="17" y1="13" x2="23" y2="13" stroke="#92400E" strokeWidth="0.5" />
+                                    <path d="M -2 0 L 30 0 L 30 -2 L -2 -2 Z" fill="#7C2D12" stroke="#451A03" strokeWidth="0.8" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'thinking-cap' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path d="M 28 26 Q 25 8 50 6 Q 75 8 72 26 Z" fill="#7C3AED" stroke="#5B21B6" strokeWidth="1.5" />
+                                <path d="M 28 26 Q 50 30 72 26" stroke="#4C1D95" strokeWidth="2" fill="none" />
+                                <ellipse cx="50" cy="6" rx="4" ry="2" fill="#A78BFA" opacity="0.5" />
+                                <g transform="translate(50, 0)">
+                                    <ellipse cx="0" cy="-4" rx="5" ry="6" fill="#FEF08A" stroke="#CA8A04" strokeWidth="1" />
+                                    <ellipse cx="-1.5" cy="-6" rx="1.5" ry="2" fill="#FFFBEB" opacity="0.7" />
+                                    <rect x="-2.5" y="1" width="5" height="2" rx="0.5" fill="#94A3B8" />
+                                    <rect x="-2" y="3" width="4" height="1.5" rx="0.5" fill="#64748B" />
+                                    <circle cx="0" cy="-4" r="9" fill="#FEF08A" opacity="0.18">
+                                        <animate attributeName="opacity" values="0.1;0.32;0.1" dur="2.4s" repeatCount="indefinite" />
+                                        <animate attributeName="r" values="8;11;8" dur="2.4s" repeatCount="indefinite" />
+                                    </circle>
+                                </g>
+                                <g>
+                                    <g>
+                                        <path d="M 0 -2 L 0.6 -0.6 L 2 0 L 0.6 0.6 L 0 2 L -0.6 0.6 L -2 0 L -0.6 -0.6 Z" fill="#FBBF24" stroke="#D97706" strokeWidth="0.4" transform="translate(70 -8)" />
+                                    </g>
+                                    <animateTransform attributeName="transform" type="rotate" from="0 50 -2" to="360 50 -2" dur="9s" repeatCount="indefinite" />
+                                </g>
+                                <g>
+                                    <g>
+                                        <path d="M 0 -1.6 L 0.5 -0.5 L 1.6 0 L 0.5 0.5 L 0 1.6 L -0.5 0.5 L -1.6 0 L -0.5 -0.5 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="0.4" transform="translate(74 -2)" />
+                                    </g>
+                                    <animateTransform attributeName="transform" type="rotate" from="120 50 -2" to="480 50 -2" dur="11s" repeatCount="indefinite" />
+                                </g>
+                                <g>
+                                    <g>
+                                        <path d="M 0 -1.4 L 0.45 -0.45 L 1.4 0 L 0.45 0.45 L 0 1.4 L -0.45 0.45 L -1.4 0 L -0.45 -0.45 Z" fill="#60A5FA" stroke="#1E40AF" strokeWidth="0.4" transform="translate(72 4)" />
+                                    </g>
+                                    <animateTransform attributeName="transform" type="rotate" from="240 50 -2" to="600 50 -2" dur="8s" repeatCount="indefinite" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'sorting-cubes' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <ellipse cx="50" cy="32" rx="22" ry="3" fill="#1F2937" opacity="0.18" />
+                                <g transform="translate(38 18) rotate(-6)">
+                                    <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#3B82F6" stroke="#1E3A8A" strokeWidth="1" />
+                                    <path d="M 0 0 L 14 0 L 14 14" stroke="#60A5FA" strokeWidth="1" fill="none" opacity="0.6" />
+                                    <circle cx="4" cy="4" r="1" fill="#DBEAFE" opacity="0.7" />
+                                </g>
+                                <g transform="translate(46 6) rotate(8)">
+                                    <rect x="0" y="0" width="14" height="14" rx="1.5" fill="#22C55E" stroke="#14532D" strokeWidth="1" />
+                                    <path d="M 0 0 L 14 0 L 14 14" stroke="#4ADE80" strokeWidth="1" fill="none" opacity="0.6" />
+                                    <path d="M 3 7 L 6 10 L 11 4" stroke="#DCFCE7" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+                                </g>
+                                <g transform="translate(54 -4) rotate(-4)">
+                                    <rect x="0" y="0" width="13" height="13" rx="1.5" fill="#EF4444" stroke="#7F1D1D" strokeWidth="1" />
+                                    <path d="M 0 0 L 13 0 L 13 13" stroke="#FCA5A5" strokeWidth="1" fill="none" opacity="0.6" />
+                                    <path d="M 4 4 L 9 9 M 9 4 L 4 9" stroke="#FEE2E2" strokeWidth="1.4" strokeLinecap="round" />
+                                </g>
+                            </g>
+                        )}
+                        {effectiveAccessory === 'clarity-crown' && (
+                            <g className="animate-in fade-in slide-in-from-top-2 duration-700 origin-center">
+                                <path d="M 22 28 L 28 12 L 35 22 L 42 8 L 50 20 L 58 8 L 65 22 L 72 12 L 78 28 Z" fill="#FCD34D" stroke="#B45309" strokeWidth="1.4" />
+                                <path d="M 22 28 Q 50 32 78 28" stroke="#92400E" strokeWidth="1.6" fill="none" />
+                                <circle cx="28" cy="13" r="2.4" fill="#FDE68A" stroke="#92400E" strokeWidth="0.6" />
+                                <g transform="translate(35 17)">
+                                    <circle cx="0" cy="0" r="2.2" fill="#FBBF24" stroke="#92400E" strokeWidth="0.4" />
+                                    <line x1="-3" y1="0" x2="-2" y2="0" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="3" y1="0" x2="2" y2="0" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="0" y1="-3" x2="0" y2="-2" stroke="#92400E" strokeWidth="0.5" />
+                                    <line x1="0" y1="3" x2="0" y2="2" stroke="#92400E" strokeWidth="0.5" />
+                                </g>
+                                <path d="M 42 8 Q 40 12 42 18 Q 44 12 42 8 Z" fill="#60A5FA" stroke="#1E40AF" strokeWidth="0.6" />
+                                <ellipse cx="50" cy="15" rx="2.5" ry="3.5" fill="#22C55E" stroke="#14532D" strokeWidth="0.6" />
+                                <line x1="50" y1="11" x2="50" y2="18" stroke="#14532D" strokeWidth="0.5" />
+                                <path d="M 58 8 Q 56 12 58 18 Q 60 12 58 8 Z" fill="#F472B6" stroke="#BE185D" strokeWidth="0.6" />
+                                <circle cx="65" cy="17" r="2.2" fill="#A78BFA" stroke="#5B21B6" strokeWidth="0.5" />
+                                <circle cx="72" cy="13" r="2.4" fill="#FDE68A" stroke="#92400E" strokeWidth="0.6" />
                             </g>
                         )}
                     </g>

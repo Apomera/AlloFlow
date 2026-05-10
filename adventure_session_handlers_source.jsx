@@ -300,6 +300,7 @@ const handleDiceRollComplete = (deps) => {
                   playAdventureEventSound('critical_success');
                   addToast(t('adventure.climax.toast_victory'), "success");
                   setShowGlobalLevelUp(true);
+                  try { window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'backflip', confetti: true } })); } catch (_) {}
               }, 0);
               return {
                   ...prev,
@@ -350,6 +351,7 @@ const handleDiceRollComplete = (deps) => {
                    addToast(t('toasts.level_up', { level: newLevel }), "success");
                    addToast(t('toasts.shop_unlocked'), "info");
                    addToast(t('adventure.feedback.energy_restored', { amount: 50 }), "success");
+                   try { window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'backflip', confetti: true } })); } catch (_) {}
               } else {
                   if (data.rollDetails) {
                       const score = data.rollDetails.total || data.rollDetails.d20 || 10;
