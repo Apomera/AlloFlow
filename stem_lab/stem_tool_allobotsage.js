@@ -1461,14 +1461,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             '/3 '
           ),
 
-          // Sector picker
-          h('section', { 'aria-label': 'Sector', className: 'mb-4' },
+          // Sector picker \u2014 richer cards showing the sector's enemy/boss pool
+          h('section', { 'aria-label': 'Sector', className: 'mb-5' },
             h('h3', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, '\uD83C\uDF0C Choose a sector'),
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+            h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
               SECTORS.map(function(sec) {
                 var unlocked = expeditionsDone >= sec.unlockAt;
                 var selected = (d.selectedSector || 'crystal_nebula') === sec.id;
                 var labelAria = sec.name + (unlocked ? (selected ? ' (selected)' : ' (unlocked)') : ' (locked: complete ' + sec.unlockAt + ' expeditions)');
+                // Pre-compute the sector's normal + boss pools for the preview
+                var sectorNormals = ENEMIES.filter(function(e) {
+                  return !e.boss && e.sectors && e.sectors.indexOf(sec.id) !== -1;
+                });
+                var sectorBosses = ENEMIES.filter(function(e) {
+                  return e.boss && sec.bossPool && sec.bossPool.indexOf(e.id) !== -1;
+                });
                 return h('button', {
                   key: sec.id,
                   disabled: !unlocked,
@@ -1477,27 +1484,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     sfxClick();
                     updKey('selectedSector', sec.id);
                   },
-                  className: 'text-left p-3 rounded-xl border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 '
+                  className: 'text-left p-4 rounded-xl border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 '
                     + (unlocked
-                      ? (selected ? 'border-violet-500' : 'border-slate-200 hover:border-violet-400')
+                      ? (selected ? 'border-violet-500 shadow-lg' : 'border-slate-200 hover:border-violet-400')
                       : 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'),
                   style: unlocked
-                    ? { background: selected ? sec.bgGradient : '#fff', color: selected ? '#fff' : '#0f172a' }
-                    : {},
+                    ? { background: selected ? sec.bgGradient : '#fff', color: selected ? '#fff' : '#0f172a', minHeight: '210px' }
+                    : { minHeight: '210px' },
                   'aria-label': labelAria
                 },
-                  h('div', { className: 'flex items-center gap-2' },
-                    h('div', { className: 'text-2xl', 'aria-hidden': 'true' }, unlocked ? '\uD83C\uDF0C' : '\uD83D\uDD12'),
+                  h('div', { className: 'flex items-center gap-2 mb-2' },
+                    h('div', { className: 'text-3xl', 'aria-hidden': 'true' }, unlocked ? '\uD83C\uDF0C' : '\uD83D\uDD12'),
                     h('div', { className: 'flex-1 min-w-0' },
-                      h('div', { className: 'font-bold text-sm truncate' }, sec.name),
-                      h('div', { className: 'text-[10px] ' + (selected ? 'opacity-90' : 'text-slate-300') },
+                      h('div', { className: 'font-bold text-sm leading-tight' }, sec.name),
+                      h('div', { className: 'text-[10px] mt-0.5 ' + (selected ? 'opacity-95 font-bold' : 'text-amber-600 font-bold') },
                         unlocked
-                          ? ('Essence \u00d7' + sec.essenceMult.toFixed(2))
+                          ? ('\u2728 Essence \u00d7' + sec.essenceMult.toFixed(2))
                           : ('Clear ' + sec.unlockAt + ' expedition' + (sec.unlockAt > 1 ? 's' : '') + ' to unlock')
                       )
                     )
                   ),
-                  h('div', { className: 'text-[10px] mt-1 ' + (selected ? 'opacity-90' : 'text-slate-300') + ' italic leading-snug' }, sec.subtitle)
+                  h('div', { className: 'text-[11px] mb-3 ' + (selected ? 'opacity-95' : 'text-slate-600') + ' italic leading-snug' }, sec.subtitle),
+                  // Boss preview
+                  unlocked && sectorBosses.length > 0 && h('div', { className: 'mb-2' },
+                    h('div', { className: 'text-[9px] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, 'Bosses'),
+                    h('div', { className: 'flex flex-wrap gap-1' },
+                      sectorBosses.map(function(b) {
+                        return h('div', {
+                          key: b.id,
+                          className: 'flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold',
+                          style: selected ? { background: 'rgba(255,255,255,0.18)' } : { background: '#fef3c7', color: '#92400e' },
+                          title: b.name + ' \u2014 ' + b.flavor
+                        },
+                          h('span', { 'aria-hidden': 'true' }, b.icon),
+                          h('span', null, b.name.replace(/^The /, ''))
+                        );
+                      })
+                    )
+                  ),
+                  // Enemy preview (normals)
+                  unlocked && sectorNormals.length > 0 && h('div', null,
+                    h('div', { className: 'text-[9px] font-bold uppercase tracking-wider mb-1 ' + (selected ? 'opacity-80' : 'text-slate-400') }, 'Foes (' + sectorNormals.length + ')'),
+                    h('div', { className: 'flex flex-wrap gap-0.5', 'aria-hidden': 'true' },
+                      sectorNormals.map(function(en) {
+                        return h('span', {
+                          key: en.id,
+                          className: 'text-base',
+                          title: en.name + ' \u2014 ' + en.flavor + ' (HP ' + en.hp + ', ATK ' + en.atk + ')'
+                        }, en.icon);
+                      })
+                    )
+                  ),
+                  unlocked && sectorBosses.length > 0 && selected && h('div', { className: 'mt-2 text-[10px] opacity-90' },
+                    h('div', { className: 'flex items-center gap-1 font-bold' }, '\u2728 Selected')
+                  )
                 );
               })
             )
@@ -1645,19 +1685,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           }, 600);
         }
 
+        // Boss telegraph mechanic — bosses cycle through:
+        //   NORMAL → NORMAL → WINDING (telegraph; no damage) → SPECIAL (1.6× dmg)
+        // During the WINDING turn, a CRIT cast interrupts the special, reducing
+        // it to 0.5× damage. This rewards fast accurate retrieval at the
+        // dramatic moments and gives bosses tactical identity beyond bigger HP.
         function enemyTurn() {
-          var dmg = Math.max(1, enemy.atk - Math.floor(Math.random() * 4));
-          var newHp = Math.max(0, exp.playerHp - dmg);
-          var entry = { text: enemy.name + ' strikes for ' + dmg + ' damage.', kind: 'enemy' };
+          var isBoss = !!enemy.boss;
+          var bossPhase = enemy.bossPhase || 'normal';
+          var normalCount = enemy.normalCount || 0;
+          var entry;
+          var newHp = exp.playerHp;
+          var newEnemy;
+
+          if (isBoss && bossPhase === 'winding') {
+            // SPECIAL attack this turn — was the player able to interrupt?
+            var multiplier = enemy.interrupted ? 0.5 : 1.6;
+            var rawDmg = enemy.atk * multiplier;
+            var specDmg = Math.max(1, Math.round(rawDmg - Math.floor(Math.random() * 3)));
+            newHp = Math.max(0, exp.playerHp - specDmg);
+            entry = enemy.interrupted
+              ? { text: '🛡️ ' + enemy.name + ' staggers — special INTERRUPTED. Hits for ' + specDmg + ' dmg only.', kind: 'enemy' }
+              : { text: '💥 ' + enemy.name + ' unleashes a SPECIAL attack — ' + specDmg + ' dmg!', kind: 'boss-special' };
+            newEnemy = Object.assign({}, enemy, { bossPhase: 'normal', normalCount: 0, interrupted: false });
+          } else if (isBoss && normalCount >= 2) {
+            // Time to wind up — no damage this turn, telegraph the special.
+            entry = { text: '⚠️ ' + enemy.name + ' begins to gather power. CRIT next cast to interrupt!', kind: 'boss-telegraph' };
+            newEnemy = Object.assign({}, enemy, { bossPhase: 'winding', interrupted: false });
+          } else {
+            // Normal attack — for both bosses (in normal phase) and regular enemies.
+            var dmg = Math.max(1, enemy.atk - Math.floor(Math.random() * 4));
+            newHp = Math.max(0, exp.playerHp - dmg);
+            entry = { text: enemy.name + ' strikes for ' + dmg + ' damage.', kind: 'enemy' };
+            newEnemy = isBoss
+              ? Object.assign({}, enemy, { normalCount: normalCount + 1 })
+              : enemy;
+          }
+
           var nextLog = (exp.log || []).concat([entry]);
           if (nextLog.length > 18) nextLog = nextLog.slice(-18);
           if (newHp <= 0) {
             // Defeat path
-            mutateExp({ playerHp: 0, log: nextLog });
+            mutateExp({ playerHp: 0, log: nextLog, enemy: newEnemy });
             setTimeout(function() { finishExpedition(false); }, 600);
             return;
           }
-          mutateExp({ playerHp: newHp, turn: 'player', log: nextLog });
+          mutateExp({ playerHp: newHp, turn: 'player', log: nextLog, enemy: newEnemy });
           announceSR(entry.text + ' Your turn.');
         }
 
@@ -1717,13 +1790,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           updKey('totalCasts', totalCasts + 1);
           if (result === 'crit') updKey('critCasts', critCasts + 1);
 
+          // Boss-telegraph interrupt: a CRIT during the boss's WINDING phase
+          // reduces the next special to 0.5×. Logged + announced for clarity.
+          var willInterrupt = !!enemy.boss && enemy.bossPhase === 'winding' && result === 'crit';
           var nextEnemy = Object.assign({}, enemy, { hp: newEnemyHp });
+          if (willInterrupt) {
+            nextEnemy.interrupted = true;
+            nextLog = nextLog.concat([{ text: '🛡️ ' + enemy.name + '’s special is interrupted by your critical strike!', kind: 'player' }]);
+            if (nextLog.length > 18) nextLog = nextLog.slice(-18);
+          }
           mutateExp({
             enemy: nextEnemy,
             pendingCast: Object.assign({}, pendingCast, { selectedIndex: selectedIndex, resolved: true, damage: dmg, result: result }),
             log: nextLog
           });
-          announceSR(text);
+          announceSR(text + (willInterrupt ? ' Boss special interrupted!' : ''));
 
           setTimeout(function() {
             if (newEnemyHp <= 0) {
@@ -1816,6 +1897,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               )
             ),
             h('p', { className: 'text-[11px] text-center text-violet-200 mt-3 italic' }, enemy.flavor)
+          ),
+
+          // Boss telegraph warning \u2014 visible when boss is winding up a special.
+          // Tells the player exactly what to do: land a CRIT to interrupt.
+          enemy.type !== 'shrine' && enemy.boss && enemy.bossPhase === 'winding' && !enemy.interrupted && h('div', {
+            role: 'alert',
+            className: 'rounded-xl p-3 mb-3 abs-pulse',
+            style: { background: 'linear-gradient(90deg, #7f1d1d 0%, #ef4444 100%)', color: 'white' }
+          },
+            h('div', { className: 'flex items-center gap-3' },
+              h('div', { className: 'text-3xl' }, '\u26a0\ufe0f'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'font-bold text-sm' }, enemy.name + ' is winding up a SPECIAL ATTACK'),
+                h('div', { className: 'text-[11px] text-red-100 mt-0.5' }, 'Land a CRITICAL cast (correct + under 6 seconds) to interrupt and reduce the damage.')
+              )
+            )
+          ),
+          // Boss interrupt confirmation \u2014 shown after a successful interrupt.
+          enemy.type !== 'shrine' && enemy.boss && enemy.bossPhase === 'winding' && enemy.interrupted && h('div', {
+            role: 'status',
+            className: 'rounded-xl p-3 mb-3',
+            style: { background: 'linear-gradient(90deg, #064e3b 0%, #10b981 100%)', color: 'white' }
+          },
+            h('div', { className: 'flex items-center gap-3' },
+              h('div', { className: 'text-3xl' }, '\ud83d\udee1\ufe0f'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'font-bold text-sm' }, 'INTERRUPT LANDED'),
+                h('div', { className: 'text-[11px] text-emerald-100 mt-0.5' }, enemy.name + '\u2019s special will deal reduced damage when it resolves.')
+              )
+            )
           ),
 
           // Shrine room (peaceful \u2014 rest + small essence)
