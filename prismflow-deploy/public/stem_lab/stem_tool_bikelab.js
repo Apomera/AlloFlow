@@ -1406,8 +1406,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
             ),
             // Canvas column
             h('div', { className: 'col-span-9 space-y-3' },
-              h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800' },
-                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block', role: 'img', 'aria-label': 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.' })
+              h('div', { id: 'bikelab-sandbox-fs', className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', style: { position: 'relative' } },
+                h('canvas', { ref: canvasRef, width: 900, height: 440, className: 'w-full block', role: 'img', 'aria-label': 'Physics sandbox simulation: bicycle on terrain with live force vectors (gravity, drag, rolling resistance, propulsion) and energy graphs.' }),
+                // Fullscreen toggle (top-right)
+                h('button', {
+                  'aria-label': 'Toggle fullscreen for the physics sandbox',
+                  title: 'Fullscreen',
+                  onClick: function() {
+                    var el = document.getElementById('bikelab-sandbox-fs');
+                    if (!el) return;
+                    var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                    if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                    else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                  },
+                  style: {
+                    position: 'absolute', top: 8, right: 8, zIndex: 10,
+                    width: 32, height: 32, borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                    border: '1px solid rgba(148,163,184,0.45)', color: '#cbd5e1',
+                    fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                  }
+                }, '⛶')
               ),
               h('div', { className: 'flex gap-2' },
                 h('button', {
@@ -2686,8 +2706,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('bikeLab'))) {
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           BackBar({ icon: '🏘️', title: 'Neighborhood Ride' }),
           h('div', { className: 'p-3 max-w-7xl mx-auto w-full space-y-3' },
-            h('div', { className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800' },
-              h('canvas', { ref: canvasRef, width: 1000, height: 380, className: 'w-full block', role: 'img', 'aria-label': 'Neighborhood ride: bicycle traverses streets with hills, stop signs, traffic, and weather. Use the brake button or arrow keys to control.' })
+            h('div', { id: 'bikelab-neighborhood-fs', className: 'bg-slate-900 rounded-xl overflow-hidden shadow-xl border border-slate-800', style: { position: 'relative' } },
+              h('canvas', { ref: canvasRef, width: 1000, height: 380, className: 'w-full block', role: 'img', 'aria-label': 'Neighborhood ride: bicycle traverses streets with hills, stop signs, traffic, and weather. Use the brake button or arrow keys to control.' }),
+              // Fullscreen toggle for the neighborhood ride
+              h('button', {
+                'aria-label': 'Toggle fullscreen for the neighborhood ride',
+                title: 'Fullscreen',
+                onClick: function() {
+                  var el = document.getElementById('bikelab-neighborhood-fs');
+                  if (!el) return;
+                  var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                  if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                  else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 8, zIndex: 10,
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(148,163,184,0.45)', color: '#cbd5e1',
+                  fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                }
+              }, '⛶')
             ),
             h('div', { className: 'grid grid-cols-1 lg:grid-cols-4 gap-3' },
               h('div', { className: 'bg-white rounded-xl shadow border border-slate-400 p-3 flex flex-col gap-2' },

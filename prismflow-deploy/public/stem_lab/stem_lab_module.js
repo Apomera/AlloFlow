@@ -3040,6 +3040,11 @@
                 desc: 'Bar charts, pie charts, line graphs & histograms. Import CSV data or enter your own. Statistical analysis included.',
                 color: 'cyan', ready: true
               },
+              {
+                id: 'opticsLab', icon: '🔆', label: 'OpticsLab AP',
+                desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
+                color: 'sky', ready: true
+              },
 
               { id: '_cat_ComputerScience', icon: '', label: 'Computer Science', desc: '', color: 'slate', category: true },
               {
@@ -3157,6 +3162,11 @@
                 color: 'rose', ready: true
               },
               {
+                id: 'swimLab', icon: '🏊', label: 'SwimLab',
+                desc: 'How swimming works (stroke physics + survival skills) plus what every swimmer should know about cold water, rip currents, ice, life jackets, and rescue. Visual stroke breakdowns, the science of buoyancy and propulsion, and the survival skills (back float, eggbeater, HELP, huddle) that actually save lives. Sources: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Educational only — find a Water Safety Instructor for actual swim training.',
+                color: 'cyan', ready: true
+              },
+              {
                 id: 'autoRepair', icon: '🔧', label: 'Auto Repair Shop',
                 desc: 'Diagnose + fix a vehicle: OBD-II codes, fluid / sound / visual diagnosis, 7 step-by-step repairs (oil, brakes, alternator, tires, A/C, timing belt). Maine vocational pathways + ASE certification info. Pairs with RoadReady.',
                 color: 'slate', ready: true
@@ -3222,6 +3232,7 @@
               { id: 'singing', icon: '\uD83C\uDFB5', label: 'Voice & Singing Lab', desc: 'Vocal range exploration, pitch matching, breathing exercises, and the science of the singing voice.', color: 'violet', ready: true },
 
               { id: '_cat_Ecology', icon: '', label: '\uD83C\uDF0D Ecology & Migration', desc: '', color: 'slate', category: true },
+              { id: 'birdLab', icon: '\uD83D\uDC26', label: 'BirdLab: I-Spy Ornithology', desc: 'Layered habitat I-Spy with animated birds whose movement signatures double as field marks. Field Marks Trainer, Beak & Feet Lab, Bird Calls, Maine Birds Spotlight, Migration, Citizen Science, Photo ID, and a Life List that persists across habitats. Pairs with Cornell Lab\u2019s Merlin Bird ID.', color: 'emerald', ready: true },
               { id: 'migration', icon: '\uD83E\uDD85', label: 'Animal Migration Lab', desc: 'Track real animal migration routes across continents. Explore navigation, climate triggers, and conservation challenges facing migratory species.', color: 'teal', ready: true },
 
               { id: '_cat_Technology', icon: '', label: '\uD83D\uDCF1 Technology & AI', desc: '', color: 'slate', category: true },
@@ -4362,7 +4373,7 @@
             anatomy: true, aquarium: true, brainAtlas: true, cell: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dissection: true, dnaLab: true, ecosystem: true,
-            epidemicSim: true, fireEcology: true, molecule: true, punnett: true,
+            epidemicSim: true, fireEcology: true, molecule: true, opticsLab: true, punnett: true,
             rocks: true, rockCycle: true, science: true, solarSystem: true,
             titrationLab: true, universe: true, unitConvert: true, waterCycle: true,
             // Engineering & CS
@@ -4383,6 +4394,7 @@
             flightSim: true,
             roadReady: true,
             bikeLab: true,
+            birdLab: true,
             atcTower: true,
             throwlab: true,
             playlab: true,
@@ -4391,6 +4403,7 @@
             // plugin-only flags — so they were completely invisible. Adding both.
             skatelab: true,
             firstResponse: true,
+            swimLab: true,
             autoRepair: true,
             weldLab: true,
             nutritionLab: true,

@@ -645,9 +645,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       }, []);
 
       // ── Keyboard Controls ──
+      // Bug fix: arrow keys + WASD weren't preventDefault'd, so the
+      // page scrolled out from under the plane while the student
+      // tried to fly. Now any flight-control key swallows its default
+      // browser action; non-flight keys still fall through so the
+      // student can type elsewhere on the page.
       useEffect(function() {
         if (view !== 'flying') return;
-        var onKey = function(e) { keysRef.current[e.key.toLowerCase()] = e.type === 'keydown'; };
+        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1, 'q': 1, 'e': 1, 'shift': 1 };
+        var onKey = function(e) {
+          var k = (e.key || '').toLowerCase();
+          if (FLIGHT_KEYS[k]) {
+            keysRef.current[k] = e.type === 'keydown';
+            if (e.type === 'keydown') e.preventDefault();
+          }
+        };
         window.addEventListener('keydown', onKey);
         window.addEventListener('keyup', onKey);
         return function() { window.removeEventListener('keydown', onKey); window.removeEventListener('keyup', onKey); };
