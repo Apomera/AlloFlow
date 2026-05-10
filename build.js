@@ -464,6 +464,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'XPModal',
+        filename: 'view_xp_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'StorybookExportModal',
+        filename: 'view_storybook_export_modal_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'LabelPositions',
         filename: 'label_positions_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -744,7 +754,7 @@ const COMPILE_PAIRS = [
     {
         // ── persona_ui ── JSX-bearing module, verified zero-diff vs deployed module.js after
         // the April 2026 WCAG back-port (slate-500→600 + text-[10px]→[11px]). First JSX module
-        // onboarded to Phase 2 auto-compile. To add more modules, verify `_phase2_diff_audit.js`
+        // onboarded to Phase 2 auto-compile. To add more modules, verify `dev-tools/phase2_diff_audit.js`
         // reports PERFECT for that module after any needed source back-ports, then add an
         // entry here with the module's specific wrapper.
         name: 'PersonaUI',
