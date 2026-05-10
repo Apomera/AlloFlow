@@ -8861,46 +8861,271 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // ═══ QUEEN RTS UI ═══
             viewMode === 'queen' && h('div', { className: 'space-y-3' },
               !queenGameActive
-                ? h('div', { className: 'rounded-2xl border-2 p-8 text-center space-y-4 ' + (dk ? 'bg-gradient-to-b from-purple-900/40 to-amber-900/30 border-purple-600/50' : 'bg-gradient-to-b from-purple-50 to-amber-50 border-purple-300') },
-                    h('div', { className: 'text-5xl mb-2' }, '👑'),
-                    h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Queen Command: Hive RTS'),
-                    h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
-                      'You ARE the queen. Control your colony through pheromones — the chemical language of the hive. Lay eggs, allocate workers, build comb structures, and defend against invaders. You don\'t give orders directly — you emit pheromone signals that influence 50,000 workers.'),
-                    h('div', { className: 'grid grid-cols-4 gap-2 max-w-lg mx-auto' },
-                      [['💜', 'QMP', 'Suppress rebellion'], ['🚨', 'Alarm', 'Mobilize guards'], ['🏠', 'Nasonov', 'Rally foragers'], ['🥚', 'Brood', 'Stimulate nurses']].map(function(p) {
-                        return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
-                          h('div', { className: 'text-lg' }, p[0]),
-                          h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
-                          h('div', { className: 'text-[11px] ' + (dk ? 'text-slate-400' : 'text-slate-300') }, p[2]));
-                      })),
-                    h('button', { onClick: startQueenGame,
-                      className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600' : 'bg-gradient-to-r from-purple-500 to-amber-500'),
-                      style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
-                    }, '👑 Begin Your Reign'))
-                : h('div', { className: 'space-y-3' },
-                    h('div', { role: 'status', 'aria-live': 'assertive', className: 'flex items-center justify-between px-4 py-2 rounded-xl text-xs font-bold ' +
-                      (queenPhase === 'swarm' ? (dk ? 'bg-purple-900/40 text-purple-300 border border-purple-600/40' : 'bg-purple-50 text-purple-800 border border-purple-300') :
-                       queenPhase === 'defend' ? (dk ? 'bg-red-900/30 text-red-300 border border-red-600/40' : 'bg-red-50 text-red-800 border border-red-300') :
-                       (dk ? 'bg-amber-900/30 text-amber-300 border border-amber-600/40' : 'bg-amber-50 text-amber-800 border border-amber-300')) },
-                      h('span', null, (queenPhase === 'swarm' ? '🐝 SWARM PHASE' : queenPhase === 'defend' ? '⚔️ DEFEND PHASE' : '🏗️ BUILD PHASE') + ' · Day ' + queenDay)),
-                    h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '400px', boxShadow: '0 0 20px rgba(147,51,234,0.1)' } },
-                      h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen defense game: release pheromones and build structures to protect the colony from threats', style: { width: '100%', height: '100%', display: 'block' } })),
-                    h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
-                      h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '👑 Pheromone Commands'),
-                      h('div', { className: 'grid grid-cols-3 gap-1.5' },
-                        QUEEN_ACTIONS.map(function(qa) {
-                          return h('button', { key: qa.id, onClick: function() { queenAction(qa.id); }, title: qa.desc,
-                            className: 'text-left p-2 rounded-lg border ' + (dk ? 'bg-slate-800 border-purple-700/30 hover:bg-slate-700' : 'bg-white border-purple-100 hover:shadow-sm') },
-                            h('div', { className: 'flex items-center gap-1' },
-                              h('span', null, qa.icon),
-                              h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-800') }, qa.label)),
-                            h('div', { className: 'text-[10px] mt-0.5 ' + (dk ? 'text-slate-400' : 'text-slate-300') }, qa.desc));
-                        }))),
-                    h('div', { className: 'flex gap-2' },
-                      h('button', { onClick: advanceQueenDay,
-                        className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white ' + (dk ? 'bg-gradient-to-r from-purple-700 to-amber-600' : 'bg-gradient-to-r from-purple-600 to-amber-500') }, '⏩ Next Day'),
-                      h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { active: false }) }); },
-                        className: 'px-4 py-2.5 rounded-xl text-sm font-bold ' + (dk ? 'bg-slate-700 text-slate-300' : 'bg-slate-100 text-slate-600') }, 'End Game')))
+                ? h('div', { className: 'rounded-2xl border-2 p-6 space-y-4 ' + (dk ? 'bg-gradient-to-b from-purple-900/40 to-amber-900/30 border-purple-600/50' : 'bg-gradient-to-b from-purple-50 to-amber-50 border-purple-300') },
+                    h('div', { className: 'text-center space-y-2' },
+                      h('div', { className: 'text-5xl mb-1' }, '👑'),
+                      h('h3', { className: 'text-lg font-black ' + (dk ? 'text-purple-200' : 'text-purple-900') }, 'Queen Command: Hive RTS'),
+                      h('p', { className: 'text-xs max-w-2xl mx-auto leading-relaxed ' + (dk ? 'text-purple-300' : 'text-purple-700') },
+                        'You ARE the queen. You don\'t give orders directly. You emit pheromones, and those chemical signals propagate through 50,000 workers and shape what they do next. Stockpile resources, lay eggs, defend the hive, and survive the seasons.')
+                    ),
+                    // ── How it works ──
+                    h('div', { className: 'rounded-xl p-3 ' + (dk ? 'bg-slate-900/60 border border-purple-700/40' : 'bg-white/70 border border-purple-200') },
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-amber-400' : 'text-amber-700') }, '📜 How to play'),
+                      h('ul', { className: 'list-disc list-inside text-[11px] leading-relaxed space-y-1 ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                        h('li', null, h('strong', null, 'Press an action'), ' to spend resources or release a pheromone. Effects show up on the HUD next turn.'),
+                        h('li', null, h('strong', null, 'Press Next Day'), ' to advance the simulation. Foragers bring nectar/pollen, builders make wax, nurses make royal jelly. Pheromones decay every day.'),
+                        h('li', null, h('strong', null, 'Watch QMP'), ' (Queen Mandibular Pheromone). If it drops below 20 your workers rebel. Below 5 they replace you.'),
+                        h('li', null, h('strong', null, 'Survive 60 days'), ' to win the reign. Threats and crowding scale up across three phases.')
+                      )
+                    ),
+                    // ── 3-phase preview ──
+                    h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+                      [
+                        { phase: 'BUILD',  days: 'Days 1-10',  icon: '🏗️', goal: 'Stockpile resources, stabilize pheromones, grow your worker population before threats arrive.', color: '#fbbf24' },
+                        { phase: 'DEFEND', days: 'Days 11-24', icon: '⚔️', goal: 'Threats appear regularly. Keep alarm pheromone ready, build guard structures, hold the line.',         color: '#ef4444' },
+                        { phase: 'SWARM',  days: 'Day 25+',    icon: '🐝', goal: 'Colony is overcrowded. Keep QMP > 40 or half your workers leave with a rival queen.',                  color: '#a855f7' }
+                      ].map(function(p) {
+                        return h('div', { key: p.phase,
+                          className: 'rounded-xl p-3 border-2',
+                          style: {
+                            borderColor: p.color + '88',
+                            background: dk
+                              ? 'linear-gradient(135deg,' + p.color + '22 0%,rgba(15,23,42,0.5) 100%)'
+                              : 'linear-gradient(135deg,' + p.color + '1a 0%,rgba(255,255,255,0.6) 100%)',
+                            boxShadow: '0 0 14px ' + p.color + '22'
+                          }
+                        },
+                          h('div', { className: 'flex items-center gap-2 mb-1' },
+                            h('span', { 'aria-hidden': 'true', style: { fontSize: 18 } }, p.icon),
+                            h('div', null,
+                              h('div', { className: 'text-[11px] font-black', style: { color: p.color } }, p.phase),
+                              h('div', { className: 'text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-500') }, p.days)
+                            )
+                          ),
+                          h('p', { className: 'text-[11px] leading-relaxed ' + (dk ? 'text-slate-300' : 'text-slate-700') }, p.goal)
+                        );
+                      })
+                    ),
+                    // ── 4 pheromones legend ──
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-1.5 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '🧪 Your four pheromones'),
+                      h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+                        [
+                          ['💜', 'QMP',     'Suppress rebellion · Holds colony together'],
+                          ['🚨', 'Alarm',   'Mobilize guards · Spike on threats'],
+                          ['🏠', 'Nasonov', 'Rally foragers · Mark safe entrance'],
+                          ['🥚', 'Brood',   'Stimulate nurses · Boosts brood care']
+                        ].map(function(p) {
+                          return h('div', { key: p[0], className: 'rounded-lg p-2 border ' + (dk ? 'bg-slate-800 border-purple-700/30' : 'bg-white border-purple-200') },
+                            h('div', { className: 'text-lg' }, p[0]),
+                            h('div', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-200' : 'text-slate-700') }, p[1]),
+                            h('div', { className: 'text-[10px] leading-tight ' + (dk ? 'text-slate-400' : 'text-slate-500') }, p[2]));
+                        }))
+                    ),
+                    // ── Begin button ──
+                    h('div', { className: 'text-center' },
+                      h('button', { onClick: startQueenGame,
+                        className: 'px-8 py-3 rounded-xl font-bold text-white text-sm shadow-lg transition-all hover:scale-105 ' + (dk ? 'bg-gradient-to-r from-purple-600 to-amber-600' : 'bg-gradient-to-r from-purple-500 to-amber-500'),
+                        style: { boxShadow: '0 4px 16px rgba(147,51,234,0.4)' }
+                      }, '👑 Begin Your Reign')
+                    )
+                  )
+                : (function() {
+                    // ── In-game UI: clarity pass ──
+                    // Old version showed a phase banner + canvas + 6 unlabeled
+                    // action buttons + Next Day. The pheromones, resources,
+                    // workers, threats, and event narrative were tracked in
+                    // state but never rendered, so the player pressed buttons
+                    // blind and had no idea why anything was happening. This
+                    // rewrite surfaces all that state.
+                    var phaseInfo = queenPhase === 'swarm'  ? { title: '🐝 SWARM PHASE',  days: 'Day 25+',     goal: 'Keep QMP above 40. The colony is overcrowded. Below 40 + 800 workers, half leave with a rebel queen.', color: '#a855f7', soft: 'rgba(168,85,247,0.18)', textCol: dk ? '#e9d5ff' : '#6b21a8' }
+                                  : queenPhase === 'defend' ? { title: '⚔️ DEFEND PHASE', days: 'Days 11-24',  goal: 'Threats appear ~15% of days. Build guard posts, keep alarm ready, watch for hornets and varroa spikes.', color: '#ef4444', soft: 'rgba(239,68,68,0.18)', textCol: dk ? '#fecaca' : '#991b1b' }
+                                  :                          { title: '🏗️ BUILD PHASE',  days: 'Days 1-10',   goal: 'Stockpile resources, lay worker eggs, hold QMP high. The first 10 days are a peaceful runway.',         color: '#fbbf24', soft: 'rgba(251,191,36,0.18)', textCol: dk ? '#fde68a' : '#92400e' };
+                    var qSeasonIdx = Math.floor((queenDay % 120) / 30);
+                    var seasonNames = ['🌱 Spring', '☀️ Summer', '🍂 Autumn', '❄️ Winter'];
+                    var totalWorkers = (queenPopulation.nurses || 0) + (queenPopulation.builders || 0) + (queenPopulation.guards || 0) + (queenPopulation.foragers || 0) + (queenPopulation.scouts || 0);
+                    var seasonName = seasonNames[qSeasonIdx];
+
+                    // Affordability check used by action grid + cost preview.
+                    function canAfford(action) {
+                      if (!action.cost) return true;
+                      for (var k in action.cost) {
+                        if ((queenResources[k] || 0) < action.cost[k]) return false;
+                      }
+                      return true;
+                    }
+                    var resIcon = { nectar: '🍯', pollen: '🌼', wax: '🕯️', royalJelly: '👑' };
+                    var resLabel = { nectar: 'Nectar', pollen: 'Pollen', wax: 'Wax', royalJelly: 'Royal Jelly' };
+
+                    // Pheromone bar — width by value (0..100), color per pheromone,
+                    // warning glow when QMP < 20 (rebellion risk).
+                    function pheromoneBar(label, val, col, warnThreshold) {
+                      var warning = warnThreshold != null && val < warnThreshold;
+                      return h('div', { className: 'flex items-center gap-2', style: { fontSize: 10 } },
+                        h('span', { style: { minWidth: 56, fontWeight: 700, color: dk ? '#cbd5e1' : '#475569' } }, label),
+                        h('div', { className: 'flex-1 rounded-full overflow-hidden', style: { height: 8, background: dk ? '#1e293b' : '#e2e8f0', boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.2)' } },
+                          h('div', { style: { width: Math.max(0, Math.min(100, val)) + '%', height: '100%', background: 'linear-gradient(90deg,' + col + 'aa,' + col + ')', boxShadow: warning ? '0 0 6px ' + col : '0 0 4px ' + col + '88', transition: 'width 0.4s ease' } })
+                        ),
+                        h('span', { style: { minWidth: 28, textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, color: warning ? '#fca5a5' : (dk ? '#e2e8f0' : '#1e293b') } }, Math.round(val))
+                      );
+                    }
+
+                    return h('div', { className: 'space-y-3' },
+                      // ── Phase + day + season banner ──
+                      h('div', { role: 'status', 'aria-live': 'polite',
+                        className: 'rounded-xl px-4 py-3 border',
+                        style: {
+                          background: dk
+                            ? 'linear-gradient(135deg,' + phaseInfo.soft + ' 0%,rgba(15,23,42,0.6) 100%)'
+                            : 'linear-gradient(135deg,' + phaseInfo.soft + ' 0%,rgba(255,255,255,0.85) 100%)',
+                          borderColor: phaseInfo.color + '66',
+                          borderLeftWidth: 4, borderLeftColor: phaseInfo.color,
+                          boxShadow: '0 0 16px ' + phaseInfo.color + '22, inset 0 1px 0 rgba(255,255,255,0.06)'
+                        }
+                      },
+                        h('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-1' },
+                          h('div', { className: 'text-sm font-black', style: { color: phaseInfo.textCol } }, phaseInfo.title),
+                          h('div', { className: 'flex items-center gap-3 text-[11px] font-bold', style: { color: phaseInfo.textCol } },
+                            h('span', null, 'Day ' + queenDay + ' · ' + phaseInfo.days),
+                            h('span', null, seasonName),
+                            h('span', { style: { color: '#fbbf24' } }, '⭐ ' + queenScore)
+                          )
+                        ),
+                        h('p', { className: 'text-[11px] leading-relaxed', style: { color: dk ? '#cbd5e1' : '#475569', margin: 0 } }, phaseInfo.goal)
+                      ),
+
+                      // ── Canvas ──
+                      h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-purple-600/50' : 'border-purple-400'), style: { height: '400px', boxShadow: '0 0 20px ' + phaseInfo.color + '22' } },
+                        h('canvas', { ref: _queenCvRef, role: 'img', 'aria-label': 'Queen defense game canvas. Phase: ' + phaseInfo.title + '. Day ' + queenDay + '. ' + seasonName + '. Score ' + queenScore + '. Workers ' + totalWorkers + '. Threats ' + (queenThreats.length || 0) + '.', style: { width: '100%', height: '100%', display: 'block' } })
+                      ),
+
+                      // ── State HUD: pheromones + resources + workers + threats ──
+                      h('div', { className: 'rounded-xl border p-3 grid grid-cols-1 md:grid-cols-2 gap-3 ' + (dk ? 'bg-slate-900/60 border-purple-700/40' : 'bg-white border-purple-200'),
+                                  style: { boxShadow: dk ? '0 4px 14px rgba(7,11,24,0.45)' : '0 2px 10px rgba(15,23,42,0.06)' } },
+                        // Pheromones panel
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '🧪 Pheromones (decay each day)'),
+                          h('div', { className: 'space-y-1.5' },
+                            pheromoneBar('💜 QMP',     queenPheromones.qmp || 0,     '#a855f7', 25),
+                            pheromoneBar('🚨 Alarm',   queenPheromones.alarm || 0,   '#ef4444'),
+                            pheromoneBar('🏠 Nasonov', queenPheromones.nasonov || 0, '#f59e0b'),
+                            pheromoneBar('🥚 Brood',   queenPheromones.brood || 0,   '#fbbf24')
+                          ),
+                          (queenPheromones.qmp || 0) < 25 && h('div', { className: 'mt-2 text-[10px] font-bold rounded p-1.5', style: { color: '#fca5a5', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.4)' } }, '⚠ QMP critical. Workers risk rebellion. Press Emit QMP.')
+                        ),
+                        // Resources panel
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-amber-300' : 'text-amber-700') }, '📦 Resources'),
+                          h('div', { className: 'grid grid-cols-2 gap-1.5' },
+                            ['nectar', 'pollen', 'wax', 'royalJelly'].map(function(k) {
+                              return h('div', { key: k, className: 'rounded p-1.5 text-[11px] flex items-center justify-between ' + (dk ? 'bg-slate-800 border border-amber-700/30' : 'bg-amber-50 border border-amber-200') },
+                                h('span', null, resIcon[k] + ' ' + resLabel[k]),
+                                h('span', { style: { fontFamily: 'monospace', fontWeight: 700, color: dk ? '#fde68a' : '#92400e' } }, (queenResources[k] || 0).toFixed ? (queenResources[k] || 0).toFixed(1) : queenResources[k] || 0)
+                              );
+                            })
+                          )
+                        ),
+                        // Workers panel
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-sky-300' : 'text-sky-700') }, '👷 Workers (' + totalWorkers.toLocaleString() + ' total)'),
+                          h('div', { className: 'grid grid-cols-5 gap-1' },
+                            [
+                              ['🤱', 'Nurses',   queenPopulation.nurses],
+                              ['🔨', 'Builders', queenPopulation.builders],
+                              ['🛡', 'Guards',   queenPopulation.guards],
+                              ['🌼', 'Foragers', queenPopulation.foragers],
+                              ['🧭', 'Scouts',   queenPopulation.scouts]
+                            ].map(function(c) {
+                              return h('div', { key: c[1], className: 'text-center rounded p-1 ' + (dk ? 'bg-slate-800' : 'bg-sky-50') },
+                                h('div', { className: 'text-base', 'aria-hidden': 'true' }, c[0]),
+                                h('div', { className: 'text-[9px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-600') }, c[1]),
+                                h('div', { className: 'text-[10px] font-bold', style: { fontFamily: 'monospace', color: dk ? '#7dd3fc' : '#0369a1' } }, c[2] || 0)
+                              );
+                            })
+                          )
+                        ),
+                        // Threats panel (or "all clear")
+                        h('div', null,
+                          h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-rose-300' : 'text-rose-700') }, '⚠ Threats'),
+                          (queenThreats || []).length > 0
+                            ? h('div', { className: 'space-y-1' },
+                                queenThreats.slice(0, 4).map(function(t, i) {
+                                  return h('div', { key: i, className: 'text-[11px] rounded p-1.5 flex items-center gap-2 ' + (dk ? 'bg-rose-900/30 border border-rose-700/40' : 'bg-rose-50 border border-rose-300') },
+                                    h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, t.icon || '⚠'),
+                                    h('span', { className: 'flex-1 font-bold ' + (dk ? 'text-rose-200' : 'text-rose-800') }, t.label || t.type || 'Threat'),
+                                    h('span', { className: 'text-[10px] font-mono', style: { color: '#fca5a5' } }, 'STR ' + (t.strength || '?'))
+                                  );
+                                })
+                              )
+                            : h('div', { className: 'text-[11px] italic rounded p-2 ' + (dk ? 'bg-emerald-900/20 text-emerald-300 border border-emerald-700/30' : 'bg-emerald-50 text-emerald-700 border border-emerald-200') }, '✓ Hive secure. No active threats.')
+                        )
+                      ),
+
+                      // ── Action grid with cost preview + disabled state ──
+                      h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-purple-900/20 border-purple-700/40' : 'bg-purple-50 border-purple-200') },
+                        h('div', { className: 'text-xs font-bold mb-2 ' + (dk ? 'text-purple-300' : 'text-purple-800') }, '👑 Pheromone Commands · click any to act'),
+                        h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-1.5' },
+                          QUEEN_ACTIONS.map(function(qa) {
+                            var afford = canAfford(qa);
+                            var costParts = qa.cost ? Object.keys(qa.cost).map(function(k) {
+                              return resIcon[k] + ' ' + qa.cost[k];
+                            }) : [];
+                            return h('button', {
+                              key: qa.id,
+                              onClick: function() { queenAction(qa.id); },
+                              disabled: !afford,
+                              'aria-disabled': !afford ? 'true' : 'false',
+                              title: qa.desc + (costParts.length ? ' [Costs ' + costParts.join(', ') + ']' : ' [Free]'),
+                              className: 'text-left p-2 rounded-lg border transition-all',
+                              style: {
+                                opacity: afford ? 1 : 0.5,
+                                cursor: afford ? 'pointer' : 'not-allowed',
+                                background: dk ? '#1e293b' : '#ffffff',
+                                borderColor: afford ? (dk ? '#7c3aed55' : '#c4b5fd') : (dk ? '#33415555' : '#cbd5e1')
+                              }
+                            },
+                              h('div', { className: 'flex items-center justify-between gap-1 mb-0.5' },
+                                h('div', { className: 'flex items-center gap-1' },
+                                  h('span', null, qa.icon),
+                                  h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-100' : 'text-slate-800') }, qa.label)
+                                ),
+                                costParts.length
+                                  ? h('span', { className: 'text-[10px] font-mono px-1 py-0.5 rounded', style: { color: afford ? '#fbbf24' : '#fca5a5', background: afford ? 'rgba(251,191,36,0.12)' : 'rgba(239,68,68,0.12)' } }, costParts.join(' '))
+                                  : h('span', { className: 'text-[9px] font-bold px-1 py-0.5 rounded', style: { color: '#86efac', background: 'rgba(134,239,172,0.12)' } }, 'FREE')
+                              ),
+                              h('div', { className: 'text-[10px] leading-tight ' + (dk ? 'text-slate-400' : 'text-slate-600') }, qa.desc)
+                            );
+                          })
+                        )
+                      ),
+
+                      // ── Event log: last 5 events ──
+                      (queenEvents || []).length > 0 && h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-900/60 border-slate-700' : 'bg-slate-50 border-slate-200') },
+                        h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-slate-200' : 'text-slate-700') }, '📋 Recent events'),
+                        h('div', { className: 'space-y-1' },
+                          queenEvents.slice(-5).reverse().map(function(ev, i) {
+                            return h('div', { key: i, className: 'text-[11px] rounded p-1.5 leading-relaxed ' + (dk ? 'bg-slate-800 text-slate-200' : 'bg-white text-slate-700 border border-slate-200') },
+                              ev.text || ev.toString()
+                            );
+                          })
+                        )
+                      ),
+
+                      // ── Next day / End game ──
+                      h('div', { className: 'flex gap-2' },
+                        h('button', { onClick: advanceQueenDay,
+                          'aria-label': 'Advance to next day',
+                          className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white transition-all hover:brightness-110',
+                          style: {
+                            background: 'linear-gradient(135deg,#7c3aed 0%,#d97706 100%)',
+                            boxShadow: '0 4px 14px rgba(124,58,237,0.35)'
+                          }
+                        }, '⏩ Next Day · Day ' + (queenDay + 1)),
+                        h('button', { onClick: function() { updAll({ queen: Object.assign({}, queenData, { active: false }) }); },
+                          className: 'px-4 py-2.5 rounded-xl text-sm font-bold ' + (dk ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, 'End Game')
+                      )
+                    );
+                  })()
             ),
             // ═══ DRONE FLIGHT UI ═══
             viewMode === 'drone' && h('div', { className: 'space-y-3' },
@@ -9208,8 +9433,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('div', { className: 'text-xs font-bold mt-2 ' + (dk ? 'text-purple-300' : 'text-purple-700') }, '📋 Three Phases of Your Reign'),
                   h('div', { className: 'grid grid-cols-3 gap-2 max-w-lg mx-auto' },
                     [
-                      { icon: '🏗️', phase: 'BUILD', days: 'Days 1–10', desc: 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.', col: 'amber' },
-                      { icon: '⚔️', phase: 'DEFEND', days: 'Days 11–24', desc: 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.', col: 'red' },
+                      { icon: '🏗️', phase: 'BUILD', days: 'Days 1-10', desc: 'Establish your colony. Build structures, lay eggs, stockpile resources. Threats are rare.', col: 'amber' },
+                      { icon: '⚔️', phase: 'DEFEND', days: 'Days 11-24', desc: 'Threats double. Wasps, robber bees, hornets attack. Build guard posts, keep alarm pheromone ready.', col: 'red' },
                       { icon: '🐝', phase: 'SWARM', days: 'Day 25+', desc: 'Colony wants to split! Keep QMP above 40 or half your workers leave. Survive the swarm impulse.', col: 'purple' }
                     ].map(function(ph) {
                       return h('div', { key: ph.phase, className: 'rounded-lg p-2.5 border text-left ' + (dk ? 'bg-slate-800 border-' + ph.col + '-700/30' : 'bg-white border-' + ph.col + '-200') },
