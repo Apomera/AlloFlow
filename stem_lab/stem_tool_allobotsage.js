@@ -1039,6 +1039,94 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   function findSpell(id) { for (var i = 0; i < SPELLBOOK.length; i++) if (SPELLBOOK[i].id === id) return SPELLBOOK[i]; return null; }
 
   // ═══════════════════════════════════════════════════════════════
+  // AI-generated challenge bank (infinite questions via Gemini)
+  // ═══════════════════════════════════════════════════════════════
+  // Each spell ships with a static challengeBank as a baseline floor.
+  // This helper kicks off a background Gemini call to generate more
+  // questions in the same style + domain. Generated questions are
+  // validated against the same shape the static bank uses, then merged
+  // into d.aiChallengeCache[spellId] for use on future casts.
+  //
+  // Failure modes (network, malformed JSON, validation reject) all
+  // return [] so the static bank still works as fallback. The cast
+  // mechanic never blocks on AI — generation is fire-and-forget.
+  function aiGenerateChallenges(spell, callGemini, toolData) {
+    if (!callGemini || !spell) return Promise.resolve([]);
+    var examples = (spell.challengeBank || []).slice(0, 2);
+    var examplesJson = JSON.stringify(examples, null, 2);
+    var srcLabel = spell.sourceLabel || spell.sourceTool || 'general';
+    var srcData = (toolData && toolData[spell.sourceTool]) || {};
+    var srcSummary = '';
+    try {
+      // Small one-line summary of source-tool progress so the AI can pitch
+      // questions at roughly the right depth (e.g., "completed 5 missions").
+      var keys = Object.keys(srcData).filter(function(k) {
+        var v = srcData[k];
+        return typeof v === 'number' || typeof v === 'boolean';
+      });
+      if (keys.length > 0) {
+        srcSummary = 'Student progress in ' + srcLabel + ': '
+          + keys.slice(0, 4).map(function(k) { return k + '=' + srcData[k]; }).join(', ') + '.';
+      }
+    } catch (e) {}
+
+    var prompt = [
+      'You are generating retrieval-practice questions for a sci-fi educational roguelite called "AlloBot Sage".',
+      'Each spell has a domain. Generate 5 NEW multiple-choice questions for the spell named "' + spell.name + '"',
+      '(element: ' + (spell.element || 'general') + ', source domain: ' + srcLabel + ').',
+      'Target audience: middle-school students (grades 6-8). Questions must be factually accurate, clearly worded,',
+      'with EXACTLY one unambiguous correct answer and 3 plausible distractors.',
+      srcSummary,
+      '',
+      'Style examples from this spell\'s domain (do NOT duplicate these):',
+      examplesJson,
+      '',
+      'Return ONLY a JSON array of exactly 5 NEW questions. Each question must have this exact shape:',
+      '{ "prompt": "Question text?", "options": ["A", "B", "C", "D"], "correctIndex": 0, "explain": "1-2 sentence why" }',
+      '',
+      'Do NOT wrap in markdown. Do NOT add commentary. Output ONLY the JSON array now:'
+    ].join('\n');
+
+    return callGemini(prompt, true).then(function(result) {
+      var raw = typeof result === 'string' ? result : (result && result.text ? result.text : String(result || ''));
+      // Strip code fences if Gemini wrapped the array.
+      raw = raw.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+      // Find the outer array brackets.
+      var startIdx = raw.indexOf('[');
+      var endIdx = raw.lastIndexOf(']');
+      if (startIdx < 0 || endIdx <= startIdx) return [];
+      var sliced = raw.substring(startIdx, endIdx + 1);
+      var parsed;
+      try { parsed = JSON.parse(sliced); } catch (e) { return []; }
+      if (!Array.isArray(parsed)) return [];
+      // Validate each question. Reject malformed entries silently.
+      return parsed.filter(function(q) {
+        return q && typeof q.prompt === 'string' && q.prompt.length > 0
+          && Array.isArray(q.options) && q.options.length === 4
+          && q.options.every(function(o) { return typeof o === 'string' && o.length > 0; })
+          && typeof q.correctIndex === 'number' && q.correctIndex >= 0 && q.correctIndex < 4 && Math.floor(q.correctIndex) === q.correctIndex
+          && typeof q.explain === 'string' && q.explain.length > 0;
+      }).map(function(q) {
+        return {
+          prompt: String(q.prompt),
+          options: q.options.map(String),
+          correctIndex: Math.floor(q.correctIndex),
+          explain: String(q.explain),
+          aiGenerated: true
+        };
+      });
+    }).catch(function() { return []; });
+  }
+
+  // Returns the full question pool for a spell: static bank + cached AI bank.
+  function getMergedBank(spell, aiCache) {
+    var staticBank = spell.challengeBank || [];
+    var aiBank = (aiCache && aiCache[spell.id]) || [];
+    if (aiBank.length === 0) return staticBank;
+    return staticBank.concat(aiBank);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // Register tool
   // ═══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('alloBotSage', {
@@ -1061,8 +1149,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
       var setStemLabTool = ctx.setStemLabTool || function() {};
       var awardXP = ctx.awardXP || function() {};
+      var callGemini = ctx.callGemini || null;
 
       var d = toolData.alloBotSage || {};
+      var aiChallengeCache = d.aiChallengeCache || {};
 
       // Helpers to patch alloBotSage state.
       function updSage(patch) { ctx.updateMulti('alloBotSage', patch); }
@@ -1461,6 +1551,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             '/3 '
           ),
 
+          // AI question bank panel \u2014 pre-load + per-spell AI status.
+          // Only renders when callGemini is wired AND at least 1 spell is equipped.
+          callGemini && equippedLoadout.length > 0 && h('section', { 'aria-label': 'AI question banks', className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-gradient-to-br from-violet-50 to-fuchsia-50' },
+            h('div', { className: 'flex items-center justify-between gap-2 mb-2' },
+              h('div', null,
+                h('div', { className: 'text-[11px] font-bold text-violet-900 uppercase tracking-wider flex items-center gap-1' }, '\u2728 Infinite Question Bank'),
+                h('div', { className: 'text-[10px] text-violet-700 mt-0.5' }, 'Static questions never run out \u2014 Gemini generates fresh ones on top.')
+              ),
+              h('button', {
+                onClick: function() {
+                  // Fire off generation for any equipped spell that has no AI cache yet.
+                  // Already-cached spells are skipped (use refresh button to reroll).
+                  if (!callGemini) return;
+                  sfxClick();
+                  var inFlight = Object.assign({}, d._aiInFlight || {});
+                  var promises = [];
+                  equippedLoadout.forEach(function(spellId) {
+                    if (inFlight[spellId]) return;
+                    if ((aiChallengeCache[spellId] || []).length > 0) return;
+                    inFlight[spellId] = true;
+                    var s = findSpell(spellId);
+                    if (!s) return;
+                    promises.push(aiGenerateChallenges(s, callGemini, toolData).then(function(qs) {
+                      return { id: spellId, qs: qs };
+                    }));
+                  });
+                  if (promises.length === 0) {
+                    addToast('All equipped spells already have AI questions cached', 'info');
+                    return;
+                  }
+                  updKey('_aiInFlight', inFlight);
+                  addToast('Generating fresh questions for ' + promises.length + ' spell' + (promises.length > 1 ? 's' : '') + '...', 'info');
+                  Promise.all(promises).then(function(results) {
+                    var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
+                    var freshCache = Object.assign({}, freshD.aiChallengeCache || {});
+                    var freshFlight = Object.assign({}, freshD._aiInFlight || {});
+                    var addedCount = 0;
+                    results.forEach(function(r) {
+                      delete freshFlight[r.id];
+                      if (r.qs.length > 0) {
+                        freshCache[r.id] = r.qs;
+                        addedCount += r.qs.length;
+                      }
+                    });
+                    ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
+                    addToast('+' + addedCount + ' AI questions ready', 'success');
+                  });
+                },
+                className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold text-white bg-violet-600 hover:bg-violet-700 focus:ring-2 focus:ring-violet-400 focus:outline-none'
+              }, '\u2728 Pre-load')
+            ),
+            // Per-spell AI status row
+            h('div', { className: 'flex flex-col gap-1' },
+              equippedLoadout.map(function(spellId) {
+                var s = findSpell(spellId);
+                if (!s) return null;
+                var aiCount = (aiChallengeCache[spellId] || []).length;
+                var staticCount = (s.challengeBank || []).length;
+                var inFlight = !!(d._aiInFlight && d._aiInFlight[spellId]);
+                return h('div', {
+                  key: 'ai-' + spellId,
+                  className: 'flex items-center gap-2 text-[11px] py-0.5'
+                },
+                  h('span', { className: 'flex-shrink-0' }, s.icon),
+                  h('span', { className: 'font-bold flex-1 truncate', style: { color: s.color } }, s.name),
+                  h('span', { className: 'text-slate-500 text-[10px]' }, staticCount + ' static'),
+                  inFlight
+                    ? h('span', { className: 'text-violet-600 text-[10px] font-bold abs-pulse' }, '\u23f3 generating...')
+                    : aiCount > 0
+                      ? h('span', { className: 'text-violet-700 text-[10px] font-bold px-1.5 py-0.5 rounded bg-violet-100 border border-violet-300' }, '\u2728 +' + aiCount + ' AI')
+                      : h('span', { className: 'text-slate-400 text-[10px] italic' }, 'no AI yet'),
+                  aiCount > 0 && !inFlight && h('button', {
+                    onClick: function() {
+                      // Reroll the AI bank for THIS spell.
+                      if (!callGemini) return;
+                      sfxClick();
+                      var inFlightLocal = Object.assign({}, d._aiInFlight || {});
+                      inFlightLocal[spellId] = true;
+                      updKey('_aiInFlight', inFlightLocal);
+                      aiGenerateChallenges(s, callGemini, toolData).then(function(qs) {
+                        var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
+                        var freshCache = Object.assign({}, freshD.aiChallengeCache || {});
+                        var freshFlight = Object.assign({}, freshD._aiInFlight || {});
+                        delete freshFlight[spellId];
+                        if (qs.length > 0) freshCache[spellId] = qs;
+                        ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
+                        if (qs.length > 0) addToast('\u2728 ' + s.name + ' rerolled (+' + qs.length + ' new)', 'success');
+                      });
+                    },
+                    'aria-label': 'Regenerate AI questions for ' + s.name,
+                    className: 'text-violet-500 hover:text-violet-700 text-[10px] focus:outline-none focus:ring-1 focus:ring-violet-400 rounded'
+                  }, '\ud83d\udd04')
+                );
+              })
+            )
+          ),
+
           // Sector picker \u2014 richer cards showing the sector's enemy/boss pool
           h('section', { 'aria-label': 'Sector', className: 'mb-5' },
             h('h3', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, '\uD83C\uDF0C Choose a sector'),
@@ -1739,7 +1926,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           var s = findSpell(spellId);
           if (!s) return;
           if (exp.turn !== 'player') return;
-          var challenge = pickRandom(s.challengeBank);
+          // Merged bank: static + AI cache. AI questions appended to floor.
+          var bank = getMergedBank(s, aiChallengeCache);
+          var challenge = pickRandom(bank);
           sfxCastReady();
           mutateExp({
             pendingCast: {
@@ -1747,10 +1936,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               challenge: challenge,
               startedAt: Date.now(),
               selectedIndex: null,
-              resolved: false
+              resolved: false,
+              aiSourced: !!challenge.aiGenerated
             }
           });
           announceSR('Casting ' + s.name + '. ' + challenge.prompt);
+          // Lazy AI fetch: if no AI cache for this spell yet, fire a background
+          // request. The questions arrive within a few seconds and are merged
+          // for the next cast. THIS cast already used static bank.
+          var existingAi = (aiChallengeCache[spellId] || []);
+          if (existingAi.length === 0 && callGemini) {
+            // Mark in-flight so we don't double-fire if startCast runs again.
+            if (!d._aiInFlight || !d._aiInFlight[spellId]) {
+              var inFlight = Object.assign({}, d._aiInFlight || {});
+              inFlight[spellId] = true;
+              updKey('_aiInFlight', inFlight);
+              aiGenerateChallenges(s, callGemini, toolData).then(function(qs) {
+                var freshD = (ctx.toolData && ctx.toolData.alloBotSage) || {};
+                var freshCache = Object.assign({}, freshD.aiChallengeCache || {});
+                var freshFlight = Object.assign({}, freshD._aiInFlight || {});
+                delete freshFlight[spellId];
+                if (qs.length > 0) {
+                  freshCache[spellId] = qs;
+                  ctx.updateMulti('alloBotSage', { aiChallengeCache: freshCache, _aiInFlight: freshFlight });
+                } else {
+                  ctx.updateMulti('alloBotSage', { _aiInFlight: freshFlight });
+                }
+              });
+            }
+          }
         }
 
         function resolveChallenge(selectedIndex) {
