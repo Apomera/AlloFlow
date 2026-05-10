@@ -7835,7 +7835,109 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             mode === 'ocean' && React.createElement("div", { className: "space-y-3" },
 
+              // \u2500\u2500 Pre-game brief: fisheries management primer \u2500\u2500
+              // Auto-opens before any scenario is chosen (oceanYear === 0
+              // and free scenario default), collapses once student is in.
+              // The brief frames carrying capacity, collapse risk, and the
+              // four control knobs they'll touch (harvest, MPA, mesh, season).
+              React.createElement("details", {
+                open: !oceanScenario || oceanYear === 0,
+                className: "rounded-xl border border-blue-300 bg-gradient-to-br from-blue-50 to-sky-50"
+              },
+                React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-blue-800" }, "\uD83D\uDCDC How fisheries management works (click to toggle)"),
+                React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, "\uD83C\uDFAF What you're doing"),
+                    React.createElement("p", { className: "leading-relaxed" },
+                      "You're a fisheries manager. Each year you set policy: how much to harvest, how much ocean to protect, what mesh size to require. Three species (sardines, tuna, sharks) grow on logistic curves and prey on each other. Push too hard and the population crashes; harvest too little and fishers leave town. Find the balance.")
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, "\uD83D\uDC1F The four control knobs"),
+                    React.createElement("ul", { className: "list-disc list-inside space-y-1 leading-relaxed" },
+                      React.createElement("li", null, React.createElement("strong", null, "Harvest rate"), ": % of population you fish each year. Above 50% = red zone, collapse risk."),
+                      React.createElement("li", null, React.createElement("strong", null, "Marine Protected Area (MPA) %"), ": fraction of the ocean closed to fishing. Acts as a population reservoir; high MPAs prevent collapse."),
+                      React.createElement("li", null, React.createElement("strong", null, "Mesh size"), ": small mesh catches juveniles + bycatch; large mesh only catches mature fish. Larger = more sustainable, fewer non-target species caught."),
+                      React.createElement("li", null, React.createElement("strong", null, "Season"), ": Open / Closed. Closed seasons let breeders spawn before harvest resumes.")
+                    )
+                  ),
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "font-black mb-1 text-blue-900" }, "\uD83D\uDCC9 Collapse: the failure mode"),
+                    React.createElement("p", { className: "leading-relaxed" },
+                      "When a species drops below 10% of its carrying capacity (K), it has collapsed. Real-world example: Atlantic cod (1992 Newfoundland) collapsed from over-fishing and hasn't recovered 30+ years later. Sharks below 10% of K is also catastrophic because they're the top predator, and removing them cascades down the food web.")
+                  ),
+                  React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-blue-200" },
+                    "Tip: try Free Play first to see how the populations move year over year. Then take a scenario (Feed the Town, Recovery Plan, Balanced Eco) for a target.")
+                )
+              ),
 
+              // \u2500\u2500 Objective banner \u2500\u2500
+              // Shows current scenario's goal and live progress. Updates
+              // each year. Stays visible during play so student knows
+              // whether they're winning.
+              (function() {
+                var sc = oceanScenario || 'free';
+                var pop = oceanPop || { sardines: 0, tuna: 0, sharks: 0 };
+                var s = OCEAN_SPECIES; // [{id,K,...},...]
+                function K(id) { var sp = s.find(function(x){return x.id===id;}); return sp ? sp.K : 100; }
+                var sardPct = Math.round((pop.sardines || 0) / K('sardines') * 100);
+                var tunaPct = Math.round((pop.tuna || 0) / K('tuna') * 100);
+                var sharkPct = Math.round((pop.sharks || 0) / K('sharks') * 100);
+                var info, statusColor, statusBg, statusBorder;
+                if (sc === 'feed') {
+                  var done = oceanYear >= 10;
+                  var failed = oceanCollapsed;
+                  statusColor = failed ? '#dc2626' : done ? '#16a34a' : '#0369a1';
+                  statusBg = failed ? 'rgba(220,38,38,0.12)' : done ? 'rgba(34,197,94,0.15)' : 'rgba(56,189,248,0.18)';
+                  statusBorder = statusColor + '66';
+                  info = {
+                    title: '\uD83C\uDFC6 Feed the Town',
+                    goal: 'Sustain a productive harvest for 10 years without any species collapsing.',
+                    progress: 'Year ' + oceanYear + ' / 10' + (failed ? ' \u00B7 COLLAPSED' : done ? ' \u00B7 COMPLETE' : ''),
+                    coach: failed ? 'A species collapsed. Reset and try a lower harvest + higher MPA.' : (oceanYear >= 7 ? 'Almost there. Hold the line.' : 'Watch shark population: top-predator collapse cascades down.')
+                  };
+                } else if (sc === 'recover') {
+                  var sharkAt = pop.sharks >= 50;
+                  statusColor = sharkAt ? '#16a34a' : '#d97706';
+                  statusBg = sharkAt ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)';
+                  statusBorder = statusColor + '66';
+                  info = {
+                    title: '\uD83D\uDEE0 Recovery Plan',
+                    goal: 'Stocks have collapsed. Rebuild sharks back to at least 50 individuals.',
+                    progress: 'Sharks: ' + (pop.sharks || 0) + ' / 50' + (sharkAt ? ' \u00B7 COMPLETE' : ''),
+                    coach: sharkAt ? 'Recovery achieved. You can keep going to see steady-state.' : 'Set harvest near 0, MPA high (60-80%). Recovery takes years; advance time + 5.'
+                  };
+                } else if (sc === 'balance') {
+                  var balanced = sardPct >= 50 && tunaPct >= 50 && sharkPct >= 50;
+                  statusColor = balanced ? '#16a34a' : '#d97706';
+                  statusBg = balanced ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)';
+                  statusBorder = statusColor + '66';
+                  info = {
+                    title: '\u2696 Balanced Eco',
+                    goal: 'Keep ALL THREE species above 50% of their carrying capacity.',
+                    progress: '\uD83D\uDC1F ' + sardPct + '% \u00B7 \uD83D\uDC1F ' + tunaPct + '% \u00B7 \uD83E\uDD88 ' + sharkPct + '%' + (balanced ? ' \u00B7 BALANCED \u2713' : ''),
+                    coach: balanced ? 'All three are healthy. Hold steady.' : 'Lowest species drives the strategy. Boost it with MPA + lower harvest.'
+                  };
+                } else {
+                  // free play
+                  statusColor = '#0369a1'; statusBg = 'rgba(56,189,248,0.18)'; statusBorder = statusColor + '66';
+                  info = {
+                    title: '\uD83C\uDF0A Free Play',
+                    goal: 'Experiment freely. No win condition.',
+                    progress: 'Year ' + oceanYear,
+                    coach: 'Try different harvest + MPA combos. Reset anytime. Pick a scenario for a target.'
+                  };
+                }
+                return React.createElement("div", {
+                  role: 'status',
+                  className: "rounded-xl px-3 py-2 border flex flex-wrap items-center gap-2",
+                  style: { background: 'linear-gradient(135deg,' + statusBg + ' 0%,rgba(255,255,255,0.85) 100%)', borderColor: statusBorder, borderLeft: '4px solid ' + statusColor }
+                },
+                  React.createElement("div", { className: "text-[12px] font-black", style: { color: statusColor } }, info.title),
+                  React.createElement("div", { className: "text-[11px] text-slate-700 flex-1 min-w-[160px]" }, info.goal),
+                  React.createElement("div", { className: "text-[11px] font-mono font-bold", style: { color: statusColor } }, info.progress),
+                  info.coach && React.createElement("div", { className: "text-[10px] italic text-slate-600 basis-full" }, '\uD83D\uDCA1 ' + info.coach)
+                );
+              })(),
 
               // Scenario selector
 
@@ -8195,7 +8297,69 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             mode === 'marine' && React.createElement("div", { className: "space-y-3" },
 
+              // ── Pre-game brief: what ocean zones + biodiversity ──
+              // Opens by default; collapses once the student has clicked
+              // at least one species (selectedSpecies set) or the quiz
+              // panel is active.
+              React.createElement("details", {
+                open: !d.selectedSpecies && (quizScore.total || 0) === 0,
+                className: "rounded-xl border border-teal-300 bg-gradient-to-br from-teal-50 to-cyan-50"
+              },
+                React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-teal-800" }, "📜 What you're exploring (click to toggle)"),
+                React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
+                  React.createElement("div", null,
+                    React.createElement("div", { className: "font-black mb-1 text-teal-900" }, "🌊 The five ocean zones"),
+                    React.createElement("p", { className: "leading-relaxed" },
+                      "The ocean is layered by depth. Each layer has its own pressure, temperature, light, and creatures adapted to those conditions. Tap a zone band below to see species that live there.")
+                  ),
+                  React.createElement("ul", { className: "grid grid-cols-1 md:grid-cols-5 gap-1 text-[10px] leading-tight" },
+                    [
+                      { name: 'Sunlight (Epipelagic)',  depth: '0-200 m',       fact: 'Photosynthesis happens here. 90% of marine life.' },
+                      { name: 'Twilight (Mesopelagic)', depth: '200-1,000 m',   fact: 'Dim light. Bioluminescence appears.' },
+                      { name: 'Midnight (Bathypelagic)',depth: '1,000-4,000 m', fact: 'Total darkness. Pressure 100x surface.' },
+                      { name: 'Abyssal',                depth: '4,000-6,000 m', fact: 'Near freezing. Whale falls = entire ecosystems.' },
+                      { name: 'Hadal (Trenches)',       depth: '6,000-11,000 m',fact: 'Mariana Trench. Pressure 1,100x surface.' }
+                    ].map(function(z, i) {
+                      return React.createElement("li", { key: i, className: 'rounded p-1.5 bg-white/70 border border-teal-200' },
+                        React.createElement("div", { className: 'font-bold text-teal-800' }, z.name),
+                        React.createElement("div", { className: 'font-mono text-slate-600' }, z.depth),
+                        React.createElement("div", { className: 'text-slate-600 italic' }, z.fact)
+                      );
+                    })
+                  ),
+                  React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-teal-200" },
+                    "🎯 Goal: tap each zone to expand it, click a species to learn its habitat / diet / status, then test yourself with the quiz below. Aim to answer 10 questions to unlock the deep-sea biodiversity badge.")
+                )
+              ),
 
+              // ── Progress strip ──
+              // Shows zones explored, species clicked, quiz score so the
+              // open-ended exploration has a felt sense of progress.
+              (function() {
+                var zonesExplored = (d.zonesExplored || []).length;
+                var speciesClicked = (d.speciesClicked || []).length;
+                var totalSpecies = MARINE_SPECIES ? MARINE_SPECIES.length : 0;
+                var quizDone = (quizScore.total || 0);
+                var quizCorrect = (quizScore.correct || 0);
+                var quizGoal = 10;
+                var quizComplete = quizDone >= quizGoal;
+                var statusColor = quizComplete ? '#16a34a' : '#0d9488';
+                return React.createElement("div", {
+                  role: 'status',
+                  className: "rounded-xl px-3 py-2 border flex flex-wrap items-center gap-3",
+                  style: {
+                    background: 'linear-gradient(135deg,' + (quizComplete ? 'rgba(34,197,94,0.15)' : 'rgba(13,148,136,0.12)') + ' 0%,rgba(255,255,255,0.85) 100%)',
+                    borderColor: statusColor + '66',
+                    borderLeft: '4px solid ' + statusColor
+                  }
+                },
+                  React.createElement("div", { className: "text-[12px] font-black", style: { color: statusColor } }, '🔬 Marine Science'),
+                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🌊 Zones: ' + zonesExplored + '/5')),
+                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🐠 Species: ' + speciesClicked + '/' + totalSpecies)),
+                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🧠 Quiz: ' + quizCorrect + '/' + quizDone + (quizDone > 0 ? ' (' + Math.round(quizCorrect / quizDone * 100) + '%)' : ''))),
+                  quizComplete && React.createElement("div", { className: "ml-auto text-[11px] font-bold", style: { color: statusColor } }, '🏅 Badge unlocked')
+                );
+              })(),
 
               // Ocean Zones Cross-Section
 
@@ -8211,7 +8375,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                     role: "button", tabIndex: 0,
 
-                    onClick: function () { upd('selectedZone', selectedZone === zone.id ? null : zone.id); },
+                    onClick: function () {
+                      // Track zones explored for the progress strip.
+                      var prev = d.zonesExplored || [];
+                      if (prev.indexOf(zone.id) === -1) upd('zonesExplored', prev.concat([zone.id]));
+                      upd('selectedZone', selectedZone === zone.id ? null : zone.id);
+                    },
 
                     className: "w-full text-left transition-all hover:brightness-110 cursor-pointer",
 
@@ -8235,7 +8404,12 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                         return React.createElement("button", { key: sp.id,
 
-                          onClick: function (e) { e.stopPropagation(); upd('selectedSpecies', sp.id); openAnatomy(sp.id); sfxBubble(); },
+                          onClick: function (e) {
+                            e.stopPropagation();
+                            var prevSp = d.speciesClicked || [];
+                            if (prevSp.indexOf(sp.id) === -1) upd('speciesClicked', prevSp.concat([sp.id]));
+                            upd('selectedSpecies', sp.id); openAnatomy(sp.id); sfxBubble();
+                          },
 
                           className: "px-2.5 py-1 bg-white/25 rounded-full text-[11px] text-white font-bold hover:bg-white/40 hover:shadow-lg transition-all duration-200 backdrop-blur-sm border border-white/10"
 
