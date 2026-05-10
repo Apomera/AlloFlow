@@ -6077,9 +6077,76 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var loadPct = Math.min(100, Math.round(currentLoad / maxLoad * 100));
 
+              // Quick water-status summary for the objective banner.
+              // Mirrors the same thresholds getChemStatus uses so the
+              // summary stays in sync with the chemistry cards.
+              var nh3 = (waterChem && waterChem.ammonia) || 0;
+              var no2 = (waterChem && waterChem.nitrite) || 0;
+              var anyCrit = nh3 >= 1.0 || no2 >= 0.5;
+              var anyWarn = nh3 >= 0.25 || no2 >= 0.1;
+              var waterStatus = anyCrit ? { label: 'CRITICAL', color: '#dc2626', bg: 'rgba(220,38,38,0.12)' }
+                              : anyWarn ? { label: 'CAUTION', color: '#d97706', bg: 'rgba(245,158,11,0.15)' }
+                              :           { label: 'STABLE',  color: '#16a34a', bg: 'rgba(34,197,94,0.15)' };
+              var fishAlive = (tankFish || []).length;
+
 
 
               return React.createElement("div", { className: "space-y-3" },
+
+                // ── Pre-game brief: nitrogen cycle + goals ──
+                // Collapsible <details>. Auto-opens on day 0-1 so new
+                // students see the framing, then collapses by default
+                // once they've been playing. The hint icon + label make
+                // it easy to find again later.
+                React.createElement("details", {
+                  open: (simDay || 0) <= 1,
+                  className: "rounded-xl border border-cyan-300 bg-gradient-to-br from-cyan-50 to-sky-50"
+                },
+                  React.createElement("summary", { className: "cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800" }, "📜 How to keep this tank alive (click to toggle)"),
+                  React.createElement("div", { className: "px-3 pb-3 space-y-3 text-[11px] text-slate-700" },
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, "🎯 Goal"),
+                      React.createElement("p", { className: "leading-relaxed" },
+                        "Keep your fish alive and the water in safe ranges. Aquarium-hour ticks past while you watch. Fish wastes turn into ammonia (NH₃). Ammonia is toxic at 1 ppm. Your job: don't let it stay there.")
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, "🔬 The nitrogen cycle (the whole game)"),
+                      React.createElement("ol", { className: "list-decimal list-inside space-y-1 leading-relaxed" },
+                        React.createElement("li", null, React.createElement("strong", null, "Ammonia (NH₃)"), " is produced by fish waste. Highly toxic. Burns gills."),
+                        React.createElement("li", null, React.createElement("em", null, "Nitrosomonas"), " bacteria oxidize NH₃ → ", React.createElement("strong", null, "Nitrite (NO₂)"), ". Also toxic. Causes brown-blood disease."),
+                        React.createElement("li", null, React.createElement("em", null, "Nitrobacter"), " bacteria oxidize NO₂ → ", React.createElement("strong", null, "Nitrate (NO₃)"), ". Much less toxic, removed by plants or water changes."),
+                        React.createElement("li", null, "Real-world: this takes 4-6 weeks to establish from scratch. In this sim the bacteria are pre-seeded so you can play, but you still have to ", React.createElement("strong", null, "not overwhelm them"), ".")
+                      )
+                    ),
+                    React.createElement("div", null,
+                      React.createElement("div", { className: "font-black mb-1 text-cyan-900" }, "🛠 Your key actions"),
+                      React.createElement("ul", { className: "list-disc list-inside space-y-1 leading-relaxed" },
+                        React.createElement("li", null, React.createElement("strong", null, "Feed"), ": fish need food, but extra food becomes ammonia. Feed about once per day."),
+                        React.createElement("li", null, React.createElement("strong", null, "25% water change"), ": dilutes ammonia + nitrate by ~50% in one move. Use when chemistry trends red."),
+                        React.createElement("li", null, React.createElement("strong", null, "Plants"), ": absorb nitrate and produce oxygen by day. Bioload check: don't stock more fish than the bar allows."),
+                        React.createElement("li", null, React.createElement("strong", null, "Speed control"), ": pause to read, run 1×-5× to watch the cycle unfold. Days advance every tick.")
+                      )
+                    ),
+                    React.createElement("div", { className: "text-[10px] italic text-slate-600 pt-1 border-t border-cyan-200" },
+                      "Tip: click any chemistry card below for its safe range + 'what to do' guide. The cards turn amber or red when a value drifts out of the safe zone.")
+                  )
+                ),
+
+                // ── Objective banner ──
+                // Live status strip showing day, fish alive, water status,
+                // and bioload. Always visible so the student can read
+                // their situation at a glance during gameplay.
+                React.createElement("div", {
+                  role: "status",
+                  className: "rounded-xl px-3 py-2 border flex items-center gap-3 flex-wrap",
+                  style: { background: 'linear-gradient(135deg,' + waterStatus.bg + ' 0%,rgba(255,255,255,0.85) 100%)', borderColor: waterStatus.color + '66', borderLeft: '4px solid ' + waterStatus.color }
+                },
+                  React.createElement("div", { className: "text-[11px] font-black uppercase tracking-wider", style: { color: waterStatus.color } }, '💧 ' + waterStatus.label),
+                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '📅 Day ' + (simDay || 0))),
+                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '🐟 ' + fishAlive + ' fish')),
+                  React.createElement("div", { className: "text-[11px] text-slate-700" }, React.createElement("strong", null, '📊 Bioload ' + loadPct + '%')),
+                  React.createElement("div", { className: "ml-auto text-[11px] italic text-slate-600 hidden sm:block" }, anyCrit ? 'Do a 25% water change now.' : anyWarn ? 'Watch the trends. Reduce feeding.' : 'Tank is stable. Keep going.')
+                ),
 
                 // Tank header with time & speed
 
@@ -6216,13 +6283,22 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                       var isActive = chemTooltip === p.key;
 
-                      return React.createElement("div", { 
+                      // Status-tinted card background so red/amber/green
+                      // reads at a glance without having to click each card.
+                      var cardBg = st === 'bad'  ? 'bg-rose-50 border-rose-300'
+                                 : st === 'warn' ? 'bg-amber-50 border-amber-300'
+                                 :                 'bg-emerald-50 border-emerald-300';
+                      var activeBg = st === 'bad'  ? 'bg-rose-100 ring-2 ring-rose-400 shadow-lg'
+                                   : st === 'warn' ? 'bg-amber-100 ring-2 ring-amber-400 shadow-lg'
+                                   :                 'bg-white ring-2 ring-cyan-400 shadow-lg';
+
+                      return React.createElement("div", {
 
                         key: p.key,
 
                         onClick: function () { upd('chemTooltip', isActive ? null : p.key); },
 
-                        className: "rounded-lg p-2 text-center cursor-pointer transition-all hover:scale-105 " + (isActive ? "bg-white ring-2 ring-cyan-400 shadow-lg" : "bg-white/70 hover:bg-white/90")
+                        className: "rounded-lg p-2 text-center cursor-pointer transition-all hover:scale-105 border " + (isActive ? activeBg : cardBg)
 
                       },
 
