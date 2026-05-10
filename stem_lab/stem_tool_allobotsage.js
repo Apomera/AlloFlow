@@ -85,7 +85,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       + ' .abs-confetti-piece { position: absolute; width: 8px; height: 8px; pointer-events: none; will-change: transform, opacity; animation: absConfetti 1.2s ease-out forwards; }'
       + ' .abs-wand-aura { animation: absWandAura 2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }'
       + ' .abs-wand-flicker { animation: absWandFlicker 1.6s ease-in-out infinite; }'
-      + ' .abs-idle-twist { animation: absIdleTwist 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }';
+      + ' .abs-idle-twist { animation: absIdleTwist 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }'
+      // ── Phase 5: per-sector ambient particle effects (battlefield) ──
+      // absTwinkle: stars in Crystal Nebula — pulsing opacity.
+      // absDriftRise: pages/glyphs in Whispering Archive — drift upward, fade.
+      // absSlowSpin: gears in Ember Clockwork — slow rotate.
+      // absBubble: bubbles in Deep Tide — rise + fade out at top.
+      + ' @keyframes absTwinkle { 0%,100% { opacity: 0.3; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1.1); } }'
+      + ' @keyframes absDriftRise { 0% { transform: translateY(20px) rotate(-4deg); opacity: 0; } 15% { opacity: 0.6; } 85% { opacity: 0.6; } 100% { transform: translateY(-60px) rotate(8deg); opacity: 0; } }'
+      + ' @keyframes absSlowSpin { to { transform: rotate(360deg); } }'
+      + ' @keyframes absBubble { 0% { transform: translateY(0) scale(0.7); opacity: 0; } 20% { opacity: 0.55; } 90% { opacity: 0.55; } 100% { transform: translateY(-140px) scale(1); opacity: 0; } }'
+      + ' .abs-twinkle { animation: absTwinkle 2.4s ease-in-out infinite; }'
+      + ' .abs-drift-rise { animation: absDriftRise 6s ease-in-out infinite; }'
+      + ' .abs-slow-spin { animation: absSlowSpin 8s linear infinite; transform-origin: center; transform-box: fill-box; }'
+      + ' .abs-bubble { animation: absBubble 5s ease-in-out infinite; }';
     document.head.appendChild(_s);
   }
   (function() {
@@ -1248,10 +1261,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
     color: 'violet',
     category: 'Games',
     questHooks: [
-      { id: 'first_expedition',  label: 'Complete your first Expedition',  icon: '\u2728',        check: function(d) { return ((d.alloBotSage || {}).expeditionsCompleted || 0) >= 1; }, progress: function(d) { return ((d.alloBotSage || {}).expeditionsCompleted || 0) >= 1 ? 'Done!' : 'Not yet'; } },
-      { id: 'learn_3_spells',    label: 'Unlock 3 spells from other tools', icon: '\uD83D\uDCDC', check: function(d) { return computeUnlockedSpells(d).length >= 3; }, progress: function(d) { return computeUnlockedSpells(d).length + '/3'; } },
-      { id: 'cast_10',           label: 'Cast 10 spells across expeditions', icon: '\uD83D\uDD2E', check: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) >= 10; }, progress: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) + '/10'; } },
-      { id: 'crit_first',        label: 'Land a critical cast',              icon: '\u2B50',       check: function(d) { return ((d.alloBotSage || {}).critCasts || 0) >= 1; }, progress: function(d) { return ((d.alloBotSage || {}).critCasts || 0) >= 1 ? 'Done!' : 'Not yet'; } }
+      // \u2500\u2500 First-step quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      { id: 'first_expedition',  label: 'Complete your first Expedition',     icon: '\u2728',        check: function(d) { return ((d.alloBotSage || {}).expeditionsCompleted || 0) >= 1; }, progress: function(d) { return ((d.alloBotSage || {}).expeditionsCompleted || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'crit_first',        label: 'Land your first CRITICAL cast',      icon: '\u2B50',        check: function(d) { return ((d.alloBotSage || {}).critCasts || 0) >= 1; },           progress: function(d) { return ((d.alloBotSage || {}).critCasts || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      { id: 'interrupt_first',   label: 'Interrupt a boss SPECIAL',           icon: '\uD83D\uDEE1\uFE0F', check: function(d) { return ((d.alloBotSage || {}).interruptCount || 0) >= 1; },  progress: function(d) { return ((d.alloBotSage || {}).interruptCount || 0) >= 1 ? 'Done!' : 'Not yet'; } },
+      // \u2500\u2500 Spell-collection quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      { id: 'learn_3_spells',    label: 'Unlock 3 spells from other tools',   icon: '\uD83D\uDCDC', check: function(d) { return computeUnlockedSpells(d).length >= 3; },   progress: function(d) { return computeUnlockedSpells(d).length + '/3'; } },
+      { id: 'learn_10_spells',   label: 'Unlock 10 spells (half the grimoire)', icon: '\uD83D\uDCD6', check: function(d) { return computeUnlockedSpells(d).length >= 10; }, progress: function(d) { return computeUnlockedSpells(d).length + '/10'; } },
+      { id: 'learn_20_spells',   label: 'Unlock 20 spells',                   icon: '\uD83D\uDCDA', check: function(d) { return computeUnlockedSpells(d).length >= 20; }, progress: function(d) { return computeUnlockedSpells(d).length + '/20'; } },
+      { id: 'learn_all_spells',  label: 'Unlock the complete grimoire',       icon: '\uD83C\uDFC6', check: function(d) { return computeUnlockedSpells(d).length >= SPELLBOOK.length; }, progress: function(d) { return computeUnlockedSpells(d).length + '/' + SPELLBOOK.length; } },
+      // \u2500\u2500 Cast-volume quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      { id: 'cast_10',           label: 'Cast 10 spells across expeditions',  icon: '\uD83D\uDD2E', check: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) >= 10; },  progress: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) + '/10'; } },
+      { id: 'cast_100',          label: 'Cast 100 spells',                    icon: '\uD83D\uDD2E', check: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) >= 100; }, progress: function(d) { return ((d.alloBotSage || {}).totalCasts || 0) + '/100'; } },
+      { id: 'crit_25',           label: 'Land 25 CRITICAL casts',             icon: '\u2728',       check: function(d) { return ((d.alloBotSage || {}).critCasts || 0) >= 25; },   progress: function(d) { return ((d.alloBotSage || {}).critCasts || 0) + '/25'; } },
+      // \u2500\u2500 Sector-clear quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      { id: 'clear_crystal_nebula',     label: 'Clear the Crystal Nebula',     icon: '\uD83C\uDF0C', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).crystal_nebula; },     progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).crystal_nebula ? 'Done!' : 'Not yet'; } },
+      { id: 'clear_whispering_archive', label: 'Clear the Whispering Archive', icon: '\uD83D\uDCDC', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).whispering_archive; }, progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).whispering_archive ? 'Done!' : 'Not yet'; } },
+      { id: 'clear_ember_clockwork',    label: 'Clear the Ember Clockwork',    icon: '\u2699\uFE0F', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).ember_clockwork; },    progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).ember_clockwork ? 'Done!' : 'Not yet'; } },
+      { id: 'clear_deep_tide',          label: 'Clear the Deep Tide',          icon: '\uD83C\uDF0A', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).deep_tide; },          progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).deep_tide ? 'Done!' : 'Not yet'; } },
+      { id: 'clear_all_sectors',        label: 'Clear all 4 sectors',          icon: '\uD83C\uDFC6', check: function(d) { var s = ((d.alloBotSage || {}).sectorsCleared || {}); return ['crystal_nebula','whispering_archive','ember_clockwork','deep_tide'].every(function(id) { return s[id]; }); }, progress: function(d) { var s = ((d.alloBotSage || {}).sectorsCleared || {}); return ['crystal_nebula','whispering_archive','ember_clockwork','deep_tide'].filter(function(id) { return s[id]; }).length + '/4'; } },
+      // \u2500\u2500 Boss-defeat quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      { id: 'defeat_3_bosses',   label: 'Defeat 3 unique bosses',  icon: '\uD83D\uDC80', check: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length >= 3; },  progress: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length + '/3'; } },
+      { id: 'defeat_all_bosses', label: 'Defeat all 12 bosses',    icon: '\uD83D\uDC51', check: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length >= 12; }, progress: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length + '/12'; } },
+      // \u2500\u2500 Mastery + AI quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      { id: 'max_one_spell',     label: 'Upgrade a spell to LV 5',  icon: '\uD83C\uDF1F', check: function(d) { var lv = ((d.alloBotSage || {}).spellLevels || {}); return Object.keys(lv).some(function(k) { return lv[k] >= 5; }); }, progress: function(d) { var lv = ((d.alloBotSage || {}).spellLevels || {}); var max = Object.keys(lv).reduce(function(m, k) { return Math.max(m, lv[k] || 0); }, 0); return max + '/5'; } },
+      { id: 'ai_first_bank',     label: 'Generate AI questions for a spell', icon: '\u2728', check: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); return Object.keys(c).some(function(k) { return (c[k] || []).length > 0; }); }, progress: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); var total = Object.keys(c).reduce(function(t, k) { return t + (c[k] || []).length; }, 0); return total + ' AI questions'; } }
     ],
     render: function(ctx) {
       var React = window.React;
@@ -1312,11 +1346,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         }, ArrowLeft ? h(ArrowLeft, { className: 'w-3.5 h-3.5' }) : h('span', null, '\u2190'), h('span', null, label || 'Back'));
       }
 
+      // Mastery tier from cumulative cast count. Returns null below the first
+      // threshold so beginners don't see a "tier 0" badge.
+      function masteryTier(count) {
+        if (count >= 50) return { name: 'Sage',   bg: 'rgba(251,191,36,0.18)',   border: '#fbbf24', text: '#92400e', icon: '\uD83C\uDF1F' };
+        if (count >= 20) return { name: 'Master', bg: 'rgba(139,92,246,0.18)',   border: '#8b5cf6', text: '#5b21b6', icon: '\u2728' };
+        if (count >= 5)  return { name: 'Adept',  bg: 'rgba(59,130,246,0.15)',   border: '#3b82f6', text: '#1d4ed8', icon: '\u25C6' };
+        return null;
+      }
+
       function spellCard(s, opts) {
         opts = opts || {};
         var unlocked = opts.unlocked;
         var onClick = opts.onClick;
         var equipped = opts.equipped;
+        var usageCount = opts.usageCount || 0;
+        var tier = masteryTier(usageCount);
         return h('button', {
           key: s.id,
           onClick: onClick,
@@ -1325,12 +1370,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             + (unlocked
               ? (equipped ? 'border-violet-500 bg-violet-50' : 'border-slate-200 bg-white hover:border-violet-400 hover:bg-violet-50/50')
               : 'border-slate-200 bg-slate-50 opacity-60 cursor-not-allowed'),
-          'aria-label': s.name + (unlocked ? (equipped ? ' (equipped)' : ' (unlocked)') : ' (locked: ' + s.unlockHint + ')'),
+          'aria-label': s.name + (unlocked ? (equipped ? ' (equipped)' : ' (unlocked)') : ' (locked: ' + s.unlockHint + ')') + (tier ? ', ' + tier.name + ' tier (' + usageCount + ' casts)' : ''),
           style: unlocked ? { boxShadow: '0 1px 0 ' + s.color + '20' } : {}
         },
           h('div', { className: 'flex items-center gap-2 mb-1' },
             h('span', { className: 'text-2xl', 'aria-hidden': 'true', style: { filter: unlocked ? '' : 'grayscale(1)' } }, unlocked ? s.icon : '\uD83D\uDD12'),
             h('span', { className: 'font-bold text-sm', style: { color: unlocked ? s.color : '#94a3b8' } }, s.name),
+            tier && unlocked && h('span', {
+              className: 'text-[9px] font-bold px-1.5 py-0.5 rounded-md',
+              style: { background: tier.bg, border: '1px solid ' + tier.border, color: tier.text },
+              title: tier.name + ' (' + usageCount + ' casts)'
+            }, tier.icon + ' ' + tier.name),
             equipped && h('span', { className: 'ml-auto text-[10px] font-bold text-violet-600 uppercase tracking-wide' }, 'Equipped')
           ),
           h('div', { className: 'text-[11px] text-slate-300 leading-snug' },
@@ -1338,6 +1388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               ? (s.sourceLabel + ' \u00b7 ' + s.baseDamage + ' dmg \u00b7 crit \u00d7' + s.critMultiplier.toFixed(1))
               : ('Locked \u2014 ' + s.unlockHint)
           ),
+          unlocked && usageCount > 0 && h('div', { className: 'mt-1 text-[10px] text-slate-500 font-mono' }, '\uD83D\uDD2E ' + usageCount + ' cast' + (usageCount > 1 ? 's' : '')),
           unlocked && h('div', { className: 'mt-1 text-[10px] italic text-slate-400 leading-snug' }, s.flavor)
         );
       }
@@ -1614,7 +1665,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               )
             ),
             unlockedSpells.length > 0 && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-4' },
-              unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, onClick: function() {} }); })
+              unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: (d.castCounts || {})[s.id] || 0, onClick: function() {} }); })
             ),
             lockedSpells.length > 0 && h('div', null,
               h('h3', { className: 'text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2' }, 'Yet to discover (' + lockedSpells.length + ')'),
@@ -1849,6 +1900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               return spellCard(s, {
                 unlocked: true,
                 equipped: !!loadoutSet[s.id],
+                usageCount: (d.castCounts || {})[s.id] || 0,
                 onClick: function() { toggleSpell(s.id); }
               });
             })
@@ -1915,16 +1967,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         function finishExpedition(victory) {
           var baseEarned = exp.essenceEarned || 0;
           var bonus = victory ? scaledReward(5) : 0; // completion bonus for last boss
-          var reward = baseEarned + bonus;
+          // First-clear bonus: clearing a sector for the first time gives +20 essence
+          // and is logged in d.sectorsCleared so achievements can fire.
+          var sectorsClearedNow = Object.assign({}, d.sectorsCleared || {});
+          var bossesDefeatedNow = Object.assign({}, d.bossesDefeated || {});
+          var firstClearBonus = 0;
+          var firstClearSector = null;
+          if (victory) {
+            if (exp.sectorId && !sectorsClearedNow[exp.sectorId]) {
+              sectorsClearedNow[exp.sectorId] = true;
+              firstClearBonus = scaledReward(20);
+              firstClearSector = exp.sectorName || exp.sectorId;
+            }
+            // Track boss defeated (final room boss)
+            var lastRoom = (exp.roomsPlan || [])[(exp.roomsPlan || []).length - 1];
+            if (lastRoom && lastRoom.boss && lastRoom.id) {
+              bossesDefeatedNow[lastRoom.id] = true;
+            }
+          }
+          var reward = baseEarned + bonus + firstClearBonus;
           announceSR(victory ? 'Expedition complete! +' + reward + ' essence earned.' : 'Expedition ended after ' + (exp.roomsCleared || 0) + ' rooms. +' + reward + ' essence earned.');
-          updSage({
+          var debriefPatch = {
             phase: 'debrief',
-            expedition: Object.assign({}, exp, { result: victory ? 'victory' : 'defeat', reward: reward })
-          });
+            expedition: Object.assign({}, exp, {
+              result: victory ? 'victory' : 'defeat',
+              reward: reward,
+              firstClearBonus: firstClearBonus,
+              firstClearSector: firstClearSector
+            })
+          };
+          if (victory) {
+            debriefPatch.sectorsCleared = sectorsClearedNow;
+            debriefPatch.bossesDefeated = bossesDefeatedNow;
+            debriefPatch.expeditionsCompleted = expeditionsDone + 1;
+          }
+          updSage(debriefPatch);
           if (victory) {
             sfxVictory();
-            updKey('expeditionsCompleted', expeditionsDone + 1);
             try { awardXP('alloBotSage', 15 + (exp.roomsCleared || 0) * 3); } catch(e) {}
+            if (firstClearBonus > 0) {
+              addToast('🏆 First clear of ' + firstClearSector + '! +' + firstClearBonus + ' bonus essence', 'success');
+            }
           }
           updKey('essence', essence + reward);
         }
@@ -2120,15 +2203,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Stats
           updKey('totalCasts', totalCasts + 1);
           if (result === 'crit') updKey('critCasts', critCasts + 1);
+          // Per-spell mastery counter (drives the tier badge in the grimoire)
+          var nextCounts = Object.assign({}, d.castCounts || {});
+          nextCounts[s.id] = (nextCounts[s.id] || 0) + 1;
+          updKey('castCounts', nextCounts);
 
           // Boss-telegraph interrupt: a CRIT during the boss's WINDING phase
           // reduces the next special to 0.5×. Logged + announced for clarity.
+          // Also bumps d.interruptCount for the achievement check.
           var willInterrupt = !!enemy.boss && enemy.bossPhase === 'winding' && result === 'crit';
           var nextEnemy = Object.assign({}, enemy, { hp: newEnemyHp });
           if (willInterrupt) {
             nextEnemy.interrupted = true;
             nextLog = nextLog.concat([{ text: '🛡️ ' + enemy.name + '’s special is interrupted by your critical strike!', kind: 'player' }]);
             if (nextLog.length > 18) nextLog = nextLog.slice(-18);
+            updKey('interruptCount', (d.interruptCount || 0) + 1);
           }
           mutateExp({
             enemy: nextEnemy,
@@ -2198,9 +2287,104 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             h('div', { className: 'text-xs text-slate-300' }, 'Turn: ', h('span', { className: 'font-bold ' + (exp.turn === 'player' ? 'text-violet-600' : 'text-red-600') }, exp.turn === 'player' ? 'You' : enemy.name))
           ),
 
-          // Battlefield (sector-tinted gradient)
-          enemy.type !== 'shrine' && h('div', { className: 'rounded-2xl p-5 mb-3', style: { background: (sectorById(exp.sectorId).bgGradient || 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)'), color: 'white' } },
-            h('div', { className: 'flex items-center justify-between gap-4' },
+          // Battlefield (sector-tinted gradient + ambient particles per sector).
+          // Particles are absolutely-positioned children behind the player/enemy
+          // row so they don't interfere with interactions. Each sector gets its
+          // own thematic ambient set: stars (nebula), drifting pages (archive),
+          // spinning gears (clockwork), rising bubbles (deep tide).
+          enemy.type !== 'shrine' && h('div', {
+            className: 'rounded-2xl p-5 mb-3',
+            style: { background: (sectorById(exp.sectorId).bgGradient || 'linear-gradient(135deg, #1e1b4b 0%, #3b0764 100%)'), color: 'white', position: 'relative', overflow: 'hidden', minHeight: '200px' }
+          },
+            // Ambient particle layer (deterministic seed per sector so positions are stable)
+            h('div', {
+              'aria-hidden': 'true',
+              style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }
+            },
+              (function() {
+                var sectorId = exp.sectorId;
+                var particles = [];
+                var i;
+                if (sectorId === 'crystal_nebula') {
+                  // 18 small twinkling stars at pseudo-random positions
+                  for (i = 0; i < 18; i++) {
+                    var sLeft = ((i * 53) % 100);
+                    var sTop = ((i * 37) % 100);
+                    var sSize = 2 + (i % 3);
+                    var sDelay = (i * 0.17) % 2.4;
+                    particles.push(h('span', {
+                      key: 'star-' + i,
+                      className: 'abs-twinkle',
+                      style: {
+                        position: 'absolute',
+                        left: sLeft + '%', top: sTop + '%',
+                        width: sSize + 'px', height: sSize + 'px',
+                        background: '#fff',
+                        borderRadius: '50%',
+                        boxShadow: '0 0 ' + (sSize * 2) + 'px rgba(255,255,255,0.6)',
+                        animationDelay: sDelay + 's'
+                      }
+                    }));
+                  }
+                } else if (sectorId === 'whispering_archive') {
+                  // 8 drifting glyphs / page fragments
+                  var glyphs = ['📜', '✒', '✦', '𝔄', 'ℜ', '✧', '※', '𝔚'];
+                  for (i = 0; i < 8; i++) {
+                    particles.push(h('span', {
+                      key: 'glyph-' + i,
+                      className: 'abs-drift-rise',
+                      style: {
+                        position: 'absolute',
+                        left: ((i * 13 + 7) % 90) + '%',
+                        top: ((i * 27) % 80) + '%',
+                        fontSize: (12 + (i % 3) * 4) + 'px',
+                        animationDelay: ((i * 0.7) % 6) + 's',
+                        animationDuration: (5 + (i % 4)) + 's',
+                        color: 'rgba(254, 240, 138, 0.5)'
+                      }
+                    }, glyphs[i]));
+                  }
+                } else if (sectorId === 'ember_clockwork') {
+                  // 6 slow-spinning gears
+                  for (i = 0; i < 6; i++) {
+                    particles.push(h('span', {
+                      key: 'gear-' + i,
+                      className: 'abs-slow-spin',
+                      style: {
+                        position: 'absolute',
+                        left: ((i * 19 + 5) % 90) + '%',
+                        top: ((i * 31) % 80) + '%',
+                        fontSize: (16 + (i % 3) * 6) + 'px',
+                        animationDuration: (5 + (i % 4) * 2) + 's',
+                        animationDirection: i % 2 === 0 ? 'normal' : 'reverse',
+                        opacity: 0.18
+                      }
+                    }, '⚙'));
+                  }
+                } else if (sectorId === 'deep_tide') {
+                  // 14 rising bubbles
+                  for (i = 0; i < 14; i++) {
+                    var bSize = 4 + (i % 4) * 2;
+                    particles.push(h('span', {
+                      key: 'bubble-' + i,
+                      className: 'abs-bubble',
+                      style: {
+                        position: 'absolute',
+                        left: ((i * 11 + 3) % 95) + '%',
+                        bottom: '0%',
+                        width: bSize + 'px', height: bSize + 'px',
+                        borderRadius: '50%',
+                        background: 'radial-gradient(circle at 30% 30%, rgba(255,255,255,0.9), rgba(125,211,252,0.3))',
+                        animationDelay: ((i * 0.43) % 5) + 's',
+                        animationDuration: (4 + (i % 3)) + 's'
+                      }
+                    }));
+                  }
+                }
+                return particles;
+              })()
+            ),
+            h('div', { className: 'flex items-center justify-between gap-4', style: { position: 'relative', zIndex: 1 } },
               // Player
               h('div', { className: 'text-center flex-1' },
                 allobotAvatar(exp.playerHp < exp.playerMaxHp * 0.3 ? 'hurt' : 'happy'),
