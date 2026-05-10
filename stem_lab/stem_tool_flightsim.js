@@ -166,6 +166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { id: 'world_tour', name: 'Around the World', desc: 'Visit 5 airports across different continents. Learn geography as you fly!', goals: ['Visit any 5 different airports', 'Cross at least 2 oceans', 'Learn a fact at each stop'], lesson: 'navigation' },
     { id: 'coastal_rescue', name: '🚁 Coastal Rescue', desc: 'A boater is in distress 5nm offshore from PWM. Fly the rescue helicopter to the location, hover stably below 100 ft AGL, lower the hoist for 5 seconds, then return to PWM and land.', goals: ['Reach the survivor coordinates', 'Hover stably for hoist (≤100 ft AGL, ≤10 kts)', 'Hold hoist 5 seconds', 'Return to PWM', 'Land safely'], lesson: 'lift', requiresAircraft: 'rescue_heli' },
     { id: 'drone_survey', name: '🛸 Drone Aerial Survey', desc: 'Fly a Part 107 drone survey of Casco Bay. Stay below 400 ft AGL, within visual line of sight, capture 4 photo waypoints, and return to launch.', goals: ['Read FAA Part 107 briefing', 'Stay below 400 ft AGL', 'Capture 4 photo waypoints', 'Stay within 1 nm of launch', 'Return to launch + land'], lesson: 'navigation', requiresAircraft: 'drone' },
+    { id: 'drone_powerline', name: '🔌 Powerline Inspection', desc: 'Real Part 107 work: fly low and slow along a 6-segment powerline, photograph each defect site for the utility crew, and return to launch. Tighter tolerance — 30 ft, 60 ft AGL, 5 kts.', goals: ['Read FAA Part 107 briefing', 'Stay below 400 ft AGL', 'Inspect 6 defect sites at < 60 ft AGL', 'Stay within 30 ft of each pole', 'Return to launch + land'], lesson: 'navigation', requiresAircraft: 'drone' },
   ];
 
   // ── HYPERJET GEOGRAPHY SPRINT ROUTES ──
@@ -6895,10 +6896,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         }
       };
 
-      // ── Drone Aerial Survey overlay ──
-      // Renders battery + GPS + AGL HUD strip, photo-waypoint markers projected
+      // ── Drone Aerial Survey / Powerline Inspection overlay ──
+      // Renders battery + GPS + AGL HUD strip, waypoint markers projected
       // onto the canvas, the active capture progress ring, and a brief camera-flash
-      // when a photo is captured. Only active when d.survey.active.
+      // when a target is captured. Only active when d.survey.active.
       var drawSurveyOverlay = function(gfx, W, H, horizonY, state, time) {
         var survey = d.survey;
         if (!survey || !survey.active) return;
@@ -6906,21 +6907,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         var aglS = state.altitude - (state.fieldElev || 0);
         var ktsS = state.speed * 0.5924838;
         var launchDist = haversineNm(state.lat, state.lon, survey.launchLat, survey.launchLon);
+        var sMode = survey.mode || 'aerial';
+        var sTotal = photos.length;
+        var sLabel = sMode === 'powerline' ? '🔌 INSPECTIONS' : '📸 PHOTOS';
+        var sHudTitle = sMode === 'powerline' ? '🔌 LINE INSPECTOR' : '🛸 DRONE TELEMETRY';
+        var sCapRadiusFt = sMode === 'powerline' ? 30 : 50;
+        var sCapCeil = sMode === 'powerline' ? 60 : 100;
+        var sCapKts = sMode === 'powerline' ? 5 : 8;
+        var sCapHold = sMode === 'powerline' ? 1.5 : 2.0;
+        var sActiveColor = sMode === 'powerline' ? '#fb923c' : '#22d3ee';
+        var sActiveColorRgb = sMode === 'powerline' ? '251,146,60' : '34,211,238';
 
         // Top-right drone HUD strip
         var hudW = 220, hudH = 76;
         var hudX = W - hudW - 10, hudY = 40;
         gfx.fillStyle = 'rgba(8,47,73,0.88)';
         gfx.fillRect(hudX, hudY, hudW, hudH);
-        gfx.strokeStyle = 'rgba(8,145,178,0.6)';
+        gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',0.6)';
         gfx.lineWidth = 1;
         gfx.strokeRect(hudX, hudY, hudW, hudH);
 
         // Header
-        gfx.fillStyle = '#7dd3fc';
+        gfx.fillStyle = sActiveColor;
         gfx.font = 'bold 10px system-ui';
         gfx.textAlign = 'left';
-        gfx.fillText('🛸 DRONE TELEMETRY', hudX + 8, hudY + 13);
+        gfx.fillText(sHudTitle, hudX + 8, hudY + 13);
 
         // Battery bar
         var bat = survey.battery != null ? survey.battery : 100;
@@ -6948,10 +6959,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.fillStyle = vlosColor;
         gfx.fillText('VLOS ' + launchDist.toFixed(2) + ' nm / 1.00 max', hudX + 8, hudY + 56);
 
-        // Photo count
-        gfx.fillStyle = '#7dd3fc';
+        // Capture / inspection count + AGL-ceiling reminder for current mode
+        gfx.fillStyle = sActiveColor;
         gfx.font = 'bold 10px system-ui';
-        gfx.fillText('📸 PHOTOS: ' + (survey.capturedCount || 0) + ' / 4', hudX + 8, hudY + 70);
+        gfx.fillText(sLabel + ': ' + (survey.capturedCount || 0) + ' / ' + sTotal, hudX + 8, hudY + 70);
+        gfx.fillStyle = '#64748b';
+        gfx.font = '8px system-ui';
+        gfx.textAlign = 'right';
+        gfx.fillText('hold ' + sCapHold.toFixed(1) + 's < ' + sCapCeil + 'ft AGL < ' + sCapKts + 'kts', hudX + hudW - 8, hudY + 70);
+
+        // ── Search-pattern polyline ──
+        // Connect uncaptured waypoints with a faint cyan line so students see
+        // the box / lawnmower pattern. Real drone surveys ALWAYS fly a planned
+        // pattern — random sweeps miss coverage and waste battery.
+        var screenPts = [];
+        for (var spi = 0; spi < photos.length; spi++) {
+          var sp = photos[spi];
+          var spBrg = bearing(state.lat, state.lon, sp.lat, sp.lon);
+          var spRel = ((spBrg - state.heading + 540) % 360) - 180;
+          var spDistNm = haversineNm(state.lat, state.lon, sp.lat, sp.lon);
+          if (Math.abs(spRel) < 80 && spDistNm < 6) {
+            var spX = W / 2 + (spRel / 60) * (W * 0.45);
+            var tN = Math.max(0.05, 1 - Math.min(1, Math.log(spDistNm * 60 + 1) / Math.log(120)));
+            var spY = horizonY + (H - horizonY) * (0.05 + 0.85 * (tN * tN));
+            screenPts.push({ x: spX, y: spY, captured: sp.captured });
+          } else {
+            screenPts.push(null); // off-screen
+          }
+        }
+        // Draw polyline connecting uncaptured waypoints in order (forms the search pattern)
+        gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',0.4)';
+        gfx.lineWidth = 1.5;
+        gfx.setLineDash([6, 4]);
+        gfx.beginPath();
+        var lineStarted = false;
+        for (var li = 0; li < screenPts.length; li++) {
+          var pt = screenPts[li];
+          if (!pt) { lineStarted = false; continue; }
+          if (!lineStarted) {
+            gfx.moveTo(pt.x, pt.y);
+            lineStarted = true;
+          } else {
+            gfx.lineTo(pt.x, pt.y);
+          }
+        }
+        gfx.stroke();
+        gfx.setLineDash([]);
 
         // Project photo waypoints onto canvas (front of camera)
         for (var pi = 0; pi < photos.length; pi++) {
@@ -6966,13 +7019,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var pBy = horizonY + (H - horizonY) * (0.05 + 0.85 * (tNorm * tNorm));
             // Pulse marker
             var pulseS = 0.5 + 0.5 * Math.sin(time * 4 + pi);
-            gfx.strokeStyle = 'rgba(34,211,238,' + (0.6 + pulseS * 0.4) + ')';
+            gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',' + (0.6 + pulseS * 0.4) + ')';
             gfx.lineWidth = 2;
             gfx.beginPath();
             gfx.arc(pBx, pBy, 14 + pulseS * 6, 0, Math.PI * 2);
             gfx.stroke();
             // Inner dot
-            gfx.fillStyle = 'rgba(34,211,238,0.85)';
+            gfx.fillStyle = 'rgba(' + sActiveColorRgb + ',0.85)';
             gfx.beginPath();
             gfx.arc(pBx, pBy, 4, 0, Math.PI * 2);
             gfx.fill();
@@ -6987,22 +7040,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
         // Capture-in-progress ring (center of canvas)
         var capP = survey.captureProgress || 0;
-        if (capP > 0.05 && (survey.capturedCount || 0) < 4) {
+        if (capP > 0.05 && (survey.capturedCount || 0) < sTotal) {
           var crX = W / 2, crY = H * 0.4;
           gfx.strokeStyle = 'rgba(15,23,42,0.85)';
           gfx.lineWidth = 8;
           gfx.beginPath(); gfx.arc(crX, crY, 26, 0, Math.PI * 2); gfx.stroke();
-          gfx.strokeStyle = '#22d3ee';
+          gfx.strokeStyle = sActiveColor;
           gfx.lineWidth = 4;
           gfx.beginPath();
-          gfx.arc(crX, crY, 26, -Math.PI / 2, -Math.PI / 2 + (capP / 2) * Math.PI * 2);
+          gfx.arc(crX, crY, 26, -Math.PI / 2, -Math.PI / 2 + (capP / sCapHold) * Math.PI * 2);
           gfx.stroke();
           gfx.fillStyle = '#fff';
           gfx.font = 'bold 11px system-ui';
           gfx.textAlign = 'center';
-          gfx.fillText('📸 CAPTURING', crX, crY - 38);
+          gfx.fillText((sMode === 'powerline' ? '🔌 INSPECTING' : '📸 CAPTURING'), crX, crY - 38);
           gfx.font = 'bold 10px monospace';
-          gfx.fillText(capP.toFixed(1) + ' / 2.0 s', crX, crY + 46);
+          gfx.fillText(capP.toFixed(1) + ' / ' + sCapHold.toFixed(1) + ' s', crX, crY + 46);
         }
 
         // Camera flash effect (300ms after each photo)
@@ -7016,26 +7069,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (survey.completed && survey.completedAt && (time - survey.completedAt) < 8) {
           var sAge = time - survey.completedAt;
           var sAlpha = Math.min(1, sAge < 0.5 ? sAge * 2 : (sAge > 6 ? (8 - sAge) / 2 : 1));
-          var scW = 360, scH = 110;
+          var scW = 380, scH = 110;
           var scX = (W - scW) / 2, scY = H * 0.25;
           gfx.fillStyle = 'rgba(8,47,73,' + (0.92 * sAlpha) + ')';
           gfx.fillRect(scX, scY, scW, scH);
-          gfx.strokeStyle = 'rgba(8,145,178,' + sAlpha + ')';
+          gfx.strokeStyle = 'rgba(' + sActiveColorRgb + ',' + sAlpha + ')';
           gfx.lineWidth = 2;
           gfx.strokeRect(scX, scY, scW, scH);
-          gfx.fillStyle = 'rgba(34,211,238,' + sAlpha + ')';
+          gfx.fillStyle = 'rgba(' + sActiveColorRgb + ',' + sAlpha + ')';
           gfx.font = 'bold 16px system-ui';
           gfx.textAlign = 'center';
-          gfx.fillText('✅ SURVEY COMPLETE', W / 2, scY + 30);
+          var doneTitle = sMode === 'powerline' ? '✅ INSPECTION COMPLETE' : '✅ SURVEY COMPLETE';
+          var doneSub = sMode === 'powerline'
+            ? 'All ' + sTotal + ' poles documented · drone returned'
+            : 'All ' + sTotal + ' photos captured · drone returned';
+          var donePart107 = sMode === 'powerline'
+            ? 'Part 107 Powerline Inspection complete'
+            : 'Part 107 Aerial Survey complete';
+          gfx.fillText(doneTitle, W / 2, scY + 30);
           gfx.fillStyle = 'rgba(255,255,255,' + sAlpha + ')';
           gfx.font = 'bold 12px system-ui';
-          gfx.fillText('All 4 photos captured · drone returned', W / 2, scY + 54);
+          gfx.fillText(doneSub, W / 2, scY + 54);
           gfx.fillStyle = 'rgba(125,211,252,' + sAlpha + ')';
           gfx.font = '11px system-ui';
           gfx.fillText('Battery remaining: ' + Math.round(survey.battery || 0) + '%', W / 2, scY + 74);
           gfx.fillStyle = 'rgba(251,191,36,' + sAlpha + ')';
           gfx.font = 'italic 10px system-ui';
-          gfx.fillText('Part 107 Aerial Survey complete', W / 2, scY + 94);
+          gfx.fillText(donePart107, W / 2, scY + 94);
         }
       };
 
@@ -7840,9 +7900,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
           }
 
-          // ── Drone Aerial Survey mission tick ──
-          // Tracks photo-waypoint capture. Drone must hover within 50 ft of a
-          // waypoint for 2 seconds at <100 ft AGL and <8 kts to "capture".
+          // ── Drone Aerial Survey / Powerline Inspection mission tick ──
+          // Tracks waypoint capture. Tolerances depend on mission mode:
+          //   aerial:    < 50 ft horiz, < 100 ft AGL, < 8 kts, 2.0 s hold
+          //   powerline: < 30 ft horiz, <  60 ft AGL, < 5 kts, 1.5 s hold
           // Battery decays slowly while in flight.
           var survey = d.survey;
           if (survey && survey.active && !survey.completed) {
@@ -7851,6 +7912,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var capProgress = survey.captureProgress || 0;
             var aglS = state.altitude - (state.fieldElev || 0);
             var ktsS = state.speed * 0.5924838;
+            var sMode = survey.mode || 'aerial';
+            var capRadiusFt = sMode === 'powerline' ? 30 : 50;
+            var capCeilingAgl = sMode === 'powerline' ? 60 : 100;
+            var capMaxKts = sMode === 'powerline' ? 5 : 8;
+            var capHoldSec = sMode === 'powerline' ? 1.5 : 2.0;
+            var totalTargets = photos.length;
+            var captureEmoji = sMode === 'powerline' ? '🔌' : '📸';
+            var actionWord = sMode === 'powerline' ? 'inspected' : 'captured';
             // Find nearest uncaptured photo waypoint
             var nearestPi = -1; var nearestDistFt = 9e9;
             for (var pi = 0; pi < photos.length; pi++) {
@@ -7859,18 +7928,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var pdFt = pdNm * 6076;
               if (pdFt < nearestDistFt) { nearestDistFt = pdFt; nearestPi = pi; }
             }
-            // Capture conditions: within 50 ft horizontally, <100 ft AGL, <8 kts
-            var capturable = nearestPi >= 0 && nearestDistFt < 50 && aglS < 100 && aglS > 5 && ktsS < 8;
+            var capturable = nearestPi >= 0 && nearestDistFt < capRadiusFt && aglS < capCeilingAgl && aglS > 5 && ktsS < capMaxKts;
             if (capturable) {
               capProgress += dt;
-              if (capProgress >= 2) {
+              if (capProgress >= capHoldSec) {
                 photos[nearestPi].captured = true;
                 capProgress = 0;
                 survey.capturedCount = (survey.capturedCount || 0) + 1;
                 survey.flashAt = timeRef.current; // for camera-flash overlay
                 anyChange = true;
-                if (typeof addToast === 'function') addToast('📸 ' + photos[nearestPi].name + ' captured! ' + survey.capturedCount + '/4', 'success');
-                if (typeof skyAnnounce === 'function') skyAnnounce('Photo captured. ' + survey.capturedCount + ' of 4.');
+                if (typeof addToast === 'function') addToast(captureEmoji + ' ' + photos[nearestPi].name + ' ' + actionWord + '! ' + survey.capturedCount + '/' + totalTargets, 'success');
+                if (typeof skyAnnounce === 'function') skyAnnounce(actionWord.charAt(0).toUpperCase() + actionWord.slice(1) + '. ' + survey.capturedCount + ' of ' + totalTargets + '.');
               }
             } else {
               capProgress = Math.max(0, capProgress - dt * 1.5);
@@ -7887,13 +7955,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             } else if (launchDist <= 1.0 && survey.vlosWarned) {
               survey.vlosWarned = false; anyChange = true;
             }
-            // Mission complete: all 4 captured AND landed back near launch
-            if (survey.capturedCount >= 4 && state.onGround && launchDist < 0.2) {
+            // Mission complete: all targets captured AND landed back near launch
+            if (survey.capturedCount >= totalTargets && state.onGround && launchDist < 0.2) {
               survey.completed = true;
               survey.completedAt = timeRef.current;
               upd('surveysCompleted', (d.surveysCompleted || 0) + 1);
-              if (typeof addToast === 'function') addToast('✅ SURVEY COMPLETE — all 4 photos captured', 'success');
-              if (typeof skyAnnounce === 'function') skyAnnounce('Survey complete. All photos captured. Drone landed.');
+              var doneLabel = sMode === 'powerline'
+                ? '✅ INSPECTION COMPLETE — all ' + totalTargets + ' poles documented'
+                : '✅ SURVEY COMPLETE — all ' + totalTargets + ' photos captured';
+              var doneAnnounce = sMode === 'powerline'
+                ? 'Powerline inspection complete. Drone landed.'
+                : 'Survey complete. All photos captured. Drone landed.';
+              if (typeof addToast === 'function') addToast(doneLabel, 'success');
+              if (typeof skyAnnounce === 'function') skyAnnounce(doneAnnounce);
               anyChange = true;
             }
             // Persist update — only if meaningful change to avoid render thrash
@@ -8431,9 +8505,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               // a central body with camera gimbal, blinking nav lights.
               var droneScale = 0.85;
               gfx.scale(droneScale, droneScale);
-              // Shadow
+              // Shadow (drawn before tilt so it stays grounded under the drone)
               gfx.fillStyle = 'rgba(0,0,0,0.18)';
               gfx.beginPath(); gfx.ellipse(0, 12, 22, 4, 0, 0, Math.PI * 2); gfx.fill();
+              // Wind-drift compensation: real drones tilt INTO the wind to hold
+              // position. Sample wind vs heading; tilt scales with hover-ness
+              // (zero airspeed = full tilt; >5 kts = no tilt because the drone
+              // is moving and doesn't need to fight wind to hold a spot).
+              var dWeather = weatherRef.current || { wind: 0, windDir: 270 };
+              var dWspd = dWeather.wind || 0;
+              var dRelWind = ((dWeather.windDir - state.heading + 540) % 360) - 180;
+              var dHoverFactor = Math.max(0, 1 - (state.speed * 0.5924838) / 5);
+              var dTiltDeg = Math.sin(dRelWind * Math.PI / 180) * Math.min(dWspd, 25) / 25 * 8 * dHoverFactor;
+              gfx.rotate(dTiltDeg * Math.PI / 180);
               // X-frame arms (4 diagonals from center)
               gfx.strokeStyle = '#1f2937';
               gfx.lineWidth = 2.4;
@@ -10197,18 +10281,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                     var pwm = WAYPOINTS.filter(function(a) { return a.id === 'kpwm'; })[0];
                     var lat0 = pwm ? pwm.lat : 43.646;
                     var lon0 = pwm ? pwm.lon : -70.309;
-                    // Place 4 photo waypoints in a small box pattern within ~1 nm of launch
-                    var photoPts = [
-                      { lat: lat0 + 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 1 — NE' },
-                      { lat: lat0 + 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 2 — NW' },
-                      { lat: lat0 - 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 3 — SW' },
-                      { lat: lat0 - 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 4 — SE' }
-                    ];
+                    var mode = d.selectedChallenge === 'drone_powerline' ? 'powerline' : 'aerial';
+                    var photoPts;
+                    var armToast;
+                    if (mode === 'powerline') {
+                      // 6 defect sites strung along a ~0.6 nm east-west powerline
+                      // running just NW of PWM (rural Maine countryside).
+                      // Spacing ~0.002° lon ≈ 540 ft per pole — realistic transmission spacing.
+                      var poleLat = lat0 + 0.012;
+                      photoPts = [
+                        { lat: poleLat, lon: lon0 - 0.006, captured: false, name: 'Pole 1 — Cracked insulator' },
+                        { lat: poleLat, lon: lon0 - 0.004, captured: false, name: 'Pole 2 — Vegetation contact' },
+                        { lat: poleLat, lon: lon0 - 0.002, captured: false, name: 'Pole 3 — Loose hardware' },
+                        { lat: poleLat, lon: lon0 + 0.000, captured: false, name: 'Pole 4 — Corrosion' },
+                        { lat: poleLat, lon: lon0 + 0.002, captured: false, name: 'Pole 5 — Splice integrity' },
+                        { lat: poleLat, lon: lon0 + 0.004, captured: false, name: 'Pole 6 — Bird strike risk' }
+                      ];
+                      armToast = '🔌 Powerline inspection armed. Fly low (< 60 ft AGL) and slow (< 5 kts) along each pole.';
+                    } else {
+                      // 4 photo waypoints in a small box pattern within ~1 nm of launch
+                      photoPts = [
+                        { lat: lat0 + 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 1 — NE' },
+                        { lat: lat0 + 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 2 — NW' },
+                        { lat: lat0 - 0.008, lon: lon0 - 0.008, captured: false, name: 'Photo 3 — SW' },
+                        { lat: lat0 - 0.008, lon: lon0 + 0.008, captured: false, name: 'Photo 4 — SE' }
+                      ];
+                      armToast = '🛸 Drone armed. Lift off and fly to each photo waypoint. Stay below 400 ft.';
+                    }
                     updMulti({
                       droneBriefing: false,
                       aircraft: 'drone',
                       survey: {
                         active: true,
+                        mode: mode,
                         launchLat: lat0,
                         launchLon: lon0,
                         photos: photoPts,
@@ -10219,7 +10324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                       }
                     });
                     startFlying('kpwm');
-                    if (typeof addToast === 'function') addToast('🛸 Drone armed. Lift off and fly to each photo waypoint. Stay below 400 ft.', 'info');
+                    if (typeof addToast === 'function') addToast(armToast, 'info');
                   },
                   style: { flex: 2, padding: '12px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0891b2, #06b6d4)', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 4px 12px rgba(8,145,178,0.4)' }
                 }, '✓ I Understand — Begin Flight')
@@ -10413,7 +10518,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               CHALLENGES.map(function(ch) {
                 var isRescue = ch.id === 'coastal_rescue';
-                var isDroneMission = ch.id === 'drone_survey';
+                var isDroneMission = ch.id === 'drone_survey' || ch.id === 'drone_powerline';
+                var isPowerline = ch.id === 'drone_powerline';
                 return h('button', { key: ch.id, onClick: function() {
                   if (isRescue) {
                     // Rescue mission: force aircraft selection to helicopter,
@@ -10447,7 +10553,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 },
                   style: { padding: '10px 12px', borderRadius: '8px', border: '1px solid ' + (isRescue ? '#dc2626' : (isDroneMission ? '#0891b2' : '#334155')), background: isRescue ? 'linear-gradient(135deg, #1f0a0a, #2d0f0f)' : (isDroneMission ? 'linear-gradient(135deg, #082f49, #0c4a6e)' : '#0f172a'), color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }
                 },
-                  h('div', { style: { fontSize: '24px', shrink: 0 } }, isRescue ? '🚁' : (isDroneMission ? '🛸' : '🎯')),
+                  h('div', { style: { fontSize: '24px', shrink: 0 } }, isRescue ? '🚁' : (isPowerline ? '🔌' : (isDroneMission ? '🛸' : '🎯'))),
                   h('div', null,
                     h('div', { style: { fontSize: '12px', fontWeight: 700 } }, ch.name),
                     h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, ch.desc)
