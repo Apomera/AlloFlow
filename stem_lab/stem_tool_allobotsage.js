@@ -967,6 +967,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         { prompt: 'Neurons send signals using...', options: ['mechanical bumps only', 'electrical impulses + chemical neurotransmitters', 'magnetic waves', 'sound'], correctIndex: 1, explain: 'Action potential travels electrically, then chemicals cross the synapse.' },
         { prompt: 'Which body system fights infections?', options: ['digestive', 'immune', 'endocrine', 'skeletal'], correctIndex: 1, explain: 'Immune system: white blood cells, lymph nodes, spleen, antibodies.' }
       ]
+    },
+    {
+      id: 'chromatic_choir',
+      name: 'Chromatic Choir',
+      element: 'color',
+      icon: '\uD83C\uDFA8',
+      color: '#ec4899',
+      sourceTool: 'artStudio',
+      sourceLabel: 'Art Studio',
+      unlock: function(d) { return ((d.artStudio || {}).creationsCompleted || 0) >= 3; },
+      unlockHint: 'Complete 3 creations in Art Studio',
+      baseDamage: 26,
+      critMultiplier: 2.2,
+      flavor: 'Seven hues blast outward in a singing arc.',
+      challengeBank: [
+        { prompt: 'The three PRIMARY colors of light are...', options: ['red, yellow, blue', 'red, green, blue', 'cyan, magenta, yellow', 'black, white, gray'], correctIndex: 1, explain: 'Light uses additive primaries: RGB. Paint uses subtractive primaries (CMY or RYB).' },
+        { prompt: 'Mixing all primary colors of LIGHT produces...', options: ['black', 'white', 'brown', 'gray'], correctIndex: 1, explain: 'Additive mixing: R+G+B → white. (Paint subtractive mixing → near-black.)' },
+        { prompt: 'Two colors directly opposite on the color wheel are called...', options: ['analogous', 'monochromatic', 'complementary', 'triadic'], correctIndex: 2, explain: 'Complementary pairs (red/green, blue/orange) create high contrast.' },
+        { prompt: 'A color\'s value refers to its...', options: ['hue', 'lightness/darkness', 'saturation', 'temperature'], correctIndex: 1, explain: 'Value = how light or dark — independent of hue or saturation.' },
+        { prompt: 'Saturation describes a color\'s...', options: ['brightness only', 'purity / vividness', 'temperature', 'size on canvas'], correctIndex: 1, explain: 'A highly saturated color is intense; a desaturated one is grayish.' },
+        { prompt: 'Which is a WARM color?', options: ['blue', 'green', 'red-orange', 'violet'], correctIndex: 2, explain: 'Reds, oranges, yellows — associated with warmth/sun/fire.' },
+        { prompt: 'In a painting, the area where the viewer\'s eye is drawn first is called the...', options: ['background', 'focal point', 'horizon', 'frame'], correctIndex: 1, explain: 'Focal point — created via contrast, isolation, or composition.' }
+      ]
+    },
+    {
+      id: 'harmonic_havoc',
+      name: 'Harmonic Havoc',
+      element: 'sound',
+      icon: '\uD83C\uDFB5',
+      color: '#a855f7',
+      sourceTool: 'music',
+      sourceLabel: 'Music Lab',
+      unlock: function(d) { return ((d.music || {}).songsCompleted || 0) >= 2; },
+      unlockHint: 'Complete 2 songs in Music Lab',
+      baseDamage: 28,
+      critMultiplier: 2,
+      flavor: 'A perfect fifth resolves into something violent.',
+      challengeBank: [
+        { prompt: 'A standard major scale has how many notes?', options: ['5', '7', '8', '12'], correctIndex: 1, explain: '7 unique notes (do re mi fa sol la ti); 8 counting the octave.' },
+        { prompt: 'The pitch difference between C and the next higher C is one...', options: ['note', 'tone', 'octave', 'fifth'], correctIndex: 2, explain: 'Octave = doubled frequency. C4 is 261.6 Hz; C5 is 523.2 Hz.' },
+        { prompt: 'Tempo is measured in...', options: ['Hertz', 'beats per minute', 'decibels', 'notes per measure'], correctIndex: 1, explain: 'BPM — how many beats fit in 60 seconds.' },
+        { prompt: 'A song in 4/4 time has how many beats per measure?', options: ['2', '3', '4', '6'], correctIndex: 2, explain: 'Top number of time signature = beats per measure.' },
+        { prompt: 'Forte means...', options: ['soft', 'loud', 'fast', 'slow'], correctIndex: 1, explain: 'Italian dynamics: forte = loud, piano = soft, mezzo = medium.' },
+        { prompt: 'A major chord is built from which intervals (in semitones)?', options: ['1-2', '3-4', '4-3', '5-7'], correctIndex: 2, explain: 'Major triad = root + 4 semitones (major 3rd) + 3 semitones (minor 3rd).' },
+        { prompt: 'Sound waves travel through air as...', options: ['transverse waves', 'longitudinal compression waves', 'electromagnetic radiation', 'gravity ripples'], correctIndex: 1, explain: 'Sound is a longitudinal pressure wave — compressions and rarefactions.' }
+      ]
+    },
+    {
+      id: 'prism_proof',
+      name: 'Prism Proof',
+      element: 'light',
+      icon: '\uD83D\uDD06',
+      color: '#0ea5e9',
+      sourceTool: 'physics',
+      sourceLabel: 'Physics Lab',
+      unlock: function(d) { return ((d.physics || {}).experimentsCompleted || 0) >= 3; },
+      unlockHint: 'Complete 3 Physics Lab experiments',
+      baseDamage: 30,
+      critMultiplier: 2.1,
+      flavor: 'A single beam splits into seven knives.',
+      challengeBank: [
+        { prompt: 'When light passes through a prism it splits into colors because different wavelengths...', options: ['have different speeds in vacuum', 'bend by different amounts in glass', 'have different mass', 'reflect more strongly'], correctIndex: 1, explain: 'Refractive index varies with wavelength → different bending angles → spectrum.' },
+        { prompt: 'The fastest known speed in the universe is...', options: ['speed of sound', 'speed of light in vacuum', 'speed of an electron', 'orbital speed of Earth'], correctIndex: 1, explain: '~299,792,458 m/s — a fundamental constant.' },
+        { prompt: 'Visible light is what part of the electromagnetic spectrum?', options: ['radio waves', 'a narrow band between UV and IR', 'X-rays', 'gamma rays'], correctIndex: 1, explain: 'Roughly 380-700 nm wavelength — tiny slice of the EM spectrum.' },
+        { prompt: 'Newton\'s second law states F = ?', options: ['mv', 'ma', 'mgh', 'qE'], correctIndex: 1, explain: 'Force = mass × acceleration. Bigger mass or bigger accel = bigger force.' },
+        { prompt: 'Energy is conserved means...', options: ['energy can be destroyed', 'energy is always created', 'energy changes form but total stays constant', 'energy decreases over time'], correctIndex: 2, explain: 'First law of thermodynamics — energy is converted, not lost or gained.' },
+        { prompt: 'Which object falls FASTER on the Moon in a vacuum?', options: ['a feather', 'a hammer', 'both fall at the same rate', 'neither falls'], correctIndex: 2, explain: 'No air resistance → all objects accelerate equally under gravity. Apollo 15 demonstrated this.' }
+      ]
+    },
+    {
+      id: 'voltage_verse',
+      name: 'Voltage Verse',
+      element: 'lightning',
+      icon: '\u26A1',
+      color: '#facc15',
+      sourceTool: 'circuit',
+      sourceLabel: 'Circuit Lab',
+      unlock: function(d) { return ((d.circuit || {}).circuitsBuilt || 0) >= 2; },
+      unlockHint: 'Build 2 working circuits',
+      baseDamage: 27,
+      critMultiplier: 2.2,
+      flavor: 'Words turn into wire turn into current turn into a strike.',
+      challengeBank: [
+        { prompt: 'Ohm\'s law states that V = ?', options: ['I + R', 'I × R', 'I / R', 'R / I'], correctIndex: 1, explain: 'Voltage = current × resistance. Foundational electrical relationship.' },
+        { prompt: 'Voltage is measured in...', options: ['amps', 'volts', 'ohms', 'watts'], correctIndex: 1, explain: 'Volt (V) — named for Alessandro Volta.' },
+        { prompt: 'In a SERIES circuit, components are connected...', options: ['one after another, single path', 'in branches with multiple paths', 'wirelessly', 'with capacitors only'], correctIndex: 0, explain: 'Series = single loop. If one component breaks, current stops.' },
+        { prompt: 'A SHORT CIRCUIT happens when...', options: ['the battery dies', 'current bypasses the load with very low resistance', 'a switch is open', 'a fuse blows on purpose'], correctIndex: 1, explain: 'Low-resistance bypass → very high current → heat → fire risk.' },
+        { prompt: 'A resistor\'s job is to...', options: ['store energy', 'limit current flow', 'amplify voltage', 'switch automatically'], correctIndex: 1, explain: 'Resistors convert electrical energy into heat, limiting current.' },
+        { prompt: 'Power dissipated by a resistor (in watts) = ?', options: ['V × I', 'V + I', 'V / I', 'V − I'], correctIndex: 0, explain: 'P = V × I (also P = I²R or V²/R via Ohm\'s law).' }
+      ]
     }
   ];
 
@@ -1029,7 +1119,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
 ,
     { id: 'tidal_thrall', name: 'The Tidal Thrall', icon: '\uD83C\uDF0A', hp: 140, atk: 17, flavor: 'A wave that learned a face.', sectors: ['deep_tide'], boss: true, specialName: 'Riptide Rebuke', specialFlavor: 'A fist of water shaped like a question.' },
     { id: 'abyssal_chant', name: 'The Abyssal Chant', icon: '\uD83D\uDC19', hp: 135, atk: 19, flavor: 'Sings in three pitches at once. None pleasant.', sectors: ['deep_tide'], boss: true, specialName: 'Pressure Hymn', specialFlavor: 'The deep itself bears down on your bones.' },
-    { id: 'kraken_kalmar', name: 'Kraken Kalmar', icon: '\uD83E\uDD91', hp: 155, atk: 17, flavor: 'Old as a continental shelf. Lonely.', sectors: ['deep_tide'], boss: true, specialName: 'Tentacle Litany', specialFlavor: 'Eight grasping verses, one grim conclusion.' }
+    { id: 'kraken_kalmar', name: 'Kraken Kalmar', icon: '\uD83E\uDD91', hp: 155, atk: 17, flavor: 'Old as a continental shelf. Lonely.', sectors: ['deep_tide'], boss: true, specialName: 'Tentacle Litany', specialFlavor: 'Eight grasping verses, one grim conclusion.' },
+    // ── Aurora Atelier (art / music / color theme) ──
+    { id: 'chromatic_specter', name: 'Chromatic Specter', icon: '\uD83C\uDFA8', hp: 55, atk: 12, flavor: 'A wraith with seven hues and no name.', sectors: ['aurora_atelier'] },
+    { id: 'crescendo_clamor', name: 'Crescendo Clamor', icon: '\uD83C\uDFBA', hp: 65, atk: 14, flavor: 'A sustained note that learned malice.', sectors: ['aurora_atelier'] },
+    { id: 'palette_phantom', name: 'Palette Phantom', icon: '\uD83D\uDD8C\uFE0F', hp: 50, atk: 11, flavor: 'Drips primary colors onto reality.', sectors: ['aurora_atelier'] },
+    { id: 'harmonic_haunt', name: 'Harmonic Haunt', icon: '\uD83C\uDFB6', hp: 60, atk: 13, flavor: 'Three voices, one terrible intention.', sectors: ['aurora_atelier'] },
+    { id: 'gilded_grotesque', name: 'Gilded Grotesque', icon: '\uD83D\uDC51', hp: 85, atk: 12, flavor: 'Gold leaf hides what gold leaf hides.', sectors: ['aurora_atelier'] },
+    { id: 'vellum_vortex', name: 'Vellum Vortex', icon: '\uD83D\uDCDC', hp: 70, atk: 13, flavor: 'Old paper spinning faster than old paper should.', sectors: ['aurora_atelier'] },
+    { id: 'pigment_pest', name: 'Pigment Pest', icon: '\uD83D\uDC1E', hp: 35, atk: 14, flavor: 'Small. Vivid. Furious.', sectors: ['aurora_atelier'] },
+    { id: 'frieze_fiend', name: 'Frieze Fiend', icon: '\uD83D\uDDFF', hp: 95, atk: 11, flavor: 'A relief carving that learned how to leave the wall.', sectors: ['aurora_atelier'] },
+    // ── Aurora Atelier bosses ──
+    { id: 'canvas_caesar', name: 'Canvas Caesar', icon: '\uD83D\uDDBC\uFE0F', hp: 150, atk: 18, flavor: 'Painted himself an empire. Refuses to be unframed.', sectors: ['aurora_atelier'], boss: true, specialName: 'Brushstroke Decree', specialFlavor: 'A single, perfect stroke divides the room.' },
+    { id: 'maestro_mortis', name: 'Maestro Mortis', icon: '\uD83C\uDFAD', hp: 145, atk: 19, flavor: 'Conducts an orchestra of one — yours.', sectors: ['aurora_atelier'], boss: true, specialName: 'Crescendo Cataclysm', specialFlavor: 'The final movement, played at the loudest dynamic available.' },
+    { id: 'prism_paragon', name: 'The Prism Paragon', icon: '\uD83D\uDD06', hp: 160, atk: 17, flavor: 'Pure white light, sharpened on every angle.', sectors: ['aurora_atelier'], boss: true, specialName: 'Spectral Decomposition', specialFlavor: 'Light fractures around you. So do you.' }
   ];
 
   // ═══════════════════════════════════════════════════════════════
@@ -1081,6 +1184,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       bossPool: ['tidal_thrall', 'abyssal_chant', 'kraken_kalmar'],
       unlockAt: 2,
       flavor: 'A drowned cathedral of life. Every spell echoes back through the water.'
+    },
+    {
+      id: 'aurora_atelier',
+      name: 'Aurora Atelier',
+      subtitle: 'A drifting studio of color and chord',
+      bgGradient: 'linear-gradient(135deg, #831843 0%, #312e81 100%)',
+      accent: '#f472b6',
+      essenceMult: 1.4,
+      bossPool: ['canvas_caesar', 'maestro_mortis', 'prism_paragon'],
+      unlockAt: 4,
+      flavor: 'Where palette knives sing and the chord of light itself sharpens. Mastery only.'
     }
   ];
 
@@ -1252,6 +1366,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   }
 
   // ═══════════════════════════════════════════════════════════════
+  // Spaced-repetition weighted pick (the heart of the SRS layer)
+  // ═══════════════════════════════════════════════════════════════
+  // Each question has a stable key (its prompt text). We track per-question
+  // stats in d.questionStats: { [prompt]: { lastResult, lastSeen, attempts } }.
+  // The pick function biases toward questions the student has gotten WRONG
+  // recently and away from questions answered correctly (especially crits).
+  // This implements the core retrieval-practice principle: surface what you
+  // don't yet know more often than what you do.
+  //
+  // Weights (tunable):
+  //   never seen        → 1.0   (baseline new question)
+  //   last 'backfire'   → 3.0   (HEAVY boost — student needs this question)
+  //   last 'hit'        → 0.6   (slight de-prioritize — they got it)
+  //   last 'crit'       → 0.25  (strong de-prioritize — they know it cold)
+  //   plus: "stale" bonus +0.5 for any question not seen in 10+ minutes
+  //   plus: aiGenerated questions get +0.3 to surface variety
+  function pickWeighted(bank, stats) {
+    if (!bank || bank.length === 0) return null;
+    if (!stats || Object.keys(stats).length === 0) return pickRandom(bank);
+    var now = Date.now();
+    var weights = bank.map(function(qq) {
+      var s = stats[qq.prompt];
+      var w = 1.0;
+      if (!s) w = 1.0;
+      else if (s.lastResult === 'backfire') w = 3.0;
+      else if (s.lastResult === 'hit') w = 0.6;
+      else if (s.lastResult === 'crit') w = 0.25;
+      // Stale bonus — anything not seen in 10+ minutes gets a small boost
+      if (s && s.lastSeen && (now - s.lastSeen) > 600000) w += 0.5;
+      // AI questions get a small variety boost so the merged bank doesn't
+      // ignore them once SRS has accumulated stats on static questions.
+      if (qq.aiGenerated) w += 0.3;
+      return w;
+    });
+    var total = weights.reduce(function(a, b) { return a + b; }, 0);
+    if (total <= 0) return pickRandom(bank);
+    var r = Math.random() * total;
+    for (var i = 0; i < bank.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return bank[i];
+    }
+    return bank[bank.length - 1];
+  }
+
+  // ═══════════════════════════════════════════════════════════════
   // Register tool
   // ═══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('alloBotSage', {
@@ -1279,10 +1438,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       { id: 'clear_whispering_archive', label: 'Clear the Whispering Archive', icon: '\uD83D\uDCDC', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).whispering_archive; }, progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).whispering_archive ? 'Done!' : 'Not yet'; } },
       { id: 'clear_ember_clockwork',    label: 'Clear the Ember Clockwork',    icon: '\u2699\uFE0F', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).ember_clockwork; },    progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).ember_clockwork ? 'Done!' : 'Not yet'; } },
       { id: 'clear_deep_tide',          label: 'Clear the Deep Tide',          icon: '\uD83C\uDF0A', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).deep_tide; },          progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).deep_tide ? 'Done!' : 'Not yet'; } },
-      { id: 'clear_all_sectors',        label: 'Clear all 4 sectors',          icon: '\uD83C\uDFC6', check: function(d) { var s = ((d.alloBotSage || {}).sectorsCleared || {}); return ['crystal_nebula','whispering_archive','ember_clockwork','deep_tide'].every(function(id) { return s[id]; }); }, progress: function(d) { var s = ((d.alloBotSage || {}).sectorsCleared || {}); return ['crystal_nebula','whispering_archive','ember_clockwork','deep_tide'].filter(function(id) { return s[id]; }).length + '/4'; } },
+      { id: 'clear_aurora_atelier',     label: 'Clear the Aurora Atelier',     icon: '\uD83C\uDFA8', check: function(d) { return !!((d.alloBotSage || {}).sectorsCleared || {}).aurora_atelier; },     progress: function(d) { return ((d.alloBotSage || {}).sectorsCleared || {}).aurora_atelier ? 'Done!' : 'Not yet'; } },
+      { id: 'clear_all_sectors',        label: 'Clear all 5 sectors',          icon: '\uD83C\uDFC6', check: function(d) { var s = ((d.alloBotSage || {}).sectorsCleared || {}); return ['crystal_nebula','whispering_archive','ember_clockwork','deep_tide','aurora_atelier'].every(function(id) { return s[id]; }); }, progress: function(d) { var s = ((d.alloBotSage || {}).sectorsCleared || {}); return ['crystal_nebula','whispering_archive','ember_clockwork','deep_tide','aurora_atelier'].filter(function(id) { return s[id]; }).length + '/5'; } },
       // \u2500\u2500 Boss-defeat quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
       { id: 'defeat_3_bosses',   label: 'Defeat 3 unique bosses',  icon: '\uD83D\uDC80', check: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length >= 3; },  progress: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length + '/3'; } },
-      { id: 'defeat_all_bosses', label: 'Defeat all 12 bosses',    icon: '\uD83D\uDC51', check: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length >= 12; }, progress: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length + '/12'; } },
+      { id: 'defeat_all_bosses', label: 'Defeat all 15 bosses',    icon: '\uD83D\uDC51', check: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length >= 15; }, progress: function(d) { return Object.keys((d.alloBotSage || {}).bossesDefeated || {}).length + '/15'; } },
       // \u2500\u2500 Mastery + AI quests \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
       { id: 'max_one_spell',     label: 'Upgrade a spell to LV 5',  icon: '\uD83C\uDF1F', check: function(d) { var lv = ((d.alloBotSage || {}).spellLevels || {}); return Object.keys(lv).some(function(k) { return lv[k] >= 5; }); }, progress: function(d) { var lv = ((d.alloBotSage || {}).spellLevels || {}); var max = Object.keys(lv).reduce(function(m, k) { return Math.max(m, lv[k] || 0); }, 0); return max + '/5'; } },
       { id: 'ai_first_bank',     label: 'Generate AI questions for a spell', icon: '\u2728', check: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); return Object.keys(c).some(function(k) { return (c[k] || []).length > 0; }); }, progress: function(d) { var c = ((d.alloBotSage || {}).aiChallengeCache || {}); var total = Object.keys(c).reduce(function(t, k) { return t + (c[k] || []).length; }, 0); return total + ' AI questions'; } }
@@ -2127,8 +2287,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           if (!s) return;
           if (exp.turn !== 'player') return;
           // Merged bank: static + AI cache. AI questions appended to floor.
+          // Pick weighted by SRS stats so recently-failed questions resurface.
           var bank = getMergedBank(s, aiChallengeCache);
-          var challenge = pickRandom(bank);
+          var challenge = pickWeighted(bank, d.questionStats || {});
           sfxCastReady();
           mutateExp({
             pendingCast: {
@@ -2207,6 +2368,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           var nextCounts = Object.assign({}, d.castCounts || {});
           nextCounts[s.id] = (nextCounts[s.id] || 0) + 1;
           updKey('castCounts', nextCounts);
+          // ── Spaced repetition ledger ──
+          // Record this question's result so future picks can weight it.
+          // Keyed by prompt text (stable for static + AI questions alike).
+          var nextStats = Object.assign({}, d.questionStats || {});
+          var prevStat = nextStats[challenge.prompt] || { attempts: 0, correctCount: 0 };
+          nextStats[challenge.prompt] = {
+            lastResult: result,
+            lastSeen: Date.now(),
+            attempts: (prevStat.attempts || 0) + 1,
+            correctCount: (prevStat.correctCount || 0) + (correct ? 1 : 0)
+          };
+          updKey('questionStats', nextStats);
 
           // Boss-telegraph interrupt: a CRIT during the boss's WINDING phase
           // reduces the next special to 0.5×. Logged + announced for clarity.
@@ -2379,6 +2552,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         animationDuration: (4 + (i % 3)) + 's'
                       }
                     }));
+                  }
+                } else if (sectorId === 'aurora_atelier') {
+                  // 10 drifting brushstrokes / music notes in alternating pink+violet
+                  var brushIcons = ['🖌', '♪', '🎨', '♫', '✦', '♩', '🎶', '✧', '🎼', '♬'];
+                  var brushColors = ['rgba(244,114,182,0.55)', 'rgba(167,139,250,0.55)', 'rgba(253,224,71,0.5)'];
+                  for (i = 0; i < 10; i++) {
+                    particles.push(h('span', {
+                      key: 'brush-' + i,
+                      className: 'abs-drift-rise',
+                      style: {
+                        position: 'absolute',
+                        left: ((i * 17 + 5) % 92) + '%',
+                        top: ((i * 23) % 70) + '%',
+                        fontSize: (14 + (i % 3) * 5) + 'px',
+                        animationDelay: ((i * 0.6) % 5.5) + 's',
+                        animationDuration: (4.5 + (i % 4)) + 's',
+                        color: brushColors[i % brushColors.length]
+                      }
+                    }, brushIcons[i]));
                   }
                 }
                 return particles;
