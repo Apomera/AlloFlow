@@ -1018,9 +1018,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           eng._respawnTimer = 0;
 
           // Controls
+          // preventDefault on flight keys so the page doesn't scroll
+          // out from under the bat. (WASD don't scroll, but Space and
+          // arrow keys do, and the original bug class felt like
+          // "the controls don't work" even when keys were registering.)
           eng.keys = {};
-          eng._keyDown = function(e) { eng.keys[e.code] = true; };
-          eng._keyUp = function(e) { eng.keys[e.code] = false; };
+          var _CAVE_FLIGHT_CODES = { KeyW: 1, KeyA: 1, KeyS: 1, KeyD: 1, KeyE: 1, KeyP: 1, KeyR: 1, Space: 1, ArrowUp: 1, ArrowDown: 1, ArrowLeft: 1, ArrowRight: 1 };
+          eng._keyDown = function(e) {
+            if (_CAVE_FLIGHT_CODES[e.code]) {
+              eng.keys[e.code] = true;
+              e.preventDefault();
+            }
+          };
+          eng._keyUp = function(e) {
+            if (_CAVE_FLIGHT_CODES[e.code]) {
+              eng.keys[e.code] = false;
+              e.preventDefault();
+            }
+          };
           document.addEventListener('keydown', eng._keyDown);
           document.addEventListener('keyup', eng._keyUp);
 
@@ -1525,8 +1540,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           // 3D Canvas container
           threeReady && h('div', {
             ref: cave3dRef,
+            id: 'echo-cave3d-fs-wrap',
             style: { width: '100%', height: '400px', borderRadius: '12px', overflow: 'hidden', border: '2px solid ' + (isDark ? '#1e3a3a' : '#a7f3d0'), position: 'relative', background: '#020208', cursor: 'crosshair' }
           },
+            // Fullscreen toggle (top-right corner)
+            h('button', {
+              'aria-label': 'Toggle fullscreen for the 3D cave',
+              title: 'Fullscreen',
+              onClick: function() {
+                var el = document.getElementById('echo-cave3d-fs-wrap');
+                if (!el) return;
+                var inFull = document.fullscreenElement === el
+                  || document.webkitFullscreenElement === el
+                  || document.mozFullScreenElement === el;
+                if (inFull) {
+                  var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+                  if (ex) ex.call(document);
+                } else {
+                  var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                  if (rq) rq.call(el);
+                }
+              },
+              style: {
+                position: 'absolute', top: 8, right: 8, zIndex: 20,
+                width: 32, height: 32, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(0,40,30,0.85)',
+                backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                border: '1px solid rgba(0,255,170,0.45)',
+                color: '#4ade80',
+                fontSize: 16, fontWeight: 700, cursor: 'pointer',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+              }
+            }, '⛶'),
             // HUD overlay
             h('div', { style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10, pointerEvents: 'none', fontSize: '11px', color: '#4ade80', maxWidth: '200px' } },
               h('div', { style: { fontWeight: 700 } }, '\uD83E\uDD87 3D Echolocation Cave'),
@@ -1723,7 +1769,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               className: 'px-3 py-1 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-500'
             }, '\uD83E\uDD87 Emit Pulse')
           ),
-          // Canvas (wrapped) + goal banner overlay
+          // Canvas (wrapped) + goal banner overlay + fullscreen button
           // The student looks at the canvas while playing, not at the
           // HUD strip below it. Surface the goal + progress at the top
           // of the canvas so it stays in view: "Catch 10 moths \u00B7 3/10"
@@ -1737,8 +1783,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             var clarity = Math.round(sonarStateRef.current.clarity || 0);
             var inCave = sceneIdx === 0 && !isFrugivore;
             var goalDone = caught >= 10;
-            return h('div', { style: { position: 'relative' } },
+            return h('div', { id: 'echo-sonar-fs-wrap', style: { position: 'relative', background: '#0a0a1a' } },
               sonarCanvasEl,
+              // Fullscreen toggle (top-right; doesn't overlap the goal
+              // banner which is top-center). Uses the standard
+              // requestFullscreen API with vendor-prefix fallbacks.
+              h('button', {
+                'aria-label': 'Toggle fullscreen for the sonar canvas',
+                title: 'Fullscreen',
+                onClick: function() {
+                  var el = document.getElementById('echo-sonar-fs-wrap');
+                  if (!el) return;
+                  var inFull = document.fullscreenElement === el
+                    || document.webkitFullscreenElement === el
+                    || document.mozFullScreenElement === el;
+                  if (inFull) {
+                    var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen;
+                    if (ex) ex.call(document);
+                  } else {
+                    var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                    if (rq) rq.call(el);
+                  }
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 8, zIndex: 10,
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(15,23,42,0.75)',
+                  backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(99,102,241,0.45)',
+                  color: '#c7d2fe',
+                  fontSize: 16, fontWeight: 700, cursor: 'pointer',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.35)'
+                }
+              }, '\u26F6'),
               h('div', {
                 'aria-hidden': 'true',
                 style: {
@@ -2085,11 +2163,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
         }
 
         // Key listeners
+        // Bug fix: arrow keys + WASD weren't preventDefault'd, so the
+        // page would scroll under the bat while the student was trying
+        // to fly — felt like the controls were broken even when the
+        // game was reading the keys correctly. Now any flight-control
+        // key swallows its default browser action.
+        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1 };
         var onKey = function(e) {
-          sonarKeysRef.current[e.key.toLowerCase()] = e.type === 'keydown';
-          if (e.type === 'keydown' && (e.key === ' ' || e.key === 'Spacebar')) {
-            e.preventDefault();
-            emitSonarPulse();
+          var k = (e.key || '').toLowerCase();
+          if (FLIGHT_KEYS[k]) {
+            sonarKeysRef.current[k] = e.type === 'keydown';
+            if (e.type === 'keydown') {
+              e.preventDefault();
+              if (k === ' ' || k === 'spacebar') emitSonarPulse();
+            }
           }
         };
         window.addEventListener('keydown', onKey);
