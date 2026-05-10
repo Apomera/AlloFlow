@@ -1519,9 +1519,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
 
           // ═══ TAB: RENEWABLES SIMULATOR ═══
           tab === 'renewables' && el('div', { style: { maxWidth: 680, margin: '0 auto' } },
-            el('div', { style: { textAlign: 'center', marginBottom: 20 } },
+            el('div', { style: { textAlign: 'center', marginBottom: 12 } },
               el('div', { style: { color: '#fbbf24', fontSize: 16, fontWeight: 900 } }, '\u26A1 Renewables Impact Simulator'),
               el('div', { style: { color: '#94a3b8', fontSize: 12 } }, 'Design an energy mix and see how it changes our future')
+            ),
+
+            // \u2500\u2500 Goal banner: makes the implicit win condition explicit \u2500\u2500
+            // The Net-Zero badge earns at fossil <= 5%, but until now that
+            // target was nowhere visible to the student. Now stated up
+            // front so the four sliders feel like a target, not a sandbox.
+            el('div', {
+              style: {
+                marginBottom: 16, padding: '10px 14px', borderRadius: 12,
+                background: 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(245,158,11,0.10) 100%)',
+                border: '1px solid rgba(34,197,94,0.30)', borderLeft: '4px solid #22c55e',
+                color: '#ecfdf5'
+              }
+            },
+              el('div', { style: { fontSize: 12, fontWeight: 800, marginBottom: 4 } }, '\uD83C\uDFAF Goal: drive fossil share to 5% or lower'),
+              el('div', { style: { fontSize: 11, lineHeight: 1.5, color: '#bbf7d0' } },
+                'The four sliders are your renewable mix. Whatever they do not add up to gets filled by fossil fuels. ',
+                'Hit Fossil at or below 5% to earn the Net-Zero badge. Below the sliders you will see total gigatons of CO\u2082 avoided over 25 years for your design, with an AI analysis of trade-offs.'
+              )
             ),
 
             // Scenario presets
@@ -2005,6 +2024,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 'The communities that contribute the LEAST to climate change often face the GREATEST risks. This is what scientists and advocates call climate injustice.')
             ),
 
+            // \u2500\u2500 Play-order hint \u2500\u2500
+            // The Climate Justice badge unlocks at 5 regions explored,
+            // but the grid shows 9 collapsed cards and the badge target
+            // was previously invisible. Now stated as the goal up front.
+            (function() {
+              var regionsViewed = Object.keys(d.regionsViewed || {}).length;
+              return el('div', {
+                style: {
+                  padding: '8px 12px', marginBottom: 12, borderRadius: 10,
+                  background: regionsViewed >= 5 ? 'rgba(34,197,94,0.12)' : 'rgba(168,85,247,0.10)',
+                  border: '1px solid ' + (regionsViewed >= 5 ? 'rgba(34,197,94,0.30)' : 'rgba(168,85,247,0.30)'),
+                  display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap'
+                }
+              },
+                el('span', { style: { fontSize: 14 } }, regionsViewed >= 5 ? '\uD83C\uDFC5' : '\uD83D\uDD0D'),
+                el('span', { style: { fontSize: 11, color: '#cbd5e1', fontWeight: 600, flex: 1, minWidth: 200 } },
+                  regionsViewed >= 5
+                    ? 'Justice Witness badge earned. Keep exploring; every region has a different story.'
+                    : 'Click a card to expand its data. Explore at least 5 regions to earn the Justice Witness badge.'
+                ),
+                el('span', { style: { fontSize: 11, fontFamily: 'monospace', fontWeight: 700, color: regionsViewed >= 5 ? '#86efac' : '#c4b5fd' } }, regionsViewed + ' / 5 explored')
+              );
+            })(),
+
             // View toggle
             el('div', { style: { display: 'flex', gap: 6, marginBottom: 16 } },
               [{ id: 'risk', label: '\u26A0\uFE0F Risks' }, { id: 'emissions', label: '\uD83C\uDFED Emissions' }, { id: 'resilience', label: '\uD83D\uDCAA Resilience' }].map(function(v) {
@@ -2340,7 +2383,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 } },
                   el('div', null,
                     el('div', { style: { color: '#4ade80', fontSize: 14, fontWeight: 900 } }, '🎯 Solution Stack Builder'),
-                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, 'Select solutions to stack — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
+                    el('div', { style: { color: '#94a3b8', fontSize: 10 } }, '🏅 Goal: stack to 200 Gt to earn the Gigaton badge. Select solutions — see combined impact in gigatons of CO\u2082 avoided by 2050 (Project Drawdown data)')
                   ),
                   el('div', { style: { textAlign: 'right' } },
                     el('div', { style: { color: totalGt >= 200 ? '#fbbf24' : '#4ade80', fontSize: 24, fontWeight: 900, fontFamily: 'monospace' } }, Math.round(totalGt) + ' Gt'),
