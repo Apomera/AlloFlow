@@ -1835,6 +1835,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                       : 'Re-study what you got wrong'
                   )
                 )
+              ),
+              h('button', {
+                onClick: function() { sfxClick(); updKey('phase', 'dashboard'); },
+                className: 'flex-1 px-5 py-2.5 rounded-xl font-bold text-sky-800 bg-sky-50 hover:bg-sky-100 border-2 border-sky-200 focus:ring-2 focus:ring-sky-400 focus:outline-none flex items-center justify-center gap-2',
+                'aria-label': 'View your progress dashboard'
+              },
+                h('span', { className: 'text-xl' }, '\uD83D\uDCCA'),
+                h('div', { className: 'text-left' },
+                  h('div', { className: 'text-sm' }, 'Your Progress'),
+                  h('div', { className: 'text-[10px] text-sky-600 font-normal' }, 'Accuracy \u00B7 calibration \u00B7 sectors \u00B7 bosses')
+                )
               )
             );
           })(),
@@ -2129,6 +2140,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               });
             })
           ),
+          // \u2500\u2500 Goal-setting (Locke & Latham: specific + challenging + attainable goals improve performance) \u2500\u2500
+          // Multi-select 3 goal types. State persists in d.selectedGoals so it's
+          // remembered across expeditions. Tracked during run, celebrated at debrief.
+          h('section', { 'aria-label': 'Set goals for this expedition', className: 'mb-4 p-3 rounded-xl border-2 border-violet-200 bg-violet-50/40' },
+            h('div', { className: 'flex items-center justify-between mb-2' },
+              h('div', null,
+                h('div', { className: 'text-[11px] font-bold text-violet-900 uppercase tracking-wider' }, '\ud83c\udfaf Set your goals (optional)'),
+                h('div', { className: 'text-[10px] text-violet-700 mt-0.5' }, 'Research: specific goals improve performance + focus. Pick any.')
+              ),
+              h('button', {
+                onClick: function() { sfxClick(); updKey('selectedGoals', []); },
+                className: 'text-[10px] text-violet-600 hover:text-violet-900 font-semibold underline focus:ring-2 focus:ring-violet-400 focus:outline-none rounded'
+              }, 'Skip / clear all')
+            ),
+            (function() {
+              var selectedGoals = d.selectedGoals || [];
+              var GOALS = [
+                { id: 'crit_5',      icon: '\u2728', label: 'Land 5 critical casts',          desc: 'Rewards fast + correct retrieval' },
+                { id: 'spell_variety', icon: '\ud83c\udf08', label: 'Use all 3 equipped spells',     desc: 'Rewards versatility, not one-trick' },
+                { id: 'no_death',    icon: '\ud83d\udee1\ufe0f', label: 'Finish run without dying',     desc: 'Rewards strategy + healing choices' },
+                { id: 'interrupt',   icon: '\u26a1', label: 'Interrupt a boss SPECIAL',       desc: 'Crit during the WINDING phase' }
+              ];
+              function toggleGoal(gid) {
+                sfxClick();
+                var next = selectedGoals.indexOf(gid) !== -1
+                  ? selectedGoals.filter(function(x) { return x !== gid; })
+                  : selectedGoals.concat([gid]);
+                updKey('selectedGoals', next);
+              }
+              return h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-1.5' },
+                GOALS.map(function(g) {
+                  var picked = selectedGoals.indexOf(g.id) !== -1;
+                  return h('button', {
+                    key: 'goal-' + g.id,
+                    onClick: function() { toggleGoal(g.id); },
+                    className: 'text-left p-2 rounded-lg border-2 transition focus:outline-none focus:ring-2 focus:ring-violet-400 ' + (picked ? 'border-violet-500 bg-violet-100' : 'border-slate-200 bg-white hover:border-violet-300'),
+                    'aria-pressed': picked,
+                    'aria-label': g.label + (picked ? ' (selected)' : '')
+                  },
+                    h('div', { className: 'flex items-center gap-2' },
+                      h('span', { className: 'text-lg' }, g.icon),
+                      h('div', { className: 'flex-1' },
+                        h('div', { className: 'text-[11px] font-bold ' + (picked ? 'text-violet-900' : 'text-slate-700') }, g.label),
+                        h('div', { className: 'text-[10px] ' + (picked ? 'text-violet-700' : 'text-slate-400') }, g.desc)
+                      ),
+                      picked && h('span', { className: 'text-violet-700 font-bold' }, '\u2713')
+                    )
+                  );
+                })
+              );
+            })()
+          ),
           h('button', {
             disabled: equippedLoadout.length === 0,
             onClick: function() {
@@ -2155,7 +2218,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     ? { text: 'A ' + firstRoom.name + ' greets you. ' + firstRoom.flavor, kind: 'info' }
                     : { text: 'A ' + firstRoom.name + ' materializes. ' + firstRoom.flavor, kind: 'info' }
                 ],
-                pendingCast: null
+                pendingCast: null,
+                // Snapshot the run-start state so debrief can compute goal progress
+                goals: (d.selectedGoals || []).slice(),
+                goalsStartCrits: critCasts,
+                goalsStartInterrupts: d.interruptCount || 0,
+                goalsSpellsUsed: {}
               };
               updSage({ phase: 'expedition', expedition: exp });
               announceSR('Expedition begins in the ' + sector.name + '. ' + firstRoom.name + ' appears in room 1 of ' + ROOMS_PER_EXPEDITION + '.');
@@ -2470,12 +2538,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             wasBoss: !!enemy.boss
           }]);
           if (nextCastLog.length > 60) nextCastLog = nextCastLog.slice(-60);
+          // Goal-tracking: mark this spell as used in the run's spells-used set.
+          var nextGoalsSpells = Object.assign({}, exp.goalsSpellsUsed || {});
+          nextGoalsSpells[s.id] = true;
 
           mutateExp({
             enemy: nextEnemy,
             pendingCast: Object.assign({}, pendingCast, { selectedIndex: selectedIndex, resolved: true, damage: dmg, result: result }),
             log: nextLog,
-            castLog: nextCastLog
+            castLog: nextCastLog,
+            goalsSpellsUsed: nextGoalsSpells
           });
           announceSR(text + (willInterrupt ? ' Boss special interrupted!' : ''));
 
@@ -2969,6 +3041,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             ),
             h('div', { className: 'mt-1 inline-block px-4 py-2 rounded-xl bg-white/20 font-bold text-lg' }, '+' + reward + ' \u2B50 Essence')
           ),
+          // \u2500\u2500 Goal evaluation (Locke & Latham closure) \u2500\u2500
+          // For each goal the student picked at the start, check whether they
+          // hit it. Specific goals + outcome feedback = the closing loop of
+          // goal-setting theory. Renders only if any goals were active.
+          (expedition.goals && expedition.goals.length > 0) && (function() {
+            var goals = expedition.goals;
+            var critsThisRun = (d.critCasts || 0) - (expedition.goalsStartCrits || 0);
+            var interruptsThisRun = (d.interruptCount || 0) - (expedition.goalsStartInterrupts || 0);
+            var spellsUsed = Object.keys(expedition.goalsSpellsUsed || {}).length;
+            var GOAL_DEFS = {
+              crit_5:        { icon: '\u2728', label: 'Land 5 critical casts',     check: function() { return critsThisRun >= 5; },        progress: critsThisRun + '/5 crits' },
+              spell_variety: { icon: '\ud83c\udf08', label: 'Use all 3 equipped spells', check: function() { return spellsUsed >= 3; },          progress: spellsUsed + ' spell' + (spellsUsed !== 1 ? 's' : '') + ' used' },
+              no_death:      { icon: '\ud83d\udee1\ufe0f', label: 'Finish without dying',     check: function() { return result === 'victory'; },     progress: result === 'victory' ? 'Survived \u2713' : 'Fell' },
+              interrupt:     { icon: '\u26a1', label: 'Interrupt a boss SPECIAL',  check: function() { return interruptsThisRun >= 1; },   progress: interruptsThisRun + ' interrupt' + (interruptsThisRun !== 1 ? 's' : '') }
+            };
+            var metCount = goals.filter(function(gid) { return GOAL_DEFS[gid] && GOAL_DEFS[gid].check(); }).length;
+            var allMet = metCount === goals.length;
+            return h('section', {
+              className: 'rounded-xl border-2 p-3 mb-4 text-left',
+              style: { borderColor: allMet ? '#16a34a' : '#94a3b8', background: allMet ? '#ecfdf5' : '#f8fafc' },
+              'aria-label': 'Goal progress: ' + metCount + ' of ' + goals.length + ' met'
+            },
+              h('div', { className: 'flex items-center justify-between mb-2' },
+                h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: allMet ? '#065f46' : '#475569' } },
+                  '\ud83c\udfaf Goal Progress: ' + metCount + ' / ' + goals.length + ' met'
+                ),
+                allMet && h('span', { className: 'text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300' }, '\u2728 All goals met!')
+              ),
+              h('div', { className: 'space-y-1' },
+                goals.map(function(gid) {
+                  var def = GOAL_DEFS[gid];
+                  if (!def) return null;
+                  var met = def.check();
+                  return h('div', {
+                    key: 'goal-result-' + gid,
+                    className: 'flex items-center gap-2 p-1.5 rounded-md text-[11px] ' + (met ? 'bg-emerald-100 text-emerald-900' : 'bg-white border border-slate-200 text-slate-600')
+                  },
+                    h('span', { className: 'text-base' }, met ? '\u2705' : '\u25cb'),
+                    h('span', { className: 'flex-1 font-semibold' }, def.icon + ' ' + def.label),
+                    h('span', { className: 'text-[10px] ' + (met ? 'text-emerald-700' : 'text-slate-400') }, def.progress)
+                  );
+                })
+              )
+            );
+          })(),
+
           // \u2500\u2500 This Run's Breakdown \u2500\u2500
           // Per-spell performance for THIS expedition. The textual reflection
           // moment students will actually use, not a cumulative dashboard.
@@ -3565,6 +3683,245 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               onClick: gotIt,
               className: 'flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
             }, 'Got it now ✓')
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────
+      // ── PHASE: DASHBOARD (Your Progress)
+      // ─────────────────────────────────────────────────
+      // Surfaces the student's cumulative learning data. Currently every
+      // metric is computable but invisible. This view aggregates it so
+      // students can SEE growth — accuracy, calibration, struggling spells,
+      // sectors cleared, bosses defeated, time invested.
+      if (phase === 'dashboard') {
+        var dashStats = d.questionStats || {};
+        // Aggregate accuracy across ALL recorded casts.
+        var totalAttempts = 0, totalCorrect = 0, totalCrits = 0;
+        Object.keys(dashStats).forEach(function(k) {
+          totalAttempts += (dashStats[k].attempts || 0);
+          totalCorrect += (dashStats[k].correctCount || 0);
+          if (dashStats[k].lastResult === 'crit') totalCrits++;
+        });
+        var accuracyPct = totalAttempts > 0 ? Math.round(totalCorrect / totalAttempts * 100) : 0;
+        var critPct = (d.totalCasts || 0) > 0 ? Math.round((d.critCasts || 0) / (d.totalCasts || 1) * 100) : 0;
+
+        // Confidence calibration health across all stats with confidence.
+        var calData = { high: { right: 0, total: 0 }, med: { right: 0, total: 0 }, low: { right: 0, total: 0 } };
+        Object.keys(dashStats).forEach(function(k) {
+          var st = dashStats[k];
+          if (!st.lastConfidence) return;
+          var wasRight = st.lastResult === 'hit' || st.lastResult === 'crit';
+          calData[st.lastConfidence].total++;
+          if (wasRight) calData[st.lastConfidence].right++;
+        });
+
+        // Source-tool tallies — for the "mastery domains" panel.
+        var sourceTally = {};
+        SPELLBOOK.forEach(function(sp) {
+          if (!sourceTally[sp.sourceTool]) sourceTally[sp.sourceTool] = { label: sp.sourceLabel, icon: sp.icon, unlocked: 0, total: 0, casts: 0 };
+          sourceTally[sp.sourceTool].total++;
+          if (currentlyUnlocked.indexOf(sp.id) !== -1) sourceTally[sp.sourceTool].unlocked++;
+          sourceTally[sp.sourceTool].casts += ((d.castCounts || {})[sp.id] || 0);
+        });
+
+        // Top 3 weakest spells (by accuracy across all attempts, min 3 attempts).
+        var spellAccuracy = [];
+        SPELLBOOK.forEach(function(sp) {
+          if (currentlyUnlocked.indexOf(sp.id) === -1) return;
+          var bank = getMergedBank(sp, aiChallengeCache);
+          var attempts = 0, correct = 0;
+          bank.forEach(function(qq) {
+            var st = dashStats[qq.prompt];
+            if (st) { attempts += st.attempts || 0; correct += st.correctCount || 0; }
+          });
+          if (attempts >= 3) {
+            spellAccuracy.push({ spell: sp, rate: correct / attempts, attempts: attempts });
+          }
+        });
+        spellAccuracy.sort(function(a, b) { return a.rate - b.rate; });
+        var weakest = spellAccuracy.slice(0, 3);
+        var strongest = spellAccuracy.slice().reverse().slice(0, 3);
+
+        // Estimated time invested — rough proxy: each cast ~ 25 seconds (read + answer + result)
+        var estMinutes = Math.round((d.totalCasts || 0) * 25 / 60);
+
+        var sectorsClearedMap = d.sectorsCleared || {};
+        var bossesDefeatedMap = d.bossesDefeated || {};
+        var bossesAll = ENEMIES.filter(function(e) { return e.boss; });
+
+        function dashBack() { sfxClick(); updKey('phase', 'hub'); }
+
+        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 abs-fade' },
+          h('div', { className: 'flex items-center gap-3 mb-4' },
+            backBtn(dashBack, 'Back to Spellforge'),
+            h('div', { className: 'flex-1' }),
+            h('div', { className: 'text-[10px] text-slate-300 font-semibold uppercase tracking-wider' }, 'Your Progress')
+          ),
+          // Headline + AlloBot
+          h('div', { className: 'rounded-2xl p-4 md:p-5 mb-4', style: { background: 'linear-gradient(135deg, #0c4a6e 0%, #0ea5e9 100%)', color: 'white' } },
+            h('div', { className: 'flex items-center gap-4' },
+              h('div', { className: 'text-5xl' }, '📊'),
+              h('div', { className: 'flex-1' },
+                h('h1', { className: 'text-xl md:text-2xl font-bold' }, 'Your Progress'),
+                h('p', { className: 'text-sm text-sky-100 mt-1' },
+                  totalAttempts === 0
+                    ? 'No data yet. Cast a few spells and your stats will fill in here.'
+                    : 'Across ' + totalAttempts + ' attempt' + (totalAttempts > 1 ? 's' : '') + ' on ' + Object.keys(dashStats).length + ' unique question' + (Object.keys(dashStats).length > 1 ? 's' : '') + ' · est. ' + estMinutes + ' min practiced.'
+                )
+              )
+            )
+          ),
+          // 4 headline KPIs
+          h('div', { className: 'grid grid-cols-2 md:grid-cols-4 gap-2 mb-4' },
+            h('div', { className: 'p-3 rounded-xl bg-white border-2 border-emerald-200 text-center' },
+              h('div', { className: 'text-[9px] font-bold text-emerald-700 uppercase tracking-wider' }, 'Accuracy'),
+              h('div', { className: 'text-2xl font-bold text-emerald-600 mt-1' }, accuracyPct + '%'),
+              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, totalCorrect + '/' + totalAttempts + ' correct')
+            ),
+            h('div', { className: 'p-3 rounded-xl bg-white border-2 border-amber-200 text-center' },
+              h('div', { className: 'text-[9px] font-bold text-amber-700 uppercase tracking-wider' }, 'Crit Rate'),
+              h('div', { className: 'text-2xl font-bold text-amber-600 mt-1' }, critPct + '%'),
+              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, (d.critCasts || 0) + ' crits')
+            ),
+            h('div', { className: 'p-3 rounded-xl bg-white border-2 border-violet-200 text-center' },
+              h('div', { className: 'text-[9px] font-bold text-violet-700 uppercase tracking-wider' }, 'Spells Unlocked'),
+              h('div', { className: 'text-2xl font-bold text-violet-600 mt-1' }, currentlyUnlocked.length + '/' + SPELLBOOK.length),
+              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, Math.round(currentlyUnlocked.length / SPELLBOOK.length * 100) + '% complete')
+            ),
+            h('div', { className: 'p-3 rounded-xl bg-white border-2 border-rose-200 text-center' },
+              h('div', { className: 'text-[9px] font-bold text-rose-700 uppercase tracking-wider' }, 'Interrupts'),
+              h('div', { className: 'text-2xl font-bold text-rose-600 mt-1' }, (d.interruptCount || 0)),
+              h('div', { className: 'text-[9px] text-slate-400 mt-0.5' }, 'boss specials blocked')
+            )
+          ),
+          // Sectors + bosses progress
+          h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4' },
+            // Sectors
+            h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3' },
+              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '🌌 Sectors Cleared'),
+              h('div', { className: 'space-y-1' },
+                SECTORS.map(function(sec) {
+                  var cleared = !!sectorsClearedMap[sec.id];
+                  var unlocked = (d.expeditionsCompleted || 0) >= sec.unlockAt;
+                  return h('div', {
+                    key: 'dash-sec-' + sec.id,
+                    className: 'flex items-center gap-2 p-2 rounded-lg text-[11px] ' + (cleared ? 'bg-emerald-50 border border-emerald-200' : unlocked ? 'bg-slate-50 border border-slate-200' : 'bg-slate-50 border border-slate-200 opacity-50')
+                  },
+                    h('span', { className: 'text-lg' }, cleared ? '✅' : unlocked ? '○' : '🔒'),
+                    h('span', { className: 'font-semibold flex-1' }, sec.name),
+                    h('span', { className: 'text-[10px] text-slate-400' },
+                      cleared ? 'Cleared' : unlocked ? 'Available' : 'Unlock at ' + sec.unlockAt + ' expeditions'
+                    )
+                  );
+                })
+              )
+            ),
+            // Bosses
+            h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3' },
+              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '💀 Bosses Defeated (' + Object.keys(bossesDefeatedMap).length + '/' + bossesAll.length + ')'),
+              h('div', { className: 'grid grid-cols-3 gap-1' },
+                bossesAll.map(function(b) {
+                  var defeated = !!bossesDefeatedMap[b.id];
+                  return h('div', {
+                    key: 'dash-boss-' + b.id,
+                    className: 'flex flex-col items-center p-1.5 rounded-lg text-center text-[9px] ' + (defeated ? 'bg-amber-50 border border-amber-200' : 'bg-slate-50 border border-slate-200 opacity-60'),
+                    title: b.name + (defeated ? ' (defeated)' : ' (not yet defeated)')
+                  },
+                    h('span', { className: 'text-lg', style: { filter: defeated ? '' : 'grayscale(1)' } }, b.icon),
+                    h('span', { className: 'truncate w-full font-semibold ' + (defeated ? 'text-amber-900' : 'text-slate-400') }, b.name.replace(/^The /, ''))
+                  );
+                })
+              )
+            )
+          ),
+          // Strongest + weakest spells
+          (strongest.length > 0 || weakest.length > 0) && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3 mb-4' },
+            h('section', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 p-3' },
+              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-emerald-700 mb-2' }, '💪 Top Spells'),
+              strongest.length === 0
+                ? h('div', { className: 'text-[11px] text-slate-500 italic' }, 'Cast each spell at least 3 times to see your strongest.')
+                : h('div', { className: 'space-y-1' },
+                    strongest.map(function(item) {
+                      return h('div', { key: 'top-' + item.spell.id, className: 'flex items-center gap-2 text-[11px] p-1.5 rounded-lg bg-white border border-emerald-200' },
+                        h('span', { className: 'text-base' }, item.spell.icon),
+                        h('span', { className: 'flex-1 font-semibold', style: { color: item.spell.color } }, item.spell.name),
+                        h('span', { className: 'font-bold text-emerald-700' }, Math.round(item.rate * 100) + '%'),
+                        h('span', { className: 'text-[9px] text-slate-400' }, '(' + item.attempts + ')')
+                      );
+                    })
+                  )
+            ),
+            h('section', { className: 'rounded-xl border border-rose-200 bg-rose-50 p-3' },
+              h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-rose-700 mb-2' }, '🎯 Spells to Strengthen'),
+              weakest.length === 0
+                ? h('div', { className: 'text-[11px] text-slate-500 italic' }, 'No weak spots flagged yet. Keep casting!')
+                : h('div', { className: 'space-y-1' },
+                    weakest.map(function(item) {
+                      return h('button', {
+                        key: 'weak-' + item.spell.id,
+                        onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: item.spell.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 } }); },
+                        className: 'w-full flex items-center gap-2 text-[11px] p-1.5 rounded-lg bg-white border border-rose-200 hover:bg-rose-100 focus:ring-2 focus:ring-rose-400 focus:outline-none transition text-left',
+                        'aria-label': 'Practice ' + item.spell.name + ' in Study Hall'
+                      },
+                        h('span', { className: 'text-base' }, item.spell.icon),
+                        h('span', { className: 'flex-1 font-semibold', style: { color: item.spell.color } }, item.spell.name),
+                        h('span', { className: 'font-bold text-rose-700' }, Math.round(item.rate * 100) + '%'),
+                        h('span', { className: 'text-[9px] text-rose-600 font-bold' }, 'Drill →')
+                      );
+                    })
+                  )
+            )
+          ),
+          // Calibration health (only if any confidence levels logged)
+          (calData.high.total + calData.med.total + calData.low.total) > 0 && h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3 mb-4' },
+            h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '🧠 Confidence Calibration Health'),
+            h('p', { className: 'text-[10px] text-slate-500 mb-2 italic' }, 'When you say you "know it" and you do — that\'s calibration. Mismatch (over/under-confidence) is the hidden cost in learning.'),
+            h('div', { className: 'grid grid-cols-3 gap-2' },
+              [
+                { level: 'high', icon: '🔥', label: 'Knew it' },
+                { level: 'med',  icon: '🤔', label: 'Pretty sure' },
+                { level: 'low',  icon: '🤷', label: 'Guessing' }
+              ].map(function(opt) {
+                var c = calData[opt.level];
+                if (c.total === 0) return h('div', { key: 'cd-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-center text-[10px] text-slate-400' },
+                  h('div', null, opt.icon + ' ' + opt.label),
+                  h('div', { className: 'mt-1' }, '—')
+                );
+                var pct = Math.round(c.right / c.total * 100);
+                var calNote = '';
+                if (opt.level === 'high' && pct < 70) calNote = 'overconfident';
+                else if (opt.level === 'low' && pct >= 60) calNote = 'underconfident';
+                else if (opt.level === 'high' && pct >= 85) calNote = 'sharp';
+                return h('div', {
+                  key: 'cd-' + opt.level,
+                  className: 'p-2 rounded-lg text-center text-[10px] border ' + (calNote === 'overconfident' ? 'bg-amber-50 border-amber-200' : calNote === 'underconfident' ? 'bg-sky-50 border-sky-200' : 'bg-emerald-50 border-emerald-200')
+                },
+                  h('div', { className: 'font-bold' }, opt.icon + ' ' + opt.label),
+                  h('div', { className: 'text-base font-bold mt-1' }, pct + '%'),
+                  h('div', { className: 'text-[9px] text-slate-400' }, c.right + '/' + c.total),
+                  calNote && h('div', { className: 'text-[9px] italic mt-0.5 ' + (calNote === 'overconfident' ? 'text-amber-700' : calNote === 'underconfident' ? 'text-sky-700' : 'text-emerald-700') }, calNote)
+                );
+              })
+            )
+          ),
+          // Source-tool mastery domains
+          h('section', { className: 'rounded-xl border border-slate-200 bg-white p-3 mb-4' },
+            h('h2', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '🌐 Source-Tool Mastery'),
+            h('div', { className: 'space-y-1' },
+              Object.keys(sourceTally).map(function(k) {
+                var t = sourceTally[k];
+                var pct = t.total > 0 ? Math.round(t.unlocked / t.total * 100) : 0;
+                return h('div', { key: 'st-' + k, className: 'flex items-center gap-2 text-[11px] p-1.5 rounded-lg bg-slate-50 border border-slate-200' },
+                  h('span', { className: 'text-base' }, t.icon),
+                  h('span', { className: 'flex-1 font-semibold text-slate-700' }, t.label),
+                  h('span', { className: 'text-[10px] text-slate-500' }, t.unlocked + '/' + t.total + ' spells · ' + t.casts + ' cast' + (t.casts !== 1 ? 's' : '')),
+                  h('div', { className: 'w-16 h-2 rounded-full bg-slate-200 overflow-hidden' },
+                    h('div', { className: 'h-full bg-violet-500', style: { width: pct + '%' } })
+                  )
+                );
+              })
+            )
           )
         );
       }
