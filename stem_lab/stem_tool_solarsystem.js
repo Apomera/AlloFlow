@@ -5455,9 +5455,13 @@ const d = labToolData.solarSystem;
                         }
                       },
 
-                      className: "px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all " +
+                      className: "px-3 py-1.5 rounded-lg text-[11px] font-bold capitalize transition-all hover:-translate-y-0.5 " +
 
-                        ((d.viewTab || 'overview') === tab ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md shadow-indigo-500/25 ring-1 ring-indigo-400/30' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 shadow-sm'))
+                        ((d.viewTab || 'overview') === tab
+                          ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-indigo-400/40'
+                          : (isDark ? 'bg-gradient-to-br from-slate-700 to-slate-800 text-slate-300 hover:from-slate-600 hover:to-slate-700 hover:text-white border border-slate-600/50' : 'bg-gradient-to-br from-white to-slate-100 text-slate-700 hover:from-slate-50 hover:to-slate-200 hover:text-indigo-700 border border-slate-200 shadow-sm hover:shadow-md hover:border-indigo-300')),
+
+                      style: ((d.viewTab || 'overview') === tab) ? { textShadow: '0 1px 1px rgba(15,23,42,0.4)' } : {}
 
                     }, tabLabels[tab]);
 
@@ -5482,13 +5486,23 @@ const d = labToolData.solarSystem;
                   ].map(function (item) {
 
                     return React.createElement("div", { key: item[1],
-                      className: "rounded-xl p-2.5 text-center border transition-all hover:shadow-md hover:-translate-y-0.5 " + (isDark ? 'bg-slate-800 border-slate-700 hover:border-indigo-500/40' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200 hover:border-indigo-300'),
-                      style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' }
+                      className: "rounded-xl p-2.5 text-center border transition-all hover:shadow-lg hover:-translate-y-0.5",
+                      style: {
+                        background: isDark
+                          ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
+                          : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
+                        borderColor: sel.color + "33",
+                        borderTopWidth: "2px",
+                        borderTopColor: sel.color + "88",
+                        boxShadow: isDark
+                          ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+                          : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
+                      }
                     },
 
-                      React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-200' : 'text-slate-200') }, item[0] + ' ' + item[1]),
+                      React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider " + (isDark ? 'text-slate-300' : 'text-slate-600') }, item[0] + ' ' + item[1]),
 
-                      React.createElement("p", { className: "text-xs font-bold mt-0.5 " + (isDark ? 'text-slate-200' : 'text-slate-800') }, item[2])
+                      React.createElement("p", { className: "text-xs font-bold mt-0.5 " + (isDark ? 'text-white' : 'text-slate-800') }, item[2])
 
                     );
 
@@ -5498,24 +5512,51 @@ const d = labToolData.solarSystem;
 
                 // Visual comparison bars — gravity and size relative to Earth
                 React.createElement("div", { className: "grid grid-cols-2 gap-2 mb-3" },
-                  // Gravity bar
-                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                  // Gravity bar \u2014 fill takes the planet's color so the eye
+                  // ties bar to body. Card surface matches the 8-tile grid.
+                  React.createElement("div", {
+                    className: "rounded-xl p-3 border",
+                    style: {
+                      background: isDark
+                        ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
+                        : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
+                      borderColor: sel.color + "33",
+                      borderTopWidth: "2px",
+                      borderTopColor: sel.color + "88",
+                      boxShadow: isDark
+                        ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+                        : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
+                    }
+                  },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "\u2696\uFE0F Gravity vs Earth"),
-                      React.createElement("span", { className: "text-[11px] font-bold text-indigo-500", style: { fontFamily: 'monospace' } }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
+                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "\u2696\uFE0F Gravity vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, (GRAVITY_MAP[sel.name] || 1).toFixed(2) + 'g')
                     ),
-                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.name] || 1) * 42) + '%', background: 'linear-gradient(90deg, #6366f1, #818cf8)' } })
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, (GRAVITY_MAP[sel.name] || 1) * 42) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } })
                     )
                   ),
                   // Size bar
-                  React.createElement("div", { className: "rounded-xl p-3 border " + (isDark ? 'bg-slate-800 border-slate-700' : 'bg-gradient-to-br from-white to-slate-50 border-slate-200'), style: { boxShadow: isDark ? '0 1px 3px rgba(0,0,0,0.3)' : '0 1px 3px rgba(0,0,0,0.06)' } },
+                  React.createElement("div", {
+                    className: "rounded-xl p-3 border",
+                    style: {
+                      background: isDark
+                        ? "linear-gradient(135deg,#1f2440 0%,#262a45 60%,#1c1e35 100%)"
+                        : "linear-gradient(135deg,#ffffff 0%,#f6f9ff 70%,#eef2fb 100%)",
+                      borderColor: sel.color + "33",
+                      borderTopWidth: "2px",
+                      borderTopColor: sel.color + "88",
+                      boxShadow: isDark
+                        ? "0 2px 6px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+                        : "0 2px 6px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
+                    }
+                  },
                     React.createElement("div", { className: "flex justify-between items-center mb-1.5" },
-                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-200' : 'text-slate-600') }, "\uD83D\uDCCF Radius vs Earth"),
-                      React.createElement("span", { className: "text-[11px] font-bold text-emerald-500", style: { fontFamily: 'monospace' } }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
+                      React.createElement("span", { className: "text-[11px] font-bold uppercase " + (isDark ? 'text-slate-300' : 'text-slate-600') }, "\uD83D\uDCCF Radius vs Earth"),
+                      React.createElement("span", { className: "text-[11px] font-bold", style: { fontFamily: 'monospace', color: sel.color } }, ((PLANET_RADII[sel.name] || 6371) / 6371).toFixed(2) + '\u00d7')
                     ),
-                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.1)' } },
-                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.name] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg, #10b981, #34d399)' } })
+                    React.createElement("div", { className: "w-full h-3 rounded-full overflow-hidden " + (isDark ? 'bg-slate-700' : 'bg-slate-100'), style: { boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.15)' } },
+                      React.createElement("div", { className: "h-full rounded-full transition-all duration-700", style: { width: Math.min(100, ((PLANET_RADII[sel.name] || 6371) / 6371) * 9) + '%', background: 'linear-gradient(90deg,' + sel.color + 'cc,' + sel.color + ')', boxShadow: '0 0 10px ' + sel.color + '88' } })
                     )
                   )
                 ),
@@ -7368,19 +7409,44 @@ const d = labToolData.solarSystem;
                     return interiorLayers.map(function(layer, li) {
                       return React.createElement("div", {
                         key: li,
-                        className: "flex items-start gap-3 rounded-lg p-3 border transition-all hover:shadow-md",
-                        style: { background: layer.color + '15', borderColor: layer.color + '40' }
+                        className: "flex items-stretch gap-0 rounded-xl overflow-hidden border transition-all hover:-translate-y-0.5",
+                        style: {
+                          background: "linear-gradient(135deg," + layer.color + "1f 0%," + layer.color + "0a 60%,rgba(15,23,42,0.4) 100%)",
+                          borderColor: layer.color + '40',
+                          boxShadow: "0 2px 6px rgba(15,23,42,0.30),inset 0 1px 0 rgba(255,255,255,0.04)"
+                        }
                       },
+                        // Left accent strip — same pattern as descent layer cards
                         React.createElement("div", {
-                          className: "w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-0.5",
-                          style: { background: layer.color, boxShadow: '0 2px 8px ' + layer.color + '80' }
-                        }, layer.icon),
-                        React.createElement("div", { className: "flex-1 min-w-0" },
-                          React.createElement("div", { className: "flex items-center gap-2 mb-0.5" },
-                            React.createElement("span", { className: "text-xs font-bold text-white" }, layer.label),
-                            React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full bg-white/10 text-slate-300 font-mono" }, layer.thick)
-                          ),
-                          React.createElement("p", { className: "text-[11px] text-slate-300 leading-relaxed" }, layer.desc)
+                          "aria-hidden": "true",
+                          style: {
+                            width: 5, flexShrink: 0,
+                            background: "linear-gradient(180deg," + layer.color + " 0%," + layer.color + "aa 100%)",
+                            boxShadow: "0 0 6px " + layer.color + "aa"
+                          }
+                        }),
+                        React.createElement("div", { className: "flex items-start gap-3 flex-1 p-3" },
+                          React.createElement("div", {
+                            className: "w-8 h-8 rounded-full flex items-center justify-center text-lg flex-shrink-0 mt-0.5",
+                            style: {
+                              background: "radial-gradient(circle," + layer.color + " 0%," + layer.color + "cc 70%," + layer.color + "33 100%)",
+                              boxShadow: "0 0 12px " + layer.color + "aa,inset 0 0 6px " + layer.color + "55"
+                            }
+                          }, layer.icon),
+                          React.createElement("div", { className: "flex-1 min-w-0" },
+                            React.createElement("div", { className: "flex items-center gap-2 mb-1 flex-wrap" },
+                              React.createElement("span", { className: "text-xs font-bold", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, layer.label),
+                              React.createElement("span", {
+                                className: "text-[10px] px-1.5 py-0.5 rounded font-mono",
+                                style: {
+                                  color: layer.color,
+                                  background: layer.color + '22',
+                                  border: '1px solid ' + layer.color + '55'
+                                }
+                              }, layer.thick)
+                            ),
+                            React.createElement("p", { className: "text-[11px] leading-relaxed", style: { color: '#e2e8f0' } }, layer.desc)
+                          )
                         )
                       );
                     });
