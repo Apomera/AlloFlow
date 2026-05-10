@@ -164,6 +164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { id: 'mountain_flying', name: 'Mountain Flying', desc: 'Fly to Denver at 5,431 ft elevation. Learn how altitude affects aircraft performance.', goals: ['Climb above 8,000 ft', 'Experience reduced lift at altitude', 'Land at DEN'], lesson: 'lift' },
     { id: 'energy_management', name: 'Energy Management', desc: 'Trade speed for altitude and back. Demonstrate conservation of energy.', goals: ['Reach 5,000 ft', 'Reduce throttle to idle', 'Maintain speed by descending', 'Climb using excess speed'], lesson: 'weight' },
     { id: 'world_tour', name: 'Around the World', desc: 'Visit 5 airports across different continents. Learn geography as you fly!', goals: ['Visit any 5 different airports', 'Cross at least 2 oceans', 'Learn a fact at each stop'], lesson: 'navigation' },
+    { id: 'coastal_rescue', name: '🚁 Coastal Rescue', desc: 'A boater is in distress 5nm offshore from PWM. Fly the rescue helicopter to the location, hover stably below 100 ft AGL, lower the hoist for 5 seconds, then return to PWM and land.', goals: ['Reach the survivor coordinates', 'Hover stably for hoist (≤100 ft AGL, ≤10 kts)', 'Hold hoist 5 seconds', 'Return to PWM', 'Land safely'], lesson: 'lift', requiresAircraft: 'rescue_heli' },
   ];
 
   // ── HYPERJET GEOGRAPHY SPRINT ROUTES ──
@@ -198,6 +199,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       wingArea: 1800, weight: 152000, maxThrust: 68000, cl0: 0.15, clPerAoa: 0.06, cd0: 0.009, cdK: 0.06,
       maxSpeed: 2200, ceiling: 85000, fuelBurn: 8000, range: 3200,
       lesson: 'The SR-71 flies so fast that its titanium skin heats to over 600°F from air friction. The fuel tanks are designed to leak on the ground — they only seal properly when the metal expands at operating temperature!' },
+    { id: 'rescue_heli', name: 'UH-60 Rescue Helicopter', icon: '🚁', desc: 'A search-and-rescue helicopter. Hovers in place, lifts straight up, no runway needed. Different physics from fixed-wing — collective controls vertical thrust, cyclic pitches the rotor disk for forward motion.', category: 'Rotor',
+      isHelicopter: true,
+      wingArea: 1, weight: 11000, maxThrust: 13000, cl0: 0, clPerAoa: 0, cd0: 0.15, cdK: 0,
+      maxSpeed: 174, ceiling: 10500, fuelBurn: 230, range: 320,
+      lesson: 'A helicopter rotor is a rotating wing. The rotor blades produce lift the same way a fixed wing does — but because the blades are always moving (even when the aircraft isn\'t), the helicopter can hover. Tilt the rotor disk forward and lift becomes thrust + lift; the helicopter accelerates while staying airborne. This is why rescue helicopters can pluck a person off a sinking boat.' },
   ];
 
   // ── ACHIEVEMENT SYSTEM ──
@@ -217,6 +223,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { id: 'quiz_10', name: 'Quiz Whiz', icon: '🧠', desc: 'Answer 10 geography quiz questions correctly', check: function(s, extra) { return extra.quizScore >= 10; } },
     { id: 'sprint_perfect', name: 'Perfect Sprint', icon: '⭐', desc: 'Complete a HyperJet sprint with 100% score', check: function(s, extra) { return extra.perfectSprint; } },
     { id: 'cross_ocean', name: 'Ocean Crossing', icon: '🌊', desc: 'Fly over an ocean (detect water below for 50+ nm)', check: function(s, extra) { return extra.oceanCrossing; } },
+    { id: 'rescue_one', name: 'Coast Guard Pilot', icon: '🚁', desc: 'Complete one coastal rescue', check: function(s, extra) { return extra.rescuesCompleted >= 1; } },
   ];
 
   // ── CONTINENT/OCEAN LABELS (visible at high altitude) ──
@@ -281,12 +288,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var throttle = Math.max(0, Math.min(1, controls.throttle));
       var pitch = controls.pitch; // degrees, positive = nose up
       var bank = controls.bank;   // degrees
+      var yawRate = controls.yawRate || 0; // deg/s, used by helicopter tail rotor
 
       var speed = state.speed;    // ft/s (TAS)
       var alt = state.altitude;   // ft MSL
       var vsi = state.vsi;        // ft/s vertical speed
       var heading = state.heading; // degrees
 
+      // ── HELICOPTER PHYSICS BRANCH ──
+      // Different regime from fixed-wing: lift comes from rotor thrust
+      // (independent of forward airspeed), forward motion comes from
+      // tilting the rotor disk, yaw comes from tail rotor (independent
+      // of bank). This is what allows hover.
+      if (this.IS_HELICOPTER) {
+        var collective = throttle;
+        // Rotor lift: vertical component is collective * MAX_THRUST * cos(pitch).
+        // Forward thrust: collective * MAX_THRUST * sin(pitch). Together, total
+        // rotor thrust magnitude = collective * MAX_THRUST.
+        var pitchRadH = pitch * Math.PI / 180;
+        var rotorThrust = this.MAX_THRUST * collective;
+        var verticalLift = rotorThrust * Math.cos(pitchRadH);
+        var forwardThrustH = rotorThrust * Math.sin(pitchRadH);
+        // Parasitic drag — uses cd0 against airspeed
+        var rho = this.airDensity(alt);
+        var dragH = 0.5 * rho * speed * speed * 35 * (this.CD0 || 0.15); // 35ft² flat-plate equivalent
+        // Forward acceleration
+        var accelH = (forwardThrustH - dragH) / (this.WEIGHT / this.G);
+        speed += accelH * dt;
+        speed = Math.max(0, speed);
+        // Cap at helicopter Vne (max forward speed in ft/s)
+        var maxFwdFtS = (this.MAX_SPEED_KTS || 174) * 1.6878;
+        if (speed > maxFwdFtS) speed = maxFwdFtS;
+        // Vertical accel — direct, no aoa coupling
+        var vertAccelH = (verticalLift - this.WEIGHT) / (this.WEIGHT / this.G);
+        vsi += vertAccelH * dt * 0.5;
+        vsi *= 0.96; // damping (helicopters are responsive but not bouncy)
+        alt += vsi * dt;
+        var fieldElevH = state.fieldElev || 0;
+        if (alt < fieldElevH) alt = fieldElevH;
+        // Ground contact
+        if (alt <= fieldElevH) {
+          alt = fieldElevH;
+          vsi = Math.max(0, vsi);
+          // Helicopters on the ground don't roll like a fixed-wing — kill speed faster
+          speed = Math.max(0, speed - 1.5 * this.G * dt);
+        }
+        // Yaw from tail rotor (independent of bank/airspeed)
+        heading += yawRate * dt;
+        // Bank also induces sideways drift but we keep it simple: bank affects
+        // visual roll but heading change is via yaw only. This is honest to how
+        // helicopters feel — bank in a hover translates sideways without turning.
+        heading = ((heading % 360) + 360) % 360;
+        // Position update — uses ground speed projected onto heading
+        var gsH = speed; // helicopter forward speed IS ground speed in this model
+        var nmPerSecH = gsH / 6076.12;
+        var latChangeH = nmPerSecH * Math.cos(heading * Math.PI / 180) / 60 * dt;
+        var lonChangeH = nmPerSecH * Math.sin(heading * Math.PI / 180) / (60 * Math.cos(state.lat * Math.PI / 180)) * dt;
+        // Sideways drift from bank (translates without turning)
+        var bankRadH = bank * Math.PI / 180;
+        var driftFtS = Math.sin(bankRadH) * collective * 30; // small lateral drift
+        var driftNmS = driftFtS / 6076.12;
+        var sideHeadingRad = (heading + 90) * Math.PI / 180;
+        latChangeH += driftNmS * Math.cos(sideHeadingRad) / 60 * dt;
+        lonChangeH += driftNmS * Math.sin(sideHeadingRad) / (60 * Math.cos(state.lat * Math.PI / 180)) * dt;
+        return {
+          speed: speed,
+          altitude: alt,
+          vsi: vsi,
+          heading: heading,
+          lat: state.lat + latChangeH,
+          lon: state.lon + lonChangeH,
+          aoa: 0,
+          stalling: false,
+          onGround: alt <= fieldElevH + 1,
+          fieldElev: fieldElevH,
+          forces: { lift: verticalLift, drag: dragH, thrust: rotorThrust, weight: this.WEIGHT }
+        };
+      }
+
+      // ── FIXED-WING PHYSICS (unchanged below) ──
       // Forces
       var thrust = this.MAX_THRUST * throttle;
       var aoa = pitch - (vsi / Math.max(speed, 1)) * (180 / Math.PI) * 0.5;
@@ -6553,6 +6633,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         Physics.CL_PER_AOA = currentAC.clPerAoa;
         Physics.CD0 = currentAC.cd0;
         Physics.CD_INDUCED_K = currentAC.cdK;
+        Physics.IS_HELICOPTER = !!currentAC.isHelicopter;
+        Physics.MAX_SPEED_KTS = currentAC.maxSpeed;
       }, [selectedAircraft]);
 
       // ── Achievement Tracker ──
@@ -6568,7 +6650,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           airports: (d.visitedAirports || []).length,
           quizScore: geoQuizRef.current.score,
           perfectSprint: sprintRef.current.phase === 'result' && sprintRef.current.score === sprintRef.current.places?.length && sprintRef.current.score > 0,
-          oceanCrossing: oceanNmRef.current > 50
+          oceanCrossing: oceanNmRef.current > 50,
+          rescuesCompleted: d.rescuesCompleted || 0
         };
         // Track ocean crossing
         if (isWater(state.lat, state.lon)) { oceanNmRef.current += 0.05; } else { oceanNmRef.current = 0; }
@@ -6602,6 +6685,123 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.fillStyle = '#fff'; gfx.font = 'bold 13px system-ui';
         gfx.fillText(pop.ach.icon + ' ' + pop.ach.name, cardX + 10, cardY + 37);
         gfx.globalAlpha = 1;
+      };
+
+      // ── Coastal Rescue overlay ──
+      // Draws the distress beacon banner, bearing/distance to survivor,
+      // hover-stability progress bar during hoist, and a flashing red
+      // distress marker on the canvas at the survivor's projected position.
+      var drawRescueOverlay = function(gfx, W, H, horizonY, state, time) {
+        var rescue = d.rescue;
+        if (!rescue || !rescue.active) return;
+        var rDist = haversineNm(state.lat, state.lon, rescue.survivorLat, rescue.survivorLon);
+        var rBrg = bearing(state.lat, state.lon, rescue.survivorLat, rescue.survivorLon);
+        var rRelBrg = ((rBrg - state.heading + 540) % 360) - 180;
+        var rAgl = state.altitude - (state.fieldElev || 0);
+        var rKts = state.speed * 0.5924838;
+
+        // Top-left distress beacon banner
+        var bannerY = 40;
+        gfx.fillStyle = 'rgba(180,30,30,0.85)';
+        gfx.fillRect(8, bannerY, 230, 22);
+        gfx.fillStyle = '#fff';
+        gfx.font = 'bold 10px system-ui';
+        gfx.textAlign = 'left';
+        var beaconLabel = rescue.recovered
+          ? '✅ SURVIVOR ABOARD — RTB PWM'
+          : '🆘 DISTRESS BEACON · ' + rDist.toFixed(1) + ' nm @ ' + Math.round(((rBrg + 360) % 360)) + '°';
+        gfx.fillText(beaconLabel, 14, bannerY + 14);
+
+        // Mission status callout under the beacon banner — close-range info
+        if (rDist < 1.5 && !rescue.recovered) {
+          gfx.fillStyle = 'rgba(15,23,42,0.85)';
+          gfx.fillRect(8, bannerY + 26, 230, 36);
+          gfx.fillStyle = '#fbbf24';
+          gfx.font = 'bold 10px system-ui';
+          gfx.fillText('CLOSE — SLOW + DESCEND TO HOVER', 14, bannerY + 38);
+          gfx.fillStyle = '#cbd5e1';
+          gfx.font = '10px monospace';
+          gfx.fillText('AGL ' + Math.round(rAgl) + ' ft  ·  GS ' + Math.round(rKts) + ' kts', 14, bannerY + 52);
+          gfx.fillText('Δ ' + (rDist * 6076).toFixed(0) + ' ft  ·  TGT < 100 ft AGL, < 10 kts', 14, bannerY + 64);
+        }
+
+        // Hoist progress bar — only visible while actively hoisting
+        var hoistT = rescue.hoistTime || 0;
+        if (hoistT > 0.02 && !rescue.recovered) {
+          var hbW = 240, hbH = 14;
+          var hbX = (W - hbW) / 2, hbY = H * 0.32;
+          gfx.fillStyle = 'rgba(15,23,42,0.92)';
+          gfx.fillRect(hbX - 6, hbY - 18, hbW + 12, hbH + 32);
+          gfx.fillStyle = '#fbbf24';
+          gfx.font = 'bold 11px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('HOLD POSITION — HOIST IN PROGRESS', W / 2, hbY - 4);
+          // Bar background
+          gfx.fillStyle = 'rgba(60,65,75,0.9)';
+          gfx.fillRect(hbX, hbY, hbW, hbH);
+          // Bar fill
+          var pct = Math.min(1, hoistT / 5);
+          gfx.fillStyle = '#22c55e';
+          gfx.fillRect(hbX, hbY, hbW * pct, hbH);
+          // Time label
+          gfx.fillStyle = '#fff';
+          gfx.font = 'bold 9px monospace';
+          gfx.fillText(hoistT.toFixed(1) + ' / 5.0 s', W / 2, hbY + hbH + 12);
+        }
+
+        // Flashing distress marker on canvas — projected to screen position
+        // when the survivor is roughly in front of the plane.
+        if (Math.abs(rRelBrg) < 60 && !rescue.recovered && rDist < 8) {
+          // Project distance/bearing to screen coords
+          var relRad = rRelBrg * Math.PI / 180;
+          var t = Math.max(0.1, 1 - Math.min(1, Math.log(rDist + 1) / Math.log(9)));
+          var bx = W / 2 + Math.sin(relRad) * 80 * (t * t * 0.6 + 0.4) * Math.max(rDist, 0.05) * 60;
+          // Actually clamp bx to reasonable horizontal screen range using direct relBrg fraction
+          bx = W / 2 + (rRelBrg / 60) * (W * 0.45);
+          var by = horizonY + (H - horizonY) * (0.05 + 0.85 * (t * t));
+          var pulse = 0.5 + 0.5 * Math.sin(time * 6);
+          gfx.fillStyle = 'rgba(220,40,40,' + pulse + ')';
+          gfx.beginPath();
+          gfx.arc(bx, by, 5 + pulse * 3, 0, Math.PI * 2);
+          gfx.fill();
+          // Outer ring
+          gfx.strokeStyle = 'rgba(255,180,180,' + (pulse * 0.8) + ')';
+          gfx.lineWidth = 1.4;
+          gfx.beginPath();
+          gfx.arc(bx, by, 12 + pulse * 4, 0, Math.PI * 2);
+          gfx.stroke();
+          // Beacon label
+          gfx.fillStyle = 'rgba(255,255,255,0.85)';
+          gfx.font = 'bold 10px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('SURVIVOR', bx, by - 18);
+        }
+
+        // Completion celebration card — full-screen success
+        if (rescue.completed && rescue.completedAt && (time - rescue.completedAt) < 8) {
+          var cAge = time - rescue.completedAt;
+          var cAlpha = Math.min(1, cAge < 0.5 ? cAge * 2 : (cAge > 6 ? (8 - cAge) / 2 : 1));
+          var ccW = 360, ccH = 110;
+          var ccX = (W - ccW) / 2, ccY = H * 0.25;
+          gfx.fillStyle = 'rgba(22,40,28,' + (0.92 * cAlpha) + ')';
+          gfx.fillRect(ccX, ccY, ccW, ccH);
+          gfx.strokeStyle = 'rgba(34,197,94,' + cAlpha + ')';
+          gfx.lineWidth = 2;
+          gfx.strokeRect(ccX, ccY, ccW, ccH);
+          gfx.fillStyle = 'rgba(34,197,94,' + cAlpha + ')';
+          gfx.font = 'bold 16px system-ui';
+          gfx.textAlign = 'center';
+          gfx.fillText('✅ RESCUE COMPLETE', W / 2, ccY + 30);
+          gfx.fillStyle = 'rgba(255,255,255,' + cAlpha + ')';
+          gfx.font = 'bold 12px system-ui';
+          gfx.fillText('Survivor delivered to PWM', W / 2, ccY + 54);
+          gfx.fillStyle = 'rgba(203,213,225,' + cAlpha + ')';
+          gfx.font = '11px system-ui';
+          gfx.fillText('Total mission time: ' + (rescue.totalSec || 0) + ' seconds', W / 2, ccY + 74);
+          gfx.fillStyle = 'rgba(251,191,36,' + cAlpha + ')';
+          gfx.font = 'italic 10px system-ui';
+          gfx.fillText('+ Coast Guard Pilot achievement', W / 2, ccY + 94);
+        }
       };
 
       // ── World Labels (continents/oceans at high altitude) ──
@@ -7237,12 +7437,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Process keyboard input
           var ctrl = controlsRef.current;
-          if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(15, ctrl.pitch + 0.5);
-          else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-15, ctrl.pitch - 0.5);
-          else ctrl.pitch *= 0.92;
-          if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-45, ctrl.bank - 1);
-          else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(45, ctrl.bank + 1);
-          else ctrl.bank *= 0.95;
+          // Helicopter mode: cyclic pitch range narrower (rotor disk only
+          // tilts ±20° in real life), bank doesn't auto-center as fast
+          // (sideways drift continues until commanded back), AND Q/E pedals
+          // map to yawRate for tail rotor.
+          var heliMode = !!(currentAC && currentAC.isHelicopter);
+          if (heliMode) {
+            // Cyclic pitch (W/S): ±20° rotor disk tilt, snappier response
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(20, ctrl.pitch + 0.7);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-20, ctrl.pitch - 0.7);
+            else ctrl.pitch *= 0.88; // returns to neutral when released (rotor recenters)
+            // Cyclic roll (A/D): sideways disk tilt for translation
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-30, ctrl.bank - 0.8);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(30, ctrl.bank + 0.8);
+            else ctrl.bank *= 0.90;
+            // Tail rotor pedals (Q/E): yaw rate in deg/s. Continuous hold.
+            if (keys['q']) ctrl.yawRate = Math.max(-25, (ctrl.yawRate || 0) - 1.5);
+            else if (keys['e']) ctrl.yawRate = Math.min(25, (ctrl.yawRate || 0) + 1.5);
+            else ctrl.yawRate = (ctrl.yawRate || 0) * 0.85;
+          } else {
+            if (keys['w'] || keys['arrowup']) ctrl.pitch = Math.min(15, ctrl.pitch + 0.5);
+            else if (keys['s'] || keys['arrowdown']) ctrl.pitch = Math.max(-15, ctrl.pitch - 0.5);
+            else ctrl.pitch *= 0.92;
+            if (keys['a'] || keys['arrowleft']) ctrl.bank = Math.max(-45, ctrl.bank - 1);
+            else if (keys['d'] || keys['arrowright']) ctrl.bank = Math.min(45, ctrl.bank + 1);
+            else ctrl.bank *= 0.95;
+            ctrl.yawRate = 0;
+          }
           // Engine-start cough: first time throttle leaves zero on the ground,
           // record the moment so the render block can draw a puff of exhaust
           // smoke and the HUD can print "IGNITION" briefly. Reset once we're
@@ -7325,6 +7546,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           // Physics step
           var state = Physics.step(flightRef.current, dt, ctrl);
           flightRef.current = state;
+
+          // ── Coastal rescue mission tick ──
+          // Tracks hover-stability over the survivor and recovery progress.
+          // State persists in d.rescue so it survives mode switches (but
+          // resets on a fresh mission start).
+          var rescue = d.rescue;
+          if (rescue && rescue.active && !rescue.completed) {
+            // Lazy-init startedAt the first tick after mission begins
+            if (!rescue.startedAt) {
+              upd('rescue', Object.assign({}, rescue, { startedAt: timeRef.current }));
+              rescue = d.rescue || rescue;
+            }
+            var rDist = haversineNm(state.lat, state.lon, rescue.survivorLat, rescue.survivorLon);
+            var rAgl = state.altitude - (state.fieldElev || 0);
+            var rKts = state.speed * 0.5924838;
+            var hoverable = rDist < 0.05 && rAgl < 100 && rAgl > 5
+                         && rKts < 10 && Math.abs(state.vsi * 60) < 200;
+            if (!rescue.recovered) {
+              var hoist = rescue.hoistTime || 0;
+              hoist = hoverable ? Math.min(5.5, hoist + dt) : Math.max(0, hoist - dt * 1.5);
+              if (hoist >= 5 && !rescue.recovered) {
+                upd('rescue', Object.assign({}, rescue, { hoistTime: 5, recovered: true, recoveredAt: timeRef.current }));
+                if (typeof addToast === 'function') addToast('🚁 Survivor recovered! Return to PWM and land.', 'success');
+                if (typeof skyAnnounce === 'function') skyAnnounce('Survivor recovered. Return to base and land.');
+              } else if (hoist !== rescue.hoistTime) {
+                // Update without spamming — only meaningful change
+                if (Math.abs(hoist - rescue.hoistTime) > 0.05) {
+                  upd('rescue', Object.assign({}, rescue, { hoistTime: hoist }));
+                }
+              }
+            } else if (rescue.recovered && state.onGround) {
+              // Find PWM for return-distance check
+              var pwm = WAYPOINTS.filter(function(a) { return a.id === 'kpwm'; })[0];
+              var returnDist = pwm ? haversineNm(state.lat, state.lon, pwm.lat, pwm.lon) : 99;
+              if (returnDist < 0.5) {
+                var elapsedSec = Math.floor(timeRef.current - (rescue.startedAt || 0));
+                upd('rescue', Object.assign({}, rescue, { completed: true, completedAt: timeRef.current, totalSec: elapsedSec }));
+                upd('rescuesCompleted', (d.rescuesCompleted || 0) + 1);
+                if (typeof addToast === 'function') addToast('✅ RESCUE COMPLETE — ' + elapsedSec + 's', 'success');
+                if (typeof skyAnnounce === 'function') skyAnnounce('Rescue complete. Total time ' + elapsedSec + ' seconds.');
+              }
+            }
+          }
 
           // Auto-dismiss the takeoff tutorial once the player is solidly airborne
           // (>200 ft above the field). Persists in d so it doesn't reappear next drive.
@@ -8692,6 +8956,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           checkAchievements(state, timeRef.current);
           drawAchievementPopup(gfx, W, H, timeRef.current);
 
+          // Coastal rescue overlay (distress beacon, hover bar, success card)
+          drawRescueOverlay(gfx, W, H, horizonY, state, timeRef.current);
+
           // HyperJet Sprint HUD (drawn over everything)
           drawSprintHUD(gfx, W, H, state, timeRef.current);
 
@@ -9568,10 +9835,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             h('div', { style: { fontSize: '10px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' } }, '🏆 Flight Challenges'),
             h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
               CHALLENGES.map(function(ch) {
-                return h('button', { key: ch.id, onClick: function() { startFlying('kpwm'); updMulti({ selectedChallenge: ch.id }); },
-                  style: { padding: '10px 12px', borderRadius: '8px', border: '1px solid #334155', background: '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }
+                var isRescue = ch.id === 'coastal_rescue';
+                return h('button', { key: ch.id, onClick: function() {
+                  if (isRescue) {
+                    // Rescue mission: force aircraft selection to helicopter,
+                    // place survivor 5nm SE of PWM in Casco Bay, and arm
+                    // state.rescue. Then start the flight at PWM.
+                    var pwm = WAYPOINTS.filter(function(a) { return a.id === 'kpwm'; })[0];
+                    var survivorLat = (pwm ? pwm.lat : 43.646) - 0.04;
+                    var survivorLon = (pwm ? pwm.lon : -70.309) + 0.07;
+                    updMulti({
+                      aircraft: 'rescue_heli',
+                      selectedChallenge: ch.id,
+                      rescue: {
+                        active: true,
+                        survivorLat: survivorLat,
+                        survivorLon: survivorLon,
+                        hoistTime: 0,
+                        recovered: false,
+                        completed: false,
+                        startedAt: 0
+                      }
+                    });
+                    startFlying('kpwm');
+                    if (typeof addToast === 'function') addToast('🚁 Distress beacon. Boater in Casco Bay. Lift off, fly heading 095°, recover the survivor.', 'info');
+                  } else {
+                    startFlying('kpwm'); updMulti({ selectedChallenge: ch.id });
+                  }
                 },
-                  h('div', { style: { fontSize: '24px', shrink: 0 } }, '🎯'),
+                  style: { padding: '10px 12px', borderRadius: '8px', border: '1px solid ' + (isRescue ? '#dc2626' : '#334155'), background: isRescue ? 'linear-gradient(135deg, #1f0a0a, #2d0f0f)' : '#0f172a', color: '#fff', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '12px' }
+                },
+                  h('div', { style: { fontSize: '24px', shrink: 0 } }, isRescue ? '🚁' : '🎯'),
                   h('div', null,
                     h('div', { style: { fontSize: '12px', fontWeight: 700 } }, ch.name),
                     h('div', { style: { fontSize: '10px', color: '#94a3b8', marginTop: '2px' } }, ch.desc)
