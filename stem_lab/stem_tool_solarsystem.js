@@ -5578,19 +5578,39 @@ const d = labToolData.solarSystem;
 
               (d.viewTab) === 'surface' && React.createElement("div", { className: "space-y-3" },
 
-                React.createElement("div", { className: "bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-4 text-white" },
+                React.createElement("div", {
+                  className: "rounded-xl p-4 text-white",
+                  style: {
+                    position: "relative",
+                    overflow: "hidden",
+                    background: "linear-gradient(135deg," + sel.color + "44 0%,#0f172a 60%,#070b18 100%)",
+                    border: "1px solid " + sel.color + "55",
+                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06),0 0 24px " + sel.color + "22,0 6px 18px rgba(7,11,24,0.55)"
+                  }
+                },
 
-                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
+                  // Decorative planet-color glow at top-right
+                  React.createElement("div", {
+                    "aria-hidden": "true",
+                    style: {
+                      position: "absolute", top: "-50px", right: "-50px",
+                      width: "180px", height: "180px", borderRadius: "50%",
+                      background: "radial-gradient(circle," + sel.color + "44 0%,transparent 70%)",
+                      filter: "blur(8px)", pointerEvents: "none"
+                    }
+                  }),
 
-                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0D"),
+                  React.createElement("div", { className: "flex items-center gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
 
-                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Surface Conditions")
+                    React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + sel.color + "88" } }, "\uD83C\uDF0D"),
+
+                    React.createElement("h5", { className: "font-bold text-sm", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Surface Conditions")
 
                   ),
 
-                  React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3" }, sel.surfaceDesc || 'Surface data unavailable.'),
+                  React.createElement("p", { className: "text-xs text-slate-300 leading-relaxed mb-3", style: { position: "relative", zIndex: 1 } }, sel.surfaceDesc || 'Surface data unavailable.'),
 
-                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2" },
+                  React.createElement("div", { className: "grid grid-cols-3 gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
 
                     [
 
@@ -5619,7 +5639,7 @@ const d = labToolData.solarSystem;
                     if (!gVal || sel.name === 'Earth') return null;
                     var earthWeight = 70; // kg reference
                     var planetWeight = Math.round(earthWeight * gVal);
-                    return React.createElement("div", { className: "bg-white/5 rounded-lg p-2 flex items-center gap-2 border border-white/10" },
+                    return React.createElement("div", { className: "bg-white/5 rounded-lg p-2 flex items-center gap-2 border border-white/10", style: { position: "relative", zIndex: 1 } },
                       React.createElement("span", { className: "text-sm" }, "\uD83C\uDFCB\uFE0F"),
                       React.createElement("div", { className: "flex-1" },
                         React.createElement("p", { className: "text-[11px] text-slate-200" }, "If you weigh 70 kg on Earth:"),
@@ -7072,18 +7092,45 @@ const d = labToolData.solarSystem;
 
               // ── INTERIOR VIEW TAB ──
               (d.viewTab) === 'interior' && sel && React.createElement("div", { className: "space-y-3" },
-                React.createElement("div", { className: "bg-gradient-to-r from-orange-900 to-red-900 rounded-xl p-4 text-white" },
-                  React.createElement("div", { className: "flex items-center gap-2 mb-2" },
-                    React.createElement("span", { className: "text-lg" }, "\uD83C\uDF0B"),
-                    React.createElement("h5", { className: "font-bold text-sm" }, sel.name + " Interior Structure")
-                  ),
-                  React.createElement("p", { className: "text-xs text-orange-200 leading-relaxed" },
-                    sel.terrainType === 'gasgiant' ? "Gas giants have no solid surface. Layers of gas compress into liquid and eventually metallic hydrogen." :
-                    sel.terrainType === 'icegiant' ? "Ice giants have a rocky core surrounded by exotic ices, superionic water, and possibly diamond rain." :
-                    sel.terrainType === 'iceworld' ? "Pluto has a thin nitrogen/methane atmosphere, a water-ice crust over a rocky core, and possibly a subsurface ocean." :
-                    "Rocky planets have a layered structure: a metal core, a rocky mantle, and a thin crust."
-                  )
-                ),
+                // Hero band: palette matches the planet type. Rocky worlds
+                // get lava (orange / red), ice giants get ice-blue, Pluto gets
+                // pale violet, gas giants get amber. Was always lava
+                // regardless, which read wrong for Uranus / Neptune / Pluto.
+                (function() {
+                  var ttype = sel.terrainType;
+                  var palette = ttype === 'icegiant' ? { from: 'rgba(56,189,248,0.45)', to: 'rgba(15,23,42,0.95)', accent: '#7dd3fc', textTint: '#bae6fd', icon: "\u2744" }
+                              : ttype === 'iceworld' ? { from: 'rgba(167,139,250,0.40)', to: 'rgba(15,23,42,0.95)', accent: '#c4b5fd', textTint: '#ddd6fe', icon: "\u2744" }
+                              : ttype === 'gasgiant' ? { from: 'rgba(245,158,11,0.45)', to: 'rgba(127,29,29,0.85)', accent: '#fbbf24', textTint: '#fde68a', icon: "\uD83C\uDF2A\uFE0F" }
+                              :                         { from: 'rgba(239,68,68,0.55)', to: 'rgba(127,29,29,0.92)', accent: '#fb923c', textTint: '#fed7aa', icon: "\uD83C\uDF0B" };
+                  var copy = ttype === 'gasgiant' ? "Gas giants have no solid surface. Layers of gas compress into liquid and eventually metallic hydrogen."
+                           : ttype === 'icegiant' ? "Ice giants have a rocky core surrounded by exotic ices, superionic water, and possibly diamond rain."
+                           : ttype === 'iceworld' ? "Pluto has a thin nitrogen/methane atmosphere, a water-ice crust over a rocky core, and possibly a subsurface ocean."
+                           : "Rocky planets have a layered structure: a metal core, a rocky mantle, and a thin crust.";
+                  return React.createElement("div", {
+                    className: "rounded-xl p-4 text-white",
+                    style: {
+                      position: "relative", overflow: "hidden",
+                      background: "linear-gradient(135deg," + palette.from + " 0%," + palette.to + " 100%)",
+                      border: "1px solid " + palette.accent + "55",
+                      boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08),0 0 24px " + palette.accent + "22,0 6px 18px rgba(7,11,24,0.55)"
+                    }
+                  },
+                    React.createElement("div", {
+                      "aria-hidden": "true",
+                      style: {
+                        position: "absolute", top: "-50px", right: "-50px",
+                        width: "180px", height: "180px", borderRadius: "50%",
+                        background: "radial-gradient(circle," + palette.accent + "44 0%,transparent 70%)",
+                        filter: "blur(8px)", pointerEvents: "none"
+                      }
+                    }),
+                    React.createElement("div", { className: "flex items-center gap-2 mb-2", style: { position: "relative", zIndex: 1 } },
+                      React.createElement("span", { className: "text-lg", style: { textShadow: "0 0 8px " + palette.accent + "88" } }, palette.icon),
+                      React.createElement("h5", { className: "font-bold text-sm", style: { color: "#ffffff", textShadow: "0 1px 2px rgba(0,0,0,0.4)" } }, sel.name + " Interior Structure")
+                    ),
+                    React.createElement("p", { className: "text-xs leading-relaxed", style: { position: "relative", zIndex: 1, color: palette.textTint } }, copy)
+                  );
+                })(),
                 // Cutaway canvas
                 React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-orange-300 shadow-lg", style: { height: '420px' } },
                   React.createElement("canvas", {
