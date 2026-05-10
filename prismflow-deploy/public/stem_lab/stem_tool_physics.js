@@ -1577,7 +1577,29 @@ const d = labToolData.physics;
 
             ),
 
-            React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+            React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: { height: "420px" } },
+
+              // Fullscreen toggle (top-right) — wrapper is already
+              // position:relative, so absolute placement works directly.
+              React.createElement("button", {
+                'aria-label': 'Toggle fullscreen for the physics canvas',
+                title: 'Fullscreen',
+                onClick: function() {
+                  var el = document.getElementById('physics-fs-wrap');
+                  if (!el) return;
+                  var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                  if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                  else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 8, zIndex: 10,
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(125,211,252,0.5)', color: '#bae6fd',
+                  fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                }
+              }, '⛶'),
 
               React.createElement("canvas", {
 

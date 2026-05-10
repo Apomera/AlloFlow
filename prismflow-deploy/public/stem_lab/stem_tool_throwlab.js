@@ -4806,8 +4806,9 @@ window.StemLab = window.StemLab || {
         // Two-column layout
         h('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: 16 } },
 
-          // LEFT: side-view canvas + result panel
+          // LEFT: side-view canvas (wrapped for fullscreen) + result panel
           h('div', null,
+            h('div', { id: 'throwlab-fs-wrap', style: { position: 'relative' } },
             h('canvas', {
               ref: canvasRef, width: 720, height: 360,
               role: 'img',
@@ -4823,6 +4824,27 @@ window.StemLab = window.StemLab || {
                 + (lr ? ' Last throw outcome: ' + outcomeLabel(lr.location).replace(/^[^A-Za-z]+/, '') + '.' : ''),
               style: { width: '100%', maxWidth: 720, height: 'auto', borderRadius: 10, border: '1px solid #334155', background: '#0f172a' }
             }),
+            // Fullscreen toggle (top-right of canvas wrapper)
+            h('button', {
+              'aria-label': 'Toggle fullscreen for the throw lab canvas',
+              title: 'Fullscreen',
+              onClick: function() {
+                var el = document.getElementById('throwlab-fs-wrap');
+                if (!el) return;
+                var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+              },
+              style: {
+                position: 'absolute', top: 8, right: 8, zIndex: 5,
+                width: 32, height: 32, borderRadius: 8,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                border: '1px solid rgba(245,158,11,0.5)', color: '#fbbf24',
+                fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+              }
+            }, '⛶')
+            ),
             // Result panel — given an h3 so AT users tabbing into the section
             // know what they're reading. region role makes the panel announce
             // its label when entered.

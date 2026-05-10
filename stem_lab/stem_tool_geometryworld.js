@@ -6447,11 +6447,38 @@
                   destroyEngine();
                 }
               },
+              id: 'geoworld-fs-wrap',
               role: 'img',
               'aria-label': 'Interactive 3D world view. Click to enter. ' + (currentLesson.title || 'Geometry World') + '. ' + score + ' of ' + totalQ + ' questions answered.',
               tabIndex: 0,
               style: { flex: 1, position: 'relative' }
-            })
+            },
+              // Fullscreen toggle (top-right). React will mount this as a
+              // child of the engine container; the engine's renderer DOM
+              // element is appended later via initEngine, so the button
+              // and the canvas coexist as siblings. zIndex keeps the button
+              // above the WebGL surface.
+              el('button', {
+                'aria-label': 'Toggle fullscreen for the 3D world',
+                title: 'Fullscreen',
+                onClick: function(ev) {
+                  ev.stopPropagation();
+                  var fsEl = document.getElementById('geoworld-fs-wrap');
+                  if (!fsEl) return;
+                  var inFull = document.fullscreenElement === fsEl || document.webkitFullscreenElement === fsEl || document.mozFullScreenElement === fsEl;
+                  if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                  else { var rq = fsEl.requestFullscreen || fsEl.webkitRequestFullscreen || fsEl.mozRequestFullScreen; if (rq) rq.call(fsEl); }
+                },
+                style: {
+                  position: 'absolute', top: 8, right: 8, zIndex: 100,
+                  width: 32, height: 32, borderRadius: 8,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                  border: '1px solid rgba(167,139,250,0.55)', color: '#c4b5fd',
+                  fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
+                }
+              }, '⛶')
+            )
       );
     }
   });

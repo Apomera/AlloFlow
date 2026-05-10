@@ -1247,21 +1247,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 ),
                 React.createElement('span', { className: 'text-[11px] text-slate-600' }, mapSize + '\u00D7' + mapSize + ' (' + camX + ',' + camY + ')')
               ),
-              React.createElement('canvas', {
-                ref: canvasRef,
-                tabIndex: 0,
-                role: 'application',
-                'aria-label': 'Colony map. Keyboard: W A S D or arrow keys to pan, plus and minus to zoom, H to home (return to colony), Escape to clear selection. Mouse: click to select tile, drag to pan, scroll to zoom.',
-                onClick: handleMapClick,
-                onMouseDown: handleMapMouseDown,
-                onMouseMove: handleMapMouseMove,
-                onMouseUp: handleMapMouseUp,
-                onMouseLeave: handleMapMouseLeave,
-                onMouseEnter: handleMapMouseEnter,
-                onWheel: handleMapWheel,
-                className: 'w-full rounded-xl border border-slate-700 mb-3',
-                style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
-              }),
+              // Canvas wrapped in a relative div so the ⛶ button can sit
+              // absolutely-positioned over the top-right corner without
+              // interfering with the existing minimap positioned relative
+              // to the OUTER parent.
+              React.createElement('div', { id: 'spacecolony-fs-wrap', style: { position: 'relative' } },
+                React.createElement('canvas', {
+                  ref: canvasRef,
+                  tabIndex: 0,
+                  role: 'application',
+                  'aria-label': 'Colony map. Keyboard: W A S D or arrow keys to pan, plus and minus to zoom, H to home (return to colony), Escape to clear selection. Mouse: click to select tile, drag to pan, scroll to zoom.',
+                  onClick: handleMapClick,
+                  onMouseDown: handleMapMouseDown,
+                  onMouseMove: handleMapMouseMove,
+                  onMouseUp: handleMapMouseUp,
+                  onMouseLeave: handleMapMouseLeave,
+                  onMouseEnter: handleMapMouseEnter,
+                  onWheel: handleMapWheel,
+                  className: 'w-full rounded-xl border border-slate-700 mb-3',
+                  style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
+                }),
+                React.createElement('button', {
+                  'aria-label': 'Toggle fullscreen for the colony map',
+                  title: 'Fullscreen',
+                  onClick: function() {
+                    var el = document.getElementById('spacecolony-fs-wrap');
+                    if (!el) return;
+                    var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
+                    if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
+                    else { var rq = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen; if (rq) rq.call(el); }
+                  },
+                  style: {
+                    position: 'absolute', top: 8, right: 8, zIndex: 11,
+                    width: 32, height: 32, borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+                    border: '1px solid rgba(99,102,241,0.45)', color: '#c7d2fe',
+                    fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+                  }
+                }, '⛶')
+              ),
               // ── Minimap ──
               React.createElement('div', { className: 'relative', style: { width: '120px', height: '120px', position: 'absolute', right: '16px', top: '80px', zIndex: 10 } },
                 React.createElement('canvas', {
