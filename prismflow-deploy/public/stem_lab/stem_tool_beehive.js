@@ -7839,12 +7839,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Compass ring
             c.strokeStyle = 'rgba(255,255,255,0.15)'; c.lineWidth = 1.5;
             c.beginPath(); c.arc(compX, compY, compR, 0, 6.28); c.stroke();
-            // Cardinal directions
-            c.font = 'bold 7px system-ui'; c.fillStyle = 'rgba(255,255,255,0.3)'; c.textAlign = 'center';
-            c.fillText('N', compX, compY - compR + 7);
-            c.fillText('S', compX, compY + compR - 2);
-            c.fillText('E', compX + compR - 4, compY + 3);
-            c.fillText('W', compX - compR + 4, compY + 3);
+            // Cardinal directions — bumped from 7px @ 30% opacity to 10px @
+            // 75% opacity. The original was a WCAG-AA contrast fail compound
+            // (tiny + transparent against a dark sky); compass orientation is
+            // genuinely useful for the drone-flight student so it should be
+            // legible at a glance.
+            c.font = 'bold 10px system-ui'; c.fillStyle = 'rgba(255,255,255,0.75)'; c.textAlign = 'center';
+            c.fillText('N', compX, compY - compR + 9);
+            c.fillText('S', compX, compY + compR - 1);
+            c.fillText('E', compX + compR - 4, compY + 4);
+            c.fillText('W', compX - compR + 4, compY + 4);
             // Drone direction (white triangle)
             c.fillStyle = 'rgba(255,255,255,0.5)';
             c.beginPath();
@@ -8707,19 +8711,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   h('p', { className: 'text-xs ' + (dk ? 'text-slate-200' : 'text-slate-600') }, 'Manage a living superorganism — 50,000 minds, one purpose'))),
               h('div', { className: 'flex items-center gap-1' },
                 h('button', { onClick: function() { upd('soundOn', !soundOn); }, 'aria-label': soundOn ? 'Mute' : 'Unmute', className: 'p-1.5 rounded-lg text-sm ' + (dk ? 'hover:bg-slate-700' : 'hover:bg-slate-100') }, soundOn ? '🔊' : '🔇'))),
-            // Mode tabs
-            h('div', { className: 'flex gap-1 p-1 rounded-xl ' + (dk ? 'bg-slate-800' : 'bg-slate-100'), role: 'tablist' },
+            // Mode tabs — hive-amber gradient strip + lifted active state.
+            // Inactive tabs gain a soft amber wash on hover so the row
+            // reads as a glowing honeycomb-bar instead of a slate slab.
+            h('div', {
+              role: 'tablist',
+              className: 'flex gap-1 p-1.5 rounded-xl',
+              style: {
+                background: dk
+                  ? 'linear-gradient(180deg,#3a2a14 0%,#1f1408 100%)'
+                  : 'linear-gradient(180deg,#fef3c7 0%,#fde68a 100%)',
+                boxShadow: dk
+                  ? 'inset 0 1px 0 rgba(251,191,36,0.20),inset 0 -1px 0 rgba(15,23,42,0.5),0 6px 18px -10px rgba(15,23,42,0.5)'
+                  : 'inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(180,83,9,0.10),0 4px 14px -10px rgba(15,23,42,0.10)'
+              }
+            },
               [
                 { id: 'beekeeper', icon: '🧑‍🌾', label: 'Beekeeper' },
-                { id: 'queen', icon: '👑', label: 'Queen RTS' },
-                { id: 'drone', icon: '🚀', label: 'Drone Flight' }
+                { id: 'queen',     icon: '👑',         label: 'Queen RTS' },
+                { id: 'drone',     icon: '🚀',         label: 'Drone Flight' }
               ].map(function(tab) {
                 var active = viewMode === tab.id;
-                return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                return h('button', {
+                  key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
                   onClick: function() { upd('viewMode', tab.id); },
-                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold ' + (active ? (dk ? 'bg-amber-700 text-white' : 'bg-white text-amber-800') : (dk ? 'text-slate-400' : 'text-slate-300')) },
-                  h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label);
-              })),
+                  className: 'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all',
+                  style: {
+                    background: active
+                      ? 'linear-gradient(135deg,#f59e0b 0%,#b45309 100%)'
+                      : 'transparent',
+                    color: active
+                      ? '#ffffff'
+                      : (dk ? '#cbd5e1' : '#92400e'),
+                    boxShadow: active
+                      ? '0 4px 14px rgba(180,83,9,0.45),inset 0 1px 0 rgba(255,255,255,0.20)'
+                      : 'none',
+                    textShadow: active ? '0 1px 1px rgba(15,23,42,0.4)' : 'none',
+                    border: active ? 'none' : '1px solid transparent'
+                  }
+                },
+                  h('span', { 'aria-hidden': 'true' }, tab.icon), ' ', tab.label
+                );
+              })
+            ),
 
             // ── Topic-accent hero band per mode ──
             (function() {
@@ -8785,7 +8819,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             viewMode === 'beekeeper' && h('div', {
                 id: 'beehive-canvas-wrap',
                 className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-amber-600/50' : 'border-amber-400'),
-                style: { height: '500px', background: '#000', boxShadow: dk ? '0 0 20px rgba(251,191,36,0.08), 0 4px 16px rgba(0,0,0,0.4)' : '0 0 16px rgba(251,191,36,0.1), 0 4px 16px rgba(0,0,0,0.1)' }
+                // Hive-dark gradient instead of flat black: deep amber
+                // brown at the top fading into charcoal, with a stronger
+                // honey glow so the canvas reads as "looking into a
+                // warm hollow" rather than a black slab.
+                style: {
+                  height: '500px',
+                  background: 'linear-gradient(180deg,#3f2f18 0%,#1f160a 60%,#0c0905 100%)',
+                  boxShadow: dk
+                    ? '0 0 32px rgba(251,191,36,0.18), 0 0 0 1px rgba(251,191,36,0.18), inset 0 1px 0 rgba(251,191,36,0.20), 0 6px 22px rgba(0,0,0,0.55)'
+                    : '0 0 28px rgba(251,191,36,0.22), 0 0 0 1px rgba(251,191,36,0.30), inset 0 1px 0 rgba(254,240,138,0.30), 0 4px 18px rgba(0,0,0,0.20)'
+                }
               },
               h('canvas', {
                 ref: _cvRef,

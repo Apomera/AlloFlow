@@ -5615,7 +5615,18 @@ var d = (labToolData && labToolData._aquarium) || {};
 
             // ── Mode Tabs ──
 
-            React.createElement("div", { className: "flex gap-1 bg-slate-100 rounded-xl p-1" },
+            // Aquatic gradient strip (sky->cyan->teal) replaces the flat
+            // slate-100 slab so the bar reads like a sliver of seawater.
+            // Inactive tab text shifts to deep-cyan for stronger contrast
+            // on the new lighter background. Active tabs keep their
+            // existing per-mode color treatment.
+            React.createElement("div", {
+              className: "flex gap-1 rounded-xl p-1.5",
+              style: {
+                background: "linear-gradient(180deg,#e0f2fe 0%,#bae6fd 60%,#7dd3fc 100%)",
+                boxShadow: "inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(2,132,199,0.10),0 4px 14px -10px rgba(15,23,42,0.10)"
+              }
+            },
 
               [
 
@@ -5631,7 +5642,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   onClick: function () { upd('mode', tab.id); },
 
-                  className: "flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 " + (mode === tab.id ? "bg-gradient-to-r from-" + modeColors[tab.id] + "-500 to-" + modeColors[tab.id] + "-600 text-white shadow-lg shadow-" + modeColors[tab.id] + "-500/25" : "text-slate-600 hover:text-slate-700 hover:bg-white/60")
+                  className: "flex-1 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 " + (mode === tab.id ? "bg-gradient-to-r from-" + modeColors[tab.id] + "-500 to-" + modeColors[tab.id] + "-600 text-white shadow-lg shadow-" + modeColors[tab.id] + "-500/25" : "text-cyan-900 hover:text-sky-800 hover:bg-white/70")
 
                 }, tab.icon, " ", tab.label);
 

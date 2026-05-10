@@ -4698,7 +4698,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   onMouseMove: handleMouseMove,
                   onMouseLeave: function() { upd('_hoverStructure', null); },
                   className: 'rounded-xl border-2 cursor-crosshair',
-                  style: { borderColor: sys.accent + '30', background: '#fafaf9' }
+                  // Warm-anatomy backdrop: cream-to-soft-peach gradient
+                  // (subtle, doesn't compete with the figure) plus a
+                  // system-color glow that ties the canvas to whichever
+                  // body system is currently selected.
+                  style: {
+                    borderColor: sys.accent + '50',
+                    background: 'linear-gradient(135deg,#fdfaf3 0%,#f8f1e6 60%,#f4ebdb 100%)',
+                    boxShadow: '0 4px 16px rgba(15,23,42,0.06), 0 0 18px ' + sys.accent + '14, inset 0 1px 0 rgba(255,255,255,0.7)'
+                  }
                 })
               ),
               // Right panel
@@ -4770,8 +4778,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   ) : h('p', { className: 'text-sm text-slate-600 italic' }, 'No quiz questions available.')
                 ) : (
                   sel ? (
-                    // Detail panel
-                    h('div', { className: 'bg-white rounded-xl border-2 p-4 space-y-3', style: { borderColor: sys.accent + '40' } },
+                    // Detail panel — warm-anatomy gradient + system-color
+                    // glow so each body system feels distinct without
+                    // changing layout.
+                    h('div', {
+                      className: 'rounded-xl border-2 p-4 space-y-3',
+                      style: {
+                        borderColor: sys.accent + '50',
+                        background: 'linear-gradient(135deg,#ffffff 0%,#fbf6ec 70%,#f5ebd9 100%)',
+                        boxShadow: '0 4px 14px rgba(15,23,42,0.06), 0 0 16px ' + sys.accent + '14, inset 0 1px 0 rgba(255,255,255,0.7)'
+                      }
+                    },
                       h('div', { className: 'flex items-start justify-between' },
                         h('div', { className: 'flex-1' },
                           h('h4', { className: 'text-base font-black', style: { color: sys.accent } }, sel.name),
