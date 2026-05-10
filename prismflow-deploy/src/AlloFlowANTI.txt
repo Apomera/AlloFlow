@@ -3570,110 +3570,110 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/allo_data_module.js');
-    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/firestore_sync_module.js');
-    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/safety_checker_module.js');
-    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/fluency_module.js');
-    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/large_file_module.js');
-    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/key_concept_map_module.js');
-    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/utils_pure_module.js');
-    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/gemini_api_module.js');
-    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/tts_module.js');
-    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/personas_module.js');
-    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/export_module.js');
-    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/misc_components_module.js');
-    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/remediation_audio_module.js');
-    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/stem_lab/stem_lab_module.js');
-    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/word_sounds_module.js');
-    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/student_analytics_module.js');
-    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/behavior_lens_module.js');
-    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/symbol_studio_module.js');
-    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/allohaven_module.js');
+    loadModule('AlloData', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/allo_data_module.js');
+    loadModule('FirestoreSync', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/firestore_sync_module.js');
+    loadModule('SafetyChecker', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/safety_checker_module.js');
+    loadModule('Fluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/fluency_module.js');
+    loadModule('LargeFileModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/large_file_module.js');
+    loadModule('KeyConceptMapModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/key_concept_map_module.js');
+    loadModule('UtilsPure', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/utils_pure_module.js');
+    loadModule('GeminiAPI', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/gemini_api_module.js');
+    loadModule('TTS', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/tts_module.js');
+    loadModule('Personas', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/personas_module.js');
+    loadModule('Export', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/export_module.js');
+    loadModule('MiscComponents', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/misc_components_module.js');
+    loadModule('RemediationAudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/remediation_audio_module.js');
+    loadModule('StemLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/stem_lab/stem_lab_module.js');
+    loadModule('WordSoundsModal', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/word_sounds_module.js');
+    loadModule('StudentAnalytics', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/student_analytics_module.js');
+    loadModule('BehaviorLens', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/behavior_lens_module.js');
+    loadModule('SymbolStudio', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/symbol_studio_module.js');
+    loadModule('AlloHaven', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/allohaven_module.js');
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/voice_module.js');
-    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/sel_hub/sel_hub_module.js');
-    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/catalog_module.js');
-    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/accessibility_lab_module.js');
-    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/audit_remediator_module.js');
-    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/quiz_mode_strategies.js');
-    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/quiz_ai_helpers.js');
-    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/quiz_live_aggregators.js');
-    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/games_module.js');
-    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/quickstart_module.js');
-    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/allobot_module.js');
-    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/teacher_module.js');
-    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/story_forge_module.js');
-    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/story_stage_module.js');
+    loadModule('Voice', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/voice_module.js');
+    loadModule('SelHub', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/catalog_module.js');
+    loadModule('AccessibilityLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/accessibility_lab_module.js');
+    loadModule('AuditRemediator', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/audit_remediator_module.js');
+    loadModule('QuizModeStrategies', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/quiz_live_aggregators.js');
+    loadModule('GamesBundle', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/games_module.js');
+    loadModule('QuickStartWizard', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/quickstart_module.js');
+    loadModule('AlloBot', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/allobot_module.js');
+    loadModule('TeacherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/teacher_module.js');
+    loadModule('StoryForge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/story_forge_module.js');
+    loadModule('LitLab', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/story_stage_module.js');
     loadModule('PoetTree', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@5e3ae8e/poet_tree_module.js');
-    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/visual_panel_module.js');
-    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/word_sounds_setup_module.js');
-    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/adventure_module.js');
-    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/student_interaction_module.js');
-    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/math_fluency_module.js');
-    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/ui_modals_module.js');
-    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/ui_font_library_module.js');
-    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/voice_config_module.js');
-    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/canvas_tips_module.js');
-    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/label_positions_module.js');
-    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/ui_language_selector_module.js');
-    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/audio_banks_module.js');
-    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_pdf_audit_module.js');
-    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_export_preview_module.js');
-    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_misc_modals_module.js');
-    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_gemini_bridge_module.js');
-    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_misc_panels_module.js');
-    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_sidebar_panels_module.js');
-    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/module_scope_extras_module.js');
-    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/immersive_reader_module.js');
-    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/persona_ui_module.js');
-    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/doc_pipeline_module.js');
-    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/content_engine_module.js');
-    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/timeline_revision_module.js');
-    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/prompts_library_module.js');
-    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/text_pipeline_helpers_module.js');
-    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/adaptive_controller_module.js');
-    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/udl_chat_module.js');
-    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/adventure_handlers_module.js');
-    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/glossary_helpers_module.js');
-    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_renderers_module.js');
-    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/audio_helpers_module.js');
-    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/generation_helpers_module.js');
-    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/misc_handlers_module.js');
-    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/pure_helpers_module.js');
-    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/math_helpers_module.js');
-    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/concept_map_handlers_module.js');
-    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/generate_dispatcher_module.js');
-    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/phase_k_helpers_module.js');
-    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/adventure_session_handlers_module.js');
-    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/text_utility_helpers_module.js');
-    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_dbq_module.js');
-    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_timeline_module.js');
-    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_glossary_module.js');
-    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_outline_module.js');
-    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_faq_module.js');
-    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_sentence_frames_module.js');
-    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_brainstorm_module.js');
-    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_image_module.js');
-    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_analysis_module.js');
-    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_quiz_module.js');
-    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_simplified_module.js');
-    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_math_module.js');
-    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_lesson_plan_module.js');
-    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_alignment_report_module.js');
-    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_word_sounds_preview_module.js');
-    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_gemini_bridge_module.js');
-    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_concept_sort_module.js');
-    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_persona_chat_module.js');
-    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_spotlight_tour_module.js');
-    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_project_settings_module.js');
-    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_launch_pad_module.js');
-    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/view_adventure_module.js');
+    loadModule('VisualPanelModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/word_sounds_setup_module.js');
+    loadModule('AdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/adventure_module.js');
+    loadModule('StudentInteractionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/student_interaction_module.js');
+    loadModule('MathFluency', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/math_fluency_module.js');
+    loadModule('UIModalsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/ui_modals_module.js');
+    loadModule('UIFontLibrary', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/ui_font_library_module.js');
+    loadModule('VoiceConfig', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/voice_config_module.js');
+    loadModule('CanvasTips', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/canvas_tips_module.js');
+    loadModule('LabelPositions', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/label_positions_module.js');
+    loadModule('UILanguageSelector', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/ui_language_selector_module.js');
+    loadModule('AudioBanks', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/audio_banks_module.js');
+    loadModule('PdfAuditView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_export_preview_module.js');
+    loadModule('MiscModals', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_misc_modals_module.js');
+    loadModule('GeminiBridge', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_gemini_bridge_module.js');
+    loadModule('MiscPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_misc_panels_module.js');
+    loadModule('SidebarPanels', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/module_scope_extras_module.js');
+    loadModule('ImmersiveReaderModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/immersive_reader_module.js');
+    loadModule('PersonaUIModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/persona_ui_module.js');
+    loadModule('DocPipelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/doc_pipeline_module.js');
+    loadModule('ContentEngineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/content_engine_module.js');
+    loadModule('TimelineRevisionModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/adaptive_controller_module.js');
+    loadModule('UdlChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/udl_chat_module.js');
+    loadModule('AdventureHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_renderers_module.js');
+    loadModule('AudioHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/audio_helpers_module.js');
+    loadModule('GenerationHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/generation_helpers_module.js');
+    loadModule('MiscHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/misc_handlers_module.js');
+    loadModule('PureHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/pure_helpers_module.js');
+    loadModule('MathHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/math_helpers_module.js');
+    loadModule('CmapHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_dbq_module.js');
+    loadModule('ViewTimelineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_timeline_module.js');
+    loadModule('ViewGlossaryModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_glossary_module.js');
+    loadModule('ViewOutlineModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_outline_module.js');
+    loadModule('ViewFaqModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_brainstorm_module.js');
+    loadModule('ViewImageModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_image_module.js');
+    loadModule('ViewAnalysisModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_analysis_module.js');
+    loadModule('ViewQuizModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_simplified_module.js');
+    loadModule('ViewMathModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_math_module.js');
+    loadModule('ViewLessonPlanModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_launch_pad_module.js');
+    loadModule('ViewAdventureModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/view_adventure_module.js');
     loadModule('PhaseNHelpersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_n_misc_helpers_module.js');
     loadModule('PhaseOHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@main/phase_o_misc_handlers_module.js');
-    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/export_handlers_module.js');
+    loadModule('ExportHandlersModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/export_handlers_module.js');
     loadModule('EscapeRoomModule', 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@19e37fe/escape_room_module.js');
     (function() {
       var s = document.createElement('script');
@@ -3684,7 +3684,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       document.head.appendChild(s);
     })();
     setTimeout(function() {
-      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@df9149a/';
+      var pluginCdnBase = 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@c9dc7bf/';
       var toolModules = [
         'stem_lab/stem_tool_dna.js',
         'stem_lab/stem_tool_galaxy.js', 'stem_lab/stem_tool_wave.js', 'stem_lab/stem_tool_artstudio.js',
@@ -24635,7 +24635,7 @@ Return ONLY valid JSON in this format:
       {showSocraticChat && !isTeacherMode && studentProjectSettings.allowSocraticTutor && (
         <div
             ref={socraticChatRef}
-            className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[32rem] h-[36rem]' : 'w-80 h-[28rem]'}`}
+            className={`fixed z-[110] bg-white rounded-2xl shadow-2xl border-2 border-teal-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'}`}
             style={{
                 right: socraticPosition.x !== null ? 'auto' : '6rem',
                 bottom: socraticPosition.y !== null ? 'auto' : '6rem',
@@ -24743,7 +24743,7 @@ Return ONLY valid JSON in this format:
                     disabled={isSocraticThinking}
                 />
                 <button aria-label={t('common.socratic_submit')}
-                    onClick={handleSocraticSubmit}
+                    onClick={() => handleSocraticSubmit()}
                     disabled={!socraticInput.trim() || isSocraticThinking}
                     className="bg-teal-700 text-white p-2 rounded-lg hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center"
                 >
