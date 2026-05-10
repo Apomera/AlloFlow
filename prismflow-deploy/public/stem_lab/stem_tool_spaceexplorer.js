@@ -971,6 +971,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
         var badgeCount = Object.keys(earnedBadges).length;
         return h('div', { className: 'space-y-3 ' + animClass('animate-in fade-in duration-300'), role: 'main', 'aria-label': 'Space Explorer mission select' },
           // Header
+          // \u2500\u2500 Pre-game brief: how a run works \u2500\u2500
+          // Collapsible <details>. Auto-opens for first-timers
+          // (completedMissions === 0); collapses by default once the
+          // student has flown at least one mission. Re-openable from
+          // the summary chevron.
+          h('details', {
+            open: completedMissions === 0,
+            className: 'rounded-xl border border-purple-700/50 bg-gradient-to-br from-slate-900 to-purple-950'
+          },
+            h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-purple-200' }, '\uD83D\uDCDC How Space Explorer works (click to toggle)'),
+            h('div', { className: 'px-3 pb-3 space-y-3 text-[11px] text-slate-300' },
+              h('div', null,
+                h('div', { className: 'font-black mb-1 text-purple-200' }, '\uD83C\uDFAF What a run is'),
+                h('p', { className: 'leading-relaxed' },
+                  'Pick a destination. Get 8-17 turns to survive its hazards while collecting science. Each turn you set power allocation, launch, an AI-generated event fires, and you choose how your crew responds. Win = survive all turns. Lose = O\u2082 or Hull hits zero.')
+              ),
+              h('div', null,
+                h('div', { className: 'font-black mb-1 text-purple-200' }, '\uD83D\uDE80 Your six resources'),
+                h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-1.5 text-[10px]' },
+                  [
+                    { icon: '\uD83E\uDEC1', n: 'O\u2082',     d: 'Crew oxygen. Zero = mission ends.' },
+                    { icon: '\uD83D\uDEE1', n: 'Hull',   d: 'Ship integrity. Zero = mission ends.' },
+                    { icon: '\u26A1',       n: 'Power',  d: 'Drains every turn. Powers all systems.' },
+                    { icon: '\uD83D\uDE0A', n: 'Morale', d: 'Crew well-being. Affects choice quality.' },
+                    { icon: '\u26FD',       n: 'Fuel',   d: 'Needed to keep flying.' },
+                    { icon: '\uD83D\uDD2C', n: 'Science', d: 'Earned from events. Spend in Tech Shop.' }
+                  ].map(function(r, i) {
+                    return h('div', { key: i, className: 'rounded p-1.5 bg-slate-800/70 border border-purple-700/30' },
+                      h('div', { className: 'font-bold text-purple-100' }, r.icon + ' ' + r.n),
+                      h('div', { className: 'text-slate-300' }, r.d)
+                    );
+                  })
+                )
+              ),
+              h('div', null,
+                h('div', { className: 'font-black mb-1 text-purple-200' }, '\uD83E\uDDD1\u200D\uD83D\uDE80 Crew + Tech'),
+                h('ul', { className: 'list-disc list-inside space-y-1 leading-relaxed' },
+                  h('li', null, h('strong', null, 'Crew specialties'), ' (engineer, medic, scientist, etc.) unlock a hidden 4th choice when the event matches their skill. Tap a crew member during an event to consult.'),
+                  h('li', null, h('strong', null, 'Tech Shop'), ' opens once you have 50+ science. Permanent upgrades that reduce resource drain or unlock new options.'),
+                  h('li', null, h('strong', null, 'Power allocation'), ' (Life / Science / Shields / Comms) lets you bias resource drain each turn. Pre-launch decision.')
+                )
+              ),
+              h('div', { className: 'text-[10px] italic text-slate-400 pt-1 border-t border-purple-800/30' },
+                'Tip: harder destinations give more science. Mars + Moon are the safest starting points. Wins, best %, and total science track per destination below each tile.')
+            )
+          ),
           h('div', { className: 'bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 text-center' },
             h('h2', { className: 'text-lg font-black text-white flex items-center justify-center gap-2' }, '\uD83C\uDF0C Space Explorer'),
             h('p', { className: 'text-xs text-purple-200 mt-1' }, 'Roguelike missions across the solar system. Each run teaches new science.'),
