@@ -1877,7 +1877,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             lockedSpells.length > 0 && h('div', null,
               h('h3', { className: 'text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2' }, 'Yet to discover (' + lockedSpells.length + ')'),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
-                lockedSpells.map(function(s) { return spellCard(s, { unlocked: false }); })
+                lockedSpells.map(function(s) {
+                  return h('div', { key: 'locked-wrap-' + s.id, className: 'flex flex-col gap-1' },
+                    spellCard(s, { unlocked: false }),
+                    // Cross-tool jump button: makes the "play source tool to unlock"
+                    // loop one-click. Closes the distance between Sage and the
+                    // STEM Lab tools that feed it.
+                    ctx.setStemLabTool && h('button', {
+                      onClick: function() {
+                        sfxClick();
+                        try { ctx.setStemLabTool(s.sourceTool); } catch(e) {}
+                      },
+                      className: 'text-[10px] text-slate-500 hover:text-violet-700 font-semibold py-1 px-2 rounded-md hover:bg-violet-50 focus:ring-2 focus:ring-violet-400 focus:outline-none transition flex items-center gap-1 self-end',
+                      'aria-label': 'Open ' + s.sourceLabel + ' to work toward unlocking ' + s.name
+                    },
+                      h('span', null, '→ Open ' + s.sourceLabel)
+                    )
+                  );
+                })
               )
             )
           )
@@ -2442,10 +2459,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             if (nextLog.length > 18) nextLog = nextLog.slice(-18);
             updKey('interruptCount', (d.interruptCount || 0) + 1);
           }
+          // ── Per-run cast log (fuels the enriched debrief screen) ──
+          // Each entry records: spell id, result, confidence, prompt, was-boss.
+          // Capped at 60 entries to keep state small even on long runs.
+          var nextCastLog = (exp.castLog || []).concat([{
+            spellId: s.id,
+            result: result,
+            confidence: pendingCast.confidence || null,
+            prompt: challenge.prompt,
+            wasBoss: !!enemy.boss
+          }]);
+          if (nextCastLog.length > 60) nextCastLog = nextCastLog.slice(-60);
+
           mutateExp({
             enemy: nextEnemy,
             pendingCast: Object.assign({}, pendingCast, { selectedIndex: selectedIndex, resolved: true, damage: dmg, result: result }),
-            log: nextLog
+            log: nextLog,
+            castLog: nextCastLog
           });
           announceSR(text + (willInterrupt ? ' Boss special interrupted!' : ''));
 
@@ -2860,6 +2890,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         var reward = expedition.reward || 0;
         var roomsCleared = expedition.roomsCleared || 0;
         var totalRoomsD = (expedition.roomsPlan || []).length || ROOMS_PER_EXPEDITION;
+        // ── Per-run pedagogy: analyze this expedition's castLog ──
+        // Build per-spell breakdown + confidence calibration summary +
+        // identify the weakest spell (lowest correct rate). These power the
+        // enriched debrief and the smart next-step CTAs.
+        var runCastLog = expedition.castLog || [];
+        var runBySpell = {};
+        var runTotals = { crits: 0, hits: 0, backfires: 0, total: 0 };
+        var runConfidence = { high: { right: 0, wrong: 0 }, med: { right: 0, wrong: 0 }, low: { right: 0, wrong: 0 } };
+        runCastLog.forEach(function(c) {
+          if (!runBySpell[c.spellId]) runBySpell[c.spellId] = { crits: 0, hits: 0, backfires: 0, total: 0 };
+          runBySpell[c.spellId].total++;
+          if (c.result === 'crit') { runBySpell[c.spellId].crits++; runTotals.crits++; }
+          else if (c.result === 'hit') { runBySpell[c.spellId].hits++; runTotals.hits++; }
+          else { runBySpell[c.spellId].backfires++; runTotals.backfires++; }
+          runTotals.total++;
+          if (c.confidence) {
+            var wasRight = c.result === 'crit' || c.result === 'hit';
+            runConfidence[c.confidence][wasRight ? 'right' : 'wrong']++;
+          }
+        });
+        // Weakest spell in this run = lowest correct rate, must have ≥2 attempts
+        var weakestSpell = null;
+        var weakestRate = 1.0;
+        Object.keys(runBySpell).forEach(function(spellId) {
+          var st = runBySpell[spellId];
+          if (st.total < 2) return;
+          var rate = (st.crits + st.hits) / st.total;
+          if (rate < weakestRate) { weakestRate = rate; weakestSpell = spellId; }
+        });
+        // Tough-questions global count (drives the Review CTA)
+        var globalToughCount = 0;
+        var statsForToughCount = d.questionStats || {};
+        Object.keys(statsForToughCount).forEach(function(k) {
+          if (statsForToughCount[k].lastResult === 'backfire') globalToughCount++;
+        });
+        var totalCalibrated = Object.keys(runConfidence).reduce(function(t, lvl) { return t + runConfidence[lvl].right + runConfidence[lvl].wrong; }, 0);
         return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 text-center abs-fade' },
           // \u2500\u2500 Phase A: victory celebration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
           // On result='victory', show a backflipping AlloBot with wand-tier
@@ -2902,6 +2968,113 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               })
             ),
             h('div', { className: 'mt-1 inline-block px-4 py-2 rounded-xl bg-white/20 font-bold text-lg' }, '+' + reward + ' \u2B50 Essence')
+          ),
+          // \u2500\u2500 This Run's Breakdown \u2500\u2500
+          // Per-spell performance for THIS expedition. The textual reflection
+          // moment students will actually use, not a cumulative dashboard.
+          runCastLog.length > 0 && h('section', { className: 'rounded-xl border-2 border-slate-200 bg-slate-50 p-3 mb-4 text-left', 'aria-label': 'This run\'s breakdown' },
+            h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2 text-center' }, '\uD83D\uDD0D This Run \u2014 Per-Spell Breakdown'),
+            h('div', { className: 'flex flex-col gap-1.5' },
+              Object.keys(runBySpell).map(function(spellId) {
+                var sp = findSpell(spellId);
+                if (!sp) return null;
+                var st = runBySpell[spellId];
+                var rate = st.total > 0 ? Math.round(((st.crits + st.hits) / st.total) * 100) : 0;
+                var rateColor = rate >= 80 ? '#16a34a' : rate >= 50 ? '#f59e0b' : '#dc2626';
+                return h('div', {
+                  key: 'breakdown-' + spellId,
+                  className: 'flex items-center gap-2 p-2 rounded-lg bg-white border',
+                  style: { borderColor: sp.color + '40' }
+                },
+                  h('span', { className: 'text-lg' }, sp.icon),
+                  h('div', { className: 'flex-1 min-w-0' },
+                    h('div', { className: 'font-bold text-xs', style: { color: sp.color } }, sp.name),
+                    h('div', { className: 'text-[10px] text-slate-500' }, st.total + ' cast' + (st.total > 1 ? 's' : '') + ' \u00B7 ' + st.crits + ' crit \u00B7 ' + st.hits + ' hit \u00B7 ' + st.backfires + ' backfire' + (st.backfires !== 1 ? 's' : ''))
+                  ),
+                  h('div', { className: 'text-right' },
+                    h('div', { className: 'font-bold text-sm', style: { color: rateColor } }, rate + '%'),
+                    h('div', { className: 'text-[9px] text-slate-400 uppercase tracking-wide' }, 'correct')
+                  )
+                );
+              })
+            ),
+            // \u2500\u2500 Confidence calibration summary (if any confidence was set) \u2500\u2500
+            totalCalibrated > 0 && h('div', { className: 'mt-3 pt-3 border-t border-slate-200' },
+              h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-600 mb-2' }, '\uD83E\uDDE0 Confidence Calibration'),
+              h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                [
+                  { level: 'high', icon: '\uD83D\uDD25', label: 'Knew it' },
+                  { level: 'med',  icon: '\uD83E\uDD14', label: 'Pretty sure' },
+                  { level: 'low',  icon: '\uD83E\uDD37', label: 'Guessing' }
+                ].map(function(opt) {
+                  var rc = runConfidence[opt.level];
+                  var tot = rc.right + rc.wrong;
+                  if (tot === 0) return h('div', { key: 'cal-' + opt.level, className: 'p-2 rounded-lg bg-slate-50 text-[10px] text-slate-400' },
+                    h('div', null, opt.icon, ' ' + opt.label),
+                    h('div', { className: 'text-[9px] mt-0.5' }, '\u2014')
+                  );
+                  var pct = Math.round(rc.right / tot * 100);
+                  // Calibration interpretation:
+                  // High + low accuracy = overconfident
+                  // Low + high accuracy = under-confident (knew more than they thought)
+                  var note = '';
+                  if (opt.level === 'high' && pct < 70) note = 'overconfident';
+                  else if (opt.level === 'low' && pct > 60) note = 'you knew more than you thought';
+                  else if (opt.level === 'high' && pct >= 80) note = 'well-calibrated';
+                  return h('div', {
+                    key: 'cal-' + opt.level,
+                    className: 'p-2 rounded-lg bg-white border border-slate-200 text-[10px]'
+                  },
+                    h('div', { className: 'font-bold' }, opt.icon, ' ' + opt.label),
+                    h('div', { className: 'font-bold mt-0.5', style: { color: pct >= 70 ? '#16a34a' : '#f59e0b' } }, rc.right + '/' + tot, ' (' + pct + '%)'),
+                    note && h('div', { className: 'text-[9px] italic mt-0.5 text-slate-500' }, note)
+                  );
+                })
+              )
+            )
+          ),
+          // \u2500\u2500 Smart next-step CTAs \u2500\u2500
+          // Contextual recommendations driven by the run's actual outcome.
+          // Goal: move the student to whichever activity will help them most.
+          h('div', { className: 'flex flex-col gap-2 mb-4', 'aria-label': 'Recommended next steps' },
+            // Backfire-driven CTA: review tough questions
+            globalToughCount > 0 && h('button', {
+              onClick: function() { sfxClick(); updSage({ phase: 'review_mistakes', reviewIdx: 0, reviewRevealed: false, expedition: null }); },
+              className: 'p-3 rounded-xl border-2 border-red-300 bg-red-50 hover:bg-red-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-red-400 focus:outline-none'
+            },
+              h('div', { className: 'text-2xl' }, '\uD83C\uDFAF'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'font-bold text-sm text-red-900' }, 'Review ' + globalToughCount + ' tough question' + (globalToughCount > 1 ? 's' : '')),
+                h('div', { className: 'text-[10px] text-red-700' }, 'Re-study what you got wrong. Mark "Got it now" once you understand.')
+              ),
+              h('div', { className: 'text-red-600 font-bold' }, '\u2192')
+            ),
+            // Weakest-spell CTA: drill it in Study Hall
+            weakestSpell && weakestRate < 0.7 && (function() {
+              var ws = findSpell(weakestSpell);
+              if (!ws) return null;
+              return h('button', {
+                onClick: function() { sfxClick(); updSage({ phase: 'practice', practiceSpellId: weakestSpell, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, expedition: null }); },
+                className: 'p-3 rounded-xl border-2 border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-left flex items-center gap-3 focus:ring-2 focus:ring-emerald-400 focus:outline-none'
+              },
+                h('div', { className: 'text-2xl' }, ws.icon),
+                h('div', { className: 'flex-1' },
+                  h('div', { className: 'font-bold text-sm text-emerald-900' }, 'Drill ' + ws.name + ' in Study Hall'),
+                  h('div', { className: 'text-[10px] text-emerald-700' }, 'Untimed practice \u2014 your weakest spell this run (' + Math.round(weakestRate * 100) + '% correct). Build it up with no pressure.')
+                ),
+                h('div', { className: 'text-emerald-600 font-bold' }, '\u2192')
+              );
+            })(),
+            // Calibration-driven CTA \u2014 if a student was confident + wrong, suggest review
+            runConfidence.high.wrong >= 2 && h('div', {
+              className: 'p-3 rounded-xl border-2 border-amber-300 bg-amber-50 text-left flex items-center gap-3'
+            },
+              h('div', { className: 'text-2xl' }, '\u26A0\uFE0F'),
+              h('div', { className: 'flex-1' },
+                h('div', { className: 'font-bold text-sm text-amber-900' }, 'Overconfidence detected'),
+                h('div', { className: 'text-[10px] text-amber-700' }, 'You felt sure on ' + runConfidence.high.wrong + ' questions you got wrong. Those are the ones to review first \u2014 feeling-of-knowing fooled you.')
+              )
+            )
           ),
           h('div', { className: 'grid grid-cols-3 gap-2 mb-4 text-sm' },
             h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-400' },
