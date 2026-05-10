@@ -627,10 +627,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('evoLab'))) {
         return h('div', { className: 'flex flex-col h-full bg-slate-50' },
           h(BackBar, { icon: '🧮', title: 'Hardy-Weinberg Calculator' }),
           h('div', { className: 'p-4 max-w-5xl mx-auto w-full space-y-3' },
-            // Equation header
+            // Equation header — now with a motivating question instead
+            // of just stating the formula. Hardy-Weinberg's value to a
+            // student is "watch equilibrium break when a force turns on",
+            // not the bare algebra. The old hero only stated the formula
+            // and a definition; this asks them to test it.
             h('div', { className: 'bg-gradient-to-br from-cyan-500 to-blue-700 rounded-2xl p-5 text-white shadow-lg text-center' },
               h('div', { className: 'text-3xl font-black mb-1', style: { fontFamily: 'serif' } }, 'p² + 2pq + q² = 1'),
-              h('div', { className: 'text-sm opacity-90' }, 'In a non-evolving population: genotype frequencies are predicted by allele frequencies.')
+              h('div', { className: 'text-sm opacity-95 mb-2' }, 'In a non-evolving population, genotype frequencies are predicted by allele frequencies.'),
+              h('div', { className: 'text-[12px] font-bold bg-white/15 rounded-lg px-3 py-1.5 inline-block' },
+                '🎯 Your job: turn on selection, mutation, or migration and watch this equation BREAK.')
+            ),
+            // ── How to use this calculator (collapsible primer) ──
+            h('details', {
+              open: !gen || gen === 0,
+              className: 'rounded-xl border border-cyan-200 bg-cyan-50'
+            },
+              h('summary', { className: 'cursor-pointer text-xs font-bold px-3 py-2 select-none text-cyan-800' }, '📜 How to use this calculator (click to toggle)'),
+              h('div', { className: 'px-3 pb-3 space-y-2 text-[11px] text-slate-700' },
+                h('p', { className: 'leading-relaxed' },
+                  h('strong', null, 'Hardy-Weinberg equilibrium'), ' describes the genotype frequencies you should see in a population that is NOT evolving. If reality matches the equation, the population is stable. If reality drifts away from it, ONE of the five forces is acting:'),
+                h('ul', { className: 'list-disc list-inside space-y-1' },
+                  h('li', null, h('strong', null, 'Selection against aa'), ': aa individuals leave fewer offspring. Allele q drops over generations.'),
+                  h('li', null, h('strong', null, 'Mutation rate'), ': A randomly flips to a (or vice versa) per generation. Slow but constant.'),
+                  h('li', null, h('strong', null, 'Migration'), ': new alleles arrive from outside the population. Pushes p toward the migrant frequency.'),
+                  h('li', null, h('strong', null, 'Non-random mating'), ' (not modeled here) and small population size (genetic drift) are the other two.')
+                ),
+                h('p', { className: 'leading-relaxed pt-1 border-t border-cyan-200' },
+                  h('strong', null, 'Try this: '), 'set p to 0.5, turn selection against aa up to 0.3, press Step a few times. Watch q crash. Now reset, turn migration on instead. See how the curve looks different.')
+              )
             ),
             // Stats row
             h('div', { className: 'grid grid-cols-4 gap-3' },
