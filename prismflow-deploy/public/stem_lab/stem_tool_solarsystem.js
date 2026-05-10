@@ -1830,29 +1830,76 @@ const d = labToolData.solarSystem;
   var shadowMd = isDark ? "0 4px 12px rgba(0,0,0,0.5)" : "0 4px 12px rgba(0,0,0,0.1)";
 
   // ── Inject CSS for hover/focus effects (once per mount) ──
-  if (!document.getElementById("orrery-css")) {
+  // Re-inject when theme flips so cosmic gradients pick up the right palette.
+  var orrCssId = "orrery-css-" + (isDark ? "dark" : "light");
+  // Drop the OPPOSITE theme's stylesheet if it's still around from a prior render.
+  var stale = document.getElementById("orrery-css-" + (isDark ? "light" : "dark"));
+  if (stale) stale.remove();
+  if (!document.getElementById(orrCssId)) {
     var css = document.createElement("style");
-    css.id = "orrery-css";
+    css.id = orrCssId;
     css.textContent = [
       ".orr-btn{transition:all .18s ease!important}",
-      ".orr-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}",
+      ".orr-btn:hover{transform:translateY(-1px);filter:brightness(1.10)}",
       ".orr-btn:active{transform:translateY(0);filter:brightness(0.95)}",
-      ".orr-btn-active{box-shadow:0 2px 10px rgba(74,144,217,0.35)!important}",
-      ".orr-card{transition:box-shadow .2s,transform .2s}",
-      ".orr-card:hover{box-shadow:" + (isDark ? "0 6px 20px rgba(0,0,0,0.5)" : "0 6px 20px rgba(0,0,0,0.1)") + ";transform:translateY(-1px)}",
+      ".orr-btn-active{box-shadow:0 2px 14px rgba(74,144,217,0.42)!important}",
+      // Cosmic card — subtle gradient surface + inner highlight + glow on hover
+      ".orr-card{position:relative;transition:box-shadow .22s ease, transform .22s ease, border-color .22s ease}",
+      ".orr-card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:" +
+        (isDark
+          ? "radial-gradient(140% 90% at 0% 0%,rgba(99,102,241,0.10),transparent 55%),radial-gradient(120% 80% at 100% 100%,rgba(56,189,248,0.06),transparent 55%)"
+          : "radial-gradient(140% 90% at 0% 0%,rgba(99,102,241,0.07),transparent 60%)") +
+        "}",
+      ".orr-card:hover{transform:translateY(-1px);box-shadow:" +
+        (isDark
+          ? "0 8px 28px rgba(15,23,42,0.55),0 0 0 1px rgba(99,102,241,0.25),inset 0 1px 0 rgba(255,255,255,0.05)"
+          : "0 10px 26px rgba(15,23,42,0.10),0 0 0 1px rgba(99,102,241,0.22)") +
+        ";border-color:" + (isDark ? "rgba(99,102,241,0.35)" : "rgba(99,102,241,0.30)") + "}",
       ".orr-input:focus{outline:none;border-color:" + accent + "!important;box-shadow:0 0 0 3px " + accent + "33!important}",
-      ".orr-tr:hover{background:" + (isDark ? "rgba(74,144,217,0.08)" : "rgba(74,144,217,0.05)") + "!important}",
+      ".orr-tr:hover{background:" + (isDark ? "rgba(74,144,217,0.10)" : "rgba(74,144,217,0.05)") + "!important}",
       ".orr-tr:nth-child(even){background:" + (isDark ? "#252535" : "#f4f6f9") + "}",
       // Custom range slider styling
       "input[type=range].orr-slider{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;outline:none;transition:all .2s}",
       "input[type=range].orr-slider::-webkit-slider-track{height:6px;border-radius:3px;background:" + (isDark ? "linear-gradient(90deg,#1e293b,#334155)" : "linear-gradient(90deg,#e2e8f0,#cbd5e1)") + "}",
       "input[type=range].orr-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg," + accent + "," + accentLight + ");cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.3);border:2px solid #fff;transition:transform .15s}",
-      "input[type=range].orr-slider::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 8px " + accent + "44}",
+      "input[type=range].orr-slider::-webkit-slider-thumb:hover{transform:scale(1.2);box-shadow:0 0 10px " + accent + "55}",
       "input[type=range].orr-slider::-moz-range-track{height:6px;border-radius:3px;background:" + (isDark ? "#334155" : "#cbd5e1") + "}",
       "input[type=range].orr-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:" + accent + ";cursor:pointer;border:2px solid #fff}",
       // Section header accent line
       ".orr-section-hdr{position:relative;display:flex;align-items:center;gap:8px;padding-bottom:8px;margin-bottom:10px}",
-      ".orr-section-hdr::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;border-radius:2px;background:linear-gradient(90deg," + accent + "," + accentLight + ")}"
+      ".orr-section-hdr::after{content:'';position:absolute;bottom:0;left:0;width:40px;height:3px;border-radius:2px;background:linear-gradient(90deg," + accent + "," + accentLight + ")}",
+      // Cosmic tab strip — subtle starfield-style sheen
+      ".orr-tab-strip{position:relative;background:" +
+        (isDark
+          ? "linear-gradient(180deg,#0f172a 0%,#16213a 100%)"
+          : "linear-gradient(180deg,#eef2fb 0%,#dde3f3 100%)") +
+        ";box-shadow:" +
+        (isDark
+          ? "inset 0 1px 0 rgba(99,102,241,0.18),inset 0 -1px 0 rgba(15,23,42,0.6),0 8px 24px -16px rgba(15,23,42,0.65)"
+          : "inset 0 1px 0 rgba(255,255,255,0.7),inset 0 -1px 0 rgba(15,23,42,0.04),0 4px 16px -10px rgba(15,23,42,0.10)") +
+        "}",
+      ".orr-tab-strip::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:" + (isDark ? "0.5" : "0.35") + ";" +
+        "background:" +
+        // Tiny radial dots simulate distant stars without the cost of a real starfield canvas
+        "radial-gradient(1px 1px at 10% 30%," + (isDark ? "rgba(255,255,255,0.7)" : "rgba(99,102,241,0.45)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 75% 45%," + (isDark ? "rgba(165,243,252,0.55)" : "rgba(56,189,248,0.40)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 40% 70%," + (isDark ? "rgba(255,255,255,0.4)" : "rgba(99,102,241,0.30)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 88% 18%," + (isDark ? "rgba(254,240,138,0.5)" : "rgba(245,158,11,0.35)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 22% 85%," + (isDark ? "rgba(255,255,255,0.55)" : "rgba(99,102,241,0.32)") + ",transparent 60%)" +
+        "}",
+      // Cosmic hero band — radial accent glow + faint star dust
+      ".orr-tab-hero{position:relative;overflow:hidden}",
+      ".orr-tab-hero::before{content:'';position:absolute;top:-40%;right:-10%;width:240px;height:240px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,var(--orr-accent,#7c3aed)33 0%,transparent 70%);filter:blur(8px)}",
+      ".orr-tab-hero::after{content:'';position:absolute;inset:0;pointer-events:none;opacity:" + (isDark ? "0.35" : "0.20") + ";" +
+        "background:" +
+        "radial-gradient(1.5px 1.5px at 12% 60%," + (isDark ? "rgba(255,255,255,0.7)" : "rgba(15,23,42,0.45)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 35% 25%," + (isDark ? "rgba(165,243,252,0.55)" : "rgba(56,189,248,0.35)") + ",transparent 60%)," +
+        "radial-gradient(1px 1px at 60% 80%," + (isDark ? "rgba(254,240,138,0.55)" : "rgba(245,158,11,0.40)") + ",transparent 60%)," +
+        "radial-gradient(0.8px 0.8px at 85% 35%," + (isDark ? "rgba(255,255,255,0.5)" : "rgba(15,23,42,0.30)") + ",transparent 60%)" +
+        "}",
+      // Cosmic stat badge — subtle inner glow lifts it off the card surface
+      ".orr-stat{position:relative;transition:transform .15s ease,box-shadow .15s ease}",
+      ".orr-stat:hover{transform:translateY(-1px);box-shadow:0 4px 10px " + (isDark ? "rgba(15,23,42,0.5)" : "rgba(15,23,42,0.10)") + "}"
     ].join("\n");
     document.head.appendChild(css);
   }
@@ -1879,15 +1926,25 @@ const d = labToolData.solarSystem;
     }, extra || {}), label);
   }
 
+  // Cosmic card surface — diagonal gradient + cosmic-tinted border. The
+  // ::before pseudo (in orr-css) layers a low-opacity indigo/cyan radial
+  // wash over the corners so the card feels lit from above-left, like a
+  // polished panel under starlight rather than a flat slab.
+  var cardBgGradient = isDark
+    ? "linear-gradient(135deg,#1f2440 0%,#262a45 55%,#1c1e35 100%)"
+    : "linear-gradient(135deg,#ffffff 0%,#f4f7ff 65%,#ecf0fb 100%)";
+  var cardBorder = isDark ? "rgba(99,102,241,0.18)" : "rgba(99,102,241,0.16)";
   function card(children, style) {
     return h("div", {
       className: "orr-card",
       style: Object.assign({
-        background: cardBg,
-        borderRadius: "12px",
+        background: cardBgGradient,
+        borderRadius: "14px",
         padding: "16px",
-        border: "1px solid " + border,
-        boxShadow: shadowSm
+        border: "1px solid " + cardBorder,
+        boxShadow: isDark
+          ? "0 4px 14px rgba(7,11,24,0.45),inset 0 1px 0 rgba(255,255,255,0.04)"
+          : "0 2px 10px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.65)"
       }, style || {})
     }, children);
   }
@@ -1962,10 +2019,11 @@ const d = labToolData.solarSystem;
    * ==================================================================== */
   var TAB_ICONS = ["\uD83C\uDF0C", "I", "II", "III", "\uD83D\uDD27", "\uD83D\uDE80", "\uD83C\uDFC6", "\u2753"];
   var tabHeader = h("div", {
+    className: "orr-tab-strip",
     style: {
+      position: "relative",
       display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "14px",
-      padding: "6px", background: isDark ? "#1a1a2e" : "#eef1f6", borderRadius: "12px",
-      boxShadow: "inset " + (isDark ? "0 1px 4px rgba(0,0,0,0.4)" : "0 1px 4px rgba(0,0,0,0.06)")
+      padding: "8px", borderRadius: "14px"
     },
     role: "tablist",
     onKeyDown: function(ev) {
@@ -1981,17 +2039,22 @@ const d = labToolData.solarSystem;
       className: "orr-btn" + (isActive ? " orr-btn-active" : ""),
       onClick: function() { setTab(i); },
       style: {
+        position: "relative",
+        zIndex: 1,
         padding: "8px 14px",
-        borderRadius: "8px",
+        borderRadius: "9px",
         border: isActive ? "none" : "1px solid transparent",
         background: isActive
           ? "linear-gradient(135deg, " + accent + ", " + accentLight + ")"
           : "transparent",
-        color: isActive ? "#fff" : mutedFg,
+        color: isActive ? "#fff" : (isDark ? "#cbd5e1" : "#475569"),
         cursor: "pointer",
-        fontWeight: isActive ? 700 : 500,
+        fontWeight: isActive ? 700 : 600,
         fontSize: "13px",
-        boxShadow: isActive ? shadowMd : "none",
+        boxShadow: isActive
+          ? "0 4px 14px rgba(74,144,217,0.45),inset 0 1px 0 rgba(255,255,255,0.18)"
+          : "none",
+        textShadow: isActive ? "0 1px 1px rgba(15,23,42,0.35)" : "none",
         transition: "all 0.2s ease",
         letterSpacing: "0.01em"
       }
@@ -2098,11 +2161,13 @@ const d = labToolData.solarSystem;
         cv.addEventListener("pointerleave", onLeave);
       }
 
+      var clickHandler = null;
       if (props.onClick || clickRef.current) {
-        cv.addEventListener("click", function(ev) {
+        clickHandler = function(ev) {
           var rect = cv.getBoundingClientRect();
           if (clickRef.current) clickRef.current(ev.clientX - rect.left, ev.clientY - rect.top, st);
-        });
+        };
+        cv.addEventListener("click", clickHandler);
       }
 
       // Keyboard accessibility (WCAG 2.1.1): arrow-key pan, +/- zoom, Home reset, Enter/Space click at center.
@@ -2137,6 +2202,7 @@ const d = labToolData.solarSystem;
           window.removeEventListener("pointerup", onUp);
           cv.removeEventListener("pointerleave", onLeave);
         }
+        if (clickHandler) cv.removeEventListener("click", clickHandler);
         cv.removeEventListener('keydown', onKey);
       };
     }, [props.redrawKey || 0]);
@@ -2194,14 +2260,26 @@ const d = labToolData.solarSystem;
         var aph = sb.a * (1 + sb.e);
         var vPeri = visViva(peri, sb.a);
         var vAph = visViva(aph, sb.a);
+        // Stat badges pick up the planet's color as a faint accent — Mars
+        // gets a rust glow, Neptune gets blue, etc. — so the panel reads
+        // as "this body" rather than a generic stat block.
         var statBadge = function(label, value, icon) {
-          return h("div", { style: {
-            display: "inline-flex", alignItems: "center", gap: "6px",
-            padding: "4px 10px", borderRadius: "6px", fontSize: "12px",
-            background: isDark ? "#1e2a3e" : "#eef2f7", border: "1px solid " + border,
-            marginBottom: "4px", marginRight: "4px"
-          } },
-            h("span", { style: { opacity: 0.6 } }, icon || ""),
+          return h("div", {
+            className: "orr-stat",
+            style: {
+              display: "inline-flex", alignItems: "center", gap: "6px",
+              padding: "5px 11px", borderRadius: "8px", fontSize: "12px",
+              background: isDark
+                ? "linear-gradient(135deg,#1c2438 0%,#222a42 100%)"
+                : "linear-gradient(135deg,#f4f7ff 0%,#ecf0fb 100%)",
+              border: "1px solid " + sb.color + "33",
+              boxShadow: isDark
+                ? "0 1px 3px rgba(7,11,24,0.4),inset 0 1px 0 rgba(255,255,255,0.04)"
+                : "0 1px 3px rgba(15,23,42,0.06),inset 0 1px 0 rgba(255,255,255,0.6)",
+              marginBottom: "4px", marginRight: "4px"
+            }
+          },
+            h("span", { style: { opacity: 0.75, color: sb.color } }, icon || ""),
             h("span", { style: { color: mutedFg, fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" } }, label),
             h("span", { style: { fontFamily: "monospace", fontWeight: 700, color: fg } }, value)
           );
@@ -5102,21 +5180,45 @@ const d = labToolData.solarSystem;
     { accent: "#8b5cf6", soft: "rgba(139,92,246,0.10)", title: "True / False — concept check",            hint: "Quick discrimination quiz on common Kepler misconceptions. Targets the orbital myths (\"closer = slower,\" \"orbits are circles,\" \"all orbits go the same direction\")." }
   ];
   var meta = TAB_META[stab] || TAB_META[0];
+  // Cosmic hero band: radial accent glow + faint star dust (CSS pseudos in
+  // orr-tab-hero). The CSS variable --orr-accent feeds the glow color so
+  // each tab gets its own personality (Kepler I = cyan, II = green, etc.)
+  // without re-rendering CSS rules.
   var tabHero = h("div", {
+    className: "orr-tab-hero",
     style: {
-      padding: "12px 14px",
-      borderRadius: "12px",
-      background: "linear-gradient(135deg, " + meta.soft + " 0%, " + (isDark ? "rgba(15,23,42,0)" : "rgba(255,255,255,0)") + " 100%)",
-      border: "1px solid " + meta.accent + "55",
+      "--orr-accent": meta.accent,
+      padding: "14px 16px",
+      borderRadius: "14px",
+      background: isDark
+        ? "linear-gradient(135deg," + meta.soft + " 0%,rgba(15,23,42,0.55) 100%)"
+        : "linear-gradient(135deg," + meta.soft + " 0%,rgba(255,255,255,0.92) 100%)",
+      border: "1px solid " + meta.accent + "44",
       borderLeft: "4px solid " + meta.accent,
-      display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap",
-      marginBottom: "12px"
+      display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap",
+      marginBottom: "14px",
+      boxShadow: isDark
+        ? "0 4px 16px rgba(7,11,24,0.35), inset 0 1px 0 rgba(255,255,255,0.05)"
+        : "0 2px 10px rgba(15,23,42,0.06), inset 0 1px 0 rgba(255,255,255,0.6)"
     }
   },
-    h("div", { style: { fontSize: "26px", flexShrink: 0, fontWeight: 900, color: meta.accent }, "aria-hidden": "true" }, TAB_ICONS[stab]),
-    h("div", { style: { flex: 1, minWidth: "220px" } },
-      h("h3", { style: { color: meta.accent, fontSize: "15px", fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
-      h("p", { style: { margin: "3px 0 0", color: isDark ? "#cbd5e1" : "#475569", fontSize: "11px", lineHeight: 1.45, fontStyle: "italic" } }, meta.hint)
+    // Icon disc — accent-colored ring with the tab icon centered
+    h("div", {
+      style: {
+        position: "relative", zIndex: 1,
+        width: 46, height: 46, borderRadius: "50%", flexShrink: 0,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        background: "radial-gradient(circle," + meta.accent + "33 0%," + meta.accent + "11 60%,transparent 100%)",
+        border: "1px solid " + meta.accent + "55",
+        boxShadow: "0 0 14px " + meta.accent + "33, inset 0 0 8px " + meta.accent + "22",
+        fontSize: 22, fontWeight: 900, color: meta.accent,
+        textShadow: "0 0 8px " + meta.accent + "55"
+      },
+      "aria-hidden": "true"
+    }, TAB_ICONS[stab]),
+    h("div", { style: { flex: 1, minWidth: "220px", position: "relative", zIndex: 1 } },
+      h("h3", { style: { color: meta.accent, fontSize: "15px", fontWeight: 900, margin: 0, lineHeight: 1.2, letterSpacing: "0.01em" } }, meta.title),
+      h("p", { style: { margin: "4px 0 0", color: isDark ? "#cbd5e1" : "#475569", fontSize: "12px", lineHeight: 1.5, fontStyle: "italic" } }, meta.hint)
     )
   );
 
