@@ -1268,7 +1268,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     <>
     <style>{`
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-        @keyframes allo-talk { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.6); } }
+        /* allo-talk keyframe removed — defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
         @keyframes allo-wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-20deg); } 75% { transform: rotate(20deg); } }
         @keyframes allo-puff { 0% { transform: scale(1); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.5); opacity: 0; filter: blur(4px); } }

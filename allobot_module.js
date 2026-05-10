@@ -1262,7 +1262,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = "idle", accessory = null, 
   };
   return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("style", null, `
         @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
-        @keyframes allo-talk { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(0.6); } }
+        /* allo-talk keyframe removed \u2014 defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
         @keyframes allo-wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-20deg); } 75% { transform: rotate(20deg); } }
         @keyframes allo-puff { 0% { transform: scale(1); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.5); opacity: 0; filter: blur(4px); } }
@@ -1530,18 +1530,6 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
   outline: 2px solid #6366f1 !important;
   outline-offset: 2px !important;
 }
-/* WCAG 2.3.3: Disable ALL animations for users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-  .pulse-history { animation: none !important; }
-  .animate-wind-streak { animation: none !important; }
-}
-/* WCAG 1.4.3: Contrast fixes */
-.text-slate-600 { color: #64748b !important; }
 `), /* @__PURE__ */ React.createElement(
     "div",
     {

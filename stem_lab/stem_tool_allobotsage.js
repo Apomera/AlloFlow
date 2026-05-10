@@ -61,15 +61,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
   if (!document.getElementById('abs-a11y-css')) {
     var _s = document.createElement('style');
     _s.id = 'abs-a11y-css';
-    _s.textContent = '@media (prefers-reduced-motion: reduce) { .abs-anim, .abs-pulse, .abs-float { animation: none !important; transition: none !important; } }'
+    _s.textContent = '@media (prefers-reduced-motion: reduce) { .abs-anim, .abs-pulse, .abs-float, .abs-backflip, .abs-confetti, .abs-wand-aura, .abs-wand-flicker, .abs-idle-twist { animation: none !important; transition: none !important; } }'
       + ' @keyframes absPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }'
       + ' @keyframes absFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }'
       + ' @keyframes absSpin { to { transform: rotate(360deg); } }'
       + ' @keyframes absFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }'
+      // ── Phase A: victory celebration keyframes ──
+      // absBackflip = full 360° rotate + slight rise then settle, ~1.4s.
+      // absConfetti = particle drop + fade for the burst overlay.
+      + ' @keyframes absBackflip { 0% { transform: translateY(0) rotate(0deg); } 35% { transform: translateY(-22px) rotate(180deg); } 70% { transform: translateY(-6px) rotate(360deg); } 100% { transform: translateY(0) rotate(360deg); } }'
+      + ' @keyframes absConfetti { 0% { transform: translate(0,0) rotate(0deg); opacity: 1; } 100% { transform: translate(var(--abs-cdx, 0), var(--abs-cdy, 80px)) rotate(540deg); opacity: 0; } }'
+      // ── Phase B: wand-tier aura keyframes ──
+      // absWandAura pulses the radial-gradient ring radius/opacity for tier 3 (10+ unlocks).
+      + ' @keyframes absWandAura { 0%,100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.18); } }'
+      + ' @keyframes absWandFlicker { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }'
+      // ── Phase C: hub idle micro-flourish (small antenna twist / wand wiggle) ──
+      + ' @keyframes absIdleTwist { 0%,80%,100% { transform: rotate(0deg); } 88% { transform: rotate(-6deg); } 94% { transform: rotate(4deg); } }'
       + ' .abs-pulse { animation: absPulse 1.4s ease-in-out infinite; }'
       + ' .abs-float { animation: absFloat 3s ease-in-out infinite; }'
       + ' .abs-spin  { animation: absSpin 3s linear infinite; }'
-      + ' .abs-fade  { animation: absFade 0.3s ease-out; }';
+      + ' .abs-fade  { animation: absFade 0.3s ease-out; }'
+      + ' .abs-backflip { animation: absBackflip 1.4s cubic-bezier(0.4, 0, 0.2, 1) 1; }'
+      + ' .abs-confetti-piece { position: absolute; width: 8px; height: 8px; pointer-events: none; will-change: transform, opacity; animation: absConfetti 1.2s ease-out forwards; }'
+      + ' .abs-wand-aura { animation: absWandAura 2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }'
+      + ' .abs-wand-flicker { animation: absWandFlicker 1.6s ease-in-out infinite; }'
+      + ' .abs-idle-twist { animation: absIdleTwist 6s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }';
     document.head.appendChild(_s);
   }
   (function() {
@@ -821,26 +837,61 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
       }
 
       // AlloBot avatar (simple inline SVG \u2014 wizard variant).
-      function allobotAvatar(mood) {
+      // \u2500\u2500\u2500 Param plumbing \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      // mood        \u2014 'idle' | 'happy' | 'sad' | 'hurt' | 'cast' | 'victory'
+      //               'victory' inherits 'happy' colors plus triggers a
+      //               1.4s backflip via the .abs-backflip class.
+      // opts.wandTier \u2014 0..3. Drives the wand-tip aura intensity:
+      //                 0 = no aura (no spells unlocked yet)
+      //                 1 = dim glow ring         (1\u20133 spells)
+      //                 2 = bright glow + flicker (4\u20139 spells)
+      //                 3 = full pulsing aura     (10+ spells)
+      // opts.robeTier \u2014 0..2. 0 = base purple, 1 = brighter saturation
+      //                 (5+ spells), 2 = + gold accent stripe (15+).
+      // opts.idleTwist \u2014 true = adds .abs-idle-twist micro-flourish to wand
+      //                  (Phase C, used on the hub avatar).
+      function allobotAvatar(mood, opts) {
+        opts = opts || {};
+        var wandTier = opts.wandTier || 0;
+        var robeTier = opts.robeTier || 0;
         var moodColor = mood === 'cast' ? '#a855f7'
                       : mood === 'hurt' ? '#ef4444'
-                      : mood === 'happy' ? '#34d399'
+                      : (mood === 'happy' || mood === 'victory') ? '#34d399'
                       : mood === 'sad' ? '#94a3b8'
                       : '#6366f1';
         var sadMouth = (mood === 'hurt' || mood === 'sad');
-        return h('svg', { viewBox: '0 0 120 140', className: 'abs-float', width: 96, height: 112, 'aria-hidden': 'true' },
+        // Robe progression: brighter purple at tier 1, gold accent at tier 2.
+        var robeFill = robeTier >= 1 ? '#6d28d9' : '#4c1d95';
+        var hatFill  = robeTier >= 1 ? '#5b21b6' : '#4c1d95';
+        // Wand-tier aura: render a halo behind the wand tip whose radius +
+        // opacity scale with tier. Tier 3 also gets a pulsing animation.
+        var auraRadius = wandTier === 0 ? 0 : (5 + wandTier * 4);
+        var auraOpacity = wandTier === 0 ? 0 : (0.25 + wandTier * 0.20);
+        var auraColor = wandTier >= 3 ? '#fde047' : (wandTier >= 2 ? '#fbbf24' : '#a78bfa');
+        var auraClass = wandTier >= 3 ? 'abs-wand-aura' : (wandTier >= 2 ? 'abs-wand-flicker' : '');
+        var wrapperClass = mood === 'victory' ? 'abs-backflip' : 'abs-float';
+        return h('svg', { viewBox: '0 0 120 140', className: wrapperClass, width: 96, height: 112, 'aria-hidden': 'true' },
           h('defs', null,
             h('radialGradient', { id: 'absVisor' },
               h('stop', { offset: '0%', stopColor: '#67e8f9' }),
               h('stop', { offset: '100%', stopColor: '#0e7490' })
+            ),
+            wandTier > 0 && h('radialGradient', { id: 'absWandAuraGrad' },
+              h('stop', { offset: '0%', stopColor: auraColor, stopOpacity: auraOpacity + 0.25 }),
+              h('stop', { offset: '60%', stopColor: auraColor, stopOpacity: auraOpacity * 0.45 }),
+              h('stop', { offset: '100%', stopColor: auraColor, stopOpacity: 0 })
             )
           ),
+          // Wand-tip aura (rendered FIRST so it sits behind the wand stick).
+          wandTier > 0 && h('circle', { cx: 116, cy: 66, r: auraRadius, fill: 'url(#absWandAuraGrad)', className: auraClass }),
           // Wizard hat
-          h('polygon', { points: '60,2 38,44 82,44', fill: '#4c1d95' }),
+          h('polygon', { points: '60,2 38,44 82,44', fill: hatFill }),
           h('polygon', { points: '55,12 55,44 65,44 65,12', fill: '#7c3aed' }),
           h('circle', { cx: 60, cy: 6, r: 3, fill: '#fbbf24' }),
           // Body/robe
-          h('ellipse', { cx: 60, cy: 110, rx: 36, ry: 22, fill: '#4c1d95' }),
+          h('ellipse', { cx: 60, cy: 110, rx: 36, ry: 22, fill: robeFill }),
+          // Robe gold accent stripe (tier 2 milestone \u2014 15+ spells)
+          robeTier >= 2 && h('path', { d: 'M 28 108 Q 60 102 92 108', stroke: '#fde047', strokeWidth: 2.5, fill: 'none', strokeLinecap: 'round' }),
           // Head
           h('circle', { cx: 60, cy: 70, r: 28, fill: '#e0e7ff', stroke: moodColor, strokeWidth: 2 }),
           // Visor
@@ -850,10 +901,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           h('circle', { cx: 70, cy: 69, r: 2.5, fill: '#fff' }),
           // Mouth
           h('path', { d: sadMouth ? 'M 52 82 Q 60 76 68 82' : 'M 52 80 Q 60 86 68 80', stroke: moodColor, strokeWidth: 2, fill: 'none', strokeLinecap: 'round' }),
-          // Wand
-          h('line', { x1: 92, y1: 96, x2: 116, y2: 66, stroke: '#78350f', strokeWidth: 3, strokeLinecap: 'round' }),
-          h('circle', { cx: 116, cy: 66, r: 5, fill: moodColor, className: 'abs-pulse' })
+          // Wand stick + tip \u2014 group so the optional idle twist applies cleanly.
+          h('g', opts.idleTwist ? { className: 'abs-idle-twist' } : null,
+            h('line', { x1: 92, y1: 96, x2: 116, y2: 66, stroke: '#78350f', strokeWidth: 3, strokeLinecap: 'round' }),
+            h('circle', { cx: 116, cy: 66, r: 5, fill: moodColor, className: 'abs-pulse' })
+          )
         );
+      }
+
+      // \u2500\u2500\u2500 Confetti burst overlay (Phase A) \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+      // Renders 18 small colored squares that fly outward + fade. Used on
+      // the debrief screen when result === 'victory'. Pure CSS animation;
+      // unmounts when parent unmounts (no setInterval to clean up).
+      function VictoryConfettiBurst() {
+        var pieces = [];
+        var colors = ['#fbbf24', '#34d399', '#60a5fa', '#f472b6', '#a78bfa', '#fde047'];
+        for (var ci = 0; ci < 18; ci++) {
+          var angle = (ci / 18) * 6.283; // 2\u03c0
+          var dist = 60 + Math.random() * 40;
+          pieces.push(h('span', {
+            key: 'cf-' + ci,
+            className: 'abs-confetti-piece',
+            style: {
+              background: colors[ci % colors.length],
+              left: '50%', top: '50%',
+              borderRadius: ci % 2 === 0 ? '50%' : '2px',
+              animationDelay: (Math.random() * 0.15) + 's',
+              '--abs-cdx': (Math.cos(angle) * dist).toFixed(0) + 'px',
+              '--abs-cdy': (Math.sin(angle) * dist - 20).toFixed(0) + 'px'
+            }
+          }));
+        }
+        return h('div', {
+          'aria-hidden': 'true',
+          style: { position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }
+        }, pieces);
       }
 
       // ─────────────────────────────────────────────────
@@ -924,9 +1006,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           ),
 
           // Hero row: AlloBot + headline
+          // ── Phase B: wand-tier + robe-tier scale with mastery ──
+          // wandTier:  0 (no spells) → 1 (1-3) → 2 (4-9) → 3 (10+)
+          // robeTier:  0 (default) → 1 (5+ spells) → 2 (15+ spells)
           h('div', { className: 'rounded-2xl p-4 md:p-6 mb-4', style: { background: 'linear-gradient(135deg, #0f172a 0%, #4c1d95 100%)', color: 'white' } },
             h('div', { className: 'flex items-center gap-4' },
-              allobotAvatar(visitMood),
+              allobotAvatar(visitMood, {
+                wandTier: unlockedSpells.length === 0 ? 0
+                          : unlockedSpells.length < 4 ? 1
+                          : unlockedSpells.length < 10 ? 2
+                          : 3,
+                robeTier: unlockedSpells.length >= 15 ? 2
+                          : unlockedSpells.length >= 5 ? 1
+                          : 0,
+                idleTwist: true // Phase C: micro-flourish on the hub avatar
+              }),
               h('div', { className: 'flex-1 min-w-0' },
                 h('h1', { className: 'text-xl md:text-2xl font-bold' }, 'AlloBot: Starbound Sage'),
                 h('p', { className: 'text-sm text-violet-200 mt-1 italic' }, greeting),
@@ -1536,6 +1630,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
         var roomsCleared = expedition.roomsCleared || 0;
         var totalRoomsD = (expedition.roomsPlan || []).length || ROOMS_PER_EXPEDITION;
         return h('div', { className: 'max-w-2xl mx-auto p-4 md:p-6 text-center abs-fade' },
+          // \u2500\u2500 Phase A: victory celebration \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+          // On result='victory', show a backflipping AlloBot with wand-tier
+          // glow + a confetti burst overlay. The mood='victory' string makes
+          // allobotAvatar swap its wrapper class to .abs-backflip (one full
+          // rotation, ~1.4s). Pieces are positioned absolutely inside the
+          // wrapper so they fountain outward from the avatar's center.
+          result === 'victory' && h('div', {
+            style: { position: 'relative', display: 'inline-block', marginBottom: 8 }
+          },
+            allobotAvatar('victory', {
+              wandTier: unlockedSpells.length >= 10 ? 3 : unlockedSpells.length >= 4 ? 2 : unlockedSpells.length >= 1 ? 1 : 0,
+              robeTier: unlockedSpells.length >= 15 ? 2 : unlockedSpells.length >= 5 ? 1 : 0
+            }),
+            h(VictoryConfettiBurst, null)
+          ),
           h('div', {
             className: 'rounded-2xl p-6 mb-4',
             style: {
