@@ -1787,7 +1787,133 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           { key: 'immersiveReader', label: 'Immersive Reader', icon: '\uD83D\uDCD6' }
         ];
 
-        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 abs-fade' },
+        return h('div', { className: 'max-w-4xl mx-auto p-4 md:p-6 abs-fade relative' },
+          // ── Spell Preview Modal (overlay) ──
+          // Renders when d.previewingSpellId is set. Shows 2-3 sample challenge
+          // questions, per-spell SRS health, and a "Drill in Study Hall" jump.
+          // Solves a real UX gap: previously the only way to see a spell's
+          // questions was to cast it in combat (high-stakes), so students
+          // couldn't make informed choices about which spell to practice.
+          d.previewingSpellId && (function() {
+            var ps = findSpell(d.previewingSpellId);
+            if (!ps) return null;
+            var bank = getMergedBank(ps, aiChallengeCache);
+            var stats = d.questionStats || {};
+            // Per-spell aggregate: total attempts + correct on this spell's questions
+            var pAttempts = 0, pCorrect = 0, pSeen = 0;
+            bank.forEach(function(qq) {
+              var st = stats[qq.prompt];
+              if (st) { pSeen++; pAttempts += st.attempts || 0; pCorrect += st.correctCount || 0; }
+            });
+            var pAccPct = pAttempts > 0 ? Math.round(pCorrect / pAttempts * 100) : null;
+            // Pick 3 sample questions: prefer 1 seen-and-failed, 1 seen-and-correct, 1 unseen
+            // (so the preview is informative across the student's experience).
+            var failedSample = null, correctSample = null, unseenSample = null;
+            for (var bi = 0; bi < bank.length; bi++) {
+              var st2 = stats[bank[bi].prompt];
+              if (!st2 && !unseenSample) unseenSample = bank[bi];
+              else if (st2 && st2.lastResult === 'backfire' && !failedSample) failedSample = bank[bi];
+              else if (st2 && (st2.lastResult === 'hit' || st2.lastResult === 'crit') && !correctSample) correctSample = bank[bi];
+              if (failedSample && correctSample && unseenSample) break;
+            }
+            var samples = [];
+            if (failedSample) samples.push({ q: failedSample, tag: 'You backfired on this one', color: '#dc2626' });
+            if (correctSample) samples.push({ q: correctSample, tag: 'You got this one right', color: '#16a34a' });
+            if (unseenSample) samples.push({ q: unseenSample, tag: 'New — you haven\'t tried this yet', color: '#64748b' });
+            if (samples.length === 0 && bank.length > 0) {
+              // Fallback: just show first 2 from bank
+              samples = bank.slice(0, 2).map(function(qq) { return { q: qq, tag: 'Sample question', color: '#64748b' }; });
+            }
+            // Cast count from castCounts
+            var castN = (d.castCounts || {})[ps.id] || 0;
+            return h('div', {
+              role: 'dialog',
+              'aria-modal': 'true',
+              'aria-labelledby': 'abs-preview-title',
+              style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.7)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', overflow: 'auto' },
+              onClick: function(e) { if (e.target === e.currentTarget) { sfxClick(); updKey('previewingSpellId', null); } }
+            },
+              h('div', {
+                style: { maxWidth: '560px', width: '100%', maxHeight: '90vh', overflowY: 'auto', background: '#fff', border: '2px solid ' + ps.color, borderRadius: '14px', boxShadow: '0 20px 60px rgba(0,0,0,0.4)' }
+              },
+                // Header
+                h('div', { className: 'p-4 flex items-center gap-3', style: { background: 'linear-gradient(135deg, ' + ps.color + '25, ' + ps.color + '10)' } },
+                  h('span', { className: 'text-4xl' }, ps.icon),
+                  h('div', { className: 'flex-1' },
+                    h('div', { id: 'abs-preview-title', className: 'text-lg font-bold', style: { color: ps.color } }, ps.name),
+                    h('div', { className: 'text-[11px] text-slate-600 mt-0.5' }, ps.sourceLabel + ' · ' + ps.element + ' · ' + ps.baseDamage + ' base dmg · crit ×' + ps.critMultiplier.toFixed(1))
+                  ),
+                  h('button', {
+                    onClick: function() { sfxClick(); updKey('previewingSpellId', null); },
+                    className: 'text-2xl text-slate-400 hover:text-slate-700 font-bold leading-none focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2',
+                    'aria-label': 'Close preview'
+                  }, '×')
+                ),
+                // Flavor + stats strip
+                h('div', { className: 'px-4 py-2 text-[12px] italic text-slate-600 border-b border-slate-200' }, '"' + ps.flavor + '"'),
+                h('div', { className: 'px-4 py-2 grid grid-cols-3 gap-2 text-center border-b border-slate-200' },
+                  h('div', null,
+                    h('div', { className: 'text-[9px] font-bold text-slate-400 uppercase tracking-wider' }, 'Casts'),
+                    h('div', { className: 'text-base font-bold text-violet-700' }, castN)
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-[9px] font-bold text-slate-400 uppercase tracking-wider' }, 'Questions'),
+                    h('div', { className: 'text-base font-bold text-slate-700' }, bank.length, h('span', { className: 'text-[10px] text-slate-400 font-normal' }, ' (' + pSeen + ' seen)'))
+                  ),
+                  h('div', null,
+                    h('div', { className: 'text-[9px] font-bold text-slate-400 uppercase tracking-wider' }, 'Accuracy'),
+                    h('div', { className: 'text-base font-bold ' + (pAccPct === null ? 'text-slate-400' : pAccPct >= 75 ? 'text-emerald-600' : pAccPct >= 50 ? 'text-amber-600' : 'text-red-600') }, pAccPct === null ? '—' : pAccPct + '%')
+                  )
+                ),
+                // Sample questions
+                h('div', { className: 'p-4' },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2' }, '📋 Sample Questions (' + samples.length + ')'),
+                  h('div', { className: 'space-y-2' },
+                    samples.map(function(samp, si) {
+                      var qq = samp.q;
+                      return h('div', { key: 'samp-' + si, className: 'p-3 rounded-lg border border-slate-200 bg-slate-50' },
+                        h('div', { className: 'flex items-center gap-1 mb-1' },
+                          h('span', { className: 'text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded', style: { color: samp.color, background: samp.color + '15' } }, samp.tag),
+                          qq.aiGenerated && h('span', { className: 'text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-fuchsia-100 text-fuchsia-700' }, '✨ AI')
+                        ),
+                        h('p', { className: 'text-[12px] font-semibold text-slate-800 mb-2' }, qq.prompt),
+                        h('div', { className: 'space-y-1' },
+                          qq.options.map(function(opt, oi) {
+                            var isCorrect = oi === qq.correctIndex;
+                            return h('div', {
+                              key: 'samp-opt-' + oi,
+                              className: 'text-[11px] p-1.5 rounded ' + (isCorrect ? 'bg-emerald-100 text-emerald-900 font-semibold border border-emerald-300' : 'bg-white text-slate-600 border border-slate-200')
+                            },
+                              h('span', { className: 'inline-block w-5 font-bold' }, String.fromCharCode(65 + oi) + '.'),
+                              opt,
+                              isCorrect && h('span', { className: 'ml-1' }, '✓')
+                            );
+                          })
+                        ),
+                        h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, '→ ' + qq.explain)
+                      );
+                    })
+                  )
+                ),
+                // CTA: drill in Study Hall
+                h('div', { className: 'px-4 pb-4 flex gap-2' },
+                  h('button', {
+                    onClick: function() {
+                      sfxClick();
+                      updSage({ phase: 'practice', practiceSpellId: ps.id, practiceQuestion: null, practiceSession: { correct: 0, attempted: 0 }, previewingSpellId: null });
+                    },
+                    className: 'flex-1 py-2.5 rounded-xl font-bold text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-2 focus:ring-emerald-400 focus:outline-none',
+                    'aria-label': 'Drill ' + ps.name + ' in Study Hall'
+                  }, '📚 Drill in Study Hall'),
+                  h('button', {
+                    onClick: function() { sfxClick(); updKey('previewingSpellId', null); },
+                    className: 'px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 focus:ring-2 focus:ring-slate-400 focus:outline-none'
+                  }, 'Close')
+                )
+              )
+            );
+          })(),
+
           // Header
           h('div', { className: 'flex items-center gap-3 mb-4' },
             backBtn(function() { sfxClick(); setStemLabTool(null); }, 'Back to Lab'),
@@ -1944,6 +2070,57 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             );
           })(),
 
+          // ── Achievement Gallery ──
+          // Reads the same questHooks the global StemLab Quest Log uses, but
+          // renders them inline here so students see the badge grid without
+          // having to leave Sage. Earned first, then unearned (with progress).
+          unlockedSpells.length > 0 && (function() {
+            var hookSrc = (window.StemLab && window.StemLab._registry && window.StemLab._registry.alloBotSage && window.StemLab._registry.alloBotSage.questHooks) || [];
+            if (!hookSrc || hookSrc.length === 0) return null;
+            // Evaluate each hook against toolData. Bucket into earned/unearned.
+            var hookEval = hookSrc.map(function(qh) {
+              var earned = false;
+              try { earned = !!qh.check(toolData); } catch (e) {}
+              var progressText = '';
+              try { progressText = qh.progress ? qh.progress(toolData) : (earned ? 'Done!' : 'Not yet'); } catch(e) { progressText = ''; }
+              return { id: qh.id, label: qh.label, icon: qh.icon, earned: earned, progress: progressText };
+            });
+            var earnedCount = hookEval.filter(function(h2) { return h2.earned; }).length;
+            // Show open by default once student earns 1+; collapse if none earned yet
+            var galleryOpen = d.galleryOpen !== false; // default true
+            return h('section', { 'aria-label': 'Achievement gallery', className: 'mb-5' },
+              h('div', { className: 'flex items-center gap-2 mb-2' },
+                h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1' },
+                  h('span', null, '🏅 Achievements'),
+                  h('span', { className: 'text-violet-700' }, '(' + earnedCount + '/' + hookEval.length + ')')
+                ),
+                h('button', {
+                  onClick: function() { sfxClick(); updKey('galleryOpen', !galleryOpen); },
+                  className: 'ml-auto text-[10px] text-slate-500 hover:text-slate-800 font-semibold focus:ring-2 focus:ring-violet-400 focus:outline-none rounded px-2 py-0.5',
+                  'aria-expanded': galleryOpen
+                }, galleryOpen ? 'Collapse' : 'Expand')
+              ),
+              galleryOpen && h('div', { className: 'rounded-xl p-3 border border-slate-200 bg-white' },
+                h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2' },
+                  // Earned first, then unearned
+                  hookEval.slice().sort(function(a, b) { return (b.earned ? 1 : 0) - (a.earned ? 1 : 0); }).map(function(h2) {
+                    return h('div', {
+                      key: 'ach-' + h2.id,
+                      className: 'flex items-center gap-2 p-2 rounded-lg text-[11px] ' + (h2.earned ? 'bg-emerald-50 border border-emerald-200' : 'bg-slate-50 border border-slate-200'),
+                      'aria-label': h2.label + (h2.earned ? ' (earned)' : ' (in progress: ' + h2.progress + ')')
+                    },
+                      h('span', { className: 'text-base', style: { filter: h2.earned ? '' : 'grayscale(0.5) opacity(0.65)' } }, h2.icon),
+                      h('div', { className: 'flex-1 min-w-0' },
+                        h('div', { className: 'font-semibold truncate ' + (h2.earned ? 'text-emerald-900' : 'text-slate-700') }, h2.label),
+                        h('div', { className: 'text-[9px] ' + (h2.earned ? 'text-emerald-700' : 'text-slate-400') }, h2.earned ? '✓ Earned' : h2.progress)
+                      )
+                    );
+                  })
+                )
+              )
+            );
+          })(),
+
           // Trophy shelf
           unlockedSpells.length > 0 && h('section', { 'aria-label': 'Trophy shelf', className: 'mb-5' },
             h('h2', { className: 'text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2' }, '\uD83C\uDFC6 Trophy Shelf'),
@@ -1977,7 +2154,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
               )
             ),
             unlockedSpells.length > 0 && h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-4' },
-              unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: (d.castCounts || {})[s.id] || 0, onClick: function() {} }); })
+              unlockedSpells.map(function(s) { return spellCard(s, { unlocked: true, usageCount: (d.castCounts || {})[s.id] || 0, onClick: function() { sfxClick(); updKey('previewingSpellId', s.id); } }); })
             ),
             lockedSpells.length > 0 && h('div', null,
               h('h3', { className: 'text-[11px] font-semibold text-slate-300 uppercase tracking-wider mb-2' }, 'Yet to discover (' + lockedSpells.length + ')'),
