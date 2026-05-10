@@ -226,7 +226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       var viewState = useState(d.view || 'menu');
       var view = viewState[0], setView = viewState[1];
 
-      var BADGE_IDS = ['macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective'];
+      var BADGE_IDS = ['macroLab','microAtlas','labelReader','energyBalance','digestion','myths','foodMood','edAwareness','maineReality','careerPaths','maineDay','deficiencyDetective','hydrationLab'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -424,6 +424,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             desc: '10 clinical vignettes; identify which of 6 nutrients (vitamin D, iron, B12, folate, calcium, iodine) is most likely missing. Vignettes target the canonical real-world deficiency cases: Maine winter runner with stress fractures, menstruating teen with ADHD-like inattention, strict vegan with neuropathy, preconception folate, lactose-intolerant teen with low bone density, PPI-induced B12 deficiency.',
             color: 'from-rose-500 to-pink-700',
             ring: 'ring-rose-500/40',
+            ready: true
+          },
+          {
+            id: 'hydrationLab', title: 'Hydration Lab', icon: '💧',
+            subtitle: 'Water, your body, and the science of staying hydrated',
+            desc: 'Daily-needs calculator (NAM Adequate Intake by age/sex), self-check quiz with the 8-point urine-color scale (ACSM/Armstrong), beverage comparison (water vs sports drink vs soda — sodium, sugar, hydration efficacy), and a sweat-rate calculator for student athletes (NATA standard). Physiology-first framing: hydration as body function, never appetite suppression.',
+            color: 'from-sky-500 to-cyan-700',
+            ring: 'ring-sky-500/40',
             ready: true
           }
         ];
@@ -3985,6 +3993,441 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       }
 
       // ─────────────────────────────────────────────────────
+      // HYDRATION LAB
+      // Water, your body, and the science of staying hydrated.
+      // PHYSIOLOGY-FIRST framing throughout: water is a body input,
+      // never an appetite suppressant. NEDA-aware copy: no language
+      // that frames hydration as a substitute for eating.
+      // ─────────────────────────────────────────────────────
+
+      // NAM/IOM Adequate Intake (AI) for total water by age + sex.
+      // "Total water" includes fluid AND food moisture (about 20% of
+      // intake comes from food, so the fluid-only target is ~80% of
+      // the AI). Numbers reproduced from IOM (2005) Dietary Reference
+      // Intakes: Water, Potassium, Sodium, Chloride, and Sulfate, the
+      // canonical source still cited by the AAP and NIH.
+      var WATER_AI_TOTAL_L = {
+        // age band → { male, female } total water L/day
+        '4-8':   { male: 1.7, female: 1.7 },
+        '9-13':  { male: 2.4, female: 2.1 },
+        '14-18': { male: 3.3, female: 2.3 },
+        '19+':   { male: 3.7, female: 2.7 }
+      };
+
+      // Activity adder (NATA position statement on fluid replacement,
+      // 2017): roughly 400-800 mL/hr of moderate exercise; up to
+      // ~1.5 L/hr in heat. We use conservative midpoints.
+      var ACTIVITY_ADD_ML = {
+        sedentary:  0,
+        light:      300,
+        moderate:   600,
+        vigorous:  1000
+      };
+
+      // Urine color reference (Armstrong 8-point scale; ACSM-cited).
+      // Each entry: hex swatch, status word, what-it-means line.
+      var URINE_COLORS = [
+        { hex: '#fcfdf2', n: 1, label: 'Very pale',     status: 'Hydrated',           note: 'Often clear or nearly so. Fine if you have not been pushing fluids; overdrinking water has its own risks.' },
+        { hex: '#fafad9', n: 2, label: 'Pale yellow',   status: 'Hydrated',           note: 'The classic "well-hydrated" target color most clinicians teach.' },
+        { hex: '#f3edaa', n: 3, label: 'Light yellow',  status: 'Hydrated',           note: 'Still in the green zone. Body has enough water for routine function.' },
+        { hex: '#e6db5c', n: 4, label: 'Yellow',        status: 'Borderline',         note: 'Drink water in the next hour. Not an emergency, but you are trending toward thirsty.' },
+        { hex: '#d3b73c', n: 5, label: 'Dark yellow',   status: 'Mildly dehydrated',  note: 'About 1-2% body-weight fluid deficit. Attention, mood, short-term memory measurably drop here. Drink now.' },
+        { hex: '#b08c2a', n: 6, label: 'Amber',         status: 'Dehydrated',         note: 'Definitely behind. Sip water steadily over the next 1-2 hours. Avoid soda or caffeine right now.' },
+        { hex: '#8b6420', n: 7, label: 'Brown-amber',   status: 'Very dehydrated',    note: 'If this is post-exercise or after illness, rehydrate with water + a salty snack or oral rehydration solution.' },
+        { hex: '#6b4015', n: 8, label: 'Dark brown',    status: 'Severely dehydrated', note: 'Or possibly a sign of something else (medication, liver, blood in urine). If you cannot rehydrate or it persists, see a clinician.' }
+      ];
+
+      // Beverage comparison data (per 8 oz / ~240 mL serving).
+      // Sources: USDA FoodData Central; AAP Clinical Report on
+      // sports + energy drinks for kids (Pediatrics 2011, reaffirmed
+      // 2018); NATA position statement on fluid replacement.
+      var BEVERAGES = [
+        {
+          id: 'water', name: 'Water', icon: '💧',
+          sodium: 0, sugar: 0, caffeine: 0, kcal: 0,
+          efficacy: 'Best baseline hydrator for sub-1-hour activity. Replenishes fluid without adding sugar or sodium your body did not lose.',
+          when: 'The default. Carry a bottle. Refill at school fountains.',
+          source: 'NATA 2017 fluid replacement position'
+        },
+        {
+          id: 'sports', name: 'Sports drink (typical)', icon: '🏃',
+          sodium: 110, sugar: 14, caffeine: 0, kcal: 50,
+          efficacy: 'Replaces sodium lost in sweat AND adds quick-burning sugar. Useful for endurance over 60-90 minutes or for athletes practicing in heat.',
+          when: 'Long practices in heat, two-a-days, athletic events. Not a default thirst-quencher for routine school days.',
+          source: 'AAP 2011 Clinical Report; NATA 2017'
+        },
+        {
+          id: 'soda', name: 'Soda (cola)', icon: '🥤',
+          sodium: 35, sugar: 26, caffeine: 30, kcal: 100,
+          efficacy: 'Provides fluid but the sugar and caffeine produce a small diuretic effect. Net hydration is positive but lower per ounce than water or a sports drink.',
+          when: 'Occasional. Not a hydration tool. The 26 g of sugar per cup is well above the daily added-sugar guideline for adolescents.',
+          source: 'USDA FoodData Central; AAP added-sugar guidance'
+        },
+        {
+          id: 'milk', name: 'Milk (1%)', icon: '🥛',
+          sodium: 100, sugar: 13, caffeine: 0, kcal: 100,
+          efficacy: 'Some of the best post-exercise rehydration in studies. Fluid plus electrolytes plus protein support recovery, and the natural sugar (lactose) is part of the food, not added sugar.',
+          when: 'Post-practice recovery, breakfast, snack. Plant milks vary; check the label for added sugar.',
+          source: 'McGregor 2008 / Shirreffs 2007 (post-exercise rehydration trials)'
+        }
+      ];
+
+      function HydrationLab() {
+        var tab_state = usePersistedState('hl_tab', 'needs');
+        var tab = tab_state[0], setTab = tab_state[1];
+
+        // Daily-needs inputs
+        var ageBand_state = usePersistedState('hl_ageBand', '14-18');
+        var ageBand = ageBand_state[0], setAgeBand = ageBand_state[1];
+        var sex_state = usePersistedState('hl_sex', 'female');
+        var sex = sex_state[0], setSex = sex_state[1];
+        var activity_state = usePersistedState('hl_activity', 'moderate');
+        var activity = activity_state[0], setActivity = activity_state[1];
+
+        // Urine-color quiz (status check)
+        var urineIdx_state = usePersistedState('hl_urineIdx', null);
+        var urineIdx = urineIdx_state[0], setUrineIdx = urineIdx_state[1];
+
+        // Sweat-rate inputs (for student athletes)
+        var sweatBefore_state = usePersistedState('hl_sweatBefore', '');
+        var sweatBefore = sweatBefore_state[0], setSweatBefore = sweatBefore_state[1];
+        var sweatAfter_state = usePersistedState('hl_sweatAfter', '');
+        var sweatAfter = sweatAfter_state[0], setSweatAfter = sweatAfter_state[1];
+        var sweatFluid_state = usePersistedState('hl_sweatFluid', '');
+        var sweatFluid = sweatFluid_state[0], setSweatFluid = sweatFluid_state[1];
+        var sweatMins_state = usePersistedState('hl_sweatMins', '');
+        var sweatMins = sweatMins_state[0], setSweatMins = sweatMins_state[1];
+
+        // ── Calculations ──
+        var aiTotal = (WATER_AI_TOTAL_L[ageBand] || WATER_AI_TOTAL_L['14-18'])[sex] || 2.3;
+        // ~80% of AI is fluid intake (rest comes from food).
+        var fluidBaseMl = Math.round(aiTotal * 1000 * 0.8);
+        var activityAdd = ACTIVITY_ADD_ML[activity] || 0;
+        var dailyTargetMl = fluidBaseMl + activityAdd;
+        var dailyTargetCups = (dailyTargetMl / 240).toFixed(1); // 8 oz cup = ~240 mL
+
+        // Sweat-rate output: kg lost = fluid lost (1 kg ≈ 1 L). Rate
+        // per hour = (kg lost + L drunk) / hours. NATA recommends
+        // replacing 100-150% of fluid lost in the 2-6 hours after.
+        var sBefore = parseFloat(sweatBefore);
+        var sAfter = parseFloat(sweatAfter);
+        var sFluid = parseFloat(sweatFluid);
+        var sMins = parseFloat(sweatMins);
+        var sweatLossKg = (!isNaN(sBefore) && !isNaN(sAfter)) ? Math.max(0, sBefore - sAfter) : NaN;
+        var sweatRateMlHr = (!isNaN(sweatLossKg) && !isNaN(sFluid) && !isNaN(sMins) && sMins > 0)
+          ? Math.round(((sweatLossKg * 1000) + sFluid) / (sMins / 60))
+          : NaN;
+        var sweatReplaceTarget = !isNaN(sweatLossKg) ? Math.round(sweatLossKg * 1000 * 1.25) : NaN;
+
+        var TABS = [
+          { id: 'needs',     label: 'Daily Needs',       icon: '🎯' },
+          { id: 'status',    label: 'Status Check',      icon: '🪞' },
+          { id: 'beverages', label: 'Beverage Compare',  icon: '🥤' },
+          { id: 'sweat',     label: 'Sweat Rate',        icon: '🏃' }
+        ];
+
+        function tabBtn(t) {
+          var sel = (tab === t.id);
+          return h('button', {
+            key: t.id,
+            onClick: function() { setTab(t.id); },
+            role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            className: 'flex-1 px-3 py-2 rounded-lg text-xs md:text-sm font-bold transition-colors focus:outline-none focus:ring-2 ring-sky-500 ' +
+              (sel ? 'bg-sky-700 text-white shadow' : 'bg-white text-slate-800 hover:bg-sky-50 border border-slate-300')
+          }, t.icon + ' ' + t.label);
+        }
+
+        // Hydration fill-bar — shows daily target as a vertical bottle fill.
+        function FillBar(props) {
+          var ml = props.ml || 0;
+          var maxMl = props.max || 4000;
+          var pct = Math.min(100, Math.round((ml / maxMl) * 100));
+          var bottleH = 200, bottleW = 80;
+          return h('div', { className: 'flex items-center gap-4' },
+            h('svg', { width: bottleW, height: bottleH, viewBox: '0 0 ' + bottleW + ' ' + bottleH,
+              role: 'img', 'aria-label': 'Daily fluid target shown as a bottle ' + pct + ' percent full.' },
+              // Bottle outline
+              h('rect', { x: 14, y: 22, width: bottleW - 28, height: bottleH - 30, rx: 8, fill: 'none', stroke: '#0c4a6e', strokeWidth: 2 }),
+              // Bottle neck
+              h('rect', { x: 28, y: 8, width: 24, height: 16, fill: '#0c4a6e' }),
+              // Water fill (animated height via dasharray-free approach)
+              h('rect', {
+                x: 16, y: bottleH - 10 - ((bottleH - 34) * pct / 100),
+                width: bottleW - 32, height: ((bottleH - 34) * pct / 100),
+                fill: '#38bdf8', opacity: 0.85
+              }),
+              // Percent label
+              h('text', { x: bottleW / 2, y: bottleH / 2, textAnchor: 'middle', fontSize: 16, fontWeight: 800, fill: '#0c4a6e' }, pct + '%')
+            ),
+            h('div', { className: 'flex-1 text-sm text-slate-800' }, props.children)
+          );
+        }
+
+        return h('div', { className: 'min-h-screen bg-slate-50' },
+          h(BackBar, { icon: '💧', title: 'Hydration Lab' }),
+          h('div', { className: 'p-6 max-w-6xl mx-auto space-y-5' },
+            // Intro
+            h('div', { className: 'bg-sky-50 border-2 border-sky-300 rounded-2xl p-5' },
+              h('h2', { className: 'text-lg font-black text-sky-900 mb-2' }, 'Hydration is body function, not body shape.'),
+              h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
+                'Roughly 60% of your body weight is water. Every cell uses it. The brain runs about 75% water and the first thing that drops with mild dehydration (1-2% body-weight fluid loss) is attention, short-term memory, and mood. This lab covers four things: how much fluid you actually need, how to read your own body for status, which drinks help and which do not, and how to handle hydration as a student athlete. Hydration is never a substitute for eating. If you find yourself using water to feel full or skip meals, talk to a trusted adult and call NEDA at 1-800-931-2237.')
+            ),
+            // Tabs
+            h('div', { role: 'tablist', 'aria-label': 'Hydration Lab sections', className: 'flex flex-wrap gap-2' },
+              TABS.map(tabBtn)
+            ),
+
+            // ──────────── Tab: Daily Needs ────────────
+            tab === 'needs' && h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
+                h('h3', { className: 'text-lg font-black text-slate-800' }, 'How much fluid do I need today?'),
+                h('p', { className: 'text-xs text-slate-700' },
+                  'Tell us your age band, sex assigned at birth (the reference values are biological, not gender), and how active you are. The result is a fluid-intake estimate, not a daily quota you must hit. Body size, climate, illness, and pregnancy all shift this. Listen to thirst.'),
+
+                // Age + Sex inputs
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+                  h('label', { className: 'block' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Age band'),
+                    h('select', {
+                      value: ageBand,
+                      onChange: function(e) { setAgeBand(e.target.value); },
+                      className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
+                    },
+                      h('option', { value: '4-8' }, 'Ages 4-8'),
+                      h('option', { value: '9-13' }, 'Ages 9-13'),
+                      h('option', { value: '14-18' }, 'Ages 14-18'),
+                      h('option', { value: '19+' }, 'Ages 19+')
+                    )
+                  ),
+                  h('label', { className: 'block' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Reference (sex assigned at birth)'),
+                    h('select', {
+                      value: sex,
+                      onChange: function(e) { setSex(e.target.value); },
+                      className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
+                    },
+                      h('option', { value: 'female' }, 'Female reference'),
+                      h('option', { value: 'male' }, 'Male reference')
+                    )
+                  ),
+                  h('label', { className: 'block' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Activity level today'),
+                    h('select', {
+                      value: activity,
+                      onChange: function(e) { setActivity(e.target.value); },
+                      className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
+                    },
+                      h('option', { value: 'sedentary' }, 'Mostly sitting'),
+                      h('option', { value: 'light' }, 'Light (walking, easy PE)'),
+                      h('option', { value: 'moderate' }, 'Moderate (1 hr practice)'),
+                      h('option', { value: 'vigorous' }, 'Vigorous (long practice / heat)')
+                    )
+                  )
+                ),
+
+                // Result
+                h(FillBar, { ml: dailyTargetMl, max: 4500 },
+                  h('div', { className: 'space-y-2' },
+                    h('div', { className: 'text-2xl font-black text-sky-900' }, dailyTargetMl + ' mL'),
+                    h('div', { className: 'text-sm text-slate-800' }, 'About ' + dailyTargetCups + ' cups (8 oz each) of fluid today.'),
+                    h('div', { className: 'text-xs text-slate-700 italic' },
+                      'Baseline ' + fluidBaseMl + ' mL from NAM/IOM Adequate Intake (about 80% of total water; rest comes from food).' +
+                      (activityAdd > 0 ? ' Plus +' + activityAdd + ' mL for ' + activity + ' activity (NATA).' : ''))
+                  )
+                ),
+
+                h('p', { className: 'text-[11px] text-slate-700 italic mt-2 leading-relaxed' },
+                  'Sources: Institute of Medicine (2005) Dietary Reference Intakes for Water, still cited by AAP and NIH ODS. Activity adder from NATA 2017 Position Statement on Fluid Replacement.')
+              )
+            ),
+
+            // ──────────── Tab: Status Check ────────────
+            tab === 'status' && h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
+                h('h3', { className: 'text-lg font-black text-slate-800' }, 'The 8-point urine-color check'),
+                h('p', { className: 'text-xs text-slate-700' },
+                  'Look at your urine the next time you use the bathroom. Pick the color closest to what you saw. The Armstrong 8-point scale is widely used in athletic training and clinical hydration assessment.'),
+
+                // Color swatches
+                h('div', { role: 'radiogroup', 'aria-label': 'Urine color', className: 'grid grid-cols-2 md:grid-cols-4 gap-3' },
+                  URINE_COLORS.map(function(c, i) {
+                    var sel = (urineIdx === i);
+                    return h('button', {
+                      key: 'uc-' + i,
+                      onClick: function() { setUrineIdx(i); },
+                      role: 'radio', 'aria-checked': sel ? 'true' : 'false',
+                      'aria-label': c.label + ' — ' + c.status,
+                      className: 'rounded-xl border-2 p-3 text-left transition-all focus:outline-none focus:ring-2 ring-sky-500 ' +
+                        (sel ? 'border-sky-600 ring-2 ring-sky-300 shadow-lg' : 'border-slate-300 hover:border-sky-400')
+                    },
+                      h('div', { style: { width: '100%', height: 36, background: c.hex, borderRadius: 6, border: '1px solid #cbd5e1' }, 'aria-hidden': 'true' }),
+                      h('div', { className: 'text-[11px] font-bold mt-1 text-slate-800' }, c.n + '. ' + c.label),
+                      h('div', { className: 'text-[10px] text-slate-700' }, c.status)
+                    );
+                  })
+                ),
+
+                urineIdx != null && h('div', {
+                  className: 'rounded-xl border-2 p-4 ' +
+                    (urineIdx <= 2 ? 'bg-emerald-50 border-emerald-300' :
+                     urineIdx <= 4 ? 'bg-amber-50 border-amber-300' :
+                     'bg-rose-50 border-rose-300')
+                },
+                  h('div', { className: 'text-sm font-black mb-1' }, URINE_COLORS[urineIdx].label + ' — ' + URINE_COLORS[urineIdx].status),
+                  h('div', { className: 'text-xs text-slate-800 leading-relaxed' }, URINE_COLORS[urineIdx].note)
+                )
+              ),
+
+              // Body-signal checklist (companion to the color check)
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+                h('h3', { className: 'text-base font-black text-slate-800 mb-2' }, 'Other body signals worth tracking'),
+                h('ul', { className: 'space-y-1.5 text-sm text-slate-800 list-disc list-inside' },
+                  h('li', null, 'Thirst is a useful late signal, not an early one — by the time you feel thirsty you are usually already at 1-2% deficit.'),
+                  h('li', null, 'Lightheaded standing up, heart pounding at rest, headache without other cause: classic mild-moderate dehydration in clinical guides.'),
+                  h('li', null, 'Foggy attention, slower math, irritability: documented in studies as effects of mild dehydration in adolescents.'),
+                  h('li', null, 'Dry lips and dry mouth are real signals — but skin "tenting" (slow snap-back) only shows up at moderate-to-severe dehydration.'),
+                  h('li', null, 'Persistent dark urine despite drinking water? See a clinician — could be liver, medication, or blood-related.')
+                ),
+                h('p', { className: 'text-[11px] italic text-slate-700 mt-2' },
+                  'If you find yourself using water to feel "full" or override hunger, that is a body-cue mismatch worth talking about with a trusted adult. NEDA helpline: 1-800-931-2237.')
+              )
+            ),
+
+            // ──────────── Tab: Beverage Compare ────────────
+            tab === 'beverages' && h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+                h('h3', { className: 'text-lg font-black text-slate-800 mb-2' }, 'What is in 8 oz of...'),
+                h('p', { className: 'text-xs text-slate-700 mb-4' },
+                  'Sodium and added sugar matter for hydration efficacy AND for daily nutrient targets. AAP guidance: added sugar under 25 g/day for ages 2-18; sodium under ~2,300 mg/day for adolescents.'),
+
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                  BEVERAGES.map(function(b) {
+                    return h('div', { key: b.id, className: 'bg-slate-50 rounded-xl border-2 border-slate-300 p-4 space-y-2' },
+                      h('div', { className: 'flex items-center gap-2' },
+                        h('span', { 'aria-hidden': 'true', style: { fontSize: 24 } }, b.icon),
+                        h('div', { className: 'text-base font-black text-slate-800' }, b.name)
+                      ),
+                      h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                        h('div', { className: 'rounded-lg bg-white p-2 border border-slate-300' },
+                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, 'Sodium'),
+                          h('div', { className: 'text-sm font-black text-slate-800' }, b.sodium + ' mg')
+                        ),
+                        h('div', { className: 'rounded-lg bg-white p-2 border border-slate-300' },
+                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, 'Sugar'),
+                          h('div', { className: 'text-sm font-black ' + (b.sugar >= 14 ? 'text-rose-700' : 'text-slate-800') }, b.sugar + ' g')
+                        ),
+                        h('div', { className: 'rounded-lg bg-white p-2 border border-slate-300' },
+                          h('div', { className: 'text-[9px] uppercase font-bold text-slate-700' }, 'Caffeine'),
+                          h('div', { className: 'text-sm font-black text-slate-800' }, b.caffeine + ' mg')
+                        )
+                      ),
+                      h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
+                        h('span', { className: 'font-bold' }, 'Hydration: '), b.efficacy
+                      ),
+                      h('div', { className: 'text-xs text-slate-800 leading-relaxed' },
+                        h('span', { className: 'font-bold' }, 'When it fits: '), b.when
+                      ),
+                      h('div', { className: 'text-[10px] italic text-slate-700' }, 'Source: ' + b.source)
+                    );
+                  })
+                )
+              ),
+
+              h('div', { className: 'bg-amber-50 border-2 border-amber-300 rounded-2xl p-4' },
+                h('h4', { className: 'text-sm font-black text-amber-900 mb-1' }, 'A note on energy drinks'),
+                h('p', { className: 'text-xs text-slate-800 leading-relaxed' },
+                  'AAP says outright that energy drinks (Monster, Red Bull, etc.) "should not be consumed by children or adolescents." High caffeine doses, heart-rhythm effects, and added stimulants are the reason. They are not in this comparison because they should not be on this list.')
+              )
+            ),
+
+            // ──────────── Tab: Sweat Rate ────────────
+            tab === 'sweat' && h('div', { className: 'space-y-4' },
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-4' },
+                h('h3', { className: 'text-lg font-black text-slate-800' }, 'How fast do you sweat? (NATA standard)'),
+                h('p', { className: 'text-xs text-slate-700' },
+                  'For student athletes. Weigh yourself before practice, weigh yourself after, log the fluid you drank during, and the duration. The math: 1 kg of weight lost = 1 L of sweat. NATA recommends replacing 100-150% of fluid lost over the next 2-6 hours.'),
+
+                h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                  h('label', { className: 'block' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Weight before (kg)'),
+                    h('input', {
+                      type: 'number', step: '0.1', min: '0', value: sweatBefore,
+                      onChange: function(e) { setSweatBefore(e.target.value); },
+                      placeholder: 'e.g. 65.0',
+                      className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
+                    })
+                  ),
+                  h('label', { className: 'block' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Weight after (kg)'),
+                    h('input', {
+                      type: 'number', step: '0.1', min: '0', value: sweatAfter,
+                      onChange: function(e) { setSweatAfter(e.target.value); },
+                      placeholder: 'e.g. 64.2',
+                      className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
+                    })
+                  ),
+                  h('label', { className: 'block' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Fluid drunk during (mL)'),
+                    h('input', {
+                      type: 'number', step: '50', min: '0', value: sweatFluid,
+                      onChange: function(e) { setSweatFluid(e.target.value); },
+                      placeholder: 'e.g. 500',
+                      className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
+                    })
+                  ),
+                  h('label', { className: 'block' },
+                    h('span', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700' }, 'Duration (minutes)'),
+                    h('input', {
+                      type: 'number', step: '5', min: '0', value: sweatMins,
+                      onChange: function(e) { setSweatMins(e.target.value); },
+                      placeholder: 'e.g. 90',
+                      className: 'mt-1 w-full px-3 py-2 rounded-lg border border-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 ring-sky-500'
+                    })
+                  )
+                ),
+
+                !isNaN(sweatRateMlHr) && h('div', { className: 'rounded-xl border-2 border-sky-300 bg-sky-50 p-4 space-y-2' },
+                  h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+                    h(StatCard, { label: 'Fluid lost', value: (sweatLossKg * 1000).toFixed(0) + ' mL', color: 'text-sky-800' }),
+                    h(StatCard, { label: 'Sweat rate', value: sweatRateMlHr + ' mL/hr', color: 'text-sky-800' }),
+                    h(StatCard, { label: 'Replace target', value: sweatReplaceTarget + ' mL', color: 'text-emerald-700' })
+                  ),
+                  h('p', { className: 'text-xs text-slate-800 leading-relaxed' },
+                    sweatRateMlHr < 600 ? 'Lower-end sweat rate — typical for cool weather or moderate effort.' :
+                    sweatRateMlHr < 1200 ? 'Moderate sweat rate — typical practice intensity. Sip steadily during, replace fully after.' :
+                    'High sweat rate — common in heat or vigorous training. Plan electrolytes (sports drink or salty snack) plus water. NATA flags rates above 2 L/hr as a heat-illness risk if not replaced.'
+                  ),
+                  h('p', { className: 'text-[11px] italic text-slate-700' },
+                    'Replace target uses NATA\'s 125% recommendation (midpoint of the 100-150% guideline) to account for ongoing post-exercise sweat and urine loss.')
+                ),
+
+                h('p', { className: 'text-[11px] text-slate-700 italic mt-2 leading-relaxed' },
+                  'Sources: NATA 2017 Position Statement on Fluid Replacement; ACSM Position Stand on Exercise and Fluid Replacement (2007).')
+              )
+            ),
+
+            // Teacher Notes
+            h(TeacherNotes, {
+              standards: ['NGSS HS-LS1-3 (homeostasis)', 'CTE Health Science / Sports Med fluid balance', 'NATA Athletic Training Education Competencies'],
+              discussion: [
+                'How is the AAP recommendation against energy drinks different from a recommendation against sports drinks? Why?',
+                'A football lineman in August Maine practice and a cross-country runner in October look very different on the sweat-rate calculator. Walk through how each should adjust.',
+                'Why is "drink to thirst" enough advice for most school days but not enough for a two-a-day practice in heat?',
+                'What signals besides urine color tell you (or your friend) that hydration is off?',
+                'When does a hydration habit start crossing into something that should be talked about with a counselor or family member?'
+              ],
+              extensions: [
+                'Have students log their own sweat rate after a real practice or PE class and bring the numbers in.',
+                'Compare the cost-per-mL of water vs sports drink vs flavored seltzer. Which is the better day-to-day choice?',
+                'Cross-reference with the Maine Day Builder: which Maine foods contribute meaningfully to your fluid baseline?',
+                'Read the AAP 2011 sports/energy drink Clinical Report (open access on Pediatrics) and identify the three claims you found most surprising.'
+              ]
+            })
+          )
+        );
+      }
+
+      // ─────────────────────────────────────────────────────
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
       if (view === 'macroLab') return h(MacronutrientLab);
@@ -3999,6 +4442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
       if (view === 'careerPaths') return h(CareerPathwaysNutrition);
       if (view === 'maineDay') return h(MaineDayBuilder);
       if (view === 'deficiencyDetective') return h(DeficiencyDetective);
+      if (view === 'hydrationLab') return h(HydrationLab);
       return h(MainMenu);
     }
   });
