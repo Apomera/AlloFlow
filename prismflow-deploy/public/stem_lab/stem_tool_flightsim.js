@@ -8000,6 +8000,118 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var acX = W / 2, acY = H * 0.6;
             gfx.translate(acX, acY);
             gfx.rotate(ctrl.bank * Math.PI / 180 * 0.02); // Subtle bank
+
+            // ── Helicopter sprite (chase cam) ──
+            // Different silhouette than fixed-wing: short fuselage + tail
+            // boom + main rotor disk above + tail rotor + skids. Rotor
+            // disk drawn as wide blur ellipse with two crossing blade
+            // hints rotating at high frequency.
+            if (currentAC && currentAC.isHelicopter) {
+              // Shadow
+              gfx.fillStyle = 'rgba(0,0,0,0.18)';
+              gfx.beginPath(); gfx.ellipse(2, 14, 28, 5, 0, 0, Math.PI * 2); gfx.fill();
+              // Fuselage — rounded box with a window slit at front
+              gfx.fillStyle = '#1e3a5f';
+              gfx.beginPath(); gfx.ellipse(-2, 0, 16, 7, 0, 0, Math.PI * 2); gfx.fill();
+              // Cockpit windscreen — blue-tinted window at the front
+              gfx.fillStyle = 'rgba(135,180,220,0.85)';
+              gfx.beginPath(); gfx.ellipse(8, -1, 6, 4.5, 0, 0, Math.PI * 2); gfx.fill();
+              gfx.strokeStyle = 'rgba(20,30,45,0.7)';
+              gfx.lineWidth = 0.6;
+              gfx.beginPath(); gfx.ellipse(8, -1, 6, 4.5, 0, 0, Math.PI * 2); gfx.stroke();
+              // Tail boom — long rectangle extending back (left side from chase cam)
+              gfx.fillStyle = '#1e3a5f';
+              gfx.fillRect(-32, -2, 18, 3.5);
+              // Vertical fin at tail tip
+              gfx.fillStyle = '#64748b';
+              gfx.beginPath();
+              gfx.moveTo(-32, -2); gfx.lineTo(-36, -8); gfx.lineTo(-32, -1); gfx.closePath();
+              gfx.fill();
+              // Tail rotor — small vertical blur disk at the tail end
+              var trBlurAlpha = 0.35 + ctrl.throttle * 0.25;
+              gfx.fillStyle = 'rgba(45,55,70,' + trBlurAlpha + ')';
+              gfx.beginPath(); gfx.ellipse(-37, -1, 1.2, 4.5, 0, 0, Math.PI * 2); gfx.fill();
+              // Skids — twin horizontal lines beneath the fuselage
+              gfx.strokeStyle = '#475569';
+              gfx.lineWidth = 1.5;
+              gfx.beginPath();
+              gfx.moveTo(-12, 9); gfx.lineTo(8, 9);
+              gfx.moveTo(-10, 11); gfx.lineTo(6, 11);
+              gfx.stroke();
+              // Skid struts (vertical connectors)
+              gfx.lineWidth = 0.8;
+              [-8, 0, 4].forEach(function(sx) {
+                gfx.beginPath();
+                gfx.moveTo(sx, 5); gfx.lineTo(sx, 9);
+                gfx.stroke();
+              });
+              // Main rotor disk — wide horizontal blur ellipse above body
+              var rotorAlpha = 0.32 + ctrl.throttle * 0.15;
+              gfx.fillStyle = 'rgba(45,55,70,' + rotorAlpha + ')';
+              gfx.beginPath(); gfx.ellipse(-2, -10, 38, 1.8, 0, 0, Math.PI * 2); gfx.fill();
+              // Two crossing blade hints, rotating fast
+              var bladeAng = timeRef.current * 14;
+              gfx.strokeStyle = 'rgba(45,55,70,0.45)';
+              gfx.lineWidth = 0.8;
+              gfx.beginPath();
+              gfx.moveTo(-2 + Math.cos(bladeAng) * 38, -10 + Math.sin(bladeAng) * 1.4);
+              gfx.lineTo(-2 - Math.cos(bladeAng) * 38, -10 - Math.sin(bladeAng) * 1.4);
+              gfx.moveTo(-2 + Math.cos(bladeAng + Math.PI / 2) * 38, -10 + Math.sin(bladeAng + Math.PI / 2) * 1.4);
+              gfx.lineTo(-2 - Math.cos(bladeAng + Math.PI / 2) * 38, -10 - Math.sin(bladeAng + Math.PI / 2) * 1.4);
+              gfx.stroke();
+              // Rotor mast (small vertical pillar from body to rotor)
+              gfx.fillStyle = '#334155';
+              gfx.fillRect(-3, -10, 2, 7);
+              // Nav lights blinking (red/green on each side)
+              if (Math.sin(timeRef.current * 3) > 0) {
+                gfx.fillStyle = '#ef4444'; gfx.beginPath(); gfx.arc(-2, -7, 1.4, 0, Math.PI * 2); gfx.fill(); // Top red beacon
+              }
+              if (timeRef.current % 1 > 0.92) {
+                gfx.fillStyle = 'rgba(255,255,255,0.9)';
+                gfx.beginPath(); gfx.arc(0, 6, 2, 0, Math.PI * 2); gfx.fill();
+              }
+
+              // ── Hoist cable (only during hoist phase of rescue) ──
+              // Renders a thin cable lowering from the helicopter belly
+              // toward the ground when the rescue is in progress and
+              // hovering. Recovery animation: pulled up after success.
+              var rescueR = d.rescue;
+              if (rescueR && rescueR.active && !rescueR.completed) {
+                var hoistT = rescueR.hoistTime || 0;
+                if (hoistT > 0.05 || rescueR.recovered) {
+                  // Cable length: extends down 0..40px during hoist, retracts after recovery
+                  var cableLen;
+                  if (rescueR.recovered) {
+                    var ageR = (timeRef.current - (rescueR.recoveredAt || timeRef.current));
+                    cableLen = Math.max(0, 40 - ageR * 30); // retract over ~1.3s
+                  } else {
+                    cableLen = (hoistT / 5) * 40;
+                  }
+                  if (cableLen > 0) {
+                    gfx.strokeStyle = 'rgba(40,40,40,0.85)';
+                    gfx.lineWidth = 0.8;
+                    gfx.beginPath();
+                    gfx.moveTo(0, 6);
+                    gfx.lineTo(0, 6 + cableLen);
+                    gfx.stroke();
+                    // Hook / basket at end
+                    gfx.fillStyle = '#fbbf24';
+                    gfx.fillRect(-2, 6 + cableLen, 4, 2.5);
+                    // Survivor figure once recovered (ascending with cable)
+                    if (rescueR.recovered && cableLen > 5) {
+                      gfx.fillStyle = '#fef3c7';
+                      gfx.beginPath();
+                      gfx.arc(0, 6 + cableLen + 4, 1.5, 0, Math.PI * 2); // head
+                      gfx.fill();
+                      gfx.fillStyle = '#dc2626';
+                      gfx.fillRect(-1.5, 6 + cableLen + 5, 3, 3); // life vest
+                    }
+                  }
+                }
+              }
+
+              gfx.restore();
+            } else {
             // Shadow on ground
             gfx.fillStyle = 'rgba(0,0,0,0.15)';
             gfx.beginPath(); gfx.ellipse(2, 12, 30, 5, 0, 0, Math.PI * 2); gfx.fill();
@@ -8072,6 +8184,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               gfx.beginPath(); gfx.arc(0, 4, 2.5, 0, Math.PI * 2); gfx.fill();
             }
             gfx.restore();
+            } // end fixed-wing else
           }
 
           // (dayNight was computed at the top of the render block so drawTerrain
