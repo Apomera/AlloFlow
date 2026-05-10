@@ -9130,28 +9130,163 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // ═══ DRONE FLIGHT UI ═══
             viewMode === 'drone' && h('div', { className: 'space-y-3' },
               !droneFlightActive
-                ? h('div', { className: 'rounded-2xl border-2 p-8 text-center space-y-4 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-600/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300') },
-                    h('div', { className: 'text-5xl mb-2' }, '🚀'),
-                    h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Drone Nuptial Flight'),
-                    h('p', { className: 'text-xs max-w-md mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
-                      'Experience life as a drone bee. Fly to the Drone Congregation Area (DCA) and find a queen to mate with. Only 1 in 1,000 succeeds — can you?'),
-                    droneHighScore > 0 && h('div', { className: 'text-xs font-bold ' + (dk ? 'text-amber-400' : 'text-amber-600') }, '🏆 High Score: ' + droneHighScore),
-                    h('div', { className: 'flex gap-2 justify-center' },
+                ? h('div', { className: 'rounded-2xl border-2 p-6 space-y-4 ' + (dk ? 'bg-gradient-to-b from-indigo-900/40 to-purple-900/30 border-indigo-600/50' : 'bg-gradient-to-b from-indigo-50 to-purple-50 border-indigo-300') },
+                    // ── Title + science blurb ──
+                    h('div', { className: 'text-center space-y-2' },
+                      h('div', { className: 'text-5xl mb-1' }, '🚀'),
+                      h('h3', { className: 'text-lg font-black ' + (dk ? 'text-indigo-200' : 'text-indigo-900') }, 'Drone Nuptial Flight'),
+                      h('p', { className: 'text-xs max-w-2xl mx-auto leading-relaxed ' + (dk ? 'text-indigo-300' : 'text-indigo-700') },
+                        'You are a male drone bee. Your one job is to fly to the Drone Congregation Area (a sky cluster of 200+ drones from miles around), find a virgin queen on her nuptial flight, and mate with her in midair. In real life only 1 in 1,000 drones succeeds. Mating is fatal for the drone (the endophallus tears off inside the queen). This is a one-shot biological lottery, and we are flying it.'),
+                      droneHighScore > 0 && h('div', { className: 'inline-block text-xs font-bold px-3 py-1 rounded-full ' + (dk ? 'bg-amber-900/40 text-amber-300 border border-amber-600/50' : 'bg-amber-100 text-amber-800 border border-amber-300') }, '🏆 High Score: ' + droneHighScore)
+                    ),
+                    // ── Controls reference ──
+                    h('div', { className: 'rounded-xl p-3 ' + (dk ? 'bg-slate-900/60 border border-indigo-700/40' : 'bg-white/80 border border-indigo-200') },
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, '🕹 Controls'),
+                      h('div', { className: 'grid grid-cols-2 md:grid-cols-3 gap-2 text-[11px]' },
+                        [
+                          { keys: '↑ / W',  desc: 'Thrust forward' },
+                          { keys: '↓ / S',  desc: 'Brake / reverse' },
+                          { keys: '← → / A D', desc: 'Yaw left / right' },
+                          { keys: 'Space',  desc: 'Pitch up (climb)' },
+                          { keys: 'Shift',  desc: 'Pitch down (dive)' },
+                          { keys: 'Click canvas first', desc: 'Then keys are captured' }
+                        ].map(function(c, i) {
+                          return h('div', { key: i, className: 'flex items-center gap-2 rounded p-1.5 ' + (dk ? 'bg-slate-800' : 'bg-slate-50') },
+                            h('span', {
+                              style: {
+                                fontFamily: 'monospace', fontWeight: 700, fontSize: 10,
+                                padding: '2px 6px',
+                                borderRadius: 4,
+                                background: dk ? '#0f172a' : '#ffffff',
+                                border: '1px solid ' + (dk ? '#475569' : '#cbd5e1'),
+                                color: dk ? '#fbbf24' : '#92400e',
+                                whiteSpace: 'nowrap'
+                              }
+                            }, c.keys),
+                            h('span', { className: dk ? 'text-slate-300' : 'text-slate-700' }, c.desc)
+                          );
+                        })
+                      )
+                    ),
+                    // ── Goals panel ──
+                    h('div', { className: 'rounded-xl p-3 ' + (dk ? 'bg-slate-900/60 border border-amber-700/40' : 'bg-amber-50 border border-amber-200') },
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 ' + (dk ? 'text-amber-300' : 'text-amber-800') }, '🎯 Mission goals'),
+                      h('ul', { className: 'list-disc list-inside text-[11px] leading-relaxed space-y-1 ' + (dk ? 'text-slate-200' : 'text-slate-700') },
+                        h('li', null, h('strong', null, 'Reach the DCA'), ' (~800m to 1,800m away depending on difficulty). Watch the altitude bar marker labelled DCA.'),
+                        h('li', null, h('strong', null, 'Mate with a virgin queen'), ' once you arrive. +200 points. Game over for the drone (this is biologically realistic).'),
+                        h('li', null, h('strong', null, 'Collect 5 pollen flowers'), ' along the way for bonus points and free energy.'),
+                        h('li', null, h('strong', null, 'Ride thermals'), ' to gain altitude without burning energy. Look for shimmering air columns.'),
+                        h('li', null, h('strong', null, 'Avoid predator birds'), ' and obstacles (trees, poles, buildings). Birds will dive at you.'),
+                        h('li', null, h('strong', null, 'Beat the timer'), '. Energy depletes too. Manage both.')
+                      )
+                    ),
+                    // ── Phase preview ──
+                    h('div', { className: 'grid grid-cols-1 md:grid-cols-4 gap-2' },
                       [
-                        { id: 'easy', label: '🌱 Easy', col: 'green' },
-                        { id: 'normal', label: '🐝 Normal', col: 'amber' },
-                        { id: 'hard', label: '🔥 Hard', col: 'red' }
-                      ].map(function(diff) {
-                        return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
-                          className: 'px-4 py-3 rounded-xl font-bold text-sm shadow-lg ' +
-                            (dk ? 'bg-gradient-to-b from-' + diff.col + '-800 to-' + diff.col + '-900 text-' + diff.col + '-200 border border-' + diff.col + '-700/50'
-                                 : 'bg-gradient-to-b from-' + diff.col + '-50 to-' + diff.col + '-100 text-' + diff.col + '-800 border border-' + diff.col + '-300')
-                        }, diff.label);
-                      })))
-                : h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '500px', boxShadow: '0 0 20px rgba(99,102,241,0.15)' } },
-                    h('canvas', { ref: _droneCvRef, role: 'img', 'aria-label': 'Drone flight simulation — use arrow keys to fly', style: { width: '100%', height: '100%', display: 'block' } }),
-                    h('button', { onClick: function() { updAll({ drone: Object.assign({}, droneData, { active: false }) }); }, style: { position: 'absolute', top: '8px', left: '8px', zIndex: 10 },
-                      className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold bg-red-600/80 text-white hover:bg-red-600', 'aria-label': 'End flight' }, '✕ End Flight'))
+                        { p: 'LAUNCH',         icon: '🚀', goal: 'Build speed and climb. Energy is full.',                                 color: '#22c55e' },
+                        { p: 'CRUISE',         icon: '🐝', goal: 'Collect pollen, ride thermals, navigate around birds and obstacles.',  color: '#0ea5e9' },
+                        { p: 'FINAL APPROACH', icon: '🎯', goal: 'Approach the queen at the DCA. Match her altitude and bearing.',       color: '#f59e0b' },
+                        { p: 'MATING',         icon: '👑', goal: 'Contact the queen. +200 points. The drone\'s biological purpose ends.', color: '#a855f7' }
+                      ].map(function(ph) {
+                        return h('div', { key: ph.p,
+                          className: 'rounded-xl p-2.5 border-2',
+                          style: {
+                            borderColor: ph.color + '88',
+                            background: dk
+                              ? 'linear-gradient(135deg,' + ph.color + '22 0%,rgba(15,23,42,0.5) 100%)'
+                              : 'linear-gradient(135deg,' + ph.color + '1a 0%,rgba(255,255,255,0.6) 100%)',
+                            boxShadow: '0 0 12px ' + ph.color + '22'
+                          }
+                        },
+                          h('div', { className: 'flex items-center gap-1 mb-1' },
+                            h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, ph.icon),
+                            h('span', { className: 'text-[11px] font-black', style: { color: ph.color } }, ph.p)
+                          ),
+                          h('p', { className: 'text-[10px] leading-tight ' + (dk ? 'text-slate-300' : 'text-slate-700') }, ph.goal)
+                        );
+                      })
+                    ),
+                    // ── Difficulty selector ──
+                    h('div', null,
+                      h('div', { className: 'text-[11px] font-black uppercase tracking-wider mb-2 text-center ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Pick a difficulty to launch'),
+                      h('div', { className: 'flex gap-2 justify-center flex-wrap' },
+                        [
+                          { id: 'easy',   label: '🌱 Easy',   col: 'green',  blurb: '150s · 800m · 1 bird · 120 energy' },
+                          { id: 'normal', label: '🐝 Normal', col: 'amber',  blurb: '110s · 1,200m · 3 birds · 100 energy' },
+                          { id: 'hard',   label: '🔥 Hard',   col: 'red',    blurb: '75s · 1,800m · 5 birds · 80 energy' }
+                        ].map(function(diff) {
+                          return h('button', { key: diff.id, onClick: function() { startDroneFlight(diff.id); },
+                            className: 'flex-1 max-w-[180px] px-4 py-3 rounded-xl font-bold text-sm shadow-lg transition-all hover:scale-105 ' +
+                              (dk ? 'bg-gradient-to-b from-' + diff.col + '-800 to-' + diff.col + '-900 text-' + diff.col + '-200 border border-' + diff.col + '-700/50'
+                                   : 'bg-gradient-to-b from-' + diff.col + '-50 to-' + diff.col + '-100 text-' + diff.col + '-800 border border-' + diff.col + '-300')
+                          },
+                            h('div', null, diff.label),
+                            h('div', { className: 'text-[9px] font-mono mt-1 opacity-80' }, diff.blurb)
+                          );
+                        })
+                      )
+                    )
+                  )
+                : h('div', { className: 'space-y-3' },
+                    // ── Canvas ──
+                    h('div', { className: 'relative rounded-2xl overflow-hidden border-2 ' + (dk ? 'border-indigo-600/50' : 'border-indigo-400'), style: { height: '500px', boxShadow: '0 0 24px rgba(99,102,241,0.20), 0 0 0 1px rgba(99,102,241,0.30)' } },
+                      h('canvas', {
+                        ref: _droneCvRef, role: 'img',
+                        'aria-label': 'Drone nuptial flight in progress. Difficulty: ' + droneDifficulty + '. Use arrow keys to fly toward the Drone Congregation Area.',
+                        tabIndex: 0,
+                        style: { width: '100%', height: '100%', display: 'block', cursor: 'crosshair', outline: 'none' }
+                      }),
+                      // End Flight button (top-right so it doesn't overlap the score HUD top-left)
+                      h('button', {
+                        onClick: function() { updAll({ drone: Object.assign({}, droneData, { active: false }) }); },
+                        style: { position: 'absolute', top: '10px', right: '10px', zIndex: 10 },
+                        className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all bg-red-600/85 text-white hover:bg-red-700 backdrop-blur',
+                        'aria-label': 'End flight'
+                      }, '✕ End Flight')
+                    ),
+                    // ── Quick controls reference (always visible during flight) ──
+                    h('div', {
+                      className: 'rounded-xl border p-3 ' + (dk ? 'bg-slate-900/60 border-indigo-700/40' : 'bg-indigo-50 border-indigo-200'),
+                      style: { boxShadow: dk ? '0 4px 12px rgba(7,11,24,0.4)' : '0 2px 10px rgba(15,23,42,0.06)' }
+                    },
+                      h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
+                        h('div', { className: 'flex items-center gap-2' },
+                          h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, '🕹'),
+                          h('span', { className: 'text-[11px] font-black uppercase tracking-wider ' + (dk ? 'text-indigo-300' : 'text-indigo-800') }, 'Flight controls'),
+                          h('span', { className: 'text-[10px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') }, '(' + droneDifficulty + ')')
+                        ),
+                        h('div', { className: 'flex flex-wrap gap-2' },
+                          [
+                            { k: '↑↓', l: 'Thrust' },
+                            { k: '←→', l: 'Turn'   },
+                            { k: 'Space', l: 'Climb'  },
+                            { k: 'Shift', l: 'Dive'   }
+                          ].map(function(c, i) {
+                            return h('span', { key: i, className: 'inline-flex items-center gap-1' },
+                              h('span', {
+                                style: {
+                                  fontFamily: 'monospace', fontWeight: 700, fontSize: 10,
+                                  padding: '2px 6px', borderRadius: 4,
+                                  background: dk ? '#0f172a' : '#ffffff',
+                                  border: '1px solid ' + (dk ? '#475569' : '#cbd5e1'),
+                                  color: dk ? '#fbbf24' : '#92400e'
+                                }
+                              }, c.k),
+                              h('span', { className: 'text-[11px] font-bold ' + (dk ? 'text-slate-300' : 'text-slate-700') }, c.l)
+                            );
+                          })
+                        ),
+                        h('button', {
+                          onClick: function() { startDroneFlight(droneDifficulty); },
+                          className: 'px-3 py-1 rounded-lg text-[11px] font-bold transition-all ' + (dk ? 'bg-indigo-700 text-white hover:bg-indigo-600' : 'bg-indigo-600 text-white hover:bg-indigo-700'),
+                          'aria-label': 'Restart flight at current difficulty'
+                        }, '🔁 Restart')
+                      ),
+                      h('div', { className: 'mt-2 text-[10px] italic ' + (dk ? 'text-slate-400' : 'text-slate-500') },
+                        'Tip: click on the flight scene first so the keyboard sends to the drone, not the page.'
+                      )
+                    )
+                  )
             ),
             // SUBSPECIES PICKER (day 0) — IMPORTED FROM ORIGINAL (line 3295 in old file)
             // Stock picker collapses to compact summary once student has picked (or accepted default).
