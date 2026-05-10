@@ -3302,7 +3302,7 @@
                 )
               );
         })()
-    ))))));
+    )))));
 }
 
   window.AlloModules = window.AlloModules || {};
