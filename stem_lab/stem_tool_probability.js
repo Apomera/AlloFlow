@@ -741,7 +741,7 @@ var d = (labToolData.probability) || {};
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
 
-              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday']].map(([m, label]) =>
+              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall']].map(([m, label]) =>
 
                 React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: () => { if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; } upd('mode', m); upd('results', []); upd('trials', 0); upd('convergenceHistory', []); upd('lastResult', null); upd('_mbRemaining', null); upd('_piPoints', null); upd('_autoRunning', false); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
@@ -1122,6 +1122,188 @@ var d = (labToolData.probability) || {};
 
 
             // ── Birthday Problem Calculator ──
+            // ── Monty Hall (canonical counter-intuitive probability) ──
+            // State machine: pick → host-reveal → stay/switch → outcome.
+            // Stats tracked separately for stay vs switch, so the 1/3-vs-2/3
+            // gap emerges visibly across runs. Auto-run does 500 silent trials
+            // of each strategy for fast statistical proof.
+            d.mode === 'monty' && (function() {
+              var m = d.monty || { stage: 'pick', prizeDoor: null, picked: null, revealed: null, finalChoice: null, won: false };
+              var ms = d.montyStats || { switchWins: 0, switchN: 0, stayWins: 0, stayN: 0 };
+              // Lazy-init the round if no prize is set
+              if (m.prizeDoor == null) {
+                setTimeout(function() {
+                  upd('monty', { stage: 'pick', prizeDoor: Math.floor(Math.random() * 3), picked: null, revealed: null, finalChoice: null, won: false });
+                }, 0);
+                return React.createElement('div', { className: 'text-center text-slate-500 p-6 text-sm' }, 'Loading Monty Hall…');
+              }
+
+              function newRound() {
+                sfxProbClick();
+                upd('monty', { stage: 'pick', prizeDoor: Math.floor(Math.random() * 3), picked: null, revealed: null, finalChoice: null, won: false });
+              }
+              function pickDoor(idx) {
+                if (m.stage !== 'pick') return;
+                sfxProbClick();
+                // Host opens a door that is NOT the player's pick AND NOT the prize
+                var candidates = [0, 1, 2].filter(function(x) { return x !== idx && x !== m.prizeDoor; });
+                var reveal = candidates[Math.floor(Math.random() * candidates.length)];
+                upd('monty', Object.assign({}, m, { picked: idx, revealed: reveal, stage: 'choice' }));
+              }
+              function decide(action) {
+                if (m.stage !== 'choice') return;
+                var finalChoice = action === 'stay'
+                  ? m.picked
+                  : [0, 1, 2].filter(function(x) { return x !== m.picked && x !== m.revealed; })[0];
+                var won = finalChoice === m.prizeDoor;
+                if (won) sfxProbSuccess(); else sfxProbClick();
+                // Update per-strategy stats
+                var nextStats = Object.assign({}, ms);
+                if (action === 'stay') {
+                  nextStats.stayN = (nextStats.stayN || 0) + 1;
+                  if (won) nextStats.stayWins = (nextStats.stayWins || 0) + 1;
+                } else {
+                  nextStats.switchN = (nextStats.switchN || 0) + 1;
+                  if (won) nextStats.switchWins = (nextStats.switchWins || 0) + 1;
+                }
+                upd('monty', Object.assign({}, m, { stage: 'reveal', finalChoice: finalChoice, won: won }));
+                upd('montyStats', nextStats);
+                upd('totalTrials', (d.totalTrials || 0) + 1);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { monty: true }));
+              }
+              function autoRun(n) {
+                sfxProbClick();
+                // Simulate n rounds with BOTH strategies silently. Each round
+                // has its own random prize + initial pick + host reveal, then
+                // we evaluate stay-vs-switch on the SAME scenario for fairness.
+                var nextStats = Object.assign({}, ms);
+                for (var i = 0; i < n; i++) {
+                  var prize = Math.floor(Math.random() * 3);
+                  var pick = Math.floor(Math.random() * 3);
+                  // Strategy: STAY
+                  nextStats.stayN++;
+                  if (pick === prize) nextStats.stayWins++;
+                  // Strategy: SWITCH
+                  // Host opens any non-pick, non-prize. Player switches to the remaining door.
+                  // After switch: wins iff initial pick was wrong (prize ≠ pick).
+                  nextStats.switchN++;
+                  if (pick !== prize) nextStats.switchWins++;
+                }
+                upd('montyStats', nextStats);
+                upd('totalTrials', (d.totalTrials || 0) + n * 2);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { monty: true }));
+                if (typeof addToast === 'function') addToast('Simulated ' + n + ' rounds of each strategy', 'success');
+              }
+              function resetStats() {
+                sfxProbClick();
+                upd('montyStats', { switchWins: 0, switchN: 0, stayWins: 0, stayN: 0 });
+              }
+
+              var stayPct = ms.stayN > 0 ? Math.round(ms.stayWins / ms.stayN * 100) : 0;
+              var switchPct = ms.switchN > 0 ? Math.round(ms.switchWins / ms.switchN * 100) : 0;
+
+              function door(idx) {
+                var isPicked = m.picked === idx;
+                var isRevealed = m.revealed === idx;
+                var isFinal = m.stage === 'reveal' && m.finalChoice === idx;
+                var isWinDoor = m.stage === 'reveal' && m.prizeDoor === idx;
+                var showOpen = isRevealed || (m.stage === 'reveal');
+                // Door color/state
+                var bg, label, emoji;
+                if (showOpen) {
+                  if (idx === m.prizeDoor) { bg = 'linear-gradient(180deg, #fef3c7, #fbbf24)'; emoji = '🚗'; label = 'Prize!'; }
+                  else { bg = 'linear-gradient(180deg, #e5e7eb, #9ca3af)'; emoji = '🐐'; label = 'Goat'; }
+                } else {
+                  bg = isPicked ? 'linear-gradient(180deg, #c4b5fd, #8b5cf6)' : 'linear-gradient(180deg, #a5b4fc, #6366f1)';
+                  emoji = '🚪'; label = 'Door ' + (idx + 1);
+                }
+                var clickable = m.stage === 'pick';
+                var borderColor = isFinal ? (m.won ? '#16a34a' : '#dc2626') : isPicked ? '#7c3aed' : '#475569';
+                return React.createElement('button', {
+                  key: 'door-' + idx,
+                  onClick: clickable ? function() { pickDoor(idx); } : null,
+                  disabled: !clickable && m.stage !== 'reveal',
+                  'aria-label': 'Door ' + (idx + 1) + (isPicked ? ', your pick' : '') + (isRevealed ? ', revealed as a goat' : '') + (isFinal ? (m.won ? ', your final choice — you won!' : ', your final choice — you lost') : ''),
+                  className: 'relative flex flex-col items-center justify-center rounded-xl transition-transform ' + (clickable ? 'hover:scale-105 cursor-pointer' : 'cursor-default'),
+                  style: {
+                    width: '110px', height: '170px', background: bg,
+                    border: '4px solid ' + borderColor,
+                    boxShadow: isFinal ? '0 0 24px ' + (m.won ? 'rgba(34,197,94,0.6)' : 'rgba(220,38,38,0.6)') : '0 6px 12px rgba(0,0,0,0.15)'
+                  }
+                },
+                  React.createElement('div', { style: { fontSize: '52px', lineHeight: 1 } }, emoji),
+                  React.createElement('div', { style: { marginTop: '8px', fontSize: '13px', fontWeight: 700, color: '#0f172a', textShadow: '0 1px 2px rgba(255,255,255,0.7)' } }, label),
+                  isPicked && !isFinal && React.createElement('div', { style: { position: 'absolute', top: '-12px', right: '-8px', background: '#7c3aed', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 800 } }, 'YOUR PICK'),
+                  isFinal && React.createElement('div', { style: { position: 'absolute', top: '-12px', right: '-8px', background: m.won ? '#16a34a' : '#dc2626', color: '#fff', padding: '2px 8px', borderRadius: '10px', fontSize: '10px', fontWeight: 800 } }, m.won ? 'WIN ✓' : 'LOSS ✗')
+                );
+              }
+
+              return React.createElement('div', { className: 'rounded-xl p-4 mb-4', style: { background: 'linear-gradient(135deg, #312e81 0%, #6366f1 100%)', color: 'white' } },
+                React.createElement('div', { className: 'text-center mb-3' },
+                  React.createElement('div', { className: 'text-lg font-bold' }, '🚪 The Monty Hall Problem'),
+                  React.createElement('div', { className: 'text-[11px] text-indigo-100 mt-1 italic max-w-xl mx-auto' }, 'Behind one door: a prize. Behind two: goats. Pick a door, the host opens a goat-door, then you choose: stay or switch?')
+                ),
+                // Stage instruction
+                React.createElement('div', { className: 'text-center mb-3 text-sm font-bold' },
+                  m.stage === 'pick' && '👉 Pick one of the three doors',
+                  m.stage === 'choice' && '🤔 Stay with your pick, or switch to the remaining closed door?',
+                  m.stage === 'reveal' && (m.won
+                    ? React.createElement('span', { className: 'text-emerald-200' }, '🎉 You ' + (m.finalChoice === m.picked ? 'STAYED' : 'SWITCHED') + ' and won!')
+                    : React.createElement('span', { className: 'text-rose-200' }, '💔 You ' + (m.finalChoice === m.picked ? 'STAYED' : 'SWITCHED') + ' and missed. The prize was behind Door ' + (m.prizeDoor + 1) + '.'))
+                ),
+                // Doors row
+                React.createElement('div', { className: 'flex justify-center items-center gap-4 mb-3' }, [door(0), door(1), door(2)]),
+                // Action buttons
+                React.createElement('div', { className: 'flex justify-center gap-2 mb-4' },
+                  m.stage === 'choice' && [
+                    React.createElement('button', { key: 'stay', onClick: function() { decide('stay'); }, className: 'px-4 py-2 rounded-lg font-bold bg-slate-200 text-slate-800 hover:bg-slate-100 focus:ring-2 focus:ring-white focus:outline-none' }, '🛡 Stay'),
+                    React.createElement('button', { key: 'switch', onClick: function() { decide('switch'); }, className: 'px-4 py-2 rounded-lg font-bold bg-amber-400 text-amber-900 hover:bg-amber-300 focus:ring-2 focus:ring-white focus:outline-none' }, '🔄 Switch')
+                  ],
+                  m.stage === 'reveal' && React.createElement('button', { onClick: newRound, className: 'px-5 py-2 rounded-lg font-bold bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-2 focus:ring-white focus:outline-none' }, '↻ Play another round')
+                ),
+                // Strategy stats — side by side comparison
+                (ms.stayN > 0 || ms.switchN > 0) && React.createElement('div', { className: 'rounded-lg p-3 bg-white/10 border border-white/20' },
+                  React.createElement('div', { className: 'text-[10px] font-bold uppercase tracking-wider text-indigo-100 mb-2 text-center' }, '📊 Strategy Win Rates'),
+                  React.createElement('div', { className: 'grid grid-cols-2 gap-3 text-center' },
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-xs font-bold text-slate-200' }, '🛡 Stay'),
+                      React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: stayPct >= 50 ? '#fde047' : '#fff' } }, stayPct + '%'),
+                      React.createElement('div', { className: 'text-[10px] text-indigo-200' }, ms.stayWins + ' wins / ' + ms.stayN + ' trials'),
+                      React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
+                        React.createElement('div', { className: 'h-full bg-slate-300', style: { width: stayPct + '%' } })
+                      )
+                    ),
+                    React.createElement('div', null,
+                      React.createElement('div', { className: 'text-xs font-bold text-amber-200' }, '🔄 Switch'),
+                      React.createElement('div', { className: 'text-2xl font-bold mt-1', style: { color: switchPct >= 50 ? '#fde047' : '#fff' } }, switchPct + '%'),
+                      React.createElement('div', { className: 'text-[10px] text-amber-100' }, ms.switchWins + ' wins / ' + ms.switchN + ' trials'),
+                      React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
+                        React.createElement('div', { className: 'h-full bg-amber-400', style: { width: switchPct + '%' } })
+                      )
+                    )
+                  ),
+                  (ms.stayN + ms.switchN) >= 30 && React.createElement('div', { className: 'text-[10px] text-center mt-2 italic text-indigo-100' },
+                    'Math says: Stay wins ≈ 1/3 (33%). Switch wins ≈ 2/3 (67%). With enough trials, the math wins out.'
+                  )
+                ),
+                // Auto-run row + reset
+                React.createElement('div', { className: 'flex flex-wrap gap-2 justify-center mt-3' },
+                  [100, 500, 1000].map(function(n) {
+                    return React.createElement('button', {
+                      key: 'auto-' + n,
+                      onClick: function() { autoRun(n); },
+                      className: 'px-3 py-1.5 rounded-md text-[11px] font-bold bg-white/15 hover:bg-white/25 text-white focus:ring-2 focus:ring-white focus:outline-none',
+                      'aria-label': 'Simulate ' + n + ' rounds of each strategy'
+                    }, '⚡ +' + n + ' of each');
+                  }),
+                  (ms.stayN > 0 || ms.switchN > 0) && React.createElement('button', {
+                    onClick: resetStats,
+                    className: 'px-3 py-1.5 rounded-md text-[11px] font-bold bg-rose-500/30 hover:bg-rose-500/50 text-rose-100 ml-auto'
+                  }, '↻ Reset stats')
+                )
+              );
+            })(),
+
             d.mode === 'birthday' && (function() {
 
               var _bn = d.birthdayN || 23;
@@ -1242,7 +1424,7 @@ var d = (labToolData.probability) || {};
 
             // Visual result display (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'pi' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'pi' && d.mode !== 'monty' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
 
               d.mode === 'coin' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'coinFlip 0.42s cubic-bezier(0.25,0.46,0.45,0.94)':'none', transformOrigin:'center' } }, coinSvg(d.lastResult || 'H')),
 
@@ -1346,7 +1528,7 @@ var d = (labToolData.probability) || {};
             })(),
 
             // ── Auto-Run Controls ──
-            d.mode !== 'tree' && d.mode !== 'birthday' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
               React.createElement("button", { "aria-label": "Toggle auto-run simulation",
 
@@ -1400,7 +1582,7 @@ var d = (labToolData.probability) || {};
 
             // Trial buttons (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm" }, "+" + n)),
 
@@ -1514,7 +1696,7 @@ var d = (labToolData.probability) || {};
 
             // Statistical analysis
 
-            d.trials >= 10 && d.mode !== 'birthday' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
 
               React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } }, "\uD83D\uDCCA Statistical Analysis"),
 
@@ -1584,7 +1766,7 @@ var d = (labToolData.probability) || {};
 
             // â”€â”€ Did You Know? â€” Pedagogical Insights â”€â”€
 
-            d.trials >= 10 && d.mode !== 'birthday' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
 
               React.createElement("p", { className: "text-xs font-bold mb-1", style: { color: isDark || isContrast ? '#fbbf24' : '#b45309' } }, "\uD83D\uDCA1 Did You Know?"),
 
