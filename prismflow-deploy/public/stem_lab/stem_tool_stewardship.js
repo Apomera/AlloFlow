@@ -1,0 +1,347 @@
+// ═══════════════════════════════════════════════════════
+// stem_tool_stewardship.js — Maine Stewardship Campaigns hub
+// Cross-campaign launcher and progress dashboard. Surfaces all five
+// environmental campaigns (Cultural Mosaic, Conservation Manager,
+// Outbreak Response, Watershed Steward, Climate Policy Pathways) as
+// one cohesive offering with state inspection, navigation, and
+// cross-campaign mastery achievements.
+// ═══════════════════════════════════════════════════════
+
+// Defensive StemLab guard
+window.StemLab = window.StemLab || {
+  _registry: {}, _order: [],
+  registerTool: function(id, config) { config.id = id; config.ready = config.ready !== false; this._registry[id] = config; if (this._order.indexOf(id) === -1) this._order.push(id); },
+  isRegistered: function(id) { return !!this._registry[id]; },
+  renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
+};
+
+if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub'))) {
+(function() {
+  'use strict';
+
+  // ── Reduced motion CSS ──
+  (function() {
+    if (document.getElementById('allo-stem-motion-reduce-css')) return;
+    var st = document.createElement('style');
+    st.id = 'allo-stem-motion-reduce-css';
+    st.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; } }';
+    if (document.head) document.head.appendChild(st);
+  })();
+
+  // ── The five campaigns and their navigation targets ──
+  // Each entry knows how to read its own state out of labToolData and
+  // how to navigate the user into the right tool + tab/mode.
+  var CAMPAIGNS = [
+    {
+      id: 'mosaic', label: 'Cultural Mosaic', icon: '🧩', color: '#15803d',
+      hostTool: 'fireEcology', toolDataKey: 'fireEcology', stateField: 'mosaic',
+      tabField: 'tab', tabValue: 'mosaic',
+      scale: '8 years · 7 zones', mechanic: 'Fire-return intervals',
+      desc: 'Steward a Wabanaki territory in Maine. Six stewardship techniques, seasonal cycles (Sigwan-Nipon and Toqaq-Pun), and the cultural craft of mosaic burning.',
+      yearField: 'year', maxYearsField: 'maxYears', defaultMaxYears: 8,
+      outcomeField: 'finalOutcome'
+    },
+    {
+      id: 'conserve', label: 'Conservation Manager', icon: '🌲', color: '#16a34a',
+      hostTool: 'ecosystem', toolDataKey: 'ecosystem', stateField: 'conserve',
+      tabField: 'tab', tabValue: 'conserve',
+      scale: '10 years · 6 species', mechanic: 'Trophic cascades',
+      desc: 'Manage a Maine ecosystem across 10 years. Six species with population, habitat, and public support metrics tied together by trophic-cascade feedback rules.',
+      yearField: 'year', maxYearsField: 'maxYears', defaultMaxYears: 10,
+      outcomeField: 'finalOutcome'
+    },
+    {
+      id: 'outbreak', label: 'Outbreak Response', icon: '🏥', color: '#0ea5e9',
+      hostTool: 'epidemicSim', toolDataKey: 'epidemicSim', stateField: 'outbreak',
+      tabField: 'tab', tabValue: 'outbreak',
+      scale: '26 weeks · 4 demographics', mechanic: 'Trust feedback loops',
+      desc: 'You are the County Public Health Officer in Maine. 26 weeks of decisions across four demographic groups, with hospital strain, trust, and vaccine uptake tied together.',
+      yearField: 'week', maxYearsField: 'maxWeeks', defaultMaxYears: 26,
+      outcomeField: 'finalOutcome'
+    },
+    {
+      id: 'steward', label: 'Watershed Steward', icon: '💧', color: '#0ea5e9',
+      hostTool: 'waterCycle', toolDataKey: 'waterCycle', stateField: 'steward',
+      tabField: 'wcMode', tabValue: 'steward',     // Water Cycle uses wcMode, not tab
+      scale: '10 years · 6 components', mechanic: 'Hydrological cascades',
+      desc: 'Watershed Coordinator for a central Maine river system. Six watershed components (headwaters, mainstem, beaver wetlands, buffers, ag, suburban) and 10 years of decisions.',
+      yearField: 'year', maxYearsField: 'maxYears', defaultMaxYears: 10,
+      outcomeField: 'finalOutcome'
+    },
+    {
+      id: 'pathway', label: 'Climate Policy Pathways', icon: '🗺️', color: '#15803d',
+      hostTool: 'climateExplorer', toolDataKey: 'climateExplorer', stateField: 'pathway',
+      tabField: 'tab', tabValue: 'pathways',
+      scale: '40 years · 6 sectors', mechanic: 'Inter-sector policy feedback',
+      desc: 'Maine\'s lead climate strategist, 2025 to 2065 in 5-year periods. Six policy sectors (grid, transport, buildings, working lands, adaptation, justice) tied by feedback rules.',
+      yearField: 'year', maxYearsField: 'maxYears', defaultMaxYears: 8,
+      outcomeField: 'finalOutcome'
+    }
+  ];
+
+  // ── Read campaign state out of labToolData ──
+  function readCampaignState(labToolData, campaign) {
+    var slot = (labToolData && labToolData[campaign.toolDataKey]) || {};
+    var state = slot[campaign.stateField];
+    if (!state) return { status: 'notStarted', phase: null, year: 0, maxYears: campaign.defaultMaxYears, outcome: null, difficulty: null };
+    var phase = state.phase || 'setup';
+    var year = state[campaign.yearField] || 0;
+    var maxYears = state[campaign.maxYearsField] || campaign.defaultMaxYears;
+    var outcome = state[campaign.outcomeField] || null;
+    var status;
+    if (phase === 'setup') status = 'notStarted';
+    else if (phase === 'debrief' && outcome) status = 'complete';
+    else status = 'inProgress';
+    return { status: status, phase: phase, year: year, maxYears: maxYears, outcome: outcome, difficulty: state.difficulty || null, seed: state.seed || null };
+  }
+
+  function statusLabel(status) {
+    if (status === 'notStarted') return 'Not started';
+    if (status === 'inProgress') return 'In progress';
+    if (status === 'complete') return 'Complete';
+    return status;
+  }
+  function statusColor(status) {
+    if (status === 'notStarted') return '#64748b';
+    if (status === 'inProgress') return '#fbbf24';
+    if (status === 'complete') return '#86efac';
+    return '#94a3b8';
+  }
+
+  // ── Cross-campaign mastery achievements ──
+  var STEWARDSHIP_TIERS = [
+    { id: 'apprentice', label: 'Stewardship Apprentice', minComplete: 1, icon: '🌱', desc: 'Complete one full campaign.' },
+    { id: 'practitioner', label: 'Stewardship Practitioner', minComplete: 3, icon: '🌿', desc: 'Complete three full campaigns.' },
+    { id: 'master', label: 'Maine Stewardship Mastery', minComplete: 5, icon: '🏆', desc: 'Complete all five environmental campaigns.' },
+    { id: 'grandmaster', label: 'Stewardship Grandmaster', minComplete: 5, requireTopTier: true, icon: '🌟', desc: 'Complete all five campaigns at top-tier outcomes.' }
+  ];
+
+  function isTopTier(outcome) {
+    if (!outcome) return false;
+    var t = outcome.tier;
+    // Each campaign uses a different best-tier label
+    return t === 'excellent' || t === 'mastery' || t === 'recovery' || t === 'netzero';
+  }
+
+  // ── Tool registration ──
+  window.StemLab.registerTool('stewardshipHub', {
+    icon: '🌍',
+    label: 'Maine Stewardship Campaigns',
+    desc: 'Cross-campaign launcher: pick from five environmental stewardship sims (Cultural Mosaic, Conservation Manager, Outbreak Response, Watershed Steward, Climate Policy Pathways) and track progress across all five.',
+    color: 'emerald',
+    category: 'science',
+    questHooks: [
+      { id: 'launch_any_campaign', label: 'Launch any environmental campaign', icon: '🌍', check: function(d) { var hub = (d && d.stewardshipHub) || {}; return !!hub.launchedAny; }, progress: function(d) { var hub = (d && d.stewardshipHub) || {}; return hub.launchedAny ? 'Done!' : 'Not yet'; } },
+      { id: 'complete_one', label: 'Complete one campaign', icon: '🌱', check: function(d) { return countCompletedFromTopLevel(d) >= 1; }, progress: function(d) { return countCompletedFromTopLevel(d) + '/1 complete'; } },
+      { id: 'complete_three', label: 'Complete three campaigns', icon: '🌿', check: function(d) { return countCompletedFromTopLevel(d) >= 3; }, progress: function(d) { return countCompletedFromTopLevel(d) + '/3 complete'; } },
+      { id: 'complete_all_five', label: 'Complete all five campaigns', icon: '🏆', check: function(d) { return countCompletedFromTopLevel(d) >= 5; }, progress: function(d) { return countCompletedFromTopLevel(d) + '/5 complete'; } }
+    ],
+    render: function(ctx) {
+      var React = ctx.React;
+      var h = React.createElement;
+      var labToolData = ctx.toolData || {};
+      var setLabToolData = ctx.setToolData;
+      var setStemLabTool = ctx.setStemLabTool;
+      var addToast = ctx.addToast;
+      var announceToSR = ctx.announceToSR;
+      var ArrowLeft = ctx.icons && ctx.icons.ArrowLeft;
+
+      var hub = labToolData.stewardshipHub || {};
+      function setHub(patch) {
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { stewardshipHub: Object.assign({}, (prev && prev.stewardshipHub) || {}, patch) });
+        });
+      }
+
+      // Compute state snapshots for each campaign
+      var snapshots = CAMPAIGNS.map(function(c) {
+        return { campaign: c, state: readCampaignState(labToolData, c) };
+      });
+      var completedCount = snapshots.filter(function(s) { return s.state.status === 'complete'; }).length;
+      var inProgressCount = snapshots.filter(function(s) { return s.state.status === 'inProgress'; }).length;
+      var topTierCount = snapshots.filter(function(s) { return s.state.status === 'complete' && isTopTier(s.state.outcome); }).length;
+      var earnedTiers = STEWARDSHIP_TIERS.filter(function(t) {
+        if (t.requireTopTier) return topTierCount >= t.minComplete;
+        return completedCount >= t.minComplete;
+      });
+
+      function launchCampaign(c) {
+        // Pre-set the host tool's tab or mode so the user lands in the right place
+        var patch = {};
+        var existing = (labToolData[c.toolDataKey]) || {};
+        var fieldPatch = Object.assign({}, existing);
+        fieldPatch[c.tabField] = c.tabValue;
+        patch[c.toolDataKey] = fieldPatch;
+        // Also mark that the hub has launched at least one campaign
+        patch.stewardshipHub = Object.assign({}, hub, { launchedAny: true });
+        setLabToolData(function(prev) { return Object.assign({}, prev, patch); });
+        if (addToast) addToast('Launching ' + c.label + '...', 'info');
+        if (announceToSR) announceToSR('Opening ' + c.label);
+        // Navigate into the host tool
+        setTimeout(function() { setStemLabTool(c.hostTool); }, 50);
+      }
+
+      return h('div', {
+        style: { maxWidth: 900, margin: '0 auto', padding: 16 },
+        role: 'region',
+        'aria-label': 'Maine Stewardship Campaigns hub'
+      },
+        // Header
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 } },
+          ArrowLeft ? h('button', { onClick: function() { setStemLabTool(null); }, 'aria-label': 'Back to STEM Lab',
+            style: { background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: '#cbd5e1', fontSize: 14 } }, '← Back') : null,
+          h('div', null,
+            h('h2', { style: { margin: 0, color: '#86efac', fontSize: 22, fontWeight: 900 } }, '🌍 Maine Stewardship Campaigns'),
+            h('div', { style: { fontSize: 13, color: '#94a3b8', marginTop: 4, maxWidth: 700, lineHeight: 1.5 } }, 'Five environmental campaigns across Maine. Each is a multi-period simulation with its own pedagogical core (fire-return intervals, trophic cascades, public-health feedback, hydrological cascades, climate-policy interdependence). Same structural pattern across all five: setup, periodic decisions, review, debrief.')
+          )
+        ),
+
+        // Aggregate progress strip
+        h('div', {
+          style: {
+            padding: 14, borderRadius: 12, marginBottom: 16,
+            background: 'linear-gradient(135deg, rgba(21,128,61,0.18) 0%, rgba(56,189,248,0.06) 100%)',
+            border: '1px solid rgba(134,239,172,0.4)', borderLeft: '4px solid #16a34a',
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 10
+          }
+        },
+          h('div', null,
+            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Campaigns complete'),
+            h('div', { style: { fontSize: 26, fontWeight: 900, color: '#86efac' } }, completedCount + ' / 5')
+          ),
+          h('div', null,
+            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'In progress'),
+            h('div', { style: { fontSize: 26, fontWeight: 900, color: '#fbbf24' } }, inProgressCount)
+          ),
+          h('div', null,
+            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Top-tier outcomes'),
+            h('div', { style: { fontSize: 26, fontWeight: 900, color: '#a855f7' } }, topTierCount + ' / 5')
+          ),
+          h('div', null,
+            h('div', { style: { fontSize: 11, color: '#94a3b8' } }, 'Stewardship tier'),
+            h('div', { style: { fontSize: 16, fontWeight: 900, color: '#86efac' } }, earnedTiers.length > 0 ? earnedTiers[earnedTiers.length - 1].icon + ' ' + earnedTiers[earnedTiers.length - 1].label : '🌑 Not yet earned')
+          )
+        ),
+
+        // Mastery tier track
+        h('div', { style: { background: '#0f172a', borderRadius: 12, padding: 14, marginBottom: 16, border: '1px solid #1e293b' } },
+          h('div', { style: { fontSize: 12, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 700, marginBottom: 10 } }, 'Cross-campaign mastery'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 } },
+            STEWARDSHIP_TIERS.map(function(t) {
+              var earned = t.requireTopTier ? topTierCount >= t.minComplete : completedCount >= t.minComplete;
+              return h('div', {
+                key: t.id,
+                style: {
+                  background: earned ? 'rgba(134,239,172,0.10)' : '#1e293b',
+                  border: '1px solid ' + (earned ? '#86efac' : '#334155'),
+                  borderRadius: 10, padding: 10, opacity: earned ? 1 : 0.6
+                }
+              },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
+                  h('span', { style: { fontSize: 20 } }, t.icon),
+                  h('strong', { style: { color: earned ? '#86efac' : '#cbd5e1', fontSize: 13 } }, t.label)
+                ),
+                h('div', { style: { fontSize: 11, color: '#94a3b8', lineHeight: 1.4 } }, t.desc),
+                earned ? h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 4, fontWeight: 700 } }, '✓ Earned') : null
+              );
+            })
+          )
+        ),
+
+        // Campaign tiles
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: 12 } },
+          snapshots.map(function(snap) {
+            var c = snap.campaign;
+            var s = snap.state;
+            var pct = (s.year && s.maxYears) ? Math.round((s.year / s.maxYears) * 100) : 0;
+            var outcome = s.outcome;
+            return h('div', {
+              key: c.id,
+              style: { background: '#0f172a', borderRadius: 12, padding: 14, borderLeft: '3px solid ' + c.color, display: 'flex', flexDirection: 'column', gap: 10 }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
+                h('span', { style: { fontSize: 28 } }, c.icon),
+                h('div', { style: { flex: 1 } },
+                  h('div', { style: { fontWeight: 800, color: c.color, fontSize: 15 } }, c.label),
+                  h('div', { style: { fontSize: 11, color: '#94a3b8' } }, c.scale)
+                ),
+                h('span', { style: { background: statusColor(s.status) + '22', color: statusColor(s.status), border: '1px solid ' + statusColor(s.status) + '66', borderRadius: 20, padding: '2px 10px', fontSize: 11, fontWeight: 700 } }, statusLabel(s.status))
+              ),
+              h('div', { style: { fontSize: 11, color: '#fbbf24', fontStyle: 'italic' } }, 'Mechanic: ' + c.mechanic),
+              h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.5 } }, c.desc),
+
+              // Progress / outcome section
+              s.status === 'inProgress' ? h('div', { style: { background: '#1e293b', borderRadius: 8, padding: 8 } },
+                h('div', { style: { fontSize: 11, color: '#fbbf24', marginBottom: 4, fontWeight: 700 } }, 'Year ' + s.year + ' of ' + s.maxYears + ' (' + pct + '%)' + (s.difficulty ? ' · ' + s.difficulty : '')),
+                h('div', { style: { height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' } },
+                  h('div', { style: { width: pct + '%', height: '100%', background: c.color, borderRadius: 3, transition: 'width 0.4s' } })
+                )
+              ) : null,
+              s.status === 'complete' && outcome ? h('div', { style: { background: (outcome.color || '#86efac') + '15', borderRadius: 8, padding: 8, borderLeft: '3px solid ' + (outcome.color || '#86efac') } },
+                h('div', { style: { fontSize: 12, fontWeight: 700, color: outcome.color || '#86efac' } }, (outcome.icon || '🏆') + ' ' + (outcome.label || 'Complete')),
+                isTopTier(outcome) ? h('div', { style: { fontSize: 10, color: '#a855f7', marginTop: 2, fontWeight: 700 } }, '🌟 Top-tier outcome') : null
+              ) : null,
+
+              h('button', {
+                onClick: function() { launchCampaign(c); },
+                'aria-label': 'Launch ' + c.label,
+                style: {
+                  marginTop: 'auto',
+                  padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                  background: 'linear-gradient(135deg, ' + c.color + ' 0%, ' + c.color + 'cc 100%)',
+                  color: '#fff', fontWeight: 800, fontSize: 13
+                }
+              }, s.status === 'inProgress' ? 'Continue →' : (s.status === 'complete' ? 'Replay →' : 'Launch →'))
+            );
+          })
+        ),
+
+        // Pedagogy framing for educators
+        h('details', {
+          style: { marginTop: 16, padding: '10px 14px', borderRadius: 12, background: '#0f172a', border: '1px solid #1e293b' }
+        },
+          h('summary', { style: { fontSize: 12, fontWeight: 700, color: '#94a3b8', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: 0.5 } }, '📝 Notes for educators'),
+          h('div', { style: { marginTop: 10, fontSize: 13, lineHeight: 1.6, color: '#cbd5e1' } },
+            h('p', { style: { margin: '0 0 8px' } },
+              'All five campaigns share the same structural pattern: setup, periodic decisions (year, week, or 5-year period), random events, feedback rules that tie entities together, end-of-period review, and debrief. A student who learns one campaign knows how to play all five.'
+            ),
+            h('p', { style: { margin: '0 0 8px' } },
+              h('strong', { style: { color: '#fbbf24' } }, 'What differs across campaigns is the domain physics:'),
+              ' fire-return intervals across habitats; trophic cascades between species; trust feedback in public health; hydrological cascades through a watershed; inter-sector policy dependence in climate planning.'
+            ),
+            h('p', { style: { margin: '0 0 8px' } },
+              h('strong', { style: { color: '#fbbf24' } }, 'Real Maine grounding:'),
+              ' the Cultural Mosaic builds on documented Wabanaki practice. The Conservation Manager references Yellowstone wolves, Penobscot River dam removal, and beaver recovery. Outbreak Response uses Maine county scale and references Wabanaki Public Health and Wellness work. Watershed Steward references Edwards Dam, Veazie Dam, Sebasticook river herring, and the Penobscot River Restoration Project. Climate Pathways grounds in Maine\'s heat-pump program, NECEC transmission fight, and Justice40 framework.'
+            ),
+            h('p', { style: { margin: '0 0 8px' } },
+              h('strong', { style: { color: '#fbbf24' } }, 'Discussion prompts after multiple campaigns:'),
+            ),
+            h('ul', { style: { margin: '0 0 0 18px', padding: 0 } },
+              h('li', null, 'Which feedback rule across all five domains feels most like real life to you, and why?'),
+              h('li', null, 'In which campaign was equity / public support most load-bearing for everything else?'),
+              h('li', null, 'Where did the "do-nothing baseline" surprise you most when compared with your campaign?'),
+              h('li', null, 'In each campaign there is a Wabanaki disclaimer for the AI Reading feature. Why do you think these disclaimers are written the way they are?')
+            ),
+            h('p', { style: { margin: '8px 0 0', color: '#94a3b8', fontStyle: 'italic' } },
+              'Each campaign has its own per-entity deep-dive panels with documented case work, a year-1 coaching tip, artifact translations to tangible Maine units, a do-nothing baseline at debrief, a multi-line trend chart, and a carefully-framed AI Reading feature. Hours-per-period budgets vary by chosen difficulty.'
+            )
+          )
+        )
+      );
+    }
+  });
+
+  // Helper used by questHooks — labToolData is the top-level toolData object
+  function countCompletedFromTopLevel(d) {
+    if (!d) return 0;
+    var count = 0;
+    CAMPAIGNS.forEach(function(c) {
+      var slot = (d[c.toolDataKey]) || {};
+      var state = slot[c.stateField];
+      if (state && state.phase === 'debrief' && state[c.outcomeField]) count++;
+    });
+    return count;
+  }
+
+})();
+}

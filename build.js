@@ -712,6 +712,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_renewables.js',
     'stem_lab/stem_tool_pets.js',
     'stem_lab/stem_tool_fireecology.js',
+    'stem_lab/stem_tool_stewardship.js',
     'stem_lab/stem_tool_moonmission.js',
     'stem_lab/stem_tool_beehive.js',
     'stem_lab/stem_tool_spacecolony.js',
